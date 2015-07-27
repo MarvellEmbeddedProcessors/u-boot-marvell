@@ -112,6 +112,16 @@
 #include "cntmr/mvCntmrRegs.h"
 #include "switchingServices.h"
 
+/* zImage structure and magic are copied from bootm.c */
+struct zimage_header {
+	uint32_t code[9];
+	uint32_t zi_magic;
+	uint32_t zi_start;
+	uint32_t zi_end;
+};
+
+#define LINUX_ARM_ZIMAGE_MAGIC  0x016f2818
+
 MV_BOOL mvVerifyRequest(void)
 {
 	printf("\nDo you want to continue ? [Y/n]");
@@ -272,26 +282,47 @@ static int isSwitchingServicesSupported(void)
 *	None
 *
 *******************************************************************************/
-static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[] )
+static int do_cpss_env(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 {
 	char buf[1024];
+	MV_BOOL	z_image_mode = MV_TRUE;
 
 	if (!isSwitchingServicesSupported())
 		return 0;
 
-	printf("Saving cpss environment variable\n");
+	if (argc > 1) {
+		if (strcmp(argv[1], "0") == 0)
+			z_image_mode = MV_FALSE;
+	}
+
+	printf("***********************************************************************\n");
+	printf("* Setting CPSS environment for %s boot mode*\n",
+	       z_image_mode == MV_TRUE ? "modern (zImage & kernel >= 3.10)" : "legacy (uImage & kernel < 3.10)");
+	printf("***********************************************************************\n");
+
+	printf("Saving cpss environment variables\n");
 	setenv("standalone", "");
 	setenv("bootcmd", "run standalone_mtd");
 	setenv("consoledev","ttyS0");
-	setenv("linux_loadaddr","0x2000000");
+	sprintf(buf, "%#x", CFG_DEF_LINUX_LOAD_ADDR);
+	setenv("linux_loadaddr", buf);
+	sprintf(buf, "%#x", CFG_DEF_FDT_LOAD_ADDR);
+	setenv("fdtaddr", buf);
 	setenv("netdev","eth0");
 	setenv("rootpath","/tftpboot/rootfs_arm-mv7sft");
 	setenv("othbootargs","null=null");
 
+
 	setenv("nfsboot","setenv bootargs root=/dev/nfs rw nfsroot=${serverip}:${rootpath} "
-					 "ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off "
-					 "console=${consoledev},${baudrate} ${othbootargs} ${linux_parts}; tftp ${linux_loadaddr} "
-					 "${image_name};bootm ${linux_loadaddr}");
+		 "ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off "
+		 "console=${consoledev},${baudrate} ${othbootargs} ${linux_parts}; tftp ${linux_loadaddr} "
+		 "${image_name};bootm ${linux_loadaddr}");
+
+	setenv("nfsboot_fdt","setenv bootargs root=/dev/nfs rw nfsroot=${serverip}:${rootpath} "
+		 "ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off "
+		 "console=${consoledev},${baudrate} ${othbootargs} ${linux_parts}; tftp ${linux_loadaddr} "
+		 "${image_name}; tftp ${fdtaddr} ${fdtfile};bootz ${linux_loadaddr} - ${fdtaddr}");
+
 
 	sprintf(buf,"'mtdparts=spi_flash:%dm(spi_uboot)ro,%dm(spi_kernel),%dm(spi_rootfs),-(remainder)"
 		";armada-nand:%dm(nand_kernel),-(nand_rootfs)'", CFG_APPL_FLASH_PART_UBOOT_SIZE / _1M,
@@ -303,12 +334,24 @@ static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]
 	setenv("linux_parts", buf);
 
 #ifdef MV_INCLUDE_SPI
-	sprintf(buf,
-		"sf probe; sf read ${loadaddr} 0x%x 0x%x; setenv bootargs ${console} "
-		"ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off "
-		"root=/dev/mtdblock2 rw init=/linuxrc rootfstype=jffs2 rootwait ${mtdparts} "
-		"${mvNetConfig}; bootm ${loadaddr} ",
-		CFG_APPL_SPI_FLASH_PART_KERNEL_START, CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE);
+	if (z_image_mode == MV_FALSE) { /* kernel in uImage format*/
+		sprintf(buf,
+			"sf probe; sf read ${linux_loadaddr} %#x %#x; setenv bootargs ${console} "
+			"ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off "
+			"root=/dev/mtdblock2 rw init=/linuxrc rootfstype=jffs2 rootwait ${mtdparts} "
+			"${mvNetConfig}; bootm ${linux_loadaddr}",
+			CFG_APPL_SPI_FLASH_PART_KERNEL_START, CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE);
+	} else { /* kernel in zImage format + DTB */
+		sprintf(buf,
+			"sf probe; sf read ${linux_loadaddr} %#x %#x; cp.b  %#x %#x %#x;"
+			"setenv bootargs ${console} ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:"
+			"${hostname}:${netdev}:off root=/dev/mtdblock2 rw init=/linuxrc rootfstype=jffs2 "
+			"rootwait ${mtdparts} ${mvNetConfig}; bootz ${linux_loadaddr} - ${fdtaddr}",
+			CFG_APPL_SPI_FLASH_PART_KERNEL_START, CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE,
+			CFG_DEF_LINUX_LOAD_ADDR + CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE -
+			CFG_APPL_SPI_FLASH_PART_DEVTREE_SIZE, CFG_DEF_FDT_LOAD_ADDR,
+			CFG_APPL_SPI_FLASH_PART_DEVTREE_SIZE);
+	}
 #ifndef MV_NAND
 	setenv("standalone_mtd", buf);
 	printf("standalone_mtd = %s\n", buf);
@@ -319,13 +362,23 @@ static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]
 #endif /* MV_INCLUDE_SPI */
 
 #ifdef MV_NAND
-	sprintf(buf,
-		"nand read ${loadaddr} 0x%x 0x%x; setenv bootargs ${console} ${mtdparts} "
-		"ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off "
-		"ubi.mtd=5 root=ubi0:rootfs_nand ro rootfstype=ubifs ${mvNetConfig}; bootm 0x2000000;" ,
-		CFG_APPL_NAND_FLASH_PART_KERNEL_START,
-		CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE);
-
+	if (z_image_mode == MV_FALSE) { /* kernel in uImage format*/
+		sprintf(buf,
+			"nand read ${linux_loadaddr} %#x %#x; setenv bootargs ${console} ${mtdparts} "
+			"ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off ubi.mtd=5 "
+			"root=ubi0:rootfs_nand ro rootfstype=ubifs ${mvNetConfig}; bootm ${linux_loadaddr};",
+			CFG_APPL_NAND_FLASH_PART_KERNEL_START, CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE);
+	} else { /* kernel in zImage format + DTB */
+		sprintf(buf,
+			"nand read ${linux_loadaddr} %#x %#x; cp.b  %#x %#x %#x;"
+			"setenv bootargs ${console} ${mtdparts} ip=${ipaddr}:${serverip}:${gatewayip}:"
+			"${netmask}:${hostname}:${netdev}:off ubi.mtd=1 root=ubi0:rootfs_nand ro "
+			"rootfstype=ubifs ${mvNetConfig}; bootz ${linux_loadaddr} - ${fdtaddr}" ,
+			CFG_APPL_NAND_FLASH_PART_KERNEL_START, CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE,
+			CFG_DEF_LINUX_LOAD_ADDR + CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE -
+			CFG_APPL_NAND_FLASH_PART_DEVTREE_SIZE, CFG_DEF_FDT_LOAD_ADDR,
+			CFG_APPL_NAND_FLASH_PART_DEVTREE_SIZE);
+	}
 	setenv("standalone_mtd", buf);
 	printf("standalone_mtd = %s\n", buf);
 #endif
@@ -337,6 +390,10 @@ static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]
 U_BOOT_CMD(
 	cpss_env,      2,     1,      do_cpss_env,
 	"set cpss environment variables permanently\n",
+	"[0 | 1]\n"
+	"0 - use legacy mode (uImage + rootFS image) - kernel < 3.10\n"
+	"1 - use zImage mode (zImage + DTB + rootFS image) - kernel >= 3.10\n"
+	"If parameter omitted, use mode 1 (zImage)\n"
 	""
 );
 
@@ -348,6 +405,7 @@ struct partitionInformation nandInfo = {
 	.defaultImage = "ubifs_arm_nand.image",
 	.FLASH_SIZE = CFG_APPL_NAND_FLASH_SIZE,
 	.KERNEL_SIZE = CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE,
+	.DEVTREE_SIZE = CFG_APPL_NAND_FLASH_PART_DEVTREE_SIZE,
 	.ROOTFS_SIZE = CFG_APPL_NAND_FLASH_PART_ROOTFS_SIZE,
 	.KERNEL_START = CFG_APPL_NAND_FLASH_PART_KERNEL_START,
 	.BLOCK_ALIMENT = CFG_APPL_NAND_FLASH_BLOCK_ALIMENT,
@@ -358,6 +416,7 @@ struct partitionInformation spiInfo = {
 	.defaultImage = "jffs2_arm.image",
 	.FLASH_SIZE = CFG_APPL_SPI_FLASH_SIZE,
 	.KERNEL_SIZE = CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE,
+	.DEVTREE_SIZE = CFG_APPL_SPI_FLASH_PART_DEVTREE_SIZE,
 	.ROOTFS_SIZE = CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE,
 	.KERNEL_START = CFG_APPL_SPI_FLASH_PART_KERNEL_START,
 	.BLOCK_ALIMENT = CFG_APPL_SPI_FLASH_BLOCK_ALIMENT,
@@ -396,19 +455,29 @@ void flashErase (MV_U32 destination, MV_U32 len, MV_BOOL isNand)
 
 static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	MV_U32 i, addr, src_addr, dest_addr;
-	MV_U32 kernel_unc_len, rootfs_unc_len = 0, unc_len, src_len;
-	MV_U32 kernel_addr = CFG_DEF_KERNEL_DEST_ADDR;
-	MV_U32 rootfs_addr = CFG_DEF_ROOTFS_DEST_ADDR;
-	MV_U32 total_in, rc, single_file = 0, bz2_file = 0;
-	char *from[] = {"tftp","usb","mmc", "ram"};
-	struct partitionInformation *partitionInfo = &nandInfo;	/* default destination = NAND */
-	MV_U32 loadfrom = 0;					/* Default source = tftp */
-	char * devPart = NULL;
-	MV_U32 fsys = FS_TYPE_FAT;				/* default FS = FAT */
-	MV_BOOL isNand = MV_TRUE;				/* default destination = NAND */
-	addr = load_addr = CFG_DEF_SOURCE_LOAD_ADDR;
-	int filesize, fileSizeFromRam = -1;
+	MV_U32			i, image_addr, src_addr, dest_addr;
+	MV_U32			kernel_unc_len, rootfs_unc_len = 0, unc_len, src_len;
+
+	MV_U32			kernel_addr = CFG_DEF_KERNEL_DEST_ADDR;
+	MV_U32			script_addr = CFG_DEF_SCRIPT_DEST_ADDR;
+	MV_U32			rootfs_addr = CFG_DEF_ROOTFS_DEST_ADDR;
+
+	MV_U32			total_in, remaining_bytes, rc, bz2_file = 0;
+	char			*from[] = {"tftp","usb","mmc", "ram"};
+	struct partitionInformation	*partitionInfo = &nandInfo;	/* default destination = NAND */
+
+	MV_U32			loadfrom = 0;			/* Default source = tftp */
+	char			*devPart = NULL;
+	MV_U32			fsys = FS_TYPE_FAT;		/* default FS = FAT */
+	MV_BOOL			isNand = MV_TRUE;		/* default destination = NAND */
+	MV_BOOL			single_file;
+	int			filesize, fileSizeFromRam = -1;
+	struct zimage_header	*zi;
+	image_header_t		*hdr;
+	MV_BOOL			is_zimage = MV_FALSE;
+	MV_BOOL			run_script = MV_FALSE;
+
+	image_addr = load_addr = CFG_DEF_SOURCE_LOAD_ADDR;
 
 	if (!isSwitchingServicesSupported())
 		return 0;
@@ -443,7 +512,7 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		else if(strcmp(argv[2], "ram") == 0) {
 			loadfrom = 3;
 			if (devPart != NULL)
-				addr = load_addr = (unsigned int)simple_strtoul(devPart, NULL, 16);
+				image_addr = load_addr = (unsigned int)simple_strtoul(devPart, NULL, 16);
 		}
 		if ((loadfrom == 1 || loadfrom == 2) && devPart == NULL) /* if using USB/MMC, and not selected interface num */
 			devPart = "0";					 /* default interface number is 0 */
@@ -499,7 +568,7 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	else 	/* if filesize not specified, try maximum limit for single image */
 		filesize = partitionInfo->KERNEL_SIZE + partitionInfo->ROOTFS_SIZE;
 
-	if(filesize <=0 )
+	if (filesize <= 0)
 		return 0;
 
 	if (filesize > partitionInfo->FLASH_SIZE) {
@@ -507,12 +576,17 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 0;
 	}
 
-	printf("\nTrying separation of kernel/vxWorks-image and root_fs. Work areas=0x%08x,0x%08x\n",
-	       kernel_addr, rootfs_addr);
+	remaining_bytes = filesize;
 
-	dest_addr = kernel_addr; // uncompress the kernel here.
-	src_addr = addr;
-	src_len = unc_len = kernel_addr - addr;
+	printf("\nTrying separation of image components. Work areas=%#08x[kernel],%#08x[script],%#08x[rootfs]\n",
+	       kernel_addr, script_addr, rootfs_addr);
+
+	dest_addr = kernel_addr; /* uncompress the kernel here.*/
+	src_addr = image_addr;
+	/* The below code assumes that the uncompressed kernel destination address
+	   is always higher than the image load address, therefore the maximum
+	   memory available for decompression is the delta between these two addresses */
+	src_len = unc_len = dest_addr - image_addr;
 
 	rc = BZ2_bzBuffToBuffDecompress_extended ((char*)dest_addr, &unc_len,
 						  (char *)src_addr, src_len,
@@ -522,25 +596,81 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	if (rc == 0) {
 		printf("kernel separation ended ok. unc_len=%d, total_in=%d\n",unc_len, total_in);
+		single_file = MV_FALSE;
 		bz2_file++;
+
+		/* The Devtree destination address MUST be higher than kernel image destination address */
+		if ((partitionInfo->KERNEL_SIZE - partitionInfo->DEVTREE_SIZE) < total_in) {
+			printf("Kernel image overlaps the Device Tree space!\n");
+			return 0;
+		}
+		/* Check if it is a legacy uImage or new zImage kernel */
+		zi = (struct zimage_header *)dest_addr;
+		hdr = (image_header_t *)dest_addr;
+		if (image_check_magic(hdr)) {
+			printf("Kernel image is in uImage format\n");
+		} else if (zi->zi_magic == LINUX_ARM_ZIMAGE_MAGIC) {
+			is_zimage = MV_TRUE;
+			printf("Kernel image is in zImage format\n");
+		} else {
+			printf("WRONG KERNEL IMAGE FORMAT\n");
+			return 0;
+		}
+		remaining_bytes -= total_in;
 	} else if (rc == -5) {
 		printf("Not a valid bz2 file, assume plain single image file ?");
 		if (mvVerifyRequest() == MV_FALSE)
 			return 0;
 
-		single_file = 1;
+		single_file = MV_TRUE;
 		kernel_unc_len = filesize;
 		kernel_addr = load_addr;
+		remaining_bytes = 0;
 	} else {
 		printf("Uncompress of kernel ended with error. rc=%d\n", rc);
 		return 0;
 	}
 
-	if (!single_file) {
-	/* now try to separate the rootfs. If we get -5 then we have a single file. */
-		dest_addr = rootfs_addr; // uncompress the rootfs here.
+	if (single_file != MV_TRUE) {
+	/* Multi-part image */
+		if (kernel_unc_len > partitionInfo->KERNEL_SIZE) {
+			printf("kernel is too big to fit in flash!\n");
+			return 0;
+		}
+
+		/* Try to separate the DTB */
+		if (is_zimage == MV_TRUE) {
+			printf("Separating the device tree blob...\n");
+			/* Put the Device Tree blob at the end of kernel memory space */
+			dest_addr = kernel_addr + partitionInfo->KERNEL_SIZE - partitionInfo->DEVTREE_SIZE;
+			src_addr += total_in;
+			src_len = unc_len = dest_addr - image_addr;
+
+			rc = BZ2_bzBuffToBuffDecompress_extended ((char*)dest_addr,
+								  &unc_len, (char *)src_addr,
+								  src_len, &total_in, 0, 0);
+
+			if (rc == 0) {
+				bz2_file++;
+
+				printf("Device Tree separation ended ok. unc_len=%d, total_in=%d\n",
+				       unc_len, total_in);
+				if (unc_len > partitionInfo->DEVTREE_SIZE) {
+					printf("Device Tree is too big!\n");
+					return 0;
+				}
+			} else {
+				printf("Uncompress of Device Tree ended with error. rc=%d\n", rc);
+				return 0;
+			}
+			remaining_bytes -= total_in;
+		} /* DTB separation */
+
+		printf("Separating the root FS image. It can take some time, please wait...\n");
+		/* now try to separate the rootfs. */
+		dest_addr = rootfs_addr; /* uncompress the rootfs here. */
 		src_addr += total_in;
-		src_len = unc_len = kernel_addr - addr - total_in;
+		src_len = unc_len = dest_addr - image_addr;
 
 		rc = BZ2_bzBuffToBuffDecompress_extended ((char*)dest_addr, &unc_len, (char *)src_addr,
 							  src_len, &total_in, 0, 0);
@@ -554,32 +684,43 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				printf("rootfs too big\n");
 				return 0;
 			}
-		} else if (rc == -5) {
-			printf("One single bz2 file detected\n");
-			single_file = 1;
 		} else {
 			printf("Uncompress of rootfs ended with error. rc=%d\n", rc);
 			return 0;
 		}
-	}
+		remaining_bytes -= total_in;
 
-	if (!single_file && kernel_unc_len > partitionInfo->KERNEL_SIZE) {
-		printf("kernel too big to fit in flash\n");
-		return 0;
-	} else if (kernel_unc_len > (partitionInfo->KERNEL_SIZE + partitionInfo->ROOTFS_SIZE)) {
-		// we are now dealing with single file
-		printf("Single image too big to fit in flash\n");
-		if (bz2_file) {
-			printf("Trying to fit the compressed image on flash\n");
-			if (filesize  > (partitionInfo->KERNEL_SIZE + partitionInfo->ROOTFS_SIZE)) {
-				printf("Single image compressed format too big to fit in flash\n");
+		if (remaining_bytes != 0) {
+			printf("Separating the embedded script image...\n");
+			/* now try to separate the u-boot script. */
+			dest_addr = script_addr;
+			src_addr += total_in;
+			src_len = unc_len = script_addr - rootfs_addr;
+
+			rc = BZ2_bzBuffToBuffDecompress_extended ((char*)dest_addr, &unc_len, (char *)src_addr,
+								  src_len, &total_in, 0, 0);
+			printf("\n");
+			if (rc == 0) {
+				bz2_file++;
+				run_script = MV_TRUE;
+				printf("script separation ended ok. unc_len=%d, total_in=%d\n", unc_len, total_in);
+			} else {
+				printf("Uncompress of script ended with error. rc=%d\n", rc);
 				return 0;
 			}
-			/* point to the bz2 image in memory */
-			kernel_unc_len = filesize;
-			kernel_addr = load_addr;
 		} else
+			printf("No embedded script found\n");
+
+	/* Multi-part image */
+	} else {
+	/* Single file */
+
+		if (kernel_unc_len > (partitionInfo->KERNEL_SIZE + partitionInfo->ROOTFS_SIZE)) {
+			printf("Single image is too big to fit in flash\n");
 			return 0;
+		}
+
+	/* Single file */
 	}
 
 	/* Erase entire NAND flash - avoid invalid file system preparations */
@@ -589,7 +730,7 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			run_command("nand erase.chip", 0);
 	}
 	printf("\nBurning %s on flash at 0x%08x, length=%dK\n",
-		(single_file) ? "single image" : "kernel",
+		(single_file == MV_TRUE) ? "single image" : "kernel",
 		partitionInfo->KERNEL_START, kernel_unc_len/_1K);
 
 	printf("Erasing 0x%x - 0x%x: (%dMB)\n", partitionInfo->KERNEL_START,
@@ -599,10 +740,14 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	printf("\t\t[Done]\n");
 
 	printf("\nCopy to Flash\n");
-	flashWrite(partitionInfo->KERNEL_START, kernel_unc_len, kernel_addr, isNand);
+	/* Write entire allowed kernel size for including Device tree blob that is tailed to he kernel */
+	if (is_zimage == MV_TRUE)
+		flashWrite(partitionInfo->KERNEL_START, partitionInfo->KERNEL_SIZE, kernel_addr, isNand);
+	else
+		flashWrite(partitionInfo->KERNEL_START, kernel_unc_len, kernel_addr, isNand);
 	printf("\n");
 
-	if (!single_file) {
+	if (single_file != MV_TRUE) {
 		printf("Erasing 0x%x - 0x%x: (%dMB)\n", partitionInfo->ROOTFS_START,
 				partitionInfo->ROOTFS_START + partitionInfo->ROOTFS_SIZE,
 				partitionInfo->ROOTFS_SIZE / _1M);
@@ -615,10 +760,24 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		printf("\n");
 	}
 
+	/* Run CPSS environment configuration at any case */
+	printf("\nReady to set CPSS environment variables (mtdparts & bootcmd)");
+	if (mvVerifyRequest() == MV_TRUE) {
+		if (is_zimage == MV_TRUE)
+			run_command("cpss_env 1", 0);
+		else
+			run_command("cpss_env 0", 0);
+	}
 
-	printf("\nDo you want to prepare CPSS environment variables (mtdparts & bootcmd) ? [y/N]");
-	if (mvVerifyRequest() == MV_TRUE)
-		run_command("cpss_env", 0);
+	if (run_script == MV_TRUE) {
+		printf("\nReady to run the embedded script\n");
+		if (mvVerifyRequest() == MV_TRUE) {
+			char cmd[1024];
+			/* "source" runs u-boot script from a memory location */
+			sprintf(cmd, "source %#x", CFG_DEF_SCRIPT_DEST_ADDR);
+			run_command(cmd, 0);
+		}
+	}
 
 	return 1;
 }

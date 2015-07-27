@@ -304,7 +304,9 @@ void aapl_destruct(
     if (aapl->log)                  AAPL_FREE(aapl->log);
     if (aapl->aacs_server)          AAPL_FREE(aapl->aacs_server);
     if (aapl->aacs_server_buffer)   AAPL_FREE(aapl->aacs_server_buffer);
+#if 0 /* aapl is staticly defined */
     AAPL_FREE(aapl);
+#endif
 }
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 

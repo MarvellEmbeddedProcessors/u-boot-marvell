@@ -28,7 +28,7 @@ END
 SET VAL @dev_id = @dev_id_3xx
 IF @dev_id == 0x6820 || @dev_id == 0x6810 || @dev_id == 0x6828 || @dev_id == 0x6811 THEN
 	PRINT "%s" "Running on Armada 38x\n"
-	define macro /button static_ddr_init "batch \"NO STATIC DRAM\"\n"
+	define macro /button static_ddr_init "batch \"./tools/marvell/debugger_scripts/XDB/a38x_static.xdb\"\n"
 	SET VAL @first_breakp = 0x40000040
 	SET VAL @second_breakp = 0x400000BC
 ELSE

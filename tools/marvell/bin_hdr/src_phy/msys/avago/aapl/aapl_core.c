@@ -326,7 +326,6 @@ int aapl_get_return_code(
     return x;
 }
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /*============================================================================= */
 /* AAPL INIT */
 /** @brief Constructs the Aapl_t structure.and sets default values. */
@@ -337,11 +336,12 @@ void aapl_init(Aapl_t *aapl)
     int i;
 
     memset(aapl, 0, sizeof(Aapl_t));
-
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     for( i = 0; i < AAPL_MAX_CHIPS; i++ )
         aapl->chip_name[i] = aapl->chip_rev[i] = "";
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
-#ifndef MV_HWS_BIN_HEADER
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     aapl->log            = (char *) AAPL_MALLOC(AAPL_LOG_BUF_SIZE);
     aapl->log_end        = aapl->log;
     aapl->log_size       = 0;
@@ -361,27 +361,26 @@ void aapl_init(Aapl_t *aapl)
     aapl->enable_stream_logging     = AAPL_DEFAULT_ENABLE_STREAM_LOGGING;
     aapl->enable_stream_err_logging = AAPL_DEFAULT_ENABLE_STREAM_ERR_LOGGING;
     aapl->enable_serdes_core_port_interrupt = AAPL_DEFAULT_SERDES_CORE_PORT_INT;
-#endif /* MV_HWS_BIN_HEADER */
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
     aapl->chips                 = AAPL_NUMBER_OF_CHIPS_OVERRIDE;
-#ifndef MV_HWS_BIN_HEADER
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     aapl->sbus_rings            = AAPL_NUMBER_OF_RINGS_OVERRIDE;
 
 # ifdef AAPL_LOG_TIME_STAMPS
     aapl->log_time_stamps       = AAPL_LOG_TIME_STAMPS;
 # endif
-#endif /* MV_HWS_BIN_HEADER */
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
     aapl->serdes_int_timeout    = AAPL_SERDES_INT_TIMEOUT;
-#ifndef MV_HWS_BIN_HEADER
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     aapl->sbus_mdio_timeout     = AAPL_SBUS_MDIO_TIMEOUT;
     aapl->max_cmds_buffered     = AAPL_MAX_CMDS_BUFFERED;
     aapl->communication_method  = AAPL_DEFAULT_COMM_METHOD;
     aapl->i2c_base_addr         = AAPL_DEFAULT_I2C_BASE_ADDR;
     aapl->mdio_base_port_addr   = AAPL_DEFAULT_MDIO_BASE_PORT_ADDR;
-#endif /* MV_HWS_BIN_HEADER */
-}
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+}
 
 /* The following functions return information from the AAPL struct. addr is used to return specific information for that element. */
 

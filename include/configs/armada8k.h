@@ -68,6 +68,8 @@ extern char __end_of_spl[];
  */
 #include "mvebu-common.h"
 
+#define CONFIG_SYS_PCI_64BIT	/* enable 64-bit PCI resources */
+
 /*
  * SOC specific overrides
  * Add here all config values that differ

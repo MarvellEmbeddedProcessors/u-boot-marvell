@@ -139,6 +139,11 @@
 #define CONFIG_CMD_BOOTI
 #endif
 
+/* Memory commands / tests. */
+#ifdef CONFIG_CMD_MEMTEST
+#define CONFIG_SYS_ALT_MEMTEST	/* More comprehensive mtest algorithm */
+#endif
+
 /* Flash env setup */
 #if !defined(MV_INCLUDE_NOR) && !defined(CONFIG_MVEBU_NAND_BOOT) && !defined(CONFIG_MVEBU_SPI_BOOT)
 	#undef CONFIG_CMD_FLASH

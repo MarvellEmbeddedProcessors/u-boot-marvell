@@ -35,7 +35,7 @@ ELSE
 	SET VAL @dev_id = @dev_id_8k
 	IF @dev_id == 0x0 || @dev_id == 0x800 || @dev_id == 0x10 || @dev_id == 0x810 THEN
 		PRINT "%s" "Running on APN 806\n"
-		define macro /button static_ddr_init "batch \"NO STATIC DRAM\"\n"
+		define macro /button static_ddr_init "batch \"./tools/marvell/debugger_scripts/XDB/ap806_static.xdb\"\n"
 		SET VAL @first_breakp = 0xFFE1C048
 		SET VAL @second_breakp = 0xFFE1C07C
 	ELSE

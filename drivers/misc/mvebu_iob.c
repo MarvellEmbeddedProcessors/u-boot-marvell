@@ -38,18 +38,18 @@
 /* IOB registers */
 #define IOB_MAX_WIN_NUM			(24)
 
-#define IOB_WIN_CR_OFFSET(win)		(iob_info->iob_base + 0x0 + (0x32 * win))
+#define IOB_WIN_CR_OFFSET(win)		(iob_info->iob_base + 0x0 + (0x20 * win))
 #define IOB_TARGET_ID_OFFSET		(8)
 #define IOB_TARGET_ID_MASK		(0xF)
 
-#define IOB_WIN_SCR_OFFSET(win)		(iob_info->iob_base + 0x4 + (0x32 * win))
+#define IOB_WIN_SCR_OFFSET(win)		(iob_info->iob_base + 0x4 + (0x20 * win))
 #define IOB_WIN_ENA_CTRL_WRITE_SECURE	(0x1)
 #define IOB_WIN_ENA_CTRL_READ_SECURE	(0x2)
 #define IOB_WIN_ENA_WRITE_SECURE	(0x4)
 #define IOB_WIN_ENA_READ_SECURE		(0x8)
 
-#define IOB_WIN_ALR_OFFSET(win)		(iob_info->iob_base + 0x8 + (0x32 * win))
-#define IOB_WIN_AHR_OFFSET(win)		(iob_info->iob_base + 0xC + (0x32 * win))
+#define IOB_WIN_ALR_OFFSET(win)		(iob_info->iob_base + 0x8 + (0x20 * win))
+#define IOB_WIN_AHR_OFFSET(win)		(iob_info->iob_base + 0xC + (0x20 * win))
 
 DECLARE_GLOBAL_DATA_PTR;
 

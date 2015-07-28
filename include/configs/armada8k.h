@@ -88,14 +88,14 @@ extern char __end_of_spl[];
 				"mem=128M init=/bin/sh root=/dev/ram0 rw"
 
 #undef  CONFIG_EXTRA_ENV_SETTINGS
-#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x107ffc0\0"	\
+#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x180000\0"	\
 					"fdt_addr=0x1000000\0"		\
 					"ramfs_addr=0x3000000\0"	\
 					"fdt_high=0xa0000000\0"		\
 					"initrd_high=0xffffffffffffffff\0"
 
 #undef  CONFIG_BOOTCOMMAND
-#define CONFIG_BOOTCOMMAND		"bootm $kernel_addr $ramfs_addr $fdt_addr"
+#define CONFIG_BOOTCOMMAND		"booti $kernel_addr $ramfs_addr $fdt_addr"
 
 #endif /*CONFIG_PALLADIUM*/
 

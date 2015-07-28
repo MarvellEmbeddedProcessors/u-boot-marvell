@@ -80,7 +80,7 @@ unsigned int user_supplied_pex_address
     unsigned char serdesNum;
     unsigned int  serdesAddress;
 
-    if (sbus_addr != AVAGO_SBUS_MASTER_ADDRESS)
+    if (sbus_addr < AVAGO_SBUS_MASTER_ADDRESS)
     {
         serdesNum = avagoSerdesSbusAddr2Num[sbus_addr];
     }

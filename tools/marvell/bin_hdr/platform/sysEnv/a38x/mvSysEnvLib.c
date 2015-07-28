@@ -258,13 +258,13 @@ static MV_VOID mvBoardDb6820AmcTwsiConfig(MV_VOID)
 	MV_REG_BIT_RESET(TWSI_CONFIG_DEBUG_REG, TWSI_DEBUG_SLAVE_PORT0_EN);
 	MV_REG_BIT_RESET(TWSI_CONFIG_DEBUG_REG, TWSI_DEBUG_SLAVE_PORT1_EN);
 
-	/* GPP configuration is required for enabling access to i2c channel 1
-	   Output from GPP-44 should set to be HIGH for enabling external
+	/* GPP configuration is required for disabling access to i2c channel 1
+	   Output from GPP-44 should set to be HIGH for disabling external
 	   i2c channel 1 buffer circuit
 	   The entire GPPs configuration is the same as in u-boot */
 	/* Set GPP Out value */
 	MV_REG_WRITE(GPP_DATA_OUT_REG(0), BIT29); /* GPIO29: QS_SMI_ENA = OUT VAL High */
-	MV_REG_WRITE(GPP_DATA_OUT_REG(1), 0); /* GPIO44: I2C_EXT_EN = OUT VAL Low */
+	MV_REG_WRITE(GPP_DATA_OUT_REG(1), BIT12); /* GPIO44 (BIT12) : I2C_EXT_EN = FALSE (False = OUT VAL High) */
 	MV_REG_WRITE(GPP_DATA_OUT_REG(2), 0);
 
 	/* set GPP polarity */

@@ -395,7 +395,7 @@ static inline void *get_node_mem_nor(u32 off, void *ext_buf)
  * Generic jffs2 raw memory and node read routines.
  *
  */
-static inline void *get_fl_mem(u32 off, u32 size, void *ext_buf)
+static inline void *get_fl_mem(unsigned long off, u32 size, void *ext_buf)
 {
 	struct mtdids *id = current_part->dev->id;
 
@@ -422,7 +422,7 @@ static inline void *get_fl_mem(u32 off, u32 size, void *ext_buf)
 	return (void*)off;
 }
 
-static inline void *get_node_mem(u32 off, void *ext_buf)
+static inline void *get_node_mem(unsigned long  off, void *ext_buf)
 {
 	struct mtdids *id = current_part->dev->id;
 

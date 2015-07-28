@@ -660,7 +660,7 @@ int pci_hose_scan_bus(struct pci_controller *hose, int bus)
 			found_multi = header_type & 0x80;
 
 		debug("PCI Scan: Found Bus %d, Device %d, Function %d\n",
-			PCI_BUS(dev), PCI_DEV(dev), PCI_FUNC(dev));
+			(int)PCI_BUS(dev), (int)PCI_DEV(dev), (int)PCI_FUNC(dev));
 
 		pci_hose_read_config_word(hose, dev, PCI_DEVICE_ID, &device);
 		pci_hose_read_config_word(hose, dev, PCI_CLASS_DEVICE, &class);

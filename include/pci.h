@@ -422,9 +422,11 @@
 #ifdef CONFIG_SYS_PCI_64BIT
 typedef u64 pci_addr_t;
 typedef u64 pci_size_t;
+typedef u64 pci_dev_t;
 #else
 typedef u32 pci_addr_t;
 typedef u32 pci_size_t;
+typedef u32 pci_dev_t;
 #endif
 
 struct pci_region {
@@ -454,8 +456,6 @@ static inline void pci_set_region(struct pci_region *reg,
 	reg->size	= size;
 	reg->flags	= flags;
 }
-
-typedef int pci_dev_t;
 
 #define PCI_BUS(d)	(((d) >> 16) & 0xff)
 #define PCI_DEV(d)	(((d) >> 11) & 0x1f)

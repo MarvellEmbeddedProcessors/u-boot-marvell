@@ -30,7 +30,7 @@
 #define COMPHY_RESET_CORE_OFFSET	13
 #define COMPHY_RESET_CORE_MASK		(1 << COMPHY_RESET_CORE_OFFSET)
 
-static void comphy_pcie_release_soft_reset(u32 hpipe_addr)
+static void comphy_pcie_release_soft_reset(void __iomem *hpipe_addr)
 {
 	/* DFE reset sequence */
 	reg_set(hpipe_addr + HPIPE_PWR_CTR_REG,
@@ -51,7 +51,7 @@ static void comphy_pcie_release_soft_reset(u32 hpipe_addr)
 		0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
 }
 
-static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, u32 hpipe_addr)
+static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_addr)
 {
 	u32 start_val, break_val, master_val;
 	debug_enter();
@@ -124,8 +124,8 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, u32 hpipe_addr)
 int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map)
 {
 	struct comphy_map *ptr_comphy_map;
-	u32 comphy_base_addr, hpipe_base_addr;
-	u32 hpipe_addr;
+	void __iomem *comphy_base_addr, *hpipe_base_addr;
+	void __iomem *hpipe_addr;
 	u32 comphy_max_count, lane;
 	u32 pcie_by4 = 1;
 

@@ -82,10 +82,10 @@ static u32 comphy_mux_get_mux_value(struct comphy_mux_data *mux_data, enum phy_t
 }
 
 static void comphy_mux_reg_write(struct comphy_mux_data *mux_data,
-		struct comphy_map *comphy_map_data, int comphy_max_lanes, u32 base_addr, u32 bitcount)
+		struct comphy_map *comphy_map_data, int comphy_max_lanes, void __iomem *base_addr, u32 bitcount)
 {
 	u32 lane, value, offset, mask;
-	u32 comphy_selector_base = base_addr + 0xfc;
+	void __iomem *comphy_selector_base = base_addr + 0xfc;
 
 	debug_enter();
 	for (lane = 0; lane < comphy_max_lanes; lane++, comphy_map_data++, mux_data++) {
@@ -100,7 +100,8 @@ static void comphy_mux_reg_write(struct comphy_mux_data *mux_data,
 static void comphy_mux_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *comphy_map_data)
 {
 	struct comphy_mux_data *mux_data;
-	u32 comphy_base, mux_bitcount;
+	void __iomem *comphy_base;
+	u32 mux_bitcount;
 	u32 comphy_max_lanes;
 
 	debug_enter();
@@ -118,7 +119,7 @@ static void comphy_mux_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct 
 	debug_exit();
 }
 
-static int comphy_pcie_power_up(u32 pex_index, u32 comphy_addr, u32 hpipe_addr)
+static int comphy_pcie_power_up(u32 pex_index, void __iomem *comphy_addr, void __iomem *hpipe_addr)
 {
 	debug_enter();
 
@@ -184,7 +185,7 @@ static int comphy_pcie_power_up(u32 pex_index, u32 comphy_addr, u32 hpipe_addr)
 int comphy_a38x_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map)
 {
 	struct comphy_map *ptr_comphy_map;
-	u32 comphy_base_addr, hpipe3_base_addr;
+	void __iomem *comphy_base_addr, *hpipe3_base_addr;
 	u32 comphy_max_count, lane, ret = 0;
 	bool is_pex_enabled = false;
 

@@ -73,10 +73,10 @@ static char *get_type_string(enum phy_type type)
 	return type_strings[type];
 }
 
-void reg_set(u32 addr, u32 mask, u32 data)
+void reg_set(void __iomem *addr, u32 mask, u32 data)
 {
 	u32 reg_data;
-	debug("Write to address = %#010x, data = %#010x (mask = %#010x) - ", addr, data, mask);
+	debug("Write to address = %#010lx, data = %#010x (mask = %#010x) - ", (unsigned long)addr, data, mask);
 	debug("old value = %#010x ==> ", readl(addr));
 	reg_data = readl(addr);
 	reg_data &= ~mask;
@@ -136,12 +136,12 @@ u32 comphy_init(const void *blob)
 			error("comphy mux bitcount is wrong, skip PHY%d\n", i);
 			continue;
 		}
-		ptr_chip_cfg->comphy_base_addr = (u32)fdt_get_regs_offs(blob, node, "reg-comphy");
+		ptr_chip_cfg->comphy_base_addr = fdt_get_regs_offs(blob, node, "reg-comphy");
 		if (ptr_chip_cfg->comphy_base_addr == 0) {
 			error("comphy base address is NULL, skip PHY%d\n", i);
 			continue;
 		}
-		ptr_chip_cfg->hpipe3_base_addr = (u32)fdt_get_regs_offs(blob, node, "reg-hpipe3");
+		ptr_chip_cfg->hpipe3_base_addr = fdt_get_regs_offs(blob, node, "reg-hpipe3");
 		if (ptr_chip_cfg->hpipe3_base_addr == 0) {
 			error("comphy hpipe3 address is NULL, skip PHY%d\n", i);
 			continue;

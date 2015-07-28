@@ -78,15 +78,23 @@ struct chip_serdes_phy_config {
 	enum fdt_compat_id compat;
 	struct comphy_mux_data *mux_data;
 	int (*ptr_comphy_chip_init)(struct chip_serdes_phy_config *, struct comphy_map *);
-	u32 comphy_base_addr;
-	u32 hpipe3_base_addr;
+	void __iomem *comphy_base_addr;
+	void __iomem *hpipe3_base_addr;
 	u32 comphy_lanes_count;
 	u32 comphy_mux_bitcount;
 };
 
-void reg_set(u32 addr, u32 mask, u32 data);
+void reg_set(void __iomem *addr, u32 mask, u32 data);
 u32 comphy_init(const void *blob);
+
+#ifdef CONFIG_TARGET_ARMADA_38X
 int comphy_a38x_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *comphy_map_data);
+#elif defined(CONFIG_TARGET_ARMADA_8K)
+int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map);
+#endif
+
+
+
 void comphy_pcie_config_set(u32 comphy_max_count, struct comphy_map *serdes_map);
 void comphy_pcie_config_detect(u32 comphy_max_count, struct comphy_map *serdes_map);
 void comphy_pcie_unit_general_config(u32 pex_index);

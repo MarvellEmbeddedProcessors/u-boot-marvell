@@ -22,10 +22,11 @@
 #include <asm/arch-mvebu/comphy.h>
 #include <asm/arch-mvebu/mvebu.h>
 
-#define SOC_CONTROL_REG                         0xd0018204
+#define SOC_CONTROL_REG                         (void __iomem *)0xd0018204
 
 #define MV_PEX_IF_REGS_OFFSET(pex_if)			(pex_if > 0 ? (0x40000 + (pex_if-1)*0x4000) : 0x80000)
-#define MV_PEX_IF_REGS_BASE(unit)				(0xd0000000 + MV_PEX_IF_REGS_OFFSET(unit))
+#define MV_PEX_IF_REGS_BASE(unit)				\
+	((void __iomem *)0xd0000000 + MV_PEX_IF_REGS_OFFSET(unit))
 #define PEX_CAPABILITIES_REG(pex_if)			((MV_PEX_IF_REGS_BASE(pex_if)) + 0x60)
 #define PEX_LINK_CAPABILITIES_REG(pex_if)		((MV_PEX_IF_REGS_BASE(pex_if)) + 0x6C)
 #define PEX_LINK_CTRL_STATUS_REG(pex_if)		((MV_PEX_IF_REGS_BASE(pex_if)) + 0x70)

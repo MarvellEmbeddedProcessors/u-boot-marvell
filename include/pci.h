@@ -422,11 +422,11 @@
 #ifdef CONFIG_SYS_PCI_64BIT
 typedef u64 pci_addr_t;
 typedef u64 pci_size_t;
-typedef u64 pci_dev_t;
+typedef unsigned long pci_dev_t;
 #else
 typedef u32 pci_addr_t;
 typedef u32 pci_size_t;
-typedef u32 pci_dev_t;
+typedef int pci_dev_t;
 #endif
 
 struct pci_region {

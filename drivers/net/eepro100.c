@@ -231,8 +231,8 @@ static int eepro100_recv (struct eth_device *dev);
 static void eepro100_halt (struct eth_device *dev);
 
 #if defined(CONFIG_E500) || defined(CONFIG_MVEBU)
-#define bus_to_phys(a) (a)
-#define phys_to_bus(a) (a)
+#define bus_to_phys(a) (phys_addr_t)(a)
+#define phys_to_bus(a) (pci_addr_t)(a)
 #else
 #define bus_to_phys(a)	pci_mem_to_phys((pci_dev_t)dev->priv, a)
 #define phys_to_bus(a)	pci_phys_to_mem((pci_dev_t)dev->priv, a)
@@ -510,17 +510,17 @@ static int eepro100_init (struct eth_device *dev, bd_t * bis)
 		goto Done;
 	}
 
-	OUTL (dev, phys_to_bus ((u32) & rx_ring[rx_next]), SCBPointer);
-	OUTW (dev, SCB_M | RUC_START, SCBCmd);
+	OUTL(dev, phys_to_bus(&rx_ring[rx_next]), SCBPointer);
+	OUTW(dev, SCB_M | RUC_START, SCBCmd);
 
 	/* Send the Configure frame */
 	tx_cur = tx_next;
 	tx_next = ((tx_next + 1) % NUM_TX_DESC);
 
 	cfg_cmd = (struct descriptor *) &tx_ring[tx_cur];
-	cfg_cmd->command = cpu_to_le16 ((CONFIG_SYS_CMD_SUSPEND | CONFIG_SYS_CMD_CONFIGURE));
+	cfg_cmd->command = cpu_to_le16((CONFIG_SYS_CMD_SUSPEND | CONFIG_SYS_CMD_CONFIGURE));
 	cfg_cmd->status = 0;
-	cfg_cmd->link = cpu_to_le32 (phys_to_bus ((u32) & tx_ring[tx_next]));
+	cfg_cmd->link = cpu_to_le32(phys_to_bus(&tx_ring[tx_next]));
 
 	memcpy (cfg_cmd->params, i82558_config_cmd,
 			sizeof (i82558_config_cmd));
@@ -530,11 +530,11 @@ static int eepro100_init (struct eth_device *dev, bd_t * bis)
 		goto Done;
 	}
 
-	OUTL (dev, phys_to_bus ((u32) & tx_ring[tx_cur]), SCBPointer);
-	OUTW (dev, SCB_M | CU_START, SCBCmd);
+	OUTL(dev, phys_to_bus(&tx_ring[tx_cur]), SCBPointer);
+	OUTW(dev, SCB_M | CU_START, SCBCmd);
 
 	for (i = 0;
-	     !(le16_to_cpu (tx_ring[tx_cur].status) & CONFIG_SYS_STATUS_C);
+	     !(le16_to_cpu(tx_ring[tx_cur].status) & CONFIG_SYS_STATUS_C);
 	     i++) {
 		if (i >= TOUT_LOOP) {
 			printf ("%s: Tx error buffer not ready\n", dev->name);
@@ -554,9 +554,9 @@ static int eepro100_init (struct eth_device *dev, bd_t * bis)
 	tx_next = ((tx_next + 1) % NUM_TX_DESC);
 
 	ias_cmd = (struct descriptor *) &tx_ring[tx_cur];
-	ias_cmd->command = cpu_to_le16 ((CONFIG_SYS_CMD_SUSPEND | CONFIG_SYS_CMD_IAS));
+	ias_cmd->command = cpu_to_le16((CONFIG_SYS_CMD_SUSPEND | CONFIG_SYS_CMD_IAS));
 	ias_cmd->status = 0;
-	ias_cmd->link = cpu_to_le32 (phys_to_bus ((u32) & tx_ring[tx_next]));
+	ias_cmd->link = cpu_to_le32(phys_to_bus(&tx_ring[tx_next]));
 
 	memcpy (ias_cmd->params, dev->enetaddr, 6);
 
@@ -567,8 +567,8 @@ static int eepro100_init (struct eth_device *dev, bd_t * bis)
 		goto Done;
 	}
 
-	OUTL (dev, phys_to_bus ((u32) & tx_ring[tx_cur]), SCBPointer);
-	OUTW (dev, SCB_M | CU_START, SCBCmd);
+	OUTL(dev, phys_to_bus(&tx_ring[tx_cur]), SCBPointer);
+	OUTW(dev, SCB_M | CU_START, SCBCmd);
 
 	for (i = 0; !(le16_to_cpu (tx_ring[tx_cur].status) & CONFIG_SYS_STATUS_C);
 		 i++) {
@@ -609,16 +609,16 @@ static int eepro100_send(struct eth_device *dev, void *packet, int length)
 						TxCB_CMD_S	|
 						TxCB_CMD_EL );
 	tx_ring[tx_cur].status = 0;
-	tx_ring[tx_cur].count = cpu_to_le32 (tx_threshold);
+	tx_ring[tx_cur].count = cpu_to_le32(tx_threshold);
 	tx_ring[tx_cur].link =
-		cpu_to_le32 (phys_to_bus ((u32) & tx_ring[tx_next]));
+		cpu_to_le32(phys_to_bus(&tx_ring[tx_next]));
 	tx_ring[tx_cur].tx_desc_addr =
-		cpu_to_le32 (phys_to_bus ((u32) & tx_ring[tx_cur].tx_buf_addr0));
+		cpu_to_le32(phys_to_bus(&tx_ring[tx_cur].tx_buf_addr0));
 	tx_ring[tx_cur].tx_buf_addr0 =
-		cpu_to_le32 (phys_to_bus ((u_long) packet));
-	tx_ring[tx_cur].tx_buf_size0 = cpu_to_le32 (length);
+		cpu_to_le32(phys_to_bus((u_long) packet));
+	tx_ring[tx_cur].tx_buf_size0 = cpu_to_le32(length);
 
-	if (!wait_for_eepro100 (dev)) {
+	if (!wait_for_eepro100(dev)) {
 		printf ("%s: Tx error ethernet controller not ready.\n",
 				dev->name);
 		goto Done;
@@ -626,10 +626,10 @@ static int eepro100_send(struct eth_device *dev, void *packet, int length)
 
 	/* Send the packet.
 	 */
-	OUTL (dev, phys_to_bus ((u32) & tx_ring[tx_cur]), SCBPointer);
-	OUTW (dev, SCB_M | CU_START, SCBCmd);
+	OUTL(dev, phys_to_bus(&tx_ring[tx_cur]), SCBPointer);
+	OUTW(dev, SCB_M | CU_START, SCBCmd);
 
-	for (i = 0; !(le16_to_cpu (tx_ring[tx_cur].status) & CONFIG_SYS_STATUS_C);
+	for (i = 0; !(le16_to_cpu(tx_ring[tx_cur].status) & CONFIG_SYS_STATUS_C);
 		 i++) {
 		if (i >= TOUT_LOOP) {
 			printf ("%s: Tx error buffer not ready\n", dev->name);
@@ -637,9 +637,9 @@ static int eepro100_send(struct eth_device *dev, void *packet, int length)
 		}
 	}
 
-	if (!(le16_to_cpu (tx_ring[tx_cur].status) & CONFIG_SYS_STATUS_OK)) {
+	if (!(le16_to_cpu(tx_ring[tx_cur].status) & CONFIG_SYS_STATUS_OK)) {
 		printf ("TX error status = 0x%08X\n",
-			le16_to_cpu (tx_ring[tx_cur].status));
+			le16_to_cpu(tx_ring[tx_cur].status));
 		goto Done;
 	}
 
@@ -706,8 +706,8 @@ static int eepro100_recv (struct eth_device *dev)
 			goto Done;
 		}
 
-		OUTL (dev, phys_to_bus ((u32) & rx_ring[rx_next]), SCBPointer);
-		OUTW (dev, SCB_M | RUC_START, SCBCmd);
+		OUTL(dev, phys_to_bus(&rx_ring[rx_next]), SCBPointer);
+		OUTW(dev, SCB_M | RUC_START, SCBCmd);
 	}
 
   Done:
@@ -875,7 +875,7 @@ static void init_rx_ring (struct eth_device *dev)
 				(i == NUM_RX_DESC - 1) ? cpu_to_le16 (RFD_CONTROL_S) : 0;
 		rx_ring[i].link =
 				cpu_to_le32 (phys_to_bus
-							 ((u32) & rx_ring[(i + 1) % NUM_RX_DESC]));
+							 (&rx_ring[(i + 1) % NUM_RX_DESC]));
 		rx_ring[i].rx_buf_addr = 0xffffffff;
 		rx_ring[i].count = cpu_to_le32 (PKTSIZE_ALIGN << 16);
 	}

@@ -143,7 +143,7 @@ static int mvebu_pcie_write_config(struct pci_controller *hose, pci_dev_t bdf,
 	return 0;
 }
 
-static void mvebu_pcie_set_local_bus_nr(u32 reg_base, int nr)
+static void mvebu_pcie_set_local_bus_nr(void __iomem *reg_base, int nr)
 {
 	u32 stat;
 
@@ -153,7 +153,7 @@ static void mvebu_pcie_set_local_bus_nr(u32 reg_base, int nr)
 	writel(stat, PCIE_STAT_OFF(reg_base));
 }
 
-static void mvebu_pcie_set_local_dev_nr(u32 reg_base, int nr)
+static void mvebu_pcie_set_local_dev_nr(void __iomem *reg_base, int nr)
 {
 	u32 stat;
 
@@ -168,7 +168,7 @@ static void mvebu_pcie_set_local_dev_nr(u32 reg_base, int nr)
  * BAR[0,2] -> disabled, BAR[1] -> covers all DRAM banks
  * WIN[0-3] -> DRAM bank[0-3]
  */
-static void mvebu_pcie_setup_mapping(u32 reg_base)
+static void mvebu_pcie_setup_mapping(void __iomem *reg_base)
 {
 	u32 size;
 	int i;
@@ -218,7 +218,7 @@ static void mvebu_pcie_setup_mapping(u32 reg_base)
 	writel(((size - 1) & 0xffff0000) | PCIE_BAR_ENABLE, PCIE_BAR_CTRL_OFF(reg_base, 1));
 }
 
-static void mvebu_pcie_hw_init(u32 reg_base, int first_busno)
+static void mvebu_pcie_hw_init(void __iomem *reg_base, int first_busno)
 {
 	u32 cmd;
 
@@ -252,7 +252,7 @@ static struct pci_controller	pci_hose[MAX_PCIE_PORTS];
 static const char speed_str[3][8] = {"NA", "2.5GHz", "5GHz"};
 static const char width_str[5][8] = {"NA", "x1", "NA", "NA", "x4"};
 
-static int mvebu_pcie_init(int host_id, u32 reg_base, struct pcie_win *win, int first_busno)
+static int mvebu_pcie_init(int host_id, void __iomem *reg_base, struct pcie_win *win, int first_busno)
 {
 	struct pci_controller *hose = &pci_hose[host_id];
 	u32 link, speed, width;
@@ -296,12 +296,12 @@ static int mvebu_pcie_init(int host_id, u32 reg_base, struct pcie_win *win, int 
 	return hose->last_busno + 1;
 }
 
-static int mvebu_pcie_check_link(u32 reg_base)
+static int mvebu_pcie_check_link(void __iomem *reg_base)
 {
 	return readl(PCIE_STAT_OFF(reg_base)) &  PCIE_STAT_LINK;
 }
 
-static void mvebu_pcie_set_endpoint(u32 hid, u32 reg_base)
+static void mvebu_pcie_set_endpoint(u32 hid, void __iomem *reg_base)
 {
 	u32 capability;
 
@@ -324,7 +324,7 @@ void pci_init_board(void)
 	int bus_node, port_node, count;
 	const void *blob = gd->fdt_blob;
 	struct pcie_win win;
-	u32 reg_base;
+	void __iomem *reg_base;
 	int err;
 
 	count = fdtdec_find_aliases_for_id(blob, "pcie-controller",
@@ -339,7 +339,7 @@ void pci_init_board(void)
 		if (!fdtdec_get_is_enabled(blob, port_node))
 			continue;
 
-		reg_base = (u32)fdt_get_regs_offs(blob, port_node, "reg");
+		reg_base = fdt_get_regs_offs(blob, port_node, "reg");
 		if (reg_base == 0) {
 			error("Missing registers in PCIe node\n");
 			continue;

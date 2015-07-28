@@ -646,7 +646,7 @@ void misc_init_r_env(void)
 
 	env = getenv("image_name");
 	if (!env)
-		setenv("image_name", "uImage");
+		setenv("image_name", "zImage");
 
 #if CONFIG_AMP_SUPPORT
 	env = getenv("amp_enable");

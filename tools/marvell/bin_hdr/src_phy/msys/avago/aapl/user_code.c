@@ -77,20 +77,10 @@ unsigned int user_supplied_pex_address
     unsigned char reg_addr
 )
 {
-    unsigned char serdesNum;
-    unsigned int  serdesAddress;
-
-    if (sbus_addr < AVAGO_SBUS_MASTER_ADDRESS)
-    {
-        serdesNum = avagoSerdesSbusAddr2Num[sbus_addr];
-    }
-    else
-    {
-        serdesNum = sbus_addr;
-    }
+    unsigned int serdesAddress;
 
     serdesAddress = ((SBC_MASTER_BASE_ADDRESS)                  |
-                     (serdesNum << SBC_MASTER_SERDES_NUM_SHIFT) |
+                     (sbus_addr << SBC_MASTER_SERDES_NUM_SHIFT) |
                      (reg_addr  << SBC_MASTER_REG_ADDR_SHIFT));
 
     return serdesAddress;
@@ -261,6 +251,18 @@ int user_supplied_sbus_close_function(Aapl_t *aapl)
     return rc;
 }
 
+/** @brief   WA for MG access */
+/** @details Add configurable delay in MG Access */
+/**          Default set to 10000 "nop" */
+void mvHwsMgAccessDelayWA(void)
+{
+    unsigned int delayIndex;
+    for (delayIndex = 0; delayIndex < AVAGO_MG_ACCESS_THRESHOLD; delayIndex++)
+    {
+        __asm__("nop");
+    }
+}
+
 /** @brief   Execute an sbus command. */
 /** @return  For reads, returns read data. */
 /**          For writes and reset, returns 0. */
@@ -284,11 +286,13 @@ unsigned int user_supplied_sbus_function(
     if (command == 1/*Write Command - WRITE_SBUS_DEVICE*/)
     {
         commandAddress = user_supplied_pex_address(addr_struct.sbus, reg_addr);
+        mvHwsMgAccessDelayWA();
         genRegisterSet(devNum, portGroup, commandAddress, sbus_data, mask);
     }
     else if (command == 2/*Read Command - READ_SBUS_DEVICE*/)
     {
         commandAddress = user_supplied_pex_address(addr_struct.sbus, reg_addr);
+        mvHwsMgAccessDelayWA();
         genRegisterGet (devNum, portGroup, commandAddress, &data, mask);
         /* return data in case of read command */
         rcode = data;
@@ -451,3 +455,4 @@ void user_supplied_sbus_soft_reset
     data |= SBC_UNIT_SOFT_RESET;
     genRegisterSet(devNum, portGroup, SBC_UNIT_REG_ADDR(SBC_UNIT_COMMOM_CTRL_REG_ADDR), data, mask);
 }
+

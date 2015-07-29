@@ -70,8 +70,6 @@
 /************************* Globals *******************************************************/
 
 unsigned int avagoConnection = AVAGO_SBUS_CONNECTION;
-char avagoSerdesNum2SbusAddr[MAX_AVAGO_SERDES_NUMBER];
-char avagoSerdesSbusAddr2Num[MAX_AVAGO_SERDES_ADDRESS];
 Aapl_t* aaplSerdesDb[HWS_MAX_DEVICE_NUM] = {0};
 Aapl_t  aaplSerdesDbDef[HWS_MAX_DEVICE_NUM];
 
@@ -86,6 +84,25 @@ unsigned int mvAvagoDb = 1;
 #else
 unsigned int mvAvagoDb = 0;
 #endif /* MARVELL_AVAGO_DB_BOARD */
+
+GT_U8 serdesToAvagoMap[] =
+{
+    [20] 14, /* Logical SERDES 20  == Physical SERDES 14 on SERDES chain */
+    [24] 13, /* Logical SERDES 24  == Physical SERDES 13 on SERDES chain */
+    [25] 12, /* Logical SERDES 25  == Physical SERDES 12 on SERDES chain */
+    [26] 11, /* Logical SERDES 26  == Physical SERDES 11 on SERDES chain */
+    [27] 10, /* Logical SERDES 27  == Physical SERDES 10 on SERDES chain */
+    [31] 8,  /* Logical SERDES 31  == Physical SERDES 08 on SERDES chain */
+    [30] 7,  /* Logical SERDES 30  == Physical SERDES 07 on SERDES chain */
+    [29] 6,  /* Logical SERDES 29  == Physical SERDES 06 on SERDES chain */
+    [28] 5,  /* Logical SERDES 28  == Physical SERDES 05 on SERDES chain */
+    [32] 4,  /* Logical SERDES 32  == Physical SERDES 04 on SERDES chain */
+    [33] 3,  /* Logical SERDES 33  == Physical SERDES 03 on SERDES chain */
+    [34] 2,  /* Logical SERDES 34  == Physical SERDES 02 on SERDES chain */
+    [35] 1,  /* Logical SERDES 35  == Physical SERDES 01 on SERDES chain */
+
+    /* Temp Sensor = Physical SPICO 09 on SERDES chain */
+};
 
 /************************* * Pre-Declarations *******************************************************/
 #ifndef ASIC_SIMULATION
@@ -118,10 +135,11 @@ int mvHwsAvagoConvertSerdesToSbusAddr
         return GT_BAD_PARAM;
     }
 
-    *sbusAddr = avagoSerdesNum2SbusAddr[serdesNum];
+    *sbusAddr = serdesToAvagoMap[serdesNum];
 
     return GT_OK;
 }
+
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /*******************************************************************************
 * mvHwsAvagoEthDriverInit
@@ -255,10 +273,8 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
 {
     unsigned int sbus_addr;
     unsigned int curr_adr;
-    unsigned int curr_serdes=0;
     unsigned int chip=devNum;
     unsigned int ring =0; /*we have only one ring*/
-    unsigned int serdes_num=0x1;
     Avago_addr_t addr_struct;
 #ifndef AVAGO_AAPL_LGPL
     unsigned int addr = avago_make_addr3(AVAGO_BROADCAST, AVAGO_BROADCAST, AVAGO_BROADCAST);
@@ -270,10 +286,6 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
         /* structures were already initialized */
         return GT_ALREADY_EXIST;
     }
-
-    /* Initialize SBUS address Array */
-    memset(avagoSerdesNum2SbusAddr, AVAGO_INVALID_SBUS_ADDR, MAX_AVAGO_SERDES_NUMBER);
-    memset(avagoSerdesSbusAddr2Num, AVAGO_INVALID_SBUS_ADDR, MAX_AVAGO_SERDES_ADDRESS);
 
     /* Construct AAPL structure */
     aapl_init(&(aaplSerdesDbDef[devNum]));
@@ -332,12 +344,6 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
         {
             addr_struct.sbus = curr_adr;
             sbus_addr = avago_struct_to_addr(&addr_struct);
-
-            /* save sbus_addr in avagoSerdesNum2SbusAddr */
-            avagoSerdesNum2SbusAddr[curr_serdes++] = curr_adr;
-            /* save serdes_num in avagoSerdesSbusAddr2Num */
-            avagoSerdesSbusAddr2Num[curr_adr] = serdes_num;
-            serdes_num++;
 
 #ifdef FW_DOWNLOAD_FROM_SERVER
             AVAGO_DBG(("Loading file: %s to SBus address %x chip %d, ring %x sbus %x data[0]=%x\n",
@@ -747,7 +753,7 @@ int mvHwsAvagoSerdesPolarityConfigGetImpl
 *******************************************************************************/
 void mvHwsAvagoAccessValidate(unsigned char devNum, uint sbus_addr)
 {
-    osPrintf("Validate SBUS access, address 0x%x - ");
+    osPrintf("Validate SBUS access (sbus_addr 0x%x)- ", sbus_addr);
     if (avago_diag_sbus_rw_test(aaplSerdesDb[devNum], avago_make_sbus_controller_addr(sbus_addr), 2) == TRUE)
     {
         osPrintf("Access Verified\n");

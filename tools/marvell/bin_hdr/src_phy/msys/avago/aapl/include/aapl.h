@@ -90,7 +90,7 @@
 #define AAPL_ALLOW_OFFLINE_SBUS        0  /**< Set to 0 to remove the AVAGO_OFFLINE communication method. */
 #define AAPL_ALLOW_SYSTEM_I2C          1  /**< Set to 0 to remove the AVAGO_SYSTEM_I2C communication method. */
 #define AAPL_ALLOW_SYSTEM_MDIO         0  /**< Set to 0 to remove the AVAGO_SYSTEM_MDIO communication method (not implemented). */
-#define AAPL_ALLOW_USER_SUPPLIED_I2C   1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_I2C communication method. */
+#define AAPL_ALLOW_USER_SUPPLIED_I2C   0  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_I2C communication method. */
 #define AAPL_ALLOW_USER_SUPPLIED_MDIO  0  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_MDIO communication method. */
 #define AAPL_ALLOW_USER_SUPPLIED_SBUS  1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_SBUS_DIRECT communication method. */
 #define AAPL_ENABLE_USER_SERDES_INT    0  /**< Set to 0 to remove support for using the user_supplied_serdes_interrupt_function() for SerDes interrupts */
@@ -217,12 +217,15 @@ typedef enum
 /** Maximum number of AACS commands to queue before send. */
 /** Setting this to 0 disables command buffering. */
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
-#define AAPL_MAX_CMDS_BUFFERED      1000
+#define AAPL_MAX_CMDS_BUFFERED         1000
 #define AAPL_SBUS_MDIO_TIMEOUT         100  /**< Maximum number of reads of the SBUS_RESULT register in sbus-over-mdio mode */
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
-#define AAPL_SERDES_INT_TIMEOUT        500  /**< Maximum number of SBus reads to check for completion of SPICO interrupt command */
-#define AAPL_SERDES_INIT_RDY_TIMEOUT    20  /**< Maximum milliseconds for pll calibration */
+#define AAPL_SERDES_INT_TIMEOUT        500 /**< Maximum number of SBus reads to check for completion of SPICO interrupt command */
+#define AAPL_SERDES_INIT_RDY_TIMEOUT   20  /**< Maximum milliseconds for pll calibration */
 #define AAPL_SPICO_UPLOAD_WAIT_TIMEOUT 500  /**< Maximum milliseconds to wait for AAPL to wait for external SPICO upload to complete */
+
+#define AVAGO_MG_ACCESS_THRESHOLD      10000  /**< Maximum "mop" to wait fbefore any MG access */
+
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #define AAPL_I2C_HARD_RESET_TIMEOUT    100  /**< Maximum number of commands to send after a hard I2C reset to wait for bus to come back up */
 

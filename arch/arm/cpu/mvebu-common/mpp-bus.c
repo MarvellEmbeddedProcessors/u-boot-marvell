@@ -28,7 +28,7 @@
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/pinctl.h>
 
-struct mpp_bus buses[MAX_MPP_BUSES];
+struct mpp_bus __attribute__((section(".data"))) buses[MAX_MPP_BUSES];
 
 #define DEBUG
 int mpp_get_bus_id(const char *name)

@@ -534,13 +534,13 @@ typedef enum _mvSuspendWakeupStatus {
 };
 #else
 #define MV_BOARD_WAKEUP_GPIO_INFO {\
-{A39X_RD_69XX_ID, -1 },\
 {A39X_DB_69XX_ID, -1 },\
+{A39X_RD_69XX_ID, -1 },\
 };
 
 #define MV_BOARD_USB_VBUS_GPIO_INFO {\
-{A39X_RD_69XX_ID, {-1, -1} },\
 {A39X_DB_69XX_ID, {-1, -1} },\
+{A39X_RD_69XX_ID, {39, -1} },\
 };
 #endif /* MV88F68XX */
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */

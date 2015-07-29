@@ -573,6 +573,11 @@ struct MV_BOARD_IO_EXPANDER gp88f6925InfoBoardioExpValue[] = {
 	{0, 3, 0xFD}, /* Output Data, reg#1: BIT1, SDIO=0 */
 };
 
+MV_BOARD_GPP_INFO gp88f6925InfoBoardGppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
+/* USB_Host0 */	{BOARD_GPP_USB_VBUS,    39}, /* from MPP map */
+};
+
 MV_BOARD_INFO gp88f6925_board_info = {
 	.boardName			= "DB-88F6925-GP",
 	.numBoardNetComplexValue	= ARRSZ(gp88f6925InfoBoarNetComplexInfo),
@@ -587,8 +592,8 @@ MV_BOARD_INFO gp88f6925_board_info = {
 	.pBoardTwsiDev			= gp88f6925BoardTwsiDev,
 	.numBoardMacInfo		= ARRSZ(gp88f6925InfoBoardMacInfo),
 	.pBoardMacInfo			= gp88f6925InfoBoardMacInfo,
-	.numBoardGppInfo		= 0,
-	.pBoardGppInfo			= 0,
+	.numBoardGppInfo		= ARRSZ(gp88f6925InfoBoardGppInfo),
+	.pBoardGppInfo			= gp88f6925InfoBoardGppInfo,
 	.activeLedsNumber		= 0,
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,

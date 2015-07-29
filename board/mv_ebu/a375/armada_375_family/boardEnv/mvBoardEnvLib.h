@@ -366,6 +366,8 @@ typedef struct _boardInfo {
 	/* Indicates if auto-detection of modules is enabled on this board. */
 	/* Set to MV_FALSE for any board that is not a DB. */
 	MV_BOOL configAutoDetect;
+
+	MV_BOOL isSdMmcConnected;
 } MV_BOARD_INFO;
 
 /* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask,  Offset, expanderNum,  regNum,    isActiveForBoard[]}} */
@@ -524,6 +526,11 @@ MV_U8 mvBoardPICGpioGet(MV_U32 *picGpioMppInfo);
 MV_BOOL mvBoardIsTdmConnected(void);
 MV_BOOL mvBoardIsUsb3PortDevice(MV_U32 port);
 MV_VOID mvBoardUpdateConfigforDT(MV_VOID);
+#ifdef CONFIG_MMC
+MV_BOOL mvBoardisSdioConnected(void);
+#endif
+void mvBoardGetModelName(char *pNameBuff);
+void mvBoardPinCtrlNameGet(char *compatibleBuf);
 
 #ifdef __cplusplus
 }

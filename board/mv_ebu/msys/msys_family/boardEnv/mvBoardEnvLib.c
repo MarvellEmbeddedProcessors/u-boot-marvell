@@ -2833,6 +2833,7 @@ MV_NFC_ECC_MODE mvBoardNandECCModeGet()
 MV_U8 mvBoardCompatibleNameGet(char *pNameBuff)
 {
 	MV_U8 len = 0;
+	MV_U32 boardId;
 	/* i.e: compatible = "marvell,msys", "marvell,msys-bc2", "marvell,msys-bc2-db", "marvell,armada-370-xp"; */
 	len = sprintf(pNameBuff, "marvell,msys") + 1;
 	/*
@@ -2840,8 +2841,17 @@ MV_U8 mvBoardCompatibleNameGet(char *pNameBuff)
 	 * sprintf wrote.  This is how a device tree stores multiple
 	 * strings in a property.
 	 */
-	len += sprintf(pNameBuff + len, "marvell,msys-bc2") + 1;
-	len += sprintf(pNameBuff + len, "marvell,msys-bc2-db") + 1;
+	boardId = mvBoardIdGet();
+	if (boardId >= BC2_MARVELL_BOARD_ID_BASE && boardId < BC2_MARVELL_MAX_BOARD_ID) {
+		len += sprintf(pNameBuff + len, "marvell,msys-bc2") + 1;
+		len += sprintf(pNameBuff + len, "marvell,msys-bc2-db") + 1;
+	} else if (boardId >= AC3_MARVELL_BOARD_ID_BASE && boardId < AC3_MARVELL_MAX_BOARD_ID) {
+		len += sprintf(pNameBuff + len, "marvell,msys-ac3") + 1;
+		len += sprintf(pNameBuff + len, "marvell,msys-ac3-db") + 1;
+	} else if (boardId >= BOBK_MARVELL_BOARD_ID_BASE && boardId < BOBK_MARVELL_MAX_BOARD_ID) {
+		len += sprintf(pNameBuff + len, "marvell,msys-bobk") + 1;
+		len += sprintf(pNameBuff + len, "marvell,msys-bobk-db") + 1;
+	}
 	len += sprintf(pNameBuff + len, "marvell,armada-370-xp") + 1;
 
 	return len;
@@ -2959,3 +2969,65 @@ MV_VOID mvBoardUpdateConfigforDT(MV_VOID)
 
 }
 
+#ifdef CONFIG_MMC
+/*******************************************************************************
+* mvBoardisSdioConnected
+* DESCRIPTION: return true if SDIO connected on board
+*
+* INPUT:  None
+* OUTPUT: None.
+* RETURN: MV_TRUE:SDIO connected on board
+*         MV_FALSE: else
+*******************************************************************************/
+MV_BOOL mvBoardisSdioConnected(void)
+{
+	return board->isSdMmcConnected;
+}
+#endif
+
+/*******************************************************************************
+* mvBoardGetModelName
+*
+* DESCRIPTION:
+*       This function returns a string describing the board model.
+*
+* OUTPUT:
+*       pNameBuff - Buffer to contain board model name string. Minimum size 128 chars.
+*
+*******************************************************************************/
+void mvBoardGetModelName(char *pNameBuff)
+{
+	mvOsSPrintf(pNameBuff, "Marvell MSYS %s %s", board->modelName, board->boardName);
+}
+
+#ifdef MV_PP_SMI
+/*******************************************************************************
+* mvBoardIsPpSmi
+* DESCRIPTION:
+*	checks whether PP_SMI is used or not
+*
+* INPUT:  None
+* OUTPUT: None.
+* RETURN: MV_TRUE PP_SMI is used
+*	  MV_FALSE otherwise
+*******************************************************************************/
+MV_BOOL mvBoardIsPpSmi(void)
+{
+	return board->isSmiExternalPp;
+}
+#endif
+
+/*******************************************************************************
+* mvBoardPinCtrlNameGet
+*
+* DESCRIPTION:
+*       This function returns the compatible string of pinctrl
+*
+* OUTPUT:
+*       compatibleBuf - Buffer to contain pinctrl compatible string
+*
+*******************************************************************************/
+void mvBoardPinCtrlNameGet(char *compatibleBuf)
+{
+	mvOsSPrintf(compatibleBuf, "marvell,bc2-ac3-pinctrl");
+}

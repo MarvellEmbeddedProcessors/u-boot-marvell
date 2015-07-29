@@ -91,6 +91,7 @@ extern "C" {
 #define MV_BOARD_MAX_MPP_GROUPS         9
 #define MV_BOARD_MPP_GROUPS_MAX_TYPES   8
 #define MV_BOARD_NAME_LEN               0x20
+#define MV_BOARD_MODEL_NAME_LEN		0x50
 #define MV_BOARDID_I2C_ADDR_50		0x50
 
 typedef enum _devBoardOtherTypeClass {
@@ -402,6 +403,8 @@ typedef struct _boardInfo {
 	/* External Switch Configuration */
 	struct MV_BOARD_SWITCH_INFO *pSwitchInfo;
 	MV_U32 switchInfoNum;
+
+	char modelName[MV_BOARD_MODEL_NAME_LEN];
 } MV_BOARD_INFO;
 
 struct _mvBoardMppModule {
@@ -590,7 +593,9 @@ void mvBoardEepromValidSet(void);
 MV_BOOL mvBoardIsTdmConnected(void);
 void mvBoardTdmConnectionSet(MV_BOOL isConnected);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
+#ifdef CONFIG_MMC
 MV_BOOL mvBoardisSdioConnected(void);
+#endif
 MV_VOID mvBoardSdioConnectionSet(MV_BOOL status);
 MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
 MV_BOARD_INFO *mvBoardInfoStructureGet(MV_VOID);
@@ -599,6 +604,8 @@ void mvBoardAudioConnectionSet(MV_BOOL isConnected);
 MV_BOOL mvBoardIsUsb3PortDevice(MV_U32 port);
 MV_VOID mvBoardUsbPortStatusSet(MV_UNIT_ID usbType, MV_U32 usbPort, MV_BOOL usbStatus);
 MV_VOID mvBoardUpdateConfigforDT(MV_VOID);
+void mvBoardGetModelName(char *pNameBuff);
+void mvBoardPinCtrlNameGet(char *compatibleBuf);
 
 #ifdef CONFIG_SWITCHING_SERVICES
 MV_BOOL mvBoardisAmc(void);

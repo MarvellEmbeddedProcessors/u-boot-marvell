@@ -585,6 +585,7 @@ extern int nand_get_env_offs(void);
 /* this define is to support different nand node name in Linux mainline
    currently in Linux 3.14/3.10 same name used "nand@"*/
 #define MV_NFC_FDT_NODE_NAME    "nand@"
+#define MV_MMC_FDT_NODE_NAME	"sdhci"
 
 #ifdef CONFIG_ARMADA_38X
 #define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:Armada38x:eth0:none"

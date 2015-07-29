@@ -945,3 +945,25 @@ MV_VOID mvBoardUpdateConfigforDT(MV_VOID)
 	}
 #endif
 }
+
+/*******************************************************************************
+* mvBoardGetModelName
+*
+* DESCRIPTION:
+*       This function returns a string describing the board model.
+*
+* OUTPUT:
+*       pNameBuff - Buffer to contain board model name string. Minimum size 80 chars.
+*
+*******************************************************************************/
+void mvBoardGetModelName(char *pNameBuff)
+{
+	MV_BOARD_INFO *board = mvBoardInfoStructureGet();
+
+	if (!board) {
+		DB(mvOsPrintf("%s: Error: board structure not initialized\n", __func__));
+		return;
+	}
+
+	mvOsSPrintf(pNameBuff, "Marvell Armada %s %s", board->modelName, board->boardName);
+}

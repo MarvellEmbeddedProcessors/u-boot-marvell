@@ -100,6 +100,7 @@ void fdt_env_setup(char *fdtfile, MV_BOOL runUpdate)
 
 static int mv_fdt_find_node(void *fdt, const char *name);
 static int mv_fdt_board_compatible_name_update(void *fdt);
+static int mv_fdt_board_model_name_update(void *fdt);
 static int mv_fdt_update_serial(void *fdt);
 #ifdef CONFIG_PIC_GPIO
 static int mv_fdt_update_pic_gpio(void *fdt);
@@ -129,8 +130,8 @@ static int mv_fdt_update_audio(void *fdt);
 static int mv_fdt_update_switch(void *fdt);
 #endif
 static int mv_fdt_debug;
-#ifdef CONFIG_MV_SDHCI
-static int mv_fdt_update_sdhci(void *fdt);
+#ifdef CONFIG_MMC
+static int mv_fdt_update_sd(void *fdt);
 #endif
 #ifdef CONFIG_SWITCHING_SERVICES
 static int mv_fdt_update_prestera(void *fdt);
@@ -148,6 +149,7 @@ static int mv_fdt_update_usb_device(void *fdt);
 #if 0 /* not compiled, since this routine is currently not in use  */
 static int mv_fdt_remove_prop(void *fdt, const char *path,
 				const char *name, int nodeoff);
+
 #endif
 
 typedef int (update_fnc_t)(void *);
@@ -163,8 +165,8 @@ update_fnc_t *update_sequence[] = {
 #endif
 	mv_fdt_update_ethnum,			/* Get number of active ETH port and update DT */
 	mv_fdt_update_mpp_config,		/*Update FDT entries related to mpp configuration*/
-#ifdef CONFIG_MV_SDHCI
-	mv_fdt_update_sdhci,			/* Update SDHCI driver settings in DT */
+#ifdef CONFIG_MMC
+	mv_fdt_update_sd,			/* Update SDHCI/SDIO driver settings in DT */
 #endif
 #ifdef CONFIG_SWITCHING_SERVICES
 	mv_fdt_update_prestera,			/* Update prestera driver DT settings - for AMC board */
@@ -179,6 +181,7 @@ update_fnc_t *update_sequence[] = {
 	mv_fdt_nand_mode_fixup,			/* Update NAND controller ECC settings in DT */
 	mv_fdt_update_pinctrl,			/* Update pinctrl driver settings in DT */
 	mv_fdt_board_compatible_name_update,	/* Update compatible (board name) in DT */
+	mv_fdt_board_model_name_update,		/* Update model node in DT */
 	mv_fdt_update_serial,			/* Update serial/UART nodes in DT */
 #ifdef CONFIG_PIC_GPIO
 	mv_fdt_update_pic_gpio,
@@ -612,13 +615,14 @@ static int mv_fdt_update_usb_vbus(void *fdt)
 }
 #endif /* MV_USB_VBUS_CYCLE */
 
-#ifdef CONFIG_MV_SDHCI
+#ifdef CONFIG_MMC
 /*******************************************************************************
-* mv_fdt_update_sdhci
+* mv_fdt_update_sd
 *
 * DESCRIPTION:
-* target		: update status and dat3-cd fields of MMC node.
-* node, properties	: -property status and dat3-cd @ node sdhci@X.
+* target		: update status field for SDHCI/SDIO and dat3 for SDHCI.
+* node, properties	: - property status and dat3-cd @ node sdhci@X.
+*			  - property status @ node mvsdio
 * dependencies		: status of MMC in isSdMmcConnected entry in board structure.
 *
 * INPUT:
@@ -631,7 +635,7 @@ static int mv_fdt_update_usb_vbus(void *fdt)
 *	-1 on error os 0 otherwise.
 *
 *******************************************************************************/
-static int mv_fdt_update_sdhci(void *fdt)
+static int mv_fdt_update_sd(void *fdt)
 {
 	int err, nodeoffset;				/* nodeoffset: node offset from libfdt */
 	char propval[10];				/* property value */
@@ -644,7 +648,7 @@ static int mv_fdt_update_sdhci(void *fdt)
 	else
 		sprintf(propval, "disabled");
 
-	sprintf(node, "sdhci@%x", MV_SDMMC_REGS_OFFSET);
+	sprintf(node, "%s@%x", MV_MMC_FDT_NODE_NAME, MV_SDMMC_REGS_OFFSET);
 	nodeoffset = mv_fdt_find_node(fdt, node);
 
 	if (nodeoffset < 0) {
@@ -662,7 +666,8 @@ static int mv_fdt_update_sdhci(void *fdt)
 		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 	}
 
-	/* add DAT3 detection */
+	/* for SDHCI only:
+	   add DAT3 detection */
 	env = getenv("sd_detection_dat3");
 
 	if (!env || strcmp(env, "yes") != 0)
@@ -976,7 +981,8 @@ static int mv_fdt_update_usb_device(void *fdt)
 * DESCRIPTION:
 * target		: update compatible field of pinctrl node.
 * node, properties	: -property compatible @ node pinctrl.
-* dependencies		:DEV_ID_REG value "device model type".
+* dependencies		: - for a38x/a39x: according to DEV_ID_REG value "device model type"
+*			  - for MSYS: currently static for all devices
 *
 * INPUT:
 *	fdt.
@@ -995,7 +1001,8 @@ static int mv_fdt_update_pinctrl(void *fdt)
 	const char *node = "pinctrl";			/* node name */
 
 	/* update pinctrl driver 'compatible' property, according to device model type */
-	sprintf(propval, "marvell,mv88f%x-pinctrl", mvCtrlModelGet());
+	mvBoardPinCtrlNameGet(propval);
+
 	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
 		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
 		return 0;
@@ -1013,6 +1020,8 @@ static int mv_fdt_update_pinctrl(void *fdt)
 *					  -property phy-mode and phy-id @ node macX.
 *			  Neta Driver	: -property status and phy-mode @ node ethernet@X.
 *					  -property reg @ node ethernet-phy@X.
+*					  -property phy @ node ethernet@X (if PP SMI is used)
+*
 * dependencies		: pBoardNetComplexInfo entry in board structure.
 *			  pBoardMacInfo entry in board structure.
 *	     		  For PP3/Neta driver we get ethernet nodes via "nic@/ethernet@" aliasses.
@@ -1097,6 +1106,23 @@ static int mv_fdt_update_ethnum(void *fdt)
 			if (phyAddr == -1)
 				phyAddr = 999; /* Inband management - see mv_netdev.c for details */
 
+#ifdef MV_PP_SMI
+			/* - 'phy' property must point to the corresponding 'ethernet-phy@' node in the
+			 *   internal/external mdio node
+			 * - by default 'phy' points to internal mdio node (/soc/internal-regs/mdio)
+			 * - when using external PP smi, point 'phy' to the correct 'indirect-phy'
+			 *   external mdio node (/soc/mdio)
+			 */
+
+			/* get the address (phandle) of indirect-phy node */
+			phandle = fdt_getprop(fdt, nodeoffset, "indirect-phy", &len);
+			if (len == 0) {
+				mv_fdt_dprintf("Empty \"indirect-phy\" property value\n");
+				return 0;
+			}
+			sprintf(prop, "phy");
+			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, phandle, 4));
+#endif
 			/* The ETH node we found contains a pointer (phandle) to its PHY
 			   The phandle is a unique numeric identifier of a specific node.
 			   For PP3 driver the phy address under 'emac-data' field
@@ -1197,6 +1223,16 @@ static int mv_fdt_update_ethnum(void *fdt)
 					sprintf(propval, "yes");
 					mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, propval, strlen(propval)+1));
 				}
+			}
+#endif
+#ifdef MV_PP_SMI
+			/* BobK utilizes external SMI access,
+			 * Initially integrated with mainline NETA driver */
+			if (mvBoardIsPpSmi() == MV_TRUE) {
+				sprintf(prop, "compatible");
+				sprintf(propval, "marvell,armada-370-neta");
+				mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
+							propval, strlen(propval)+1));
 			}
 #endif
 			/* Last property to set is the "status" - common for valid and non-valid ports */
@@ -1788,6 +1824,43 @@ static int mv_fdt_board_compatible_name_update(void *fdt)
 }
 
 /*******************************************************************************
+* mv_fdt_board_model_name_update
+*
+* DESCRIPTION:
+* target		: Update model property in root node
+* node, properties:	: -property model @ root node
+* dependencies		: modelName in board structure.
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
+static int mv_fdt_board_model_name_update(void *fdt)
+{
+	char propval[128];				/* property value */
+	const char *prop = "model";			/* property name */
+	MV_U8 err;
+
+	mvBoardGetModelName(propval);
+
+	mv_fdt_modify(fdt, err, fdt_setprop(fdt, 0, prop, propval, strlen(propval) + 1));
+
+	if (err < 0) {
+		mv_fdt_dprintf("Modifying '%s' in root node failed\n", prop);
+		return 0;
+	}
+	mv_fdt_dprintf("Set '%s' property to Root node\n", prop);
+
+	return 0;
+}
+
+/*******************************************************************************
 * mv_fdt_update_serial
 *
 * DESCRIPTION:
@@ -1827,6 +1900,7 @@ static int mv_fdt_update_serial(void *fdt)
 
 	return 0;
 }
+
 #ifdef CONFIG_PIC_GPIO
 /*******************************************************************************
 * mv_fdt_update_pic_gpio

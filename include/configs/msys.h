@@ -427,16 +427,19 @@ disclaimer.
 /************/
 /* SDIO/MMC */
 /************/
-#define CONFIG_MMC
-#define CONFIG_CMD_MMC
-#define CONFIG_GENERIC_MMC
-#define CONFIG_MRVL_MMC
-#define CONFIG_SYS_MMC_BASE 		(INTER_REGS_BASE + 0xd4000)
-#define CONFIG_SYS_MMC_MAX_DEVICE 1
+#if defined(CONFIG_BOBCAT2) || defined(CONFIG_BOBK)
+	#define CONFIG_MMC
+	#define CONFIG_CMD_MMC
+	#define CONFIG_GENERIC_MMC
+	#define CONFIG_MRVL_MMC
+	#define CONFIG_SYS_MMC_BASE 		(INTER_REGS_BASE + 0xd4000)
+	#define CONFIG_SYS_MMC_MAX_DEVICE 1
+#endif
 /***************************************/
 /* LINUX BOOT and other ENV PARAMETERS */
 /***************************************/
-#define MV_NFC_FDT_NODE_NAME	"nand@"
+#define MV_NFC_FDT_NODE_NAME	"nand-flash@"
+#define MV_MMC_FDT_NODE_NAME	"mvsdio"
 #define MV_BOOTARGS_END		":10.4.50.254:255.255.255.0:DSMP:eth0:none"
 #define RCVR_IP_ADDR		"169.254.100.100"
 #define	RCVR_LOAD_ADDR		"0x02000000"

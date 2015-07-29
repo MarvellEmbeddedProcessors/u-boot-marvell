@@ -496,7 +496,9 @@ MV_BOARD_INFO db88f69xx_board_info = {
 	.isAudioConnected		= MV_FALSE,
 	.isTdmConnected			= MV_FALSE,
 	.pSwitchInfo			= NULL,
-	.switchInfoNum			= 0
+	.switchInfoNum			= 0,
+
+	.modelName			= "A390 Development Board"
 };
 
 /*******************************************************************************
@@ -644,6 +646,8 @@ MV_BOARD_INFO gp88f6925_board_info = {
 	.isTdmConnected			= MV_FALSE,
 	.pSwitchInfo			= gp88f6925SwitchInfo,
 	.switchInfoNum			= ARRSZ(gp88f6925SwitchInfo),
+
+	.modelName			= "A395 General Purpose Development Board"
 };
 
 

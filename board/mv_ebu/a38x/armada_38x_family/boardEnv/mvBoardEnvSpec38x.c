@@ -522,7 +522,9 @@ MV_BOARD_INFO db88f68xx_board_info = {
 	.isAudioConnected		= MV_FALSE,
 	.isTdmConnected			= MV_FALSE,
 	.pSwitchInfo			= db88f68xxSwitchInfo,
-	.switchInfoNum			= ARRSZ(db88f68xxSwitchInfo)
+	.switchInfoNum			= ARRSZ(db88f68xxSwitchInfo),
+
+	.modelName			= "Development Board"
 };
 
 /*******************************************************************************
@@ -855,7 +857,9 @@ MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.isAudioConnected		= MV_FALSE,
 	.isTdmConnected			= MV_FALSE,
 	.pSwitchInfo			= NULL,
-	.switchInfoNum			= 0
+	.switchInfoNum			= 0,
+
+	.modelName			= "Access Point Development Board"
 };
 
 /*******************************************************************************
@@ -990,7 +994,9 @@ MV_BOARD_INFO dbGP88f68XX_board_info = {
 	.isAudioConnected		= MV_FALSE,
 	.isTdmConnected			= MV_FALSE,
 	.pSwitchInfo			= NULL,
-	.switchInfoNum			= 0
+	.switchInfoNum			= 0,
+
+	.modelName			= "General Purpose Development Board"
 };
 
 /*******************************************************************************
@@ -1106,7 +1112,9 @@ MV_BOARD_INFO db88f6821_board_info = {
 	.isAudioConnected	= MV_FALSE,
 	.isTdmConnected		= MV_FALSE,
 	.pSwitchInfo		= NULL,
-	.switchInfoNum		= 0
+	.switchInfoNum		= 0,
+
+	.modelName		= "Development Board"
 };
 
 /*******************************************************************************
@@ -1213,7 +1221,9 @@ MV_BOARD_INFO dbAmc88f68xx_board_info = {
 	.isAudioConnected	= MV_FALSE,
 	.isTdmConnected		= MV_FALSE,
 	.pSwitchInfo		= NULL,
-	.switchInfoNum		= 0
+	.switchInfoNum		= 0,
+
+	.modelName		= "AMC Development Board"
 };
 
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {

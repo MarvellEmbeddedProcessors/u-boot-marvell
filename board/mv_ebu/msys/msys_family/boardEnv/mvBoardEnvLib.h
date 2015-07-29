@@ -83,6 +83,7 @@ extern "C" {
 
 #define MV_BOARD_MAX_MPP		9	/* number of MPP conf registers */
 #define MV_BOARD_NAME_LEN  		0x20
+#define MV_BOARD_MODEL_NAME_LEN		0x50
 
 enum {
 	MV_PORT_TYPE_SGMII,
@@ -265,7 +266,10 @@ typedef struct _boardInfo {
 	MV_BOARD_PEX_INFO	boardPexInfo;	/* filled in runtime */
 	MV_U32 norFlashReadParams;
 	MV_U32 norFlashWriteParams;
+	MV_BOOL isSmiExternalPp;
+	MV_BOOL isSdMmcConnected;
 
+	char modelName[MV_BOARD_MODEL_NAME_LEN];
 } MV_BOARD_INFO;
 
 MV_VOID mvBoardEnvInit(MV_VOID);
@@ -383,6 +387,15 @@ MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
 MV_BOOL mvBoardisAmc(void);
 MV_STATUS mvBoardPPSmiIndexGet(MV_U32 *index);
 MV_VOID mvBoardUpdateConfigforDT(MV_VOID);
+#ifdef CONFIG_MMC
+MV_BOOL mvBoardisSdioConnected(void);
+#endif
+void mvBoardGetModelName(char *pNameBuff);
+#ifdef MV_PP_SMI
+MV_BOOL mvBoardIsPpSmi(void);
+#endif
+void mvBoardPinCtrlNameGet(char *compatibleBuf);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

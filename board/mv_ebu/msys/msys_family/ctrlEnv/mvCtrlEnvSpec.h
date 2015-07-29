@@ -206,9 +206,9 @@ extern "C" {
 #define MV_CESA_VERSION				3
 #define MV_CESA_SRAM_SIZE			(2 * 1024)
 
-#ifdef CONFIG_ALLEYCAT3
+#ifdef MV_USB
 #define MV_USB_MAX_PORTS 1
-#else /* BC2 no USB ports */
+#else
 #define MV_USB_MAX_PORTS 0
 #endif
 #define MV_USB3_MAX_HOST_PORTS 0

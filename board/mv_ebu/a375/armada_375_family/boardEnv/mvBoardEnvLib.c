@@ -3164,3 +3164,49 @@ MV_VOID mvBoardUpdateConfigforDT(MV_VOID)
 {
 
 }
+
+#ifdef CONFIG_MMC
+/*******************************************************************************
+* mvBoardisSdioConnected
+* DESCRIPTION: return true if SDIO connected on board
+*
+* INPUT:  None
+* OUTPUT: None.
+* RETURN: MV_TRUE:SDIO connected on board
+*         MV_FALSE: else
+*******************************************************************************/
+MV_BOOL mvBoardisSdioConnected(void)
+{
+	return board->isSdMmcConnected;
+}
+#endif
+
+/*******************************************************************************
+* mvBoardGetModelName
+*
+* DESCRIPTION:
+*       This function returns a string describing the board model.
+*
+* OUTPUT:
+*       pNameBuff - Buffer to contain board model name string. Minimum size 128 chars.
+*
+*******************************************************************************/
+void mvBoardGetModelName(char *pNameBuff)
+{
+	mvOsSPrintf(pNameBuff, "Marvell Armada 375 Development Board");
+}
+
+/*******************************************************************************
+* mvBoardPinCtrlNameGet
+*
+* DESCRIPTION:
+*       This function returns the compatible string of pinctrl
+*
+* OUTPUT:
+*       compatibleBuf - Buffer to contain pinctrl compatible string
+*
+*******************************************************************************/
+void mvBoardPinCtrlNameGet(char *compatibleBuf)
+{
+	mvOsSPrintf(compatibleBuf, "marvell,bc2-ac3-pinctrl");
+}

@@ -477,7 +477,7 @@ void misc_init_r_env(void){
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 	fdt_env_setup(mv_get_default_dtb_name(), MV_FALSE); /* static setup: Skip DT update for customer */
 #else
-	fdt_env_setup(mv_get_default_dtb_name(), MV_FALSE); /* dynamic setup: run DT update (false since not supported yet) */
+	fdt_env_setup("msys-modular.dtb", MV_TRUE); /* dynamic setup: run DT update (false since not supported yet) */
 #endif
 
 #if (CONFIG_BOOTDELAY >= 0)

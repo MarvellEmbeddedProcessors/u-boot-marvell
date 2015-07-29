@@ -3757,6 +3757,8 @@ void mvBoardTdmConnectionSet(MV_BOOL isConnected)
 {
 	board->isTdmConnected = isConnected;
 }
+
+#ifdef CONFIG_MMC
 /*******************************************************************************
 * mvBoardisSdioConnected
 * DESCRIPTION: return true if SDIO connected on board
@@ -3770,7 +3772,7 @@ MV_BOOL mvBoardisSdioConnected(void)
 {
 	return board->isSdMmcConnected;
 }
-
+#endif
 /*******************************************************************************
 * mvBoardSdioConnectionSet
 * DESCRIPTION: set SDIO connection status on board structures
@@ -3892,4 +3894,19 @@ MV_VOID mvBoardUsbPortStatusSet(MV_UNIT_ID usbType, MV_U32 usbPort, MV_BOOL usbS
 		if (board->pBoardUsbInfo[i].usbType == usbType &&
 				board->pBoardUsbInfo[i].usbPortNum == usbPort)
 			board->pBoardUsbInfo[usbPort].isActive = usbStatus;
+}
+
+/*******************************************************************************
+* mvBoardPinCtrlNameGet
+*
+* DESCRIPTION:
+*       This function returns the compatible string of pinctrl
+*
+* OUTPUT:
+*       compatibleBuf - Buffer to contain pinctrl compatible string
+*
+*******************************************************************************/
+void mvBoardPinCtrlNameGet(char *compatibleBuf)
+{
+	mvOsSPrintf(compatibleBuf, "marvell,mv88f%x-pinctrl", mvCtrlModelGet());
 }

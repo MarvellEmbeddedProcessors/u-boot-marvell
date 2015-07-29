@@ -113,7 +113,12 @@ MV_DEV_CS_INFO bobcat2_customer_board_0_InfoBoardDeCsInfo[] = {
 #if defined(MV_INCLUDE_SPI)
 	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
 #endif
-#if defined(MV_INCLUDE_NOR)
+#if defined(MV_INCLUDE_NOR) && defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE}, /* NAND DEV */
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
+#elif defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE} /* NAND DEV */
+#elif defined(MV_INCLUDE_NOR)
 	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
 #endif
 };
@@ -331,7 +336,12 @@ MV_DEV_CS_INFO alleycat3_customer_board_0_InfoBoardDeCsInfo[] = {
 #if defined(MV_INCLUDE_SPI)
 	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
 #endif
-#if defined(MV_INCLUDE_NOR)
+#if defined(MV_INCLUDE_NOR) && defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE}, /* NAND DEV */
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
+#elif defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE} /* NAND DEV */
+#elif defined(MV_INCLUDE_NOR)
 	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
 #endif
 };
@@ -440,8 +450,13 @@ MV_DEV_CS_INFO db_dx_bc2InfoBoardDeCsInfo[] = {
 #if defined(MV_INCLUDE_SPI)
 	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
 #endif
-#if defined(MV_INCLUDE_NOR)
-	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 8, 8, 0, MV_TRUE} /* NOR DEV */
+#if defined(MV_INCLUDE_NOR) && defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE}, /* NAND DEV */
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
+#elif defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE} /* NAND DEV */
+#elif defined(MV_INCLUDE_NOR)
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
 #endif
 };
 
@@ -502,7 +517,10 @@ MV_BOARD_INFO db_dx_bc2Info = {
 	.nandFlashControl		= DB_DX_BC2_BOARD_NAND_CONTROL,
 	/* NOR init params */
 	.norFlashReadParams		= DB_DX_BC2_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= DB_DX_BC2_BOARD_NOR_WRITE_PARAMS
+	.norFlashWriteParams		= DB_DX_BC2_BOARD_NOR_WRITE_PARAMS,
+	.modelName			= "BobCat2 Development Board",
+	.isSmiExternalPp		= MV_FALSE,
+	.isSdMmcConnected		= MV_TRUE
 };
 
 /**********************************************************************************/
@@ -529,7 +547,10 @@ MV_BOARD_MODULE_TYPE_INFO rd_dx_bc2InfoBoardModTypeInfo[] = {
 MV_DEV_CS_INFO rd_dx_bc2InfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busNum, active}*/
 #if defined(MV_INCLUDE_SPI)
-	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 0, MV_TRUE} /* SPI DEV */
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE} /* NAND DEV */
 #endif
 };
 
@@ -582,7 +603,10 @@ MV_BOARD_INFO rd_dx_bc2Info = {
 	 /* NAND init params */
 	.nandFlashReadParams		= RD_DX_BC2_BOARD_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= RD_DX_BC2_BOARD_NAND_WRITE_PARAMS,
-	.nandFlashControl		= RD_DX_BC2_BOARD_NAND_CONTROL
+	.nandFlashControl		= RD_DX_BC2_BOARD_NAND_CONTROL,
+	.modelName			= "BobCat2 Reference Design Board",
+	.isSmiExternalPp		= MV_FALSE,
+	.isSdMmcConnected		= MV_TRUE
 };
 
 /**********************************************************************************/
@@ -614,7 +638,10 @@ MV_BOARD_MODULE_TYPE_INFO bc2_rd_mtlInfoBoardModTypeInfo[] = {
 MV_DEV_CS_INFO bc2_rd_mtlInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busNum, active}*/
 #if defined(MV_INCLUDE_SPI)
-	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 0, MV_TRUE} /* SPI DEV */
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE} /* NAND DEV */
 #endif
 };
 
@@ -667,7 +694,10 @@ MV_BOARD_INFO bc2_rd_mtlInfo = {
 	/* NAND init params */
 	.nandFlashReadParams	= RD_MTL_BC2_BOARD_NAND_READ_PARAMS,
 	.nandFlashWriteParams	= RD_MTL_BC2_BOARD_NAND_WRITE_PARAMS,
-	.nandFlashControl		= RD_MTL_BC2_BOARD_NAND_CONTROL
+	.nandFlashControl		= RD_MTL_BC2_BOARD_NAND_CONTROL,
+	.modelName			= "BobCat2 Reference Design Board",
+	.isSmiExternalPp		= MV_FALSE,
+	.isSdMmcConnected		= MV_TRUE
 };
 
 /*********************************************************************************/
@@ -780,7 +810,10 @@ MV_BOARD_INFO db_dx_bobkInfo = {
 	.nandFlashControl		= DB_DX_BOBK_BOARD_NAND_CONTROL,
 	/* NOR init params */
 	.norFlashReadParams		= DB_DX_BOBK_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= DB_DX_BOBK_BOARD_NOR_WRITE_PARAMS
+	.norFlashWriteParams		= DB_DX_BOBK_BOARD_NOR_WRITE_PARAMS,
+	.isSmiExternalPp		= MV_TRUE,
+	.modelName			= "BobK Development Board",
+	.isSdMmcConnected		= MV_TRUE
 };
 
 /*********************************************************************************/
@@ -826,7 +859,12 @@ MV_DEV_CS_INFO db_dx_ac3InfoBoardDeCsInfo[] = {
 #if defined(MV_INCLUDE_SPI)
 	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
 #endif
-#if defined(MV_INCLUDE_NOR)
+#if defined(MV_INCLUDE_NOR) && defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE}, /* NAND DEV */
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
+#elif defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE} /* NAND DEV */
+#elif defined(MV_INCLUDE_NOR)
 	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
 #endif
 };
@@ -883,7 +921,10 @@ MV_BOARD_INFO db_dx_ac3Info = {
 	.nandFlashControl		= DB_DX_AC3_BOARD_NAND_CONTROL,
 	/* NOR init params */
 	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS
+	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
+
+	.modelName			= "AlleyCat3 Development Board",
+	.isSmiExternalPp		= MV_FALSE,
 };
 
 /*********************************************************************************/
@@ -942,7 +983,10 @@ MV_BOARD_INFO rd_mtl_4xg_ac3Info = {
 	.nandFlashControl		= DB_DX_AC3_BOARD_NAND_CONTROL,
 	/* NOR init params */
 	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS
+	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
+
+	.modelName			= "AlleyCat3 Reference Design Board",
+	.isSmiExternalPp		= MV_FALSE,
 };
 /*********************************************************************************/
 /***********************************/
@@ -1000,7 +1044,10 @@ MV_BOARD_INFO rd_mtl_2xxg_2xg_ac3Info = {
 	.nandFlashControl		= DB_DX_AC3_BOARD_NAND_CONTROL,
 	/* NOR init params */
 	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS
+	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
+
+	.modelName			= "AlleyCat3 Reference Design Board",
+	.isSmiExternalPp		= MV_FALSE,
 };
 
 /*********************************************************************************/
@@ -1059,7 +1106,10 @@ MV_BOARD_INFO db_misl_24G_4xg_ac3Info = {
 	.nandFlashControl			= DB_DX_AC3_BOARD_NAND_CONTROL,
 	/* NOR init params */
 	.norFlashReadParams			= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS
+	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
+
+	.modelName			= "AlleyCat3 Reference Design Board",
+	.isSmiExternalPp		= MV_FALSE,
 };
 
 /*********************************************************************************/
@@ -1118,7 +1168,10 @@ MV_BOARD_INFO rd_mtl_24G_ac3Info = {
 	.nandFlashControl		= DB_DX_AC3_BOARD_NAND_CONTROL,
 	/* NOR init params */
 	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS
+	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
+
+	.modelName			= "AlleyCat3 Reference Design Board",
+	.isSmiExternalPp		= MV_FALSE,
 };
 
 /***************************************************************************************/
@@ -1156,7 +1209,10 @@ MV_BOARD_GPP_INFO db78X60amcInfoBoardGppInfo[] = {
 MV_DEV_CS_INFO db78X60amcInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth}*/
 #if defined(MV_INCLUDE_SPI)
-	{SPI_CS0_AXP, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
+	{SPI_CS0_AXP, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE} /* NAND DEV */
 #endif
 };
 
@@ -1213,7 +1269,9 @@ MV_BOARD_INFO db78X60amcInfo = {
 	/* NAND init params */
 	.nandFlashReadParams		= DB_78X60_AMC_BOARD_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= DB_78X60_AMC_BOARD_NAND_WRITE_PARAMS,
-	.nandFlashControl		= DB_78X60_AMC_BOARD_NAND_CONTROL
+	.nandFlashControl		= DB_78X60_AMC_BOARD_NAND_CONTROL,
+
+	.modelName			= "AMC Development Board"
 };
 
 

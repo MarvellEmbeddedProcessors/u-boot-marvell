@@ -26,7 +26,7 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-struct sar_data sar_board;
+struct sar_data  __attribute__((section(".data"))) sar_board;
 #define board_get_sar() (&sar_board)
 #define board_get_sar_table() (sar_board.sar_lookup)
 

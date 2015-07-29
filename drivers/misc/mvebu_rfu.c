@@ -38,7 +38,7 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-void __iomem *rfu_base;
+void __attribute__((section(".data"))) __iomem *rfu_base;
 
 struct rfu_win {
 	u32 base_addr_high;

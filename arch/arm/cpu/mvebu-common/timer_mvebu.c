@@ -41,8 +41,8 @@
 
 #define TIMER_LOAD_VAL 0xFFFFFFFF
 
-static ulong timestamp;
-static ulong lastdec;
+static ulong  __attribute__((section(".data"))) timestamp;
+static ulong  __attribute__((section(".data"))) lastdec;
 
 int timer_init_done = -1;
 

@@ -28,7 +28,7 @@
 #include <nand.h>
 
 #if defined(CONFIG_TARGET_ARMADA_8K)
-#define MAIN_HDR_MAGIC		B105B002
+#define MAIN_HDR_MAGIC		0xB105B002
 
 struct mvebu_image_header {
 	uint32_t	magic;			/*  0-3  */

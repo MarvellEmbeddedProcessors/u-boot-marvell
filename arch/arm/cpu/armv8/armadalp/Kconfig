@@ -2,7 +2,7 @@ if TARGET_ARMADA_LP
 
 config SYS_CPU
 	string
-	default "armv7"
+	default "armv8"
 
 config SYS_BOARD
 	string
@@ -20,7 +20,12 @@ config SYS_CONFIG_NAME
 	string
 	default "armadalp"
 
+config ARMV8_PSCI
+	bool
+	default n
+
 config PALLADIUM
 	bool "Support palladium emulation"
 	default y
 endif
+

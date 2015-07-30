@@ -41,7 +41,6 @@ endif
 obj-$(if $(filter am33xx,$(SOC)),y) += am33xx/
 obj-$(if $(filter armada-xp,$(SOC)),y) += armada-xp/
 obj-$(if $(filter armada38x,$(SOC)),y) += armada38x/
-obj-$(if $(filter armadalp,$(SOC)),y) += armadalp/
 obj-$(CONFIG_AT91FAMILY) += at91/
 obj-$(if $(filter bcm281xx,$(SOC)),y) += bcm281xx/
 obj-$(if $(filter bcmcygnus,$(SOC)),y) += bcmcygnus/

@@ -21,11 +21,12 @@
 
 /* Version */
 #define CONFIG_IDENT_STRING		" Marvell version: 2015_T2.0"
-#define CONFIG_BOOTP_VCI_STRING		" U-boot.armv7.armadalp"
+#define CONFIG_BOOTP_VCI_STRING		" U-boot.armv8.armadalp"
 
 /* Platform */
-#define CONFIG_MVEBU_CA9
-#define CONFIG_MVEBU_TIMER
+/* Support GICv3 */
+#undef CONFIG_GICV2
+#define CONFIG_GICV3
 
 /*
 #define MV_INCLUDE_SDIO
@@ -48,16 +49,27 @@
 /* Plaform */
 #define CONFIG_MARVELL
 
-/* Clock */
-#ifndef __ASSEMBLY__
-	#define CONFIG_SYS_HZ                   1000
-	#define CONFIG_SYS_TCLK                 soc_tclk_get()
-	#define CONFIG_SYS_BUS_CLK              soc_sys_clk_get()
-#endif /* __ASSEMBLY__ */
+#define COUNTER_FREQUENCY	(6000)
+
 
 /* DRAM detection stuff */
 #define MV_DRAM_AUTO_SIZE
 #define CONFIG_SYS_DRAM_BANKS           1
+
+#ifdef CONFIG_SPL_BUILD
+/* SPL */
+/* Defines for SPL */
+#define CONFIG_SPL_TEXT_BASE	 0xFFE1C048
+#define CONFIG_SPL_MAX_SIZE		(0x1ffc0)
+
+#ifndef __ASSEMBLY__
+extern char __end_of_spl[];
+#endif /* __ASSEMBLY__ */
+#define CONFIG_SYS_SPL_MALLOC_START	((ulong)__end_of_spl)
+#define CONFIG_SYS_SPL_MALLOC_SIZE	(0x4000)
+#endif /* CONFIG_SPL_BUILD */
+#define CONFIG_SPL_LDSCRIPT		"arch/arm/cpu/mvebu-common/u-boot-armv8-spl.lds"
+
 
 /* SPI flash for Palladium */
 #ifdef CONFIG_MVEBU_SPI
@@ -75,6 +87,8 @@
  * The generic file is affected by the defines above.
  */
 #include "mvebu-common.h"
+
+
 
 /*
  * SOC specific overrides

@@ -40,6 +40,8 @@
 #define MV_INCLUDE_RTC
 #define MV_INCLUDE_PEX
 */
+#undef CONFIG_GICV3
+#define CONFIG_GICV2
 
 #define CONFIG_GENERIC_TIMER
 #define CONFIG_REMAKE_ELF

@@ -1,7 +1,7 @@
 
 source "arch/arm/cpu/armv8/armada8k/Kconfig"
 source "arch/arm/cpu/armv7/armada38x/Kconfig"
-source "arch/arm/cpu/armv7/armadalp/Kconfig"
+source "arch/arm/cpu/armv8/armadalp/Kconfig"
 
 config MVEBU
 	bool "Support MVEBU devices"

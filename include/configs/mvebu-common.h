@@ -192,9 +192,9 @@
 
 
 /* Generic Interrupt Controller Definitions */
-#define CONFIG_GICV2
 #define GICD_BASE                       MVEBU_GICD_BASE
 #define GICC_BASE                       MVEBU_GICC_BASE
+#define GICR_BASE                       MVEBU_GICR_BASE
 
 /* Flat Device Tree Definitions */
 #define CONFIG_OF_LIBFDT

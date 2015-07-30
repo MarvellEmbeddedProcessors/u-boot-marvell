@@ -26,9 +26,9 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 /* to use global variables before u-boot relocation, initialize it to something !=0 */
-unsigned int mvebu_uart_reg_base = 100;
-unsigned int mvebu_uart_clock_frequency = 100;
-unsigned int mvebu_uart_baudrate = 100;
+unsigned long mvebu_uart_reg_base = 100;
+unsigned long mvebu_uart_clock_frequency = 100;
+unsigned long mvebu_uart_baudrate = 100;
 
 #define MVEBU_UART_BASE(x)	mvebu_uart_reg_base
 
@@ -123,9 +123,9 @@ static int mvebu_serial_init(void)
 		if (node <= 0)
 			continue;
 
-		mvebu_uart_reg_base = (unsigned int)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
-		mvebu_uart_clock_frequency = (unsigned int)fdtdec_get_int(gd->fdt_blob, node, "clock_frequency", 0);
-		mvebu_uart_baudrate = (unsigned int)fdtdec_get_int(gd->fdt_blob, node, "baudrate", 0);
+		mvebu_uart_reg_base = (unsigned long)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
+		mvebu_uart_clock_frequency = (unsigned long)fdtdec_get_int(gd->fdt_blob, node, "clock_frequency", 0);
+		mvebu_uart_baudrate = (unsigned long)fdtdec_get_int(gd->fdt_blob, node, "baudrate", 0);
 	}
 
 	/* 115200KBps fixed Baud rate  */

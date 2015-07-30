@@ -329,6 +329,13 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
     /* Print AAPL structure */
     aapl_print_struct(aaplSerdesDb[devNum],aaplSerdesDb[devNum]->debug > 0, addr, 0);
 #endif /* AVAGO_AAPL_LGPL */
+
+#else /* MV_HWS_BIN_HEADER */
+    /* Validate access to Avago device */
+    mvHwsAvagoAccessValidate(devNum, 0);
+
+    /* Initialize AAPL structure */
+    aapl_get_ip_info(aaplSerdesDb[devNum],1);
 #endif /*MV_HWS_BIN_HEADER*/
     osPrintf("Loading Avago Firmware.......\n");
 

@@ -29,12 +29,6 @@
 #define AAPL_ENABLE_INTERNAL_FUNCTIONS
 #include "aapl.h"
 
-int avago_pex_sbus(Aapl_t *aapl,
-    unsigned int sbus_addr, /**< [in] Address of the sbus device */
-    unsigned char reg_addr, /**< [in] Address of the register */
-    unsigned char command,  /**< [in] Type of command */
-    unsigned int sbus_data); /**< [in] Data to write for a <b>write</b> command */
-
 #ifndef MV_HWS_REDUCED_BUILD
 #if AAPL_ALLOW_OFFLINE_SBUS
 
@@ -121,17 +115,6 @@ static uint offline_sbus(
 #endif
 
 #endif /* MV_HWS_REDUCED_BUILD */
-
-/* Commnunication via PEX to replace I2C */
-int avago_pex_sbus(
-    Aapl_t *aapl,           /**< [in/out] Pointer to AAPL structure */
-    unsigned int sbus_addr, /**< [in] Address of the sbus device */
-    unsigned char reg_addr, /**< [in] Address of the register */
-    unsigned char command,  /**< [in] Type of command */
-    unsigned int sbus_data) /**< [in] Data to write for a <b>write</b> command */
-{
-    return 0;
-}
 
 /*============================================================================= */
 /* S B U S */
@@ -226,7 +209,8 @@ uint avago_sbus(
         return -1;
     }
 #else
-    data = (uint)avago_pex_sbus(aapl, sbus_addr, reg_addr, command, sbus_data);
+    data = user_supplied_sbus_function(aapl, sbus_addr, reg_addr,
+                                     command, sbus_data, recv_data_back);
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
@@ -356,6 +340,7 @@ void avago_sbus_reset(
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 
 #if AAPL_ALLOW_AACS
+#ifndef MV_HWS_REDUCED_BUILD
         if (aapl->capabilities & AACS_SERVER_SBUS_RESET)
         {
             char cmd[64];
@@ -371,9 +356,7 @@ void avago_sbus_reset(
             uint tap_gen;
 
             AAPL_SUPPRESS_ERRORS_PUSH(aapl); /* can be done only after parameters declaration */
-
             tap_gen = avago_get_tap_gen(aapl);
-
             snprintf (hs1_mode, 64, "sbus_mode %s", avago_aacs_send_command(aapl, "sbus_mode"));
             {
                 char *ptr = strstr(hs1_mode," I2C");
@@ -401,6 +384,7 @@ void avago_sbus_reset(
             aapl->communication_method = comm_method;
             AAPL_SUPPRESS_ERRORS_POP(aapl);
         }
+#endif /* MV_HWS_REDUCED_BUILD */
 #endif
 
         if(aapl_is_mdio_communication_method(aapl))
@@ -435,7 +419,7 @@ void avago_sbus_reset(
         {
             avago_i2c_sbus(aapl, sbus_addr_in, 0, 3, 0);
 #else
-            avago_pex_sbus(aapl, sbus_addr_in, 0, 3, 0);
+            avago_sbus(aapl, sbus_addr_in, 0x00, 0x03, 0x00, 0);
 #endif /* MV_HWS_REDUCED_BUILD */
 
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3

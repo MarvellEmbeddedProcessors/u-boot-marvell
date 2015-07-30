@@ -40,17 +40,18 @@ EXT uint avago_sbus_rmw( Aapl_t *aapl, uint sbus_addr, unsigned char reg, uint d
 EXT void avago_sbus_reset(Aapl_t *aapl, uint sbus_addr, int hard);
 EXT BOOL avago_diag_sbus_rw_test(Aapl_t *aapl, uint sbus_addr, int cycles);
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
-# if AAPL_ALLOW_USER_SUPPLIED_SBUS
-    EXT int user_supplied_sbus_open_function(Aapl_t *aapl);
-    EXT int user_supplied_sbus_close_function(Aapl_t *aapl);
-    EXT uint user_supplied_sbus_function(
+EXT uint user_supplied_sbus_function(
         Aapl_t *aapl,
         unsigned int sbus_addr,
         unsigned char reg_addr,
         unsigned char command,
         unsigned int sbus_data,
         int recv_data_back);
+
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+# if AAPL_ALLOW_USER_SUPPLIED_SBUS
+    EXT int user_supplied_sbus_open_function(Aapl_t *aapl);
+    EXT int user_supplied_sbus_close_function(Aapl_t *aapl);
 # endif
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 

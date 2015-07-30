@@ -23,7 +23,7 @@
 
 #ifndef AVAGO_ASIC_INFO_H_
 #define AVAGO_ASIC_INFO_H_
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 typedef struct
 {
         uint jtag_idcode;

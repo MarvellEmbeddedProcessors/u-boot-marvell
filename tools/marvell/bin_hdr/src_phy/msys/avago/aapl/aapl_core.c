@@ -26,7 +26,7 @@
 
 #define AAPL_ENABLE_INTERNAL_FUNCTIONS
 #include "aapl.h"
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if  !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 #include "asic_info.h"
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
@@ -333,15 +333,14 @@ int aapl_get_return_code(
 /** Use functions provided to get and set information in this structure. */
 void aapl_init(Aapl_t *aapl)
 {
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     int i;
-
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
     memset(aapl, 0, sizeof(Aapl_t));
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     for( i = 0; i < AAPL_MAX_CHIPS; i++ )
         aapl->chip_name[i] = aapl->chip_rev[i] = "";
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     aapl->log            = (char *) AAPL_MALLOC(AAPL_LOG_BUF_SIZE);
     aapl->log_end        = aapl->log;
     aapl->log_size       = 0;
@@ -364,9 +363,8 @@ void aapl_init(Aapl_t *aapl)
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
     aapl->chips                 = AAPL_NUMBER_OF_CHIPS_OVERRIDE;
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     aapl->sbus_rings            = AAPL_NUMBER_OF_RINGS_OVERRIDE;
-
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 # ifdef AAPL_LOG_TIME_STAMPS
     aapl->log_time_stamps       = AAPL_LOG_TIME_STAMPS;
 # endif
@@ -614,7 +612,7 @@ Avago_ip_type_t aapl_get_ip_type(
     return (Avago_ip_type_t)(aapl->ip_type[AAPL_3D_ARRAY_ADDR(addr_struct)]);
 }
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 /** @brief Internal function that returns index from avago_chip_id array (from asic_info.h) */
 static int avago_find_chip_index(uint jtag, int jtag_mask)
 {
@@ -1131,7 +1129,9 @@ BOOL aapl_check_process_full(
 }
 #endif /* MV_HWS_REDUCED_BUILD */
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
+
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief Internal function that returns the tap_gen from an HS1 */
 uint avago_get_tap_gen(Aapl_t *aapl)
 {
@@ -1166,7 +1166,6 @@ uint avago_get_tap_gen(Aapl_t *aapl)
     return tap_gen;
 }
 
-#ifndef MV_HWS_REDUCED_BUILD
 static void set_hs1_reset_override(Aapl_t *aapl, uint chip, uint override)
 {
     if(!aapl_is_aacs_communication_method(aapl)) return;
@@ -1398,9 +1397,13 @@ static void get_chip_name(
     #endif
 
     if (aapl->jtag_idcode[chip]) jtag_idcode = aapl->jtag_idcode[chip];
-
+#ifndef MV_HWS_BIN_HEADER
     if (jtag_idcode == 0 && jtag_string)
         jtag_idcode = strtoul(jtag_string, NULL, 2);
+#else
+    /* Clear warning from BIN HEADER */
+    jtag_string = jtag_string;
+#endif /* MV_HWS_BIN_HEADER */
 
     aapl_log_printf(aapl, AVAGO_DEBUG2, __func__, __LINE__,  "User supplied IDCODE for device %d (from aapl->jtag_idcode[] or aapl.h defines): 0x%08x\n", chip, jtag_idcode);
 
@@ -1408,6 +1411,7 @@ static void get_chip_name(
     if (jtag_idcode == 0)
     {
         int rc = aapl->return_code;
+#ifndef MV_HWS_BIN_HEADER
         char chip_cmd_buffer[16];
         snprintf(chip_cmd_buffer, sizeof(chip_cmd_buffer), "chipnum %d", chip);
         avago_aacs_send_command(aapl, chip_cmd_buffer);
@@ -1415,7 +1419,7 @@ static void get_chip_name(
 
         jtag_idcode = strtoul(aapl->data_char, NULL, 2);
         aapl_log_printf(aapl, AVAGO_DEBUG2, __func__, __LINE__,  "IDCODE read from JTAG for device %d: 0x%08x\n", chip, jtag_idcode);
-
+#endif /* MV_HWS_BIN_HEADER */
         if ((rc != aapl->return_code) || ( jtag_idcode == 0) || (jtag_idcode == 0xffffffff))
         {
             uint addr_80;
@@ -1446,10 +1450,10 @@ static void get_chip_name(
     AAPL_SUPPRESS_ERRORS_POP(aapl);
 
     aapl->jtag_idcode[chip] = jtag_idcode;
-
+#ifndef MV_HWS_BIN_HEADER
     if (aapl->jtag_idcode[chip] == 0x0 && !aapl_is_aacs_communication_method(aapl))
         aapl_log_printf(aapl, AVAGO_WARNING, __func__, __LINE__, "AAPL has not been configured to use AACS, and an override (AAPL_CHIP_ID_OVERRIDE, aapl->jtag_idcode[], or AAPL_CHIP_ID_HEX_OVERRIDE) has not been set for chip %d, which may cause AAPL to not function properly as it has no way of determining exactly what device it is communicating with.\n", chip);
-
+#endif /* MV_HWS_BIN_HEADER */
     for( ring = 0; ring < AAPL_MAX_RINGS; ring++ )
         aapl->max_sbus_addr[chip][ring] = 0;
 
@@ -1539,12 +1543,12 @@ void aapl_get_ip_info(
     int chip, chips;
 
     aapl_log_printf(aapl, AVAGO_DEBUG1, __func__, __LINE__, "AAPL Version " AAPL_VERSION ", " AAPL_COPYRIGHT "\n", 0);
-
+#ifndef MV_HWS_BIN_HEADER
     if( chip_reset ) avago_aacs_send_command(aapl, "reset");
-
     AAPL_SUPPRESS_ERRORS_PUSH(aapl);
     avago_aacs_send_command(aapl, "chip");
     AAPL_SUPPRESS_ERRORS_POP(aapl);
+#endif /* MV_HWS_BIN_HEADER */
 
     chips = get_number_of_chips(aapl);
     for (chip=0; chip<chips; chip++)
@@ -1631,7 +1635,7 @@ void aapl_get_ip_info(
     }
     aapl_log_printf(aapl, AVAGO_DEBUG2, __func__, __LINE__, "End of get_ip_info.\n", 0);
 }
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+#endif /* !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER */
 
 /** @brief Sets the ip_type, ip_rev, spico_running, firm_rev, and lsb_rev fields of aapl. */
 /** @param aapl Aapl_t struct */

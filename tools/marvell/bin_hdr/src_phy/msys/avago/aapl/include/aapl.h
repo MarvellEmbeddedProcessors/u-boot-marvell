@@ -65,7 +65,7 @@
 #define  aapl_check_process(aapl, addr, function, line, error, args, arg...)  aapl_check_process_full(aapl, addr, function, line, error, args, arg)
 #endif  /* MV_HWS_REDUCED_BUILD */
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 #ifndef AVAGO_FIRMWARE_PATH
 /** @brief This optional define provides a shortcut for accessing firmware */
 /**        by [fw_rev] and [build_id] rather than only by full path. */
@@ -85,16 +85,20 @@
 /*      value to 0. Do not comment or remove a define as that may */
 /*      cause compile failures. */
 
+#ifndef MV_HWS_BIN_HEADER
 #define AAPL_ALLOW_AACS                1  /**< Set to 0 to remove AVAGO_AACS_SBUS, AVAGO_AACS_MDIO, and AVAGO_AACS_I2C communication methods. */
+#else
+#define AAPL_ALLOW_AACS                0  /**< Set to 0 to remove AVAGO_AACS_SBUS, AVAGO_AACS_MDIO, and AVAGO_AACS_I2C communication methods. */
+#endif /* MV_HWS_BIN_HEADER */
 #define AAPL_ALLOW_GPIO_MDIO           0  /**< Set to 0 to remove the AVAGO_GPIO_MDIO communication method. */
 #define AAPL_ALLOW_OFFLINE_SBUS        0  /**< Set to 0 to remove the AVAGO_OFFLINE communication method. */
-#define AAPL_ALLOW_SYSTEM_I2C          1  /**< Set to 0 to remove the AVAGO_SYSTEM_I2C communication method. */
+#define AAPL_ALLOW_SYSTEM_I2C          0  /**< Set to 0 to remove the AVAGO_SYSTEM_I2C communication method. */
 #define AAPL_ALLOW_SYSTEM_MDIO         0  /**< Set to 0 to remove the AVAGO_SYSTEM_MDIO communication method (not implemented). */
 #define AAPL_ALLOW_USER_SUPPLIED_I2C   0  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_I2C communication method. */
 #define AAPL_ALLOW_USER_SUPPLIED_MDIO  0  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_MDIO communication method. */
-#define AAPL_ALLOW_USER_SUPPLIED_SBUS  1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_SBUS_DIRECT communication method. */
 #define AAPL_ENABLE_USER_SERDES_INT    0  /**< Set to 0 to remove support for using the user_supplied_serdes_interrupt_function() for SerDes interrupts */
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+#define AAPL_ALLOW_USER_SUPPLIED_SBUS  1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_SBUS_DIRECT communication method. */
+#endif /* !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER */
 
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /* Set value to 0 to disable corresponding feature support: */

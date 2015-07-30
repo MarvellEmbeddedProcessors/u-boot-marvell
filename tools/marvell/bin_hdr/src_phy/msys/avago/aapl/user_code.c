@@ -25,6 +25,7 @@
 /** @file */
 /** @brief User-supplied functions. */
 
+#include "mv_hws_avago_if.h"
 #ifndef ASIC_SIMULATION
 #include <sys/ioctl.h>
 #endif
@@ -36,16 +37,18 @@
 #include <common/siliconIf/mvSiliconIf.h>
 #else
 #include <gtOs/gtGenTypes.h>
+#include <mvSiliconIf.h>
+#ifndef MV_HWS_BIN_HEADER
 #include <gtOs/gtOsTimer.h>
 #define hwsOsTimerWkFuncPtr osTimerWkAfter
+#endif /* MV_HWS_BIN_HEADER */
 #endif
 
 #define I2C_SLAVE       0x0703
-
+#ifndef MV_HWS_BIN_HEADER
 static int avagoI2cFd = -1;
 static unsigned int i2cAvagoSlaveId;
-
-extern char avagoSerdesSbusAddr2Num[255];
+#endif
 #define SBC_UNIT_BASE_ADDRESS         (0x60000000)
 #define SBC_UNIT_REG_ADDR(reg)        (SBC_UNIT_BASE_ADDRESS | reg)
 #define SBC_UNIT_COMMOM_CTRL_REG_ADDR (0x0)
@@ -55,6 +58,20 @@ extern char avagoSerdesSbusAddr2Num[255];
 #define SBC_MASTER_BASE_ADDRESS       (0x60040000)
 #define SBC_MASTER_SERDES_NUM_SHIFT   (10)
 #define SBC_MASTER_REG_ADDR_SHIFT     (2)
+
+#ifdef MV_HWS_BIN_HEADER
+extern unsigned int genSwitchRegisterSet(unsigned int address, unsigned int sbus_data, unsigned int mask);
+extern unsigned int genSwitchRegisterGet(unsigned int address, unsigned int *sbus_data, unsigned int mask);
+#define genRegisterSet(devNum, portGroup, address, sbus_data, mask) \
+     devNum = devNum; \
+     portGroup = portGroup; \
+     genSwitchRegisterSet(address, sbus_data, mask)
+
+#define genRegisterGet(devNum, portGroup, address, data_ptr, mask) \
+     devNum = devNum; \
+     portGroup = portGroup; \
+     genSwitchRegisterGet(address, data_ptr, mask)
+#endif
 
 /*******************************************************************************
 * user_supplied_pex_address
@@ -85,7 +102,7 @@ unsigned int user_supplied_pex_address
 
     return serdesAddress;
 }
-
+#ifndef MV_HWS_BIN_HEADER
 /*******************************************************************************
 * mvHwsInitAvagoI2cDriver
 *
@@ -228,6 +245,7 @@ unsigned int user_supplied_mdio_function(
     return data;
 }
 #endif
+#endif
 
 #if AAPL_ALLOW_USER_SUPPLIED_SBUS
 
@@ -251,6 +269,7 @@ int user_supplied_sbus_close_function(Aapl_t *aapl)
     return rc;
 }
 
+#ifndef MV_HWS_BIN_HEADER
 /** @brief   WA for MG access */
 /** @details Add configurable delay in MG Access */
 /**          Default set to 10000 "nop" */
@@ -262,6 +281,7 @@ void mvHwsMgAccessDelayWA(void)
         __asm__("nop");
     }
 }
+#endif /* MV_HWS_BIN_HEADER */
 
 /** @brief   Execute an sbus command. */
 /** @return  For reads, returns read data. */
@@ -286,13 +306,17 @@ unsigned int user_supplied_sbus_function(
     if (command == 1/*Write Command - WRITE_SBUS_DEVICE*/)
     {
         commandAddress = user_supplied_pex_address(addr_struct.sbus, reg_addr);
+#ifndef MV_HWS_BIN_HEADER
         mvHwsMgAccessDelayWA();
+#endif /* MV_HWS_BIN_HEADER */
         genRegisterSet(devNum, portGroup, commandAddress, sbus_data, mask);
     }
     else if (command == 2/*Read Command - READ_SBUS_DEVICE*/)
     {
         commandAddress = user_supplied_pex_address(addr_struct.sbus, reg_addr);
+#ifndef MV_HWS_BIN_HEADER
         mvHwsMgAccessDelayWA();
+#endif /* MV_HWS_BIN_HEADER */
         genRegisterGet (devNum, portGroup, commandAddress, &data, mask);
         /* return data in case of read command */
         rcode = data;

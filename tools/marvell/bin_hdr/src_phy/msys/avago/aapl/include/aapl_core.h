@@ -105,7 +105,7 @@ typedef enum
     AVAGO_SERDES_P1_BROADCAST        = 0xed,
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
     AVAGO_SERDES_M4_BROADCAST        = 0xee,
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
     AVAGO_SERDES_D6_BROADCAST        = 0xff,
     AVAGO_THERMAL_SENSOR_BROADCAST   = 0xef,
     AVAGO_DDR_STOP_BROADCAST         = 0xf0,
@@ -120,7 +120,7 @@ typedef enum
     AVAGO_AUTO_NEGOTIATION_BROADCAST = 0xf9,
     AVAGO_FBD_BROADCAST              = 0xfb,
     AVAGO_QPI_BROADCAST              = 0xfc,
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+#endif /* !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER */
     AVAGO_SPICO_BROADCAST            = 0xfd,
     AVAGO_SERDES_BROADCAST           = 0xff
 } Avago_ip_type_t;
@@ -166,8 +166,8 @@ typedef struct
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3*/
 
     uint chips;                               /**< number of die this struct points to */
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     uint sbus_rings;                          /**< number of SBus rings this struct points to */
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 
     int max_cmds_buffered;                    /**< Maximum bumber of commands to queue before sending them via TCP over AACS. */
                                               /**< Setting this to 0 disables command buffering */
@@ -184,20 +184,22 @@ typedef struct
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     char *buf_cmd, *buf_cmd_end;              /**< Pointer to start/end of AACS command buffer */
     char *aacs_server_buffer;                 /**< Pointer to aacs_server's internal buffer */
-
-    const char *chip_name[AAPL_MAX_CHIPS];  /**< Array of chip name pointers */
-    const char *chip_rev[AAPL_MAX_CHIPS];   /**< Array of chip revision pointers */
     char *aacs_server;          /**< Server name (or IP address) used to open the AACS socket */
     int socket;                 /**< Socket used for AACS TCP communications */
     int tcp_port;               /**< TCP port used to open the AACS socket */
-    uint jtag_idcode[AAPL_MAX_CHIPS];       /**< JTAG IDCODE for each chip */
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
-    Avago_process_id_t process_id[AAPL_MAX_CHIPS]; /**< Process Identifier for each chip */
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+
     uint last_mdio_addr[AAPL_MAX_CHIPS];    /**< Last MDIO address used */
     uint mdio_base_port_addr;               /**< MDIO base port address. */
     int  i2c_base_addr;                     /**< I2C base address. */
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
+    const char *chip_name[AAPL_MAX_CHIPS];  /**< Array of chip name pointers */
+    const char *chip_rev[AAPL_MAX_CHIPS];   /**< Array of chip revision pointers */
+    uint jtag_idcode[AAPL_MAX_CHIPS];       /**< JTAG IDCODE for each chip */
+#endif /* !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER */
+
+    Avago_process_id_t process_id[AAPL_MAX_CHIPS]; /**< Process Identifier for each chip */
     unsigned short   ip_rev[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256]; /**< IP revision for each SBus Rx */
     unsigned short firm_rev[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256]; /**< Revision of firmware load, populated if ip_type is SERDES or SPICO */
     unsigned short firm_build[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256]; /**< Build of firmware load, populated if ip_type is SERDES or SPICO */
@@ -212,13 +214,17 @@ typedef struct
     int   log_size;         /**< memory log managment */
     int   data;             /**< used for functions that return int data */
     int   data_char_size;   /**< data_char memory management */
-    char *data_char;        /**< used for functions that return strings */
     char *data_char_end;    /**< to truncate data_char, set data_char_end = data_char; */
-
     char *log;              /**< memory log, logs commands, info,errors, warnings, and debug statements */
     char *log_end;          /**< to truncate log, set log_end = log; */
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
-#endif
+
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
+    char *data_char;        /**< used for functions that return strings */
+#endif /* !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER */
+
+#endif /* SWIG */
+
 #ifndef MV_HWS_REDUCED_BUILD
     void *client_data;
     volatile int async_cancel;
@@ -261,10 +267,12 @@ EXT void                   aapl_set_ip_type(Aapl_t *aapl, uint addr);
 EXT BOOL aapl_get_spico_running_flag(Aapl_t *aapl, uint addr);
 EXT BOOL aapl_set_spico_running_flag(Aapl_t *aapl, uint addr, BOOL running);
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 /* Query ASIC(s) to fully fill out the AAPL struct. Should be done before using. */
 EXT void    aapl_get_ip_info(Aapl_t *aapl, int chip_reset);
+#endif /* !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER */ 
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /* Send / receive JTAG information. */
 EXT char *avago_jtag(Aapl_t *aapl, int opcode, int bits, const char *data);
 EXT char *avago_jtag_rd(Aapl_t *aapl, int opcode, int bits);
@@ -294,7 +302,9 @@ EXT BOOL aapl_check_firmware_build(Aapl_t *aapl, uint addr, const char *caller, 
 
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 EXT void avago_system_chip_setup(Aapl_t *aapl, int reset, int chip);
+#ifndef MV_HWS_REDUCED_BUILD
 EXT uint avago_get_tap_gen(Aapl_t *aapl);
+#endif
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 

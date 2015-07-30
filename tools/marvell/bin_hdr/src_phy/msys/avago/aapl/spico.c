@@ -1461,7 +1461,7 @@ int avago_firmware_upload_file(
 
 #endif
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 /** @brief   Check to see if any uploads are in progress, and waits for them to complete */
 /** */
 void avago_twi_wait_for_complete(
@@ -1503,7 +1503,7 @@ void avago_twi_wait_for_complete(
             aapl_log_printf(aapl, AVAGO_DEBUG1, __func__, __LINE__, "TWI status indicates failure: 0x%08x.\n", twi_status);
     }
 }
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+#endif /* !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER */
 
 /** @brief   Check to see if any uploads are in progress, and waits for them to complete */
 /** */

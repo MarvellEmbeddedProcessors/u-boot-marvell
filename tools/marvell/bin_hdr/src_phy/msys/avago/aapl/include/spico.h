@@ -66,12 +66,14 @@ EXT int avago_firmware_upload(Aapl_t *aapl, uint addr,
                               int sbm_rom_size,    const short *sbm_rom,
                               int sdi_rom_size,    const short *sdi_rom);
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
-
 #endif
-EXT void avago_spico_wait_for_upload(Aapl_t *aapl, uint sbus_addr);
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
-EXT void avago_twi_wait_for_complete(Aapl_t *aapl, uint sbus_addr);
 
+EXT void avago_spico_wait_for_upload(Aapl_t *aapl, uint sbus_addr);
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
+EXT void avago_twi_wait_for_complete(Aapl_t *aapl, uint sbus_addr);
+#endif /* !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER */
+
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #if AAPL_ENABLE_FILE_IO
 EXT int avago_load_rom_from_file(Aapl_t *aapl, const char *filename, int *rom_size, short **rom);
 EXT int avago_firmware_upload_file(Aapl_t *aapl, uint addr,

@@ -137,10 +137,6 @@ static void ccu_enable_win(struct ccu_win *win, u32 win_id)
 	u32 alr, ahr;
 	u64 start_addr, end_addr;
 
-	ccu_win_reg = WIN_ENABLE_BIT;
-	ccu_win_reg |= (win->target_id & CCU_TARGET_ID_MASK) << CCU_TARGET_ID_OFFSET;
-	writel(ccu_win_reg, CCU_WIN_CR_OFFSET(win_id));
-
 	start_addr = ((u64)win->base_addr_high << 32) + win->base_addr_low;
 	end_addr = (start_addr + (((u64)win->win_size_high << 32) + win->win_size_low) - 1);
 	alr = (u32)((start_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
@@ -148,6 +144,11 @@ static void ccu_enable_win(struct ccu_win *win, u32 win_id)
 
 	writel(alr, CCU_WIN_ALR_OFFSET(win_id));
 	writel(ahr, CCU_WIN_AHR_OFFSET(win_id));
+
+	ccu_win_reg = WIN_ENABLE_BIT;
+	ccu_win_reg |= (win->target_id & CCU_TARGET_ID_MASK) << CCU_TARGET_ID_OFFSET;
+	writel(ccu_win_reg, CCU_WIN_CR_OFFSET(win_id));
+
 }
 
 void dump_ccu(void)

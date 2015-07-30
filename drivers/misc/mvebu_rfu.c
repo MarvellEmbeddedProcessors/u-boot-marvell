@@ -117,16 +117,16 @@ static void rfu_enable_win(struct rfu_win *win, u32 trgt_id)
 
 	start_addr = ((u64)win->base_addr_high << 32) + win->base_addr_low;
 	end_addr = (start_addr + (((u64)win->win_size_high << 32) + win->win_size_low) - 1);
+
+	/* there's no ahr for bootrom and pcie-regs windows */
+	if (trgt_id != BOOTROM_TID && trgt_id != PCIE_REGS_TID) {
+		ahr = (u32)((end_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
+		writel(ahr, rfu_ahr_offset_get(trgt_id));
+	}
+
 	alr = (u32)((start_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 	alr |= WIN_ENABLE_BIT;
 	writel(alr, rfu_alr_offset_get(trgt_id));
-
-	/* there's no ahr for bootrom and pcie-regs windows */
-	if (trgt_id == BOOTROM_TID || trgt_id == PCIE_REGS_TID)
-		return;
-
-	ahr = (u32)((end_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
-	writel(ahr, rfu_ahr_offset_get(trgt_id));
 }
 
 void dump_rfu(void)

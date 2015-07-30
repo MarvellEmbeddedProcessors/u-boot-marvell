@@ -128,8 +128,8 @@ void dump_iob(void)
 	u32 win_id, win_cr, alr, ahr;
 	u8 target_id;
 	u64 start, end;
-	char *iob_target_name[IOB_MAX_TID] = {"IHB0 ", "PEX1 ", "PEX2 ", "PEX0 ",
-						"NAND ", "RUNIT", "IHB1 "};
+	char *iob_target_name[IOB_MAX_TID] = {"CONFIG", "IHB0 ", "PEX1 ", "PEX2 ",
+					      "PEX0 ", "NAND ", "RUNIT", "IHB1 "};
 
 	/* Dump all IOB windows */
 	printf("bank  id target  start              end\n");

@@ -88,8 +88,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /************************************ definitions ***********************************/
 
+#if defined(MV_MSYS_BOBK)
+/* in BobK, serdes >= 20 has additional offset */
+#define MV_SERDES20_BASE				0x13040000
+#define MV_SERDES_BASE					MV_SERDES20_BASE
+#else /* AC3/BC2 */
 #define MV_SERDES_BASE					0x13000000
 #define MV_SERDES_PHY_BASE				0x13000800
+#endif
 #define MV_SERDES_OFFSET				0x1000
 #define MV_INTERNAL_OFFSET				0x1000
 
@@ -599,7 +605,6 @@ MV_STATUS mvSiliconInit(MV_VOID)
 	mvUnitInfoSet(INTERNAL_REG_UNIT,	INTER_REGS_BASE,		MV_INTERNAL_OFFSET);
 	mvUnitInfoSet(MG_UNIT,				0,						MV_INTERNAL_OFFSET);
 	mvUnitInfoSet(SERDES_UNIT,			MV_SERDES_BASE,			MV_SERDES_OFFSET);
-	mvUnitInfoSet(SERDES_PHY_UNIT,		MV_SERDES_PHY_BASE,		MV_SERDES_OFFSET);
 	mvUnitInfoSet(USB_REG_UNIT,			MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(USB_WIN_ID)) & 0xFFFF0000,		0);
 	mvUnitInfoSet(SERVER_REG_UNIT,		MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID)) & 0xFFFF0000,	0);
 

@@ -108,7 +108,7 @@ endmenu
 
 
 choice
-	prompt "Flash for environment and image"
+	prompt "Flash for image"
 	default MVEBU_SPI_BOOT
 
 config MVEBU_NAND_BOOT
@@ -124,6 +124,16 @@ config MVEBU_NOR_BOOT
 	depends on MVEBU_NOR
 
 endchoice
+
+config ENV_IS_IN_BOOTDEV
+	bool "Boot-time Environment Selection"
+	depends on (MVEBU_SPI || MVEBU_NAND)
+	help
+	  Choose this option to add support
+	  for boot-time environment selection.
+	  the boot-time environment is decided
+	  according to the boot source value
+	  in sample at reset register.
 
 config MVEBU_TOOLS_SUPPORT
 	bool "MVEBU tools functions for U-Boot"

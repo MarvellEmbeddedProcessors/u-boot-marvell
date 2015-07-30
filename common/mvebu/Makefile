@@ -22,3 +22,4 @@ obj-$(CONFIG_CMD_MVEBU_CONFIG) += cmd_config.o
 obj-$(CONFIG_CMD_MVEBU_MPP) += cmd_mpp.o
 obj-$(CONFIG_CMD_MVEBU_BUBT) += cmd_bubt.o
 obj-$(CONFIG_CMD_MVEBU_MSS_BOOT) += cmd_mss.o
+obj-$(CONFIG_ENV_IS_IN_BOOTDEV) += env_bootdev.o

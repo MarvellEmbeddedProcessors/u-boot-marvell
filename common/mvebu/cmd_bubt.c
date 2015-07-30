@@ -434,6 +434,7 @@ struct bubt_dev *find_bubt_dev(char *dev_name)
 
 #define DEFAULT_BUBT_SRC "tftp"
 
+#ifndef DEFAULT_BUBT_DST
 #ifdef CONFIG_MVEBU_SPI_BOOT
 #define DEFAULT_BUBT_DST "spi"
 #elif defined(CONFIG_MVEBU_NAND_BOOT)
@@ -443,6 +444,7 @@ struct bubt_dev *find_bubt_dev(char *dev_name)
 #else
 #define DEFAULT_BUBT_DST "error"
 #endif
+#endif /* DEFAULT_BUBT_DST */
 
 int do_bubt_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])

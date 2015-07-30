@@ -144,8 +144,18 @@
 #define CONFIG_SYS_ALT_MEMTEST	/* More comprehensive mtest algorithm */
 #endif
 
+
+#if defined(CONFIG_ENV_IS_IN_BOOTDEV)
+	#define CONFIG_ENV_IS_IN_SPI_FLASH
+	#define DEFAULT_BUBT_DST "spi"
+	#define CONFIG_DOIMAGE_TYPE     "flash"
+	#define CONFIG_DOIMAGE_SUFFIX   "dynamic"
+#endif  /* CONIFG_ENV_IS_IN_BOOTDEV */
+
+
 /* Flash env setup */
-#if !defined(MV_INCLUDE_NOR) && !defined(CONFIG_MVEBU_NAND_BOOT) && !defined(CONFIG_MVEBU_SPI_BOOT)
+#if !defined(MV_INCLUDE_NOR) && !defined(CONFIG_MVEBU_NAND_BOOT) &&		\
+	!defined(CONFIG_MVEBU_SPI_BOOT) && !defined(CONFIG_ENV_IS_IN_BOOTDEV)
 	#undef CONFIG_CMD_FLASH
 	#undef CONFIG_CMD_IMLS
 	#define CONFIG_ENV_IS_NOWHERE

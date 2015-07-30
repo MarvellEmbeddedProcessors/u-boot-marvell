@@ -12,6 +12,10 @@
 #include <asm/omap_boot.h>
 #endif
 
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+#include <env_bootdev.h>
+#endif
+
 /* Architecture-specific global data */
 struct arch_global_data {
 #if defined(CONFIG_FSL_ESDHC)
@@ -52,6 +56,9 @@ struct arch_global_data {
 	void *soc_family;
 	void *board_family;
 	void *reg_base;
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+	struct env_func_ptr env_func;
+#endif
 #endif
 
 };

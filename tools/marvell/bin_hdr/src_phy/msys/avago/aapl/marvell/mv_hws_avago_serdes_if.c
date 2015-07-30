@@ -515,7 +515,7 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     if (divider != NA_VALUE) config->tx_divider = config->rx_divider = divider;
 
     /* initializes the Avago_serdes_init_config_t struct */
-    config->sbus_reset = TRUE;
+    config->sbus_reset = FALSE;
     config->signal_ok_threshold = 2;
 
     /* Select the Rx & Tx data path width */

@@ -36,12 +36,12 @@ extern "C" {
 #undef CHECK_STATUS
 #endif
 
-#define SERVER_WIN_ID					1
-#define SWITCH_WIN_ID					5
-#define USB_WIN_ID						6
-#define SWITCH_REGS_BASE_ADDR_MASK		0xFC000000
-
-#define MV_ALL_BITS_MASK				0xFFFFFFFF
+#define SERVER_WIN_ID                           1
+#define SWITCH_WIN_ID                           5
+#define USB_WIN_ID                              6
+#define SWITCH_REGS_BASE_ADDR_MASK              0xFC000000
+#define SWITCH_ADDRESS_COMPLETION_BYTE_MASK     0xFF000000
+#define MV_ALL_BITS_MASK                        0xFFFFFFFF
 
 static __inline MV_U32 SWITCH_WIN_BASE_ADDR_GET(MV_VOID)
 {
@@ -54,20 +54,40 @@ static __inline MV_U32 SWITCH_WIN_BASE_ADDR_GET(MV_VOID)
 }
 
 #define SWITCH_ADDR_COMPL_MSB_VAL(addr)	((addr >> 24) & 0xFF)
-#define SWITCH_ADDR_COMPL_SHIFT(addr)	(((addr >> 24) & 0x3) << 3)
-#define SWITCH_BUS_ADDR(addr)			((~SWITCH_REGS_BASE_ADDR_MASK & addr) |\
+#define SWITCH_ADDR_COMPL_INDEX(addr)	((addr >> 24) & 0x3)
+#define SWITCH_ADDR_COMPL_OFF(index)	((index) * 8)
+/* this macro clears highest byte and adds the base address for switch access */
+#define SWITCH_BUS_ADDR(addr)			((~SWITCH_ADDRESS_COMPLETION_BYTE_MASK & addr) |\
 										(SWITCH_WIN_BASE_ADDR_GET() & SWITCH_REGS_BASE_ADDR_MASK))
 
-static __inline MV_STATUS SWITCH_ADDR_COMPL_SET(MV_U32 addr)
+static __inline MV_U32 SWITCH_ADDR_COMPL_SET(MV_U32 addr)
 {
-	MV_U32	rVal;
-	/* Configure address completion region REG using SERDES memory window */
-	rVal  = MV_MEMIO_LE32_READ(SWITCH_WIN_BASE_ADDR_GET());
-	rVal &= ~(0xFF << SWITCH_ADDR_COMPL_SHIFT(addr));
-	rVal |= SWITCH_ADDR_COMPL_MSB_VAL(addr) << SWITCH_ADDR_COMPL_SHIFT(addr);
-	MV_MEMIO_LE32_WRITE(SWITCH_WIN_BASE_ADDR_GET(), rVal);
+    MV_U32 regVal;
+    MV_U32 addrCompIndex = SWITCH_ADDR_COMPL_INDEX(addr);
+    MV_U32 addrCompOffset;
 
-	return MV_OK;
+    if(((addr & SWITCH_ADDRESS_COMPLETION_BYTE_MASK) != 0) && (addrCompIndex == 0))
+    {
+        /* in case address completion is needed (upper byte is not 0) but calculated
+           region is 0, we need to change to another region (since region 0 is only for
+           addresses which doesn't require address completion) */
+        addrCompIndex = 3;
+    }
+
+    addrCompOffset = SWITCH_ADDR_COMPL_OFF(addrCompIndex);
+
+	/* Configure address completion region REG using SERDES memory window */
+
+    /* Read address completion register*/
+	regVal  = MV_MEMIO_LE32_READ(SWITCH_WIN_BASE_ADDR_GET());
+    /* Clear relevant region */
+	regVal &= ~(0xFF << addrCompOffset);
+    /* Update region with new value */
+	regVal |= (SWITCH_ADDR_COMPL_MSB_VAL(addr) << addrCompOffset);
+    /* Write address completion register*/
+	MV_MEMIO_LE32_WRITE(SWITCH_WIN_BASE_ADDR_GET(), regVal);
+
+	return (SWITCH_BUS_ADDR(addr) | (addrCompIndex << 24));
 }
 
 #define CHECK_STATUS(origFunc) \

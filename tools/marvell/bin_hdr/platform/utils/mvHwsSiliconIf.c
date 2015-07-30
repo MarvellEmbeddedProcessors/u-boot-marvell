@@ -140,9 +140,10 @@ MV_STATUS genSwitchRegisterGet
 	MV_U32			mask
 )
 {
-	SWITCH_ADDR_COMPL_SET(address); /* Only MSB is important, serdes number offset does not matter */
+	/* update address completion register and re-calc address */
+	address = SWITCH_ADDR_COMPL_SET(address);
 
-	*data  = MV_MEMIO_LE32_READ(SWITCH_BUS_ADDR(address)) & mask;
+	*data  = MV_MEMIO_LE32_READ(address) & mask;
 	return MV_OK;
 }
 
@@ -179,9 +180,10 @@ MV_STATUS genSwitchRegisterSet
 	} else
 		regData = data;
 
-	SWITCH_ADDR_COMPL_SET(address); /* Only MSB is important, serdes number offset does not matter */
+	/* update address completion register and re-calc address */
+	address = SWITCH_ADDR_COMPL_SET(address);
 
-	MV_MEMIO_LE32_WRITE(SWITCH_BUS_ADDR(address), regData);
+	MV_MEMIO_LE32_WRITE(address, regData);
 		return MV_OK;
 }
 

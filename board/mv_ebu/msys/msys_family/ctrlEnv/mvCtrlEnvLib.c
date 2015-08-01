@@ -104,36 +104,38 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_MSYS_BC2_INDEX		0
 #define MV_MSYS_AC3_INDEX		1
 #define MV_78460_INDEX			2
-#define MV_MSYS_AXP_INDEX_MAX		3
+#define MV_MSYS_BOBK_INDEX			3
+#define MV_MSYS_AXP_INDEX_MAX		4
 
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_MSYS_AXP_INDEX_MAX] = {
-/*			     BC2	AC3		78460*/
-/* DRAM_UNIT_ID		*/ { 1,		1,		1,},
-/* PEX_UNIT_ID		*/ { 1,		1,		4,},
-/* ETH_GIG_UNIT_ID	*/ { 2,		2,		4,},
-/* XOR_UNIT_ID		*/ { 1,		1,		4,},
-/* UART_UNIT_ID		*/ { 2,		2,		4,},
-/* SPI_UNIT_ID		*/ { 2,		1,		2,},
-/* SDIO_UNIT_ID		*/ { 1,		1,		1,},
-/* I2C_UNIT_ID		*/ { 2,		2,		2,},
-/* USB_UNIT_ID		*/ { 0,		1,		3,},
-/* USB3_UNIT_ID		*/ { 0,		0,		0,},
-/* NAND_UNIT_ID		*/ { 1,		1,		1 },
-/* DEVBUS_UNIT_ID	*/ { 0,		0,		0 },
-/* IDMA_UNIT_ID		*/ { 0,		0,		4,},
-/* SATA_UNIT_ID		*/ { 0,		0,		2,},
-/* TDM_UNIT_ID		*/ { 0,		0,		1,},
-/* CESA_UNIT_ID		*/ { 0,		0,		2,},
-/* AUDIO_UNIT_ID	*/ { 0,		0,		0,},
-/* TS_UNIT_ID		*/ { 0,		0,		0,},
-/* XPON_UNIT_ID		*/ { 0,		0,		0,},
-/* BM_UNIT_ID		*/ { 0,		0,		1,},
-/* PNC_UNIT_ID		*/ { 0,		0,		1,},
+/*			     BC2	AC3		78460		BOBK*/
+/* DRAM_UNIT_ID		*/ { 1,		1,		1,		1,},
+/* PEX_UNIT_ID		*/ { 1,		1,		4,		1,},
+/* ETH_GIG_UNIT_ID	*/ { 2,		2,		4,		2,},
+/* XOR_UNIT_ID		*/ { 1,		1,		4,		1,},
+/* UART_UNIT_ID		*/ { 2,		2,		4,		2,},
+/* SPI_UNIT_ID		*/ { 1,		1,		2,		1,},
+/* SDIO_UNIT_ID		*/ { 1,		1,		1,		1,},
+/* I2C_UNIT_ID		*/ { 2,		2,		2,		2,},
+/* USB_UNIT_ID		*/ { 0,		1,		3,		1,},
+/* USB3_UNIT_ID		*/ { 0,		0,		0,		0,},
+/* NAND_UNIT_ID		*/ { 1,		1,		1,		1,},
+/* DEVBUS_UNIT_ID	*/ { 0,		0,		0,		0,},
+/* IDMA_UNIT_ID		*/ { 0,		0,		4,		0,},
+/* SATA_UNIT_ID		*/ { 0,		0,		2,		0,},
+/* TDM_UNIT_ID		*/ { 0,		0,		1,		0,},
+/* CESA_UNIT_ID		*/ { 0,		0,		2,		0,},
+/* AUDIO_UNIT_ID	*/ { 0,		0,		0,		0,},
+/* TS_UNIT_ID		*/ { 0,		0,		0,		0,},
+/* XPON_UNIT_ID		*/ { 0,		0,		0,		0,},
+/* BM_UNIT_ID		*/ { 0,		0,		1,		0,},
+/* PNC_UNIT_ID		*/ { 0,		0,		1,		0,},
 };
 
-MV_U32  mvDev2CpuMapTable[16][2] = {
+MV_U32  mvDev2CpuMapTable[17][2] = {
 /*	Dev ID			cores#   */
 	{MV_BOBCAT2_DEV_ID,		2},
+	{MV_BOBK_DEV_ID,		2},
 	{MV_ALLEYCAT3_98DX3336_DEV_ID,	2},
 	{MV_ALLEYCAT3_98DX3335_DEV_ID,	2},
 	{MV_ALLEYCAT3_98DX3334_DEV_ID,	2},
@@ -167,6 +169,9 @@ static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
 		break;
 	case MV_78460_DEV_ID:
 		index = MV_78460_INDEX;
+		break;
+	case MV_BOBK_DEV_ID:
+		index = MV_MSYS_BOBK_INDEX;
 		break;
 	default:
 		index = MV_MSYS_AC3_INDEX;
@@ -743,6 +748,7 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 	switch (ctrlId & ~DEVICE_FLAVOR_MASK) {
 	case MV_BOBCAT2_DEV_ID:
 	case MV_ALLEYCAT3_DEV_ID:
+	case MV_BOBK_DEV_ID:
 		return ctrlId;
 	default:
 		mvOsPrintf("%s: Error: Failed to obtain Controller Device ID\n", __func__);
@@ -898,6 +904,15 @@ MV_VOID mvCtrlRevNameGet(char *pNameBuff)
 		default:
 			break;
 		}
+	} else if (ctrlFamily == MV_BOBK_DEV_ID) {
+
+		char *revArrayBOBK[] = MV_BOBK_ID_ARRAY;
+
+		switch (revId) {
+		case MV_BOBK_A0_ID:
+			mvOsSPrintf(pNameBuff, " Rev %s", revArrayBOBK[revId]);
+			return;
+		}
 	} else
 		mvOsPrintf("%s: Error: Wrong controller model %#x\n", __func__, ctrlFamily);
 
@@ -953,6 +968,8 @@ MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel)
 		return MV_BOBCAT2_DEV_ID;
 	else if ((boardId >= AC3_CUSTOMER_BOARD_ID_BASE) && (boardId < AC3_MARVELL_MAX_BOARD_ID))
 		return MV_ALLEYCAT3_DEV_ID;
+	else if ((boardId >= BOBK_CUSTOMER_BOARD_ID_BASE) && (boardId < BOBK_MARVELL_MAX_BOARD_ID))
+		return MV_BOBK_DEV_ID;
 	else {
 		mvOsPrintf("%s: ERR. Invalid Board ID (%d) ,Using BC2 as default family\n", __func__, boardId);
 		return MV_BOBCAT2_DEV_ID;
@@ -1363,8 +1380,10 @@ MV_BOOL mvCtrlIsBootFromNOR(MV_VOID)
 
 	if (mvCtrlDevFamilyIdGet(0) == MV_BOBCAT2_DEV_ID)
 		satr = MSAR_BC2_BOOT_MODE(satr, 0);
-	else
+	else if (mvCtrlDevFamilyIdGet(0) == MV_ALLEYCAT3_DEV_ID)
 		satr = MSAR_AC3_BOOT_MODE(satr, 0);
+	else
+		satr = MSAR_BOBK_BOOT_MODE(satr, 0);
 
 	if (satr == SAR1_BOOT_FROM_NOR)
 		return MV_TRUE;
@@ -1394,8 +1413,10 @@ MV_BOOL mvCtrlIsBootFromSPI(MV_VOID)
 
 	if (mvCtrlDevFamilyIdGet(0) == MV_BOBCAT2_DEV_ID)
 		satr = MSAR_BC2_BOOT_MODE(satr, 0);
-	else
+	else if (mvCtrlDevFamilyIdGet(0) == MV_ALLEYCAT3_DEV_ID)
 		satr = MSAR_AC3_BOOT_MODE(satr, 0);
+	else
+		satr = MSAR_BOBK_BOOT_MODE(satr, 0);
 
 	if (satr == SAR1_BOOT_FROM_SPI)
 		return MV_TRUE;
@@ -1425,8 +1446,10 @@ MV_BOOL mvCtrlIsBootFromNAND(MV_VOID)
 
 	if (mvCtrlDevFamilyIdGet(0) == MV_BOBCAT2_DEV_ID)
 		satr = MSAR_BC2_BOOT_MODE(satr, 0);
-	else
+	else if (mvCtrlDevFamilyIdGet(0) == MV_ALLEYCAT3_DEV_ID)
 		satr = MSAR_AC3_BOOT_MODE(satr, 0);
+	else
+		satr = MSAR_BOBK_BOOT_MODE(satr, 0);
 
 	if (satr == SAR1_BOOT_FROM_NAND)
 		return MV_TRUE;
@@ -1682,8 +1705,8 @@ MV_U32 mvCtrlDDRBudWidth(MV_VOID)
 	reg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
 	reg = reg & (1 << REG_SDRAM_CONFIG_DDR_BUS_OFFS);
 
-	/* Bobcat2 have 64/16 DDR Bus width */
-	if (mvCtrlDevFamilyIdGet(0) == MV_BOBCAT2_DEV_ID)
+	/* Bobcat2 and BobK have 64/16 DDR Bus width */
+	if (mvCtrlDevFamilyIdGet(0) == MV_BOBCAT2_DEV_ID || mvCtrlDevFamilyIdGet(0) == MV_BOBK_DEV_ID)
 		return reg ? 64 : 32;
 	else	/* Alley-Cat3 have 32/16 DDR Bus width */
 		return reg ? 32 : 16;

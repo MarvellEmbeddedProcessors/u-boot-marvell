@@ -178,6 +178,115 @@ MV_BOARD_INFO *customerBC2BoardInfoTbl[] = {
 	&bobcat2_customer_board_0_Info,
 };
 
+/*******************************************************************************
+	BobK board - Based on BOBK-DB-98DX4235
+*******************************************************************************/
+#define BOBK_CUSTOMER_0_BOARD_NAND_READ_PARAMS	0x000C0282
+#define BOBK_CUSTOMER_0_BOARD_NAND_WRITE_PARAMS	0x00010305
+/*NAND care support for small page chips*/
+#define BOBK_CUSTOMER_0_BOARD_NAND_CONTROL		0x01c00543
+
+#define BOBK_CUSTOMER_0_BOARD_NOR_READ_PARAMS	0x403E07CF
+#define BOBK_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
+
+MV_BOARD_TWSI_INFO	bobk_customer_board_0_InfoBoardTwsiDev[] = {
+/* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{BOARD_DEV_TWSI_PLD, 0x18, ADDR7_BIT},		/* Access to control PLD reg file */
+	{BOARD_DEV_TWSI_ZARLINK, 0x1B, ADDR7_BIT},		/* Access to Zarlink	*/
+	{BOARD_DEV_TWSI_SATR, 0x4C, ADDR7_BIT},         /* SatR bios 0		*/
+	{BOARD_DEV_TWSI_SATR, 0x4D, ADDR7_BIT},         /* SatR bios 1		*/
+	{BOARD_DEV_TWSI_SATR, 0x4E, ADDR7_BIT},          /* SatR bios 2		*/
+	{BOARD_DEV_TWSI_SATR, 0x4F, ADDR7_BIT},          /* SatR bios 3		*/
+	{BOARD_DEV_TWSI_INIT_EPROM, 0x50, ADDR7_BIT},          /* Serial Init EPROM	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x70, ADDR7_BIT},          /* PCA9548 I2C mux 0	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x71, ADDR7_BIT},          /* PCA9548 I2C mux 1	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x75, ADDR7_BIT}          /* PCA9548 I2C mux 2	*/
+};
+
+MV_BOARD_MAC_INFO bobk_customer_board_0_InfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_AUTO, -1, -1 },
+	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0 },
+};
+
+MV_BOARD_MODULE_TYPE_INFO bobk_customer_board_0_InfoBoardModTypeInfo[] = {
+	{
+		.boardMppMod		= MV_BOARD_AUTO,
+	}
+};
+
+MV_DEV_CS_INFO bobk_customer_board_0_InfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+#if defined(MV_INCLUDE_SPI)
+		{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NOR)
+		{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
+#endif
+#if defined(MV_INCLUDE_NAND)
+		{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE} /* NAND DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO bobk_customer_board_0_InfoBoardMppConfigValue[] = {
+	{ {
+	BOBK_CUSTOMER_0_MPP0_7,
+	BOBK_CUSTOMER_0_MPP8_15,
+	BOBK_CUSTOMER_0_MPP16_23,
+	BOBK_CUSTOMER_0_MPP24_31,
+	BOBK_CUSTOMER_0_MPP32_39,
+	} },
+};
+
+MV_BOARD_INFO bobk_customer_board_0_Info = {
+	.boardName			= "BOBK-Customer-Board-0",
+	.numBoardMppTypeValue		= ARRSZ(bobk_customer_board_0_InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= bobk_customer_board_0_InfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(bobk_customer_board_0_InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= bobk_customer_board_0_InfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(bobk_customer_board_0_InfoBoardDeCsInfo),
+	.pDevCsInfo			= bobk_customer_board_0_InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(bobk_customer_board_0_InfoBoardTwsiDev),
+	.pBoardTwsiDev			= bobk_customer_board_0_InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(bobk_customer_board_0_InfoBoardMacInfo),
+	.pBoardMacInfo			= bobk_customer_board_0_InfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= BOBK_CUSTOMER_0_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= BOBK_CUSTOMER_0_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= BOBK_CUSTOMER_0_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= BOBK_CUSTOMER_0_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= BOBK_CUSTOMER_0_GPP_POL_LOW,
+	.gppPolarityValMid		= BOBK_CUSTOMER_0_GPP_POL_MID,
+	.gppPolarityValHigh		= 0,
+
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+
+	/* NAND init params */
+	.nandFlashReadParams		= BOBK_CUSTOMER_0_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= BOBK_CUSTOMER_0_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= BOBK_CUSTOMER_0_BOARD_NAND_CONTROL,
+	/* NOR init params */
+	.norFlashReadParams		= BOBK_CUSTOMER_0_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= BOBK_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS
+};
+
+MV_BOARD_INFO *customerBOBKBoardInfoTbl[] = {
+	&bobk_customer_board_0_Info,
+	&bobk_customer_board_0_Info,
+};
 
 /*******************************************************************************
 	Alleycat3 board - Based on BOBCAT2-DB-DX
@@ -559,6 +668,120 @@ MV_BOARD_INFO bc2_rd_mtlInfo = {
 	.nandFlashReadParams	= RD_MTL_BC2_BOARD_NAND_READ_PARAMS,
 	.nandFlashWriteParams	= RD_MTL_BC2_BOARD_NAND_WRITE_PARAMS,
 	.nandFlashControl		= RD_MTL_BC2_BOARD_NAND_CONTROL
+};
+
+/*********************************************************************************/
+/*******************************/
+/* BOBK-DB-98DX4235-12XG BOARD */
+/*******************************/
+#define DB_DX_BOBK_BOARD_NAND_READ_PARAMS	0x000C0282
+#define DB_DX_BOBK_BOARD_NAND_WRITE_PARAMS	0x00010305
+/*NAND care support for small page chips*/
+#define DB_DX_BOBK_BOARD_NAND_CONTROL		0x01c00543
+
+#define DB_DX_BOBK_BOARD_NOR_READ_PARAMS	0x403E07CF
+#define DB_DX_BOBK_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
+
+/* TODO */
+MV_BOARD_TWSI_INFO	db_dx_bobkInfoBoardTwsiDev[] = {
+/* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{BOARD_DEV_TWSI_PLD, 0x18, ADDR7_BIT},		/* Access to control PLD reg file */
+	{BOARD_DEV_TWSI_ZARLINK, 0x1B, ADDR7_BIT},		/* Access to Zarlink	*/
+	{BOARD_DEV_TWSI_SATR, 0x4C, ADDR7_BIT},         /* SatR bios 0		*/
+	{BOARD_DEV_TWSI_SATR, 0x4D, ADDR7_BIT},         /* SatR bios 1		*/
+	{BOARD_DEV_TWSI_SATR, 0x4E, ADDR7_BIT},          /* SatR bios 2		*/
+	{BOARD_DEV_TWSI_SATR, 0x4F, ADDR7_BIT},          /* SatR bios 3		*/
+	/*HW issue need to update to 0x50*/
+	{BOARD_DEV_TWSI_INIT_EPROM, 0x54, ADDR7_BIT},          /* Serial Init EPROM	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x70, ADDR7_BIT},          /* PCA9548 I2C mux 0	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x71, ADDR7_BIT},          /* PCA9548 I2C mux 1	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x75, ADDR7_BIT}          /* PCA9548 I2C mux 2	*/
+};
+
+MV_BOARD_MAC_INFO db_dx_bobkInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_AUTO, -1, -1 },
+	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0 },
+};
+
+MV_BOARD_MODULE_TYPE_INFO db_dx_bobkInfoBoardModTypeInfo[] = {
+	{
+		.boardMppMod		= MV_BOARD_AUTO,
+	}
+};
+
+/* TO DE */
+MV_DEV_CS_INFO db_dx_bobkInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NOR)
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
+#endif
+#if defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE} /* NAND DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO db_dx_bobkInfoBoardMppConfigValue[] = {
+	{ {
+#if defined(MV_INCLUDE_NOR)
+	DB_DX_BOBK_NOR_MPP0_7,
+	DB_DX_BOBK_NOR_MPP8_15,
+#else
+	DB_DX_BOBK_MPP0_7,
+	DB_DX_BOBK_MPP8_15,
+#endif
+	DB_DX_BOBK_MPP16_23,
+	DB_DX_BOBK_MPP24_31,
+	DB_DX_BOBK_MPP32_39,
+	} },
+};
+
+MV_BOARD_INFO db_dx_bobkInfo = {
+	.boardName			= "DB-98DX4235-12XG",
+	.numBoardMppTypeValue		= ARRSZ(db_dx_bobkInfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db_dx_bobkInfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(db_dx_bobkInfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= db_dx_bobkInfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(db_dx_bobkInfoBoardDeCsInfo),
+	.pDevCsInfo			= db_dx_bobkInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(db_dx_bobkInfoBoardTwsiDev),
+	.pBoardTwsiDev			= db_dx_bobkInfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db_dx_bobkInfoBoardMacInfo),
+	.pBoardMacInfo			= db_dx_bobkInfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= DB_DX_BOBK_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_DX_BOBK_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= DB_DX_BOBK_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_DX_BOBK_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= DB_DX_BOBK_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_DX_BOBK_GPP_POL_MID,
+	.gppPolarityValHigh		= 0,
+
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+
+	/* NAND init params */
+	.nandFlashReadParams		= DB_DX_BOBK_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_DX_BOBK_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_DX_BOBK_BOARD_NAND_CONTROL,
+	/* NOR init params */
+	.norFlashReadParams		= DB_DX_BOBK_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= DB_DX_BOBK_BOARD_NOR_WRITE_PARAMS
 };
 
 /*********************************************************************************/
@@ -1001,6 +1224,10 @@ MV_BOARD_INFO *marvellBC2BoardInfoTbl[] = {
 	&db_dx_bc2Info,
 	&rd_dx_bc2Info,
 	&bc2_rd_mtlInfo
+};
+
+MV_BOARD_INFO *marvellBOBKBoardInfoTbl[] = {
+	&db_dx_bobkInfo
 };
 
 MV_BOARD_INFO *marvellAC3BoardInfoTbl[] = {

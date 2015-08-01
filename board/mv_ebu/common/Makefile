@@ -47,6 +47,9 @@ MAKE_GENERAL_U_BOOT_TOOLS = yes
 ifdef CONFIG_ALLEYCAT3
 MAKE_USB = yes
 endif
+ifdef CONFIG_BOBK
+MAKE_USB = yes
+endif
 endif
 
 ifeq ($(BOARD_TYPE),mv_fpga_board)

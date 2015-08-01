@@ -252,6 +252,9 @@ extern "C" {
 #define MSAR_AC3_BOOT_MODE(sar1, sar2)	(((sar1) >> 11) & 0x7)		/* boot from */
 #define MSAR_AC3_TM_CLK(sar1, sar2)	(((sar2) >> 17) & 0x1)		/* PLL 2 config */
 
+#define MSAR_BOBK_BOOT_MODE(sar1, sar2)	(((sar1) >> 13) & 0x7)		/* boot from */
+#define MSAR_BOBK_TM_CLK(sar1, sar2)	(((sar2) >> 15) & 0x7)		/* PLL 2 config */
+
 #define SAR1_BOOT_FROM_NOR			0
 #define SAR1_BOOT_FROM_NAND			1
 #define SAR1_BOOT_FROM_UART			2
@@ -522,6 +525,12 @@ typedef struct {
 		450					\
 	}
 
+#define MV_CORE_CLK_TBL_BOBK	{	\
+		365, 220,			\
+		250, 200,			\
+		167					\
+	}
+
 #define MV_CORE_CLK_TBL_AC3	{	\
 		290, 250,			\
 		222, 167,			\
@@ -538,6 +547,16 @@ typedef struct {
 	{1000, 500, 2000, MV_TRUE},	\
 	{1200, 600, 2400, MV_TRUE},	\
 	{1333, 666, 1600, MV_TRUE}	\
+}
+
+#define MV_CPU_DDR_CLK_TBL_BOBK {	\
+	{ 400, 400,  400, MV_FALSE},	\
+	{1000, 667, 2000, MV_FALSE},	\
+	{ 667, 667, 2000, MV_FALSE},	\
+	{ 800, 800,  800, MV_FALSE},	\
+	{1200, 800, 2400, MV_FALSE},	\
+	{ 800, 400,  800, MV_FALSE},	\
+	{ 800, 800,  800, MV_FALSE}	\
 }
 
 #define MV_CPU_DDR_CLK_TBL_AC3 {	\

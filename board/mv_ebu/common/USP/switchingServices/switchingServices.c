@@ -252,7 +252,7 @@ static int isSwitchingServicesSupported(void)
 
 	/* enable command only for AC3 & BC2 & AMC boards  */
 	if (!((family >= MV_ALLEYCAT3_DEV_ID && family <= MV_ALLEYCAT3_MAX_DEV_ID)
-		|| family == MV_BOBCAT2_DEV_ID || mvBoardisAmc())) {
+		|| family == MV_BOBCAT2_DEV_ID || family == MV_BOBK_DEV_ID || mvBoardisAmc())) {
 		printf("Command not supported for this SoC/Board\n");
 		return 0;
 	}

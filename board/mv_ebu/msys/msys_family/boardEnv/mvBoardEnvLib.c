@@ -94,6 +94,8 @@ extern MV_BOARD_INFO *marvellBC2BoardInfoTbl[];
 extern MV_BOARD_INFO *customerBC2BoardInfoTbl[];
 extern MV_BOARD_INFO *marvellAC3BoardInfoTbl[];
 extern MV_BOARD_INFO *customerAC3BoardInfoTbl[];
+extern MV_BOARD_INFO *marvellBOBKBoardInfoTbl[];
+extern MV_BOARD_INFO *customerBOBKBoardInfoTbl[];
 /* Global variables should be removed from BSS (set to a non-zero value)
    for avoiding memory corruption during early access upon code relocation */
 static MV_BOARD_INFO *board = (MV_BOARD_INFO *)-1;
@@ -117,14 +119,12 @@ static MV_DEV_CS_INFO *mvBoardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devCl
 *******************************************************************************/
 MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber)
 {
-	MV_U16 family = mvCtrlDevFamilyIdGet(0);
-
-	if (family == MV_BOBCAT2_DEV_ID)
-		return MV_FALSE;/*BobCat2 SoC has no usb port*/
-
-	if (family == MV_ALLEYCAT3_DEV_ID && usbTypeID == USB_UNIT_ID && usbPortNumber == 0)
-		return MV_TRUE; /*AlleyCat3 SoC board has only one usb2 port */
-
+	/*BobCat2 SoC have no usb port
+	AlleyCat3 & BobK SoC board has only one usb2 port */
+#ifdef MV_USB
+	if (usbTypeID == USB_UNIT_ID && usbPortNumber == 0)
+		return MV_TRUE;
+#endif
 	return MV_FALSE;
 }
 
@@ -622,6 +622,7 @@ MV_U32 mvBoardSysClkGet(MV_VOID)
 	MV_U32		idx;
 	MV_U32		freq_tbl_bc2[] = MV_CORE_CLK_TBL_BC2;
 	MV_U32		freq_tbl_ac3[] = MV_CORE_CLK_TBL_AC3;
+	MV_U32		freq_tbl_bobk[] = MV_CORE_CLK_TBL_BOBK;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
 	if (family == MV_78460_DEV_ID)
@@ -635,6 +636,8 @@ MV_U32 mvBoardSysClkGet(MV_VOID)
 		return freq_tbl_bc2[idx] * 1000000;
 	else if (family == MV_ALLEYCAT3_DEV_ID)
 		return freq_tbl_ac3[idx] * 1000000;
+	else if (family == MV_BOBK_DEV_ID)
+		return freq_tbl_bobk[idx] * 1000000;
 	else
 		return 0xFFFFFFFF;
 }
@@ -1331,13 +1334,21 @@ MV_32 mvBoardNandWidthGet(void)
 static MV_U32 gBoardId = -1;
 MV_VOID mvBoardSet(MV_U32 boardId)
 {
+	/* Marvell BobK Boards */
+	if (boardId >= BOBK_MARVELL_BOARD_ID_BASE && boardId < BOBK_MARVELL_MAX_BOARD_ID) { /* Marvell Board */
+		board = marvellBOBKBoardInfoTbl[mvBoardIdIndexGet(boardId)];
+		gBoardId = boardId;
 	/* Marvell Bobcat2 Boards */
-	if (boardId >= BC2_MARVELL_BOARD_ID_BASE && boardId < BC2_MARVELL_MAX_BOARD_ID) { /* Marvell Board */
+	} else if (boardId >= BC2_MARVELL_BOARD_ID_BASE && boardId < BC2_MARVELL_MAX_BOARD_ID) { /* Marvell Board */
 		board = marvellBC2BoardInfoTbl[mvBoardIdIndexGet(boardId)];
 		gBoardId = boardId;
 	/* Marvell AlleyCat3 Boards */
 	} else if (boardId >= AC3_MARVELL_BOARD_ID_BASE && boardId < AC3_MARVELL_MAX_BOARD_ID) { /* Marvell Board */
 		board = marvellAC3BoardInfoTbl[mvBoardIdIndexGet(boardId)];
+		gBoardId = boardId;
+	/* Customer BobK Boards */
+	} else if (boardId >= BOBK_CUSTOMER_BOARD_ID_BASE && boardId < BOBK_CUSTOMER_MAX_BOARD_ID) {/*Customer Board*/
+		board = customerBOBKBoardInfoTbl[mvBoardIdIndexGet(boardId)];
 		gBoardId = boardId;
 	/* Customer Bobcat2 Boards */
 	} else if (boardId >= BC2_CUSTOMER_BOARD_ID_BASE && boardId < BC2_CUSTOMER_MAX_BOARD_ID) { /* Customer Board */
@@ -1359,9 +1370,12 @@ MV_VOID mvBoardSet(MV_U32 boardId)
 #ifdef CONFIG_ALLEYCAT3
 		gBoardId = AC3_CUSTOMER_BOARD_ID0;
 		board = customerAC3BoardInfoTbl[gBoardId];
-#else
+#elif defined CONFIG_BOBCAT2
 		gBoardId = BC2_CUSTOMER_BOARD_ID0;
 		board = customerBC2BoardInfoTbl[gBoardId];
+#else
+		gBoardId = BOBK_CUSTOMER_BOARD_ID0;
+		board = customerBOBKBoardInfoTbl[gBoardId];
 #endif
 		mvOsPrintf("Applying default Customer board ID (%d: %s)\n", gBoardId, board->boardName);
 	}
@@ -1398,11 +1412,17 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		#elif CONFIG_CUSTOMER_BOARD_1
 			gBoardId = AC3_CUSTOMER_BOARD_ID1;
 		#endif
-	#else /* BC2 */
+	#elif defined CONFIG_BOBCAT2
 		#ifdef CONFIG_CUSTOMER_BOARD_0
 			gBoardId = BC2_CUSTOMER_BOARD_ID0;
 		#elif CONFIG_CUSTOMER_BOARD_1
 			gBoardId = BC2_CUSTOMER_BOARD_ID1;
+		#endif
+	#else /* BOBK */
+		#ifdef CONFIG_CUSTOMER_BOARD_0
+			gBoardId = BOBK_CUSTOMER_BOARD_ID0;
+		#elif CONFIG_CUSTOMER_BOARD_1
+			gBoardId = BOBK_CUSTOMER_BOARD_ID1;
 		#endif
 	#endif
 
@@ -1412,8 +1432,10 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	MV_BOARD_INFO **mvBoardInfoTbl =
 	#if defined CONFIG_ALLEYCAT3
 		marvellAC3BoardInfoTbl;
-	#else
+	#elif defined CONFIG_BOBCAT2
 		marvellBC2BoardInfoTbl;
+	#else /* BOBK */
+		marvellBOBKBoardInfoTbl;
 	#endif
 
 	/* Temporarily set generic board struct pointer, to set/get EEPROM i2c address, and read board ID */

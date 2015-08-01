@@ -812,6 +812,10 @@ int mv_get_arch_number(void)
 	case RD_MTL_24G_AC3_ID:
 	case AC3_CUSTOMER_BOARD_ID0:
 	case AC3_CUSTOMER_BOARD_ID1:
+	case RD_BOBK_ID:
+	case DB_BOBK_ID:
+	case BOBK_CUSTOMER_BOARD_ID0:
+	case BOBK_CUSTOMER_BOARD_ID1:
 		return 3035;
 	default:
 		mvOsPrintf("%s: Error: wrong board Id (%d)\n", __func__, mvBoardIdGet());
@@ -868,10 +872,10 @@ void setBoardEnv(void)
 	}
 	envVerifyAndSet("enaFPU", "no", "yes", 2);
 	envSetDefault("pxe_files_load", ":default.arm-armadaxp-db:default.arm-armadaxp:default.arm");
-	if (mvCtrlDevFamilyIdGet(0) == MV_ALLEYCAT3_DEV_ID) {
-		envSetDefault("usbType", "2");
-		envSetDefault("usb0Mode", "Host");
-	}
+#ifdef MV_USB
+	envSetDefault("usbType", "2");
+	envSetDefault("usb0Mode", "Host");
+#endif
 }
 
 void mv_cpu_init(void)

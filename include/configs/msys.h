@@ -86,7 +86,7 @@ disclaimer.
 
 #define MV_DDR_TRAINING_CMD_NEW_TIP
 
-#ifdef CONFIG_ALLEYCAT3
+#if defined(CONFIG_ALLEYCAT3) || defined(CONFIG_BOBK)
 #define MV_USB
 #endif
 

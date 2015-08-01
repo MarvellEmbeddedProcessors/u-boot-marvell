@@ -78,10 +78,12 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define MV_ARM_SOC
-#ifdef CONFIG_ALLEYCAT3
+#if defined CONFIG_ALLEYCAT3
 #define SOC_NAME_PREFIX				"Alleycat3"
-#else
+#elif defined CONFIG_BOBCAT2
 #define SOC_NAME_PREFIX				"Bobcat2"
+#else
+#define SOC_NAME_PREFIX				"BobK"
 #endif
 /*
  * Bobcat2/AXP Units Address decoding

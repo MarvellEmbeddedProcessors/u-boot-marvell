@@ -1669,9 +1669,9 @@ MV_STATUS mvBoardCoreFreqGet(MV_U8 *value)
 	MV_U8		sar0;
 	MV_STATUS	rc1;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
-	MV_U32		fieldOffs = (family == MV_BOBCAT2_DEV_ID) ? 0 : 2;
+	MV_U32		fieldOffs = (family == MV_ALLEYCAT3_DEV_ID) ? 2 : 0;
 
-	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID) && (family != MV_BOBK_DEV_ID)) {
 		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
 		return MV_ERROR;
 	}
@@ -1691,9 +1691,10 @@ MV_STATUS mvBoardCoreFreqSet(MV_U8 freqVal)
 	MV_U8		sar0;
 	MV_STATUS	rc1;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
-	MV_U32		fieldOffs = (family == MV_BOBCAT2_DEV_ID) ? 0 : 2;
+	MV_U32		fieldOffs = (family == MV_ALLEYCAT3_DEV_ID) ? 2 : 0;
 
-	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)
+		&& (family != MV_BOBK_DEV_ID)) {
 		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
 		return MV_ERROR;
 	}
@@ -1726,6 +1727,16 @@ MV_STATUS mvBoardCpuFreqGet(MV_U8 *value)
 		/* BC2 */
 		if ((MV_ERROR == mvBoardTwsiSatRGet(1, 0, &sar)) ||
 			(MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar2)))
+			return MV_ERROR;
+
+		*value = ((((sar2 & 0x1)) << 3) | ((sar & 0x18) >> 3));
+
+	} else if (family == MV_BOBK_DEV_ID) {
+		MV_U8		sar2;
+
+		/* BOBK */
+		if ((MV_ERROR == mvBoardTwsiSatRGet(0, 0, &sar)) ||
+			(MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar2)))
 			return MV_ERROR;
 
 		*value = ((((sar2 & 0x1)) << 3) | ((sar & 0x18) >> 3));
@@ -1773,6 +1784,27 @@ MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 			return MV_ERROR;
 		}
 
+	} else if (family == MV_BOBK_DEV_ID) {
+		MV_U8		sar2;
+		/* BOBK */
+		if ((MV_ERROR == mvBoardTwsiSatRGet(0, 0, &sar)) ||
+			(MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar2)))
+			return MV_ERROR;
+
+		sar  &= ~0x18;
+		sar2 &= ~0x1;
+		sar  |= ((freqVal & 0x03) << 3);
+		sar2 |= ((freqVal & 0x04) >> 2);
+
+		if (MV_OK != mvBoardTwsiSatRSet(0, 0, sar)) {
+			DB(mvOsPrintf("Board: Write CpuFreq(1) S@R fail\n"));
+			return MV_ERROR;
+		}
+		if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar2)) {
+			DB(mvOsPrintf("Board: Write CpuFreq(2) S@R fail\n"));
+			return MV_ERROR;
+		}
+
 	} else if (family == MV_ALLEYCAT3_DEV_ID) {
 
 		/* AC3 */
@@ -1802,16 +1834,27 @@ MV_STATUS mvBoardTmFreqGet(MV_U8 *value)
 	MV_U8		sar2;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-	if (family != MV_BOBCAT2_DEV_ID) {
+	if (family != MV_BOBCAT2_DEV_ID && family != MV_BOBK_DEV_ID) {
 		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
 		return MV_ERROR; /* AC3 */
 	}
 
-	/* BC2 */
-	if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar2))
-		return MV_ERROR;
+	if (family == MV_BOBCAT2_DEV_ID) {
 
-	*value = ((sar2 & 0x0E) >> 1);
+		/* BC2 */
+		if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar2))
+			return MV_ERROR;
+
+		*value = ((sar2 & 0x0E) >> 1);
+
+	} else if (family == MV_BOBK_DEV_ID) {
+
+		/* BOBK */
+		if (MV_ERROR == mvBoardTwsiSatRGet(0, 0, &sar2))
+			return MV_ERROR;
+
+		*value = (sar2 & 0x07);
+	}
 
 	return MV_OK;
 }
@@ -1822,22 +1865,41 @@ MV_STATUS mvBoardTmFreqSet(MV_U8 freqVal)
 	MV_U8		sar2;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-	if (family != MV_BOBCAT2_DEV_ID) {
+	if (family != MV_BOBCAT2_DEV_ID && family != MV_BOBK_DEV_ID) {
 		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
 		return MV_ERROR; /* AC3 */
 	}
 
-	/* BC2 */
-	if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar2))
-		return MV_ERROR;
+	if (family == MV_BOBCAT2_DEV_ID) {
 
-	sar2 &= ~0xE;
-	sar2 |= ((freqVal & 0x07) << 1);
+		/* BC2 */
+		if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar2))
+			return MV_ERROR;
 
-	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar2)) {
-		DB(mvOsPrintf("Board: Write TM-Freq S@R fail\n"));
-		return MV_ERROR;
+		sar2 &= ~0xE;
+		sar2 |= ((freqVal & 0x07) << 1);
+
+		if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar2)) {
+			DB(mvOsPrintf("Board: Write TM-Freq S@R fail\n"));
+			return MV_ERROR;
+		}
+	} else if (family == MV_BOBK_DEV_ID) {
+
+		/* BOBK */
+		if (MV_ERROR == mvBoardTwsiSatRGet(0, 0, &sar2))
+			return MV_ERROR;
+
+		sar2 &= ~0x7;
+		sar2 |= (freqVal & 0x07);
+
+		if (MV_OK != mvBoardTwsiSatRSet(0, 0, sar2)) {
+			DB(mvOsPrintf("Board: Write TM-Freq S@R fail\n"));
+			return MV_ERROR;
+		}
 	}
+
+	/* BC2 or BOBK*/
+
 	DB(mvOsPrintf("Board: Write TM-Freq S@R succeeded\n"));
 
 	return MV_OK;
@@ -1849,16 +1911,27 @@ MV_STATUS mvBoardJtagCpuGet(MV_U8 *value)
 	MV_U8		sar;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-	if (family != MV_BOBCAT2_DEV_ID) {
+	if (family != MV_BOBCAT2_DEV_ID && family != MV_BOBK_DEV_ID) {
 		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
 		return MV_ERROR; /* AC3 */
 	}
 
-	/* BC2 */
-	if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
-		return MV_ERROR;
+	if (family == MV_BOBCAT2_DEV_ID) {
 
-	*value = (sar & 0x8) >> 3;
+		/* BC2 */
+		if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+			return MV_ERROR;
+
+		*value = (sar & 0x8) >> 3;
+
+	} else if (family == MV_BOBK_DEV_ID) {
+
+		/* BOBK */
+		if (MV_ERROR == mvBoardTwsiSatRGet(1, 0, &sar))
+			return MV_ERROR;
+
+		*value = (sar & 0x8) >> 3;
+	}
 
 	return MV_OK;
 }
@@ -1869,21 +1942,38 @@ MV_STATUS mvBoardJtagCpuSet(MV_U8 cpu)
 	MV_U8		sar;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-	if (family != MV_BOBCAT2_DEV_ID) {
+	if (family != MV_BOBCAT2_DEV_ID && family != MV_BOBK_DEV_ID) {
 		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
 		return MV_ERROR; /* AC3 */
 	}
 
-	/* BC2 */
-	if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
-		return MV_ERROR;
+	if (family == MV_BOBCAT2_DEV_ID) {
 
-	sar &= ~(0x8);
-	sar |= ((cpu & 0x1) << 3);
+		/* BC2 */
+		if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+			return MV_ERROR;
 
-	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
-		DB(mvOsPrintf("Board: Write JTAG CPU S@R fail\n"));
-		return MV_ERROR;
+		sar &= ~(0x8);
+		sar |= ((cpu & 0x1) << 3);
+
+		if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
+			DB(mvOsPrintf("Board: Write JTAG CPU S@R fail\n"));
+			return MV_ERROR;
+		}
+
+	} else if (family == MV_BOBK_DEV_ID) {
+
+		/* BOBK */
+		if (MV_ERROR == mvBoardTwsiSatRGet(1, 0, &sar))
+			return MV_ERROR;
+
+		sar &= ~(0x8);
+		sar |= ((cpu & 0x1) << 3);
+
+		if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar)) {
+			DB(mvOsPrintf("Board: Write JTAG CPU S@R fail\n"));
+			return MV_ERROR;
+		}
 	}
 
 	DB(mvOsPrintf("Board: Write JTAG CPU  S@R succeeded\n"));
@@ -1897,8 +1987,8 @@ MV_STATUS mvBoardPtpPllGet(MV_U8 *value)
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
 	if (family != MV_BOBCAT2_DEV_ID) {
-		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
-		return MV_ERROR; /* AC3 */
+		DB(mvOsPrintf("%s: Only Support BC2 controller family\n", __func__));
+		return MV_ERROR; /* AC3/BOBK */
 	}
 
 	/* BC2 */
@@ -1917,8 +2007,8 @@ MV_STATUS mvBoardPtpPllSet(MV_U8 val)
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
 	if (family != MV_BOBCAT2_DEV_ID) {
-		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
-		return MV_ERROR; /* AC3 */
+		DB(mvOsPrintf("%s: Only Support BC2 controller family\n", __func__));
+		return MV_ERROR; /* AC3/BOBK */
 	}
 
 	/* BC2 */
@@ -1944,8 +2034,8 @@ MV_STATUS mvBoardOobPortConnectionGet(MV_U8 port, MV_U8 *value)
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
 	if (family != MV_BOBCAT2_DEV_ID) {
-		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
-		return MV_ERROR; /* AC3 */
+		DB(mvOsPrintf("%s: Only Support BC2 controller family\n", __func__));
+		return MV_ERROR; /* AC3/BOBK */
 	}
 
 	if (port > 1) {
@@ -2048,9 +2138,9 @@ MV_STATUS mvBoardBootDevGet(MV_U8 *value)
 {
 	MV_U8		sar;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
-	MV_U8		twsiDevice = (family == MV_BOBCAT2_DEV_ID) ? 3 : 2;
+	MV_U8		twsiDevice = (family == MV_ALLEYCAT3_DEV_ID) ? 2 : 3;
 
-	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID) && (family != MV_BOBK_DEV_ID)) {
 		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
 		return MV_ERROR;
 	}
@@ -2058,7 +2148,10 @@ MV_STATUS mvBoardBootDevGet(MV_U8 *value)
 	if (MV_ERROR == mvBoardTwsiSatRGet(twsiDevice, 0, &sar))
 		return MV_ERROR;
 
-	*value = (sar & 0x7);
+	if (family == MV_BOBK_DEV_ID)
+		*value = ((sar & 0x0E) >> 1);
+	else
+		*value = (sar & 0x7);
 
 	return MV_OK;
 }
@@ -2068,9 +2161,9 @@ MV_STATUS mvBoardBootDevSet(MV_U8 val)
 {
 	MV_U8		sar;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
-	MV_U8		twsiDevice = (family == MV_BOBCAT2_DEV_ID) ? 3 : 2;
+	MV_U8		twsiDevice = (family == MV_ALLEYCAT3_DEV_ID) ? 2 : 3;
 
-	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID) && (family != MV_BOBK_DEV_ID)) {
 		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
 		return MV_ERROR;
 	}
@@ -2078,8 +2171,13 @@ MV_STATUS mvBoardBootDevSet(MV_U8 val)
 	if (MV_ERROR == mvBoardTwsiSatRGet(twsiDevice, 0, &sar))
 		return MV_ERROR;
 
-	sar &= ~(0x7);
-	sar |= (val & 0x7);
+	if (family == MV_BOBK_DEV_ID) {
+		sar &= ~(0xE);
+		sar |= ((val & 0x7) << 1);
+	} else {
+		sar &= ~(0x7);
+		sar |= (val & 0x7);
+	}
 
 	if (MV_OK != mvBoardTwsiSatRSet(twsiDevice, 0, sar)) {
 		DB(mvOsPrintf("Board: Write BootDev S@R fail\n"));
@@ -2094,16 +2192,17 @@ MV_STATUS mvBoardDeviceIdGet(MV_U8 *value)
 {
 	MV_U8		sar;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+	MV_U8		twsiDevice = (family == MV_BOBK_DEV_ID) ? 2 : 0;
 
-	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID) && (family != MV_BOBK_DEV_ID)) {
 		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
 		return MV_ERROR;
 	}
 
-	if (MV_ERROR == mvBoardTwsiSatRGet(0, 0, &sar))
-		return MV_ERROR;
+	if (MV_ERROR == mvBoardTwsiSatRGet(twsiDevice, 0, &sar))
+			return MV_ERROR;
 
-	*value = (sar & 0x1F);
+		*value = (sar & 0x1F);
 
 	return MV_OK;
 }
@@ -2113,19 +2212,20 @@ MV_STATUS mvBoardDeviceIdSet(MV_U8 val)
 {
 	MV_U8		sar;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+	MV_U8		twsiDevice = (family == MV_BOBK_DEV_ID) ? 2 : 0;
 
-	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID) && (family != MV_BOBK_DEV_ID)) {
 		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
 		return MV_ERROR;
 	}
 
-	if (MV_ERROR == mvBoardTwsiSatRGet(0, 0, &sar))
+	if (MV_ERROR == mvBoardTwsiSatRGet(twsiDevice, 0, &sar))
 		return MV_ERROR;
 
 	sar &= ~(0x1F);
 	sar |= (val & 0x1F);
 
-	if (MV_OK != mvBoardTwsiSatRSet(0, 0, sar)) {
+	if (MV_OK != mvBoardTwsiSatRSet(twsiDevice, 0, sar)) {
 		DB(mvOsPrintf("Board: Write device-id S@R fail\n"));
 		return MV_ERROR;
 	}
@@ -2184,17 +2284,24 @@ MV_STATUS mvBoardPcieModeGet(MV_U8 *val)
 {
 	MV_U8		sar;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
-	MV_U8		bitOffset = (family == MV_BOBCAT2_DEV_ID) ? 4 : 3;
+	MV_U8		bitOffset = (family == MV_ALLEYCAT3_DEV_ID) ? 3 : 4;
 
-	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID) && (family != MV_BOBK_DEV_ID)) {
 		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
 		return MV_ERROR;
 	}
 
-	if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar))
-		return MV_ERROR;
+	if ((family == MV_ALLEYCAT3_DEV_ID) || (family == MV_BOBCAT2_DEV_ID)) {
+		if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar))
+			return MV_ERROR;
 
-	*val = (sar & (0x1 << bitOffset)) >> bitOffset;
+		*val = (sar & (0x1 << bitOffset)) >> bitOffset;
+	} else if (family == MV_BOBK_DEV_ID) {
+		if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+			return MV_ERROR;
+
+		*val = (sar & (0x1 << bitOffset)) >> bitOffset;
+	}
 
 	return MV_OK;
 }
@@ -2204,22 +2311,35 @@ MV_STATUS mvBoardPcieModeSet(MV_U8 val)
 {
 	MV_U8		sar;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
-	MV_U8		bitOffset = (family == MV_BOBCAT2_DEV_ID) ? 4 : 3;
+	MV_U8		bitOffset = (family == MV_ALLEYCAT3_DEV_ID) ? 3 : 4;
 
-	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID) && (family != MV_BOBK_DEV_ID)) {
 		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
 		return MV_ERROR;
 	}
 
-	if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar))
-		return MV_ERROR;
+	if ((family == MV_ALLEYCAT3_DEV_ID) || (family == MV_BOBCAT2_DEV_ID)) {
+		if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar))
+			return MV_ERROR;
 
-	sar &= ~(0x1 << bitOffset);
-	sar |= (val & 0x1) << bitOffset;
+		sar &= ~(0x1 << bitOffset);
+		sar |= (val & 0x1) << bitOffset;
 
-	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar)) {
-		DB(mvOsPrintf("Board: Write pcimode S@R fail\n"));
-		return MV_ERROR;
+		if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar)) {
+			DB(mvOsPrintf("Board: Write pcimode S@R fail\n"));
+			return MV_ERROR;
+		}
+	} else if (family == MV_BOBK_DEV_ID) {
+		if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+			return MV_ERROR;
+
+		sar &= ~(0x1 << bitOffset);
+		sar |= (val & 0x1) << bitOffset;
+
+		if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
+			DB(mvOsPrintf("Board: Write pcimode S@R fail\n"));
+			return MV_ERROR;
+		}
 	}
 
 	DB(mvOsPrintf("Board: Write pcimode S@R succeeded\n"));
@@ -2446,7 +2566,12 @@ MV_STATUS mvBoardSarBoardIdSet(MV_U8 val)
 			mvOsPrintf("%s: Error: Unsupported board ID (%d)\n", __func__, val);
 			return MV_ERROR;
 		}
-	} else {
+	} else if (family == MV_BOBK_DEV_ID) {
+		if (val >= BOBK_MARVELL_BOARD_NUM) {
+			mvOsPrintf("%s: Error: Unsupported board ID (%d)\n", __func__, val);
+			return MV_ERROR;
+		}
+	} else if (family == MV_BOBCAT2_DEV_ID) {
 		if (val >= BC2_MARVELL_BOARD_NUM) {
 			mvOsPrintf("%s: Error: Unsupported board ID (%d)\n", __func__, val);
 			return MV_ERROR;

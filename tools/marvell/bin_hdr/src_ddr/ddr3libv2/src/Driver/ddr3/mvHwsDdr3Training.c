@@ -716,11 +716,13 @@ GT_STATUS    mvHwsDdr3TipInitController
 
 			/*Set Active control for ODT write transactions*/
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x1494, uiODTConfig, MASK_ALL_BITS));
-#if defined (CONFIG_ALLEYCAT3) || defined(CONFIG_BOBK)
-			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, 0x14a8, 0x900,0x900));
-			/*WA: Controls whether to float The Control pups outputs during Self Refresh*/
-			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, 0x16d0, 0,0x8000));
-#endif
+
+            if (ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) == MV_TIP_REV_3) /* AC3/BobK only */
+            {
+			    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, 0x14a8, 0x900,0x900));
+			    /*WA: Controls whether to float The Control pups outputs during Self Refresh*/
+			    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, 0x16d0, 0,0x8000));
+            }
         }
     }
     else
@@ -806,8 +808,7 @@ GT_STATUS    mvHwsDdr3TipLoadTopologyMap
 /*****************************************************************************
 RANK Control Flow
 ******************************************************************************/
-#if defined(CONFIG_BOBCAT2)
-static GT_STATUS ddr3TipRankControl(GT_U32 devNum, GT_U32 interfaceId)
+static GT_STATUS ddr3TipRev2RankControl(GT_U32 devNum, GT_U32 interfaceId)
 {
     GT_U32 dataValue = 0,  busCnt= 0;
 	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
@@ -843,8 +844,8 @@ static GT_STATUS ddr3TipRankControl(GT_U32 devNum, GT_U32 interfaceId)
      
     return GT_OK;
 }
-#else
-static GT_STATUS ddr3TipRankControl(GT_U32 devNum, GT_U32 interfaceId)
+
+static GT_STATUS ddr3TipRev3RankControl(GT_U32 devNum, GT_U32 interfaceId)
 {
     GT_U32 dataValue = 0,  busCnt;
 	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
@@ -860,9 +861,23 @@ static GT_STATUS ddr3TipRankControl(GT_U32 devNum, GT_U32 interfaceId)
 	dataValue |= topologyMap->interfaceParams[interfaceId].asBusParams[0].mirrorEnableBitmask << 4;
 
 	CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, RANK_CTRL_REG, dataValue, 0xFF));
-return GT_OK;
+
+    return GT_OK;
 }
-#endif
+
+static GT_STATUS ddr3TipRankControl(GT_U32 devNum, GT_U32 interfaceId)
+{
+    if (ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) == MV_TIP_REV_2)
+    {
+        /* BC2 */
+        return ddr3TipRev2RankControl(devNum, interfaceId);
+    }
+    else
+    {
+        /* Other devices */
+        return ddr3TipRev3RankControl(devNum, interfaceId);
+    }
+}
 
 /*****************************************************************************
 PAD Inverse Flow
@@ -1624,6 +1639,7 @@ GT_STATUS    ddr3TipFreqSet
     return GT_OK;
 }
 #else
+/* for A-380/A-390 */
 GT_STATUS    ddr3TipFreqSet
 (
     GT_U32					devNum,

@@ -746,8 +746,9 @@ GT_STATUS    ddr3TipBobKIFWrite
     GT_U32                mask
 )
 {
-        interfaceAccess = interfaceAccess;
-    interfaceId = interfaceId;
+    if (interfaceAccess == ACCESS_TYPE_MULTICAST)
+        interfaceId = 4;
+ 
     return(ddr3TipBobKWrite(devNum,regAddr,dataValue,mask));
 }
 
@@ -770,9 +771,9 @@ GT_STATUS    ddr3TipBobKIFRead
     GT_U32                mask
 )
 {
-    interfaceAccess = interfaceAccess;
-    interfaceId = interfaceId;
-    return(ddr3TipBobKRead(devNum,regAddr,data,mask));
+    if (interfaceAccess == ACCESS_TYPE_MULTICAST)
+        interfaceId = 4;
+    return ddr3TipBobKRead(devNum, regAddr, &data[interfaceId], mask);
 }
 
 

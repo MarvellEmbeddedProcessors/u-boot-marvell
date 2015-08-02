@@ -742,6 +742,63 @@ int mvHwsAvagoSerdesPolarityConfigGetImpl
 }
 
 /*******************************************************************************
+* mvHwsAvagoSerdesSbmVoltageGet
+*
+* DESCRIPTION:
+*       Gets the voltage data from a given AVAGO_THERMAL_SENSOR sensor.
+*       Returns the voltage in milli-volt.
+*
+* INPUTS:
+*       devNum      - system device number
+*       portGroup   - port group (core) number
+*       serdesNum   - physical serdes number
+*       sensorAddr  - SBus address of the AVAGO_THERMAL_SENSOR
+*
+* OUTPUTS:
+*       voltage - Serdes voltage in milli-volt
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+int mvHwsAvagoSerdesSbmVoltageGet
+(
+    unsigned char   devNum,
+    unsigned int    portGroup,
+    unsigned int    serdesNum,
+    unsigned int    sensorAddr,
+    unsigned int    *voltage
+)
+{
+#ifndef ASIC_SIMULATION
+    unsigned int    sbus_addr;
+    GT_U32          data, interruptData;
+    Avago_addr_t    addr_struct;
+    unsigned int addr = avago_make_sbus_master_addr(sensorAddr);
+
+    CHECK_STATUS(mvHwsAvagoConvertSerdesToSbusAddr(devNum, serdesNum, &sbus_addr));
+
+    avago_addr_to_struct(sensorAddr, &addr_struct);
+
+    interruptData = (sbus_addr << 12) | (addr_struct.sbus & 0xff);
+    data = avago_spico_int(aaplSerdesDb[devNum], addr, 0x18, interruptData);
+    CHECK_AVAGO_RET_CODE();
+
+    /* result is a 12b signed value in 0.5mv increments */
+    if(data & 0x8000)
+    {  /* bit[15] indicates result is good */
+        data &= 0x0FFF;         /* Mask down to 12b voltage value */
+        *voltage = (data / 2);  /* Scale to milli-volt. */
+    }
+    else
+        return GT_BAD_VALUE;  /* voltage not valid */
+
+#endif /* ASIC_SIMULATION */
+    return GT_OK;
+}
+
+/*******************************************************************************
 * mvHwsAvagoAccessValidate
 *
 * DESCRIPTION:

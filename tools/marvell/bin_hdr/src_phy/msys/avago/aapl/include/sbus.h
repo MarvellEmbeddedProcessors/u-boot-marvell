@@ -56,4 +56,5 @@ EXT uint user_supplied_sbus_function(
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 void user_supplied_sbus_soft_reset(Aapl_t *aapl);
+EXT int avago_sbm_get_temperature(Aapl_t *aapl, uint sensor_addr, uint sensor);
 #endif

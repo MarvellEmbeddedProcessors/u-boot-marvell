@@ -460,6 +460,45 @@ void avago_sbus_reset(
     }
 }
 
+/*============================================================================= */
+/* GET TEMP DATA */
+/** @brief  Gets the temperature data from a given AVAGO_THERMAL_SENSOR sensor */
+/** @return Returns the temperature in milli-degrees C. */
+/**         On error, returns 999999. */
+/** @details Verifies that the process is 28nm, the #sensor_addr is */
+/**          AVAGO_THERMAL_SENSOR, and the SBus Master SPICO for the sensor */
+/**          is running, then issues the get_temp_data interrupt. */
+/**          Takes the resulting 12b signed value and converts it to an integer. */
+int avago_sbm_get_temperature(
+    Aapl_t *aapl,       /**< [in] Pointer to Aapl_t structure. */
+    uint sensor_addr,   /**< [in] SBus address of the AVAGO_THERMAL_SENSOR */
+    uint sensor)        /**< [in] Which sensor to get data for. */
+{
+    const int invalid_data = 999999;
+    int data;
+    Avago_addr_t addr_struct;
+    uint addr = avago_make_sbus_master_addr(sensor_addr);
+
+    if (!aapl_check_process(aapl, addr, __func__, __LINE__, TRUE, 1, AVAGO_TSMC_28)) return invalid_data;
+    if (!aapl_check_ip_type(aapl, sensor_addr, __func__, __LINE__, TRUE, 1, AVAGO_THERMAL_SENSOR)) return invalid_data;
+
+    if( !avago_spico_running(aapl,addr) )
+        return invalid_data;  /* spico not running return a bogus temp */
+
+    avago_addr_to_struct(sensor_addr,&addr_struct);
+    data = avago_spico_int(aapl, addr, 0x17, (sensor << 12) | (addr_struct.sbus & 0xff) );
+    /* result is a 12b signed value in 1/8 degree increments */
+    if( data & 0x8000 )
+    {  /* bit[15] indicates result is good */
+        data &= 0x0FFF;     /* Mask down to 12b temp value */
+        if (data & 0x0800)  /* Negative 12b temp value, do sign extension */
+            data = -1 * (((~data) & 0x0FFF) + 1);
+
+        return (data / 8);   /* Scale to degrees. */
+    }
+    return invalid_data;  /* Temperature not valid */
+}
+
 /** @brief   Performs a read-write test to the SBus Controller. */
 /** @details Communication with the SBus Controller (sbus address 0xfd) is */
 /**          confirmed via a quick read-write test of address 0x13, which is */

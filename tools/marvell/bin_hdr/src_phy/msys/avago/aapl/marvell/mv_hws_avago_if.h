@@ -248,6 +248,36 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     unsigned char       mode
 );
 
+/*******************************************************************************
+* mvHwsAvagoSerdesSbmVoltageGet
+*
+* DESCRIPTION:
+*       Gets the voltage data from a given AVAGO_THERMAL_SENSOR sensor.
+*       Returns the voltage in milli-volt.
+*
+* INPUTS:
+*       devNum      - system device number
+*       portGroup   - port group (core) number
+*       serdesNum   - physical serdes number
+*       sensorAddr  - SBus address of the AVAGO_THERMAL_SENSOR
+*
+* OUTPUTS:
+*       voltage - Serdes voltage in milli-volt
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+int mvHwsAvagoSerdesSbmVoltageGet
+(
+    unsigned char   devNum,
+    unsigned int    portGroup,
+    unsigned int    serdesNum,
+    unsigned int    sensorAddr,
+    unsigned int    *voltage
+);
+
 #ifdef __cplusplus
 }
 #endif

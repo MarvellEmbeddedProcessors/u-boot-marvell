@@ -1312,9 +1312,40 @@ static GT_STATUS ddr3TipCpuSetDivider
 {
     GT_U32 data = 0, value, divider = 0, divRatio;
     MV_HWS_DDR_FREQ sarFreq;
+    GT_U32 writeData;
 
 	DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("CPU PLL Config\n"));
+#if 1
+    /* calc SAR */
+    ddr3TipBobKGetInitFreq(devNum, interfaceId, &sarFreq);
+    divider = freqVal[sarFreq]/freqVal[frequency];
 
+    DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("\nSAR value %d divider %d freqVal[%d] %d  freqVal[%d] %d\n",
+					  sarFreq, divider, sarFreq, freqVal[sarFreq], frequency, freqVal[frequency]));
+
+	CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, 0x000F82ec,  &data, MASK_ALL_BITS ));
+	writeData = (0x1 << 9);
+	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0x000F82ec,  R_MOD_W(writeData,data, (0x1 << 9))));
+
+    switch (divider)
+    {
+        case 1:
+			/*Not 800 is a 667 only*/
+            writeData = (sarFreq==DDR_FREQ_800)?(0x2):(0x1);
+            break;
+        case 2:
+			/*Not 800 is a 667 only*/
+            writeData = (sarFreq==DDR_FREQ_800)?(0x3):(0x2);
+            break;
+        default:
+            DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("Error: Wrong divider %d\n", divider));
+            return GT_BAD_PARAM;
+            break;
+    }
+
+	CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, 0x000F82e8,  &data, MASK_ALL_BITS ));
+	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0x000F82e8,  R_MOD_W(writeData,data, (0x7 << 0))));
+#else
     /* calc SAR */
     ddr3TipBobKGetInitFreq(devNum, interfaceId, &sarFreq);
     divider = freqVal[sarFreq]/freqVal[frequency];
@@ -1333,17 +1364,17 @@ static GT_STATUS ddr3TipCpuSetDivider
 	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0xF8298,  R_MOD_W(divRatio, data, (0x3 << 16))));
 	divRatio = (frequency==initFreq)?(0):(1);
 	/*sel_pll_ddr_clk_div2*/
-	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0xF8298,  R_MOD_W( divRatio<<15, data, (0x1 << 5))));
+	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0xF8298,  R_MOD_W( divRatio<<15, data, (0x1 << 15))));
 
 	/*cpu_pll_clkdiv_reload_smooth*/
 	CHECK_STATUS(ddr3TipBobKServerRegRead(devNum,  0xF8270,  &data, MASK_ALL_BITS ));
-	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0xF8270,  R_MOD_W((0x7F<<11), data, (0x7F << 16))));
+	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0xF8270,  R_MOD_W((/*0x7F<*/0x6f<11), data, (0x7F << 11))));
 
 	CHECK_STATUS(ddr3TipBobKServerRegRead(devNum,  0xF8268,  &data, MASK_ALL_BITS ));
 	/*cpu_pll_clkdiv_relax_en*/
-	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0xF8268,  R_MOD_W(0x7F, data, 0x7F)));
+	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0xF8268,  R_MOD_W(/*0x7F<*/0x6f, data, 0x7F)));
 	/*cpu_pll_clkdiv_reset_mask*/
-	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0xF8268,  R_MOD_W((0x7F<<7), data, (0x7F << 7))));
+	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0xF8268,  R_MOD_W((/*0x7F<*/0x6f<<7), data, (0x7F << 7))));
 
 	/*cpu_pll_ddr_clkdiv_ratio_full*/
 	CHECK_STATUS(ddr3TipBobKServerRegRead(devNum,  0xF826C,  &data, MASK_ALL_BITS ));
@@ -1351,7 +1382,7 @@ static GT_STATUS ddr3TipCpuSetDivider
 
 	/*cpu_pll_clkdiv_reload_force*/
 	CHECK_STATUS(ddr3TipBobKServerRegRead(devNum,  0xF8268,  &data, MASK_ALL_BITS ));
-	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0xF8268,  R_MOD_W((divider<<21), data, (0x7F << 21))));
+	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0xF8268,  R_MOD_W((0x2<<21), data, (0x7F << 21))));
 
 	/*cpu_pll_clkdiv_reload_ratio*/
 	CHECK_STATUS(ddr3TipBobKServerRegRead(devNum,  0xF8270,  &data, MASK_ALL_BITS ));
@@ -1359,6 +1390,7 @@ static GT_STATUS ddr3TipCpuSetDivider
 	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0xF8270,  R_MOD_W(0, data, (0x1 << 10))));
 
     DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("\tCPU PLL config Done\n"));
+#endif
     return GT_OK;
 }
 

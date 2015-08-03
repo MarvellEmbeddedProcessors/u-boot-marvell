@@ -552,6 +552,16 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
+	/* U-Boot flow for MSYS can not read FamilyIdGet to derrive Tclk,
+	since FamilyIdGet needs Board ID, via TWSI trasaction, which depends on Tclk reading.
+	MSYS platforms use static Tclk=200MHz (not Sampled@Reset)*/
+#ifdef MV_MSYS /* MV_MSYS is defined only in U-boot for MSYS platforms: AC3/BC2/BobK */
+	return MV_BOARD_TCLK_200MHZ;
+#else
+
+	/* for Linux flow, FamilyIdGet can use BoardIDGet, since Board id is not readen from TWSI,
+	but passed from U-Boot tags instead */
+
 	if (mvCtrlDevFamilyIdGet(0) != MV_78460_DEV_ID)
 		/* constant Tclock @ 200MHz (not Sampled@Reset) */
 		return MV_BOARD_TCLK_200MHZ;
@@ -560,7 +570,7 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 		return MV_BOARD_TCLK_200MHZ;
 	else
 		return MV_BOARD_TCLK_250MHZ;
-
+#endif
 }
 
 /*******************************************************************************

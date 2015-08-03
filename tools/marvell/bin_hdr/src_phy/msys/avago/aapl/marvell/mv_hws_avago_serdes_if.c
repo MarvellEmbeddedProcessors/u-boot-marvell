@@ -432,7 +432,7 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
 *       0  - on success
 *       1  - on error
 *******************************************************************************/
-static int mvHwsAvagoSerdesInit(unsigned char devNum)
+int mvHwsAvagoSerdesInit(unsigned char devNum)
 {
     /* Validate AAPL */
     if (aaplSerdesDb[devNum] != NULL)

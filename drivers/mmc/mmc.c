@@ -367,6 +367,14 @@ static int mmc_send_op_cond_iter(struct mmc *mmc, struct mmc_cmd *cmd,
 
 		if (mmc->cfg->host_caps & MMC_MODE_HC)
 			cmd->cmdarg |= OCR_HCS;
+		/* Below is used to pass init with Cadence eMMC soft model */
+#ifdef CONFIG_PALLADIUM
+		cmd->cmdarg = OCR_HCS;
+		cmd->cmdarg |= MMC_VDD_35_36 | MMC_VDD_34_35 | MMC_VDD_33_34 | MMC_VDD_32_33;
+		cmd->cmdarg |= MMC_VDD_31_32 | MMC_VDD_30_31 | MMC_VDD_29_30 | MMC_VDD_28_29;
+		cmd->cmdarg |= MMC_VDD_31_32 | MMC_VDD_30_31 | MMC_VDD_29_30 | MMC_VDD_28_29;
+		cmd->cmdarg |= MMC_VDD_27_28 | MMC_VDD_165_195;
+#endif
 	}
 	err = mmc_send_cmd(mmc, cmd, NULL);
 	if (err)
@@ -379,13 +387,21 @@ static int mmc_send_op_cond(struct mmc *mmc)
 {
 	struct mmc_cmd cmd;
 	int err, i;
+	int start_idx;
 
 	/* Some cards seem to need this */
 	mmc_go_idle(mmc);
 
  	/* Asking to the card its capabilities */
 	mmc->op_cond_pending = 1;
-	for (i = 0; i < 2; i++) {
+
+	/* Send cmd1 only once to work correctly with Cadence eMMC soft model */
+#ifdef CONFIG_PALLADIUM
+	start_idx = 1;
+#else
+	start_idx = 0;
+#endif /* CONFIG_PALLADIUM */
+	for (i = start_idx; i < 2; i++) {
 		err = mmc_send_op_cond_iter(mmc, &cmd, i != 0);
 		if (err)
 			return err;
@@ -406,6 +422,25 @@ static int mmc_complete_op_cond(struct mmc *mmc)
 
 	mmc->op_cond_pending = 0;
 	start = get_timer(0);
+
+	/* Send cmd1 only once to work correctly with Cadence eMMC soft model.
+	 * Before this routin is called, the cmd1 is already sent once.
+	 * Then the input parameter mmc will carry the information get
+	 * from emmc response.
+	 * In do-->while case, the cmd1 will be sent again then quit from loop.
+	 * If change to while-->do, it will check the status(response == busy)
+	 * and quit from the loop directly without sending cmd1.
+	 */
+#ifdef CONFIG_PALLADIUM
+	while (!(mmc->op_cond_response & OCR_BUSY)) {
+		err = mmc_send_op_cond_iter(mmc, &cmd, 1);
+		if (err)
+			return err;
+		if (get_timer(start) > timeout)
+			return UNUSABLE_ERR;
+		udelay(100);
+	}
+#else
 	do {
 		err = mmc_send_op_cond_iter(mmc, &cmd, 1);
 		if (err)
@@ -414,8 +449,9 @@ static int mmc_complete_op_cond(struct mmc *mmc)
 			return UNUSABLE_ERR;
 		udelay(100);
 	} while (!(mmc->op_cond_response & OCR_BUSY));
+#endif /* CONFIG_PALLADIUM */
 
-	if (mmc_host_is_spi(mmc)) { /* read OCR for spi */
+	if (mmc_host_is_spi(mmc)) {/* read OCR for spi */
 		cmd.cmdidx = MMC_CMD_SPI_READ_OCR;
 		cmd.resp_type = MMC_RSP_R3;
 		cmd.cmdarg = 0;

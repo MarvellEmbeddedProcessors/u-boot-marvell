@@ -57,7 +57,7 @@ GT_U8 ADLL_SHIFT_Lock[MAX_INTERFACE_NUM][MAX_BUS_NUM] ;
 GT_U8 ADLL_SHIFT_val[MAX_INTERFACE_NUM][MAX_BUS_NUM] ;
 MV_HWS_PATTERN pbsPattern = PATTERN_VREF;
 
-extern GT_U32 mvHwsDdr3TipMaxCSGet(void);
+extern GT_U32 mvHwsDdr3TipMaxCSGet(GT_U32 devNum);
 /************************** pre declarations ******************************/
 extern MV_HWS_TOPOLOGY_MAP *topologyMap;
 extern GT_U32 maskResultsDqRegMap[];
@@ -616,7 +616,7 @@ GT_STATUS    ddr3TipPrintAllPbsResult
 )
 {
     GT_U32 currCs;
-    GT_U32 max_cs = mvHwsDdr3TipMaxCSGet();
+    GT_U32 max_cs = mvHwsDdr3TipMaxCSGet(devNum);
 
    for(currCs = 0; currCs < max_cs; currCs++)
    {

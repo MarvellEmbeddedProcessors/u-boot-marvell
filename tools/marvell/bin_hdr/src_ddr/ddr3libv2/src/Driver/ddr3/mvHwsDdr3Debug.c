@@ -578,7 +578,7 @@ GT_STATUS	ddr3TipPrintStabilityLog(GT_U32 devNum)
 	GT_U32 regData1;
 #endif
 	GT_U32 readData[MAX_INTERFACE_NUM];
-	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet();
+	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet(devNum);
 
 	/*Title print*/
 	for(interfaceId = 0; interfaceId < MAX_INTERFACE_NUM; interfaceId++)
@@ -1432,7 +1432,7 @@ GT_BOOL ddr3TipRunSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direction, GT
     GT_32 reg = (direction == 0) ? WRITE_CENTRALIZATION_PHY_REG : READ_CENTRALIZATION_PHY_REG;
     MV_HWS_ACCESS_TYPE  pupAccess;
     GT_U32 uiCs;
-    GT_U32 maxCs = mvHwsDdr3TipMaxCSGet();
+    GT_U32 maxCs = mvHwsDdr3TipMaxCSGet(devNum);
 	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     RepeatNum = RepeatNum;
@@ -1551,7 +1551,7 @@ GT_BOOL ddr3TipRunLevelingSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direc
     GT_32 reg = (direction == 0) ? WL_PHY_REG : RL_PHY_REG;
     MV_HWS_ACCESS_TYPE  pupAccess;
     GT_U32 uiCs;
-    GT_U32 maxCs = mvHwsDdr3TipMaxCSGet();
+    GT_U32 maxCs = mvHwsDdr3TipMaxCSGet(devNum);
 	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
     RepeatNum = RepeatNum;
 	RepeatNum = 3;
@@ -1589,7 +1589,7 @@ GT_BOOL ddr3TipRunLevelingSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direc
 		}
 		/*Save Leveling value(after algorithm run)*/
 		readAdllValue(ctrlADLL, (reg + (uiCs * CS_REGISTER_ADDR_OFFSET)) , 0x1F );
-		readPhaseValue(ctrlLevelPhase, (reg + (uiCs * CS_REGISTER_ADDR_OFFSET)) , 0x3<<6 );
+		readPhaseValue(ctrlLevelPhase, (reg + (uiCs * CS_REGISTER_ADDR_OFFSET)) , 0x7<<6 );
 		if(direction == 0)
 		{
 			readAdllValue(ctrlADLL1, (0x1 + (uiCs * CS_REGISTER_ADDR_OFFSET)) , MASK_ALL_BITS );

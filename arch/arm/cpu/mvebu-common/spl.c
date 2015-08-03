@@ -21,6 +21,7 @@
 #include <fdtdec.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/comphy.h>
+#include <asm/arch-mvebu/tools.h>
 #ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 #include <asm/arch-mvebu/dram_over_pci.h>
 #endif
@@ -69,4 +70,8 @@ void board_init_f(ulong silent)
 #else
 	dram_over_pci_init(gd->fdt_blob);
 #endif /* CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT */
+#ifdef CONFIG_MVEBU_SPL_MEMORY_TEST
+	if (run_memory_test())
+		printf("**** DRAM test failed ****\n");
+#endif
 }

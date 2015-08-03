@@ -148,3 +148,14 @@ config MVEBU_NOR_BOOT
 
 endchoice
 
+config MVEBU_TOOLS_SUPPORT
+	bool "MVEBU tools functions for U-Boot"
+	default y
+	help
+	  Choose this option to add support
+	  for different tools function for
+	  U-Boot/SPL code
+
+if MVEBU_TOOLS_SUPPORT
+source "arch/arm/cpu/mvebu-common/tools/Kconfig"
+endif

@@ -1,0 +1,42 @@
+
+menu "Tools support"
+depends on MVEBU_TOOLS_SUPPORT
+
+config MVEBU_SPL_MEMORY_TEST
+	bool "Memory test"
+	depends on SPL
+	default y
+	help
+	To add this option you need to edit the
+	defconfig and add the following line:
+	+S:CONFIG_MVEBU_SPL_MEMORY_TEST=y
+	Choose this option to test the memory after
+	DRAM initialization
+
+config MVEBU_MEM_TEST_ITERATION
+	int "Number of Iterations for Memory test"
+	depends on MVEBU_SPL_MEMORY_TEST
+	range 1 255
+	default 2
+	help
+	  This option set the number of the
+	  iterations for DRAM test in SPL code
+	  the range of the iteration number
+	  between 1-255
+
+config MVEBU_MEM_TEST_START_ADDR
+	hex "Start address for Memory test"
+	depends on MVEBU_SPL_MEMORY_TEST
+	default 0x100000
+	help
+	  This option set the start address
+	  of the DRAM test in SPL code
+
+config MVEBU_MEM_TEST_END_ADDR
+	hex "End address for Memory test"
+	depends on MVEBU_SPL_MEMORY_TEST
+	default 0xB00000
+	help
+	  This option set the end address
+	  of the DRAM test in SPL code
+endmenu

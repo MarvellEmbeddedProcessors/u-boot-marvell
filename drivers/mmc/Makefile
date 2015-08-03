@@ -21,6 +21,7 @@ obj-$(CONFIG_MMC_SPI) += mmc_spi.o
 obj-$(CONFIG_MMC_SUNXI) += sunxi_mmc.o
 obj-$(CONFIG_MV_SDHCI) += mv_sdhci.o
 obj-$(CONFIG_MVEBU_MMC) += mvebu_mmc.o
+obj-$(CONFIG_XENON_MMC) += xenon_mmc.o
 obj-$(CONFIG_MXC_MMC) += mxcmmc.o
 obj-$(CONFIG_MXS_MMC) += mxsmmc.o
 obj-$(CONFIG_OMAP_HSMMC) += omap_hsmmc.o

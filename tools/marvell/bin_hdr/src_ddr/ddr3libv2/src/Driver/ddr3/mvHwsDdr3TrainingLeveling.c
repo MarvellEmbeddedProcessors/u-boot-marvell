@@ -835,10 +835,10 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 			}
 			else
 			{
-				CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_TRAINING_TRIGGER_REG, &regData, (1 << 2)));
-				if (regData != 0)
+				CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_TRAINING_TRIGGER_REG, dataRead, (1 << 2)));
+				if (dataRead[interfaceId] != 0)
 				{
-					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("WL: WL failed IF %d regData=0x%x\n",interfaceId,regData));
+					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("WL: WL failed IF %d regData=0x%x\n",interfaceId,dataRead[interfaceId]));
 				}
 			}
 		}

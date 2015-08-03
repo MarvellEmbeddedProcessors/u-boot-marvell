@@ -78,6 +78,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define REG_DEVICE_SAR0_ADDR                        0xF8200
 #define REG_DEVICE_SAR1_ADDR                        0xF8204
+#define REG_DEVICE_SAR1_OVERRIDE_ADDR               0xF82D8
 #define PLL0_CNFIG_OFFSET         					21
 #define PLL0_CNFIG_MASK           					0x7
 #define PLL1_CNFIG_OFFSET         					18

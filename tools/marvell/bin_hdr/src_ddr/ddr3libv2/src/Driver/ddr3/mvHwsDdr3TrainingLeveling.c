@@ -109,16 +109,26 @@ static GT_STATUS    ddr3TipWlSuppOneClkErrShift
 /*****************************************************************************
 mvHwsDdr3TipMaxCSGet
 ******************************************************************************/
-GT_U32 mvHwsDdr3TipMaxCSGet(void)
+GT_U32 mvHwsDdr3TipMaxCSGet(GT_U32 devNum)
 {
-  GT_U32 c_cs;
+  GT_U32 c_cs,interfaceId=0,busId=0;
+  GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
   static GT_U32 max_cs=0;
 
-  if (!max_cs){
-	 for(c_cs = 0;c_cs < NUM_OF_CS; c_cs++){
-		VALIDATE_IF_ACTIVE(topologyMap->interfaceParams[0].asBusParams[0].csBitmask, c_cs)
+  if (!max_cs)
+  {
+      CHECK_STATUS(ddr3TipGetFirstActiveIf((GT_U8)devNum, topologyMap->interfaceActiveMask, &interfaceId));
+ 	  for(busId=0; busId<octetsPerInterfaceNum; busId++)
+      {
+          VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busId)
+          break;
+      }
+
+      for(c_cs = 0;c_cs < NUM_OF_CS; c_cs++)
+      {
+		VALIDATE_IF_ACTIVE(topologyMap->interfaceParams[interfaceId].asBusParams[busId].csBitmask, c_cs)
 		max_cs++;
-		}
+	  }
   }
   return max_cs;
 }
@@ -133,7 +143,7 @@ GT_STATUS    ddr3TipDynamicReadLeveling
 )
 {
     GT_U32 data, mask;
-	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet();
+	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet(devNum);
 	GT_U32 busNum, interfaceId, clVal;
     MV_HWS_SPEED_BIN speedBinIndex;
 	GT_U32 csEnableRegVal[MAX_INTERFACE_NUM] = {0}; /* save current CS value */
@@ -356,7 +366,7 @@ GT_STATUS    ddr3TipLegacyDynamicWriteLeveling
 )
 {
 	GT_U32 c_cs, interfaceId, cs_mask = 0;
-	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet();
+	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet(devNum);
 
 /*	in TRAINIUNG reg (0x15b0) write 0x80000008 | cs_mask:
 	TrnStart
@@ -390,7 +400,7 @@ GT_STATUS    ddr3TipLegacyDynamicReadLeveling
 )
 {
 	GT_U32 c_cs, interfaceId, cs_mask = 0;
-	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet();
+	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet(devNum);
 
 	/* in TRAINIUNG reg (0x15b0) write 0x80000040 | cs_mask:
 	TrnStart
@@ -740,7 +750,7 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 	GT_U8   WLValues[NUM_OF_CS][MAX_BUS_NUM][MAX_INTERFACE_NUM];
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U32 csMask0[MAX_INTERFACE_NUM]={0};
-	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet();
+	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet(devNum);
 	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)

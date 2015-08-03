@@ -74,7 +74,7 @@ static GT_U32 uiXorRegsCtrlBackup;
 static GT_U32 uiXorRegsBaseBackup[MAX_CS];
 static GT_U32 uiXorRegsMaskBackup[MAX_CS];
 
-extern GT_U32 mvHwsDdr3TipMaxCSGet(void);
+extern GT_U32 mvHwsDdr3TipMaxCSGet(GT_U32 devNum);
 
 GT_VOID mvSysXorInit(GT_U32 uiNumOfCS, GT_U32 uiCsEna, GT_U32 csSize, GT_U32 baseDelta)
 {
@@ -394,7 +394,7 @@ MV_VOID	ddr3NewTipEccScrub()
 	MV_U32 uiCsEna = 0;
     mvPrintf("DDR Training Sequence - Start scrubbing \n");
 
-	max_cs = mvHwsDdr3TipMaxCSGet();
+	max_cs = mvHwsDdr3TipMaxCSGet(0);
 	for (cs_c = 0; cs_c < max_cs; cs_c++)
 		uiCsEna |= 1 << cs_c;
 

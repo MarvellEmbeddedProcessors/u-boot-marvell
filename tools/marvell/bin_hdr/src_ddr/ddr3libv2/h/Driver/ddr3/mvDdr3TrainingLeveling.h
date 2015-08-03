@@ -65,7 +65,7 @@ GT_STATUS    ddr3TipCalcCsMask
 );
 
 
-GT_U32 mvHwsDdr3TipMaxCSGet(void);
+GT_U32 mvHwsDdr3TipMaxCSGet(GT_U32 devNum);
 
 #ifdef __cplusplus
    }

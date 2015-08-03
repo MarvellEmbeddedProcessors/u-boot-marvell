@@ -2257,7 +2257,7 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
     InitCntrParam   initCntrPrm;
     GT_STATUS retVal = GT_OK;
 	GT_U32 interfaceId;
-	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet();
+	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet(devNum);
 
 #ifdef DDR_VIEWER_TOOL
 	if(debugTraining == DEBUG_LEVEL_TRACE)

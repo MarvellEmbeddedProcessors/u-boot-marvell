@@ -306,8 +306,11 @@ MV_HWS_PATTERN              trainPattern;
 MV_HWS_EdgeCompare          trainEdgeCompare;
 GT_U32                      trainCsNum;
 GT_U32                      trainIfAcess, trainIfId, trainPupAccess;
-GT_U32                      maxPollingForDone = 1000000;
-
+#ifdef CONFIG_BOBK
+GT_U32                      maxPollingForDone = 1000; /*1000000; oferb */
+#else
+GT_U32                      maxPollingForDone = 1000000; 
+#endif
 extern MV_HWS_RESULT trainingResult[MAX_STAGE_LIMIT][MAX_INTERFACE_NUM];
 extern AUTO_TUNE_STAGE trainingStage;
 
@@ -558,6 +561,10 @@ GT_STATUS    ddr3TipIpTraining
 		                break;
 		            }
 		        }
+#ifdef CONFIG_BOBK
+                 /* WA to avoid training stucking */
+                hwsOsExactDelayPtr((GT_U8)devNum, devNum, 50); /* 50 mSec */
+#endif
 		        if (pollCnt == maxPollingForDone)
 		        {
 		            trainStatus[indexCnt] = MV_HWS_TrainingIpStatus_TIMEOUT;
@@ -601,6 +608,10 @@ GT_STATUS    ddr3TipIpTraining
                     break;
                 }
             }
+#ifdef CONFIG_BOBK
+            /* WA to avoid training stucking */
+             hwsOsExactDelayPtr((GT_U8)devNum, devNum, 50);
+#endif
             if (pollCnt == maxPollingForDone)
             {
                 trainStatus[indexCnt] = MV_HWS_TrainingIpStatus_TIMEOUT;

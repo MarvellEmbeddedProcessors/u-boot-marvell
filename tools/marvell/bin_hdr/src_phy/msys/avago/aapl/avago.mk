@@ -65,7 +65,7 @@
 
   CSRC += $(BOARD)/avago/aapl/marvell/mv_hws_avago_serdes_if.c
   CSRC += $(BOARD)/avago/aapl/spico.c $(BOARD)/avago/aapl/aapl_core.c  $(BOARD)/avago/aapl/serdes_core.c \
-	  $(BOARD)/avago/aapl/library.c $(BOARD)/avago/aapl/sbus.c $(BOARD)/avago/aapl/user_code.c
+	  $(BOARD)/avago/aapl/library.c $(BOARD)/avago/aapl/sbus.c $(BOARD)/avago/aapl/user_code.c $(BOARD)/avago/aapl/sbus_access.c
 
   TIP_INC = $(BH_ROOT_DIR)/src_phy/msys/avago
   INCLUDE += -I$(BH_ROOT_DIR)/inc/common -I$(BH_ROOT_DIR)/inc/common/gtOs -I$(TIP_INC) -I$(TIP_INC)/aapl/include -I$(TIP_INC)/aapl/marvell -I$(TIP_INC)/aapl/marvell/sd28firmware

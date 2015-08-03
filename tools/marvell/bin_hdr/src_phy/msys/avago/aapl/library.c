@@ -25,6 +25,9 @@
 
 #define AAPL_ENABLE_INTERNAL_FUNCTIONS
 #include "aapl.h"
+#ifdef MV_HWS_FREE_RTOS
+#include <hw.h>
+#endif /* MV_HWS_FREE_RTOS */
 /** @defgroup Address IP Addressing Functions */
 /** @{ */
 
@@ -204,6 +207,10 @@ void ms_sleep(
 #elif defined __CYGWIN__
 
     usleep(ms_delay * 1000);
+
+#elif defined MV_HWS_FREE_RTOS
+
+    udelay( ms_delay * 1000 );
 
 #elif defined unix
 

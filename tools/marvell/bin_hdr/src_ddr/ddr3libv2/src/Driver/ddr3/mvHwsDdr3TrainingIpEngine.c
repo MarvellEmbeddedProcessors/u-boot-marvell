@@ -504,7 +504,7 @@ GT_STATUS    ddr3TipIpTraining
         {
 			if (IS_BUS_ACTIVE(topologyMap->activeBusMask, pupId) == GT_TRUE) continue;
 
-		    for(indexCnt=(maskDqNumOfRegs-pupId*8); indexCnt<(maskDqNumOfRegs-(pupId+1)*8);indexCnt++)
+		    for(indexCnt=pupId*8; indexCnt<(pupId+1)*8;indexCnt++)
 		    {
 		        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceNum, maskResultsDqRegMap[indexCnt], (1<<24), 1<<24));
 		    }

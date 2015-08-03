@@ -256,7 +256,7 @@
 	#define CONFIG_SYS_I2C_SLAVE		0x0*/
 #endif
 #if defined(CONFIG_MVEBU_I2C) || defined(CONFIG_I2C_MV)
-	#define CONFIG_SYS_I2C_SPEED            100000  /* I2C speed default */
+#define CONFIG_SYS_I2C_SPEED            100000  /* I2C speed default */
 #endif
 
 /* RTC */
@@ -291,6 +291,13 @@
 	#define  CONFIG_SYS_MMC_BASE
 	#define  CONFIG_SYS_MMC_MAX_DEVICE
 #endif
+
+/* XENON MMC */
+#ifdef CONFIG_XENON_MMC
+#define  CONFIG_MMC
+#define  CONFIG_CMD_MMC
+#define  CONFIG_GENERIC_MMC
+#endif /* CONFIG_XENON_MMC */
 
 /* PCI-E */
 #if defined(CONFIG_MVEBU_PCI) || defined(CONFIG_MVEBU_DW_PCIE)

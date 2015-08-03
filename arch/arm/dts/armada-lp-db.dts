@@ -32,6 +32,9 @@
 			sata: sata@e0000 {
 				status = "okay";
 			};
+			mmc0: mmc@D8000 {
+				status = "okay";
+			};
 		};
 	};
 };

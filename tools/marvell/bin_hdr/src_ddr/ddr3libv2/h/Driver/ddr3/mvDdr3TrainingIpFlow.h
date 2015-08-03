@@ -84,8 +84,8 @@
 #define EXT_ACCESS_BURST_LENGTH (8)
 #define  CHIP_ID                0
 #define IS_INTERFACE_ACTIVE( _uiInterfaceMask_ , _uiInterfaceId_ )   ( _uiInterfaceMask_ & ( 1 << _uiInterfaceId_ ) )
-#define IS_BUS_ACTIVE( _uiInterfaceMask_ , _uiInterfaceId_ )   ( _uiInterfaceMask_ & ( 1 << _uiInterfaceId_ ) )
-
+#define IS_BUS_ACTIVE( _uiInterfaceMask_ , _uiInterfaceId_ )   ( (_uiInterfaceMask_ >> _uiInterfaceId_) & 1 )
+       /*Haim ( _uiInterfaceMask_ & ( 1 << _uiInterfaceId_ ) )*/  
 #define DDR3_IS_ECC_PUP3_MODE(_uiInterfaceMask_)	((_uiInterfaceMask_ == 0xB)?(GT_TRUE):(GT_FALSE))
 #define DDR3_IS_ECC_PUP4_MODE(_uiInterfaceMask_)	((((_uiInterfaceMask_ & 0x10) == 0))?(GT_FALSE):(GT_TRUE))
 #define DDR3_IS_16BIT_DRAM_MODE(_activeBusMask_)	((((_activeBusMask_ & 0x4) == 0))?(GT_TRUE):(GT_FALSE))

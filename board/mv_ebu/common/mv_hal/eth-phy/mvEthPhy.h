@@ -117,6 +117,9 @@ typedef struct {
 	MV_U32		QuadPhyPort0[MV_ETH_MAX_PORTS];		/* quad phy port 0 address */
 	MV_U16		ctrlModel;
 	MV_U32		ctrlFamily;
+#ifdef MV_PP_SMI
+	MV_U16		phyId;
+#endif
 } MV_ETHPHY_HAL_DATA;
 
 #define MV_PHY_ADVERTISE_10_HALF        0x1
@@ -128,10 +131,20 @@ typedef struct {
 
 MV_STATUS 	mvEthPhyHalInit(MV_ETHPHY_HAL_DATA *halData);
 MV_STATUS	mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable);
+#ifdef MV_PP_SMI
+MV_STATUS	mvPPEthPhyRegRead(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 *data);
+MV_STATUS	mvPPEthPhyRegWrite(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 data);
+#define mvEthPhyRegWrite mvPPEthPhyRegWrite
+#define mvEthPhyRegRead mvPPEthPhyRegRead
+
+MV_STATUS mvPPEthPhyReadLinkStatus(MV_U32 *linkStatus);
+MV_STATUS mvPPEthPhyReadSpeed(MV_U32 *speed);
+#else
 MV_STATUS	mvEthPhyRegRead(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 *data);
+MV_STATUS	mvEthPhyRegWrite(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 data);
+#endif
 MV_STATUS	mvEthPhyRegPrint(MV_U32 phyAddr, MV_U32 regOffs);
 void            mvEthPhyRegs(int phyAddr);
-MV_STATUS 	mvEthPhyRegWrite(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 data);
 MV_U32 		mvEthPhyAddGet(MV_U32 ethPortNum);
 MV_STATUS 	mvEthPhyReset(MV_U32 phyAddr, int timeout);
 MV_STATUS 	mvEthPhyRestartAN(MV_U32 phyAddr, int timeout);

@@ -899,8 +899,13 @@ int phy_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U16 phyReg;
 
+#ifdef MV_PP_SMI
+	mvPPEthPhyRegRead(simple_strtoul(argv[1], NULL, 16),
+					simple_strtoul(argv[2], NULL, 16), &phyReg);
+#else
 	mvEthPhyRegRead(simple_strtoul( argv[1], NULL, 16 ),
 	                simple_strtoul( argv[2], NULL, 16), &phyReg);
+#endif
 
 	printf ("0x%x\n", phyReg);
 
@@ -917,9 +922,15 @@ U_BOOT_CMD(
 
 int phy_write_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
+#ifdef MV_PP_SMI
+	mvPPEthPhyRegWrite(simple_strtoul(argv[1], NULL, 16),
+						 simple_strtoul(argv[2], NULL, 16),
+						 simple_strtoul(argv[3], NULL, 16));
+#else
 	mvEthPhyRegWrite(simple_strtoul( argv[1], NULL, 16 ),
 					 simple_strtoul( argv[2], NULL, 16 ),
 					 simple_strtoul( argv[3], NULL, 16 ));
+#endif
 
 	return 1;
 }

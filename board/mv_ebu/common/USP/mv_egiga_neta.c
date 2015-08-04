@@ -213,6 +213,10 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 	MV_BOARD_MAC_SPEED mac_speed;
 	MV_ETH_PORT_SPEED speed = 0;
 	NETA_RX_DESC *pDesc;
+#ifdef MV_PP_SMI
+	MV_U32 link_status;
+	MV_U32 phy_speed;
+#endif
 
 	/* init each port only once */
 	if (priv->devInit != MV_TRUE) {
@@ -266,6 +270,37 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 	}
 
 	mac_speed = mvBoardMacSpeedGet(priv->port);
+#ifdef MV_PP_SMI
+	/* when use PP_SMI with AUTO_SPEED, we nend to check the link&speed from phy reg */
+	if (mac_speed == BOARD_MAC_SPEED_AUTO) {
+		/* read the link status */
+		if (mvPPEthPhyReadLinkStatus(&link_status)) {
+			printf("mvPPEthPhyReadLinkStatus failed\n");
+			goto error;
+		}
+
+		if (link_status == 0) {
+			printf("PHY Link Down\n");
+			goto error;
+		}
+
+		/* read the phy speed */
+		if (mvPPEthPhyReadSpeed(&phy_speed)) {
+			printf("mvPPEthPhyReadSpeed failed\n");
+			goto error;
+		}
+
+		if (phy_speed == BOARD_MAC_SPEED_AUTO) {
+			/* AUTO SPEED is the reservd speed, which means it failed
+			to update speed from the real link */
+			printf("PHY Speed detect failed\n");
+			goto error;
+		}
+
+		mac_speed = phy_speed;
+		/* set the speed to mac_speed */
+	}
+#endif
 	if (mac_speed != BOARD_MAC_SPEED_AUTO) {
 		switch (mac_speed) {
 		case BOARD_MAC_SPEED_10M:

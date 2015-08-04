@@ -66,6 +66,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvOs.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "mvSysEthPhyConfig.h"
+#ifdef MV_PP_SMI
+#include "mvBoardEnvLib.h"
+#endif
 #include "mvEthPhyRegs.h"
 #include "mvEthPhy.h"
 #undef DEBUG
@@ -76,6 +79,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DB(x)
 #define DB2(x)
 #endif /* DEBUG */
+
+#ifdef MV_PP_SMI
+#define mvEthPhyRegWrite mvPPEthPhyRegWrite
+#define mvEthPhyRegRead mvPPEthPhyRegRead
+static MV_STATUS mvPPInitPhyAccess(void);
+#endif
 
 static 	MV_VOID	mvEthPhyPower(MV_U32 ethPortNum, MV_BOOL enable);
 
@@ -129,6 +138,11 @@ MV_STATUS mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	if (ethPortNum != ((MV_U32) -1))
 		phyAddr = ethphyHalData.phyAddr[ethPortNum];
 
+#ifdef MV_PP_SMI
+	/* Init the indirect access to the PHY chip */
+	mvPPInitPhyAccess();
+#endif
+
 	/* Set page as 0 */
 	if (mvEthPhyRegWrite(phyAddr, 22, 0) != MV_OK) {
 		mvOsPrintf("Port%d: phyAddr=0x%x -  phy set page 0 failed\n", ethPortNum, phyAddr);
@@ -153,6 +167,12 @@ MV_STATUS mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	}
 
 	deviceId = (id2 & 0x3F0) >> 4;
+
+#ifdef MV_PP_SMI
+	/* need to use the phyId while reading linkStatus&Speed from PHY */
+	ethphyHalData.phyId = deviceId;
+#endif
+
 	switch (deviceId) {
 	case MV_PHY_88E1116:
 	case MV_PHY_88E1116R:
@@ -224,6 +244,230 @@ void    rdPhy(MV_U32 phyAddr, MV_U32 regOffs)
 		mvOsPrintf("Read failed\n");
 }
 
+
+#ifdef MV_PP_SMI
+/* in legacy mode, we have 4 comletions and each completion region is 16M.
+	while in normal mode, there are 8 completions and each size is 512K
+	both of the modes are valid. */
+#define MV_PP_ACCESS_MODE_LEGACY
+/*#define MV_PP_ACCESS_MODE_NORMAL*/
+
+#ifdef MV_PP_ACCESS_MODE_NORMAL
+#define MV_PP_SMI_REG	MV_PP_ETH_REG_BASE_NORNAL
+#else
+#define MV_PP_SMI_REG	MV_PP_ETH_REG_BASE_LEGACY
+#endif
+
+
+
+
+
+/*******************************************************************************
+* mvPPInitPhyAccess - Init the indirect access to the PHY chip
+*
+* DESCRIPTION:
+*       This function inits the registers for indirect access from CPU to SMI reg,
+*		and clears the INVERT_MDC bit to avoid the bit-float while doing read cmd
+*
+* INPUT:
+*       None
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:   MV_OK       - Success
+*           Others		- Failure
+*
+*******************************************************************************/
+MV_STATUS mvPPInitPhyAccess(void)
+{
+	MV_U32 regTmp;
+	MV_U32 smiIndex;
+
+	mvBoardPPSmiIndexGet(&smiIndex);
+
+#ifdef MV_PP_ACCESS_MODE_NORMAL
+
+	/*normal mode*/
+	/*1. Set the Indirect Access mode*/
+	regTmp = MV_MEMIO_LE32_READ(SWITCH_REGS_VIRT_BASE | MV_PP_ADDCOMP_CNCTRL);
+	MV_MEMIO_LE32_WRITE(SWITCH_REGS_VIRT_BASE | MV_PP_ADDCOMP_CNCTRL, regTmp & (~MV_PP_ADDCOMP_MODE_MASK));
+
+	/*2. Set the AddCompReg_n to MV_PP_SMI_BASE>>19*/
+	MV_MEMIO_LE32_WRITE(SWITCH_REGS_VIRT_BASE | MV_PP_ADDCOMP_REG(MV_PP_ETH_ADDCOMP_INDEX),
+		MV_PP_SMI_BASE(smiIndex)>>19);
+
+	/*3. Disable the bypass bit of addCompReg n*/
+	regTmp = MV_MEMIO_LE32_READ(SWITCH_REGS_VIRT_BASE | MV_PP_ADDCOMP_CNCTRL);
+	MV_MEMIO_LE32_WRITE(SWITCH_REGS_VIRT_BASE | MV_PP_ADDCOMP_CNCTRL, regTmp & (~(1<<MV_PP_ETH_ADDCOMP_INDEX)));
+
+	/*4. Access the reg with ADDR[21:19] = n*/
+#else
+
+	/* Legacy mode*/
+	/*1. Set the Indirect Access mode*/
+	regTmp = MV_MEMIO_LE32_READ(SWITCH_REGS_VIRT_BASE | MV_PP_ADDCOMP_CNCTRL);
+	MV_MEMIO_LE32_WRITE(SWITCH_REGS_VIRT_BASE | MV_PP_ADDCOMP_CNCTRL, regTmp | MV_PP_ADDCOMP_MODE_MASK);
+
+	/*2. Set the Address Completion[(8n+7):8n] to MV_PP_SMI_BASE>>24*/
+	regTmp = MV_MEMIO_LE32_READ(SWITCH_REGS_VIRT_BASE);
+	MV_MEMIO_LE32_WRITE(SWITCH_REGS_VIRT_BASE,
+			regTmp | (((MV_PP_SMI_BASE(smiIndex))>>24)<<(8*MV_PP_ETH_ADDCOMP_INDEX)));
+
+	/*3. Disable the bypass bit of addCompReg n*/
+	regTmp = MV_MEMIO_LE32_READ(SWITCH_REGS_VIRT_BASE | MV_PP_ADDCOMP_CNCTRL);
+	MV_MEMIO_LE32_WRITE(SWITCH_REGS_VIRT_BASE | MV_PP_ADDCOMP_CNCTRL, regTmp & (~(1<<MV_PP_ETH_ADDCOMP_INDEX)));
+
+	/*4. Access the reg with ADDR[25:24] = n*/
+#endif
+
+	/* Clear the INVERT_MDC bit */
+	regTmp = MV_MEMIO_LE32_READ(MV_PP_SMI_REG | MV_PP_SMI_MISC_CONFIG_OFFSET);
+	MV_MEMIO_LE32_WRITE(MV_PP_SMI_REG | MV_PP_SMI_MISC_CONFIG_OFFSET,
+		regTmp & (~MV_PP_SMI_INVERT_MDC_MASK));
+
+	return MV_OK;
+}
+
+MV_STATUS mvPPEthPhyRegRead(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 *data)
+{
+	MV_U32			smiReg;
+	volatile MV_U32 timeout;
+
+	/* check parameters */
+	if ((phyAddr << ETH_PHY_SMI_DEV_ADDR_OFFS) & ~ETH_PHY_SMI_DEV_ADDR_MASK) {
+		mvOsPrintf("mvPPEthPhyRegRead: Err. Illegal PHY device address %d\n",
+				phyAddr);
+		return MV_FAIL;
+	}
+	if ((regOffs << ETH_PHY_SMI_REG_ADDR_OFFS) & ~ETH_PHY_SMI_REG_ADDR_MASK) {
+		mvOsPrintf("mvPPEthPhyRegRead: Err. Illegal PHY register offset %d\n",
+				regOffs);
+		return MV_FAIL;
+	}
+
+	timeout = ETH_PHY_TIMEOUT;
+	/* wait till the SMI is not busy*/
+	do {
+		/* read smi register */
+		smiReg = MV_MEMIO_LE32_READ(MV_PP_SMI_REG);
+		if (timeout-- == 0) {
+			mvOsPrintf("mvPPEthPhyRegRead: SMI busy timeout\n");
+			return MV_FAIL;
+		}
+	} while (smiReg & ETH_PHY_SMI_BUSY_MASK);
+
+	/* fill the phy address and regiser offset and read opcode */
+	smiReg = (phyAddr <<  ETH_PHY_SMI_DEV_ADDR_OFFS) | (regOffs << ETH_PHY_SMI_REG_ADDR_OFFS)|
+			   ETH_PHY_SMI_OPCODE_READ;
+
+	/* write the smi register */
+	MV_MEMIO_LE32_WRITE(MV_PP_SMI_REG, smiReg);
+
+	timeout = ETH_PHY_TIMEOUT;
+
+	/*wait till readed value is ready */
+	do {
+		/* read smi register */
+		smiReg = MV_MEMIO_LE32_READ(MV_PP_SMI_REG);
+
+		if (timeout-- == 0) {
+			mvOsPrintf("mvPPEthPhyRegRead: SMI read-valid timeout\n");
+			return MV_FAIL;
+		}
+	} while (!(smiReg & ETH_PHY_SMI_READ_VALID_MASK));
+
+	/* Wait for the data to update in the SMI register */
+	for (timeout = 0; timeout < ETH_PHY_TIMEOUT; timeout++)
+		;
+
+	*data = (MV_U16)((MV_MEMIO_LE32_READ(MV_PP_SMI_REG) & ETH_PHY_SMI_DATA_MASK));
+
+	return MV_OK;
+}
+
+MV_STATUS mvPPEthPhyRegWrite(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 data)
+{
+	MV_U32			smiReg;
+	volatile MV_U32 timeout;
+
+	/* check parameters */
+	if ((phyAddr <<  ETH_PHY_SMI_DEV_ADDR_OFFS) & ~ETH_PHY_SMI_DEV_ADDR_MASK) {
+		mvOsPrintf("mvPPEthPhyRegWrite: Err. Illegal phy address 0x%x\n", phyAddr);
+		return MV_BAD_PARAM;
+	}
+	if ((regOffs <<  ETH_PHY_SMI_REG_ADDR_OFFS) & ~ETH_PHY_SMI_REG_ADDR_MASK) {
+		mvOsPrintf("mvPPEthPhyRegWrite: Err. Illegal register offset 0x%x\n", regOffs);
+		return MV_BAD_PARAM;
+	}
+
+	timeout = ETH_PHY_TIMEOUT;
+
+	/* wait till the SMI is not busy*/
+	do {
+		/* read smi register */
+		smiReg = MV_MEMIO_LE32_READ(MV_PP_SMI_REG);
+		if (timeout-- == 0) {
+			mvOsPrintf("mvEthPhyRegWrite: SMI busy timeout\n");
+		return MV_TIMEOUT;
+		}
+	} while (smiReg & ETH_PHY_SMI_BUSY_MASK);
+
+	/* fill the phy address and regiser offset and write opcode and data*/
+	smiReg = (data << ETH_PHY_SMI_DATA_OFFS);
+	smiReg |= (phyAddr <<  ETH_PHY_SMI_DEV_ADDR_OFFS) | (regOffs << ETH_PHY_SMI_REG_ADDR_OFFS);
+	smiReg &= ~ETH_PHY_SMI_OPCODE_READ;
+
+	/* write the smi register */
+	DB(printf("%s: phyAddr=0x%x offset = 0x%x data=0x%x\n", __func__, phyAddr, regOffs, data));
+	DB(printf("%s: PPethphyHalData.ethPhySmiReg = 0x%x smiReg=0x%x\n", __func__, MV_PP_SMI_REG, smiReg));
+	MV_MEMIO_LE32_WRITE(MV_PP_SMI_REG, smiReg);
+
+	return MV_OK;
+}
+
+MV_STATUS mvPPEthPhyReadLinkStatus(MV_U32 *linkStatus)
+{
+	MV_U16 phyReg;
+
+	switch (ethphyHalData.phyId) {
+	case MV_PHY_88E1512:
+		if (mvPPEthPhyRegRead(0, 17, &phyReg))
+			return MV_FAIL;
+
+		if (phyReg & (0x1 << 10))
+			*linkStatus = 1;
+		else
+			*linkStatus = 0;
+		break;
+	default:
+		mvOsPrintf("Unsupported Device(%#x). Read Link status failed\n", ethphyHalData.phyId);
+		return MV_ERROR;
+	}
+
+	return MV_OK;
+}
+
+MV_STATUS mvPPEthPhyReadSpeed(MV_U32 *speed)
+{
+	MV_U16 phyReg;
+
+	switch (ethphyHalData.phyId) {
+	case MV_PHY_88E1512:
+		if (mvPPEthPhyRegRead(0, 17, &phyReg))
+			return MV_FAIL;
+
+		*speed = (phyReg >> 14) & 0x3;
+		break;
+	default:
+		mvOsPrintf("Unsupported Device(%#x). Read Speed failed\n", ethphyHalData.phyId);
+		return MV_ERROR;
+	}
+
+	return MV_OK;
+}
+
+#else /* !MV_PP_SMI --> direct SMI access */
 
 /*******************************************************************************
 * mvEthPhyRegRead - Read from ethernet phy register.
@@ -299,35 +543,6 @@ MV_STATUS mvEthPhyRegRead(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 *data)
 	return MV_OK;
 }
 
-MV_STATUS mvEthPhyRegPrint(MV_U32 phyAddr, MV_U32 regOffs)
-{
-	MV_U16      data;
-	MV_STATUS   status;
-
-	status = mvEthPhyRegRead(phyAddr, regOffs, &data);
-	if (status != MV_OK)
-		mvOsPrintf("Read failed - status = %d\n", status);
-
-	mvOsPrintf("phy=0x%x, reg=0x%x: 0x%04x\n", phyAddr, regOffs, data);
-
-	return status;
-}
-
-void mvEthPhyRegs(int phyAddr)
-{
-	mvOsPrintf("[ETH-PHY #%d registers]\n\n", phyAddr);
-
-	mvEthPhyRegPrint(phyAddr, ETH_PHY_CTRL_REG);
-	mvEthPhyRegPrint(phyAddr, ETH_PHY_STATUS_REG);
-	mvEthPhyRegPrint(phyAddr, ETH_PHY_AUTONEGO_AD_REG);
-	mvEthPhyRegPrint(phyAddr, ETH_PHY_LINK_PARTNER_CAP_REG);
-	mvEthPhyRegPrint(phyAddr, ETH_PHY_1000BASE_T_CTRL_REG);
-	mvEthPhyRegPrint(phyAddr, ETH_PHY_1000BASE_T_STATUS_REG);
-	mvEthPhyRegPrint(phyAddr, ETH_PHY_EXTENDED_STATUS_REG);
-	mvEthPhyRegPrint(phyAddr, ETH_PHY_SPEC_CTRL_REG);
-	mvEthPhyRegPrint(phyAddr, ETH_PHY_SPEC_STATUS_REG);
-}
-
 /*******************************************************************************
 * mvEthPhyRegWrite - Write to ethernet phy register.
 *
@@ -386,7 +601,36 @@ MV_STATUS mvEthPhyRegWrite(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 data)
 
 	return MV_OK;
 }
+#endif /* MV_PP_SMI */
 
+MV_STATUS mvEthPhyRegPrint(MV_U32 phyAddr, MV_U32 regOffs)
+{
+	MV_U16      data;
+	MV_STATUS   status;
+
+	status = mvEthPhyRegRead(phyAddr, regOffs, &data);
+	if (status != MV_OK)
+		mvOsPrintf("Read failed - status = %d\n", status);
+
+	mvOsPrintf("phy=0x%x, reg=0x%x: 0x%04x\n", phyAddr, regOffs, data);
+
+	return status;
+}
+
+void mvEthPhyRegs(int phyAddr)
+{
+	mvOsPrintf("[ETH-PHY #%d registers]\n\n", phyAddr);
+
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_CTRL_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_STATUS_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_AUTONEGO_AD_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_LINK_PARTNER_CAP_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_1000BASE_T_CTRL_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_1000BASE_T_STATUS_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_EXTENDED_STATUS_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_SPEC_CTRL_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_SPEC_STATUS_REG);
+}
 
 /*******************************************************************************
 * mvEthPhyReset - Reset ethernet Phy.

@@ -366,6 +366,10 @@ disclaimer.
 #define MV_ETH_NETA
 #define CONFIG_MV_ETH_NETA
 
+#ifdef CONFIG_BOBK
+#define MV_PP_SMI
+#endif
+
 /* to change the default ethernet port, use this define (options: 0, 1, 2) */
 #define CONFIG_NET_MULTI
 #define CONFIG_IPADDR		10.4.50.165

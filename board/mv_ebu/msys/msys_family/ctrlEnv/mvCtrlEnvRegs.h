@@ -225,6 +225,20 @@ extern "C" {
 
 #define MPP_CONTROL_REG(id)			(0x18000 + (id * 4))
 
+/* Switch core registers */
+#define MV_PP_ADDCOMP_CNCTRL 0x00000140
+#define MV_PP_ADDCOMP_REG(n) (0x00000120 + 4*n)
+#define MV_PP_ADDCOMP_MODE_BIT			16
+#define MV_PP_ADDCOMP_MODE_MASK			(1 << MV_PP_ADDCOMP_MODE_BIT)
+
+#define MV_PP_SMI_MISC_CONFIG_OFFSET 0x4
+#define MV_PP_SMI_INVERT_MDC_BIT          11
+#define MV_PP_SMI_INVERT_MDC_MASK         (1 << MV_PP_SMI_INVERT_MDC_BIT)
+
+#define MV_PP_ETH_ADDCOMP_INDEX 1
+#define MV_PP_ETH_REG_BASE_NORNAL (SWITCH_REGS_VIRT_BASE | MV_PP_ETH_ADDCOMP_INDEX<<19)
+#define MV_PP_ETH_REG_BASE_LEGACY (SWITCH_REGS_VIRT_BASE | MV_PP_ETH_ADDCOMP_INDEX<<24)
+
 /* Sample at Reset - AXP only */
 #define MPP_SAMPLE_AT_RESET(id)			(0x18230 + (id * 4))
 

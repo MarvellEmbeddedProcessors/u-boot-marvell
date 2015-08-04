@@ -2806,3 +2806,19 @@ MV_BOOL mvBoardisAmc(void)
 {
 	return MV_FALSE;
 }
+
+/*******************************************************************************
+* mvBoardPPSmiIndexGet
+* DESCRIPTION: Get the PP SMI index for the board
+*
+* INPUT:  None
+* OUTPUT: PP SMI index.
+* RETURN: MV_TRUE
+*******************************************************************************/
+MV_STATUS mvBoardPPSmiIndexGet(MV_U32 *index)
+{
+	/* just return 0 for bobk. need to add
+	the PP_SMI index(pPSmiIndex) in board Structures (MV_BOARD_INFO) later*/
+	*index = 0;
+	return MV_OK;
+}

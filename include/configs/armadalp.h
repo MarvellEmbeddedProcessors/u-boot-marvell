@@ -106,7 +106,7 @@ extern char __end_of_spl[];
 #define CONFIG_BAUDRATE                 4000
 
 #undef CONFIG_BOOTARGS
-#define CONFIG_BOOTARGS			"console=ttyS0,5652 earlycon=uart8250,mmio32,0xf0512000 mem=128M"
+#define CONFIG_BOOTARGS			"console=ttyS0,300 earlycon=arlp_uart,0xd0012000"
 
 #undef  CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x107ffc0\0"	\

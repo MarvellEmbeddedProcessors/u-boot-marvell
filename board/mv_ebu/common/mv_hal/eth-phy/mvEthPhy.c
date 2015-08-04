@@ -2102,8 +2102,8 @@ MV_VOID mvEthE1512PhyBasicInit(MV_U32 ethPortNum)
 	if (ethphyHalData.isSgmii[ethPortNum]) {
 
 		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x0012);
-		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x14, 0x0001);
-		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x14, 0x8001);
+		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x14, 0x0201);
+		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x14, 0x8201);
 	}
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x0000);
 

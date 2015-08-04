@@ -18,6 +18,7 @@
 
 #include <common.h>
 #include <asm/io.h>
+#include <asm/arch-mvebu/ddr.h>
 
 void static_dram_init(void)
 {
@@ -183,4 +184,6 @@ void static_dram_init(void)
 	udelay(2000);
 	writel(0xfffdffff, 0xD00182e4);
 	udelay(2000);
+
+	printf("Static DRAM initialization is DONE..\n");
 }

@@ -22,13 +22,12 @@
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/comphy.h>
 #include <asm/arch-mvebu/tools.h>
+#include <asm/arch-mvebu/ddr.h>
 #ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 #include <asm/arch-mvebu/dram_over_pci.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;
-
-extern void static_dram_init(void);
 
 static int setup_fdt(void)
 {

@@ -18,6 +18,7 @@
 
 #include <common.h>
 #include <asm/io.h>
+#include <asm/arch-mvebu/ddr.h>
 
 void static_dram_init(void)
 {
@@ -203,4 +204,6 @@ void static_dram_init(void)
 	reg = readl(0xf0020008);
 	while (reg != 0x00001111)
 		reg = readl(0xf0020008);
+
+	printf("Static DRAM initialization is DONE..\n");
 }

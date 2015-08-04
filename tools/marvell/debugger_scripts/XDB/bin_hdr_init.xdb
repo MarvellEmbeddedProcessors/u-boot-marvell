@@ -7,6 +7,14 @@ DELETE WATCHPOINT /ALL
 ! Once the memory regison in L2 cache is ready, laod the BIN header and execute it
 LOAD /SEGMENT /DEBUG /GLOBAL /INIT="" OF "./tools/marvell/bin_hdr/bin_hdr.elf"
 
+! Disable MMU (for BobK & BC2) before running BIN header
+! This WA is only valid for the SoCs which will not open
+! the address window in BIN header.
+IF &2 == 0x1 THEN
+  PRINT "%s" "Disable MMU for BIN header\n"
+  SET SYSREGISTER /"COPROCESSOR_1" ARM_CONTROL=0xC53078
+END
+
 ! Break at the end of BIN header execution before jumping back top BootROM
 SET VAL @progcnt = ASM(PC)
 SET BREAKPOINT AT CORE:1(@progcnt + 0xC)

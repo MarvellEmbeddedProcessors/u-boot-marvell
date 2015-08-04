@@ -3,6 +3,7 @@ DEFINE SYMBOL /ADDRESS=0xD001823C SocId
 SET VAL @dev_id = (DeviceId & 0xFFFF0000) >> 16
 SET VAL @soc_id = SocId & 0xFFFF
 SET VAL @breakp = 0x40000000
+SET VAL @bh_nommu = 0x0
 
 !EVALUATE /HEX /WORD @dev_id
 !EVALUATE /HEX /WORD @soc_id
@@ -32,28 +33,39 @@ ELSE
         IF @soc_id == 0xFC00 THEN
           PRINT "%s" "Running on Bobcat2\n"
           SET VAL @breakp = 0x4007FFF0
-          ! Currently BC3 static DDR init is not suported
+          SET VAL @bh_nommu = 0x1
+          ! Currently BC2 static DDR init is not suported
           !define macro /button StaticInitDDR "batch \"./tools/marvell/debugger_scripts/XDB/bc2_static.xdb\"\n"
         ELSE
-          IF @soc_id == 0x7846 THEN
-            PRINT "%s" "Running on Armada XP\n"
-            SET VAL @breakp = 0x40004000
-            ! Currently AC3 static DDR init is not suported
-            !define macro /button StaticInitDDR "batch \"./tools/marvell/debugger_scripts/XDB/axp_static.xdb\"\n"
+          IF @soc_id == 0xBE00 || @soc_id == 0xBC00 THEN
+            PRINT "%s" "Running on BobK\n"
+            SET VAL @breakp = 0x4007FFF0
+            SET VAL @bh_nommu = 0x1
+            ! Currently BobK static DDR init is not suported
+            !define macro /button StaticInitDDR "batch \"./tools/marvell/debugger_scripts/XDB/bobk_static.xdb\"\n"
           ELSE
-            ! Try to check if this is A370 (KW40)
-            SET VAL @a370_id = (SocId >> 4) & 0xFFFF
-            IF @a370_id == 0x6710 THEN
-              PRINT "%s" "Running on Armada 370\n"
-              define macro /button StaticInitDDR "batch \"./tools/marvell/debugger_scripts/XDB/a370_static.xdb\"\n"
+            IF @soc_id == 0x7846 THEN
+              PRINT "%s" "Running on Armada XP\n"
+              SET VAL @breakp = 0x40004000
+              ! Currently AC3 static DDR init is not suported
+              !define macro /button StaticInitDDR "batch \"./tools/marvell/debugger_scripts/XDB/axp_static.xdb\"\n"
             ELSE
-              PRINT "Unknown device ID %x and SoC ID %x\n" @dev_id,@soc_id
-            END ! A370
-          END ! AXP
+              ! Try to check if this is A370 (KW40)
+              SET VAL @a370_id = (SocId >> 4) & 0xFFFF
+              IF @a370_id == 0x6710 THEN
+                PRINT "%s" "Running on Armada 370\n"
+                define macro /button StaticInitDDR "batch \"./tools/marvell/debugger_scripts/XDB/a370_static.xdb\"\n"
+              ELSE
+                PRINT "Unknown device ID %x and SoC ID %x\n" @dev_id,@soc_id
+              END ! A370
+            END ! AXP
+          END !BobK
         END ! BC2
       END ! AC3
     END ! A39X
   END ! A38X
 END ! A375/ALP
 
-define macro /button DynamicInitDDR "batch /ARGUMENTS=\"@breakp\" \"./tools/marvell/debugger_scripts/XDB/bin_hdr_init.xdb\"\n"
+define macro /button DynamicInitDDR "batch /ARGUMENTS=\"@breakp,@bh_nommu\" \"./tools/marvell/debugger_scripts/XDB/bin_hdr_init.xdb\"\n"
+
+

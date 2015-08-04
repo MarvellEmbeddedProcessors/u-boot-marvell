@@ -138,6 +138,10 @@ extern "C" {
 
 #define MV_USB2_CAPLENGTH_OFFSET(index)		(INTER_REGS_BASE + MV_USB_REGS_OFFSET(index) + 0x100)
 #define MV_ETH_SMI_PORT   0
+
+#define MV_PP_SMI_BASE(n) (0x54000000 + 0x01000000*n)
+#define MV_PP_ETH_SMI_PORT 0
+
 /*
  * Miscellanuous Controller Configurations
  */

@@ -691,8 +691,7 @@ MV_BOARD_TWSI_INFO	db_dx_bobkInfoBoardTwsiDev[] = {
 	{BOARD_DEV_TWSI_SATR, 0x4D, ADDR7_BIT},         /* SatR bios 1		*/
 	{BOARD_DEV_TWSI_SATR, 0x4E, ADDR7_BIT},          /* SatR bios 2		*/
 	{BOARD_DEV_TWSI_SATR, 0x4F, ADDR7_BIT},          /* SatR bios 3		*/
-	/*HW issue need to update to 0x50*/
-	{BOARD_DEV_TWSI_INIT_EPROM, 0x54, ADDR7_BIT},          /* Serial Init EPROM	*/
+	{BOARD_DEV_TWSI_INIT_EPROM, 0x50, ADDR7_BIT},          /* Serial Init EPROM	*/
 	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x70, ADDR7_BIT},          /* PCA9548 I2C mux 0	*/
 	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x71, ADDR7_BIT},          /* PCA9548 I2C mux 1	*/
 	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x75, ADDR7_BIT}          /* PCA9548 I2C mux 2	*/

@@ -43,4 +43,13 @@ config CMD_MVEBU_MSS_BOOT
 	default y
 	help
 	  mss_boot - Loads MSS code into CM3 ID RAM and release from reset
+
+config CMD_MVEBU_TSEN
+	bool "tsen"
+	depends on MVEBU_THERMAL_SENSOR_28NM
+	default n
+	help
+	  tsen - Display the SoC temperature
+	  as read from the on chip thermal sensor
+
 endmenu

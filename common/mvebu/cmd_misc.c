@@ -22,6 +22,7 @@
 #include <cli.h>
 
 #include <asm/io.h>
+#include <asm/arch-mvebu/thermal.h>
 
 #ifdef CONFIG_MVEBU_CCU
 #include <asm/arch-mvebu/ccu.h>
@@ -185,3 +186,16 @@ U_BOOT_CMD(
 	"\tPressing enter without any value keeps the value unchanged.\n"
 );
 
+#ifdef CONFIG_CMD_MVEBU_TSEN
+int thermal_sensor_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	printf("Temperature = %d\n", mvebu_thermal_sensor_read());
+	return 1;
+}
+
+U_BOOT_CMD(
+	tsen, 1, 1, thermal_sensor_cmd,
+	"temp   - Display the SoC temperature.\n",
+	"\n\tDisplay the SoC temperature as read from the on chip thermal sensor.\n"
+);
+#endif

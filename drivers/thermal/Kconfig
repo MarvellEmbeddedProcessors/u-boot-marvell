@@ -1,6 +1,7 @@
 config MVEBU_THERMAL_SENSOR_28NM
 	bool "Enable Thermal Sensor 28NM driver"
 	default n
+	select CMD_MVEBU_TEMP
 	help
 	  Choose this option to add support for
 	  thermal sensor 28nm driver.

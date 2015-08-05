@@ -505,7 +505,7 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     if (powerUp == GT_FALSE)
     {
         /* Rx, Tx, Output = disable */
-        CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x1, 0));
+        CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x1, 0, NULL));
 
         /* Serdes Digital UnReset */
         CHECK_STATUS(mvHwsAvagoSerdesResetImpl(devNum, portGroup, serdesNum, GT_FALSE, GT_FALSE, GT_FALSE));

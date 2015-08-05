@@ -91,6 +91,12 @@
 				status = "disabled";
 			};
 
+			thermal: thermal@e4070 {
+				compatible = "marvell,thermal-sensor";
+				reg = <0xE4070 0x12>;
+				status = "okay";
+			};
+
 			comphy {
 				compatible = "marvell,mvebu-comphy", "marvell,comphy-armada38x";
 				mux-bitcount = <4>;

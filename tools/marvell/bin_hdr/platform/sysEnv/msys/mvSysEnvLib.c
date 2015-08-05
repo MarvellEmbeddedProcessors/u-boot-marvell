@@ -119,8 +119,8 @@ MV_U32 mvBoardIdGet(MV_VOID)
 
 	if (readValue >= MV_MARVELL_BOARD_NUM) {
 		mvPrintf("%s: Error: read wrong board ID (%d)\n", __func__, readValue);
-		mvPrintf("%s: Setting default board to: %s\n", __func__, MV_DEFAULT_BOARD_ID);
-		return MV_DEFAULT_BOARD_ID;
+		mvPrintf("%s: Setting default board to: %d\n", __func__, MV_DEFAULT_BOARD_ID);
+		readValue = MV_DEFAULT_BOARD_ID;
 	}
 	gBoardId = MARVELL_BOARD_ID_BASE + readValue;
 

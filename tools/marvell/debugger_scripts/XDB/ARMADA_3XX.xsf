@@ -11,6 +11,15 @@ UPDATE NOR TO KEEP CURRENT THE INFORMATION CONTAINED IN THIS DOCUMENT.
 Target=JTAG CS/CS
 Version=2:2
 [SETTINGS]
-Global=-plg "./../plugin/common/vt100/vt100.dll " -B "./tools/marvell/debugger_scripts/XDB/startup.xdb" -sync "EctHardware" -W "/local/store/u-boot-14t3/u-boot"
-CS=-plg "./../plugin/arm/trace/etmtrace.dll " -L "tcp:127.0.0.1:3020:usb:" -smp "1" -target scanchain=JTAG_CS_CS_dap4_jcs_a3xx device=mjc
-CS$2=-plg "./../plugin/arm/trace/etmtrace.dll " -L "tcp:127.0.0.1:3020:usb:" -smp "1" -target scanchain=JTAG_CS_CS_dap4_jcs_a3xx hotdebug device=mjc
+Global=-plg ".\..\plugin\common\vt100\vt100.dll " -sync "EctHardware"
+CS=-plg ".\..\plugin\arm\trace\etmtrace.dll " -L "tcp:127.0.0.1:3020:usb:" -smp 1 -target scanchain=JTAG_CS_CS_dap4_jcs_a380 device=mjc
+CS$2=-plg ".\..\plugin\arm\trace\etmtrace.dll " -L "tcp:127.0.0.1:3020:usb:" -smp 1 -target scanchain=JTAG_CS_CS_dap4_jcs_a380 device=mjc hotdebug
+
+[SCRIPT]
+!#ifdef @UNITRACE_1
+!UNITRACE_1 set workaround usetpiu = false
+!#endif
+!#ifdef @UNITRACE_2
+!UNITRACE_2 set workaround usetpiu = false
+!#endif
+

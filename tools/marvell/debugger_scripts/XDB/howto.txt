@@ -11,7 +11,7 @@ Assumptions:
 The <u_boot root dir>/tools/marvell/debugger_scripts/XDB/ includes the following files:
 
 SoC configuration files:
-	- 88F6xxx.xsf - covers all Cortex A9 based SoCs: Armada 37x/38x/39x and Avanta LP
+	- ARMADA_3XX.xsf - covers all Cortex A9 based SoCs: Armada 37x/38x/39x
 	- AXP_MSYS.xsf - covers all PJ4B based SoCs: Armada XP and Armada 370, BobCat2 and AlleyCat3
 
 Common startup script

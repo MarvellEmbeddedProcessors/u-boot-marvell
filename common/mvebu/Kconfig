@@ -46,7 +46,7 @@ config CMD_MVEBU_MSS_BOOT
 
 config CMD_MVEBU_TSEN
 	bool "tsen"
-	depends on MVEBU_THERMAL_SENSOR_28NM
+	depends on MVEBU_THERMAL_SENSOR_28NM || MVEBU_THERMAL_SENSOR_28NM_V2
 	default n
 	help
 	  tsen - Display the SoC temperature

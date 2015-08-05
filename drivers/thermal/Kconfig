@@ -1,6 +1,13 @@
+config MVEBU_THERMAL_SENSOR
+	bool "Thermal Sensor driver"
+	depends on !SPL_BUILD
+
+choice
+	prompt "Thermal Sensor select"
+	depends on MVEBU_THERMAL_SENSOR
+
 config MVEBU_THERMAL_SENSOR_28NM
 	bool "Enable Thermal Sensor 28NM driver"
-	default n
 	select CMD_MVEBU_TEMP
 	help
 	  Choose this option to add support for
@@ -8,3 +15,13 @@ config MVEBU_THERMAL_SENSOR_28NM
 	  This driver init the thermal sensor unit,
 	  and read the tempreture from the unit.
 
+config MVEBU_THERMAL_SENSOR_28NM_V2
+	bool "Enable Thermal Sensor 28NM V2 driver"
+	select CMD_MVEBU_TEMP
+	help
+	  Choose this option to add support for
+	  thermal sensor 28nm V2 driver.
+	  This driver init the External thermal sensor unit,
+	  and read the tempreture from the unit.
+
+endchoice

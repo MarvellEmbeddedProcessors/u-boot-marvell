@@ -584,6 +584,9 @@ int mvHwsAvagoSerdesPowerCtrlImpl
 #endif /* MV_HWS_REDUCED_BUILD */
     }
 
+    /* for ICAL: disable the one-shot pCal, send SPICO interrupt before iCal is enabled */
+    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x26, 0x5B01, NULL));
+
     /* Serdes Digital UnReset */
     CHECK_STATUS(mvHwsAvagoSerdesResetImpl(devNum, portGroup, serdesNum, GT_FALSE, GT_FALSE, GT_FALSE));
 

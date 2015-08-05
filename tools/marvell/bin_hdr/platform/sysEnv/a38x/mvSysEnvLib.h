@@ -721,7 +721,7 @@ typedef enum _mvConfigTypeID {
 
 typedef enum _mvGpConfig {
 	MV_GP_CONFIG_EAP_10G,
-	MV_GP_CONFIG_HGW_AP_10G,
+	MV_GP_CONFIG_EAP_1G,
 	MV_GP_CONFIG_HGW_AP_2_5G,
 	MV_GP_CONFIG_HGW_AP_2_5G_SATA
 } MV_GP_CONFIG;

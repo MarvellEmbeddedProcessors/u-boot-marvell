@@ -85,7 +85,7 @@ typedef enum _eth_negotiation_port_type {
 
 typedef enum _mvGpConfig {
 	MV_GP_CONFIG_EAP_10G,
-	MV_GP_CONFIG_HGW_AP_10G,
+	MV_GP_CONFIG_EAP_1G,
 	MV_GP_CONFIG_HGW_AP_2_5G,
 	MV_GP_CONFIG_HGW_AP_2_5G_SATA
 } MV_GP_CONFIG;
@@ -300,7 +300,7 @@ typedef enum _mvConfigTypeID {
 {MV_CONFIG_5_SMI_MODE, "serdes5Mode", "SerDes Lane #5 SMI MODE", 2, {"SMI", "XSMI"} },				\
 {MV_CONFIG_6_SMI_MODE, "serdes6Mode", "SerDes Lane #6 SMI MODE", 2, {"SMI", "XSMI"} },				\
 {MV_CONFIG_GP_CONFIG, "gpConfig", "GP configurations", 4, {"10G EAP (On board switch)",				\
-	"HGW 10G (External Switch,3x PCIe)", "HGW 2.5G (On board switch, 3x PCIe)",		\
+	"1G EAP (On board switch)", "HGW 2.5G (On board switch, 3x PCIe)",		\
 	"HGW 2.5G (On board switch, 2x PCIe, 1 mSATA)"} },							\
 };
 

@@ -255,15 +255,15 @@ SERDES_MAP EAP_10G_ConfigDefault[MAX_SERDES_LANES] =
 	{ RXAUI,        __6_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE }
 };
 
-SERDES_MAP HGW_AP_10G_ConfigDefault[MAX_SERDES_LANES] =
+SERDES_MAP EAP_1G_ConfigDefault[MAX_SERDES_LANES] =
 {
 	 { SATA0,        __6Gbps,                   SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
 	 { USB3_HOST0,   __5Gbps,                   SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
 	 { PEX1,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
 	 { PEX3,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
-	 { PEX2,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
-	 { RXAUI,        __6_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
-	 { RXAUI,        __6_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE }
+	 { SGMII1,       __1_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	 { DEFAULT_SERDES,  LAST_SERDES_SPEED,      SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	 { SGMIIv3_0,       __1_25Gbps,             SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE }
 };
 
 SERDES_MAP HGW_AP_2G_ConfigDefault[MAX_SERDES_LANES] =
@@ -344,8 +344,8 @@ MV_STATUS loadTopologyDB_GP(SERDES_MAP  *serdesMapArray)
 		case MV_GP_CONFIG_EAP_10G:
 			serdesTopology = EAP_10G_ConfigDefault;
 			break;
-		case MV_GP_CONFIG_HGW_AP_10G:
-			serdesTopology = HGW_AP_10G_ConfigDefault;
+		case MV_GP_CONFIG_EAP_1G:
+			serdesTopology = EAP_1G_ConfigDefault;
 			break;
 		case MV_GP_CONFIG_HGW_AP_2_5G:
 			serdesTopology = HGW_AP_2G_ConfigDefault;

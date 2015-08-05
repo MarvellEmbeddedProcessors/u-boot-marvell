@@ -1079,14 +1079,17 @@ static int mv_fdt_update_ethnum(void *fdt)
 	*/
 	MV_U32 gpConfig = mvBoardSysConfigGet(MV_CONFIG_GP_CONFIG);
 	MV_U32 boardId = mvBoardIdGet();
-	if (boardId == A39X_RD_69XX_ID && (gpConfig == MV_GP_CONFIG_EAP_10G || gpConfig == MV_GP_CONFIG_HGW_AP_10G)) {
+	if (boardId == A39X_RD_69XX_ID && (gpConfig == MV_GP_CONFIG_EAP_10G || gpConfig == MV_GP_CONFIG_EAP_1G)) {
 		MV_U32 netComplex = 0;
 		netComplex |= MV_NETCOMP_GE_MAC3_2_SGMII_L4;
-		netComplex |= MV_NETCOMP_GE_MAC0_2_RXAUI;
+		if (gpConfig == MV_GP_CONFIG_EAP_10G)
+			netComplex |= MV_NETCOMP_GE_MAC0_2_RXAUI;
+		else
+			netComplex |= MV_NETCOMP_GE_MAC0_2_SGMII_L6;
 		mvBoardNetComplexConfigSet(netComplex);
 		mvBoardMacStatusSet(1, MV_FALSE);
 		mvBoardMacStatusSet(3, MV_TRUE);
-        }
+	}
 #endif
 
 		/* Get path to ethernet node from property value */
@@ -1205,7 +1208,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 					sprintf(prop, "phy-speed");
 					mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, &phySpeed, sizeof(phySpeed)));
 				}
-				if ((port == 3) && (gpConfig == MV_GP_CONFIG_EAP_10G || gpConfig == MV_GP_CONFIG_HGW_AP_10G)) {
+				if ((port == 3) && (gpConfig == MV_GP_CONFIG_EAP_10G || gpConfig == MV_GP_CONFIG_EAP_1G)) {
 					sprintf(prop, "force-link");
 					sprintf(propval, "yes");
 					mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, propval, strlen(propval)+1));

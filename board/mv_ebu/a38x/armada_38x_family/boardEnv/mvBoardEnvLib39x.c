@@ -390,11 +390,16 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		/*each case describes one configuration for db-gp 395 board*/
 		switch (gpConfig) {
 		case MV_GP_CONFIG_EAP_10G:
-			mvBoardSdioConnectionSet(MV_FALSE);
-		case MV_GP_CONFIG_HGW_AP_10G:
-			/*option 0+1: MAC0=>SerDeses 5+6 using RAXUAI
+			/*option 0: MAC0=>SerDeses 5+6 using RAXUAI
 				       MAC1=>SerDes 4 using switch*/
+			mvBoardSdioConnectionSet(MV_FALSE);
 			netComplexOptions |= defaultNetComplex;
+			break;
+		case MV_GP_CONFIG_EAP_1G:
+			/*option 1: MAC0=>SerDeses 6 using SGMII
+					MAC1=>SerDes 4 using switch*/
+			mvBoardSdioConnectionSet(MV_FALSE);
+			netComplexOptions |= (MV_NETCOMP_GE_MAC0_2_SGMII_L6 | MV_NETCOMP_GE_MAC1_2_SGMII_L4);
 			break;
 		case MV_GP_CONFIG_HGW_AP_2_5G:
 		case MV_GP_CONFIG_HGW_AP_2_5G_SATA:
@@ -813,7 +818,7 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 		case MV_GP_CONFIG_HGW_AP_2_5G:
 			mvModuleMppUpdate(7, sdioSpi0);
 			break;
-		case MV_GP_CONFIG_HGW_AP_10G:
+		case MV_GP_CONFIG_EAP_1G:
 		case MV_GP_CONFIG_HGW_AP_2_5G_SATA:
 			mvModuleMppUpdate(4, sdio);
 			break;
@@ -869,7 +874,7 @@ MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 		mvBoardIoExpanderStructSet(0, 2, 0xFE);
 		mvBoardIoExpanderStructSet(0, 3, 0xFD);
 		break;
-	case MV_GP_CONFIG_HGW_AP_10G:
+	case MV_GP_CONFIG_EAP_1G:
 		/* SGMII3 enable & SDIO enable */
 		mvBoardIoExpanderStructSet(0, 2, 0xFE);
 		mvBoardIoExpanderStructSet(0, 3, 0xFF);

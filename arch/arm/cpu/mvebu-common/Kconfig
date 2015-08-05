@@ -23,6 +23,14 @@ config MVEBU_SECURE_BOOT
 	  boot flow algorithm described in details
 	  in appropriate device specification.
 
+config MVEBU_SPL_DIFFRENT_BASE_ADDR
+	bool "Use SPL different registers base address"
+	depends on MVEBU
+	default n
+	help
+	  Choose this option to enable setting of a different
+	  registers base address at the SPL stage.
+
 menu "IO support"
 
 config MVEBU_NAND

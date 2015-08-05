@@ -73,9 +73,9 @@ typedef enum
     AVAGO_DDR_TRAIN                  = 0x0e,
     AVAGO_DDR_CTC                    = 0x0f,
     AVAGO_DDR_STOP                   = 0x10,
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
     AVAGO_THERMAL_SENSOR             = 0x11,
     AVAGO_RMON                       = 0x12,
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
     AVAGO_LINK_EMULATOR              = 0x13,
     AVAGO_AVSP_CONTROL_LOGIC         = 0x14,
     AVAGO_M4                         = 0x15,

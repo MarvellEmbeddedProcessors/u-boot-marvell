@@ -24,6 +24,7 @@
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/tables.h>
+#include <asm/arch-mvebu/thermal.h>
 
 #ifdef CONFIG_MVEBU_CCU
 #include <asm/arch-mvebu/ccu.h>
@@ -37,6 +38,13 @@
 #ifdef CONFIG_MVEBU_MBUS
 #include <asm/arch-mvebu/mbus.h>
 #endif
+
+/* Weak function for SoC who need specific thermal sensor */
+u32 __mvebu_thermal_sensor_probe(void)
+{
+	return 0;
+}
+u32 mvebu_thermal_sensor_probe(void) __attribute__((weak, alias("__mvebu_thermal_sensor_probe")));
 
 /* Weak function for boards who need specific init seqeunce */
 int __soc_late_init(void)
@@ -64,6 +72,8 @@ int mvebu_soc_init()
 #ifdef CONFIG_MVEBU_MBUS
 	init_mbus();
 #endif
+
+	mvebu_thermal_sensor_probe();
 
 	/* Soc specific init */
 	ret = soc_late_init();

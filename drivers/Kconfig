@@ -50,4 +50,6 @@ source "drivers/crypto/Kconfig"
 
 source "drivers/phy/Kconfig"
 
+source "drivers/thermal/Kconfig"
+
 endmenu

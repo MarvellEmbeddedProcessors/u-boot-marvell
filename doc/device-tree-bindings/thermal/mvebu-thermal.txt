@@ -1,0 +1,17 @@
+Marvell Thermal Sensor bindings
+=====================================
+
+The thermal node include describtion about the Thermal Sensor Unit.
+
+The thermal node requires the following properties:
+	- compatible
+		should be "marvell,thermal-sensor"
+	- reg: the base address of thermal unit
+
+Example:
+	thermal: thermal@e4070 {
+		compatible = "marvell,thermal-sensor";
+		reg = <0xE4070 0x12>;
+		status = "okay";
+	};
+

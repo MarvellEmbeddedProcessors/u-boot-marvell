@@ -43,8 +43,6 @@
 #define SBC_MASTER_REG_ADDR_SHIFT     (2)
 
 #ifdef MV_HWS_BIN_HEADER
-extern unsigned int genSwitchRegisterSet(unsigned int address, unsigned int sbus_data, unsigned int mask);
-extern unsigned int genSwitchRegisterGet(unsigned int address, unsigned int *sbus_data, unsigned int mask);
 #define genRegisterSet(devNum, portGroup, address, sbus_data, mask) \
      devNum = devNum; \
      portGroup = portGroup; \

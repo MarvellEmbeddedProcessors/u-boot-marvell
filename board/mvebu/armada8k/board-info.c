@@ -26,8 +26,8 @@
 /* Assuming their location is equal on all boards */
 struct cfg_var a8k_cfg_lookup[MAX_CFG] = {
 	[BOARD_ID_CFG] = {0, 0, 3, 4, 0,
-		{{ARMADA_8021_DB_ID, "DB-8021", VAR_IS_DEFUALT},
-		 {ARMADA_8021_RD_ID, "RD-8021", 0},
+		{{ARMADA_8021_DB_ID, "DB-88FA806-DDR4-MODULAR", VAR_IS_DEFUALT},
+		 {ARMADA_8021_RD_ID, "RD-88FA806-DDR4-MODULAR", 0},
 		 {ARMADA_8022_DB_ID, "DB-8022", 0},
 		 {ARMADA_8022_RD_ID, "RD-8022", 0} },
 	},

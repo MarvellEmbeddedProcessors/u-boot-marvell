@@ -23,7 +23,6 @@
 #include <asm/system.h>
 #include <asm/io.h>
 #include <fdtdec.h>
-#include <malloc.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/rfu.h>
@@ -158,9 +157,9 @@ void dump_rfu(void)
 	return;
 }
 
-int init_rfu(void)
+int init_rfu(bool sw_init)
 {
-	struct rfu_win *memory_map, *win;
+	struct rfu_win memory_map[RFU_MAX_TID], *win;
 	const void *blob = gd->fdt_blob;
 	u32 win_id, win_reg, trgt_id;
 	u32 node, win_count;
@@ -177,10 +176,11 @@ int init_rfu(void)
 	/* Get the base address of the address decoding MBUS */
 	rfu_base = (void *)fdt_get_regs_offs(blob, node, "reg");
 
-	memory_map = malloc(RFU_MAX_TID * sizeof(struct rfu_win));
-	if (memory_map == 0) {
-		error("failed allocating struct to init windows configuration\n");
-		return -1;
+	if (sw_init) {
+		/* init only the rfu_base without update the rfu windows.
+			The rfu_base required for the dump_rfu function */
+		debug("Done SW RFU Address decoding Initializing\n");
+		return 0;
 	}
 
 	/* Get the array of the windows and fill the map data */
@@ -204,7 +204,6 @@ int init_rfu(void)
 		rfu_enable_win(win, win->target_id);
 	}
 
-	free(memory_map);
 	debug("Done RFU Address decoding Initializing\n");
 	debug_exit();
 

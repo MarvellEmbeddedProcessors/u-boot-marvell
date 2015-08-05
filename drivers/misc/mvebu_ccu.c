@@ -23,7 +23,6 @@
 #include <asm/system.h>
 #include <asm/io.h>
 #include <fdtdec.h>
-#include <malloc.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/ccu.h>
@@ -179,9 +178,9 @@ void dump_ccu(void)
 	return;
 }
 
-int init_ccu(void)
+int init_ccu(bool sw_init)
 {
-	struct ccu_win *memory_map, *win;
+	struct ccu_win memory_map[CCU_MAX_WIN_NUM], *win;
 	const void *blob = gd->fdt_blob;
 	u32 win_id, win_reg;
 	u32 node, win_count;
@@ -200,15 +199,16 @@ int init_ccu(void)
 
 	/* Get the maximum number of CCU windows supported */
 	ccu_info->max_win = fdtdec_get_int(blob, node, "max-win", 0);
-	if (ccu_info->max_win == 0) {
+	if ((ccu_info->max_win == 0) || (ccu_info->max_win > CCU_MAX_WIN_NUM)) {
 		ccu_info->max_win = CCU_MAX_WIN_NUM;
 		error("failed reading max windows number, set window max size to %d\n", ccu_info->max_win);
 	}
 
-	memory_map = malloc(ccu_info->max_win * sizeof(struct ccu_win));
-	if (memory_map == 0) {
-		error("failed allocating struct to init windows configuration\n");
-		return -1;
+	if (sw_init) {
+		/* init only the ccu_info structure without updating the ccu windows.
+			The ccu_info is required for the dump_ccu function */
+		debug("Done SW CCU Address decoding Initializing\n");
+		return 0;
 	}
 
 	/* Get the array of the windows and fill the map data */
@@ -240,7 +240,6 @@ int init_ccu(void)
 		ccu_enable_win(win, win_id);
 	}
 
-	free(memory_map);
 	debug("Done CCU Address decoding Initializing\n");
 	debug_exit();
 

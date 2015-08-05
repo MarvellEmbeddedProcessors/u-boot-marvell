@@ -3227,10 +3227,10 @@ MV_STATUS mvBoardEepromWriteDefaultCfg(void)
 * mvBoardEepromValidSet - reset the valid counter in the EEPROM.
 *
 * DESCRIPTION:
-*       the valid counter is implemented by 2 bits in the EEPROM (offset 0x13
-*»       bits 0 & 1). the counter is used to count 3 failures during loading,
-*»       which happen because of bad configuration. when the counter reaches 3,
-*»       the configuration on the EEPROM is set to default.
+*       the valid counter is implemented by 4 bits in the EEPROM (offset 0x13
+*        bits 0-4). the counter is used to count 10 failures during loading,
+*        which happen because of bad configuration. when the counter reaches 10,
+*        the configuration on the EEPROM is set to default.
 * INPUT:
 *       None
 *

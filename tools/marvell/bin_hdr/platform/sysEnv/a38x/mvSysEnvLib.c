@@ -1054,9 +1054,9 @@ static MV_STATUS mvSysEnvEepromInit(void)
 		return MV_FAIL;
 
 	/* board configuration is enabled.*/
-	/* bits 0&1 in offset 11 in the EEPROM are used as counters for board configuration validation.
+	/* bits 0-4 in offset 13 in the EEPROM are used as counters for board configuration validation.
 	   each load of the board by EEPROM configuration, the counter is incremented, and when
-	   it reaches 3 times, the configuration is set to default */
+	   it reaches 10 times, the configuration is set to default */
 	if (mvSysEnvEpromRead(validConfigInfo.byteNum, data, 1, mvSysEnvi2cAddrGet()) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEepromInit: Error: read data from EEPROM failed.");
 		return MV_FAIL;
@@ -1064,9 +1064,9 @@ static MV_STATUS mvSysEnvEepromInit(void)
 
 	validCount = (data[0] & validConfigInfo.mask) >> validConfigInfo.offset;
 
-	/* if the valid counter has reached 3, reset the counter, disable the board auto configuration
+	/* if the valid counter has reached 10, reset the counter, disable the board auto configuration
 	   enable bit, and return MV_FAIL to load default configuration. */
-	if (validCount == 3) {
+	if (validCount == 10) {
 		DEBUG_INIT_S("mvSysEnvEepromInit: board configuration from the EEPROM is not valid\n");
 
 		/* reset the valid counter to 0 */

@@ -20,3 +20,27 @@
 
 #include "apn-806-db.dtsi"
 
+/ {
+	model = "Marvell APN-806 Development Board FLC mode";
+	compatible = "marvell,apn-806-db-flc", "marvell,apn-806-db", "marvell,apn-806";
+
+	soc {
+		internal-regs {
+
+			ccu {
+				windows = <0x0 0x0  0x0 0xeff00000 0x3 /* DRAM window */
+				0x0 0xf2000000 0x0 0xe000000 0x00 /* IO window */>;
+			};
+
+			rfu {
+				windows = <
+					0x0 0xfff00000 0x0 0x0 0x0 /*BootROM */
+					0x0 0xf8000000 0x0 0x1100000 0x2 /* SPI */
+					0x0 0xfe000000 0x0 0x1f00000 0x05 /* PCIe window 31Mb for PCIe port*/
+					0x0 0xffe00000 0x0 0x100000 0x03 /* PCI-REG window 64Kb for PCIe-reg*/>;
+			};
+
+		};
+	};
+};
+

@@ -1,0 +1,108 @@
+/*
+ * ***************************************************************************
+ * Copyright (C) 2015 Marvell International Ltd.
+ * ***************************************************************************
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ***************************************************************************
+ */
+
+#include "apn-806.dtsi"
+
+/ {
+	model = "Marvell APN-806 Development Board";
+	compatible = "marvell,apn-806-db", "marvell,apn-806";
+
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x10000000 0 0>; /* 256 MB */
+	};
+	/* This should go only into devel boards */
+	sar {
+		compatible = "marvell,sample-at-reset";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x4c 0x4d 0x0>;
+		chip_count = <2>;
+		bit_width = <5>;
+
+		freq {
+			key = "freq";
+			description = "CPU/DDR frequencies";
+			start-bit = <0>;
+			bit-length = <5>;
+			option-cnt = <4>;
+			options = "0x4", "2500/525 Mhz",
+				"0x6", "2500/800 Mhz",
+				"0x9", "2200/800 Mhz",
+				"0x13", "1600/800 Mhz";
+			default = <0x9>;
+			swap-bit;
+			status = "okay";
+		};
+		bootsrc {
+			key = "bootsrc";
+			description = "Boot source options";
+			start-bit = <5>;
+			bit-length = <2>;
+			option-cnt = <3>;
+			options = "0x0", "BootRoom",
+				"0x1", "Companion Device",
+				"0x2", "SPI";
+			default = <0x2>;
+			status = "okay";
+		};
+		c2c_ihb {
+			key = "c2c_ihb";
+			description = "C2C IHB select";
+			start-bit = <7>;
+			bit-length = <1>;
+			option-cnt = <2>;
+			options = "0x0", "IHB",
+				"0x1", "C2C";
+			default = <0x1>;
+			status = "okay";
+		};
+		dual_ap {
+			key = "dual_ap";
+			description = "Dual AP mode";
+			start-bit = <8>;
+			bit-length = <1>;
+			option-cnt = <2>;
+			options = "0x0", "Single AP mode",
+				"0x1", "Dual AP mode";
+			default = <0x0>;
+			status = "okay";
+		};
+		avs_enable {
+			key = "avs_enable";
+			description = "AVS Enable";
+			start-bit = <9>;
+			bit-length = <1>;
+			option-cnt = <2>;
+			options = "0x0", "AVS disabled",
+				"0x1", "AVS enabled";
+			default = <0x1>;
+			status = "okay";
+		};
+	};
+};
+
+&pinctl {
+		  /* 0 1 2 3 4 5 6 7 8 9 */
+	pin-func = < 1 1 1 1 1 1 1 1 1 0
+		     0 0 0 1 0 0>;
+};
+

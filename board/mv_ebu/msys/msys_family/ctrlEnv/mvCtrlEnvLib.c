@@ -132,7 +132,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_MSYS_AXP_INDEX_MAX] = {
 /* PNC_UNIT_ID		*/ { 0,		0,		1,		0,},
 };
 
-MV_U32  mvDev2CpuMapTable[17][2] = {
+MV_U32  mvDev2CpuMapTable[18][2] = {
 /*	Dev ID			cores#   */
 	{MV_BOBCAT2_DEV_ID,		2},
 	{MV_BOBK_DEV_ID,		2},
@@ -150,6 +150,7 @@ MV_U32  mvDev2CpuMapTable[17][2] = {
 	{MV_ALLEYCAT3_98DX1333_DEV_ID,	2},
 	{MV_ALLEYCAT3_98DX1335_DEV_ID,	2},
 	{MV_ALLEYCAT3_98DX1336_DEV_ID,	2},
+	{MV_78460_DEV_ID,		4},
 	{MV_MAX_DEV_ID,			0},
 };
 

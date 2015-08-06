@@ -56,7 +56,7 @@ u32 mvebu_thermal_sensor_read(void)
 u32 mvebu_thermal_sensor_probe(void)
 {
 	const void *blob = gd->fdt_blob;
-	u32 node, reg;
+	u32 node, reg, timeout = 0;
 
 	debug_enter();
 	debug("Initializing thermal sensor unit\n");
@@ -77,8 +77,13 @@ u32 mvebu_thermal_sensor_probe(void)
 	reg |= THERMAL_SEN_CTRL_MSB_RST_MASK;
 	writel(reg, thermal_base + THERMAL_SEN_CTRL_MSB);
 
-	udelay(10); /* wait 10 ms and check if the TSEN is ready */
 	reg = readl(thermal_base + THERMAL_SEN_CTRL_STATS);
+	while ((reg & THERMAL_SEN_CTRL_STATS_VALID_MASK) == 0 && timeout < 300) {
+		udelay(1);
+		reg = readl(thermal_base + THERMAL_SEN_CTRL_STATS);
+		timeout++;
+	}
+
 	if ((reg & THERMAL_SEN_CTRL_STATS_VALID_MASK) == 0) {
 		error("%s: thermal sensor is not ready\n", __func__);
 		return -1;

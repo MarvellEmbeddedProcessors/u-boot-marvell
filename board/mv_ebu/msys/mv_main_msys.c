@@ -840,6 +840,9 @@ char* mv_get_default_dtb_name(void)
 	case AC3_CUSTOMER_BOARD_ID0:
 	case AC3_CUSTOMER_BOARD_ID1:
 		return "msys_ac3.dtb";
+	case DB_BOBK_ID:
+	case RD_BOBK_ID:
+		return "msys_bobk.dtb";
 	default:
 		return "msys.dtb";
 	}

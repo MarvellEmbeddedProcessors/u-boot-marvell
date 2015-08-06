@@ -210,7 +210,12 @@ MV_BOOL mvGetAvsValFromEfuse(MV_U32 satrFreq, MV_U32 *avsVal)
 	MV_U32 versionVal, binVal, avsRegControlVal;
 	MV_BOARD_AVS_EFUSE_MAP efuse_freq_val[] = EFUSE_FREQ_VAL_INFO;
 	int i;
+
 #ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+	if (mvBoardIdGet() == DB_AMC_6820_ID) {
+		mvPrintf("Skipping AVS selection from EFUSE when run on AMC card\n");
+		return MV_FALSE;
+	}
 	/* For Marvell boards only:
 	 * AVS configuration from EFUSE can be skipped for Marvell boards, for:
 		- Already existing SoCs which EFUSE was not pre-burnt with AVS values
@@ -220,6 +225,7 @@ MV_BOOL mvGetAvsValFromEfuse(MV_U32 satrFreq, MV_U32 *avsVal)
 		return MV_FALSE;
 	}
 #endif
+
 	/* Set Memory I/O window */
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(EFUSE_WIN_ID), EFUSE_WIN_CTRL_VAL);
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(EFUSE_WIN_ID), EFUSE_WIN_BASE_VAL);

@@ -26,6 +26,7 @@
 #include "mvSiliconIf.h"
 #include "mvDdr3TrainingIpPrvIf.h"
 #include "mvHwsDdr3BobK.h"
+#include "soc_spec.h"
 #include "printf.h"
 
 /************************** globals ***************************************/
@@ -321,12 +322,10 @@ MV_VOID configureServerWindows(void)
 	if(configDone == MV_TRUE)
 		return;
 
-	MV_REG_WRITE(REG_XBAR_WIN_5_CTRL_ADDR, 0xF0081);
+    serverBaseAddr = MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(1));
 
-	serverBaseAddr = MV_REG_READ(REG_XBAR_WIN_5_BASE_ADDR);
-
-	/* init server access */
-	hwsServerRegSetFuncPtr = serverRegSet; 
+    /* init server access */
+	hwsServerRegSetFuncPtr = serverRegSet;
 	hwsServerRegGetFuncPtr = serverRegGet;
 
 	configDone = MV_TRUE;

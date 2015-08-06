@@ -131,7 +131,7 @@ Address Bits   Value   Description
 #define  DISABLE_DDR_TUNING_DATA          (0x02294285)
 #define  ENABLE_DDR_TUNING_DATA           (0x12294285)
 
-#if !defined(CONFIG_BOBCAT2)
+#if !defined(CPSS_BUILD) && !defined(CONFIG_BOBCAT2)
 #define ODPG_TRAINING_STATUS_REG          (0x18488)
 #else
 #define ODPG_TRAINING_STATUS_REG          (0x1030)
@@ -205,7 +205,7 @@ Address Bits   Value   Description
 #define CS_ENABLE_REG                     (0x16D8)
 #define WR_LEVELING_DQS_PATTERN_REG       (0x16DC)
 
-#if !defined(CONFIG_BOBCAT2)
+#if !defined(CPSS_BUILD) && !defined(CONFIG_BOBCAT2)
 #define ODPG_BIST_DONE                    (0x186D4)
 #else
 #define ODPG_BIST_DONE                    (0x16FC)
@@ -214,7 +214,7 @@ Address Bits   Value   Description
 #define ODPG_BIST_DONE_BIT_VALUE_REV2          (1)
 #define ODPG_BIST_DONE_BIT_VALUE_REV3          (0)
 
-#if !defined(CONFIG_BOBCAT2)
+#if !defined(CPSS_BUILD) && !defined(CONFIG_BOBCAT2)
 #define RESULT_CONTROL_BYTE_PUP_0_REG     (0x1830)
 #define RESULT_CONTROL_BYTE_PUP_1_REG     (0x1834)
 #define RESULT_CONTROL_BYTE_PUP_2_REG     (0x1838)

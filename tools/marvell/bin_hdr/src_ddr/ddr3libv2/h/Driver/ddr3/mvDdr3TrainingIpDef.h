@@ -46,6 +46,10 @@
 #include "common/siliconIf/mvSiliconIf.h"
 
 #if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+#define CPSS_BUILD
+#endif
+
+#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
 #define osMemCpy	hwsOsMemCopyFuncPtr
 #else
 #include <gtOs/gtOsMem.h>

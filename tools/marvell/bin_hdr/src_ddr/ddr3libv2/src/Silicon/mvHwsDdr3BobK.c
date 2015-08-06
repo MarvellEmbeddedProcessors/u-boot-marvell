@@ -1486,10 +1486,9 @@ static GT_STATUS ddr3TipCpuGetInitFreq
 	GT_U32 data;
 
     /* calc SAR */
-    CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, REG_DEVICE_SAR1_OVERRIDE_ADDR, /* in BOBK SAR should be read from REG_DEVICE_SAR1_OVERRIDE_ADDR since 
-                                                                                    read from REG_DEVICE_SAR1_ADDR register returns wrong value (0)*/
-                                           &data, MASK_ALL_BITS ));
-	mvPrintf("SAR1 is 0x%X\n", data);
+    CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, REG_DEVICE_SAR1_ADDR,&data, MASK_ALL_BITS ));
+    DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("SAR1 is 0x%X\n", data));
+
     data = (data >> PLL1_CNFIG_OFFSET) & PLL1_CNFIG_MASK;
 
     switch(data)

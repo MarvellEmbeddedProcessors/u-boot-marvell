@@ -848,7 +848,7 @@ static GT_STATUS ddr3TipRev2RankControl(GT_U32 devNum, GT_U32 interfaceId)
 static GT_STATUS ddr3TipRev3RankControl(GT_U32 devNum, GT_U32 interfaceId)
 {
     GT_U32 dataValue = 0,  busCnt;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U32 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	for (busCnt= 1; busCnt < octetsPerInterfaceNum; busCnt++) {
 		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busCnt)

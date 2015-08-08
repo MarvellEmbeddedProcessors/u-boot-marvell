@@ -65,6 +65,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*
 		Linux/vxWorks partitions on nor flash
 */
+
+#include "mvCommon.h"
+
 struct partitionInformation {
 	char *defaultImage;
 	MV_U32 FLASH_SIZE;
@@ -133,7 +136,7 @@ struct partitionInformation {
 
 #define MARVELL_VENDOR_ID		0x11ab
 #define NP5_DEVICE_ID			0x2012
-#define BC2_DEVICE_ID			0xfc00
+
 #define INT_LVL_XCAT2_SWITCH		55	/* Switch MG interrupt */
 
 /*
@@ -152,11 +155,12 @@ typedef enum {	// special device enum
 		SILT_XCAT2,
 		SILT_NP5,
 		SILT_BC2,
+		SILT_BOBK,
 		SILT_OTHER,
 		SILT_NOT_DETECT = 0x5a5a
 } SILICON_TYPE;
 
 SILICON_TYPE get_attached_silicon_type(void);
-int do_sar_bc2(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[]);
+int do_sar_msys(cmd_tbl_t * cmdtp, int flag, int silt, int argc, char * const argv[]);
 void hwServicesLateInit(void);
 #endif

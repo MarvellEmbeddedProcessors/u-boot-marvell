@@ -594,8 +594,8 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 
 		if (silt == SILT_NOT_DETECT)
 			silt = get_attached_silicon_type();
-		if (silt == SILT_BC2)
-			return do_sar_bc2(cmdtp, flag, argc, argv);
+		if (silt == SILT_BC2 || silt == SILT_BOBK)
+			return do_sar_msys(cmdtp, flag, silt, argc, argv);
 	}
 
 	/* is requested 'SatR read' --> Dump all */

@@ -556,6 +556,7 @@ MV_STATUS mvBoardIoExpanderDataSet(MV_VOID);
 MV_U8 mvBoardPICGpioGet(MV_U32 *picGpioMppInfo);
 MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
 MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
+MV_STATUS mvBoardEnableExternalI2C(void);
 MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField);
 MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val);
 MV_STATUS mvBoardIoExpanderStructGet(MV_U8 addr, MV_U8 offs, MV_U8 *pVal);

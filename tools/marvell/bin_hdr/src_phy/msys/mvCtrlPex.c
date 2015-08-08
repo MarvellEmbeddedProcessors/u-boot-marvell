@@ -432,5 +432,5 @@ MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32
 *******************************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-	return 0xFC00 /*MV_BOBCAT2_DEV_ID*/;
+	return MV_MSYS_DEV_ID;
 }

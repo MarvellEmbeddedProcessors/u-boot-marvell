@@ -133,7 +133,7 @@ endif
 ifdef MAKE_SWITCH_SERVICES
 USP_OBJS +=	$(USP_DIR)/switchingServices/switchingServices.o
 ifeq ($(BOARD),a38x)
-USP_OBJS +=	$(USP_DIR)/switchingServices/sar_bc2.o
+USP_OBJS +=	$(USP_DIR)/switchingServices/sar_msys.o
 endif
 endif
 

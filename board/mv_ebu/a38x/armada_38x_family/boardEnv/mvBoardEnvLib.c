@@ -2867,6 +2867,45 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 }
 
 /*******************************************************************************
+* mvBoardEnableExternalI2C -
+*
+* DESCRIPTION: Enable the I2C external access to Host board
+*
+* INPUT:
+*		None
+*
+* OUTPUT:
+*		None.
+*
+* RETURN:
+*		None
+*
+*******************************************************************************/
+MV_STATUS mvBoardEnableExternalI2C(void)
+{
+	MV_U32 boardId = mvBoardIdGet();
+	static MV_U32 enable;
+	MV_U32 regTmp = 0;
+
+	/* Check if switch is connected to AMC board */
+	if (boardId == DB_AMC_6820_ID) {
+
+		/* A385-AMC: GPIO44 controls remote I2C external access to Host board
+			Output Low: remote access enabled
+			Output High: remote access disabled */
+		if (enable == 0) {
+			enable = 1;
+			regTmp = MV_REG_READ(GPP_DATA_OUT_REG(1));
+			MV_REG_WRITE(GPP_DATA_OUT_REG(1), regTmp | BIT12);
+		}
+	} else {
+		mvOsPrintf("Error: current board doesn't support external I2C remote access via GPIO\n");
+	}
+
+	return MV_OK;
+}
+
+/*******************************************************************************
 * mvBoardSatRRead
 *
 * DESCRIPTION: Read S@R configuration Field

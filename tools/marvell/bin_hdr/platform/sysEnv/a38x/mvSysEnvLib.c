@@ -264,7 +264,7 @@ static MV_VOID mvBoardDb6820AmcTwsiConfig(MV_VOID)
 	   The entire GPPs configuration is the same as in u-boot */
 	/* Set GPP Out value */
 	MV_REG_WRITE(GPP_DATA_OUT_REG(0), BIT29); /* GPIO29: QS_SMI_ENA = OUT VAL High */
-	MV_REG_WRITE(GPP_DATA_OUT_REG(1), BIT12); /* GPIO44 (BIT12) : I2C_EXT_EN = FALSE (False = OUT VAL High) */
+	MV_REG_WRITE(GPP_DATA_OUT_REG(1), 0); /* GPIO44 (BIT12) : I2C_EXT_EN = FALSE (False = OUT VAL Low) */
 	MV_REG_WRITE(GPP_DATA_OUT_REG(2), 0);
 
 	/* set GPP polarity */

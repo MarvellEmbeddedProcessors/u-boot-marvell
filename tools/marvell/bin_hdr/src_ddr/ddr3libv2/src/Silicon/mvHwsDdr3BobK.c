@@ -240,7 +240,7 @@ GT_U32 phy1ValTable[DDR_FREQ_LIMIT] =
 /* Bit mapping (for PBS) */
 GT_U32 bobKDQbitMap2Phypin[] =
 {
-#warning "DQ mapping is updated for Interface4 only!" !!!
+/*#warning "DQ mapping is updated for Interface4 only!" !!!*/
 	    /* Interface 0 */
 	    0,0,0,0,0,0,0,0 , /* dq[0:7]   */
 	    0,0,0,0,0,0,0,0 , /* dq[8:15]  */
@@ -1311,7 +1311,10 @@ static GT_STATUS ddr3TipCpuSetDivider
     MV_HWS_DDR_FREQ                 frequency
 )
 {
-    GT_U32 data = 0, value, divider = 0, divRatio;
+    GT_U32 data = 0, divider = 0;
+#if 0
+    GT_U32 value, divRatio;
+#endif
     MV_HWS_DDR_FREQ sarFreq;
     GT_U32 writeData;
 

@@ -51,13 +51,14 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 #if defined(CONFIG_BOBCAT2) || defined(CONFIG_BOBK)
 	CMD_TM_FREQ,
 	CMD_JTAG_CPU,
-#ifdef CONFIG_BOBCAT2/* TODO */
+#endif
+#if defined CONFIG_BOBCAT2/* TODO */
 	CMD_PTP_PLL,
 	CMD_OOB0_CON,
 	CMD_OOB1_CON,
 	CMD_PEX_GEN1,
 #endif
-#elif defined(CONFIG_ALLEYCAT3)
+#if defined(CONFIG_ALLEYCAT3)
 	CMD_PCIE_CLOCK,
 	CMD_PLL_CLOCK,
 	CMD_AVS_MODE,
@@ -156,7 +157,8 @@ static int sar_cmd_get(const char *cmd)
 		return CMD_TM_FREQ;
 	if (strcmp(cmd, "jtagcpu") == 0)
 		return CMD_JTAG_CPU;
-#ifdef CONFIG_BOBCAT2
+#endif
+#if defined CONFIG_BOBCAT2
 	if (strcmp(cmd, "ptppll") == 0)
 		return CMD_PTP_PLL;
 	if (strcmp(cmd, "oob0con") == 0)
@@ -166,7 +168,7 @@ static int sar_cmd_get(const char *cmd)
 	if (strcmp(cmd, "pciegen1") == 0)
 		return CMD_PEX_GEN1;
 #endif
-#elif defined CONFIG_ALLEYCAT3
+#if defined CONFIG_ALLEYCAT3
 	if (strcmp(cmd, "pciclock") == 0)
 		return CMD_PCIE_CLOCK;
 	if (revId == MV_ALLEYCAT3_A0_ID) {
@@ -210,7 +212,7 @@ static int do_sar_list(int mode)
 		printf("Determines the core clock frequency:\n");
 		printf("\t| ID  | Core clock (MHz) |\n");
 		printf("\t--------------------------\n");
-		for (i = 0; i < 7; i++)
+		for (i = 0; i < ARRAY_SIZE(coreClockTbl); i++)
 			printf("\t| %2d  |      %4d        |\n", i, coreClockTbl[i]);
 		printf("\t--------------------------\n");
 		break;
@@ -218,7 +220,7 @@ static int do_sar_list(int mode)
 		printf("Determines the CPU and DDR frequency:\n");
 		printf("\t| ID  | CPU Freq (MHz) | DDR Freq (MHz) |\n");
 		printf("\t-----------------------------------------\n");
-		for (i = 0; i < 7; i++) {
+		for (i = 0; i < ARRAY_SIZE(cpuDdrClkTbl); i++) {
 			if (cpuDdrClkTbl[i].internalFreq)
 				continue;
 			printf("\t| %2d  |      %4d      |      %4d      |\n",
@@ -232,7 +234,7 @@ static int do_sar_list(int mode)
 		printf("\t| ID  | TM Freq (MHz) | DDR Freq (MHz) |\n");
 		printf("\t----------------------------------------\n");
 		printf("\t|  0  |   Disabled    |                |\n");
-		for (i = 1; i < 7; i++) {
+		for (i = 1; i < ARRAY_SIZE(tmClkTbl); i++) {
 			if (tmClkTbl[i].internalFreq)
 				continue;
 			printf("\t| %2d  |      %4d     |      %4d      |\n",
@@ -248,7 +250,8 @@ static int do_sar_list(int mode)
 		printf("\t|  1  |  MSYS (PJ4B)    |\n");
 		printf("\t------------------------\n");
 		break;
-#ifdef CONFIG_BOBCAT2
+#endif
+#if defined CONFIG_BOBCAT2
 	case CMD_PTP_PLL:
 		printf("Determines the PTP PLL multiplier configurtation:\n");
 		printf("\t| ID  |  PTP PLL Multiplier |\n");
@@ -281,7 +284,7 @@ static int do_sar_list(int mode)
 		break;
 #endif
 
-#elif defined CONFIG_ALLEYCAT3
+#if defined CONFIG_ALLEYCAT3
 	case CMD_DDR_ECC_EN:
 		printf("Determines the DDR ECC status:\n");
 		printf("\t| ID  |  ECC status    |\n");
@@ -394,7 +397,6 @@ static int do_sar_read(int mode)
 		break;
 
 #if defined(CONFIG_BOBCAT2) || defined(CONFIG_BOBK)
-
 	case CMD_TM_FREQ:
 		if (mvBoardTmFreqGet(&tmp) == MV_OK)
 			printf("tmfreq\t\t\t= %d ==>  TM @ %dMHz DDR3 @ %dMHz \n", tmp, tmClkTbl[tmp].tmFreq, tmClkTbl[tmp].ddr3Freq);
@@ -408,8 +410,9 @@ static int do_sar_read(int mode)
 		else
 			printf("jtagcpu Error: failed reading JTAG connection type\n");
 		break;
+#endif
 
-#ifdef CONFIG_BOBCAT2
+#if defined CONFIG_BOBCAT2
 	case CMD_PTP_PLL:
 		if (mvBoardPtpPllGet(&tmp) == MV_OK)
 			printf("ptppll \t\t= %d ==>  %s\n", tmp, ((tmp == 0) ? "20" : "21.875"));
@@ -437,7 +440,7 @@ static int do_sar_read(int mode)
 		break;
 #endif
 
-#elif defined CONFIG_ALLEYCAT3
+#if defined CONFIG_ALLEYCAT3
 	case CMD_DDR_ECC_EN:
 		if (mvBoardDdrEccEnableGet(&tmp) == MV_OK)
 			printf("ddreccenable \t\t= %d ==>  %s\n", tmp,
@@ -542,6 +545,11 @@ static int do_sar_write(int mode, int value)
 	tmp = (MV_U8)value;
 	switch (mode) {
 	case CMD_CORE_CLK_FREQ:
+		if ((value < 0) || (value >= ARRAY_SIZE(coreClockTbl))) {
+			mvOsPrintf("S@R incorrect value for Core Clock: %d\n", value);
+			rc = MV_ERROR;
+			break;
+		}
 		rc = mvBoardCoreFreqSet(tmp);
 		break;
 	case CMD_CPU_DDR_REQ:
@@ -566,7 +574,9 @@ static int do_sar_write(int mode, int value)
 	case CMD_JTAG_CPU:
 		rc = mvBoardJtagCpuSet(tmp);
 		break;
-#ifdef CONFIG_BOBCAT2
+#endif
+
+#if defined CONFIG_BOBCAT2
 	case CMD_PTP_PLL:
 		rc = mvBoardPtpPllSet(tmp);
 		break;
@@ -579,7 +589,7 @@ static int do_sar_write(int mode, int value)
 		break;
 #endif
 
-#elif defined CONFIG_ALLEYCAT3
+#if defined CONFIG_ALLEYCAT3
 	case CMD_DDR_ECC_EN:
 		rc = mvBoardDdrEccEnableSet(tmp);
 		break;
@@ -690,13 +700,14 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 #if defined(CONFIG_BOBCAT2) || defined(CONFIG_BOBK)
 "tmfreq                     - TM frequency\n"
 "jtagcpu                    - JTAG CPU connection\n"
-"ptppll                     - PTP PLL multiplier\n"
+#endif
 #if defined(CONFIG_BOBCAT2)
+"ptppll                     - PTP PLL multiplier\n"
 "oob0con                    - OOB-0 to physical port connection\n"
 "oob1con                    - OOB-1 to physical port connection\n"
+"pciegen1					- Force PCIe GEN1 on AMC RC connection\n"
 #endif
-"pciegen1                   - Force PCIe GEN1 on AMC RC connection\n"
-#elif defined CONFIG_ALLEYCAT3
+#if defined(CONFIG_ALLEYCAT3)
 "pciclock                   - PCIe reference clock source\n"
 "avsmode                    - Adaptive Voltage Scaling mode. Not valid for rev.A0\n"
 "slaveaddr                  - I2C/SMI Slave Address\n"

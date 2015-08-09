@@ -1727,7 +1727,7 @@ MV_STATUS mvBoardCpuFreqGet(MV_U8 *value)
 			(MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar2)))
 			return MV_ERROR;
 
-		*value = ((((sar2 & 0x1)) << 3) | ((sar & 0x18) >> 3));
+		*value = ((((sar2 & 0x1)) << 2) | ((sar & 0x18) >> 3));
 
 	} else if (family == MV_BOBK_DEV_ID) {
 		MV_U8		sar2;
@@ -1737,7 +1737,7 @@ MV_STATUS mvBoardCpuFreqGet(MV_U8 *value)
 			(MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar2)))
 			return MV_ERROR;
 
-		*value = ((((sar2 & 0x1)) << 3) | ((sar & 0x18) >> 3));
+		*value = ((((sar2 & 0x1)) << 2) | ((sar & 0x18) >> 3));
 
 	} else if (family == MV_ALLEYCAT3_DEV_ID) {
 

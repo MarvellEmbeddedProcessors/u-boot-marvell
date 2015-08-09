@@ -53,7 +53,8 @@ extern "C" {
 #define  AVAGO_ETH_CONNECTION         1
 #define  AVAGO_I2C_CONNECTION         2
 #define  AVAGO_SBUS_CONNECTION        3
-#define  MAX_AVAGO_SERDES_NUMBER      64
+#define  MAX_AVAGO_SPICO_NUMBER       15
+#define  MAX_AVAGO_SERDES_NUMBER      40
 #define  MAX_AVAGO_SERDES_ADDRESS     255
 #define  NA_VALUE                     0
 #define  AVAGO_INVALID_SBUS_ADDR      (-1)
@@ -82,7 +83,7 @@ extern "C" {
 
 #endif
 /************************* Globals *******************************************************/
-int mvHwsAvagoCheckSerdesAccess
+int mvHwsAvagoInitializationCheck
 (
     unsigned char devNum,
     unsigned int  serdesNum
@@ -94,6 +95,13 @@ int mvHwsAvagoConvertSerdesToSbusAddr
     unsigned int  serdesNum,
     unsigned int  *sbusAddr
 );
+
+int mvHwsAvagoConvertSbusAddrToSerdes
+(
+    unsigned char *serdesNum,
+    unsigned int  sbusAddr
+);
+
 #ifndef ASIC_SIMULATION
 /*******************************************************************************
 * mvHwsAvagoSerdesInit

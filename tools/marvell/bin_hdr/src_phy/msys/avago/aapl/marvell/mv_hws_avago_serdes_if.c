@@ -82,7 +82,7 @@ unsigned int mvAvagoDb = 1;
 unsigned int mvAvagoDb = 0;
 #endif /* MARVELL_AVAGO_DB_BOARD */
 
-GT_U8 serdesToAvagoMap[] =
+GT_U8 serdesToAvagoMap[MAX_AVAGO_SERDES_NUMBER] =
 {
     [20] 14, /* Logical SERDES 20  == Physical SERDES 14 on SERDES chain */
     [24] 13, /* Logical SERDES 24  == Physical SERDES 13 on SERDES chain */
@@ -96,10 +96,30 @@ GT_U8 serdesToAvagoMap[] =
     [32] 4,  /* Logical SERDES 32  == Physical SERDES 04 on SERDES chain */
     [33] 3,  /* Logical SERDES 33  == Physical SERDES 03 on SERDES chain */
     [34] 2,  /* Logical SERDES 34  == Physical SERDES 02 on SERDES chain */
-    [35] 1,  /* Logical SERDES 35  == Physical SERDES 01 on SERDES chain */
+    [35] 1   /* Logical SERDES 35  == Physical SERDES 01 on SERDES chain */
 
     /* Temp Sensor = Physical SPICO 09 on SERDES chain */
 };
+
+GT_U8 avagoToSerdesMap[MAX_AVAGO_SPICO_NUMBER] =
+{
+    [14] 20, /* Logical SERDES 20  == Physical SERDES 14 on SERDES chain */
+    [13] 24, /* Logical SERDES 24  == Physical SERDES 13 on SERDES chain */
+    [12] 25, /* Logical SERDES 25  == Physical SERDES 12 on SERDES chain */
+    [11] 26, /* Logical SERDES 26  == Physical SERDES 11 on SERDES chain */
+    [10] 27, /* Logical SERDES 27  == Physical SERDES 10 on SERDES chain */
+    [8]  31, /* Logical SERDES 31  == Physical SERDES 08 on SERDES chain */
+    [7]  30, /* Logical SERDES 30  == Physical SERDES 07 on SERDES chain */
+    [6]  29, /* Logical SERDES 29  == Physical SERDES 06 on SERDES chain */
+    [5]  28, /* Logical SERDES 28  == Physical SERDES 05 on SERDES chain */
+    [4]  32, /* Logical SERDES 32  == Physical SERDES 04 on SERDES chain */
+    [3]  33, /* Logical SERDES 33  == Physical SERDES 03 on SERDES chain */
+    [2]  34, /* Logical SERDES 34  == Physical SERDES 02 on SERDES chain */
+    [1]  35  /* Logical SERDES 35  == Physical SERDES 01 on SERDES chain */
+
+    /* Temp Sensor = Physical SPICO 09 on SERDES chain */
+};
+
 
 /************************* * Pre-Declarations *******************************************************/
 #ifndef ASIC_SIMULATION
@@ -107,10 +127,11 @@ extern GT_STATUS mvHwsAvagoInitI2cDriver(GT_VOID);
 #endif /* ASIC_SIMULATION */
 
 void mvHwsAvagoAccessValidate(unsigned char devNum, uint sbus_addr);
+GT_STATUS mvHwsAvagoCheckSerdesAccess(unsigned int devNum, unsigned char portGroup, unsigned char serdesNum);
 
 /***************************************************************************************************/
 
-int mvHwsAvagoCheckSerdesAccess
+int mvHwsAvagoInitializationCheck
 (
     unsigned char devNum,
     unsigned int  serdesNum
@@ -126,9 +147,10 @@ int mvHwsAvagoConvertSerdesToSbusAddr
     unsigned int  *sbusAddr
 )
 {
-    CHECK_STATUS(mvHwsAvagoCheckSerdesAccess(devNum, serdesNum));
+    CHECK_STATUS(mvHwsAvagoInitializationCheck(devNum, serdesNum));
 
-    if(serdesNum >= MAX_AVAGO_SERDES_NUMBER) {
+    if(serdesNum >= MAX_AVAGO_SERDES_NUMBER)
+    {
         return GT_BAD_PARAM;
     }
 
@@ -136,6 +158,23 @@ int mvHwsAvagoConvertSerdesToSbusAddr
 
     return GT_OK;
 }
+
+int mvHwsAvagoConvertSbusAddrToSerdes
+(
+    unsigned char *serdesNum,
+    unsigned int  sbusAddr
+)
+{
+    if(sbusAddr >= MAX_AVAGO_SPICO_NUMBER)
+    {
+        return GT_BAD_PARAM;
+    }
+
+    *serdesNum = avagoToSerdesMap[sbusAddr];
+
+    return GT_OK;
+}
+
 
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /*******************************************************************************
@@ -282,6 +321,59 @@ int avagoSerdesAacsServerExec(unsigned char devNum)
 #if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 
 /*******************************************************************************
+* mvHwsAvagoSpicoLoad
+*
+* DESCRIPTION:
+*       Load Avago SPICO Firmware
+*******************************************************************************/
+int mvHwsAvagoSpicoLoad(unsigned char devNum, unsigned int sbus_addr)
+{
+#ifdef FW_DOWNLOAD_FROM_SERVER
+    AVAGO_DBG(("Loading file: %s to SBus address %x\n", serdesFileName, sbus_addr));
+    avago_spico_upload_file(aaplSerdesDb[devNum], sbus_addr, FALSE, serdesFileName);
+
+    if (serdesSwapFileName != NULL)
+    {
+        AVAGO_DBG(("Loading swap file: %s to SBus address %x\n", serdesSwapFileName, sbus_addr));
+        avago_spico_upload_file(aaplSerdesDb[devNum], sbus_addr, FALSE,serdesSwapFileName);
+    }
+#else /* Download from embedded firmware file */
+    AVAGO_DBG(("Loading to SBus address %x data[0]=%x\n", sbus_addr, serdesFwPtr[0]));
+    CHECK_STATUS(avago_spico_upload(aaplSerdesDb[devNum], sbus_addr, FALSE,
+                                    AVAGO_SERDES_FW_IMAGE_SIZE, serdesFwPtr));
+#ifdef AVAGO_FW_SWAP_IMAGE_EXIST
+    CHECK_STATUS(avago_spico_upload_swap_image(aaplSerdesDb[devNum], sbus_addr,
+                                               AVAGO_SERDES_FW_SWAP_IMAGE_SIZE, serdesFwDataSwapPtr));
+#endif /* AVAGO_FW_SWAP_IMAGE_EXIST */
+
+#endif /* FW_DOWNLOAD_FROM_SERVER */
+
+    return GT_OK;
+}
+
+/*******************************************************************************
+* mvHwsAvagoSbusMasterLoad
+*
+* DESCRIPTION:
+*       Load Avago Sbus Master Firmware
+*******************************************************************************/
+int mvHwsAvagoSbusMasterLoad(unsigned char devNum)
+{
+    unsigned int sbus_addr = AVAGO_SBUS_MASTER_ADDRESS;
+
+#ifdef FW_DOWNLOAD_FROM_SERVER
+    AVAGO_DBG(("Loading file: %s to SBus address %x\n", sbusMasterFileName, sbus_addr));
+    avago_spico_upload_file(aaplSerdesDb[devNum], sbus_addr , FALSE, sbusMasterFileName);
+#else
+    AVAGO_DBG(("Loading to SBus address %x  data[0]=%x\n", sbus_addr , sbusMasterFwPtr[0]));
+    CHECK_STATUS(avago_spico_upload(aaplSerdesDb[devNum], sbus_addr, FALSE,
+                                    AVAGO_SBUS_MASTER_FW_IMAGE_SIZE, sbusMasterFwPtr));
+#endif /* FW_DOWNLOAD_FROM_SERVER */
+
+    return GT_OK;
+}
+
+/*******************************************************************************
 * mvHwsAvagoSerdesInit
 *
 * DESCRIPTION:
@@ -308,6 +400,7 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
 #ifndef AVAGO_AAPL_LGPL
     unsigned int addr = avago_make_addr3(AVAGO_BROADCAST, AVAGO_BROADCAST, AVAGO_BROADCAST);
 #endif
+    unsigned char serdes_num;
 
     /* Validate AAPL */
     if (aaplSerdesDb[devNum] != NULL)
@@ -381,45 +474,21 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
             addr_struct.sbus = curr_adr;
             sbus_addr = avago_struct_to_addr(&addr_struct);
 
-#ifdef FW_DOWNLOAD_FROM_SERVER
-            AVAGO_DBG(("Loading file: %s to SBus address %x chip %d, ring %x sbus %x data[0]=%x\n",
-                                       serdesFileName, sbus_addr, addr_struct.chip, addr_struct.ring, addr_struct.sbus));
-
-            avago_spico_upload_file(aaplSerdesDb[devNum], sbus_addr , FALSE,serdesFileName);
-            if (serdesSwapFileName != NULL)
+            CHECK_STATUS(mvHwsAvagoConvertSbusAddrToSerdes(&serdes_num, curr_adr));
+            if (mvHwsAvagoCheckSerdesAccess(devNum, 0, serdes_num) == GT_NOT_INITIALIZED)
             {
-                AVAGO_DBG(("Loading swap file: %s to SBus address %x chip %d, ring %x sbus %x data[0]=%x\n",
-                                           serdesSwapFileName, sbus_addr, addr_struct.chip, addr_struct.ring, addr_struct.sbus));
-                avago_spico_upload_file(aaplSerdesDb[devNum], sbus_addr , FALSE,serdesSwapFileName);
+                CHECK_STATUS(mvHwsAvagoSpicoLoad(devNum, sbus_addr));
             }
-#else /* Download from embedded firmware file */
-            AVAGO_DBG(("Loading to SBus address %x chip %d, ring %x sbus %x data[0]=%x\n",
-                                       sbus_addr ,addr_struct.chip,addr_struct.ring ,addr_struct.sbus, serdesFwPtr[0]));
-            CHECK_STATUS(avago_spico_upload(aaplSerdesDb[devNum], sbus_addr , FALSE, AVAGO_SERDES_FW_IMAGE_SIZE,serdesFwPtr));
-
-#ifdef AVAGO_FW_SWAP_IMAGE_EXIST
-            CHECK_STATUS(avago_spico_upload_swap_image(aaplSerdesDb[devNum], sbus_addr, AVAGO_SERDES_FW_SWAP_IMAGE_SIZE, serdesFwDataSwapPtr));
-#endif /* AVAGO_FW_SWAP_IMAGE_EXIST */
-#endif /* FW_DOWNLOAD_FROM_SERVER */
         }
     }
 
     /* Download SBus_Master Firmware */
     /* ============================= */
-    sbus_addr = AVAGO_SBUS_MASTER_ADDRESS;
-
-#ifdef FW_DOWNLOAD_FROM_SERVER
-    AVAGO_DBG(("Loading file: %s to SBus address %x chip %d, ring %x sbus %x data[0]=%x\n",
-                              sbusMasterFileName, sbus_addr ,addr_struct.chip,addr_struct.ring ,addr_struct.sbus));
-    avago_spico_upload_file(aaplSerdesDb[devNum], sbus_addr , FALSE,sbusMasterFileName);
-#else
-    AVAGO_DBG(("Loading to SBus address %x  data[0]=%x\n", sbus_addr , sbusMasterFwPtr[0]));
-    CHECK_STATUS(avago_spico_upload(aaplSerdesDb[devNum], sbus_addr, FALSE, AVAGO_SBUS_MASTER_FW_IMAGE_SIZE, sbusMasterFwPtr));
-#endif /* FW_DOWNLOAD_FROM_SERVER */
+    CHECK_STATUS(mvHwsAvagoSbusMasterLoad(devNum));
 
     if(aaplSerdesDb[devNum]->return_code < 0)
     {
-        osPrintf("aapl_get_ip_info failed (return code 0x%x)\n", aaplSerdesDb[devNum]->return_code);
+        osPrintf("Avago FW Load Failed (return code 0x%x)\n", aaplSerdesDb[devNum]->return_code);
         return GT_INIT_ERROR;
     }
 
@@ -846,7 +915,11 @@ int mvHwsAvagoSerdesSbmVoltageGet
 *       None.
 *
 *******************************************************************************/
-void mvHwsAvagoAccessValidate(unsigned char devNum, uint sbus_addr)
+void mvHwsAvagoAccessValidate
+(
+    unsigned char devNum,
+    uint sbus_addr
+)
 {
     AVAGO_DBG(("Validate SBUS access (sbus_addr 0x%x)- ", sbus_addr));
     if (avago_diag_sbus_rw_test(aaplSerdesDb[devNum], avago_make_sbus_controller_addr(sbus_addr), 2) == TRUE)
@@ -858,6 +931,44 @@ void mvHwsAvagoAccessValidate(unsigned char devNum, uint sbus_addr)
         AVAGO_DBG(("Access Failed\n"));
     }
 }
+
+/*******************************************************************************
+* mvHwsAvagoCheckSerdesAccess
+*
+* DESCRIPTION:
+*       Validate access to Avago Serdes
+*
+* INPUTS:
+*       unsigned int  devNum
+*       unsigned char portGroup
+*       unsigned char serdesNum
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       None.
+*
+*******************************************************************************/
+GT_STATUS mvHwsAvagoCheckSerdesAccess
+(
+    unsigned int  devNum,
+    unsigned char portGroup,
+    unsigned char serdesNum
+)
+{
+  GT_UREG_DATA data;
+
+  /* check analog reset */
+  CHECK_STATUS(hwsSerdesRegGetFuncPtr(devNum, portGroup, EXTERNAL_REG, serdesNum,
+                                      SERDES_EXTERNAL_CONFIGURATION_1, &data, 0));
+
+  if(((data >> 3) & 1) == 0)
+      return GT_NOT_INITIALIZED;
+
+  return GT_OK;
+}
+
 
 
 

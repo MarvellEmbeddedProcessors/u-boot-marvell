@@ -202,6 +202,10 @@ void user_supplied_sbus_soft_reset
 
     /* Read Common control register */
     genRegisterGet(devNum, portGroup, SBC_UNIT_REG_ADDR(SBC_UNIT_COMMOM_CTRL_REG_ADDR), &data, mask);
+
+    if (data & SBC_UNIT_SOFT_RESET)
+        return;
+
     /* Set SBC in reset */
     data &= ~SBC_UNIT_SOFT_RESET;
     /* Clear internal ROM enable - loading ROM from the application */

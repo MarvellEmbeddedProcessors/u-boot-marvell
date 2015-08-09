@@ -89,7 +89,7 @@ SERDES_MAP customerBoard1Topology[MAX_SERDES_LANES] =
 };
 
 /* Configuration options */
-SERDES_MAP* customerBobKBoardSerdesTopology[] =
+SERDES_MAP* customerBobkBoardSerdesTopology[] =
 {
 	customerBoard0Topology, /* Board 0 */
 	customerBoard1Topology, /* Board 1 */

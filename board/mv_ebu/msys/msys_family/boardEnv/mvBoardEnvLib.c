@@ -308,10 +308,11 @@ MV_STATUS mvBoardNameGet(char *pNameBuff)
 *******************************************************************************/
 MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 {
-	if (ethNum <= mvCtrlEthMaxPortGet())
+	if ((ethNum <= board->numBoardMacInfo) &&
+		(board->pBoardMacInfo[ethNum].boardMacEnabled == MV_TRUE))
 		return MV_TRUE;
-
-	return MV_FALSE;
+	else
+		return MV_FALSE;
 }
 
 /*******************************************************************************

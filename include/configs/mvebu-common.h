@@ -198,6 +198,11 @@
 
 /* UART */
 #ifdef CONFIG_SYS_NS16550
+/* We keep the UART configuration in .h file, because the UART driver is basic driver for loading
+ * U-Boot, if there any issue in the driver or in FDT getting values or maybe in the values
+ * the U-Boot will stuck while loading it. For now we'll keep this defines here,
+ * and we can later move them to Kconfig.
+ */
 	#define CONFIG_SYS_NS16550_SERIAL
 	#define CONFIG_SYS_NS16550_MEM32
 	#define CONFIG_SYS_NS16550_REG_SIZE	(-4)

@@ -232,11 +232,7 @@ typedef enum
 #define AAPL_SERDES_INIT_RDY_TIMEOUT   20  /**< Maximum milliseconds for pll calibration */
 #define AAPL_SPICO_UPLOAD_WAIT_TIMEOUT 500  /**< Maximum milliseconds to wait for AAPL to wait for external SPICO upload to complete */
 
-#ifdef MV_MSYS_BOBK
-#define AVAGO_MG_ACCESS_THRESHOLD      500  /**< Maximum "mop" to wait fbefore any MG access */
-#else
 #define AVAGO_MG_ACCESS_THRESHOLD      10000  /**< Maximum "mop" to wait fbefore any MG access */
-#endif
 
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #define AAPL_I2C_HARD_RESET_TIMEOUT    100  /**< Maximum number of commands to send after a hard I2C reset to wait for bus to come back up */

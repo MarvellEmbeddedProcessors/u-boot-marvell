@@ -147,6 +147,7 @@
 
 #if defined(CONFIG_ENV_IS_IN_BOOTDEV)
 	#define CONFIG_ENV_IS_IN_SPI_FLASH
+	#define CONFIG_ENV_IS_IN_NAND
 	#define DEFAULT_BUBT_DST "spi"
 	#define CONFIG_DOIMAGE_TYPE     "flash"
 	#define CONFIG_DOIMAGE_SUFFIX   "dynamic"
@@ -176,14 +177,14 @@
 
 
 /* Boot from NAND settings */
-#if defined(CONFIG_MVEBU_NAND_BOOT)
+#if defined(CONFIG_MVEBU_NAND_BOOT) && !defined(CONFIG_ENV_IS_IN_BOOTDEV)
 	#define CONFIG_ENV_IS_IN_NAND
 	#define CONFIG_DOIMAGE_TYPE	"nand"
 	#define CONFIG_DOIMAGE_SUFFIX	"nand"
 #endif /* CONFIG_MVEBU_NAND_BOOT */
 
 /* Boot from SPI settings */
-#if defined(CONFIG_MVEBU_SPI_BOOT)
+#if defined(CONFIG_MVEBU_SPI_BOOT) && !defined(CONFIG_ENV_IS_IN_BOOTDEV)
 	#define CONFIG_ENV_IS_IN_SPI_FLASH
 	#define CONFIG_DOIMAGE_TYPE	"flash"
 	#define CONFIG_DOIMAGE_SUFFIX	"spi"

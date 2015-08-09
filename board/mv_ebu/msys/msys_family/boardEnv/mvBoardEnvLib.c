@@ -308,11 +308,7 @@ MV_STATUS mvBoardNameGet(char *pNameBuff)
 *******************************************************************************/
 MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 {
-	if ((ethNum <= board->numBoardMacInfo) &&
-		(board->pBoardMacInfo[ethNum].boardMacEnabled == MV_TRUE))
-		return MV_TRUE;
-	else
-		return MV_FALSE;
+	return mvBoardIsGbEPortConnected(ethNum);
 }
 
 /*******************************************************************************
@@ -872,7 +868,8 @@ MV_U32 mvBoardGppConfigGet(void)
 *******************************************************************************/
 MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum)
 {
-	if ((ethPortNum + 1) <= board->numBoardMacInfo)
+	if ((ethPortNum < board->numBoardMacInfo) &&
+		(board->pBoardMacInfo[ethPortNum].boardMacEnabled == MV_TRUE))
 		return MV_TRUE;
 	else
 		return MV_FALSE;

@@ -909,3 +909,39 @@ MV_BOOL mvBoardIsUsb3PortDevice(MV_U32 port)
 	/* Since usb3 device is not supported on current board return false */
 	return MV_FALSE;
 }
+
+/*******************************************************************************
+* mvBoardUpdateConfigforDT
+* DESCRIPTION: Update board configuration structure for DT update
+*
+* INPUT:  None.
+* OUTPUT: None.
+* RETURN: None.
+*******************************************************************************/
+MV_VOID mvBoardUpdateConfigforDT(MV_VOID)
+{
+#if defined(CONFIG_CMD_BOARDCFG)
+	/* This temporary fix for a39x device tree blob,
+	   MAC#3 is working with NSS mode only (MAC#0,#1,#2 works with both modes),
+	   and U-Boot doesn't support NSS mode.
+	   U-Boot: in EAP configuration SerDes Lane #4 is connected to MAC#1.
+	   Linux: change Lane#4 connectivity to use MAC#3 (NSS mode).
+	   1. This fix sets MAC#3 settings for linux, accoding to MAC#1 configuration in U-Boot.
+	   2. Added force link for MAC#2/MAC#3 node
+	   (due to partial switch support in PP3 driver in linux, regarding fetching DT settings)
+	*/
+	MV_U32 netComplex = 0;
+	MV_U32 gpConfig = mvBoardSysConfigGet(MV_CONFIG_GP_CONFIG);
+	MV_U32 boardId = mvBoardIdGet();
+	if (boardId == A39X_RD_69XX_ID && (gpConfig == MV_GP_CONFIG_EAP_10G || gpConfig == MV_GP_CONFIG_EAP_1G)) {
+		netComplex |= MV_NETCOMP_GE_MAC3_2_SGMII_L4;
+		if (gpConfig == MV_GP_CONFIG_EAP_10G)
+			netComplex |= MV_NETCOMP_GE_MAC0_2_RXAUI;
+		else
+			netComplex |= MV_NETCOMP_GE_MAC0_2_SGMII_L6;
+		mvBoardNetComplexConfigSet(netComplex);
+		mvBoardMacStatusSet(1, MV_FALSE);
+		mvBoardMacStatusSet(3, MV_TRUE);
+	}
+#endif
+}

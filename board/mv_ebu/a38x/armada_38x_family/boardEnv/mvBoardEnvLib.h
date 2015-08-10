@@ -598,6 +598,7 @@ MV_BOOL mvBoardIsAudioConnected(void);
 void mvBoardAudioConnectionSet(MV_BOOL isConnected);
 MV_BOOL mvBoardIsUsb3PortDevice(MV_U32 port);
 MV_VOID mvBoardUsbPortStatusSet(MV_UNIT_ID usbType, MV_U32 usbPort, MV_BOOL usbStatus);
+MV_VOID mvBoardUpdateConfigforDT(MV_VOID);
 
 #ifdef CONFIG_SWITCHING_SERVICES
 MV_BOOL mvBoardisAmc(void);

@@ -3151,3 +3151,16 @@ MV_BOOL mvBoardIsUsb3PortDevice(MV_U32 port)
 	/* Since usb3 device is not supported on current board return false */
 	return MV_FALSE;
 }
+
+/*******************************************************************************
+* mvBoardUpdateConfigforDT
+* DESCRIPTION: Update board configuration structure for DT update
+*
+* INPUT:  None.
+* OUTPUT: None.
+* RETURN: None.
+*******************************************************************************/
+MV_VOID mvBoardUpdateConfigforDT(MV_VOID)
+{
+
+}

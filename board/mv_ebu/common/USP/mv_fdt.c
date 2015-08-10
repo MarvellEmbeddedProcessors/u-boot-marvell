@@ -1067,32 +1067,10 @@ static int mv_fdt_update_ethnum(void *fdt)
 	} while (node != NULL);
 	mv_fdt_dprintf("Number of ethernet nodes in DT = %d\n", ethPortsNum);
 
-#if defined(CONFIG_ARMADA_39X) && defined(CONFIG_CMD_BOARDCFG)
-	/* This temporary fix for a39x device tree blob,
-	   MAC#3 is working with NSS mode only (MAC#0,#1,#2 works with both modes),
-	   and U-Boot doesn't support NSS mode.
-	   U-Boot: in EAP configuration SerDes Lane #4 is connected to MAC#1.
-	   Linux: change Lane#4 connectivity to use MAC#3 (NSS mode).
-	   1. This fix sets MAC#3 settings for linux, accoding to MAC#1 configuration in U-Boot.
-	   2. Added force link for MAC#2/MAC#3 node
-	   (due to partial switch support in PP3 driver in linux, regarding fetching DT settings)
-	*/
-	MV_U32 gpConfig = mvBoardSysConfigGet(MV_CONFIG_GP_CONFIG);
-	MV_U32 boardId = mvBoardIdGet();
-	if (boardId == A39X_RD_69XX_ID && (gpConfig == MV_GP_CONFIG_EAP_10G || gpConfig == MV_GP_CONFIG_EAP_1G)) {
-		MV_U32 netComplex = 0;
-		netComplex |= MV_NETCOMP_GE_MAC3_2_SGMII_L4;
-		if (gpConfig == MV_GP_CONFIG_EAP_10G)
-			netComplex |= MV_NETCOMP_GE_MAC0_2_RXAUI;
-		else
-			netComplex |= MV_NETCOMP_GE_MAC0_2_SGMII_L6;
-		mvBoardNetComplexConfigSet(netComplex);
-		mvBoardMacStatusSet(1, MV_FALSE);
-		mvBoardMacStatusSet(3, MV_TRUE);
-	}
-#endif
+	/* Update board configuration for FDT update if needed */
+	mvBoardUpdateConfigforDT();
 
-		/* Get path to ethernet node from property value */
+	/* Get path to ethernet node from property value */
 	for (port = 0; port < ethPortsNum; port++) {
 
 		/* Get path to ethernet node from property value */
@@ -1198,9 +1176,10 @@ static int mv_fdt_update_ethnum(void *fdt)
 			mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 
 #if defined(CONFIG_ARMADA_39X) && defined(CONFIG_CMD_BOARDCFG)
+			MV_U32 gpConfig = mvBoardSysConfigGet(MV_CONFIG_GP_CONFIG);
 			u32 phySpeed = htonl(2500);
-			/* Temporary fix for A39x, see description in the begining of the func */
-			if (boardId == A39X_RD_69XX_ID) {
+			/* Temporary fix for A39x switch boards, see full description in mvBoardUpdateConfigforDT function */
+			if (mvBoardIdGet() == A39X_RD_69XX_ID) {
 				/* In HGW 2.5G configurations for 395 board, phy speed is 2.5Gb,
 				   update phy-speed entry in mac0 node to 2500 */
 				if ((port == 0) && (gpConfig == MV_GP_CONFIG_HGW_AP_2_5G ||

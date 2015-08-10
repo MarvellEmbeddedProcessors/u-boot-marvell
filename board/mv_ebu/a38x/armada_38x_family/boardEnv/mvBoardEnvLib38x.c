@@ -639,3 +639,16 @@ MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 
 	return MV_OK;
 }
+
+/*******************************************************************************
+* mvBoardUpdateConfigforDT
+* DESCRIPTION: Update board configuration structure for DT update
+*
+* INPUT:  None.
+* OUTPUT: None.
+* RETURN: None.
+*******************************************************************************/
+MV_VOID mvBoardUpdateConfigforDT(MV_VOID)
+{
+
+}

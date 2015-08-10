@@ -523,6 +523,7 @@ MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
 MV_U8 mvBoardPICGpioGet(MV_U32 *picGpioMppInfo);
 MV_BOOL mvBoardIsTdmConnected(void);
 MV_BOOL mvBoardIsUsb3PortDevice(MV_U32 port);
+MV_VOID mvBoardUpdateConfigforDT(MV_VOID);
 
 #ifdef __cplusplus
 }

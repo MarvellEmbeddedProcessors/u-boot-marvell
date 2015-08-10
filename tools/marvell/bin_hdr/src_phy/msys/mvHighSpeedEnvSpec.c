@@ -577,9 +577,10 @@ MV_STATUS mvHwsRefClockGet (MV_U32 serdesNum ,MV_U8 *refClockSource)
 MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
 {
 
-    /*Read BOBK SatR configuration TBD*/
-    mvPrintf("%s: TBD- Read BOBK SatR config... \n", __func__);
-	return  (0);
+    MV_U32 uiReg = 0;
+    /*Read Bobk SatR configuration SAR0[16]*/
+    CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR0_ADDR, &uiReg, BIT16));
+    return  (uiReg == 0);
 }
 
 /* BOBK: Get the Serdes revision number **************************************/

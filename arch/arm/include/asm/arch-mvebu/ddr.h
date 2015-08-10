@@ -19,8 +19,15 @@
 #ifndef _MVEBU_DDR_H_
 #define _MVEBU_DDR_H_
 
-void static_dram_init(void);
-void mvebu_dram_mac_init(void);
-void mvebu_dram_phy_init(void);
+struct mvebu_dram_config {
+	void __iomem *mac_base;
+	void __iomem *phy_base;
+	u32 ecc_enabled;
+	u32 cs_count;
+};
+
+void static_dram_init(const void *blob);
+void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config);
+void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config);
 
 #endif /* _MVEBU_DDR_H_ */

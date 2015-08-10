@@ -97,6 +97,18 @@
 				status = "okay";
 			};
 
+			ddr-mac {
+				compatible = "marvell,mvebu-ddr-mac";
+				reg = <0x1400 0x20>;
+				status = "okay";
+			};
+
+			ddr-phy {
+				compatible = "marvell,mvebu-ddr-phy";
+				reg = <0x1600 0x10>;
+				status = "okay";
+			};
+
 			comphy {
 				compatible = "marvell,mvebu-comphy", "marvell,comphy-armada38x";
 				mux-bitcount = <4>;

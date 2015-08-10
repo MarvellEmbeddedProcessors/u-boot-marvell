@@ -18,15 +18,47 @@
 
 #include <common.h>
 #include <asm/io.h>
+#include <fdtdec.h>
 #include <asm/arch-mvebu/ddr.h>
 #include <asm/arch-mvebu/mvebu.h>
+#include <asm/arch-mvebu/fdt.h>
 
-void static_dram_init(void)
+void static_dram_init(const void *blob)
 {
+	u32 node;
+	struct mvebu_dram_config dram_config;
+	struct mvebu_dram_config *config = &dram_config;
 	debug_enter();
-	mvebu_dram_mac_init();
-	mvebu_dram_phy_init();
 
-	printf("Static DRAM initialization is DONE..\n");
+	/* Get DDR MAC node from the FDT blob */
+	node = fdt_node_offset_by_compatible(blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_DDR_MAC));
+	if (node == -1) {
+		error("No DDR MAC node found in FDT blob\n");
+		return;
+	}
+	/* Get the base address of the DDR MAC unit */
+	config->mac_base = (void *)fdt_get_regs_offs(blob, node, "reg");
+	if (config->mac_base == NULL) {
+		error("missing DDR MAC base address in DDR MAC node\n");
+		return;
+	}
+
+	/* Get DDR MAC node from the FDT blob */
+	node = fdt_node_offset_by_compatible(blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_DDR_PHY));
+	if (node == -1) {
+		error("No DDR PHY node found in FDT blob\n");
+		return;
+	}
+	/* Get the base address of the DDR PHY unit */
+	config->phy_base = (void *)fdt_get_regs_offs(blob, node, "reg");
+	if (config->phy_base == NULL) {
+		error("missing DDR PHY base address in DDR PHY node\n");
+		return;
+	}
+
+	mvebu_dram_mac_init(config);
+	mvebu_dram_phy_init(config);
+
+	printf("Static DDR initialization is DONE..\n");
 	debug_exit();
 }

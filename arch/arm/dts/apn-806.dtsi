@@ -69,6 +69,18 @@
 				reverse-reg;
 			};
 
+			ddr-mac {
+				compatible = "marvell,mvebu-ddr-mac";
+				reg = <0x20000 0x20>;
+				status = "okay";
+			};
+
+			ddr-phy {
+				compatible = "marvell,mvebu-ddr-phy";
+				reg = <0x20000 0x10>;
+				status = "okay";
+			};
+
 			ccu {
 				compatible = "marvell,mvebu-ccu";
 				reg = <0x4000 0x50>;

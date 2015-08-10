@@ -73,7 +73,7 @@ void board_init_f(ulong silent)
 		error("COMPHY initialization failed\n");
 #endif
 #ifndef CONFIG_PALLADIUM
-	static_dram_init();
+	static_dram_init(gd->fdt_blob);
 #endif
 #else
 	dram_over_pci_init(gd->fdt_blob);

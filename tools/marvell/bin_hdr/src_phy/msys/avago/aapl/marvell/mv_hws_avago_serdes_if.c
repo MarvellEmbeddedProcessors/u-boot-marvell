@@ -337,7 +337,7 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
     /* Initialize AAPL structure */
     aapl_get_ip_info(aaplSerdesDb[devNum],1);
 #endif /*MV_HWS_BIN_HEADER*/
-    osPrintf("Loading Avago Firmware.......\n");
+    AVAGO_DBG(("Loading Avago Firmware.......\n"));
 
     /* Converts the address into an address structure */
     addr_struct.chip = devNum;
@@ -394,7 +394,7 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
         return GT_INIT_ERROR;
     }
 
-    osPrintf("Done\n");
+    AVAGO_DBG("Done\n");
 
 #ifdef MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG
     if (avagoConnection != AVAGO_ETH_CONNECTION)
@@ -579,9 +579,9 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     if (errors == 0 && aapl_get_return_code(aaplSerdesDb[devNum]) == 0)
     {
 #ifndef MV_HWS_REDUCED_BUILD
-        osPrintf("The SerDes at address %s is initialized.\n", aapl_addr_to_str(sbus_addr));
+        AVAGO_DBG(("The SerDes at address %s is initialized.\n", aapl_addr_to_str(sbus_addr)));
 #else
-        osPrintf("The SerDes at address 0x%x is initialized.\n", sbus_addr);
+        AVAGO_DBG(("The SerDes at address 0x%x is initialized.\n", sbus_addr));
 #endif /* MV_HWS_REDUCED_BUILD */
     }
 
@@ -823,14 +823,14 @@ int mvHwsAvagoSerdesSbmVoltageGet
 *******************************************************************************/
 void mvHwsAvagoAccessValidate(unsigned char devNum, uint sbus_addr)
 {
-    osPrintf("Validate SBUS access (sbus_addr 0x%x)- ", sbus_addr);
+    AVAGO_DBG(("Validate SBUS access (sbus_addr 0x%x)- ", sbus_addr));
     if (avago_diag_sbus_rw_test(aaplSerdesDb[devNum], avago_make_sbus_controller_addr(sbus_addr), 2) == TRUE)
     {
-        osPrintf("Access Verified\n");
+        AVAGO_DBG(("Access Verified\n"));
     }
     else
     {
-        osPrintf("Access Failed\n");
+        AVAGO_DBG(("Access Failed\n"));
     }
 }
 

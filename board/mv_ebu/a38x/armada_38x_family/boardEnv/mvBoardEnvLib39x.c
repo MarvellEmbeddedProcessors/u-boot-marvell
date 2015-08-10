@@ -381,7 +381,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		by default connected to RXUAI with XSMI mode*/
 	MV_U32 serdes5Mode = 1, serdes6Mode = 1;
 	MV_BOARD_INFO *board = mvBoardInfoStructureGet();
-	const char *boardNameArr[4] = {"DB-88F6925-GP-EAP", "DB-88F6925-GP-HGW-10G",
+	const char *boardNameArr[4] = {"DB-88F6925-GP-EAP-10G", "DB-88F6925-GP-EAP-1G",
 				"DB-88F6925-GP-HGW-2.5G", "DB-88F6925-GP-HGW-2.5-mSATA"};
 
 	switch (mvBoardIdGet()) {

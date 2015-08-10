@@ -20,5 +20,7 @@
 #define _MVEBU_DDR_H_
 
 void static_dram_init(void);
+void mvebu_dram_mac_init(void);
+void mvebu_dram_phy_init(void);
 
 #endif /* _MVEBU_DDR_H_ */

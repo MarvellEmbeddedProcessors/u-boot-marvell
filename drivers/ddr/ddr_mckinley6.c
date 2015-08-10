@@ -20,11 +20,8 @@
 #include <asm/io.h>
 #include <asm/arch-mvebu/ddr.h>
 
-void static_dram_init(void)
+void mvebu_dram_mac_init(void)
 {
-	u32 reg;
-
-
 	writel(0x7fbfdfef, 0xf0020340);
 	writel(0x020000aa, 0xf0020344);
 	writel(0x00200000, 0xf0020310);
@@ -200,10 +197,12 @@ void static_dram_init(void)
 	writel(0x40000000, 0xf0020820);
 	writel(0x80000000, 0xf0020820);
 	writel(0x1f000001, 0xf0020020);
+}
 
+void mvebu_dram_phy_init(void)
+{
+	u32 reg;
 	reg = readl(0xf0020008);
 	while (reg != 0x00001111)
 		reg = readl(0xf0020008);
-
-	printf("Static DRAM initialization is DONE..\n");
 }

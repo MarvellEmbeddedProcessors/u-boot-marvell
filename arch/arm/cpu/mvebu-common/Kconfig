@@ -104,37 +104,6 @@ config MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 	  Choose this option to add support
 	  for DDR over PCIE support
 
-menu "DDR support"
-
-config MVEBU_SPL_DDR_SUPPORT
-	bool "DDR SPL support"
-	depends on SPL
-	default y
-	help
-	  Choose this option to add support
-	  for DDR controllers driver. need to
-	  choose one of the controllers in the
-	  list below.
-
-choice
-	prompt "Controller select"
-
-config MVEBU_DUNIT_SUPPORT
-	bool "DUNIT controller support"
-	depends on MVEBU_SPL_DDR_SUPPORT
-	help
-	  Choose this option to add support
-	  for DUNIT controller.
-
-config MVEBU_MK6_SUPPORT
-	bool "MK6 controller support"
-	depends on MVEBU_SPL_DDR_SUPPORT
-	help
-	  Choose this option to add support
-	  for MK6 controller.
-
-endchoice
-endmenu
 endmenu
 
 

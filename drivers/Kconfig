@@ -52,4 +52,6 @@ source "drivers/phy/Kconfig"
 
 source "drivers/thermal/Kconfig"
 
+source "drivers/ddr/Kconfig"
+
 endmenu

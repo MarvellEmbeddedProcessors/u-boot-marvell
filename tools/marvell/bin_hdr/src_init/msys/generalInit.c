@@ -163,6 +163,105 @@ static inline MV_VOID mvMbusWinConfig()
 	);
 }
 
+#define DFX_REGS_BASE_BOOTROM	0xd0100000
+#define MV_DFX_REG_READ(offset)		\
+	(MV_MEMIO_LE32_READ(DFX_REGS_BASE_BOOTROM | (offset)))	\
+
+#define MV_DFX_REG_WRITE(offset, val)	\
+{					\
+	MV_MEMIO_LE32_WRITE((DFX_REGS_BASE_BOOTROM | (offset)), (val));	\
+}
+
+
+MV_STATUS mvWaPll(void)
+{
+	MV_U32 regTmp;
+	/* 1.check the bypass mode */
+	/* read SAR status, skip it now */
+	regTmp = MV_DFX_REG_READ(0xf8204);
+	regTmp = (regTmp >> 21) & 0x7;
+
+	if (regTmp != 7) {
+		DEBUG_INIT_S("Core PLL not in bypass mode, skip WA\n");
+		return MV_BAD_STATE;
+	}
+
+	DEBUG_INIT_S("Core PLL in bypass mode, run WA\n");
+	/* 2.configure the core PLL */
+
+	MV_DFX_REG_WRITE(0xf82e0, 0x2375E013);
+
+	regTmp = MV_DFX_REG_READ(0xf82e4);
+	regTmp &= ~(0x1);
+	regTmp |= (0x1<<9);
+	regTmp &= ~(0x7FFFF800);
+	MV_DFX_REG_WRITE(0xf82e4, regTmp);
+
+	/* 3.configure some bits before the soft reset */
+#if 1
+	regTmp = MV_DFX_REG_READ(0xf8020);/* Conf Skip */
+	MV_DFX_REG_WRITE(0xf8020, regTmp & (~(0x1<<8)));
+
+	regTmp = MV_DFX_REG_READ(0xf8030);/* RAM init Skip */
+	MV_DFX_REG_WRITE(0xf8030, regTmp & (~(0x1<<8)));
+
+	regTmp = MV_DFX_REG_READ(0xf8058);/* CPU sub-system init Skip */
+	MV_DFX_REG_WRITE(0xf8058, regTmp & (~(0x1<<8)));
+
+	regTmp = MV_DFX_REG_READ(0xf8060);/* Tables init Skip */
+	MV_DFX_REG_WRITE(0xf8060, regTmp & (~(0x1<<8)));
+
+	regTmp = MV_DFX_REG_READ(0xf8064);/* Serdes init Skip */
+	MV_DFX_REG_WRITE(0xf8064, regTmp & (~(0x1<<8)));
+
+	regTmp = MV_DFX_REG_READ(0xf8068);/* EEPROM init Skip */
+	MV_DFX_REG_WRITE(0xf8068, regTmp & (~(0x1<<8)));
+	DEBUG_INIT_S("Core PLL WA configuration done\n");
+#else
+	regTmp = MV_DFX_REG_READ(0xf8030);/* RAM init Skip */
+	MV_DFX_REG_WRITE(0xf8030, regTmp & (~(0x1<<8)));
+
+	regTmp = MV_DFX_REG_READ(0xf8058);/* CPU sub-system init Skip */
+	MV_DFX_REG_WRITE(0xf8058, regTmp & (~(0x1<<8)));
+	DEBUG_INIT_S("Core PLL WA cpuram configuration done\n");
+#endif
+
+	/* 4.wait 1ms for core PLL stabilization */
+	mvOsDelay(1);
+
+	/* 5.generate soft reset */
+	regTmp = MV_DFX_REG_READ(0xf800c);
+	regTmp &= ~(0x2);
+	regTmp |= (0x3<<20);
+	MV_DFX_REG_WRITE(0xf800c, regTmp);
+
+	DEBUG_INIT_S("Core PLL WA finished\n");
+
+	/* 6. wait 1ms for the reset */
+	mvOsDelay(1);
+
+	regTmp = MV_DFX_REG_READ(0xf8020);/* Conf Skip */
+	MV_DFX_REG_WRITE(0xf8020, regTmp | (0x1<<8));
+
+	regTmp = MV_DFX_REG_READ(0xf8030);/* RAM init Skip */
+	MV_DFX_REG_WRITE(0xf8030, regTmp | (0x1<<8));
+
+	regTmp = MV_DFX_REG_READ(0xf8058);/* CPU sub-system init Skip */
+	MV_DFX_REG_WRITE(0xf8058, regTmp | (0x1<<8));
+
+	regTmp = MV_DFX_REG_READ(0xf8060);/* Tables init Skip */
+	MV_DFX_REG_WRITE(0xf8060, regTmp | (0x1<<8));
+
+	regTmp = MV_DFX_REG_READ(0xf8064);/* Serdes init Skip */
+	MV_DFX_REG_WRITE(0xf8064, regTmp | (0x1<<8));
+
+	regTmp = MV_DFX_REG_READ(0xf8068);/* EEPROM init Skip */
+	MV_DFX_REG_WRITE(0xf8068, regTmp | (0x1<<8));
+
+	return MV_OK;
+}
+
+
 /*****************************************************************************/
 MV_STATUS mvGeneralInit(void)
 {
@@ -172,6 +271,9 @@ MV_STATUS mvGeneralInit(void)
 	DEBUG_INIT_S("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
 #endif
 	mvHwsTwsiInitWrapper();
+#ifdef CONFIG_BOBK
+	mvWaPll();
+#endif
 
 	return MV_OK;
 }

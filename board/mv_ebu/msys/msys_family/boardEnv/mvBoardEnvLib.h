@@ -382,6 +382,7 @@ MV_STATUS mvBoardOobPortCfgSet(MV_VOID);
 MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
 MV_BOOL mvBoardisAmc(void);
 MV_STATUS mvBoardPPSmiIndexGet(MV_U32 *index);
+MV_VOID mvBoardUpdateConfigforDT(MV_VOID);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -178,12 +178,28 @@ void dump_ccu(void)
 	return;
 }
 
+static bool skip_ccu_window(u32 win_reg)
+{
+	u8 target_id;
+
+	/* avoid overriding internal register and SRAM windows
+	   At SPL stage BootROM open the SRAM window and close it
+	   at the end of the SPL stage */
+	if (win_reg & WIN_ENABLE_BIT) {
+		target_id = (win_reg >> CCU_TARGET_ID_OFFSET) & CCU_TARGET_ID_MASK;
+		if (((target_id) == SRAM_TID) || ((target_id) == CFG_REG_TID))
+			return true;
+	}
+
+	return false;
+}
+
 int init_ccu(bool sw_init)
 {
 	struct ccu_win memory_map[CCU_MAX_WIN_NUM], *win;
 	const void *blob = gd->fdt_blob;
 	u32 win_id, win_reg;
-	u32 node, win_count;
+	u32 node, win_count, array_id;
 
 	debug_enter();
 	debug("Initializing CCU Address decoding\n");
@@ -206,7 +222,7 @@ int init_ccu(bool sw_init)
 
 	if (sw_init) {
 		/* init only the ccu_info structure without updating the ccu windows.
-			The ccu_info is required for the dump_ccu function */
+		   The ccu_info is required for the dump_ccu function */
 		debug("Done SW CCU Address decoding Initializing\n");
 		return 0;
 	}
@@ -220,13 +236,20 @@ int init_ccu(bool sw_init)
 	win_count = win_count/5; /* every window had 5 variables in FDT:
 				    base high, base low, size high, size low, target id) */
 
+#ifndef CONFIG_SPL_BUILD
+
 	/* Set the default target ID to DRAM 0 */
+	/* At SPL stage - running from SRAM */
 	win_reg = (DRAM_0_TID & CCU_GCR_TARGET_MASK) << CCU_GCR_TARGET_OFFSET;
 	writel(win_reg, CCU_WIN_GCR_OFFSET);
+#endif
 
-	/* disable all AP windows, start from 1 to avoid overriding internal register */
-	for (win_id = 1; win_id < ccu_info->max_win; win_id++) {
+	/* disable AP windows */
+	for (win_id = 0; win_id < ccu_info->max_win; win_id++) {
 		win_reg = readl(CCU_WIN_CR_OFFSET(win_id));
+		if (skip_ccu_window(win_reg))
+				continue;
+
 		win_reg &= ~WIN_ENABLE_BIT;
 		writel(win_reg, CCU_WIN_CR_OFFSET(win_id));
 
@@ -235,10 +258,24 @@ int init_ccu(bool sw_init)
 		writel(win_reg, CCU_WIN_SCR_OFFSET(win_id));
 	}
 
-	for (win_id = 1, win = memory_map; win_id < win_count + 1; win_id++, win++) {
+	for (win_id = 0, array_id = 0, win = memory_map;
+		  ((win_id < ccu_info->max_win) && (array_id < win_count)); win_id++) {
+		/* win_id is the index of the current ccu window
+			array_id is the index of the current FDT window entry */
+
+		win_reg = readl(CCU_WIN_CR_OFFSET(win_id));
+		if (skip_ccu_window(win_reg))
+				continue;
+
 		ccu_win_check(win, win_id);
 		ccu_enable_win(win, win_id);
+
+		win++;
+		array_id++;
 	}
+
+	if (array_id != win_count)
+		error("Set only %d CCU windows. expected %d", array_id, win_count);
 
 	debug("Done CCU Address decoding Initializing\n");
 	debug_exit();

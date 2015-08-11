@@ -61,10 +61,6 @@
 #   if AAPL_ENABLE_AACS_SERVER
 #   include <aacs_server.h>
 
-    /* This define is for internal Avago AAPL debug process
-       It should be removed, once process it created by CPSS */
-    /*#define MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG*/
-
 #   endif /* AAPL_ENABLE_AACS_SERVER */
 #endif /* !defined(ASIC_SIMULATION) && !defined(MV_HWS_REDUCED_BUILD_EXT_CM3) */
 /************************* Globals *******************************************************/
@@ -73,11 +69,12 @@ unsigned int avagoConnection = AVAGO_SBUS_CONNECTION;
 Aapl_t* aaplSerdesDb[HWS_MAX_DEVICE_NUM] = {0};
 Aapl_t  aaplSerdesDbDef[HWS_MAX_DEVICE_NUM];
 
+#ifndef MV_HWS_BIN_HEADER
+static unsigned int aacsServerEnable = 0;
 
-#ifdef MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG
 /* Avago server process Id */
 static GT_U32 avagoAACS_ServerTid;
-#endif
+#endif /*MV_HWS_BIN_HEADER*/
 
 #ifdef MARVELL_AVAGO_DB_BOARD
 unsigned int mvAvagoDb = 1;
@@ -179,8 +176,7 @@ unsigned int mvHwsAvagoEthDriverInit(unsigned char devNum)
 
 #if AAPL_ENABLE_AACS_SERVER
 
-#ifdef MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG
-
+#ifndef MV_HWS_BIN_HEADER
 extern unsigned int osTaskCreate(const char *name, unsigned int prio, unsigned int stack,
     unsigned (__TASKCONV *start_addr)(void*), void *arglist, unsigned int *tid);
 
@@ -240,18 +236,51 @@ static unsigned __TASKCONV avagoAACS_ServerRoutine
     IN GT_VOID * param
 )
 {
-    unsigned int devNum = (GT_U32)param;
     unsigned int tcpPort = 90;
 
     avago_aacs_server(aaplSerdesDb[0], tcpPort);
 
     return GT_OK;
 }
-#endif /* MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG */
+
+/*******************************************************************************
+* avagoSerdesAacsServerExec
+*
+* DESCRIPTION:
+*       Initialize the Avago AACS Server
+*
+* INPUTS:
+*       devNum - system device number
+*
+* OUTPUTS:
+*       None
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*******************************************************************************/
+#ifndef ASIC_SIMULATION
+int avagoSerdesAacsServerExec(unsigned char devNum)
+{
+    int res;
+
+    res = mvHwsAvagoSerdesDebugInit("mvHwsAvagoAACS_Server", avagoAACS_ServerRoutine, devNum);
+    if (res != GT_OK)
+    {
+        osPrintf("Failed to init Avago AACS Server\n");
+        return res;
+    }
+
+    return GT_OK;
+}
+#endif /* ASIC_SIMULATION */
+
+#endif /* MV_HWS_BIN_HEADER */
 #endif /* AAPL_ENABLE_AACS_SERVER */
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 #if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
+
 /*******************************************************************************
 * mvHwsAvagoSerdesInit
 *
@@ -394,21 +423,17 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
         return GT_INIT_ERROR;
     }
 
-    AVAGO_DBG("Done\n");
+    AVAGO_DBG(("Done\n"));
 
-#ifdef MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG
+#ifndef MV_HWS_BIN_HEADER
     if (avagoConnection != AVAGO_ETH_CONNECTION)
     {
-        int res;
-
-        res = mvHwsAvagoSerdesDebugInit("mvHwsAvagoAACS_Server", avagoAACS_ServerRoutine, devNum);
-        if (res != GT_OK)
+        if (aacsServerEnable)
         {
-            osPrintf("Failed to init Avago AACS Server\n");
-            return res;
+            CHECK_STATUS(avagoSerdesAacsServerExec(devNum));
         }
     }
-#endif /* MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG */
+#endif /* MV_HWS_BIN_HEADER */
 
     return GT_OK;
 }

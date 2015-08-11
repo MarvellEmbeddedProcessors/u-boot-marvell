@@ -1,0 +1,40 @@
+Marvell FLC bindings
+=====================================
+
+Final Level Cache for the McKinley (MCK) Memory Controller is a unit that is embedded inside the
+memory controller. When the unit is enabled, it effectively turns the memory controller into a cache
+unit using DDR memory to cache data for it. An external memory device would be required to serve
+as main memory.
+
+The FLC node include description about the FLC memory mapping configuration.
+
+The FLC node requires the following properties:
+	- compatible
+		should be "marvell,mvebu-flc"
+	- reg: the base address of the FLC unit
+	- flc_ext_dev_map: entry that include the configuration of the FLC External Memory Device Map.
+	- flc_nc_map: (optional) entry that include the configuration of the FLC Non-Cacheable Memory Map.
+		The unit enables to define part of the DDR memory as Non-Cacheable memory, used as a regular
+		DDR memory.
+	  every mapping entry should have 4 parameters:
+	  - high base address of the window
+	  - low base address of the window
+	  - high size of the memory
+	  - low size of the memory
+	  The size must be a power of 2 between 8 MB to 1 TB
+
+Note: if the base address and size is more than 32bit, it divided into high and low,
+	Base example:
+		base address: 0x10f0000000 should divided into:
+		base address high: 0x10
+		base address low: 0xf0000000
+
+Example:
+Define FLC external memory of 8 GB, base address of the external memory 0x100000000
+Define FLC Non-Cacheable Memory - the first 8 MB of the DDR used as a regular DDR.
+flc {
+	compatible = "marvell,mvebu-flc";
+	reg = <0x20700 0x100>;
+	flc_ext_dev_map = <0x1 0x0 0x2 0x0>;
+	flc_nc_map = <0x0 0x0 0x0 0x800000>
+}

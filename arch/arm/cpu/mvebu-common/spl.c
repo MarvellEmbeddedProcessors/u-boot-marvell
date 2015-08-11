@@ -26,6 +26,15 @@
 #ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 #include <asm/arch-mvebu/dram_over_pci.h>
 #endif
+#ifdef CONFIG_MVEBU_CCU
+#include <asm/arch-mvebu/ccu.h>
+#endif
+#ifdef CONFIG_MVEBU_RFU
+#include <asm/arch-mvebu/rfu.h>
+#endif
+#ifdef CONFIG_MVEBU_FLC
+#include <asm/arch-mvebu/flc.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -69,6 +78,17 @@ void board_init_f(ulong silent)
 #else
 	dram_over_pci_init(gd->fdt_blob);
 #endif /* CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT */
+
+#ifdef CONFIG_MVEBU_FLC
+#ifdef CONFIG_MVEBU_CCU
+	init_ccu(false);
+#endif
+#ifdef CONFIG_MVEBU_RFU
+	init_rfu(false);
+#endif
+	init_flc();
+#endif
+
 #ifdef CONFIG_MVEBU_SPL_MEMORY_TEST
 	if (run_memory_test())
 		printf("**** DRAM test failed ****\n");

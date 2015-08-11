@@ -102,6 +102,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(COMPAT_COMPHY_AP806, "marvell,comphy-ap806"),
 	COMPAT(MVEBU_THERMAL_SENSOR, "marvell,thermal-sensor"),
 	COMPAT(MVEBU_THERMAL_SENSOR_V2, "marvell,thermal-sensor-v2"),
+	COMPAT(MVEBU_FLC, "marvell,mvebu-flc"),
 };
 
 const char *fdtdec_get_compatible(enum fdt_compat_id id)

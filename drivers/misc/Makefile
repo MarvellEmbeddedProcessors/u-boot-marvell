@@ -32,3 +32,4 @@ obj-$(CONFIG_MVEBU_CCU) += mvebu_ccu.o
 obj-$(CONFIG_MVEBU_RFU) += mvebu_rfu.o
 obj-$(CONFIG_MVEBU_IOB) += mvebu_iob.o
 obj-$(CONFIG_MVEBU_MBUS) += mvebu_mbus.o
+obj-$(CONFIG_MVEBU_FLC) += mvebu_flc.o

@@ -83,6 +83,7 @@ libs-$(CONFIG_MVEBU_SPL_DDR_SUPPORT) += drivers/ddr/
 libs-$(CONFIG_MVEBU_COMPHY_SUPPORT) += drivers/phy/
 libs-$(CONFIG_OF_EMBED) += dts/
 libs-$(CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT) += drivers/pci/
+libs-$(CONFIG_MVEBU_FLC) += drivers/misc/
 
 head-y		:= $(addprefix $(obj)/,$(head-y))
 libs-y		:= $(addprefix $(obj)/,$(libs-y))

@@ -36,6 +36,9 @@
 #ifdef CONFIG_MVEBU_MBUS
 #include <asm/arch-mvebu/mbus.h>
 #endif
+#ifdef CONFIG_MVEBU_FLC
+#include <asm/arch-mvebu/flc.h>
+#endif
 
 int do_map_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])
@@ -51,6 +54,9 @@ int do_map_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 #endif
 #ifdef CONFIG_MVEBU_MBUS
 	dump_mbus();
+#endif
+#ifdef CONFIG_MVEBU_FLC
+	dump_flc();
 #endif
 	return 0;
 }

@@ -56,7 +56,8 @@ int soc_late_init(void) __attribute__((weak, alias("__soc_late_init")));
 int mvebu_soc_init()
 {
 	int ret;
-#if defined(CONFIG_MVEBU_CCU) || defined(CONFIG_MVEBU_RFU)
+
+#if defined(CONFIG_MVEBU_CCU) || defined(CONFIG_MVEBU_RFU) || defined(CONFIG_MVEBU_FLC)
 	/* ccu and rfu init support 2 modes:
 	   1. regular mode - init both sw structures and configure windows
 	   2. sw init - in case that the ccu and rfu were initialized at the SPL,
@@ -66,6 +67,11 @@ int mvebu_soc_init()
 #endif
 
 	soc_init();
+
+#ifdef CONFIG_MVEBU_FLC
+	/* when FLC is enable, the ccu & rfu init already done at the SPL */
+	sw_init = true;
+#endif
 
 	/* Initialize physical memory map */
 #ifdef CONFIG_MVEBU_CCU

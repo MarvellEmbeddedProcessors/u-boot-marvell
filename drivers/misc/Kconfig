@@ -36,3 +36,13 @@ config MVEBU_MBUS
 	  for MBUS address decoding driver.
 	  This driver initialize the MBUS windows
 	  only.
+
+config MVEBU_FLC
+	bool "MBUS Final Level Cache driver"
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+	default n
+	help
+	  Choose this option to add support
+	  for Final Level Cache for the Marvell McKinley
+	  Memory Controller driver.
+	  This driver enable FLC and open the FLC windows.

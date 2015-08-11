@@ -44,8 +44,8 @@ typedef __int64 GT_UL64;
 typedef unsigned long long GT_UL64;
 #endif
 
-/* Haim */
-#define VAR_32BIT   int
+#define VAR_32BIT       int
+#define GT_UREG_DATA    GT_U32
 
 #ifndef VX6_8
 typedef VAR_32BIT    *GT_32_PTR;

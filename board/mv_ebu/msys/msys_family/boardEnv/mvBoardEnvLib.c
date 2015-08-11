@@ -1725,6 +1725,75 @@ MV_STATUS mvBoardCoreFreqSet(MV_U8 freqVal)
 	DB(mvOsPrintf("Board: Write core FreqOpt S@R succeeded\n"));
 	return MV_OK;
 }
+
+/*******************************************************************************
+* Read the new SW SatR field "bypass_coreclock" from EEPROM(0x50), reg#6 bits[2:0]
+*******************************************************************************/
+MV_STATUS mvBoardBypassCoreFreqGet(MV_U8 *value)
+{
+	MV_U8		sar0;
+	MV_STATUS	rc1;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_BOBK_DEV_ID) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
+	}
+
+	/* The Core Frequency in Bypass mode is taken from the first address-value pair of the EEPROM
+	   initialization sequence, In order to support normal TWSI init sequence flow, the first pair
+	   of DWORDS on EEPROM should contain an address (bytes 0-3) of some scratch pad register
+	   (for instance an UART SCR) and a value (bytes 4-7), which will be partially interpreted
+	   as Core Freq in bypass mode (bits[2:0] of byte 6)
+	*/
+
+	rc1 = mvBoardTwsiRead(BOARD_DEV_TWSI_INIT_EPROM, 0, 6, &sar0);
+	if (MV_ERROR == rc1)
+		return MV_ERROR;
+
+	*value = (sar0 & 0x7);
+
+	return MV_OK;
+}
+
+/*******************************************************************************
+* Write the new SW SatR field "bypass_coreclock" to EEPROM(0x50), reg#6 bits[2:0]
+*******************************************************************************/
+MV_STATUS mvBoardBypassCoreFreqSet(MV_U8 freqVal)
+{
+	MV_U8		sar0;
+	MV_STATUS	rc1;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_BOBK_DEV_ID) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
+	}
+
+	/* The Core Frequency in Bypass mode is taken from the first address-value pair of the EEPROM
+	   initialization sequence, In order to support normal TWSI init sequence flow, the first pair
+	   of DWORDS on EEPROM should contain an address (bytes 0-3) of some scratch pad register
+	   (for instance an UART SCR) and a value (bytes 4-7), which will be partially interpreted
+	   as Core Freq in bypass mode (bits[2:0] of byte 6)
+	*/
+
+	rc1 = mvBoardTwsiRead(BOARD_DEV_TWSI_INIT_EPROM, 0, 6, &sar0);
+	if (MV_ERROR == rc1)
+		return MV_ERROR;
+
+	sar0 &= ~0x7;
+	sar0 |= (freqVal & 0x7);
+
+	if (MV_OK != mvBoardTwsiWrite(BOARD_DEV_TWSI_INIT_EPROM, 0, 6, sar0)) {
+		DB(mvOsPrintf("Board: Write Bypass core Freq S@R fail\n"));
+		return MV_ERROR;
+	}
+
+
+	DB(mvOsPrintf("Board: Write Bypss core FreqOpt S@R succeeded\n"));
+	return MV_OK;
+}
+
 /*******************************************************************************/
 MV_STATUS mvBoardCpuFreqGet(MV_U8 *value)
 {

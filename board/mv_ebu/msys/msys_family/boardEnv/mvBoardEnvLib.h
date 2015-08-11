@@ -349,6 +349,8 @@ MV_U16 mvBoardConfIdGet(MV_VOID);
 MV_STATUS mvBoardDramBusWidthSet(MV_U16 conf);
 MV_U16 mvBoardDramBusWidthGet(MV_VOID);
 MV_STATUS mvBoardCoreFreqGet(MV_U8 *value);
+MV_STATUS mvBoardBypassCoreFreqGet(MV_U8 *value);
+MV_STATUS mvBoardBypassCoreFreqSet(MV_U8 freqVal);
 MV_STATUS mvBoardTmFreqGet(MV_U8 *value);
 MV_STATUS mvBoardTmFreqSet(MV_U8 freqVal);
 MV_STATUS mvBoardJtagCpuGet(MV_U8 *value);

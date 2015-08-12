@@ -48,6 +48,20 @@
 					0xF0000000 0x20000 ATTR(0x1, 0x7, 0x0)
 					0x80000000 0x10000000 ATTR(0x1, 0x3, 0x0)>;
 			};
+			neta0: neta@30000 {
+				compatible = "marvell,armadalp-neta";
+				reg = <0x30000 0x20>;
+				phy_addr = <0x0>;
+				phy_mode = "rgmii";
+				status = "disabled";
+			};
+			neta1: neta@40000 {
+				compatible = "marvell,armadalp-neta";
+				reg = <0x40000 0x20>;
+				phy_addr = <0x1>;
+				phy_mode = "rgmii";
+				status = "disabled";
+			};
 		};
 	};
 };

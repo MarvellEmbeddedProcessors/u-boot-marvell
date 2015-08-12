@@ -69,7 +69,6 @@ extern char __end_of_spl[];
 #endif /* CONFIG_SPL_BUILD */
 #define CONFIG_SPL_LDSCRIPT		"arch/arm/cpu/mvebu-common/u-boot-armv8-spl.lds"
 
-
 /* SPI flash for Palladium */
 #ifdef CONFIG_MVEBU_SPI
 

@@ -37,6 +37,10 @@ int board_eth_init(bd_t *bis)
 	enc28j60_initialize(0, 1, 1000, SPI_MODE_0);
 #endif
 
+#ifdef CONFIG_MVNETA
+	cpu_eth_init(bis);
+#endif
+
 #ifdef CONFIG_EEPRO100
 	eepro100_initialize(bis);
 #endif

@@ -23,10 +23,10 @@
 #include <phy.h>
 #include <miiphy.h>
 #include <watchdog.h>
-#include <asm/arch/cpu.h>
-#include <asm/arch/soc.h>
 #include <linux/compat.h>
 #include <linux/mbus.h>
+#include <fdtdec.h>
+#include <asm/arch-mvebu/fdt.h>
 
 #if !defined(CONFIG_PHYLIB)
 # error Marvell mvneta requires PHYLIB
@@ -89,7 +89,10 @@
 #define MVNETA_WIN_BASE(w)                      (0x2200 + ((w) << 3))
 #define MVNETA_WIN_SIZE(w)                      (0x2204 + ((w) << 3))
 #define MVNETA_WIN_REMAP(w)                     (0x2280 + ((w) << 2))
+#define MVNETA_WIN_SIZE_MASK			(0xffff0000)
 #define MVNETA_BASE_ADDR_ENABLE                 0x2290
+#define MVNETA_PORT_ACCESS_PROTECT              0x2294
+#define MVNETA_PORT_ACCESS_PROTECT_WIN0_RW      0x3
 #define MVNETA_PORT_CONFIG                      0x2400
 #define      MVNETA_UNI_PROMISC_MODE            BIT(0)
 #define      MVNETA_DEF_RXQ(q)                  ((q) << 1)
@@ -190,7 +193,7 @@
 #define      MVNETA_GMAC_AN_SPEED_EN             BIT(7)
 #define      MVNETA_GMAC_CONFIG_FULL_DUPLEX      BIT(12)
 #define      MVNETA_GMAC_AN_DUPLEX_EN            BIT(13)
-#define MVNETA_MIB_COUNTERS_BASE                 0x3080
+#define MVNETA_MIB_COUNTERS_BASE                 0x3000
 #define      MVNETA_MIB_LATE_COLLISION           0x7c
 #define MVNETA_DA_FILT_SPEC_MCAST                0x3400
 #define MVNETA_DA_FILT_OTH_MCAST                 0x3500
@@ -211,6 +214,15 @@
 #define      MVNETA_TX_TOKEN_SIZE_MAX            0xffffffff
 #define MVNETA_TXQ_TOKEN_SIZE_REG(q)             (0x3e40 + ((q) << 2))
 #define      MVNETA_TXQ_TOKEN_SIZE_MAX           0x7fffffff
+
+/* NETA AUTO_NEG_CFG_REG mapping */
+#define MVNETA_AUTONEG_CFG_FORCE_LINK_UP	(3 << 0)
+#define MVNETA_AUTONEG_CFG_BYPASS_AUTO_NEG	(1 << 3)
+#define MVNETA_AUTONEG_CFG_FORCE_LINK_1G	(1 << 6)
+#define MVNETA_AUTONEG_CFG_FLOW_CTRL_EN		(1 << 8)
+#define MVNETA_AUTONEG_CFG_FLOW_CTRL_ADVERTIZE	(1 << 9)
+#define MVNETA_AUTONEG_CFG_FORCE_FULL_DPLX	(1 << 12)
+#define MVNETA_AUTONEG_CFG_RESERVED		(1 << 15)
 
 /* Descriptor ring Macros */
 #define MVNETA_QUEUE_NEXT_DESC(q, index)	\
@@ -383,7 +395,7 @@ static int rxq_def;
 struct buffer_location {
 	struct mvneta_tx_desc *tx_descs;
 	struct mvneta_rx_desc *rx_descs;
-	u32 rx_buffers;
+	dma_addr_t rx_buffers;
 };
 
 /*
@@ -397,6 +409,9 @@ static struct buffer_location buffer_loc;
  * (not < 1MB). driver uses less bd's so use 1MB bdspace.
  */
 #define BD_SPACE	(1 << 20)
+
+/* buffer has to be aligned to 1M */
+#define MVNETA_BUFFER_ALIGN_SIZE	(1 << 20)
 
 /* Utility/helper methods */
 
@@ -1020,7 +1035,7 @@ static int mvneta_txq_init(struct mvneta_port *pp,
 	txq->size = pp->tx_ring_size;
 
 	/* Allocate memory for TX descriptors */
-	txq->descs_phys = (u32)txq->descs;
+	txq->descs_phys = (dma_addr_t)txq->descs;
 	if (txq->descs == NULL)
 		return -ENOMEM;
 
@@ -1239,6 +1254,29 @@ static int mvneta_init(struct mvneta_port *pp)
 }
 
 /* platform glue : initialize decoding windows */
+
+#ifdef CONFIG_MVEBU_NETA_BYPASS_DEC_WIN
+/* not like A380, in ArmadaLP, there are two layers of decode window for GBE,
+ * first layer is: GbE Address window that resides inside the GBE unit,
+ * second layer is: Fabric address window which is located in the NIC400 (South Fabric).
+ * to simple the address decode configuration for ArmadaLP,
+ * we bypass the first layer of GBE decode window by setting the first window to 4GB.
+ */
+static void mvneta_bypass_mbus_windows(struct mvneta_port *pp)
+{
+	u32 tmp_value;
+	/* set window size to 4GB, to bypass GBE address decode, leave the work to MBUS decode window */
+	mvreg_write(pp, MVNETA_WIN_SIZE(0), MVNETA_WIN_SIZE_MASK);
+	/* enable GBE address decode window 0 by set bit 0 to 0 */
+	tmp_value = mvreg_read(pp, MVNETA_BASE_ADDR_ENABLE);
+	tmp_value = tmp_value & ~(1);
+	mvreg_write(pp, MVNETA_BASE_ADDR_ENABLE, tmp_value);
+	/* set GBE address decode window 0 to full Access (read or write) */
+	tmp_value = mvreg_read(pp, MVNETA_PORT_ACCESS_PROTECT);
+	tmp_value = tmp_value | MVNETA_PORT_ACCESS_PROTECT_WIN0_RW;
+	mvreg_write(pp, MVNETA_PORT_ACCESS_PROTECT, tmp_value);
+}
+#else
 static void mvneta_conf_mbus_windows(struct mvneta_port *pp)
 {
 	const struct mbus_dram_target_info *dram;
@@ -1272,7 +1310,7 @@ static void mvneta_conf_mbus_windows(struct mvneta_port *pp)
 
 	mvreg_write(pp, MVNETA_BASE_ADDR_ENABLE, win_enable);
 }
-
+#endif /* CONFIG_MVEBU_NETA_BYPASS_DEC_WIN */
 /* Power up the port */
 static int mvneta_port_power_up(struct mvneta_port *pp, int phy_mode)
 {
@@ -1329,7 +1367,11 @@ static int mvneta_probe(struct eth_device *dev)
 		return err;
 	}
 
+#ifdef CONFIG_MVEBU_NETA_BYPASS_DEC_WIN
+	mvneta_bypass_mbus_windows(pp);
+#else
 	mvneta_conf_mbus_windows(pp);
+#endif /* CONFIG_MVEBU_NETA_BYPASS_DEC_WIN */
 
 	mvneta_mac_addr_set(pp, dev->enetaddr, rxq_def);
 
@@ -1465,13 +1507,25 @@ static int smi_reg_write(const char *devname, u8 phy_adr, u8 reg_ofs, u16 data)
 static int mvneta_init_u_boot(struct eth_device *dev, bd_t *bis)
 {
 	struct mvneta_port *pp = dev->priv;
+#ifdef CONFIG_PALLADIUM
+	unsigned long auto_neg_value;
+#else
 	struct phy_device *phydev;
+#endif /* CONFIG_PALLADIUM */
 
 	mvneta_port_power_up(pp, pp->phy_interface);
 
 	if (!pp->init || pp->link == 0) {
 		/* Set phy address of the port */
 		mvreg_write(pp, MVNETA_PHY_ADDR, pp->phyaddr);
+#ifdef CONFIG_PALLADIUM
+		/* on Palladium, there is no PHY, need to hardcode Link configuration */
+		pp->init = 1;
+		pp->link = 1;
+		mvneta_probe(dev);
+		mvneta_port_up(pp);
+		mvneta_port_enable(pp);
+#else
 		phydev = phy_connect(pp->bus, pp->phyaddr, dev,
 				     pp->phy_interface);
 
@@ -1482,15 +1536,22 @@ static int mvneta_init_u_boot(struct eth_device *dev, bd_t *bis)
 			printf("%s: No link.\n", phydev->dev->name);
 			return -1;
 		}
-
 		/* Full init on first call */
 		mvneta_probe(dev);
-		pp->init = 1;
+#endif
 	} else {
 		/* Upon all following calls, this is enough */
 		mvneta_port_up(pp);
 		mvneta_port_enable(pp);
 	}
+#ifdef CONFIG_PALLADIUM
+	/* on Palladium, there is no PHY, need to hardcode speed to 1G */
+	auto_neg_value = MVNETA_AUTONEG_CFG_FORCE_LINK_UP | MVNETA_AUTONEG_CFG_BYPASS_AUTO_NEG
+			| MVNETA_AUTONEG_CFG_FORCE_LINK_1G | MVNETA_AUTONEG_CFG_FLOW_CTRL_EN
+			| MVNETA_AUTONEG_CFG_FLOW_CTRL_ADVERTIZE | MVNETA_AUTONEG_CFG_FORCE_FULL_DPLX
+			| MVNETA_AUTONEG_CFG_RESERVED;
+	mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG, auto_neg_value);
+#endif
 
 	return 0;
 }
@@ -1505,10 +1566,9 @@ static int mvneta_send(struct eth_device *dev, void *ptr, int len)
 
 	/* Get a descriptor for the first part of the packet */
 	tx_desc = mvneta_txq_next_desc_get(txq);
-
-	tx_desc->buf_phys_addr = (u32)ptr;
+	tx_desc->buf_phys_addr = (phys_addr_t)ptr;
 	tx_desc->data_size = len;
-	flush_dcache_range((u32)ptr, (u32)ptr + len);
+	flush_dcache_range((unsigned long)ptr, (unsigned long)ptr + len);
 
 	/* First and Last descriptor */
 	tx_desc->command = MVNETA_TX_L4_CSUM_NOT | MVNETA_TXD_FLZ_DESC;
@@ -1526,7 +1586,6 @@ static int mvneta_send(struct eth_device *dev, void *ptr, int len)
 
 	/* txDone has increased - hw sent packet */
 	mvneta_txq_sent_desc_dec(pp, txq, sent_desc);
-	return 0;
 
 	return 0;
 }
@@ -1567,7 +1626,7 @@ static int mvneta_recv(struct eth_device *dev)
 		rx_bytes = rx_desc->data_size - 6;
 
 		/* give packet to stack - skip on first 2 bytes */
-		data = (u8 *)rx_desc->buf_cookie + 2;
+		data = (u8 *)((uintptr_t)rx_desc->buf_cookie) + 2;
 		/*
 		 * No cache invalidation needed here, since the rx_buffer's are
 		 * located in a uncached memory region
@@ -1590,7 +1649,7 @@ static void mvneta_halt(struct eth_device *dev)
 	mvneta_port_disable(pp);
 }
 
-int mvneta_initialize(bd_t *bis, int base_addr, int devnum, int phy_addr)
+int mvneta_initialize_dev(bd_t *bis, unsigned long base_addr, int devnum, int phy_addr, phy_interface_t phy_type)
 {
 	struct eth_device *dev;
 	struct mvneta_port *pp;
@@ -1613,14 +1672,16 @@ int mvneta_initialize(bd_t *bis, int base_addr, int devnum, int phy_addr)
 	 */
 	if (!buffer_loc.tx_descs) {
 		/* Align buffer area for descs and rx_buffers to 1MiB */
-		bd_space = memalign(1 << MMU_SECTION_SHIFT, BD_SPACE);
+		bd_space = memalign(MVNETA_BUFFER_ALIGN_SIZE, BD_SPACE);
+#ifndef CONFIG_SYS_DCACHE_OFF
 		mmu_set_region_dcache_behaviour((u32)bd_space, BD_SPACE,
 						DCACHE_OFF);
+#endif
 		buffer_loc.tx_descs = (struct mvneta_tx_desc *)bd_space;
 		buffer_loc.rx_descs = (struct mvneta_rx_desc *)
-			((u32)bd_space +
+			((unsigned long)bd_space +
 			 MVNETA_MAX_TXD * sizeof(struct mvneta_tx_desc));
-		buffer_loc.rx_buffers = (u32)
+		buffer_loc.rx_buffers = (unsigned long)
 			(bd_space +
 			 MVNETA_MAX_TXD * sizeof(struct mvneta_tx_desc) +
 			 MVNETA_MAX_RXD * sizeof(struct mvneta_rx_desc));
@@ -1635,13 +1696,18 @@ int mvneta_initialize(bd_t *bis, int base_addr, int devnum, int phy_addr)
 	dev->send = mvneta_send;
 	dev->recv = mvneta_recv;
 	dev->write_hwaddr = NULL;
-
+#ifdef CONFIG_PALLADIUM
+	/* on Palladium, there is no mac address in env, so put a value to skip the validation
+	 * otherwise u-boot would fail at common net driver validation.
+	 */
+	dev->enetaddr[1] = 51;
+#endif
 	/*
 	 * The PHY interface type is configured via the
 	 * board specific CONFIG_SYS_NETA_INTERFACE_TYPE
 	 * define.
 	 */
-	pp->phy_interface = CONFIG_SYS_NETA_INTERFACE_TYPE;
+	pp->phy_interface = phy_type;
 
 	eth_register(dev);
 
@@ -1651,3 +1717,102 @@ int mvneta_initialize(bd_t *bis, int base_addr, int devnum, int phy_addr)
 
 	return 1;
 }
+
+#ifdef CONFIG_OF_CONTROL
+
+DECLARE_GLOBAL_DATA_PTR;
+
+char *phy_mode_str[] = {
+	"mii",
+	"gmii",
+	"sgmii",
+	"sgmii_2500",
+	"qsgmii",
+	"tbi",
+	"rmii",
+	"rgmii",
+	"rgmii_id",
+	"rgmii_rxid",
+	"rgmii_txid",
+	"rtbi",
+	"xgmii",
+	"none"	/* Must be last */
+};
+
+/* get all configuration from FDT file */
+int mvneta_initialize(bd_t *bis)
+{
+	int node_list[CONFIG_MAX_NETA_PORT_NUM], node;
+	int i, count, phy_addr, phy_mode;
+	unsigned long neta_reg_base;
+	const char **phy_mode_name = 0;
+	int err, loop;
+
+	/* in dts file, go through all the 'neta' nodes.
+	 */
+	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "neta",
+			COMPAT_MVEBU_NETA, node_list, 2);
+	if (count == 0) {
+		error("could not find neta node in FDT, initialization skipped!\n");
+		return 0;
+	}
+	for (i = 0; i < count ; i++) {
+		node = node_list[i];
+
+		if (node <= 0)
+			continue;
+
+		/* in dts file, there should be several "neta" nodes that are enabled, and in
+		 * dtsi file there are the 'reg' attribute for register base of GBE unit, and 'phy_addr'
+		 * attribute for phy address for each 'neta' node.
+		 */
+		/* fetch 'reg' propertiy from 'neta' node */
+		neta_reg_base = (unsigned long)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
+		if (neta_reg_base == FDT_ADDR_T_NONE) {
+			error("could not find reg in neta node, initialization skipped!\n");
+			return 0;
+		}
+
+		/* fetch 'phy address' propertiy from 'neta' node */
+		phy_addr = (unsigned int)fdtdec_get_addr(gd->fdt_blob, node, "phy_addr");
+		if (phy_addr == FDT_ADDR_T_NONE) {
+			error("could not find phy_addr in neta node, initialization skipped!\n");
+			return 0;
+		}
+		/* fetch 'phy mode' propertiy from 'neta' node */
+		err = fdt_get_string(gd->fdt_blob, node, "phy_mode", phy_mode_name);
+		if (err < 0) {
+			error("failed to get phy_mode_name, initialization skipped!\n");
+			return 0;
+		}
+
+		/* translate phy_mode from phy_mode_name */
+		for (loop = 0; loop < (sizeof(phy_mode_str) / sizeof(char *)); loop++)
+			if (!strcmp(*phy_mode_name, phy_mode_str[loop])) {
+				phy_mode = loop;
+				break;
+			}
+
+		if (loop >= (sizeof(phy_mode_str) / sizeof(char *))) {
+			error("could not find phy_mode by str: %s\n", *phy_mode_name);
+			return 0;
+		}
+
+		/* call 'real' mvneta init routine */
+		if (1 != mvneta_initialize_dev(bis, neta_reg_base, i, phy_addr, phy_mode)) {
+			error("mvneta_initialize_dev failed, initialization skipped!\n");
+			return 0;
+		}
+		debug("%s, %x, neta_reg_base: %lx, i: %x, phy_addr: %x, phy_mode: %x\n",
+		      __func__, __LINE__, neta_reg_base, i, phy_addr, phy_mode);
+	}
+
+	return 1;
+}
+#else
+int mvneta_initialize(bd_t *bis, int base_addr, int devnum, int phy_addr)
+{
+	return mvneta_initialize_dev(bis, base_addr, devnum, phy_addr, CONFIG_SYS_NETA_INTERFACE_TYPE);
+}
+#endif /* CONFIG_OF_CONTROL */
+

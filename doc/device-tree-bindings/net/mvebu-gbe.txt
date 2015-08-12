@@ -1,0 +1,34 @@
+Marvell ArmadaLP GBE bindings
+====================
+
+This GBE driver supports Marvell ArmadaLP SoC, which implements the GBE core operations.
+The node name is neta0 to show that it's GBE-0, for GBE-1 should be neta1.
+
+The GBE node for ArmadaLP requires the following properties:
+	- compatible
+		should be "marvell,armadalp-neta".
+	- reg: the base address of the GBE unit.
+	- phy_addr: the phy address for the GBE interface.
+	- phy_mode: the phy mode for the GBE interface, which should be one of the following:
+		"mii",
+		"gmii",
+		"sgmii",
+		"sgmii_2500",
+		"qsgmii",
+		"tbi",
+		"rmii",
+		"rgmii",
+		"rgmii_id",
+		"rgmii_rxid",
+		"rgmii_txid",
+		"rtbi",
+		"xgmii",
+
+Example for GBE-0 node:
+	neta0: neta@30000 {
+		compatible = "marvell,armadalp-neta";
+		reg = <0x30000 0x20>;
+		phy_addr = <0x0>;
+		phy_mode = "rgmii";
+		status = "disabled";
+	};

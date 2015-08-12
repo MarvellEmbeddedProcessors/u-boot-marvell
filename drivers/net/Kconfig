@@ -8,4 +8,48 @@ config ENC28J60
 	  for eth-spi (enc28j60) which
 	  enable receiving ethernet packets
 	  using spi interface.
+
+config PHYLIB
+	bool "common phy libary"
+	default n
+	help
+	  Choose this option to add support
+	  for common phy libary which
+	  includes some basic PHY util
+	  that are widely used.
+
+config MVNETA
+	bool "marvell neta driver"
+	default n
+	select PHYLIB
+	help
+	  Choose this option to add support
+	  for marvell neta eth driver which
+	  enable RX/TX ethernet packets
+	  using gbe interface on marvell SoC.
+
+config MVEBU_NETA_BYPASS_DEC_WIN
+	bool "bypass decode window of neta driver"
+	depends on MVNETA
+	default n
+	help
+	  Choose this option to bypass decode window configuration
+	  of neta eth driver. For some marvell Soc, there are two
+	  layers of decode window for GBE:
+	  1. GbE Address window that resides inside the GBE unit.
+	  2. Fabric address window which is located in the NIC400.
+	  In this case, to simplify address decode window,
+	  bypass the first layer of GBE decode window by
+	  setting the first window to 4GB.
+
+config MAX_NETA_PORT_NUM
+	int "max port number in neta driver"
+	depends on MVNETA
+	default 2
+	help
+	  Define the max number of
+	  ethernet ports that need
+	  to be supported in marvell
+	  neta driver.
+
 endmenu

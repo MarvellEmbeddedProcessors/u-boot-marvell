@@ -291,13 +291,6 @@
 
 #endif /* CONFIG_MVEBU_PCI */
 
-/* Neta */
-#ifdef CONFIG_MV_ETH_NETA
-	#define MV_INCLUDE_GIG_ETH
-	#define CONFIG_MV_INCLUDE_GIG_ETH
-	#define MV_ETH_NETA
-#endif /* CONFIG_MV_ETH_NETA */
-
 /* Add network parameters when network command is enabled */
 #ifdef CONFIG_CMD_NET
 	/* Environment */

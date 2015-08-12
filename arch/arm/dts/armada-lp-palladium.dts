@@ -17,6 +17,12 @@
 			spi0: spi@10600 {
 				status = "okay";
 			};
+			neta0: neta@30000 {
+				status = "okay";
+			};
+			neta1: neta@40000 {
+				status = "okay";
+			};
 		};
 	};
 };

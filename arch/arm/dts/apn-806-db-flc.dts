@@ -40,6 +40,12 @@
 					0x0 0xffe00000 0x0 0x100000 0x03 /* PCI-REG window 64Kb for PCIe-reg*/>;
 			};
 
+			flc {
+				compatible = "marvell,mvebu-flc";
+				reg = <0x20700 0x100>;
+				flc_ext_dev_map = <0x1 0x0 0x0 0x40000000>;
+			};
+
 		};
 	};
 };

@@ -658,6 +658,49 @@ MV_U32 mvBoardDebugLedNumGet(MV_U32 boardId)
 	return board->activeLedsNumber;
 }
 
+#ifdef CONFIG_SWITCHING_SERVICES
+/*******************************************************************************
+* mvBoardisAmc
+* DESCRIPTION: return true if board is AMC
+*
+* INPUT:  None
+* OUTPUT: None.
+* RETURN: MV_TRUE: if board is AMC
+*         MV_FALSE: else
+*******************************************************************************/
+MV_BOOL mvBoardisAmc(void)
+{
+	MV_BOARD_INFO *board = mvBoardInfoStructureGet();
+	if (board)
+		return board->isAmc;
+
+	DB(mvOsPrintf("%s: Error: board structure not initialized\n", __func__));
+	return MV_FALSE;
+}
+
+/*******************************************************************************
+* mvBoardSetisAmc
+* DESCRIPTION: turn on/off isAmc status in board structure
+*
+* INPUT:
+*	MV_TRUE
+* OUTPUT:
+*	None.
+* RETURN:
+*	None.
+*******************************************************************************/
+void mvBoardSetisAmc(MV_BOOL boardisAmc)
+{
+	MV_BOARD_INFO *board = mvBoardInfoStructureGet();
+	if (board) {
+		board->isAmc = boardisAmc;
+		return;
+	}
+
+	DB(mvOsPrintf("%s: Error: board structure not initialized\n", __func__));
+}
+#endif
+
 /*******************************************************************************
 * mvBoardDebugLed - Set the board debug Leds
 *

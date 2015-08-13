@@ -205,7 +205,8 @@ MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.pIoExp				= armada_39x_customer_0_InfoBoardioExpValue,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	.pSwitchInfo			= NULL,
-	.switchInfoNum			= 0
+	.switchInfoNum			= 0,
+	.isAmc				= MV_FALSE
 };
 
 /*******************************************************************************
@@ -339,7 +340,8 @@ MV_BOARD_INFO armada_39x_customer_board_1_info = {
 	.pIoExp				= armada_39x_customer_1_InfoBoardioExpValue,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	.pSwitchInfo			= NULL,
-	.switchInfoNum			= 0
+	.switchInfoNum			= 0,
+	.isAmc				= MV_FALSE
 };
 
 /*
@@ -497,6 +499,7 @@ MV_BOARD_INFO db88f69xx_board_info = {
 	.isTdmConnected			= MV_FALSE,
 	.pSwitchInfo			= NULL,
 	.switchInfoNum			= 0,
+	.isAmc				= MV_FALSE,
 
 	.modelName			= "A390 Development Board"
 };
@@ -646,6 +649,7 @@ MV_BOARD_INFO gp88f6925_board_info = {
 	.isTdmConnected			= MV_FALSE,
 	.pSwitchInfo			= gp88f6925SwitchInfo,
 	.switchInfoNum			= ARRSZ(gp88f6925SwitchInfo),
+	.isAmc				= MV_FALSE,
 
 	.modelName			= "A395 General Purpose Development Board"
 };

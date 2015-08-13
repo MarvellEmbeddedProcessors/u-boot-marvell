@@ -609,6 +609,7 @@ void mvBoardPinCtrlNameGet(char *compatibleBuf);
 
 #ifdef CONFIG_SWITCHING_SERVICES
 MV_BOOL mvBoardisAmc(void);
+void mvBoardSetisAmc(MV_BOOL boardisAmc);
 #endif
 
 #ifdef __cplusplus

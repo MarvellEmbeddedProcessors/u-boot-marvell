@@ -57,11 +57,11 @@
  */
 #ifdef CONFIG_ARMADA_38X
 	#define MV88F68XX
-	#define CONFIG_SWITCHING_SERVICES
 #endif
 #ifdef CONFIG_ARMADA_39X
 	#define MV88F69XX
 #endif
+#define CONFIG_SWITCHING_SERVICES
 #define MV_SEC_64K
 #define MV_BOOTSIZE_512K
 #define MV_LARGE_PAGE

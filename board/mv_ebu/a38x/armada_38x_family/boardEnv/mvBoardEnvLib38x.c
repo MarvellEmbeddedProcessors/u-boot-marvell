@@ -99,27 +99,6 @@ MV_U32 mvBoardPortTypeGet(MV_U32 ethPortNum)
 	return MV_PORT_TYPE_UNKNOWN;
 }
 
-#ifdef CONFIG_SWITCHING_SERVICES
-/*******************************************************************************
-* mvBoardisAmc
-* DESCRIPTION: return true if board is AMC
-*
-* INPUT:  None
-* OUTPUT: None.
-* RETURN: MV_TRUE: if board is AMC
-*         MV_FALSE: else
-*******************************************************************************/
-MV_BOOL mvBoardisAmc(void)
-{
-	MV_BOARD_INFO *board = mvBoardInfoStructureGet();
-	if (board)
-		return board->isAmc;
-
-	DB(mvOsPrintf("%s: Error: board structure not initialized\n", __func__));
-	return MV_FALSE;
-}
-#endif
-
 /*******************************************************************************
 * mvBoardIsUsb3PortDevice
 * DESCRIPTION: return true USB3 port is in device mode

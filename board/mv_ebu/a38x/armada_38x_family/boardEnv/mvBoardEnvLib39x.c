@@ -401,8 +401,11 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			mvBoardSdioConnectionSet(MV_FALSE);
 			netComplexOptions |= (MV_NETCOMP_GE_MAC0_2_SGMII_L6 | MV_NETCOMP_GE_MAC1_2_SGMII_L4);
 			break;
-		case MV_GP_CONFIG_HGW_AP_2_5G:
 		case MV_GP_CONFIG_HGW_AP_2_5G_SATA:
+			/* one of the uses of this configuration is to use the board as AMC board.
+			   nothing will happen if the kernel not detect any switch devices over pex*/
+			mvBoardSetisAmc(MV_TRUE);
+		case MV_GP_CONFIG_HGW_AP_2_5G:
 			/*options 2+3: MAC0=>SerDes 6 using SFP or 2.5G PHY on modules
 				       MAC2=>SerDes 5 using switch on board*/
 			netComplexOptions |= (MV_NETCOMP_GE_MAC0_2_SGMII_L6 |

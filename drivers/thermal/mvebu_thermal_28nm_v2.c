@@ -51,6 +51,9 @@ struct tsen_info __attribute__((section(".data")))*tsen = &tsen_config;
 #define THERMAL_SEN_CTRL_STATS_TEMP_OUT_OFFSET		0
 #define THERMAL_SEN_CTRL_STATS_TEMP_OUT_MASK		(0x3FF << THERMAL_SEN_CTRL_STATS_TEMP_OUT_OFFSET)
 
+#define THERMAL_SEN_OUTPUT_MSB				512
+#define THERMAL_SEN_OUTPUT_COMP				1024
+
 u32 mvebu_thermal_sensor_read(void)
 {
 	u32 reg;
@@ -60,6 +63,12 @@ u32 mvebu_thermal_sensor_read(void)
 
 	reg = readl(tsen->regs_base + THERMAL_SEN_CTRL_STATS);
 	reg = ((reg & THERMAL_SEN_CTRL_STATS_TEMP_OUT_MASK) >> THERMAL_SEN_CTRL_STATS_TEMP_OUT_OFFSET);
+
+	/* TSEN output format is signed as a 2s complement number
+	   ranging from-512 to +511. when MSB is set, need to
+	   calculate the complement number */
+	if (reg >= THERMAL_SEN_OUTPUT_MSB)
+		reg -= THERMAL_SEN_OUTPUT_COMP;
 
 	return ((tsen->tsen_gain * reg) + tsen->tsen_offset) / 1000;
 }

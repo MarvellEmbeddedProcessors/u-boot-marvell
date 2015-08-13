@@ -25,6 +25,8 @@
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/tables.h>
 #include <asm/arch-mvebu/thermal.h>
+#include <ahci.h>
+#include <scsi.h>
 
 #ifdef CONFIG_MVEBU_CCU
 #include <asm/arch-mvebu/ccu.h>
@@ -37,6 +39,17 @@
 #endif
 #ifdef CONFIG_MVEBU_MBUS
 #include <asm/arch-mvebu/mbus.h>
+#endif
+
+#ifdef CONFIG_SCSI_AHCI_PLAT
+void scsi_init(void)
+{
+	ahci_init();
+	/* use mode 1 for scsi_scan, so scsi device info will
+	  * be reported (print out) after scan the scsi bus.
+	 */
+	scsi_scan(1);
+}
 #endif
 
 /* Weak function for SoC who need specific thermal sensor */

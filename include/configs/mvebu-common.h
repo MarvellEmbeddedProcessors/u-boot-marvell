@@ -330,8 +330,9 @@
 	#define ENV_ETH_PRIME           "e1000#0"
 #endif /* CONFIG_CMD_NET */
 
-/* SATA AHCI over PCIe */
-#if defined(CONFIG_DEVEL_BOARD) && (defined(CONFIG_MVEBU_PCI) || defined(CONFIG_MVEBU_DW_PCIE))
+/* SATA AHCI via controller or over PCIe */
+#if defined(CONFIG_DEVEL_BOARD) && \
+	(defined(CONFIG_MVEBU_PCI) || defined(CONFIG_MVEBU_DW_PCIE_) || defined(CONFIG_MV_INCLUDE_SATA))
 
 	#define CONFIG_CMD_SCSI
 	#define CONFIG_CMD_EXT2

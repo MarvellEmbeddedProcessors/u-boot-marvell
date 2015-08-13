@@ -57,6 +57,8 @@ Group Ltd.
 				Specify the GBE interface for armadaLP, check doc/device-tree-bindings/net/mvebu-gbe.txt
 			2.1.8 /soc/internal-regs/pcie/ node;
 				Specify the PCIe interface for armadaLP, check doc/device-tree-bindings/pci/mvebu-pci.txt
+			2.1.9 /soc/internal-regs/sata/ node;
+				Specify the SATA interface for mvebu, check doc/device-tree-bindings/sata/mvebu-sata.txt
 
 3) /sar/ node:
 	Specify the sample at reset database, check

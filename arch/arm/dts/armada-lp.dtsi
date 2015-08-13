@@ -94,6 +94,11 @@
 					status = "disabled";
 				};
 			};
+			sata: sata@e0000 {
+				compatible = "marvell,mvebu-sata";
+				reg = <0xe0000 0x200>;
+				status = "disabled";
+			};
 		};
 	};
 };

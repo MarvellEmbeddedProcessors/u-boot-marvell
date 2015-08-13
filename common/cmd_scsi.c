@@ -179,7 +179,18 @@ int scsi_get_disk_count(void)
 	return scsi_max_devs;
 }
 
-#ifdef CONFIG_PCI
+#if defined(CONFIG_PCI) && (!defined(CONFIG_SCSI_AHCI_PLAT))
+/* This routine applies for SATA over PCI only, since it scans SATA device
+  * with routine pci_find_device, and use scsi_device_list as input which
+  * has PCI device ID in it.
+  * So when SATA is over SATA controller, another scsi_init routine is needed.
+  * which will be invoked by routine board_init_r.
+  * But when a SoC has both SATA over controller and PCI (for other device),
+  * there will be two routines scsi_init compiled, and that is a link error.
+  *
+  * That is the reason of not compiled this routine when SATA is on controller but
+  * not over PCI.
+*/
 void scsi_init(void)
 {
 	int busdevfunc;

@@ -1,0 +1,20 @@
+menu "block device drivers"
+config MV_INCLUDE_SATA
+	bool "Include driver for mvebu SATA device"
+	default n
+	help
+	  Choose this option to enable
+	  driver for mvebu SATA device,
+	  which is standard ahci.c and
+	  could be based on PCIe or SATA
+	  controller.
+
+config SCSI_AHCI_PLAT
+	bool "SATA device based on controller"
+	default n
+	help
+	  Choose this option to enable
+	  the SATA device driver that
+	  based on directly on SATA
+	  controller.
+endmenu

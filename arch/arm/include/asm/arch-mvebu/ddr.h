@@ -26,7 +26,7 @@ struct mvebu_dram_config {
 	u32 cs_count;
 };
 
-void static_dram_init(const void *blob);
+void mvebu_dram_init(const void *blob);
 void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config);
 void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config);
 

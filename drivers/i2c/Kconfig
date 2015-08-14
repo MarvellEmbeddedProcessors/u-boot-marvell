@@ -1,11 +1,42 @@
 menu "I2C Support"
 
+config HARD_I2C
+	bool "Legacy I2C Support"
+	default n
+	help
+	  Choose this option to enable
+	  legacy I2C serial bus commands
+	  and include the appropriate
+	  I2C driver for the selected CPU.
+
 config MVEBU_I2C
 	bool "MVEBU I2C support"
 	default n
 	select CMD_I2C
 	help
-	  Choose this option to add support
-	  for Marvell's MVEBU I2C driver
+	  Choose this option to add
+	  support for Marvell's MVEBU
+	  I2C driver, which is used
+	  by Armada8k and Armada38x.
+
+config I2C_MV
+	bool "I2C support for armada100/armadaLP"
+	default n
+	select CMD_I2C
+	select HARD_I2C
+	help
+	  Choose this option to
+	  add support for I2C
+	  driver of Marvell's SoC
+	  Armada100 and ArmadaLP.
+
+config I2C_MV_PAD_REG
+	bool "4 bytes pad between every two I2C registers"
+	default y
+	help
+	  Choose this option to add
+	  4 bytes pad between every
+	  two I2C registers, it fits
+	  some SoC like Armada100.
 
 endmenu

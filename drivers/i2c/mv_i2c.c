@@ -19,6 +19,8 @@
 
 #include <common.h>
 #include <asm/io.h>
+#include <fdtdec.h>
+#include <asm/arch-mvebu/fdt.h>
 
 #ifdef CONFIG_HARD_I2C
 #include <i2c.h>
@@ -37,7 +39,7 @@ struct i2c_msg {
 	u8 direction;
 	u8 data;
 };
-
+#ifdef CONFIG_I2C_MV_PAD_REG
 struct mv_i2c {
 	u32 ibmr;
 	u32 pad0;
@@ -49,7 +51,15 @@ struct mv_i2c {
 	u32 pad3;
 	u32 isar;
 };
-
+#else
+struct mv_i2c {
+	u32 ibmr;
+	u32 idbr;
+	u32 icr;
+	u32 isr;
+	u32 isar;
+};
+#endif
 static struct mv_i2c *base;
 static void i2c_board_init(struct mv_i2c *base)
 {
@@ -99,6 +109,9 @@ unsigned int i2c_get_bus_num(void)
 {
 	return current_bus;
 }
+#else
+/* without Multibus, I2C_NUM has to be 1 */
+#define CONFIG_MV_I2C_NUM 1
 #endif
 
 /*
@@ -268,13 +281,64 @@ i2c_transfer_finish:
 /* ------------------------------------------------------------------------ */
 void i2c_init(int speed, int slaveaddr)
 {
+#ifdef CONFIG_OF_CONTROL
+
+	DECLARE_GLOBAL_DATA_PTR;
+
+	int node_list[CONFIG_MV_I2C_NUM], node;
+	int i, count;
+	unsigned long i2c_reg_base = 0;
+
+	/* in dts file, go through all the 'i2c' nodes.
+	 */
+	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "i2c",
+			COMPAT_MVEBU_ARLP_I2C, node_list, 2);
+	if (count == 0) {
+		error("could not find i2c node in FDT, initialization failed!\n");
+		return;
+	}
+	for (i = 0; i < count ; i++) {
+		node = node_list[i];
+
+		if (node <= 0)
+			continue;
+
+		/* in dts file, there should be several "i2c" nodes that are enabled, and in
+		 * dtsi file there are the 'reg' attribute for register base of each i2c unit.
+		 */
+		/* fetch 'reg' propertiy from 'i2c' node */
+		i2c_reg_base = (unsigned long)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
+		if (i2c_reg_base == FDT_ADDR_T_NONE) {
+			error("could not find reg in i2c node, initialization failed!\n");
+			return;
+		}
 #ifdef CONFIG_I2C_MULTI_BUS
+		i2c_regs[i] = i2c_reg_base;
+#endif
+	}
+
+#endif /* CONFIG_OF_CONTROL */
+
+#ifdef CONFIG_I2C_MULTI_BUS
+	/* in multi-bus mode:
+	  * If fdt is supported, i2c reg base array (i2c_regs) comes from fdt file
+	  * and the values are put into it in this routine;
+	  * If fdt is not supported, i2c reg base array (i2c_regs) comes from define,
+	  * and since it is array, it is inited at declaration and not in this routine.
+	*/
 	current_bus = 0;
 	base = (struct mv_i2c *)i2c_regs[current_bus];
+#else /* CONFIG_I2C_MULTI_BUS */
+	/* in single bus mode, if fdt is supported, i2c reg base comes from fdt file;
+	  * else, it comes from define.
+	*/
+#ifdef CONFIG_OF_CONTROL
+	base = (struct mv_i2c *)i2c_reg_base;
 #else
 	base = (struct mv_i2c *)CONFIG_MV_I2C_REG;
-#endif
+#endif /* CONFIG_OF_CONTROL */
 
+#endif /* CONFIG_I2C_MULTI_BUS */
 	i2c_board_init(base);
 }
 
@@ -385,8 +449,8 @@ int i2c_read(uchar chip, uint addr, int alen, uchar *buffer, int len)
 			return -1;
 
 		*buffer = msg.data;
-		PRINTD(("i2c_read: reading byte (0x%08x)=0x%02x\n",
-			(unsigned int)buffer, *buffer));
+		PRINTD(("i2c_read: reading byte (0x%08lx)=0x%02x\n",
+			(unsigned long)buffer, *buffer));
 		buffer++;
 	}
 
@@ -448,8 +512,8 @@ int i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len)
 
 	/* write bytes; send NACK at last byte */
 	while (len--) {
-		PRINTD(("i2c_write: writing byte (0x%08x)=0x%02x\n",
-			(unsigned int)buffer, *buffer));
+		PRINTD(("i2c_write: writing byte (0x%08lx)=0x%02x\n",
+			(unsigned long)buffer, *buffer));
 
 		if (len == 0)
 			msg.condition = I2C_COND_STOP;

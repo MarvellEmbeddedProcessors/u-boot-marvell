@@ -49,6 +49,19 @@ void soc_init(void)
 {
 	/* Do early SOC specific init here */
 
+	/* now there is no timer/MPP driver,
+	  * currently we put all this kind of
+	  * configuration here, and will remove
+	  * this after official driver is ready
+	  */
+#ifdef CONFIG_PALLADIUM
+
+#ifdef CONFIG_I2C_MV
+	/* 0xD0013830[10] = 1'b0 (select GPIO pins to use for I2C_1) */
+	writel((readl(0xd0013830) & ~(1 << 10)), 0xd0013830);
+#endif /* CONFIG_I2C_MV */
+
+#endif /* CONFIG_PALLADIUM */
 	return;
 }
 
@@ -82,6 +95,18 @@ int cpu_eth_init(bd_t *bis)
 	return 0;
 }
 #endif /* CONFIG_MVNETA */
+
+#ifdef CONFIG_I2C_MV
+void i2c_clk_enable(void)
+{
+	/* i2c is enabled by default,
+	  * but need this empty routine
+	  * to pass compilation.
+	*/
+	return;
+}
+
+#endif /* CONFIG_I2C_MV */
 
 int dram_init(void)
 {

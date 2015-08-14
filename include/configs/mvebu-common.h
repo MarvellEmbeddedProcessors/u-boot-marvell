@@ -238,11 +238,13 @@
 #ifdef CONFIG_MVEBU_I2C
 	#define CONFIG_SYS_I2C
 	#define CONFIG_I2C_MULTI_BUS
-	#define CONFIG_SYS_I2C_SPEED            100000  /* I2C speed default */
 /*	#define CONFIG_CMD_EEPROM
 	#define CONFIG_SYS_I2C_EEPROM_ADDR_LEN  1
 	#define CONFIG_SYS_I2C_MULTI_EEPROMS
 	#define CONFIG_SYS_I2C_SLAVE		0x0*/
+#endif
+#if defined(CONFIG_MVEBU_I2C) || defined(CONFIG_I2C_MV)
+	#define CONFIG_SYS_I2C_SPEED            100000  /* I2C speed default */
 #endif
 
 /* RTC */

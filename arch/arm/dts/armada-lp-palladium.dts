@@ -23,6 +23,9 @@
 			neta1: neta@40000 {
 				status = "okay";
 			};
+			i2c: i2c@11000 {
+				status = "okay";
+			};
 		};
 	};
 };

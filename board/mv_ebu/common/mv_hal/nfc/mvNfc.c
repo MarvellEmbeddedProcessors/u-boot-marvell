@@ -1886,11 +1886,16 @@ MV_STATUS mvNfcCommandPio(MV_NFC_CTRL *nfcCtrl, MV_NFC_MULTI_CMD *cmd_desc, MV_B
 		reg = MV_NAND_REG_READ(NFC_CONTROL_REG);
 		if (!(reg & NFC_CTRL_ND_RUN_MASK))
 			break;
+		udelay(10);
 		timeout--;
 	}
 
-	if (timeout == 0)
-		return MV_BAD_STATE;
+	/* If the controller can't finish the last transaction, clear the ND run command
+	   bit and start the next one */
+	if (timeout == 0) {
+		reg &= ~NFC_CTRL_ND_RUN_MASK;
+		MV_NAND_REG_WRITE(NFC_CONTROL_REG, reg);
+	}
 
 	reg |= NFC_CTRL_ND_RUN_MASK;
 	MV_NAND_REG_WRITE(NFC_CONTROL_REG, reg);

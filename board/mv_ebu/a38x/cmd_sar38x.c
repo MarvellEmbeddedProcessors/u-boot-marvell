@@ -64,7 +64,7 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_DB_SERDES2_CFG,	{1,		1,		1,		1,		1,	  1,		0}},
 { MV_SATR_DB_USB3_PORT0,	{0,		0,		0,		0,		0,	  0,		0}},
 { MV_SATR_DB_USB3_PORT1,	{0,		0,		0,		0,		0,	  0,		0}},
-{ MV_SATR_DDR_ECC_ENABLE,	{0,		0,		0,		0,		0,	  0,		1}},
+{ MV_SATR_DDR_ECC_ENABLE,	{0,		0,		0,		0,		0,	  0,		0}},
 { MV_SATR_DDR_ECC_PUP_SEL,	{0,		0,		0,		0,		0,	  0,		1}},
 { MV_SATR_FULL_FLAVOR,		{0,		1,		0,		1,		1,	  1,		0} },
 { MV_SATR_TDM_CONNECTED,	{0,		1,		0,		0,		0,	  0,		0} },

@@ -704,10 +704,8 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				bz2_file++;
 				run_script = MV_TRUE;
 				printf("script separation ended ok. unc_len=%d, total_in=%d\n", unc_len, total_in);
-			} else {
-				printf("Uncompress of script ended with error. rc=%d\n", rc);
-				return 0;
-			}
+			} else
+				printf("Uncompress of script ended with error. rc=%d. Script is ignored\n", rc);
 		} else
 			printf("No embedded script found\n");
 

@@ -77,7 +77,7 @@ disclaimer.
 					 100000 -> 20000 . adiy, erez*/
 typedef volatile unsigned long VUL;
 
-static MV_U8 tread_msys(MV_U8 addr, int reg)
+static MV_U8 tread_msys(MV_U8 addr, int reg, MV_BOOL moreThen256)
 {
 		MV_TWSI_SLAVE twsiSlave;
 		MV_TWSI_ADDR slave;
@@ -96,7 +96,7 @@ static MV_U8 tread_msys(MV_U8 addr, int reg)
 		twsiSlave.slaveAddr.address = addr ;
 		twsiSlave.validOffset = MV_TRUE;
 		twsiSlave.offset = reg;
-		twsiSlave.moreThen256 = MV_FALSE;
+		twsiSlave.moreThen256 = moreThen256;
 
 		if (MV_OK != mvTwsiRead(TWSI_CHANNEL_MSYS, &twsiSlave, &data, 1)) {
 				DB(printf("tread_msys : twsi read fail\n"));
@@ -107,7 +107,7 @@ static MV_U8 tread_msys(MV_U8 addr, int reg)
 		return data;
 }
 
-static MV_STATUS twrite_msys(MV_U8 addr, int reg, MV_U8 regVal)
+static MV_STATUS twrite_msys(MV_U8 addr, int reg, MV_U8 regVal, MV_BOOL moreThen256)
 {
 		MV_TWSI_SLAVE twsiSlave;
 		MV_TWSI_ADDR slave;
@@ -125,7 +125,7 @@ static MV_STATUS twrite_msys(MV_U8 addr, int reg, MV_U8 regVal)
 		twsiSlave.slaveAddr.type = ADDR7_BIT;
 		twsiSlave.validOffset = MV_TRUE;
 		twsiSlave.offset = reg;
-		twsiSlave.moreThen256 = MV_FALSE;
+		twsiSlave.moreThen256 = moreThen256;
 
 		data = regVal;
 		if (MV_OK != mvTwsiWrite(TWSI_CHANNEL_MSYS, &twsiSlave, &data, 1)) {
@@ -239,11 +239,12 @@ static int do_sar_list_msys(int silt, int argc, char *const argv[])
 				}
 		}
 
-		if ((strcmp(cmd, "pciegen1") == 0) || all) {
-				if (silt == SILT_BC2) {
-					printf("pciegen1 (0x4c.1 4:4): Determines the pciegen1:\n");
-					printf("\t0x0 = Do not force BC2 PCIe connection to GEN1\n");
-					printf("\t0x1 = Force BC2 PCIe connection to GEN1\n");
+		if ((strcmp(cmd, "forcegen1") == 0) || all) {
+				if (silt == SILT_BC2 || silt == SILT_BOBK) {
+					printf("forcegen1 (0x57.3 2:2): Determines if whether to force PCI-e");
+					printf(" connection to GEN1 or not:\n");
+					printf("\t0x0 = Do not force BC2 PCI-e connection to GEN1\n");
+					printf("\t0x1 = Force BC2 PCI-e connection to GEN1\n");
 					printf("\n");
 				}
 		}
@@ -278,15 +279,16 @@ static int do_sar_read_msys(int silt, int argc, char *const argv[])
 		uint twsi_Addr = 0;
 		uint twsi_Reg = 0;
 		uint field_Offs = 0;
+		MV_BOOL moreThen256 = MV_FALSE;
 
 		cmd = argv[0];
 
 		if (strcmp(cmd, "dump") == 0) {
 				satr_reg =
-				((tread_msys(0x4c, 0)&0x1f) << 0) |	/* 5 bits */
-				((tread_msys(0x4d, 0)&0x1f) << 5) |
-				((tread_msys(0x4e, 0)&0x1f) << 10) |
-				((tread_msys(0x4f, 0)&0x1f) << 15);
+				((tread_msys(0x4c, 0, moreThen256)&0x1f) << 0) |	/* 5 bits */
+				((tread_msys(0x4d, 0, moreThen256)&0x1f) << 5) |
+				((tread_msys(0x4e, 0, moreThen256)&0x1f) << 10) |
+				((tread_msys(0x4f, 0, moreThen256)&0x1f) << 15);
 				printf("MSYS S@R raw register = 0x%08x\n", satr_reg);
 
 				return 0;
@@ -309,14 +311,14 @@ static int do_sar_read_msys(int silt, int argc, char *const argv[])
 				field_Offs = 3;
 				bit_mask = 0x3;
 
-				satr_reg = (tread_msys(twsi_Addr, twsi_Reg) >> field_Offs) & bit_mask;
+				satr_reg = (tread_msys(twsi_Addr, twsi_Reg, moreThen256) >> field_Offs) & bit_mask;
 
 				twsi_Addr = (silt == SILT_BC2) ? 0x4e : 0x4f;
 				field_Offs = 0;
 				bit_mask = 0x1;
 
 				satr_reg = satr_reg |
-					(((tread_msys(twsi_Addr, twsi_Reg) >> field_Offs) & bit_mask) << 2);
+					(((tread_msys(twsi_Addr, twsi_Reg, moreThen256) >> field_Offs) & bit_mask) << 2);
 
 				printf("MSYS S@R freq = 0x%x\n", satr_reg);
 
@@ -347,11 +349,13 @@ static int do_sar_read_msys(int silt, int argc, char *const argv[])
 				bit_mask = 0x1;
 		}
 
-		else if (strcmp(cmd, "pciegen1") == 0 && silt == SILT_BC2) {
-				twsi_Addr = 0x4c;
-				field_Offs = 4;
+		else if (strcmp(cmd, "forcegen1") == 0 &&
+				(silt == SILT_BC2 || silt == SILT_BOBK)) {
+				twsi_Addr = 0x57;
+				field_Offs = 2;
 				bit_mask = 0x1;
-				twsi_Reg = 1;
+				twsi_Reg = 3;
+				moreThen256 = MV_TRUE;
 		}
 
 		else {
@@ -360,7 +364,7 @@ static int do_sar_read_msys(int silt, int argc, char *const argv[])
 				return -1;
 		}
 
-		satr_reg = (tread_msys(twsi_Addr, twsi_Reg) >> field_Offs) & bit_mask;
+		satr_reg = (tread_msys(twsi_Addr, twsi_Reg, moreThen256) >> field_Offs) & bit_mask;
 		printf("MSYS S@R %s = 0x%02x\n", cmd, satr_reg);
 
 		return 0;
@@ -375,6 +379,8 @@ static int do_sar_write_msys(int silt, int argc, char *const argv[])
 		uint twsi_Addr = 0;
 		uint twsi_Reg = 0;
 		uint field_Offs = 0;
+		MV_BOOL moreThen256 = MV_FALSE;
+		MV_U8 write_Mask = 0x1f;
 
 		cmd = argv[0];
 		data = simple_strtoul(argv[1], NULL, 16);
@@ -396,9 +402,9 @@ static int do_sar_write_msys(int silt, int argc, char *const argv[])
 				field_Offs = 3;
 				bit_mask = 0x3;
 
-				satr_reg = tread_msys(twsi_Addr, 0) & 0x1f;
+				satr_reg = tread_msys(twsi_Addr, 0, moreThen256) & 0x1f;
 				satr_reg = (satr_reg & (~(bit_mask << field_Offs))) | ((data & bit_mask) << field_Offs);
-				twrite_msys(twsi_Addr, twsi_Reg, (MV_U8)satr_reg);
+				twrite_msys(twsi_Addr, twsi_Reg, (MV_U8)satr_reg, moreThen256);
 
 				data = data >> 2;
 				twsi_Addr = (silt == SILT_BC2) ? 0x4e : 0x4f;
@@ -430,11 +436,14 @@ static int do_sar_write_msys(int silt, int argc, char *const argv[])
 				bit_mask = 0x1;
 		}
 
-		else if (strcmp(cmd, "pciegen1") == 0 && silt == SILT_BC2) {
-				twsi_Addr = 0x4c;
-				field_Offs = 4;
+		else if (strcmp(cmd, "forcegen1") == 0 &&
+				(silt == SILT_BC2 || silt == SILT_BOBK)) {
+				twsi_Addr = 0x57;
+				field_Offs = 2;
 				bit_mask = 0x1;
-				twsi_Reg = 1;
+				twsi_Reg = 3;
+				moreThen256 = MV_TRUE;
+				write_Mask = 0xff;
 		}
 
 		else {
@@ -443,9 +452,9 @@ static int do_sar_write_msys(int silt, int argc, char *const argv[])
 				return -1;
 		}
 
-		satr_reg = tread_msys(twsi_Addr, 0) & 0x1f;
+		satr_reg = tread_msys(twsi_Addr, 0, moreThen256) & write_Mask;
 		satr_reg = (satr_reg & (~(bit_mask << field_Offs))) | ((data & bit_mask) << field_Offs);
-		twrite_msys(twsi_Addr, twsi_Reg, (MV_U8)satr_reg);
+		twrite_msys(twsi_Addr, twsi_Reg, (MV_U8)satr_reg, moreThen256);
 
 		return 0;
 }
@@ -454,7 +463,7 @@ static int do_sar_write_msys(int silt, int argc, char *const argv[])
 
 MV_STATUS check_twsi_msys(void)
 {
-		MV_U8 reg = tread_msys(0x4c, 0);
+		MV_U8 reg = tread_msys(0x4c, 0, MV_FALSE);
 		DB(printf("\ncheck_twsi_msys: read_MSYS= 0x%x\n", reg));
 		if (reg == 0xff)
 				return MV_ERROR;
@@ -515,7 +524,7 @@ int do_sar_msys(cmd_tbl_t * cmdtp, int flag, int silt, int argc, char * const ar
 		if (silt == SILT_BC2)
 				printf("SatR list ptppll    - print ptppll list\n");
 
-		printf("SatR list pciegen1  - print pciegen1 list\n");
+		printf("SatR list forcegen1  - print forcegen1 list\n");
 
 		printf("\n");
 
@@ -527,7 +536,7 @@ int do_sar_msys(cmd_tbl_t * cmdtp, int flag, int silt, int argc, char * const ar
 		printf("SatR read jtagcpu   - read JTAG CPU selection\n");
 		if (silt == SILT_BC2) {
 				printf("SatR read ptppll    - read PTP PLL setting\n");
-				printf("SatR read pciegen1  - read Force PCIe GEN1 setting\n");
+				printf("SatR read forcegen1  - read Force PCIe GEN1 setting\n");
 		}
 		printf("SatR read dump      - read all values\n");
 		printf("\n");
@@ -540,7 +549,7 @@ int do_sar_msys(cmd_tbl_t * cmdtp, int flag, int silt, int argc, char * const ar
 		printf("SatR write jtagcpu  <val> - write JTAG CPU selection\n");
 		if (silt == SILT_BC2) {
 				printf("SatR write ptppll   <val> - write PTP PLL setting\n");
-				printf("SatR write pciegen1 <val> - write Force PCIe GEN1 setting\n");
+				printf("SatR write forcegen1 <val> - write Force PCIe GEN1 setting\n");
 		}
 
 		return 1;
@@ -568,10 +577,10 @@ static int do_qsgmii_sel(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv
 
 		bit_mask = (simple_strtoul(argv[1], NULL, 16) & 0x0000ffff);
 
-		twrite_msys(0x20, 2, (MV_U8)((bit_mask >> 0) & 0xff));
-		twrite_msys(0x20, 3, (MV_U8)((bit_mask >> 8) & 0xff));
-		twrite_msys(0x20, 6, 0x0);
-		twrite_msys(0x20, 7, 0x0);
+		twrite_msys(0x20, 2, (MV_U8)((bit_mask >> 0) & 0xff), MV_FALSE);
+		twrite_msys(0x20, 3, (MV_U8)((bit_mask >> 8) & 0xff), MV_FALSE);
+		twrite_msys(0x20, 6, 0x0, MV_FALSE);
+		twrite_msys(0x20, 7, 0x0, MV_FALSE);
 		return 1;
 
 		usage:

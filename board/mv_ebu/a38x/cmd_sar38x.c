@@ -47,7 +47,7 @@ typedef struct _boardSatrDefault {
 	MV_SATR_TYPE_ID satrId;
 	MV_U32 defauleValueForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_SATR_DEFAULT;
-#define MAX_DEFAULT_ENTRY	23
+#define MAX_DEFAULT_ENTRY	24
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 /* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_BP_68xx,	RD_WAP_68xx,	DB_AP_68xx , DB_GP_68xx,  DB_BP_6821,	DB-AMC */
 { MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c,		0x0c,	  0x4,		0x0c}},
@@ -71,6 +71,7 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_TDM_PLACE_HOLDER,	{0,		1,		0,		0,		0,	  0,		0} },
 { MV_SATR_BOARD_SPEED,		{0,		0x1,		0,		0x1,		0x1,	  0,		0x1} },
 { MV_SATR_AVS_SKIP,		{0,		0x1,		0,		0x1,		0x1,	  0x1,		0x1} },
+{ MV_SATR_PEX_FORCE_GEN1,	{0,		0,		0,		0,		0,	  0,		0x1} },
 {MV_SATR_BOOT_DEVICE,           {0,             0,              0,		0,		0,	  0,		0} },/* Dummy entry: default value taken from S@R register */
 {MV_SATR_BOOT2_DEVICE,          {0,             0,              0,		0,		0,	  0,		0} },/* Dummy entry: default value taken from S@R register */
 };
@@ -349,6 +350,11 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("\t0 = Do not skip AVS update from EFUSE\n");
 		mvOsPrintf("\t1 = Skip AVS update from EFUSE\n");
 		break;
+	case MV_SATR_PEX_FORCE_GEN1:
+		mvOsPrintf("Indicates whether to force use PCI-e connection to GEN1 or not:\n");
+		mvOsPrintf("\t0 = Force BC2 PCI-e connection to GEN1\n");
+		mvOsPrintf("\t1 = Do not force BC2 PCI-e connection to GEN1\n");
+		break;
 	case MV_SATR_BOARD_SPEED:
 		mvOsPrintf("Determines the max supported CPU speed:\n");
 		mvOsPrintf("\t1 = %uMHz\n", getBoardSpeed(1));
@@ -473,6 +479,9 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		break;
 	case MV_SATR_AVS_SKIP:
 		mvOsPrintf("avsskip\t\t= %d  ==> %sskip AVS update from EFUSE\n", tmp, (tmp == 0) ? "Do not " : "");
+		break;
+	case MV_SATR_PEX_FORCE_GEN1:
+		mvOsPrintf("forcegen1\t\t= %d  ==> %sforce use PCI-e GEN 1.0\n", tmp, (tmp == 1) ? "Do not " : "");
 		break;
 	case MV_SATR_BOARD_SPEED:
 		mvOsPrintf("boardspeed\t\t= %d  ==> Max CPU speed is %uMHz\n", tmp, getBoardSpeed(tmp));
@@ -671,6 +680,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "boardid			   - board ID		(read only)\n"
 "boardspeed			   - MAX validated CPU mode for current chip		(read only)\n"
 "avsskip			   - Skip AVS from EFUSE update\n"
+"forcegen1			   - DB-AMC: force use PCI-e GEN 1.0\n"
 
 "\n\t Board Specific SW fields\n"
 "\t------------------------\n"

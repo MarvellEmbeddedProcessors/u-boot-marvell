@@ -168,6 +168,7 @@ typedef enum _mvSatRTypeID {
 	MV_SATR_TDM_PLACE_HOLDER,
 	MV_SATR_BOARD_SPEED,
 	MV_SATR_AVS_SKIP,
+	MV_SATR_PEX_FORCE_GEN1,
 	MV_SATR_MAX_OPTION,
 } MV_SATR_TYPE_ID;
 
@@ -202,6 +203,7 @@ typedef enum _mvSatRTypeID {
 {"tdm",		MV_SATR_TDM_CONNECTED,		0x20,	5,	0,	2,	{0, 1, 0, 0, 0, 0, 0}, 0},\
 {"tdmplaceholder",	MV_SATR_TDM_PLACE_HOLDER,	0x40,	6,	0,	2,	{0, 0, 0, 0, 0, 0, 0}, 0},\
 {"avsskip",	MV_SATR_AVS_SKIP,		0x80,	7,	0,	2,	{0, 1, 0, 1, 1, 1, 1}, 0},\
+{"forcegen1",	MV_SATR_PEX_FORCE_GEN1,		0x4,	2,	0,	3,	{0, 0, 0, 0, 0, 0, 1}, 0},\
 {"boardspeed",	MV_SATR_BOARD_SPEED,		0x3,	0,	0,	3,	{0, 1, 0, 1, 1, 0, 1}, SATR_READ_ONLY},\
 {"max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0, 0, 0, 0}, 0},\
 };

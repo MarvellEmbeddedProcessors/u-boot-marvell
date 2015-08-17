@@ -16,8 +16,6 @@
  * ***************************************************************************
  */
 
-#define DEBUG
-/* #define DEBUG_REG */
 
 #include <common.h>
 #include <asm/system.h>

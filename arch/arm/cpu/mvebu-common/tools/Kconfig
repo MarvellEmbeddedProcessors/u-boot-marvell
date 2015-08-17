@@ -39,4 +39,16 @@ config MVEBU_MEM_TEST_END_ADDR
 	help
 	  This option set the end address
 	  of the DRAM test in SPL code
+
+config MVEBU_SPL_SAR_DUMP
+	bool "Sample at reset dump"
+	depends on SPL
+	default n
+	help
+	  To add this option you need to edit the
+	  defconfig and add the following line:
+	  +S:CONFIG_MVEBU_SPL_SAR_DUMP=y
+	  Choose this option to dump sample at
+	  reset register
+
 endmenu

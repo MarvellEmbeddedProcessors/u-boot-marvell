@@ -36,6 +36,10 @@
 #include <asm/arch-mvebu/flc.h>
 #endif
 
+#ifdef CONFIG_MVEBU_SPL_SAR_DUMP
+extern void mvebu_sar_dump_reg(void);
+#endif
+
 DECLARE_GLOBAL_DATA_PTR;
 
 static int setup_fdt(void)
@@ -63,6 +67,10 @@ void board_init_f(ulong silent)
 
 	setup_fdt();
 	preloader_console_init();
+
+#ifdef CONFIG_MVEBU_SPL_SAR_DUMP
+	mvebu_sar_dump_reg();
+#endif
 
 #ifndef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 /* when DDR over PCIE is enabled, add delay before and after the comphy_init
@@ -93,4 +101,5 @@ void board_init_f(ulong silent)
 	if (run_memory_test())
 		printf("**** DRAM test failed ****\n");
 #endif
+
 }

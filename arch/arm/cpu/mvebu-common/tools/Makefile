@@ -17,3 +17,4 @@
 #
 
 obj-$(CONFIG_MVEBU_SPL_MEMORY_TEST) += ddr_test.o
+obj-$(CONFIG_MVEBU_SPL_SAR_DUMP) += mvebu_sar.o

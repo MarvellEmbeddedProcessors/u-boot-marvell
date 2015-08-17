@@ -47,6 +47,9 @@
 
 enum { /* Update defaultValue[] if any change to this enum has made!*/
 	CMD_CORE_CLK_FREQ = 0,
+#if defined(CONFIG_BOBK)
+	CMD_BYPASS_CORE_CLK_FREQ,
+#endif
 	CMD_CPU_DDR_REQ,
 #if defined(CONFIG_BOBCAT2) || defined(CONFIG_BOBK)
 	CMD_TM_FREQ,
@@ -95,6 +98,7 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 	MV_U32 cpuDdrClkTblSize = ARRAY_SIZE(cpuDdrClkTbl);
 #elif defined(CONFIG_BOBK)
 	int defaultValue[] = { 0,	/* Core clock */
+						   0,	/* bypass_coreclock: if core clock is set to bypass(7), this field select the bypass clock */
 						   3,	/* CPU/DDR clock */
 						   2,	/* TM frequency */
 						   1,	/* JTAG CPU 1 == MSYS */
@@ -104,6 +108,7 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 						   0 };	/* Device ID */
 	MV_U32 coreClockTblBobkCetus[] = MV_CORE_CLK_TBL_BOBK_CETUS;
 	MV_U32 coreClockTblBobkCaelum[] = MV_CORE_CLK_TBL_BOBK_CAELUM;
+	MV_U32 bypassCoreClockTbl[] = MV_BYPASS_CORE_CLK_TBL_BOBK;
 	MV_CPUDDR_MODE cpuDdrClkTblBobkCetus[] = MV_CPU_DDR_CLK_TBL_BOBK_CETUS;
 	MV_CPUDDR_MODE cpuDdrClkTblBobkCaelum[] = MV_CPU_DDR_CLK_TBL_BOBK_CAELUM;
 	MV_U32 *coreClockTbl;
@@ -160,6 +165,10 @@ static int sar_cmd_get(const char *cmd)
 
 	if (strcmp(cmd, "coreclock") == 0)
 		return CMD_CORE_CLK_FREQ;
+#if defined CONFIG_BOBK
+	if (strcmp(cmd, "bypass_coreclock") == 0)
+		return CMD_BYPASS_CORE_CLK_FREQ;
+#endif
 	if (strcmp(cmd, "freq") == 0)
 		return CMD_CPU_DDR_REQ;
 #if defined(CONFIG_BOBCAT2) || defined(CONFIG_BOBK)
@@ -224,8 +233,22 @@ static int do_sar_list(int mode)
 		printf("\t--------------------------\n");
 		for (i = 0; i < coreClockTblSize; i++)
 			printf("\t| %2d  |      %4d        |\n", i, coreClockTbl[i]);
+#if defined CONFIG_BOBK
+		/* Bypass mode is reserved(out of table), print it seperately */
+		printf("\t| %2d  |   Bypass Mode    |\n", 7);
+#endif
 		printf("\t--------------------------\n");
 		break;
+#if defined CONFIG_BOBK
+		case CMD_BYPASS_CORE_CLK_FREQ:
+		printf("Determines the core clock frequency used in bypass mode(when \"coreclock\"=7):\n");
+		printf("\t| ID  | Core clock (MHz) |\n");
+		printf("\t--------------------------\n");
+		for (i = 0; i < ARRAY_SIZE(bypassCoreClockTbl); i++)
+			printf("\t| %2d  |      %4d        |\n", i, bypassCoreClockTbl[i]);
+		printf("\t--------------------------\n");
+		break;
+#endif
 	case CMD_CPU_DDR_REQ:
 		printf("Determines the CPU and DDR frequency:\n");
 		printf("\t| ID  | CPU Freq (MHz) | DDR Freq (MHz) |\n");
@@ -392,15 +415,30 @@ static int do_sar_read(int mode)
 
 	switch (mode) {
 	case CMD_CORE_CLK_FREQ:
-		if (mvBoardCoreFreqGet(&tmp) == MV_OK)
-			printf("coreclock\t\t= %d ==>  Core @ %dMHz\n", tmp, coreClockTbl[tmp]);
-		else
+		if (mvBoardCoreFreqGet(&tmp) == MV_OK) {
+#if defined CONFIG_BOBK
+			if (tmp == 7) {
+				printf("coreclock\t\t= %d ==>  bypass mode, refer to bypass_coreclock\n", tmp);
+			} else
+#endif
+				printf("coreclock\t\t= %d ==>  Core @ %dMHz\n", tmp, coreClockTbl[tmp]);
+		} else
 			printf("coreclock Error: failed reading Core Clock Frequency (PLL_0)\n");
 		break;
 
+#if defined CONFIG_BOBK
+	case CMD_BYPASS_CORE_CLK_FREQ:
+		if (mvBoardBypassCoreFreqGet(&tmp) == MV_OK) {
+			printf("bypass_coreclock\t= %d ==>  Core @ %dMHz valid only when \"coreclock\"=7(bypass mode)\n",
+				tmp, bypassCoreClockTbl[tmp]);
+		} else
+			printf("bypass_coreclock Error: failed reading Core Clock Frequency in bypass mode\n");
+		break;
+#endif
+
 	case CMD_CPU_DDR_REQ:
 		if (mvBoardCpuFreqGet(&tmp) == MV_OK)
-			printf("freq\t\t\t= %d ==>  CPU @ %dMHz DDR @ %dMHz \n", tmp,
+			printf("freq\t\t\t= %d ==>  CPU @ %dMHz DDR @ %dMHz\n", tmp,
 			       cpuDdrClkTbl[tmp].cpuFreq, cpuDdrClkTbl[tmp].ddrFreq);
 		else
 			printf("freq Error: failed reading CPU/DDR Clocks Frequency (PLL_1)\n");
@@ -555,13 +593,30 @@ static int do_sar_write(int mode, int value)
 	tmp = (MV_U8)value;
 	switch (mode) {
 	case CMD_CORE_CLK_FREQ:
+#if defined CONFIG_BOBK
+		/* In Bobk, we need to valid the bypass mode(coreclock=7) to enble the CorePLL WA,
+		and the index 7 is out of table limit */
+		if ((value != 7) && ((value < 0) || (value >= coreClockTblSize))) {
+#else
 		if ((value < 0) || (value >= coreClockTblSize)) {
+#endif
 			mvOsPrintf("S@R incorrect value for Core Clock: %d\n", value);
 			rc = MV_ERROR;
 			break;
 		}
 		rc = mvBoardCoreFreqSet(tmp);
 		break;
+#if defined CONFIG_BOBK
+	case CMD_BYPASS_CORE_CLK_FREQ:
+		if ((value < 0) || (value >= ARRAY_SIZE(bypassCoreClockTbl))) {
+			mvOsPrintf("S@R incorrect value for Core Clock in bypass mode: %d\n", value);
+			rc = MV_ERROR;
+			break;
+		}
+		rc = mvBoardBypassCoreFreqSet(tmp);
+		break;
+#endif
+
 	case CMD_CPU_DDR_REQ:
 		if (((value < 0) || (value >= cpuDdrClkTblSize)) ||
 			(cpuDdrClkTbl[value].internalFreq != MV_FALSE)) {
@@ -765,6 +820,9 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "\n\tSW SatR fields\n"
 "\t--------------\n"
 "boardid                    - Board ID\n"
+#if defined CONFIG_BOBK
+"bypass_coreclock			- Core frequency used in bypass mode(when coreclock=7)\n"
+#endif
 #ifdef CONFIG_ALLEYCAT3
 "ddreccenable               - DDR ECC modes\n"
 "\t----Legacy fileds----\n"

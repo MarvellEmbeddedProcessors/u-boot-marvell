@@ -68,20 +68,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAX_BUS_NUM        		(5)
 
 #include "ddr3_hws_hw_training_def.h"
-
+#include "mvSysEnvLib.h"
 
 /*Controler bus divider 1 for 32 bit, 2 for 64 bit */
 #define MV_DDR_CONTROLLER_BUS_WIDTH_MULTIPLIER         1
 
-/* MISC */
-#define INTER_REGS_BASE								0xD0000000
-
-#define REG_DEVICE_SAR0_ADDR                        0xF8200
-#define REG_DEVICE_SAR1_ADDR                        0xF8204
-#define PLL0_CNFIG_OFFSET         					21
-#define PLL0_CNFIG_MASK           					0x7
-#define PLL1_CNFIG_OFFSET         					18
-#define PLL1_CNFIG_MASK           					0x7
+/* MISC defined in mvSysEnvLib.h */
 
 /* DRAM Windows */
 #define REG_XBAR_WIN_5_CTRL_ADDR					0x20050

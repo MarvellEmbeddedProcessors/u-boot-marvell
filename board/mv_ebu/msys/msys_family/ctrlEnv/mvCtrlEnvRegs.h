@@ -557,6 +557,12 @@ typedef struct {
 		167, 133			\
 	}
 
+#define MV_BYPASS_CORE_CLK_TBL_BOBK	{	\
+		365, 220,			\
+		250, 200,			\
+		167					\
+	}
+
 #define MV_CORE_CLK_TBL_AC3	{	\
 		290, 250,			\
 		222, 167,			\

@@ -205,6 +205,49 @@ MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value)
 	return MV_OK;
 }
 
+#ifdef CONFIG_BOBK
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+MV_STATUS mvSysBypassCoreFreqGet(MV_U8 *value)
+{
+	/* set to fixed 365MHZ for customer's board */
+	*value = MV_MSYS_CORECLOCK_OVERIDE_VAL;
+}
+
+#else
+/*******************************************************************************/
+/* The Core Frequency in Bypass mode is taken from the first address-value pair of the EEPROM
+ * initialization sequence, In order to support normal TWSI init sequence flow, the first pair
+ * of DWORDS on EEPROM should contain an address (bytes 0-3) of some scratch pad register
+ * (for instance an UART SCR) and a value (bytes 4-7), which will be partially interpreted
+ * as Core Freq in bypass mode ('bypass_clcok': SW EEPROM(0x50), reg#6 bits[2:0])
+*/
+MV_STATUS mvSysBypassCoreFreqGet(MV_U8 *value)
+{
+	MV_U8			bypass_coreclock;
+	MV_TWSI_SLAVE	twsiSlave;
+
+	/* Initializing twsiSlave in order to read from the TWSI address */
+	twsiSlave.slaveAddr.address = 0x50;	/* 0x50: address of init EEPROM */
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.offset = 6;
+
+	/* in case the offset should be set to a TWSI slave which support
+	 * 2 bytes offset, the offset setting will be done in 2 transactions.
+	 * For accessing EEPROM, always using 2 bytes address offset
+	 */
+	twsiSlave.moreThen256 = MV_TRUE;
+
+	if (MV_ERROR == mvTwsiRead(0, &twsiSlave, &bypass_coreclock, 1))
+		return MV_ERROR;
+
+	*value = (bypass_coreclock & 0x7);
+
+	return MV_OK;
+}
+#endif/* CONFIG_CUSTOMER_BOARD_SUPPORT */
+#endif/* CONFIG_BOBK */
+
 /*******************************************************************************
 * mvSysEnvDeviceRevGet - Get Marvell controller device revision number
 *

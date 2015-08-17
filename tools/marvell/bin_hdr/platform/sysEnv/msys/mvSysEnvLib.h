@@ -135,7 +135,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* BobK  Family */
 #define MV_BOBK_DEV_ID		0xBC00
 
-
 #define INVALID_BOARD_ID			0xFFFF
 #define BOARD_ID_INDEX_MASK			0x10	/* Mask used to return board index via board Id */
 
@@ -175,12 +174,127 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* BobK device revision TBD !!!*/
 #define MV_MSYS_BOBK_A0_ID			0x0
 
+/* MV_DFX_REG_READ/WRITE API are used to access DFX data prior to SerDes initialization.
+   As a part of SerDes init flow, mvGenUnitRegisterSet/Get API's are enabled to access
+   DFX domain, after mvUnitInfoSet(SERVER_REF_UNIT,..) is called.
+*/
+#define DFX_REGS_BASE_BOOTROM	(MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID)))
+#define MV_DFX_REG_READ(offset)		\
+	(MV_MEMIO_LE32_READ(DFX_REGS_BASE_BOOTROM | (offset)))	\
+
+#define MV_DFX_REG_WRITE(offset, val)	\
+{					\
+	MV_MEMIO_LE32_WRITE((DFX_REGS_BASE_BOOTROM | (offset)), (val));	\
+}
+
 typedef enum _mvSuspendWakeupStatus {
 	MV_SUSPEND_WAKEUP_DISABLED,
 	MV_SUSPEND_WAKEUP_ENABLED,
 	MV_SUSPEND_WAKEUP_ENABLED_GPIO_DETECTED,
 	MV_SUSPEND_WAKEUP_ENABLED_MEM_DETECTED,
 } MV_SUSPEND_WAKEUP_STATUS;
+
+/* MISC defines */
+#define INTER_REGS_BASE								0xD0000000
+
+#define PLL0_CNFIG_OFFSET			21
+#define PLL0_CNFIG_MASK				0x7
+#define PLL1_CNFIG_OFFSET			18
+#define PLL1_CNFIG_MASK				0x7
+
+#if  defined CONFIG_BOBCAT2
+	#define REG_DEVICE_SAR1_ADDR                        0xF8200
+	#define REG_DEVICE_SAR2_ADDR                        0xF8204
+	#define REG_DEVICE_SERVER_CONTROL_0                 0xF8250
+	#define REG_DEVICE_SERVER_CONTROL_14                0xF8288
+	#define REG_DEVICE_SAR1_MSYS_TM_SDRAM_SEL_OFFSET    11
+	#define REG_DEVICE_SAR1_MSYS_TM_SDRAM_SEL_MASK      0x1
+#else
+	#define REG_DEVICE_SAR0_ADDR                        0xF8200
+	#define REG_DEVICE_SAR1_ADDR                        0xF8204
+#endif
+
+#if defined CONFIG_BOBK
+	#define REG_DEVICE_SAR1_OVERRIDE_ADDR				0xF82D8
+#endif
+
+/* defines for DFX reg, used in core clock WA */
+#if defined CONFIG_BOBK
+#define REG_SERVER_RESET_CTRL		0xF800C
+#define MG_SOFT_RESET_TRIG_BIT		1
+
+#define REG_CONF_SKIP_INIT_MATRIX	0xF8020
+#define REG_RAM_SKIP_INIT_MATRIX	0xF8030
+#define REG_CPU_SKIP_INIT_MATRIX	0xF8058
+#define REG_TABLES_SKIP_INIT_MATRIX	0xF8060
+#define REG_SERDES_SKIP_INIT_MATRIX	0xF8064
+#define REG_EEPROM_SKIP_INIT_MATRIX	0xF8068
+#define SKIP_INIT_MG_SOFTRST_OFFSET	8
+
+#define REG_PLL_CORE_PARAMETERS		0xF82E0
+#define REG_PLL_CORE_CONFIG			0xF82E4
+#define PLL_CORE_CONFIG_USE_RF_BIT	9
+#define PLL_CORE_CONFIG_BYPASS_BIT	0
+
+#define PLL_CORE_PARAM_KDIV_MASK	0x7
+#define PLL_CORE_PARAM_MDIV_OFFSET	3
+#define PLL_CORE_PARAM_MDIV_MASK	(0x1FF<<PLL_CORE_PARAM_MDIV_OFFSET)
+#define PLL_CORE_PARAM_NDIV_OFFSET	12
+#define PLL_CORE_PARAM_NDIV_MASK	(0x1FF<<PLL_CORE_PARAM_NDIV_OFFSET)
+#define PLL_CORE_PARAM_VCO_OFFSET	21
+#define PLL_CORE_PARAM_VCO_MASK		(0xF<<PLL_CORE_PARAM_VCO_OFFSET)
+#define PLL_CORE_PARAM_LPF_OFFSET	25
+#define PLL_CORE_PARAM_LPF_MASK		(0xF<<PLL_CORE_PARAM_LPF_OFFSET)
+#define PLL_CORE_PARAM_IADJ_OFFSET	29
+#define PLL_CORE_PARAM_IADJ_MASK	(0x7<<PLL_CORE_PARAM_IADJ_OFFSET)
+
+/* BobK Core Clock setting index*/
+typedef enum _mvBypassCoreClcokFreq {
+	MV_MSYS_CORECLOCK_365M = 0,
+	MV_MSYS_CORECLOCK_220M,
+	MV_MSYS_CORECLOCK_250M,
+	MV_MSYS_CORECLOCK_200M,
+	MV_MSYS_CORECLOCK_167M,
+} MV_BYPASS_CORECLOCK_FREQ;
+
+/* For Bobk ASIC, the CPSS program need the CoreClock WA("mvBypassCoreClockWA") to set
+core PLL manually in bypass mode(HW SAR "coreclock"=7), this MV_MSYS_CORECLOCK_OVERIDE_VAL
+is used for BobK customer boards to define the default coreclock frequency in
+bypass mode. Refer to the WA funtion for detail. */
+#define MV_MSYS_CORECLOCK_OVERIDE_VAL MV_MSYS_CORECLOCK_365M
+
+typedef struct mvBypassCoreClockVal {
+	MV_BYPASS_CORECLOCK_FREQ freqId;
+	MV_32 freq;
+	MV_32 kDiv;
+	MV_32 mDiv;
+	MV_32 nDiv;
+	MV_32 vcoBand;
+	MV_32 lpf;
+	MV_32 iAdj;
+	MV_32 enable;
+} MV_BYPASS_CORECLOCK_VAL;
+
+/* predefined values for MV_BYPASS_CORECLOCK_VAL per frequency */
+/*	ex:	Core PLL (365 MHz)
+		i.	 bit[2:0] K div = 0x3 ( k = 4)
+		ii.  bit [11:3]  M div = 2 ( m = 3)
+		iii. bit [20:12] N_div = 350 ( N = 351)
+		iv.  bit[24:21] VCO band = 11
+		v.	 bit [28:25]  LPF  = 1
+		vi.  bit[31:29] Iadj = 1
+*/
+#define MV_BYPASS_CORECLOCK_VAL_INFO {\
+/*          freqId,                 freq, k, m, n,   vcoBand, lpf, jAdj, enable */\
+/* 365M */ {MV_MSYS_CORECLOCK_365M,	365,  3, 2, 350, 11,      1,   1,    MV_TRUE },\
+/* 220M */ {MV_MSYS_CORECLOCK_220M,	220,  3, 2, 211, 5,       1,   1,    MV_FALSE },\
+/* 250M */ {MV_MSYS_CORECLOCK_250M,	250,  3, 0, 79,	 6,       4,   1,    MV_TRUE },\
+/* 200M */ {MV_MSYS_CORECLOCK_200M, 200,  3, 0, 63,	 5,       4,   1,    MV_TRUE },\
+/* 167M */ {MV_MSYS_CORECLOCK_167M,	167,  2, 1, 106, 3,       4,   1,    MV_TRUE },\
+};
+#endif
+
+
 
 /*************************** Globals ***************************/
 
@@ -253,6 +367,23 @@ MV_U32 mvBoardTclkGet(MV_VOID);
  *		Tclk
  ***************************************************************************/
 MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value);
+
+/**************************************************************************
+ * mvSysBypassCoreFreqGet -
+ *
+ * DESCRIPTION:          Returns the Core Freq in Bypass mode from SatR
+ *
+ * INPUT:
+ *		None.
+ *
+ * OUTPUT:
+ *		None.
+ *
+ * RETURNS:
+ *		Tclk
+ ***************************************************************************/
+MV_STATUS mvSysBypassCoreFreqGet(MV_U8 *value);
+
 
 /************************************************************************************
 * mvSysEnvSuspendWakeupCheck

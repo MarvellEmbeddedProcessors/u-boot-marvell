@@ -163,104 +163,142 @@ static inline MV_VOID mvMbusWinConfig()
 	);
 }
 
-#define DFX_REGS_BASE_BOOTROM	0xd0100000
-#define MV_DFX_REG_READ(offset)		\
-	(MV_MEMIO_LE32_READ(DFX_REGS_BASE_BOOTROM | (offset)))	\
-
-#define MV_DFX_REG_WRITE(offset, val)	\
-{					\
-	MV_MEMIO_LE32_WRITE((DFX_REGS_BASE_BOOTROM | (offset)), (val));	\
-}
-
-
-MV_STATUS mvWaPll(void)
+/*	The BOBK ASIC can't init the PLL correctly according to the SAR. Add this WA to fix it:
+	The WA will take effect when HW SAR "coreclock" is set to bypass mode(7),in this mode,
+	use a new field "bypass_coreclock" to select the core frequency.
+	1) Read HW SAR "coreclock"
+	2) If "coreclock" is set to bypass mode(7), read the bypass_coreclock
+		2.1) For marvell boards, read "EEPROM(0x50), reg#6 bits[2:0]" to get the bypass_coreclock
+		2.2) For customer boards, read predefined MV_MSYS_CORECLOCK_OVERIDE_VAL
+	3) Set the Core PLL manually according to the bypass_coreclock.
+	   (follow the steps in the comments below)
+*/
+#ifdef CONFIG_BOBK
+MV_STATUS mvBypassCoreClockWA(void)
 {
 	MV_U32 regTmp;
-	/* 1.check the bypass mode */
-	/* read SAR status, skip it now */
-	regTmp = MV_DFX_REG_READ(0xf8204);
-	regTmp = (regTmp >> 21) & 0x7;
+	MV_U8 coreClock;
+	MV_BYPASS_CORECLOCK_VAL bypass_coreclock_val[] = MV_BYPASS_CORECLOCK_VAL_INFO;
 
+	/* 1.check if the SAR field "coreclock" is set to bypass mode */
+	regTmp = (MV_DFX_REG_READ(REG_DEVICE_SAR1_ADDR) >> PLL0_CNFIG_OFFSET) & PLL0_CNFIG_MASK;
+
+	/* coreclock = 7 --> bypass mode */
 	if (regTmp != 7) {
-		DEBUG_INIT_S("Core PLL not in bypass mode, skip WA\n");
+		mvPrintf("Core PLL('coreclock') is not in bypass mode, skip WA\n");
 		return MV_BAD_STATE;
 	}
 
-	DEBUG_INIT_S("Core PLL in bypass mode, run WA\n");
+	mvSysBypassCoreFreqGet(&coreClock);
+	if ((coreClock < 0) || (coreClock >= (sizeof(bypass_coreclock_val)/sizeof(bypass_coreclock_val[0])))) {
+		mvPrintf("Unknown setting (%d) for coreclock, skip WA\n", coreClock);
+		return MV_BAD_PARAM;
+	}
+
+	if (!bypass_coreclock_val[coreClock].enable) {
+		mvPrintf("Bypass freq(%dM) is not enabled, skip WA\n", bypass_coreclock_val[coreClock].freq);
+		return MV_BAD_PARAM;
+	}
+
+	mvPrintf("Core PLL('coreclock') is in bypass mode, run WA\n");
+
 	/* 2.configure the core PLL */
+	mvPrintf("Selected Bypass Core PLL is %dM\n", bypass_coreclock_val[coreClock].freq);
+	/* 2.1 set the core pll parameters */
+	regTmp = MV_DFX_REG_READ(REG_PLL_CORE_PARAMETERS);
+	regTmp &= (~PLL_CORE_PARAM_KDIV_MASK);
+	regTmp |= bypass_coreclock_val[coreClock].kDiv;
+	MV_DFX_REG_WRITE(REG_PLL_CORE_PARAMETERS, regTmp);
 
-	MV_DFX_REG_WRITE(0xf82e0, 0x2375E013);
+	regTmp = MV_DFX_REG_READ(REG_PLL_CORE_PARAMETERS);
+	regTmp &= (~PLL_CORE_PARAM_MDIV_MASK);
+	regTmp |= (bypass_coreclock_val[coreClock].mDiv << PLL_CORE_PARAM_MDIV_OFFSET);
+	MV_DFX_REG_WRITE(REG_PLL_CORE_PARAMETERS, regTmp);
 
-	regTmp = MV_DFX_REG_READ(0xf82e4);
-	regTmp &= ~(0x1);
-	regTmp |= (0x1<<9);
-	regTmp &= ~(0x7FFFF800);
-	MV_DFX_REG_WRITE(0xf82e4, regTmp);
+	regTmp = MV_DFX_REG_READ(REG_PLL_CORE_PARAMETERS);
+	regTmp &= (~PLL_CORE_PARAM_NDIV_MASK);
+	regTmp |= (bypass_coreclock_val[coreClock].nDiv<<PLL_CORE_PARAM_NDIV_OFFSET);
+	MV_DFX_REG_WRITE(REG_PLL_CORE_PARAMETERS, regTmp);
 
-	/* 3.configure some bits before the soft reset */
-#if 1
-	regTmp = MV_DFX_REG_READ(0xf8020);/* Conf Skip */
-	MV_DFX_REG_WRITE(0xf8020, regTmp & (~(0x1<<8)));
+	regTmp = MV_DFX_REG_READ(REG_PLL_CORE_PARAMETERS);
+	regTmp &= (~PLL_CORE_PARAM_VCO_MASK);
+	regTmp |= (bypass_coreclock_val[coreClock].vcoBand<<PLL_CORE_PARAM_VCO_OFFSET);
+	MV_DFX_REG_WRITE(REG_PLL_CORE_PARAMETERS, regTmp);
 
-	regTmp = MV_DFX_REG_READ(0xf8030);/* RAM init Skip */
-	MV_DFX_REG_WRITE(0xf8030, regTmp & (~(0x1<<8)));
+	regTmp = MV_DFX_REG_READ(REG_PLL_CORE_PARAMETERS);
+	regTmp &= (~PLL_CORE_PARAM_LPF_MASK);
+	regTmp |= (bypass_coreclock_val[coreClock].lpf<<PLL_CORE_PARAM_LPF_OFFSET);
+	MV_DFX_REG_WRITE(REG_PLL_CORE_PARAMETERS, regTmp);
 
-	regTmp = MV_DFX_REG_READ(0xf8058);/* CPU sub-system init Skip */
-	MV_DFX_REG_WRITE(0xf8058, regTmp & (~(0x1<<8)));
+	regTmp = MV_DFX_REG_READ(REG_PLL_CORE_PARAMETERS);
+	regTmp &= (~PLL_CORE_PARAM_IADJ_MASK);
+	regTmp |= (bypass_coreclock_val[coreClock].iAdj<<PLL_CORE_PARAM_IADJ_OFFSET);
+	MV_DFX_REG_WRITE(REG_PLL_CORE_PARAMETERS, regTmp);
 
-	regTmp = MV_DFX_REG_READ(0xf8060);/* Tables init Skip */
-	MV_DFX_REG_WRITE(0xf8060, regTmp & (~(0x1<<8)));
+	/* 2.2 sample PLL from DFX registers instead of SAR jumpers */
+	regTmp = MV_DFX_REG_READ(REG_PLL_CORE_CONFIG);
+	regTmp |= (0x1<<PLL_CORE_CONFIG_USE_RF_BIT);
+	regTmp &= ~(0x7FFFF800);/* clear unrelated bits */
+	MV_DFX_REG_WRITE(REG_PLL_CORE_CONFIG, regTmp);
 
-	regTmp = MV_DFX_REG_READ(0xf8064);/* Serdes init Skip */
-	MV_DFX_REG_WRITE(0xf8064, regTmp & (~(0x1<<8)));
+	/* 2.3 Switch from by pass to normal mode */
+	regTmp = MV_DFX_REG_READ(REG_PLL_CORE_CONFIG);
+	regTmp &= ~(0x1<<PLL_CORE_CONFIG_BYPASS_BIT);
+	MV_DFX_REG_WRITE(REG_PLL_CORE_CONFIG, regTmp);
 
-	regTmp = MV_DFX_REG_READ(0xf8068);/* EEPROM init Skip */
-	MV_DFX_REG_WRITE(0xf8068, regTmp & (~(0x1<<8)));
-	DEBUG_INIT_S("Core PLL WA configuration done\n");
-#else
-	regTmp = MV_DFX_REG_READ(0xf8030);/* RAM init Skip */
-	MV_DFX_REG_WRITE(0xf8030, regTmp & (~(0x1<<8)));
-
-	regTmp = MV_DFX_REG_READ(0xf8058);/* CPU sub-system init Skip */
-	MV_DFX_REG_WRITE(0xf8058, regTmp & (~(0x1<<8)));
-	DEBUG_INIT_S("Core PLL WA cpuram configuration done\n");
-#endif
-
-	/* 4.wait 1ms for core PLL stabilization */
+	/* 3.wait 1ms for core PLL stabilization */
 	mvOsDelay(1);
+
+	/* 4.Skip configuration for sub modules */
+	regTmp = MV_DFX_REG_READ(REG_CONF_SKIP_INIT_MATRIX);/* Conf Skip */
+	MV_DFX_REG_WRITE(REG_CONF_SKIP_INIT_MATRIX, regTmp & (~(0x1<<SKIP_INIT_MG_SOFTRST_OFFSET)));
+
+	regTmp = MV_DFX_REG_READ(REG_RAM_SKIP_INIT_MATRIX);/* RAM init Skip */
+	MV_DFX_REG_WRITE(REG_RAM_SKIP_INIT_MATRIX, regTmp & (~(0x1<<SKIP_INIT_MG_SOFTRST_OFFSET)));
+
+	regTmp = MV_DFX_REG_READ(REG_CPU_SKIP_INIT_MATRIX);/* CPU sub-system init Skip */
+	MV_DFX_REG_WRITE(REG_CPU_SKIP_INIT_MATRIX, regTmp & (~(0x1<<SKIP_INIT_MG_SOFTRST_OFFSET)));
+
+	regTmp = MV_DFX_REG_READ(REG_TABLES_SKIP_INIT_MATRIX);/* Tables init Skip */
+	MV_DFX_REG_WRITE(REG_TABLES_SKIP_INIT_MATRIX, regTmp & (~(0x1<<SKIP_INIT_MG_SOFTRST_OFFSET)));
+
+	regTmp = MV_DFX_REG_READ(REG_SERDES_SKIP_INIT_MATRIX);/* Serdes init Skip */
+	MV_DFX_REG_WRITE(REG_SERDES_SKIP_INIT_MATRIX, regTmp & (~(0x1<<SKIP_INIT_MG_SOFTRST_OFFSET)));
+
+	regTmp = MV_DFX_REG_READ(REG_EEPROM_SKIP_INIT_MATRIX);/* EEPROM init Skip */
+	MV_DFX_REG_WRITE(REG_EEPROM_SKIP_INIT_MATRIX, regTmp & (~(0x1<<SKIP_INIT_MG_SOFTRST_OFFSET)));
+	mvPrintf("Core PLL WA configuration done\n");
 
 	/* 5.generate soft reset */
-	regTmp = MV_DFX_REG_READ(0xf800c);
-	regTmp &= ~(0x2);
-	regTmp |= (0x3<<20);
-	MV_DFX_REG_WRITE(0xf800c, regTmp);
+	regTmp = MV_DFX_REG_READ(REG_SERVER_RESET_CTRL);
+	regTmp &= ~(0x1<<MG_SOFT_RESET_TRIG_BIT);
+	MV_DFX_REG_WRITE(REG_SERVER_RESET_CTRL, regTmp);
 
-	DEBUG_INIT_S("Core PLL WA finished\n");
+	/* 6. wait 10ms for the reset */
+	mvOsDelay(10);
 
-	/* 6. wait 1ms for the reset */
-	mvOsDelay(1);
+	/* 7. revert the skip bit */
+	regTmp = MV_DFX_REG_READ(REG_CONF_SKIP_INIT_MATRIX);/* Conf Skip */
+	MV_DFX_REG_WRITE(REG_CONF_SKIP_INIT_MATRIX, regTmp | (0x1<<SKIP_INIT_MG_SOFTRST_OFFSET));
 
-	regTmp = MV_DFX_REG_READ(0xf8020);/* Conf Skip */
-	MV_DFX_REG_WRITE(0xf8020, regTmp | (0x1<<8));
+	regTmp = MV_DFX_REG_READ(REG_RAM_SKIP_INIT_MATRIX);/* RAM init Skip */
+	MV_DFX_REG_WRITE(REG_RAM_SKIP_INIT_MATRIX, regTmp | (0x1<<SKIP_INIT_MG_SOFTRST_OFFSET));
 
-	regTmp = MV_DFX_REG_READ(0xf8030);/* RAM init Skip */
-	MV_DFX_REG_WRITE(0xf8030, regTmp | (0x1<<8));
+	regTmp = MV_DFX_REG_READ(REG_CPU_SKIP_INIT_MATRIX);/* CPU sub-system init Skip */
+	MV_DFX_REG_WRITE(REG_CPU_SKIP_INIT_MATRIX, regTmp | (0x1<<SKIP_INIT_MG_SOFTRST_OFFSET));
 
-	regTmp = MV_DFX_REG_READ(0xf8058);/* CPU sub-system init Skip */
-	MV_DFX_REG_WRITE(0xf8058, regTmp | (0x1<<8));
+	regTmp = MV_DFX_REG_READ(REG_TABLES_SKIP_INIT_MATRIX);/* Tables init Skip */
+	MV_DFX_REG_WRITE(REG_TABLES_SKIP_INIT_MATRIX, regTmp | (0x1<<SKIP_INIT_MG_SOFTRST_OFFSET));
 
-	regTmp = MV_DFX_REG_READ(0xf8060);/* Tables init Skip */
-	MV_DFX_REG_WRITE(0xf8060, regTmp | (0x1<<8));
+	regTmp = MV_DFX_REG_READ(REG_SERDES_SKIP_INIT_MATRIX);/* Serdes init Skip */
+	MV_DFX_REG_WRITE(REG_SERDES_SKIP_INIT_MATRIX, regTmp | (0x1<<SKIP_INIT_MG_SOFTRST_OFFSET));
 
-	regTmp = MV_DFX_REG_READ(0xf8064);/* Serdes init Skip */
-	MV_DFX_REG_WRITE(0xf8064, regTmp | (0x1<<8));
-
-	regTmp = MV_DFX_REG_READ(0xf8068);/* EEPROM init Skip */
-	MV_DFX_REG_WRITE(0xf8068, regTmp | (0x1<<8));
+	regTmp = MV_DFX_REG_READ(REG_EEPROM_SKIP_INIT_MATRIX);/* EEPROM init Skip */
+	MV_DFX_REG_WRITE(REG_EEPROM_SKIP_INIT_MATRIX, regTmp | (0x1<<SKIP_INIT_MG_SOFTRST_OFFSET));
 
 	return MV_OK;
 }
-
+#endif
 
 /*****************************************************************************/
 MV_STATUS mvGeneralInit(void)
@@ -268,11 +306,11 @@ MV_STATUS mvGeneralInit(void)
 	mvMbusWinConfig();
 #if !defined(MV_NO_PRINT)
 	mvUartInit();
-	DEBUG_INIT_S("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
+	mvPrintf("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
 #endif
 	mvHwsTwsiInitWrapper();
 #ifdef CONFIG_BOBK
-	mvWaPll();
+	mvBypassCoreClockWA();
 #endif
 
 	return MV_OK;

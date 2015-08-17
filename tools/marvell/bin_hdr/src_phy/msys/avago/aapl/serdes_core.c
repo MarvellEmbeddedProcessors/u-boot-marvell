@@ -748,6 +748,35 @@ int avago_serdes_set_tx_eq(
     return return_code == aapl->return_code ? 0 : -1;
 }
 
+/** @brief   Gets the TX equalization values. */
+/** @details Retrieves all values (pre, atten, post, slew). */
+/** @return  On success, returns 0. */
+/** @return  On error, decrements aapl->return_code and returns -1. */
+/** @see     avago_serdes_set_tx_eq(), avago_serdes_get_tx_eq_limits(). */
+EXT int avago_serdes_get_tx_eq(
+    Aapl_t *aapl,                   /**< [in] Pointer to Aapl_t structure. */
+    uint addr,                      /**< [in] Device address number. */
+    Avago_serdes_tx_eq_t *tx_eq)    /**< [in] New TX equalization values. */
+{
+    int return_code = aapl->return_code;
+    if( aapl_check_firmware_rev(aapl,addr, __func__, __LINE__, FALSE, 1, 0x1043) )
+    {
+        tx_eq->pre   = (short) avago_spico_int(aapl, addr, 0x15, (1 << 8) | (0 << 14));
+        tx_eq->atten = (short) avago_spico_int(aapl, addr, 0x15, (1 << 8) | (1 << 14));
+        tx_eq->post  = (short) avago_spico_int(aapl, addr, 0x15, (1 << 8) | (2 << 14));
+    }
+    else    /* Pre-0x1043 firmware: */
+    {
+        uint i = avago_spico_int(aapl, addr, 0x15, 1 << 8);
+        tx_eq->pre   = (i >> 12) & 0x0F;
+        tx_eq->atten = (i >> 5 ) & 0x1F;
+        tx_eq->post  = (i >> 0 ) & 0x1F;
+    }
+    tx_eq->slew = (short) avago_serdes_mem_rd(aapl, addr, AVAGO_ESB, 0x240) & 3;
+    AAPL_LOG_PRINT5(aapl,AVAGO_DEBUG5,__func__,__LINE__,"SBus %s, tx_eq=%d,%d,%d,%d\n",
+                    aapl_addr_to_str(addr),tx_eq->pre,tx_eq->atten,tx_eq->post,tx_eq->slew);
+    return return_code == aapl->return_code ? 0 : -1;
+}
 
 /** @brief   Gets the RX compare data configuration. */
 /** */

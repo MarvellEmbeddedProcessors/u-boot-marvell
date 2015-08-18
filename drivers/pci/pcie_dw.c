@@ -28,6 +28,8 @@
 #include <linux/sizes.h>
 #include <errno.h>
 #include <asm/arch-mvebu/fdt.h>
+#include "pcie_dw.h"
+
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -124,46 +126,46 @@ static int dw_pcie_addr_valid(pci_dev_t d, int first_busno)
 	return 1;
 }
 
-static int dw_pcie_read_config(struct pci_controller *hose, pci_dev_t d,
+static int dw_pcie_read_config(struct pci_controller *hose, pci_dev_t bdf,
 				int where, u32 *val)
 {
 	uintptr_t va_address;
 
-	if (!dw_pcie_addr_valid(d, hose->first_busno)) {
-		debug("CFG read: address out of range (%d,%d,%d)\n",
-		      PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
+	debug("PCIE CFG read:  (b,d,f)=(%2ld,%2ld,%2ld) ", PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
+
+	if (!dw_pcie_addr_valid(bdf, hose->first_busno)) {
+		debug("address out of range\n");
 		*val = 0xffffffff;
 		return 1;
 	}
 
-	va_address = set_cfg_address(hose, (uintptr_t)hose->priv_data, d, where);
+	va_address = set_cfg_address(hose, (uintptr_t)hose->priv_data, bdf, where);
 
 	writel(0xffffffff, val);
 	*val = readl(va_address);
 
-	debug("PCIE CFG read:  (b,d,f)=(%2d,%2d,%2d) (addr,val)=(0x%04x, 0x%08x)\n",
-	      PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf), where, (*val));
+	debug("(addr,val)=(0x%04x, 0x%08x)\n", where, (*val));
 
 	return 0;
 }
 
 
-static int dw_pcie_write_config(struct pci_controller *hose, pci_dev_t d,
+static int dw_pcie_write_config(struct pci_controller *hose, pci_dev_t bdf,
 			int where, u32 val)
 {
 	uintptr_t va_address = 0;
 
-	if (!dw_pcie_addr_valid(d, hose->first_busno)) {
-		debug("CFG write: address out of range (%d,%d,%d)\n",
-		      PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
+	debug("PCIE CFG write: (b,d,f)=(%2ld,%2ld,%2ld) ", PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
+	debug("(addr,val)=(0x%04x, 0x%08x)\n", where, val);
+
+	if (!dw_pcie_addr_valid(bdf, hose->first_busno)) {
+		debug("address out of range\n");
 		return 1;
 	}
 
-	va_address = set_cfg_address(hose, (uintptr_t)hose->priv_data, d, where);
+	va_address = set_cfg_address(hose, (uintptr_t)hose->priv_data, bdf, where);
 
 	writel(val, va_address);
-	debug("PCIE CFG write: (b,d,f)=(%2d,%2d,%2d) (addr,val)=(0x%04x, 0x%08x)\n",
-	      PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf), where, val);
 
 	return 0;
 }
@@ -210,6 +212,7 @@ int dw_pcie_init(int host_id, uintptr_t regs_base, struct pcie_win *mem_win,
 int dw_pcie_set_endpoint(u32 hid, u32 regs_base)
 {
 	printf("PCIE-%d: End point mode not supported yet.\n", hid);
+	return 0;
 }
 
 

@@ -170,6 +170,14 @@ static int dw_pcie_write_config(struct pci_controller *hose, pci_dev_t bdf,
 	return 0;
 }
 
+/*
+ * We dont use a host bridge so don't let the
+ * stack skip CFG cycle for dev = 0 func = 0
+ */
+int pci_skip_dev(struct pci_controller *hose, pci_dev_t dev)
+{
+	return 0;
+}
 
 static struct pci_controller	pci_hose[MAX_PCIE_PORTS];
 int dw_pcie_init(int host_id, uintptr_t regs_base, struct pcie_win *mem_win,

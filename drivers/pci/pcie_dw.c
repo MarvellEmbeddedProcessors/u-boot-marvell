@@ -177,6 +177,7 @@ int dw_pcie_init(int host_id, uintptr_t regs_base, struct pcie_win *mem_win,
 {
 	struct pci_controller *hose = &pci_hose[host_id];
 	uintptr_t temp;
+	u32 reg;
 
 	dw_pcie_regions_setup(regs_base, cfg_win);
 
@@ -198,6 +199,17 @@ int dw_pcie_init(int host_id, uintptr_t regs_base, struct pcie_win *mem_win,
 
 	hose->priv_data = (void *)regs_base;
 	hose->first_busno = first_busno;
+
+	/* CMD reg:I/O space, MEM space, and Bus Master Enable */
+	reg = readl(regs_base + PCI_COMMAND);
+	reg |= (PCI_COMMAND_IO | PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER);
+	writel(reg, regs_base + PCI_COMMAND);
+
+	/* Set the CLASS_REV of RC CFG header to PCI_CLASS_BRIDGE_PCI */
+	reg = readl(regs_base + PCI_CLASS_REVISION);
+	reg &= ~(0xFFFF << 16);
+	reg |= (PCI_CLASS_BRIDGE_PCI << 16);
+	writel(reg, regs_base + PCI_CLASS_REVISION);
 
 	/* Register the host */
 	pci_register_hose(hose);

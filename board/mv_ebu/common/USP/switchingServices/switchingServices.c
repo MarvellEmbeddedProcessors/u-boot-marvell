@@ -295,33 +295,42 @@ static int do_cpss_env(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 			z_image_mode = MV_FALSE;
 	}
 
-	printf("***********************************************************************\n");
+	printf("**************************************************************************************\n");
 	printf("* Setting CPSS environment for %s boot mode*\n",
 	       z_image_mode == MV_TRUE ? "modern (zImage & kernel >= 3.10)" : "legacy (uImage & kernel < 3.10)");
-	printf("***********************************************************************\n");
+	printf("**************************************************************************************\n");
 
 	printf("Saving cpss environment variables\n");
 	setenv("standalone", "");
 	setenv("bootcmd", "run standalone_mtd");
+	run_command("printenv bootcmd", 0);
 	setenv("consoledev","ttyS0");
+	run_command("printenv consoledev", 0);
 	sprintf(buf, "%#x", CFG_DEF_LINUX_LOAD_ADDR);
 	setenv("linux_loadaddr", buf);
+	run_command("printenv linux_loadaddr", 0);
 	sprintf(buf, "%#x", CFG_DEF_FDT_LOAD_ADDR);
 	setenv("fdtaddr", buf);
+	run_command("printenv fdtaddr", 0);
 	setenv("netdev","eth0");
+	run_command("printenv netdev", 0);
 	setenv("rootpath","/tftpboot/rootfs_arm-mv7sft");
+	run_command("printenv rootpath", 0);
 	setenv("othbootargs","null=null");
+	run_command("printenv othbootargs", 0);
 
 
 	setenv("nfsboot","setenv bootargs root=/dev/nfs rw nfsroot=${serverip}:${rootpath} "
 		 "ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off "
 		 "console=${consoledev},${baudrate} ${othbootargs} ${linux_parts}; tftp ${linux_loadaddr} "
 		 "${image_name};bootm ${linux_loadaddr}");
+	run_command("printenv nfsboot", 0);
 
 	setenv("nfsboot_fdt","setenv bootargs root=/dev/nfs rw nfsroot=${serverip}:${rootpath} "
 		 "ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off "
 		 "console=${consoledev},${baudrate} ${othbootargs} ${linux_parts}; tftp ${linux_loadaddr} "
 		 "${image_name}; tftp ${fdtaddr} ${fdtfile};bootz ${linux_loadaddr} - ${fdtaddr}");
+	run_command("printenv nfsboot_fdt", 0);
 
 
 	sprintf(buf,"'mtdparts=spi_flash:%dm(spi_uboot)ro,%dm(spi_kernel),%dm(spi_rootfs),-(remainder)"
@@ -330,8 +339,9 @@ static int do_cpss_env(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 		CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE / _1M);
 
 	setenv("mtdparts", buf);
-	printf("mtdparts = %s\n", buf);
+	run_command("printenv mtdparts", 0);
 	setenv("linux_parts", buf);
+	run_command("printenv linux_parts", 0);
 
 #ifdef MV_INCLUDE_SPI
 	if (z_image_mode == MV_FALSE) { /* kernel in uImage format*/
@@ -354,10 +364,10 @@ static int do_cpss_env(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 	}
 #ifndef MV_NAND
 	setenv("standalone_mtd", buf);
-	printf("standalone_mtd = %s\n", buf);
+	run_command("printenv standalone_mtd", 0);
 #else
 	setenv("standalone_mtd_spi", buf);
-	printf("standalone_mtd_spi = %s\n", buf);
+	run_command("printenv standalone_mtd_spi", 0);
 #endif
 #endif /* MV_INCLUDE_SPI */
 
@@ -380,7 +390,7 @@ static int do_cpss_env(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 			CFG_APPL_NAND_FLASH_PART_DEVTREE_SIZE);
 	}
 	setenv("standalone_mtd", buf);
-	printf("standalone_mtd = %s\n", buf);
+	run_command("printenv standalone_mtd", 0);
 #endif
 	run_command("saveenv", 0);
 	printf("\nboot command prepared: run 'boot' to load kernel and file system from flash.\n");

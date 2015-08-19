@@ -368,7 +368,13 @@ extern "C" {
 #define DEV_ID_REG				0x1823C
 #define DEVICE_ID_OFFS			0
 #define DEVICE_ID_MASK			0xFFFF
-#define DEVICE_FLAVOR_MASK		0xFF
+
+/* for BobK devID, Cetus: 0xBE00 Caelum:0xBC00, the higher 6bits are the same.
+so update mask to 0x3FF, for BC2 flavor(0xF4XX), and AC3 flavor(0xFC00),
+the higher 6bits are also the same, so can work normally */
+#define DEVICE_FLAVOR_MASK		0x3FF
+
+#define BOBK_FLAVOR_MASK		0xFF	/* only for Cetus & Caelum flavor */
 #define DEV_REV_ID_REG			0xF8244
 #define REVISON_ID_OFFS			28
 #define REVISON_ID_MASK			0xF0000000
@@ -539,10 +545,16 @@ typedef struct {
 		450					\
 	}
 
-#define MV_CORE_CLK_TBL_BOBK	{	\
+#define MV_CORE_CLK_TBL_BOBK_CETUS	{	\
 		365, 220,			\
 		250, 200,			\
 		167					\
+	}
+
+#define MV_CORE_CLK_TBL_BOBK_CAELUM	{	\
+		365, 220,			\
+		250, 200,			\
+		167, 133			\
 	}
 
 #define MV_CORE_CLK_TBL_AC3	{	\
@@ -563,14 +575,24 @@ typedef struct {
 	{1333, 666, 1600, MV_TRUE}	\
 }
 
-#define MV_CPU_DDR_CLK_TBL_BOBK {	\
+#define MV_CPU_DDR_CLK_TBL_BOBK_CETUS {	\
 	{ 400, 400,  400, MV_FALSE},	\
 	{1000, 667, 2000, MV_FALSE},	\
 	{ 667, 667, 2000, MV_FALSE},	\
 	{ 800, 800,  800, MV_FALSE},	\
 	{1200, 800, 2400, MV_FALSE},	\
 	{ 800, 400,  800, MV_FALSE},	\
-	{ 800, 800,  800, MV_FALSE}	\
+	{ 800, 800,  800, MV_TRUE}	\
+}
+
+#define MV_CPU_DDR_CLK_TBL_BOBK_CAELUM {	\
+	{ 400, 400,  400, MV_FALSE},	\
+	{1000, 667, 2000, MV_TRUE},	\
+	{ 667, 667, 2000, MV_FALSE},	\
+	{ 800, 800,  800, MV_FALSE},	\
+	{1200, 800, 2400, MV_TRUE},	\
+	{ 800, 400,  800, MV_FALSE},	\
+	{ 800, 800,  800, MV_TRUE}	\
 }
 
 #define MV_CPU_DDR_CLK_TBL_AC3 {	\

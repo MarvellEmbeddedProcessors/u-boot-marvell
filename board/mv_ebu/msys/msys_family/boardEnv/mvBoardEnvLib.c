@@ -629,7 +629,8 @@ MV_U32 mvBoardSysClkGet(MV_VOID)
 	MV_U32		idx;
 	MV_U32		freq_tbl_bc2[] = MV_CORE_CLK_TBL_BC2;
 	MV_U32		freq_tbl_ac3[] = MV_CORE_CLK_TBL_AC3;
-	MV_U32		freq_tbl_bobk[] = MV_CORE_CLK_TBL_BOBK;
+	MV_U32		freq_tbl_bobk_cetus[] = MV_CORE_CLK_TBL_BOBK_CETUS;
+	MV_U32		freq_tbl_bobk_caelum[] = MV_CORE_CLK_TBL_BOBK_CAELUM;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
 	if (family == MV_78460_DEV_ID)
@@ -643,9 +644,20 @@ MV_U32 mvBoardSysClkGet(MV_VOID)
 		return freq_tbl_bc2[idx] * 1000000;
 	else if (family == MV_ALLEYCAT3_DEV_ID)
 		return freq_tbl_ac3[idx] * 1000000;
-	else if (family == MV_BOBK_DEV_ID)
-		return freq_tbl_bobk[idx] * 1000000;
-	else
+	else if (family == MV_BOBK_DEV_ID) {
+		/* BobK family has two different flavors(Cetus/Caelum) with different settings */
+		switch (mvCtrlModelGet() & ~BOBK_FLAVOR_MASK) {
+		case MV_BOBK_CETUS_98DX4235_DEV_ID:
+			return freq_tbl_bobk_cetus[idx] * 1000000;
+			break;
+		case MV_BOBK_CAELUM_98DX4203_DEV_ID:
+			return freq_tbl_bobk_caelum[idx] * 1000000;
+			break;
+		default:
+			mvOsPrintf("ERROR: Unknown Device ID %d, CORE freq get failed\n", mvCtrlModelGet());
+			return 0xFFFFFFFF;
+		}
+	} else
 		return 0xFFFFFFFF;
 }
 
@@ -1382,7 +1394,7 @@ MV_VOID mvBoardSet(MV_U32 boardId)
 		gBoardId = BC2_CUSTOMER_BOARD_ID0;
 		board = customerBC2BoardInfoTbl[gBoardId];
 #else
-		gBoardId = BOBK_CUSTOMER_BOARD_ID0;
+		gBoardId = BOBK_CETUS_CUSTOMER_BOARD_ID0;
 		board = customerBOBKBoardInfoTbl[gBoardId];
 #endif
 		mvOsPrintf("Applying default Customer board ID (%d: %s)\n", gBoardId, board->boardName);
@@ -1428,9 +1440,9 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		#endif
 	#else /* BOBK */
 		#ifdef CONFIG_CUSTOMER_BOARD_0
-			gBoardId = BOBK_CUSTOMER_BOARD_ID0;
+			gBoardId = BOBK_CETUS_CUSTOMER_BOARD_ID0;
 		#elif CONFIG_CUSTOMER_BOARD_1
-			gBoardId = BOBK_CUSTOMER_BOARD_ID1;
+			gBoardId = BOBK_CAELUM_CUSTOMER_BOARD_ID1;
 		#endif
 	#endif
 

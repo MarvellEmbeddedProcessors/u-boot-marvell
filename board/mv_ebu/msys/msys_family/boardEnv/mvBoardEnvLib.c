@@ -2950,9 +2950,7 @@ MV_BOOL mvBoardisAmc(void)
 *******************************************************************************/
 MV_STATUS mvBoardPPSmiIndexGet(MV_U32 *index)
 {
-	/* just return 0 for bobk. need to add
-	the PP_SMI index(pPSmiIndex) in board Structures (MV_BOARD_INFO) later*/
-	*index = 0;
+	*index = board->smiExternalPpIndex;
 	return MV_OK;
 }
 

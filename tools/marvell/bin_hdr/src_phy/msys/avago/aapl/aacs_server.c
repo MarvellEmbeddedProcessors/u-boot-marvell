@@ -428,8 +428,9 @@ static void mdio_command(Aapl_t *aapl, const char *cmd, const char *cp, char *re
 
 static void jtag_command(Aapl_t * aapl, const char * cmd, const char * cp, char * result, int * chip_nump)
 {
+    const char my_string[] = "32";
 
-    SKIPSPACE(cp); if (0 != strncmp( cp, "32",   2)) goto BadJtagCmd; cp += 2;
+    SKIPSPACE(cp); if (0 != strncmp( cp, my_string,   2)) goto BadJtagCmd; cp += 2;
     SKIPSPACE(cp); if (! EQCN(cp, "02b6", 4)) goto BadJtagCmd; cp += 4;
     SKIPSPACE(cp); if (*cp != '0')            goto BadJtagCmd; ++cp;
     while (*cp == '0') ++cp;

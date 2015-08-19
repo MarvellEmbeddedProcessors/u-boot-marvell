@@ -23,7 +23,7 @@
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/fdt.h>
 
-#ifdef CONFIG_MVEBU_MK6_STATIC_SUPPORT
+#ifdef CONFIG_MVEBU_STATIC_SUPPORT
 static void static_dram_init(struct mvebu_dram_config *config)
 {
 	mvebu_dram_mac_init(config);
@@ -65,10 +65,12 @@ void mvebu_dram_init(const void *blob)
 		error("missing DDR PHY base address in DDR PHY node\n");
 		return;
 	}
-#ifdef CONFIG_MVEBU_MK6_STATIC_SUPPORT
+#ifdef CONFIG_MVEBU_STATIC_SUPPORT
 	static_dram_init(config);
-#elif CONFIG_MVEBU_MK6_DYNAMIC_SUPPORT
+#elif CONFIG_MVEBU_DYNAMIC_SUPPORT
 	dynamic_dram_init(config);
+#else
+#error "No DRAM configuration selected"
 #endif
 	debug_exit();
 }

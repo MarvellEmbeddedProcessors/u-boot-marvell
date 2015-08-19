@@ -11,6 +11,31 @@ config MVEBU_SPL_DDR_SUPPORT
 	  list below.
 
 choice
+	prompt "Controller static/dynamic select"
+
+config MVEBU_STATIC_SUPPORT
+	bool "Static DDR initialization"
+	depends on MVEBU_SPL_DDR_SUPPORT
+	help
+	  Choose this option to add support
+	  for static DDR initialization code,
+	  init the DDR with out training.
+	  to add this option to SPL code,
+	  need to add +S:CONFIG_MVEBU_STATIC_SUPPORT to defconfig file
+
+config MVEBU_DYNAMIC_SUPPORT
+	bool "Dynamic DDR initialization"
+	depends on MVEBU_SPL_DDR_SUPPORT
+	help
+	  Choose this option to add support
+	  for dynamic DDR initialization code,
+	  init the DDR with training.
+	  to add this option to SPL code,
+	  need to add +S:CONFIG_MVEBU_DYNAMIC_SUPPORT to defconfig file
+
+endchoice
+
+choice
 	prompt "Controller select"
 
 config MVEBU_DUNIT_SUPPORT
@@ -20,23 +45,14 @@ config MVEBU_DUNIT_SUPPORT
 	  Choose this option to add support
 	  for DUNIT controller.
 
-config MVEBU_MK6_STATIC_SUPPORT
-	bool "MK6 static controller support"
+config MVEBU_MK6_SUPPORT
+	bool "MK6 controller support"
 	depends on MVEBU_SPL_DDR_SUPPORT
 	help
 	  Choose this option to add support
-	  for static DDR training code for MK6 controller
+	  for DDR code for MK6 controller
 	  to add this option to SPL code,
-	  need to add +S:CONFIG_MVEBU_MK6_STATIC_SUPPORT to defconfig file
-
-config MVEBU_MK6_DYNAMIC_SUPPORT
-	bool "MK6 dynamic controller support"
-	depends on MVEBU_SPL_DDR_SUPPORT
-	help
-	  Choose this option to add support
-	  for dynamic DDR training code for MK6 controller
-	  to add this option to SPL code,
-	  need to add +S:CONFIG_MVEBU_MK6_DYNAMIC_SUPPORT to defconfig file
+	  need to add +S:CONFIG_MVEBU_MK6_SUPPORT to defconfig file
 
 endchoice
 endmenu

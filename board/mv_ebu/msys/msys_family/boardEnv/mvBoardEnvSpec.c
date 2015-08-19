@@ -285,7 +285,10 @@ MV_BOARD_INFO bobk_customer_board_0_Info = {
 	.nandFlashControl		= BOBK_CUSTOMER_0_BOARD_NAND_CONTROL,
 	/* NOR init params */
 	.norFlashReadParams		= BOBK_CUSTOMER_0_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= BOBK_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS
+	.norFlashWriteParams		= BOBK_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS,
+	.isSmiExternalPp		= MV_TRUE,
+	.smiExternalPpIndex		= 0,
+	.isSdMmcConnected		= MV_TRUE
 };
 
 MV_BOARD_INFO *customerBOBKBoardInfoTbl[] = {
@@ -812,6 +815,7 @@ MV_BOARD_INFO db_dx_bobkInfo = {
 	.norFlashReadParams		= DB_DX_BOBK_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= DB_DX_BOBK_BOARD_NOR_WRITE_PARAMS,
 	.isSmiExternalPp		= MV_TRUE,
+	.smiExternalPpIndex		= 0,
 	.modelName			= "BobK Development Board",
 	.isSdMmcConnected		= MV_TRUE
 };

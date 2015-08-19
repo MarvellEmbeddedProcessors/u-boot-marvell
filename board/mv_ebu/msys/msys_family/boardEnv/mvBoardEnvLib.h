@@ -267,6 +267,7 @@ typedef struct _boardInfo {
 	MV_U32 norFlashReadParams;
 	MV_U32 norFlashWriteParams;
 	MV_BOOL isSmiExternalPp;
+	MV_U32 smiExternalPpIndex;
 	MV_BOOL isSdMmcConnected;
 
 	char modelName[MV_BOARD_MODEL_NAME_LEN];

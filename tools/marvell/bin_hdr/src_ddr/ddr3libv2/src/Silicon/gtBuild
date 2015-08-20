@@ -19,7 +19,7 @@ else
 
 ## CPSS compilation environment #################
 #INCLUDE_PATH =
-C_FILE_LIST   = mvHwsDdr3Bc2.c
+C_FILE_LIST   = mvHwsDdr3Msys.c mvHwsDdr3Bc2.c mvHwsDdr3BobK.c
 #SUBDIRS      =
 #C_EXCLUDE_FILE_LIST =
 

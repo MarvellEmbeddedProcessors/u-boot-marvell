@@ -5,7 +5,7 @@
 
 / {
 	model = "Marvell Armada_LP Palladium";
-	compatible = "marvell,armada-lp-palladium", "marvell,armada-lp";
+	compatible = "marvell,armada-lp-db0", "marvell,armada-lp";
 
 	soc {
 		internal-regs {

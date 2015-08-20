@@ -5,7 +5,7 @@
 
 / {
 	model = "Marvell Armada_LP Development Board";
-	compatible = "marvell,armada-lp-db", "marvell,armada-lp";
+	compatible = "marvell,armada-lp-db0", "marvell,armada-lp";
 
 	soc {
 		internal-regs {

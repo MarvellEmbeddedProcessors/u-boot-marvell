@@ -16,8 +16,6 @@
  * ***************************************************************************
  */
 
-/* #define DEBUG*/
-
 #include <common.h>
 #include <malloc.h>
 #include <errno.h>
@@ -27,10 +25,17 @@
 #include <linux/compiler.h>
 #include "board-info.h"
 
-
-struct mvebu_board_family *board_init_family(void)
+struct mvebu_board_info *mvebu_board_info_get(enum fdt_compat_id compat_id)
 {
-	/* Board family specific init goes here */
-
-	return &a38x_board_family;
+	switch (compat_id) {
+	case COMPAT_MVEBU_ARMADA_38X_DB:
+		return &a38x_db_info;
+	case COMPAT_MVEBU_ARMADA_38X_RD:
+		return &a38x_rd_info;
+	case COMPAT_MVEBU_ARMADA_38X_CUSTOMER:
+		return &a38x_customer_info;
+	default:
+		error("Missing board information for compatible string = %d\n", compat_id);
+		return &a38x_db_info;
+	}
 }

@@ -22,12 +22,6 @@
 #include <common.h>
 #include "board.h"
 
-int mvebu_devel_board_init(struct mvebu_board_family *brd_fam);
-
-struct sar_data *board_get_sar(void);
-struct sar_var  *board_get_sar_table(void);
-struct cfg_data *board_get_cfg(void);
-struct cfg_var  *board_get_cfg_table(void);
-
+int mvebu_devel_board_init(struct mvebu_board_info *brd);
 
 #endif /* _DEVEL_BOARD_H_ */

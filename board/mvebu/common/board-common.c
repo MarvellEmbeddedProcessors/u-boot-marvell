@@ -27,10 +27,6 @@
 #include <asm/arch-mvebu/soc.h>
 #include "board.h"
 
-DECLARE_GLOBAL_DATA_PTR;
-
-struct mvebu_board_family *brd;
-
 /* Generic board id function. Each board family can make his own */
 int __board_get_id(void)
 {

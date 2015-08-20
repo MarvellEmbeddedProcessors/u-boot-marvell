@@ -17,7 +17,6 @@
 #
 
 obj-y	+= armadalp.o
-obj-y	+= board-info.o
 obj-y	+= db0-armadalp-info.o
 obj-y	+= db1-armadalp-info.o
 obj-y	+= customer-board.o

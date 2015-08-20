@@ -32,6 +32,5 @@ enum a38x_board_types {
 extern struct mvebu_board_info a38x_db_info;
 extern struct mvebu_board_info a38x_rd_info;
 extern struct mvebu_board_info a38x_customer_info;
-extern struct mvebu_board_family a38x_board_family;
 
 #endif /* _BOARD_INFO_H_ */

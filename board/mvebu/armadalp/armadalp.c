@@ -27,10 +27,17 @@
 #include <linux/compiler.h>
 #include "board-info.h"
 
-
-struct mvebu_board_family *board_init_family(void)
+struct mvebu_board_info *mvebu_board_info_get(enum fdt_compat_id compat_id)
 {
-	/* Board family specific init goes here */
-
-	return &armadalp_board_family;
+	switch (compat_id) {
+	case COMPAT_MVEBU_ARMADA_LP_DB0:
+		return &db0_armadalp_info;
+	case COMPAT_MVEBU_ARMADA_LP_DB1:
+		return &db1_armadalp_info;
+	case COMPAT_MVEBU_ARMADA_LP_CUSTOMER:
+		return &armadalp_customer_info;
+	default:
+		error("Missing board information for compatible string = %d\n", compat_id);
+		return &db0_armadalp_info;
+	}
 }

@@ -25,10 +25,8 @@
 
 #include "sar.h"
 
-int mvebu_devel_board_init(struct mvebu_board_family *brd_fam)
+int mvebu_devel_board_init(struct mvebu_board_info *brd)
 {
-	struct mvebu_board_info *brd = brd_fam->curr_board;
-
 	sar_init();
 
 	/* Update MPP configurations */

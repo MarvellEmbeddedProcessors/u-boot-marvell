@@ -33,8 +33,6 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-struct mvebu_brd_fam *brd_fam;
-
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
@@ -104,10 +102,20 @@ int mvebu_print_info(char *board_name)
 	return 0;
 }
 
+struct mvebu_board_info *mvebu_fdt_get_board(void)
+{
+	const void *blob = gd->fdt_blob;
+	struct mvebu_board_info *brd;
+	u32 compt_id;
+
+	compt_id = fdtdec_lookup(blob, 0);
+	brd = mvebu_board_info_get(compt_id);
+
+	return brd;
+}
+
 int mvebu_board_init(void)
 {
-	int board_id;
-	struct mvebu_board_family *brd_fam;
 	struct mvebu_board_info *brd;
 
 	debug("Initializing board\n");
@@ -115,25 +123,7 @@ int mvebu_board_init(void)
 #ifdef CONFIG_MVEBU_PINCTL
 	mvebu_pinctl_probe();
 #endif
-
-	brd_fam = board_init_family();
-	if (!brd_fam) {
-		error("Failed to get board family structure");
-		return 0;
-	}
-
-	set_board_family(board_init_family());
-
-	/* Identify the specific board */
-	board_id = board_get_id();
-	if ((board_id < 0) || (board_id > brd_fam->board_cnt)) {
-		error("Unidentified board id %d. Using default %d",
-		      board_id, brd_fam->default_id);
-		board_id = brd_fam->default_id;
-	}
-
-	brd_fam->curr_board = brd_fam->boards_info[board_id];
-	brd = brd_fam->curr_board;
+	brd = mvebu_fdt_get_board();
 
 	mvebu_print_info(brd->name);
 
@@ -142,7 +132,7 @@ int mvebu_board_init(void)
 #endif
 
 #ifdef CONFIG_DEVEL_BOARD
-	mvebu_devel_board_init(brd_fam);
+	mvebu_devel_board_init(brd);
 #endif
 
 	return 0;

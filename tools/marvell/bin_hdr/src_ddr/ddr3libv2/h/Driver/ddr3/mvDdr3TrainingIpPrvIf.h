@@ -313,6 +313,9 @@ typedef struct
     MV_HWS_GET_CS_CONFIG_FUNC_PTR           tipGetCsConfigInfo;
 	MV_HWS_TRAINING_IP_GET_TEMP				tipGetTemperature;
 	MV_HWS_TRAINING_IP_GET_RATIO			tipGetClockRatio;
+    MV_HWS_TRAINING_IP_EXTERNAL_READ_PTR	tipExternalRead;
+    MV_HWS_TRAINING_IP_EXTERNAL_WRITE_PTR	tipExternalWrite;
+
 } MV_HWS_TIP_CONFIG_FUNC_DB;
 
 
@@ -337,7 +340,6 @@ typedef struct
     MV_HWS_TRAINING_IP_LOAD_TOPOLOGY                trainingIpLoadTopology;
 
 }MV_HWS_TRAINING_IP_FUNC_PTRS;
-
 
 /******************************** declarations ***************************************/
 

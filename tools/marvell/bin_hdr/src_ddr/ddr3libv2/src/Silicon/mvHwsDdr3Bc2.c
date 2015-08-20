@@ -46,6 +46,23 @@
 
 /************************** pre-declaration ******************************/
 
+GT_STATUS    ddr3TipBC2ExtRead
+(
+    GT_U32      devNum,
+    GT_U32      interfaceId,
+    GT_U32      regAddr,
+    GT_U32      numOfBursts,
+    GT_U32      *data
+);
+
+GT_STATUS    ddr3TipBC2ExtWrite
+(
+    GT_U32      devNum,
+    GT_U32      interfaceId,
+    GT_U32      regAddr,
+    GT_U32      numOfBursts,
+    GT_U32      *addr
+);
 static GT_STATUS ddr3TipBc2GetMediumFreq
 (
     GT_U32          devNum,
@@ -85,7 +102,7 @@ GT_STATUS ddr3TipBc2GetInitFreq
     MV_HWS_DDR_FREQ* freq
 );
 
-GT_STATUS ddr3TipTmGetInitFreq
+static GT_STATUS ddr3TipTmGetInitFreq
 (
     GT_STATUS       devNum,
     MV_HWS_DDR_FREQ *freq
@@ -260,24 +277,6 @@ static GT_U8 bc2RatePerFreq[DDR_FREQ_LIMIT] =
    0x1  /*DDR_FREQ_360*/
 };
 
-GT_U32 phy1ValTable[DDR_FREQ_LIMIT] =
-{
-  0,   /* DDR_FREQ_LOW_FREQ */
-  0xf, /* DDR_FREQ_400 */
-  0xf, /* DDR_FREQ_533 */
-  0xf, /* DDR_FREQ_667 */
-  0xc, /* DDR_FREQ_800 */
-  0x8, /* DDR_FREQ_933 */
-  0x8, /* DDR_FREQ_1066 */
-  0xf, /* DDR_FREQ_311 */
-  0xf, /* DDR_FREQ_333 */
-  0xf, /* DDR_FREQ_467 */
-  0xc, /*DDR_FREQ_850*/
-  0xf, /*DDR_FREQ_600*/
-  0xf, /*DDR_FREQ_300*/
-  0x8,  /*DDR_FREQ_900*/
-  0xf  /*DDR_FREQ_360*/
-};
 
 /* Bit mapping (for PBS) */
 GT_U32 bc2DQbitMap2Phypin[] =
@@ -338,7 +337,7 @@ MV_HWS_TOPOLOGY_MAP bc2TopologyMap[] =
 };
 #endif
 
-GT_U8    ddr3TipClockMode( GT_U32 frequency );
+static GT_U8    ddr3TipClockMode( GT_U32 frequency );
 
 /************************** Server Access ******************************/
 
@@ -444,7 +443,7 @@ static GT_STATUS  ddr3TipBc2GetInterfaceMap( GT_U8 devNum )
 /*****************************************************************************
 Enable Pipe
 ******************************************************************************/
-GT_STATUS    ddr3TipPipeEnable
+static GT_STATUS    ddr3TipPipeEnable
 (
     GT_U8                 devNum,
     MV_HWS_ACCESS_TYPE    interfaceAccess,
@@ -477,7 +476,7 @@ GT_STATUS    ddr3TipPipeEnable
     return GT_OK;
 }
 
-void ddr3TipIsUnicastAccess( GT_U8 devNum,GT_U32* interfaceId, MV_HWS_ACCESS_TYPE* interfaceAccess)
+static void ddr3TipIsUnicastAccess( GT_U8 devNum,GT_U32* interfaceId, MV_HWS_ACCESS_TYPE* interfaceAccess)
 {
 	GT_U32 indexCnt, totalCnt = 0 , interfaceTmp = 0;
     MV_HWS_TOPOLOGY_MAP *topologyMap = ddr3TipGetTopologyMap(devNum);
@@ -746,7 +745,7 @@ static GT_STATUS ddr3TipInitBc2Silicon
 		return GT_NOT_INITIALIZED;
 	}
 
-	ddr3TipBc2GetInterfaceMap((GT_U8)devNum);
+    ddr3TipBc2GetInterfaceMap((GT_U8)devNum);
 
 #ifdef STATIC_ALGO_SUPPORT
 	MV_HWS_TIP_STATIC_CONFIG_INFO staticConfig;
@@ -772,6 +771,9 @@ static GT_STATUS ddr3TipInitBc2Silicon
     configFunc.tipGetDeviceInfoFunc = ddr3TipBc2GetDeviceInfo;
 	configFunc.tipGetTemperature = NULL;
 	configFunc.tipGetClockRatio = ddr3TipClockMode;
+
+    configFunc.tipExternalRead  = ddr3TipBC2ExtRead;
+    configFunc.tipExternalWrite = ddr3TipBC2ExtWrite;
 
     mvHwsDdr3TipInitConfigFunc(devNum, &configFunc);
 
@@ -950,7 +952,7 @@ static GT_STATUS    ddr3TipDataReset
 /*****************************************************************************
 XSB External read
 ******************************************************************************/
-GT_STATUS    ddr3TipExtRead
+GT_STATUS    ddr3TipBC2ExtRead
 (
     GT_U32      devNum,
     GT_U32      interfaceId,
@@ -1015,7 +1017,7 @@ GT_STATUS    ddr3TipExtRead
 /*****************************************************************************
 XSB External write
 ******************************************************************************/
-GT_STATUS    ddr3TipExtWrite
+GT_STATUS    ddr3TipBC2ExtWrite
 (
     GT_U32      devNum,
     GT_U32      interfaceId,
@@ -1130,7 +1132,7 @@ GT_STATUS ddr3TipBc2SetDivider
 /******************************************************************************
 * return 1 of core/DUNIT clock ration is 1 for given freq, 0 if clock ratios is 2:1
 */
-GT_U8    ddr3TipClockMode(GT_U32 frequency)
+static GT_U8    ddr3TipClockMode(GT_U32 frequency)
 {
     frequency = frequency; /* avoid warnings */
 
@@ -1408,7 +1410,7 @@ GT_STATUS ddr3TipBc2GetInitFreq
 /*****************************************************************************
 TM interface frequency Get
 ******************************************************************************/
-GT_STATUS ddr3TipTmGetInitFreq
+static GT_STATUS ddr3TipTmGetInitFreq
 (
 	GT_STATUS       devNum,
 	MV_HWS_DDR_FREQ *freq

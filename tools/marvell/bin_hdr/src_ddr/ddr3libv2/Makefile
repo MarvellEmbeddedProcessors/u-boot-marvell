@@ -86,9 +86,13 @@ TDDR4SUBLIB = ./$(DDRTYPE)_training_$(LIBNAME)sub.lib
 
 TSRC = $(wildcard ./src/Driver/ddr3/*.c)
 TSRC += ./src/Silicon/mvHwsDdr3$(SILNAME).c
+ifeq "$(BOARD)"  "msys"
+	TSRC += ./src/Silicon/mvHwsDdr3Msys.c
+endif
 TSRC += ./src/Soc/ddr3_$(BOARDNAME)_training.c
 TSRC += ./src/Soc/ddr3_hws_hw_training.c
 TSRC += ./src/Os/gtOs/mvXor.c
+
 
 TSRCDDR4 = $(wildcard ./src/Driver/ddr4/src/*.c)
 

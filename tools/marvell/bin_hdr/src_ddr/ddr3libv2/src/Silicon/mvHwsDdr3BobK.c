@@ -16,8 +16,7 @@
 ******************************************************************************/
 
 #define DEFINE_GLOBALS
-#include "ddr3_msys_bobk.h"
-#include "mvHwsDdr3BobK.h"
+
 #include "mvDdr3TrainingIpStatic.h"
 #include "mvDdr3TrainingIpFlow.h"
 #include "mvDdrTrainingIpDb.h"
@@ -25,6 +24,10 @@
 #include "mvDdr3TrainingIpDef.h"
 #include "mvDdr3TrainingIpPrvIf.h"
 #include "mvDdr3LoggingDef.h"
+#include "mvHwsDdr3BobK.h"
+#if !defined(CPSS_BUILD)
+#include "ddr3_msys_bobk.h"
+#endif
 
 /************************** definitions ******************************/
 #define BOBK_NUM_BYTES                   (3)
@@ -32,14 +35,26 @@
 #define BOBK_CLIENT_FIELD(client)		(client << 15)
 #define BOBK_GET_CLIENT_FIELD(interfaceAccess,interfaceId) ((interfaceAccess == ACCESS_TYPE_MULTICAST) ? BOBK_CLIENT_FIELD(MULTICAST_ID):BOBK_CLIENT_FIELD(interfaceId))
 #define BOBK_XSB_MAPPING(interfaceId, interfaceAccess, regaddr)   (regaddr+ XSB_BASE_ADDR + BOBK_GET_CLIENT_FIELD(interfaceAccess,interfaceMap[interfaceId].client))
-#if 0
+
+#if defined(CPSS_BUILD)
+
+#define REG_DEVICE_SAR0_ADDR                        0xF8200
+#define REG_DEVICE_SAR1_ADDR                        0xF8204
+#define REG_DEVICE_SAR1_OVERRIDE_ADDR               0xF82D8
+#define PLL0_CNFIG_OFFSET         					21
+#define PLL0_CNFIG_MASK           					0x7
+#define PLL1_CNFIG_OFFSET         					18
+#define PLL1_CNFIG_MASK           					0x7
+
 #define CS_CBE_VALUE(csNum)   (csCbeReg[csNum])
 #endif
+
 #define BOBK_CLIENT_MAPPING(interfaceId, regaddr) ((regaddr << 2)+ CLIENT_BASE_ADDR + BOBK_CLIENT_FIELD(interfaceMap[interfaceId].client))
 
 #define TM_PLL_REG_DATA(a,b,c)  ((a << 12) + (b << 8) + (c << 2))
 #define R_MOD_W(writeData,readData,mask) ((writeData & mask) | (readData & (~mask)))
 
+#define MAX_TM_INTERFACE_NUM 1 /* TEMPORARY  TBD - should be defined per bobk type */
 
 /************************** pre-declaration ******************************/
 
@@ -48,6 +63,24 @@ static GT_STATUS ddr3TipBobKGetMediumFreq
     GT_U32          devNum,
 	GT_U32			interfaceId,
     MV_HWS_DDR_FREQ *freq
+);
+
+GT_STATUS    ddr3TipBobKExtRead
+(
+    GT_U32      devNum,
+    GT_U32      interfaceId,
+    GT_U32      regAddr,
+    GT_U32      numOfBursts,
+    GT_U32      *data
+);
+
+GT_STATUS    ddr3TipBobKExtWrite
+(
+    GT_U32      devNum,
+    GT_U32      interfaceId,
+    GT_U32      regAddr,
+    GT_U32      numOfBursts,
+    GT_U32      *data
 );
 
 GT_STATUS ddr3TipBobKSetDivider
@@ -84,7 +117,7 @@ GT_STATUS ddr3TipBobKGetInitFreq
     MV_HWS_DDR_FREQ* freq
 );
 
-GT_STATUS ddr3TipTmGetInitFreq
+static GT_STATUS ddr3TipTmGetInitFreq
 (
     GT_STATUS       devNum,
     MV_HWS_DDR_FREQ *freq
@@ -143,6 +176,15 @@ GT_STATUS ddr3TipBobKGetDeviceInfo
 	MV_DDR3_DEVICE_INFO * infoPtr
 );
 
+GT_STATUS    ddr3TipBobKTMWrite
+(
+    GT_U8                 devNum,
+    MV_HWS_ACCESS_TYPE    interfaceAccess,
+    GT_U32                interfaceId,
+    GT_U32                regAddr,
+    GT_U32                dataValue,
+    GT_U32                mask
+);
 /************************** Globals ******************************/
 
 extern GT_U32 maskTuneFunc;
@@ -165,7 +207,7 @@ extern GT_U32 dfsLowFreq;
 GT_U32 debugBobK = 0;
 GT_U32  pipeMulticastMask;
 
-#if 0
+#if defined(CPSS_BUILD)
 static GT_U32 csCbeReg[]=
 {
     0xE , 0xD, 0xB, 0x7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -177,7 +219,8 @@ static MV_DFX_ACCESS interfaceMap[] =
 	{   0,	 16 },
 	{   3,	 18	},
 	{   1,	 10 },
-	{   3,	 1	}
+	{   3,	 1	},
+    {   0,	 0	} /* in BOBK interface 4 doesn't belong to TM*/
 };
 
 static GT_U8 bobKBwPerFreq[DDR_FREQ_LIMIT] =
@@ -216,25 +259,6 @@ static GT_U8 bobKRatePerFreq[DDR_FREQ_LIMIT] =
    0x1, /*DDR_FREQ_300*/
    0x3,  /*DDR_FREQ_900*/
    0x1  /*DDR_FREQ_360*/
-};
-
-GT_U32 phy1ValTable[DDR_FREQ_LIMIT] =
-{
-  0,   /* DDR_FREQ_LOW_FREQ */
-  0xf, /* DDR_FREQ_400 */
-  0xf, /* DDR_FREQ_533 */
-  0xf, /* DDR_FREQ_667 */
-  0xc, /* DDR_FREQ_800 */
-  0x8, /* DDR_FREQ_933 */
-  0x8, /* DDR_FREQ_1066 */
-  0xf, /* DDR_FREQ_311 */
-  0xf, /* DDR_FREQ_333 */
-  0xf, /* DDR_FREQ_467 */
-  0xc, /*DDR_FREQ_850*/
-  0xf, /*DDR_FREQ_600*/
-  0xf, /*DDR_FREQ_300*/
-  0x8,  /*DDR_FREQ_900*/
-  0xf  /*DDR_FREQ_360*/
 };
 
 /* Bit mapping (for PBS) */
@@ -277,36 +301,25 @@ GT_U32 bobKDQbitMap2Phypin[] =
         0,1,2,3,6,7,8,9   /* dq[ECC]   */
 };
 
-#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+#if defined(CPSS_BUILD)
+
 MV_HWS_TOPOLOGY_MAP bobKTopologyMap[] =
 {
-    /* 1st board */
+    /* 1st board  - CETUS*/
     {
-    0x1f, /* active interfaces */
+    0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                         speed_bin           memory_width  mem_size  frequency  casL casWL      temperature */
- {  {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+ {  {{{0x1,0,0,0}, {0x1,0,0,0}, {0x2,1,0,0}, {0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} },
     0xF  /* Buses mask */
-    },
-
-    /* 2nd board */
-    {
-    0x1f, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                         speed_bin           memory_width  mem_size  frequency  casL casWL      temperature */
- {  {{{0x1,0,0,0}, {0x1,0,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
-    {{{0x1,0,0,0}, {0x1,0,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
-    {{{0x1,0,0,0}, {0x1,0,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
-    {{{0x1,0,0,0}, {0x1,0,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
-    {{{0x1,0,0,0}, {0x1,0,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} },
-    0xF  /* Buses mask */
     }
 };
 #endif
 
-GT_U8    ddr3TipClockMode( GT_U32 frequency );
+static GT_U8    ddr3TipClockMode( GT_U32 frequency );
 
 /************************** Server Access ******************************/
 GT_STATUS ddr3TipBobKServerRegWrite
@@ -384,7 +397,7 @@ GT_STATUS ddr3TipBobKGetFreqConfig
 /*****************************************************************************
 Enable Pipe
 ******************************************************************************/
-GT_STATUS    ddr3TipPipeEnable
+static GT_STATUS    ddr3TipPipeEnable
 (
     GT_U8                 devNum,
     MV_HWS_ACCESS_TYPE    interfaceAccess,
@@ -392,7 +405,7 @@ GT_STATUS    ddr3TipPipeEnable
     GT_BOOL               enable
 )
 {
-    GT_U32 dataValue, pipeEnableMask = 0;
+    GT_U32 dataValue=0, pipeEnableMask = 0;
 
 
     if (enable == GT_FALSE)
@@ -410,14 +423,13 @@ GT_STATUS    ddr3TipPipeEnable
             pipeEnableMask = (1 << interfaceMap[interfaceId].pipe);
         }
     }
-    CHECK_STATUS(ddr3TipBobKRead(devNum, PIPE_ENABLE_ADDR, &dataValue, MASK_ALL_BITS));
+    CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, PIPE_ENABLE_ADDR, &dataValue, MASK_ALL_BITS));
     dataValue = (dataValue & (~0xFF)) | pipeEnableMask;
-    CHECK_STATUS(ddr3TipBobKWrite(devNum, PIPE_ENABLE_ADDR, dataValue, MASK_ALL_BITS));
-
+    CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, PIPE_ENABLE_ADDR, dataValue));
     return GT_OK;
 }
 
-void ddr3TipIsUnicastAccess( GT_U8 devNum,GT_U32* interfaceId, MV_HWS_ACCESS_TYPE* interfaceAccess)
+static void ddr3TipIsUnicastAccess( GT_U8 devNum,GT_U32* interfaceId, MV_HWS_ACCESS_TYPE* interfaceAccess)
 {
 	GT_U32 indexCnt, totalCnt = 0 , interfaceTmp = 0;
     MV_HWS_TOPOLOGY_MAP *topologyMap = ddr3TipGetTopologyMap(devNum);
@@ -455,8 +467,9 @@ GT_STATUS    ddr3TipBobKSelectTMDdrController
 )
 {
     GT_U32 interfaceId = 0, dataValue = 0;
-	for(interfaceId=0; interfaceId <MAX_INTERFACE_NUM ;interfaceId++)
-		{
+
+    for(interfaceId=0; interfaceId <MAX_TM_INTERFACE_NUM ;interfaceId++)
+	{
 			ddr3TipPipeEnable(devNum, ACCESS_TYPE_UNICAST, interfaceId, GT_TRUE);
 			if (IS_INTERFACE_ACTIVE(topologyMap->interfaceActiveMask, interfaceId) ==  0)
 			{
@@ -482,15 +495,16 @@ GT_STATUS    ddr3TipBobKSelectTMDdrController
    if (enable)
     {
        /* Enable DDR Tuning */
-        CHECK_STATUS(ddr3TipBobKWrite(devNum, READ_BUFFER_SELECT_REG,  0x8000, MASK_ALL_BITS));
+
+        CHECK_STATUS(ddr3TipBobKTMWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, READ_BUFFER_SELECT_REG,  0x8000, MASK_ALL_BITS));
         /* configure duplicate CS */
-		CHECK_STATUS(ddr3TipBobKWrite(devNum, CS_ENABLE_REG,  0x4A/*Haim 0x42*/, MASK_ALL_BITS));
+		CHECK_STATUS(ddr3TipBobKTMWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, CS_ENABLE_REG,  0x4A/*Haim 0x42*/, MASK_ALL_BITS));
     }
     else
     {
         /* Disable DDR Tuning Select */
-        CHECK_STATUS(ddr3TipBobKWrite(devNum, CS_ENABLE_REG,  0x2, MASK_ALL_BITS));
-        CHECK_STATUS(ddr3TipBobKWrite(devNum, READ_BUFFER_SELECT_REG, 0,MASK_ALL_BITS));
+        CHECK_STATUS(ddr3TipBobKTMWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, CS_ENABLE_REG,  0x2, MASK_ALL_BITS));
+        CHECK_STATUS(ddr3TipBobKTMWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, READ_BUFFER_SELECT_REG, 0,MASK_ALL_BITS));
    }
    return GT_OK;
 }
@@ -618,7 +632,8 @@ GT_STATUS    ddr3TipBobKTMWrite
         {
             DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("ddr3TipBobKTMWrite active interface = %d\n",uiReadInterfaceId));
         }
-        CHECK_STATUS(ddr3TipBobKRead(devNum, regAddr,  dataRead,MASK_ALL_BITS));
+
+        CHECK_STATUS(ddr3TipBobKTMRead(devNum, ACCESS_TYPE_UNICAST, uiReadInterfaceId,regAddr,dataRead,MASK_ALL_BITS));
         uiDataRead = dataRead[uiReadInterfaceId];
         dataValue = (uiDataRead & (~mask)) | (dataValue & mask);
     }
@@ -645,7 +660,7 @@ GT_STATUS    ddr3TipBobKTMWrite
 	if (interfaceAccess == ACCESS_TYPE_MULTICAST)
     {
         startIf = 0;
-        endIf = MAX_INTERFACE_NUM-1;
+        endIf = MAX_TM_INTERFACE_NUM-1;
     }
     else
     {
@@ -662,7 +677,7 @@ GT_STATUS    ddr3TipBobKTMWrite
    /* ddr3TipPipeEnable(devNum, interfaceAccess, interfaceId, GT_FALSE);*/
     return GT_OK;
 }
-
+#if !defined(CPSS_BUILD)
 /******************************************************************************
 * Name:     ddr3TipBobKWrite.
 * Desc:
@@ -776,6 +791,7 @@ GT_STATUS    ddr3TipBobKIFRead
     return ddr3TipBobKRead(devNum, regAddr, &data[interfaceId], mask);
 }
 
+#endif
 
 /******************************************************************************
 * Name:     ddr3TipBobKSelectCpuDdrController.
@@ -823,15 +839,20 @@ static GT_STATUS ddr3TipInitBobKSilicon
 
     boardId = boardId; /* avoid warnings */
 
-#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+#if defined(CPSS_BUILD)
     configFunc.tipDunitReadFunc = ddr3TipBobKTMRead;
     configFunc.tipDunitWriteFunc = ddr3TipBobKTMWrite;
     configFunc.tipDunitMuxSelectFunc = ddr3TipBobKSelectTMDdrController;
+
 #else
     configFunc.tipDunitReadFunc = ddr3TipBobKIFRead;
     configFunc.tipDunitWriteFunc = ddr3TipBobKIFWrite;
     configFunc.tipDunitMuxSelectFunc = ddr3TipBobKSelectCPUDdrController;
 #endif
+
+    configFunc.tipExternalRead  = ddr3TipBobKExtRead;
+	configFunc.tipExternalWrite = ddr3TipBobKExtWrite;
+
     configFunc.tipGetFreqConfigInfoFunc = ddr3TipBobKGetFreqConfig;
     configFunc.tipSetFreqDividerFunc = ddr3TipBobKSetDivider;
     configFunc.tipGetDeviceInfoFunc = ddr3TipBobKGetDeviceInfo;
@@ -845,11 +866,28 @@ static GT_STATUS ddr3TipInitBobKSilicon
 
 	/*Set device attributes*/
 	ddr3TipDevAttrInit(devNum);
-	ddr3TipDevAttrSet(devNum, MV_ATTR_TIP_REV, MV_TIP_REV_3);
+#if defined(CPSS_BUILD)
+	ddr3TipDevAttrSet(devNum, MV_ATTR_TIP_REV, MV_TIP_REV_2);   /* TM DDR (Non-ECC) TIP version 2*/
+#else
+    ddr3TipDevAttrSet(devNum, MV_ATTR_TIP_REV, MV_TIP_REV_3);   /* BOBK MSYS DDR TIP version 3  */
+#endif
 	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_NEGATIVE);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, numOfBusPerInterface);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_INTERLEAVE_WA, GT_FALSE);
 
+#if defined(CPSS_BUILD)
+	maskTuneFunc = ( INIT_CONTROLLER_MASK_BIT |
+					/*SET_MEDIUM_FREQ_MASK_BIT |*/
+					WRITE_LEVELING_MASK_BIT |
+					LOAD_PATTERN_2_MASK_BIT |
+					READ_LEVELING_MASK_BIT |
+					SET_TARGET_FREQ_MASK_BIT |
+					WRITE_LEVELING_TF_MASK_BIT |
+					READ_LEVELING_TF_MASK_BIT |
+					WRITE_LEVELING_SUPP_TF_MASK_BIT |
+					CENTRALIZATION_RX_MASK_BIT |
+					CENTRALIZATION_TX_MASK_BIT);
+#else
    maskTuneFunc =     (/*SET_LOW_FREQ_MASK_BIT |
 						LOAD_PATTERN_MASK_BIT |*/
 						SET_MEDIUM_FREQ_MASK_BIT |
@@ -866,7 +904,7 @@ static GT_STATUS ddr3TipInitBobKSilicon
 						CENTRALIZATION_RX_MASK_BIT |
 						CENTRALIZATION_TX_MASK_BIT
 						);
-
+#endif
 	/*Skip mid freq stages for 400Mhz DDR speed*/
 	if( (topologyMap->interfaceParams[firstActiveIf].memoryFreq == DDR_FREQ_400) ){
 		maskTuneFunc = ( WRITE_LEVELING_MASK_BIT |
@@ -886,7 +924,7 @@ static GT_STATUS ddr3TipInitBobKSilicon
     tuneParams.PhyReg3Val = 0xA;
     tuneParams.gRttNom = 0x44;
     tuneParams.gDic = 0x2;
-    tuneParams.uiODTConfig = 0x120012;
+    tuneParams.uiODTConfig = 0x30000;/*/0x120012;*/
     tuneParams.gZpriData = 123;
     tuneParams.gZnriData = 123;
     tuneParams.gZpriCtrl = 74;
@@ -895,7 +933,7 @@ static GT_STATUS ddr3TipInitBobKSilicon
     tuneParams.gZnodtData = 45;
     tuneParams.gZpodtCtrl = 45;
     tuneParams.gZnodtCtrl = 45;
-    tuneParams.gRttWR = 0x0;
+    tuneParams.gRttWR = 0x400;/*0x0;*/
 
     CHECK_STATUS(ddr3TipTuneTrainingParams(devNum, &tuneParams));
 
@@ -922,23 +960,6 @@ GT_STATUS ddr3BobKUpdateTopologyMap(GT_U32 devNum, MV_HWS_TOPOLOGY_MAP* topology
     MV_HWS_DDR_FREQ freq;
 
 	DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("topologyMap->interfaceActiveMask is 0x%x\n", topologyMap->interfaceActiveMask));
-
-	#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
-	/* first check if TM is enabled. reading frequency will check if it's enabled or not
-	   in case it's not, the function will exit with error */
-	CHECK_STATUS(ddr3TipTmGetInitFreq(devNum, &freq));
-
-	/* if interface 4 is active, check it's assignment and close it if it's for MSYS */
-	if(topologyMap->interfaceActiveMask & 0x10)
-	{
-		if(ddr3GetSdramAssignment((GT_U8)devNum) == MSYS_EN)
-		{
-			topologyMap->interfaceActiveMask &= ~0x10; /* remove interface 4 from mask */
-			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR,
-								  ("Warning: DDR IF 4 is allocated to MSYS (and was removed from TM IF list)\n"));
-		}
-	}
-	#endif
 
     for(interfaceId = 0; interfaceId < MAX_INTERFACE_NUM; interfaceId++) {
     	if (IS_INTERFACE_ACTIVE(topologyMap->interfaceActiveMask, interfaceId) ==  GT_FALSE)
@@ -971,7 +992,7 @@ GT_STATUS ddr3TipInitBobK
 
 	if(NULL == topologyMap)
 	{
-		#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+		#if defined(CPSS_BUILD)
 		/* for CPSS, since topology is not always initialized, it is
 		   needed to set it to default topology */
 		topologyMap = &bobKTopologyMap[0];
@@ -986,11 +1007,160 @@ GT_STATUS ddr3TipInitBobK
     return GT_OK;
 }
 
+#if defined(CPSS_BUILD)
+/*****************************************************************************
+Data Reset
+******************************************************************************/
+static GT_STATUS    ddr3TipDataReset
+(
+    GT_U32                  devNum,
+    MV_HWS_ACCESS_TYPE      interfaceAccess,
+    GT_U32                  interfaceId
+)
+{
+    GT_STATUS retVal;
+    GT_U32  uiWordCnt;
 
+    for(uiWordCnt = 0; uiWordCnt < 8 ; uiWordCnt++)
+    {
+        /*Write Interface DATA as data to XSB address 0x10.*/
+        retVal = ddr3TipBobKServerRegWrite(devNum,     BOBK_XSB_MAPPING(interfaceId, interfaceAccess, XSB_DATA_REG+(uiWordCnt * 4)), 0xABCDEF12);
+        if (retVal != GT_OK)
+        {
+            return retVal;
+        }
+    }
+    return GT_OK;
+}
+
+/*****************************************************************************
+XSB External read
+******************************************************************************/
+GT_STATUS    ddr3TipBobKExtRead
+(
+    GT_U32      devNum,
+    GT_U32      interfaceId,
+    GT_U32      regAddr,
+    GT_U32      numOfBursts,
+    GT_U32      *data
+)
+{
+    GT_U32 burstNum, wordNum , dataValue;
+	GT_U32 cntPoll;
+    MV_HWS_ACCESS_TYPE accessType = ACCESS_TYPE_UNICAST;
+    /*DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("=== EXTERNAL READ ==="));*/
+
+    ddr3TipPipeEnable((GT_U8)devNum, accessType, interfaceId, GT_TRUE);
+    CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BOBK_XSB_MAPPING(interfaceId, accessType, XSB_CTRL_0_REG) ,EXT_TRAINING_ID));
+
+    for(burstNum=0 ; burstNum < numOfBursts; burstNum++)
+    {
+        ddr3TipDataReset(devNum, ACCESS_TYPE_UNICAST, interfaceId);
+        /*working with XSB client InterfaceNum  Write Interface ADDR as data to XSB address C*/
+        CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BOBK_XSB_MAPPING(interfaceId, accessType, XSB_ADDRESS_REG + (burstNum * 32)), regAddr));
+        if (isCbeRequired ==  GT_TRUE)
+        {
+            /*CS_CBE_VALUE(0)*/
+            dataValue = CS_CBE_VALUE(0) << 19;
+        }
+        else
+        {
+            dataValue = (GT_U32)(TARGET_EXT << 19);
+        }
+        dataValue |= (BYTE_EN << 11) + (NUM_BYTES_IN_BURST << 4) + (ACCESS_EXT << 3);
+        /*Write Interface COMMAND as data to XSB address 8 */
+        CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BOBK_XSB_MAPPING( interfaceId, accessType, XSB_CMD_REG),   dataValue));
+        dataValue |= EXECUTING;
+        CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BOBK_XSB_MAPPING( interfaceId, accessType, XSB_CMD_REG),   dataValue));
+
+		for(cntPoll=0; cntPoll < MAX_POLLING_ITERATIONS; cntPoll++)
+		{
+			CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, BOBK_XSB_MAPPING( interfaceId, accessType, XSB_CMD_REG), &dataValue, 0x1));
+
+			if (dataValue == 0)
+				break;
+		}
+
+		if (cntPoll >= MAX_POLLING_ITERATIONS)
+		{
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("No Done indication for DDR Read\n", dataValue));
+			return GT_NOT_READY;
+		}
+
+        for(wordNum = 0; wordNum < EXT_ACCESS_BURST_LENGTH /*s_uiNumOfBytesInBurst/4*/; wordNum++)
+        {
+            CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, BOBK_XSB_MAPPING(interfaceId, accessType, XSB_DATA_REG + (wordNum * 4)), &data[wordNum], MASK_ALL_BITS));
+            DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("ddr3TipExtRead data 0x%x \n",data[wordNum]));
+        }
+    }
+    return GT_OK;
+}
+
+
+
+/*****************************************************************************
+XSB External write
+******************************************************************************/
+GT_STATUS    ddr3TipBobKExtWrite
+(
+    GT_U32      devNum,
+    GT_U32      interfaceId,
+    GT_U32      regAddr,
+    GT_U32      numOfBursts,
+    GT_U32      *addr
+)
+{
+    GT_U32        wordNum = 0,  dataCmd = 0, burstNum=0, cntPoll = 0, dataValue  = 0;
+    MV_HWS_ACCESS_TYPE accessType = ACCESS_TYPE_UNICAST;
+
+    ddr3TipPipeEnable((GT_U8)devNum, accessType, interfaceId, GT_TRUE);
+    CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BOBK_XSB_MAPPING(interfaceId, accessType, XSB_CTRL_0_REG) ,EXT_TRAINING_ID  ));
+    for(burstNum=0 ; burstNum < numOfBursts; burstNum++)
+    {
+        /*working with XSB multicast client , Write Interface ADDR as data to XSB address C */
+        CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BOBK_XSB_MAPPING(interfaceId, accessType, XSB_ADDRESS_REG), regAddr + (burstNum * EXT_ACCESS_BURST_LENGTH * 4)));
+        for(wordNum = 0; wordNum < 8 ; wordNum++)
+        {
+            /*Write Interface DATA as data to XSB address 0x10.*/
+            CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BOBK_XSB_MAPPING(interfaceId, accessType, XSB_DATA_REG + (wordNum * 4)), addr[wordNum]));
+        }
+        if (isCbeRequired ==  GT_TRUE)
+        {
+            dataCmd =  CS_CBE_VALUE(0) << 19;
+        }
+        else
+        {
+            dataCmd = (GT_U32)(TARGET_EXT << 19);
+        }
+        dataCmd |= (BYTE_EN << 11) + (NUM_BYTES_IN_BURST << 4) + (ACCESS_EXT << 3) + EXT_MODE;
+        CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BOBK_XSB_MAPPING(interfaceId,  accessType, XSB_CMD_REG), dataCmd));
+        /* execute xsb write */
+        dataCmd |= 0x1;
+        DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("ddr3TipExtWrite dataCmd 0x%x \n", dataCmd));
+        CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BOBK_XSB_MAPPING(interfaceId, accessType, XSB_CMD_REG), dataCmd));
+
+		for(cntPoll=0; cntPoll < MAX_POLLING_ITERATIONS; cntPoll++)
+		{
+			CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, BOBK_XSB_MAPPING( interfaceId, accessType, XSB_CMD_REG), &dataValue, 0x1));
+
+			if (dataValue == 0)
+				break;
+		}
+
+		if (cntPoll >= MAX_POLLING_ITERATIONS)
+		{
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("No Done indication for DDR Write External\n", dataValue));
+			return GT_NOT_READY;
+		}
+
+    }
+    return GT_OK;
+}
+#else
 /******************************************************************************
 * external read from memory
 */
-GT_STATUS    ddr3TipExtRead
+GT_STATUS    ddr3TipBobKExtRead
 (
     GT_U32      devNum,
     GT_U32      interfaceId,
@@ -1013,7 +1183,7 @@ GT_STATUS    ddr3TipExtRead
 /******************************************************************************
 * external write to memory
 */
-GT_STATUS    ddr3TipExtWrite
+GT_STATUS    ddr3TipBobKExtWrite
 (
     GT_U32      devNum,
     GT_U32      interfaceId,
@@ -1032,178 +1202,7 @@ GT_STATUS    ddr3TipExtWrite
     return GT_OK;
 }
 
-#if 0
-/*****************************************************************************
-Data Reset
-******************************************************************************/
-static GT_STATUS    ddr3TipDataReset
-(
-    GT_U32                  devNum,
-    MV_HWS_ACCESS_TYPE      interfaceAccess,
-    GT_U32                  interfaceId
-)
-{
-    GT_STATUS retVal;
-    GT_U32  uiWordCnt;
-
-    for(uiWordCnt = 0; uiWordCnt < 8 ; uiWordCnt++)
-    {
-        /*Write Interface DATA as data to XSB address 0x10.*/
-        retVal = ddr3TipBobKServerRegWrite(devNum,     BC2_XSB_MAPPING(interfaceId, interfaceAccess, XSB_DATA_REG+(uiWordCnt * 4)), 0xABCDEF12);
-        if (retVal != GT_OK)
-        {
-            return retVal;
-        }
-    }
-    return GT_OK;
-}
-/*****************************************************************************
-XSB External read
-******************************************************************************/
-GT_STATUS    ddr3TipExtRead
-(
-    GT_U32      devNum,
-    GT_U32      interfaceId,
-    GT_U32      regAddr,
-    GT_U32      numOfBursts,
-    GT_U32      *data
-)
-{
-    GT_U32 burstNum, wordNum , dataValue;
-	GT_U32 cntPoll;
-    MV_HWS_ACCESS_TYPE accessType = ACCESS_TYPE_UNICAST;
-    /*DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("=== EXTERNAL READ ==="));*/
-
-    ddr3TipPipeEnable((GT_U8)devNum, accessType, interfaceId, GT_TRUE);
-    CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BC2_XSB_MAPPING(interfaceId, accessType, XSB_CTRL_0_REG) ,EXT_TRAINING_ID));
-
-    for(burstNum=0 ; burstNum < numOfBursts; burstNum++)
-    {
-        ddr3TipDataReset(devNum, ACCESS_TYPE_UNICAST, interfaceId);
-        /*working with XSB client InterfaceNum  Write Interface ADDR as data to XSB address C*/
-        CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BC2_XSB_MAPPING(interfaceId, accessType, XSB_ADDRESS_REG + (burstNum * 32)), regAddr));
-        if (isCbeRequired ==  GT_TRUE)
-        {
-            /*CS_CBE_VALUE(0)*/
-            dataValue = CS_CBE_VALUE(0) << 19;
-        }
-        else
-        {
-            dataValue = (GT_U32)(TARGET_EXT << 19);
-        }
-        dataValue |= (BYTE_EN << 11) + (NUM_BYTES_IN_BURST << 4) + (ACCESS_EXT << 3);
-        /*Write Interface COMMAND as data to XSB address 8 */
-        CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BC2_XSB_MAPPING( interfaceId, accessType, XSB_CMD_REG),   dataValue));
-        dataValue |= EXECUTING;
-        CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BC2_XSB_MAPPING( interfaceId, accessType, XSB_CMD_REG),   dataValue));
-
-		for(cntPoll=0; cntPoll < MAX_POLLING_ITERATIONS; cntPoll++)
-		{
-			CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, BC2_XSB_MAPPING( interfaceId, accessType, XSB_CMD_REG), &dataValue, 0x1));
-
-			if (dataValue == 0)
-				break;
-		}
-
-		if (cntPoll >= MAX_POLLING_ITERATIONS)
-		{
-			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("No Done indication for DDR Read\n", dataValue));
-			return GT_NOT_READY;
-		}
-
-        for(wordNum = 0; wordNum < EXT_ACCESS_BURST_LENGTH /*s_uiNumOfBytesInBurst/4*/; wordNum++)
-        {
-            CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, BC2_XSB_MAPPING(interfaceId, accessType, XSB_DATA_REG + (wordNum * 4)), &data[wordNum], MASK_ALL_BITS));
-            DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("ddr3TipExtRead data 0x%x \n",data[wordNum]));
-        }
-    }
-    return GT_OK;
-}
-
-
-
-/*****************************************************************************
-XSB External write
-******************************************************************************/
-GT_STATUS    ddr3TipExtWrite
-(
-    GT_U32      devNum,
-    GT_U32      interfaceId,
-    GT_U32      regAddr,
-    GT_U32      numOfBursts,
-    GT_U32      *addr
-)
-{
-    GT_U32        wordNum = 0,  dataCmd = 0, burstNum=0, cntPoll = 0, dataValue  = 0;
-    MV_HWS_ACCESS_TYPE accessType = ACCESS_TYPE_UNICAST;
-
-    ddr3TipPipeEnable((GT_U8)devNum, accessType, interfaceId, GT_TRUE);
-    CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BC2_XSB_MAPPING(interfaceId, accessType, XSB_CTRL_0_REG) ,EXT_TRAINING_ID  ));
-    for(burstNum=0 ; burstNum < numOfBursts; burstNum++)
-    {
-        /*working with XSB multicast client , Write Interface ADDR as data to XSB address C */
-        CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BC2_XSB_MAPPING(interfaceId, accessType, XSB_ADDRESS_REG), regAddr + (burstNum * EXT_ACCESS_BURST_LENGTH * 4)));
-        for(wordNum = 0; wordNum < 8 ; wordNum++)
-        {
-            /*Write Interface DATA as data to XSB address 0x10.*/
-            CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BC2_XSB_MAPPING(interfaceId, accessType, XSB_DATA_REG + (wordNum * 4)), addr[wordNum]));
-        }
-        if (isCbeRequired ==  GT_TRUE)
-        {
-            dataCmd =  CS_CBE_VALUE(0) << 19;
-        }
-        else
-        {
-            dataCmd = (GT_U32)(TARGET_EXT << 19);
-        }
-        dataCmd |= (BYTE_EN << 11) + (NUM_BYTES_IN_BURST << 4) + (ACCESS_EXT << 3) + EXT_MODE;
-        CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BC2_XSB_MAPPING(interfaceId,  accessType, XSB_CMD_REG), dataCmd));
-        /* execute xsb write */
-        dataCmd |= 0x1;
-        DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("ddr3TipExtWrite dataCmd 0x%x \n", dataCmd));
-        CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, BC2_XSB_MAPPING(interfaceId, accessType, XSB_CMD_REG), dataCmd));
-
-		for(cntPoll=0; cntPoll < MAX_POLLING_ITERATIONS; cntPoll++)
-		{
-			CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, BC2_XSB_MAPPING( interfaceId, accessType, XSB_CMD_REG), &dataValue, 0x1));
-
-			if (dataValue == 0)
-				break;
-		}
-
-		if (cntPoll >= MAX_POLLING_ITERATIONS)
-		{
-			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("No Done indication for DDR Write External\n", dataValue));
-			return GT_NOT_READY;
-		}
-
-    }
-    return GT_OK;
-}
-
 #endif
-/******************************************************************************
- * Name:     ddr3GetSdramAssignment
- * Desc:     read S@R and return DDR3 assignment ( 0 = TM , 1 = MSYS )
- * Args:
- * Notes:
- * Returns:  required value
- */
-DDR_IF_ASSIGNMENT ddr3GetSdramAssignment(GT_U8 devNum)
-{
-#if 0
-	GT_U32 data = 0; /* initialized for simulation */
-
-	/* Read sample at reset setting */
-	CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, BOBK_DEVICE_SAR1_REG_ADDR,  &data, MASK_ALL_BITS));
-
-	data = (data >> BOBK_DEVICE_SAR1_MSYS_TM_SDRAM_SEL_OFFSET) & BOBK_DEVICE_SAR1_MSYS_TM_SDRAM_SEL_MASK;
-
-	return (data == 0) ? TM_EN : MSYS_EN;
-#endif
-	return  MSYS_EN;
-}
-
 /******************************************************************************/
 /*   PLL/Frequency Functionality                                              */
 /******************************************************************************/
@@ -1238,7 +1237,7 @@ GT_STATUS ddr3TipBobKSetDivider
 /******************************************************************************
 * return 1 of core/DUNIT clock ration is 1 for given freq, 0 if clock ratios is 2:1
 */
-GT_U8    ddr3TipClockMode( GT_U32 frequency )
+static GT_U8 ddr3TipClockMode( GT_U32 frequency )
 {
 	if(frequency == DDR_FREQ_LOW_FREQ){
 		return 1;
@@ -1262,38 +1261,51 @@ static GT_STATUS ddr3TipTmSetDivider
     MV_HWS_DDR_FREQ                 frequency
 )
 {
-    GT_U32 writeData, divider = 0, ratio;
+    GT_U32 data = 0, writeData, divider = 0;
     MV_HWS_DDR_FREQ sarFreq;
 
 	DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("TM PLL Config\n"));
 
+    /* Calc SAR */
+   /*CHECK_STATUS(ddr3TipTmGetInitFreq(devNum, &sarFreq));*/
     /* calc SAR */
-    ddr3TipBobKGetInitFreq(devNum, interfaceId, &sarFreq);
+    ddr3TipBobKGetInitFreq(devNum, 0, &sarFreq);
     divider = freqVal[sarFreq]/freqVal[frequency];
 
-    DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("\nSAR value %d divider %d freqVal[%d] %d  freqVal[%d] %d\n",
+    DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("\tSAR value %d divider %d (freqVal[%d] %d  freqVal[%d] %d\n",
 					  sarFreq, divider, sarFreq, freqVal[sarFreq], frequency, freqVal[frequency]));
+    switch (divider)
+    {
+	case 1:
+		writeData  = TM_PLL_REG_DATA(2,1,3);
+		break;
+	case 2:
+		writeData  = TM_PLL_REG_DATA(4,2,3);
+		break;
+	case 3:
+		writeData  = TM_PLL_REG_DATA(6,3,3);
+		break;
+	case 4:
+		writeData  = TM_PLL_REG_DATA(8,4,3);
+		break;
 
-	CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, 0x000F8264,  &writeData, MASK_ALL_BITS ));
+	default:
+		DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("Error: ddr3TipTmSetDivider: %d divider is not supported\n", divider));
+		return GT_BAD_PARAM;
+    }
 
-	writeData |= ~0x1FF0C;
+    CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, 0x000F8264,  &data, MASK_ALL_BITS ));
+    CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0x000F8264,  R_MOD_W(writeData,data,0xFF0C)));
 
-	/*For regular freq(divider<=4) x2 the divider and ratio*/
-	ratio = (frequency == DDR_FREQ_LOW_FREQ)?(1):(2);
-	divider *= ratio;
+    CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, 0x000F8264,  &data, MASK_ALL_BITS));
+	data |= (1<<16);
+    CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0x000F8264,  data));
 
-	writeData &= (0x3 << 2) | (divider << 8) | (divider << 12);
-	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0x000F8264,  writeData));
+	/*hwsOsExactDelayPtr(devNum, 0, 10); */
+	CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, 0x000F8264,  &data, MASK_ALL_BITS));
+	data &= ~(1<<16);
+    CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0x000F8264,  R_MOD_W(0, data, (1<<16))));
 
-	writeData &= (0x1 << 16);
-	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0x000F8264,  writeData));
-
-	CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, 0x000F82A8,  &writeData, MASK_ALL_BITS));
-	writeData |= ~0x30;
-	writeData &= ratio << 4;
-	CHECK_STATUS(ddr3TipBobKServerRegWrite(devNum, 0x000F82A8,  writeData));
-
-    DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("\tTM PLL config Done\n"));
     return GT_OK;
 }
 
@@ -1429,7 +1441,7 @@ GT_STATUS ddr3TipBobKGetInitFreq
 /*****************************************************************************
 TM interface frequency Get
 ******************************************************************************/
-GT_STATUS ddr3TipTmGetInitFreq
+static GT_STATUS ddr3TipTmGetInitFreq
 (
 	GT_STATUS       devNum,
 	MV_HWS_DDR_FREQ *freq
@@ -1532,29 +1544,36 @@ static GT_STATUS ddr3TipBobKGetMediumFreq
 	MV_HWS_DDR_FREQ *freq
 )
 {
-	GT_U32 data;
+    MV_HWS_DDR_FREQ sarFreq;
 
-    /* calc SAR */
-    CHECK_STATUS(ddr3TipBobKRead(devNum, REG_DEVICE_SAR1_ADDR,  &data, MASK_ALL_BITS ));
-    data = (data >> PLL1_CNFIG_OFFSET) & PLL1_CNFIG_MASK;
+      CHECK_STATUS(ddr3TipBobKGetInitFreq((GT_U8)devNum, interfaceId, &sarFreq));
 
-    switch(data)
-    {
-        case 0:
-		case 5:
-            *freq = DDR_FREQ_400;
-            break;
-        case 2:
-            *freq = DDR_FREQ_333;
-            break;
-        case 3:
-            *freq = DDR_FREQ_400;
-            break;
-        default:
-            DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("Freq SAR Unknown\n"));
-            *freq = DDR_FREQ_LIMIT;
-            return GT_BAD_PARAM;
-    }
+      switch(sarFreq)
+      {
+          case DDR_FREQ_400:
+              DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("No medium freq supported for 400Mhz\n"));
+              *freq = DDR_FREQ_400;
+              break;
+
+          case DDR_FREQ_667:
+              DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("Medium DDR_FREQ_333\n"));
+              *freq = DDR_FREQ_333;
+              break;
+
+          case DDR_FREQ_800:
+              DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("Medium DDR_FREQ_400\n"));
+              *freq = DDR_FREQ_400;
+              break;
+
+          case DDR_FREQ_933:
+              DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("Medium DDR_FREQ_311\n"));
+              *freq = DDR_FREQ_311;
+              break;
+
+          default:
+              DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("Error: ddr3TipBc2GetMediumFreq: Freq %d is not supported\n", sarFreq));
+              return GT_FAIL;
+      }
     return GT_OK;
 }
 

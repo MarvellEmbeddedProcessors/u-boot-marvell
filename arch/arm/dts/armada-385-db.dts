@@ -5,7 +5,7 @@
 #define ATTR(remapped, target, attributes) (((remapped) << 12) | ((target) << 8) | (attributes))
 
 / {
-	model = "Marvell Armada 385 Development Board";
+	model = "DB-88F6820-BP";
 	compatible = "marvell,armada-38x-db", "marvell,armada38x";
 
 	#address-cells = <2>;

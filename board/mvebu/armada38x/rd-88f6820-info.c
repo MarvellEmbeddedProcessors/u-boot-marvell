@@ -32,7 +32,6 @@ int rd_a38x_configure_mpp(void)
 }
 
 struct mvebu_board_info a38x_rd_info = {
-	.name = "RD-88F6820-GP",
 	.id = ARMADA_38X_RD_ID,
 	.configure_mpp = &rd_a38x_configure_mpp,
 };

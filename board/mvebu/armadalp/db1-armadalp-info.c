@@ -21,7 +21,6 @@
 #include "board-info.h"
 
 struct mvebu_board_info db1_armadalp_info = {
-	.name = "DB1-MV-ARMADALP",
 	.id = ARMADA_LP_DB1_ID,
 };
 

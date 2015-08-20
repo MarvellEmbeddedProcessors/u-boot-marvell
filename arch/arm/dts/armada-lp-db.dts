@@ -4,7 +4,7 @@
 #include "armada-lp.dtsi"
 
 / {
-	model = "Marvell Armada_LP Development Board";
+	model = "DB0-MV-ARMADALP";
 	compatible = "marvell,armada-lp-db0", "marvell,armada-lp";
 
 	soc {

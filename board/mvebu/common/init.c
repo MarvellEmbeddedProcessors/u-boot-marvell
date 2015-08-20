@@ -114,6 +114,13 @@ struct mvebu_board_info *mvebu_fdt_get_board(void)
 	return brd;
 }
 
+int mvebu_fdt_board_info_update(struct mvebu_board_info *brd)
+{
+	const void *blob = gd->fdt_blob;
+	fdt_get_string(blob, 0, "model", (const char **)&brd->name);
+	return 0;
+}
+
 int mvebu_board_init(void)
 {
 	struct mvebu_board_info *brd;
@@ -124,6 +131,7 @@ int mvebu_board_init(void)
 	mvebu_pinctl_probe();
 #endif
 	brd = mvebu_fdt_get_board();
+	mvebu_fdt_board_info_update(brd);
 
 	mvebu_print_info(brd->name);
 

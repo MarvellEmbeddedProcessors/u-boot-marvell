@@ -35,7 +35,7 @@
  * id -		a unique board id value
  */
 struct mvebu_board_info {
-	char name[MAX_BOARD_NAME];
+	char *name;
 	u32  id;
 
 	/* Configure MPP for different board configurations */

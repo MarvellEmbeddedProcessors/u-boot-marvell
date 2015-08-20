@@ -4,7 +4,7 @@
 #include "armada-lp.dtsi"
 
 / {
-	model = "Marvell Armada_LP Palladium";
+	model = "PD-MV-ARMADALP";
 	compatible = "marvell,armada-lp-db0", "marvell,armada-lp";
 
 	soc {

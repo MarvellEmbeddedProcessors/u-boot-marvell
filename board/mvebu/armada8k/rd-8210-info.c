@@ -21,7 +21,6 @@
 #include "board-info.h"
 
 struct mvebu_board_info a8021_rd_info = {
-	.name = "RD-MV8021",
 	.id = ARMADA_8021_RD_ID,
 };
 

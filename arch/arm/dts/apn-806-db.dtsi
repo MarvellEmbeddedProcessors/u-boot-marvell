@@ -19,7 +19,7 @@
 #include "apn-806.dtsi"
 
 / {
-	model = "Marvell APN-806 Development Board";
+	model = "DB-88FA806-DDR4-MODULAR";
 	compatible = "marvell,apn-806-db", "marvell,apn-806";
 
 	#address-cells = <2>;

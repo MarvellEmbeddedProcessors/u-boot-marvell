@@ -21,7 +21,6 @@
 #include "board-info.h"
 
 struct mvebu_board_info armadalp_customer_info = {
-	.name = "CUSTOMER-BOARD0-MV-ARMADA-LP",
 	.id = ARMADA_LP_CUSTOMER0_ID,
 };
 

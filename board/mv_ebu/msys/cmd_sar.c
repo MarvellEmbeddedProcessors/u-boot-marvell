@@ -91,6 +91,8 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 						   0 };	/* Device ID */
 	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_BC2;
 	MV_CPUDDR_MODE cpuDdrClkTbl[] = MV_CPU_DDR_CLK_TBL_BC2;
+	MV_U32 coreClockTblSize = ARRAY_SIZE(coreClockTbl);
+	MV_U32 cpuDdrClkTblSize = ARRAY_SIZE(cpuDdrClkTbl);
 #elif defined(CONFIG_BOBK)
 	int defaultValue[] = { 0,	/* Core clock */
 						   3,	/* CPU/DDR clock */
@@ -100,8 +102,14 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 						   0,	/* PCIe mode */
 						   3,	/* Boot source */
 						   0 };	/* Device ID */
-	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_BOBK;
-	MV_CPUDDR_MODE cpuDdrClkTbl[] = MV_CPU_DDR_CLK_TBL_BOBK;
+	MV_U32 coreClockTblBobkCetus[] = MV_CORE_CLK_TBL_BOBK_CETUS;
+	MV_U32 coreClockTblBobkCaelum[] = MV_CORE_CLK_TBL_BOBK_CAELUM;
+	MV_CPUDDR_MODE cpuDdrClkTblBobkCetus[] = MV_CPU_DDR_CLK_TBL_BOBK_CETUS;
+	MV_CPUDDR_MODE cpuDdrClkTblBobkCaelum[] = MV_CPU_DDR_CLK_TBL_BOBK_CAELUM;
+	MV_U32 *coreClockTbl;
+	MV_CPUDDR_MODE *cpuDdrClkTbl;
+	MV_U32 coreClockTblSize;
+	MV_U32 cpuDdrClkTblSize;
 #elif defined(CONFIG_ALLEYCAT3)
 	int defaultValue[] = { 4,	/* Core clock */
 						   3,	/* CPU/DDR clock */
@@ -118,6 +126,8 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 
 	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_AC3;
 	MV_CPUDDR_MODE cpuDdrClkTbl[] = MV_CPU_DDR_CLK_TBL_AC3;
+	MV_U32 coreClockTblSize = ARRAY_SIZE(coreClockTbl);
+	MV_U32 cpuDdrClkTblSize = ARRAY_SIZE(cpuDdrClkTbl);
 #else
 #error "Unknown MSYS family!"
 #endif
@@ -212,7 +222,7 @@ static int do_sar_list(int mode)
 		printf("Determines the core clock frequency:\n");
 		printf("\t| ID  | Core clock (MHz) |\n");
 		printf("\t--------------------------\n");
-		for (i = 0; i < ARRAY_SIZE(coreClockTbl); i++)
+		for (i = 0; i < coreClockTblSize; i++)
 			printf("\t| %2d  |      %4d        |\n", i, coreClockTbl[i]);
 		printf("\t--------------------------\n");
 		break;
@@ -220,7 +230,7 @@ static int do_sar_list(int mode)
 		printf("Determines the CPU and DDR frequency:\n");
 		printf("\t| ID  | CPU Freq (MHz) | DDR Freq (MHz) |\n");
 		printf("\t-----------------------------------------\n");
-		for (i = 0; i < ARRAY_SIZE(cpuDdrClkTbl); i++) {
+		for (i = 0; i < cpuDdrClkTblSize; i++) {
 			if (cpuDdrClkTbl[i].internalFreq)
 				continue;
 			printf("\t| %2d  |      %4d      |      %4d      |\n",
@@ -545,7 +555,7 @@ static int do_sar_write(int mode, int value)
 	tmp = (MV_U8)value;
 	switch (mode) {
 	case CMD_CORE_CLK_FREQ:
-		if ((value < 0) || (value >= ARRAY_SIZE(coreClockTbl))) {
+		if ((value < 0) || (value >= coreClockTblSize)) {
 			mvOsPrintf("S@R incorrect value for Core Clock: %d\n", value);
 			rc = MV_ERROR;
 			break;
@@ -553,7 +563,7 @@ static int do_sar_write(int mode, int value)
 		rc = mvBoardCoreFreqSet(tmp);
 		break;
 	case CMD_CPU_DDR_REQ:
-		if (((value < 0) || (value >= ARRAY_SIZE(cpuDdrClkTbl))) ||
+		if (((value < 0) || (value >= cpuDdrClkTblSize)) ||
 			(cpuDdrClkTbl[value].internalFreq != MV_FALSE)) {
 			mvOsPrintf("S@R incorrect value for Freq: %d\n", value);
 			rc = MV_ERROR;
@@ -656,6 +666,34 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	const char *cmd;
 	int mode, value;
 
+/* For BobK boards(Cetus & Caelum), Some of the settings are different,
+we can't select the settings with "ifdef", so update it in runtime*/
+#if defined CONFIG_BOBK
+	static int setBoardSarEnv;
+
+	if (setBoardSarEnv == 0) {
+		switch (mvBoardIdGet()) {
+		case BOBK_CETUS_DB_ID:
+		case BOBK_CETUS_CUSTOMER_BOARD_ID0:
+			coreClockTbl = coreClockTblBobkCetus;
+			coreClockTblSize = ARRAY_SIZE(coreClockTblBobkCetus);
+			cpuDdrClkTbl = cpuDdrClkTblBobkCetus;
+			cpuDdrClkTblSize = ARRAY_SIZE(cpuDdrClkTblBobkCetus);
+			break;
+		case BOBK_CAELUM_DB_ID:
+		case BOBK_CAELUM_CUSTOMER_BOARD_ID1:
+			coreClockTbl = coreClockTblBobkCaelum;
+			coreClockTblSize = ARRAY_SIZE(coreClockTblBobkCaelum);
+			cpuDdrClkTbl = cpuDdrClkTblBobkCaelum;
+			cpuDdrClkTblSize = ARRAY_SIZE(cpuDdrClkTblBobkCaelum);
+			break;
+		default:
+			mvOsPrintf("ERROR: Unknown BoardID %d, Set Board SAR env failed\n", mvBoardIdGet());
+			return 1;
+		}
+		setBoardSarEnv = 1;
+	}
+#endif
 	/* need at least two arguments */
 	if (argc < 2)
 		goto usage;
@@ -663,9 +701,18 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	cmd = argv[1];
 	mode = sar_cmd_get(argv[2]);
 
-	if(mvBoardIdGet() != MV_DEFAULT_BOARD_ID && mode != CMD_BOARD_ID) {
-		mvOsPrintf("Error: Sample at reset supports modifying only 'boardid' field for current board\n\n");
-		goto usage;
+	if (mode != CMD_BOARD_ID) {
+		/* SatR support BC2-DB, AC3-DB, BOBK-CETUS-DB, BOBK-CAELUM-DB */
+		switch (mvBoardIdGet()) {
+		case DB_AC3_ID:
+		case DB_DX_BC2_ID:
+		case BOBK_CETUS_DB_ID:
+		case BOBK_CAELUM_DB_ID:
+			break;
+		default:
+			mvOsPrintf("Error: Sample at reset supports modifying only 'boardid' field for current board\n\n");
+			goto usage;
+		}
 	}
 
 	if (strcmp(cmd, "list") == 0)

@@ -184,17 +184,17 @@ MV_BOARD_INFO *customerBC2BoardInfoTbl[] = {
 };
 
 /*******************************************************************************
-	BobK board - Based on BOBK-DB-98DX4235
+	BobK Cetus customer board - Based on BOBK-CETUS-DB-98DX4235-12XG
 *******************************************************************************/
-#define BOBK_CUSTOMER_0_BOARD_NAND_READ_PARAMS	0x000C0282
-#define BOBK_CUSTOMER_0_BOARD_NAND_WRITE_PARAMS	0x00010305
+#define BOBK_CETUS_CUSTOMER_0_BOARD_NAND_READ_PARAMS	0x000C0282
+#define BOBK_CETUS_CUSTOMER_0_BOARD_NAND_WRITE_PARAMS	0x00010305
 /*NAND care support for small page chips*/
-#define BOBK_CUSTOMER_0_BOARD_NAND_CONTROL		0x01c00543
+#define BOBK_CETUS_CUSTOMER_0_BOARD_NAND_CONTROL		0x01c00543
 
-#define BOBK_CUSTOMER_0_BOARD_NOR_READ_PARAMS	0x403E07CF
-#define BOBK_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
+#define BOBK_CETUS_CUSTOMER_0_BOARD_NOR_READ_PARAMS	0x403E07CF
+#define BOBK_CETUS_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
 
-MV_BOARD_TWSI_INFO	bobk_customer_board_0_InfoBoardTwsiDev[] = {
+MV_BOARD_TWSI_INFO	bobk_cetus_customer_board_0_InfoBoardTwsiDev[] = {
 /* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
 	{BOARD_DEV_TWSI_PLD, 0x18, ADDR7_BIT},		/* Access to control PLD reg file */
 	{BOARD_DEV_TWSI_ZARLINK, 0x1B, ADDR7_BIT},		/* Access to Zarlink	*/
@@ -208,19 +208,19 @@ MV_BOARD_TWSI_INFO	bobk_customer_board_0_InfoBoardTwsiDev[] = {
 	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x75, ADDR7_BIT}          /* PCA9548 I2C mux 2	*/
 };
 
-MV_BOARD_MAC_INFO bobk_customer_board_0_InfoBoardMacInfo[] = {
+MV_BOARD_MAC_INFO bobk_cetus_customer_board_0_InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
 	{BOARD_MAC_SPEED_AUTO, -1, -1, MV_FALSE},
 	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0, MV_TRUE},
 };
 
-MV_BOARD_MODULE_TYPE_INFO bobk_customer_board_0_InfoBoardModTypeInfo[] = {
+MV_BOARD_MODULE_TYPE_INFO bobk_cetus_customer_board_0_InfoBoardModTypeInfo[] = {
 	{
 		.boardMppMod		= MV_BOARD_AUTO,
 	}
 };
 
-MV_DEV_CS_INFO bobk_customer_board_0_InfoBoardDeCsInfo[] = {
+MV_DEV_CS_INFO bobk_cetus_customer_board_0_InfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
 #if defined(MV_INCLUDE_SPI)
 		{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
@@ -233,31 +233,31 @@ MV_DEV_CS_INFO bobk_customer_board_0_InfoBoardDeCsInfo[] = {
 #endif
 };
 
-MV_BOARD_MPP_INFO bobk_customer_board_0_InfoBoardMppConfigValue[] = {
+MV_BOARD_MPP_INFO bobk_cetus_customer_board_0_InfoBoardMppConfigValue[] = {
 	{ {
-	BOBK_CUSTOMER_0_MPP0_7,
-	BOBK_CUSTOMER_0_MPP8_15,
-	BOBK_CUSTOMER_0_MPP16_23,
-	BOBK_CUSTOMER_0_MPP24_31,
-	BOBK_CUSTOMER_0_MPP32_39,
+	BOBK_CETUS_CUSTOMER_0_MPP0_7,
+	BOBK_CETUS_CUSTOMER_0_MPP8_15,
+	BOBK_CETUS_CUSTOMER_0_MPP16_23,
+	BOBK_CETUS_CUSTOMER_0_MPP24_31,
+	BOBK_CETUS_CUSTOMER_0_MPP32_39,
 	} },
 };
 
-MV_BOARD_INFO bobk_customer_board_0_Info = {
-	.boardName			= "BOBK-Customer-Board-0",
-	.numBoardMppTypeValue		= ARRSZ(bobk_customer_board_0_InfoBoardModTypeInfo),
-	.pBoardModTypeValue		= bobk_customer_board_0_InfoBoardModTypeInfo,
-	.numBoardMppConfigValue		= ARRSZ(bobk_customer_board_0_InfoBoardMppConfigValue),
-	.pBoardMppConfigValue		= bobk_customer_board_0_InfoBoardMppConfigValue,
+MV_BOARD_INFO bobk_cetus_customer_board_0_Info = {
+	.boardName			= "BOBK-Cetus-Customer-Board-0",
+	.numBoardMppTypeValue		= ARRSZ(bobk_cetus_customer_board_0_InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= bobk_cetus_customer_board_0_InfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(bobk_cetus_customer_board_0_InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= bobk_cetus_customer_board_0_InfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
-	.numBoardDeviceIf		= ARRSZ(bobk_customer_board_0_InfoBoardDeCsInfo),
-	.pDevCsInfo			= bobk_customer_board_0_InfoBoardDeCsInfo,
-	.numBoardTwsiDev		= ARRSZ(bobk_customer_board_0_InfoBoardTwsiDev),
-	.pBoardTwsiDev			= bobk_customer_board_0_InfoBoardTwsiDev,
-	.numBoardMacInfo		= ARRSZ(bobk_customer_board_0_InfoBoardMacInfo),
-	.pBoardMacInfo			= bobk_customer_board_0_InfoBoardMacInfo,
+	.numBoardDeviceIf		= ARRSZ(bobk_cetus_customer_board_0_InfoBoardDeCsInfo),
+	.pDevCsInfo			= bobk_cetus_customer_board_0_InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(bobk_cetus_customer_board_0_InfoBoardTwsiDev),
+	.pBoardTwsiDev			= bobk_cetus_customer_board_0_InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(bobk_cetus_customer_board_0_InfoBoardMacInfo),
+	.pBoardMacInfo			= bobk_cetus_customer_board_0_InfoBoardMacInfo,
 	.numBoardGppInfo		= 0,
 	.pBoardGppInfo			= NULL,
 	.activeLedsNumber		= 0,
@@ -265,14 +265,14 @@ MV_BOARD_INFO bobk_customer_board_0_Info = {
 	.ledsPolarity			= 0,
 
 	/* GPP values */
-	.gppOutEnValLow			= BOBK_CUSTOMER_0_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid			= BOBK_CUSTOMER_0_GPP_OUT_ENA_MID,
+	.gppOutEnValLow			= BOBK_CETUS_CUSTOMER_0_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= BOBK_CETUS_CUSTOMER_0_GPP_OUT_ENA_MID,
 	.gppOutEnValHigh		= 0,
-	.gppOutValLow			= BOBK_CUSTOMER_0_GPP_OUT_VAL_LOW,
-	.gppOutValMid			= BOBK_CUSTOMER_0_GPP_OUT_VAL_MID,
+	.gppOutValLow			= BOBK_CETUS_CUSTOMER_0_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= BOBK_CETUS_CUSTOMER_0_GPP_OUT_VAL_MID,
 	.gppOutValHigh			= 0,
-	.gppPolarityValLow		= BOBK_CUSTOMER_0_GPP_POL_LOW,
-	.gppPolarityValMid		= BOBK_CUSTOMER_0_GPP_POL_MID,
+	.gppPolarityValLow		= BOBK_CETUS_CUSTOMER_0_GPP_POL_LOW,
+	.gppPolarityValMid		= BOBK_CETUS_CUSTOMER_0_GPP_POL_MID,
 	.gppPolarityValHigh		= 0,
 
 	/* External Switch Configuration */
@@ -280,20 +280,129 @@ MV_BOARD_INFO bobk_customer_board_0_Info = {
 	.switchInfoNum = 0,
 
 	/* NAND init params */
-	.nandFlashReadParams		= BOBK_CUSTOMER_0_BOARD_NAND_READ_PARAMS,
-	.nandFlashWriteParams		= BOBK_CUSTOMER_0_BOARD_NAND_WRITE_PARAMS,
-	.nandFlashControl		= BOBK_CUSTOMER_0_BOARD_NAND_CONTROL,
+	.nandFlashReadParams		= BOBK_CETUS_CUSTOMER_0_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= BOBK_CETUS_CUSTOMER_0_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= BOBK_CETUS_CUSTOMER_0_BOARD_NAND_CONTROL,
 	/* NOR init params */
-	.norFlashReadParams		= BOBK_CUSTOMER_0_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= BOBK_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS,
+	.norFlashReadParams		= BOBK_CETUS_CUSTOMER_0_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= BOBK_CETUS_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS,
 	.isSmiExternalPp		= MV_TRUE,
 	.smiExternalPpIndex		= 0,
 	.isSdMmcConnected		= MV_TRUE
 };
 
+/*******************************************************************************
+	BobK Caelum customer board - Based on BOBK-CAELUM-DB-98DX4203-12XG
+*******************************************************************************/
+#define BOBK_CAELUM_CUSTOMER_1_BOARD_NAND_READ_PARAMS	0x000C0282
+#define BOBK_CAELUM_CUSTOMER_1_BOARD_NAND_WRITE_PARAMS	0x00010305
+/*NAND care support for small page chips*/
+#define BOBK_CAELUM_CUSTOMER_1_BOARD_NAND_CONTROL		0x01c00543
+
+#define BOBK_CAELUM_CUSTOMER_1_BOARD_NOR_READ_PARAMS	0x403E07CF
+#define BOBK_CAELUM_CUSTOMER_1_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
+
+MV_BOARD_TWSI_INFO	bobk_caelum_customer_board_1_InfoBoardTwsiDev[] = {
+/* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{BOARD_DEV_TWSI_PLD, 0x18, ADDR7_BIT},		/* Access to control PLD reg file */
+	{BOARD_DEV_TWSI_ZARLINK, 0x1B, ADDR7_BIT},		/* Access to Zarlink	*/
+	{BOARD_DEV_TWSI_SATR, 0x4C, ADDR7_BIT},         /* SatR bios 0		*/
+	{BOARD_DEV_TWSI_SATR, 0x4D, ADDR7_BIT},         /* SatR bios 1		*/
+	{BOARD_DEV_TWSI_SATR, 0x4E, ADDR7_BIT},          /* SatR bios 2		*/
+	{BOARD_DEV_TWSI_SATR, 0x4F, ADDR7_BIT},          /* SatR bios 3		*/
+	{BOARD_DEV_TWSI_INIT_EPROM, 0x50, ADDR7_BIT},          /* Serial Init EPROM	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x70, ADDR7_BIT},          /* PCA9548 I2C mux 0	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x71, ADDR7_BIT},          /* PCA9548 I2C mux 1	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x75, ADDR7_BIT}          /* PCA9548 I2C mux 2	*/
+};
+
+MV_BOARD_MAC_INFO bobk_caelum_customer_board_1_InfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_AUTO, -1, -1, MV_FALSE},
+	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0, MV_TRUE},
+};
+
+MV_BOARD_MODULE_TYPE_INFO bobk_caelum_customer_board_1_InfoBoardModTypeInfo[] = {
+	{
+		.boardMppMod		= MV_BOARD_AUTO,
+	}
+};
+
+MV_DEV_CS_INFO bobk_caelum_customer_board_1_InfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+#if defined(MV_INCLUDE_SPI)
+		{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NOR)
+		{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
+#endif
+#if defined(MV_INCLUDE_NAND)
+		{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE} /* NAND DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO bobk_caelum_customer_board_1_InfoBoardMppConfigValue[] = {
+	{ {
+	BOBK_CAELUM_CUSTOMER_1_MPP0_7,
+	BOBK_CAELUM_CUSTOMER_1_MPP8_15,
+	BOBK_CAELUM_CUSTOMER_1_MPP16_23,
+	BOBK_CAELUM_CUSTOMER_1_MPP24_31,
+	BOBK_CAELUM_CUSTOMER_1_MPP32_39,
+	} },
+};
+
+MV_BOARD_INFO bobk_caelum_customer_board_1_Info = {
+	.boardName			= "BOBK-Caelum-Customer-Board-1",
+	.numBoardMppTypeValue		= ARRSZ(bobk_caelum_customer_board_1_InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= bobk_caelum_customer_board_1_InfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(bobk_caelum_customer_board_1_InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= bobk_caelum_customer_board_1_InfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(bobk_caelum_customer_board_1_InfoBoardDeCsInfo),
+	.pDevCsInfo			= bobk_caelum_customer_board_1_InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(bobk_caelum_customer_board_1_InfoBoardTwsiDev),
+	.pBoardTwsiDev			= bobk_caelum_customer_board_1_InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(bobk_caelum_customer_board_1_InfoBoardMacInfo),
+	.pBoardMacInfo			= bobk_caelum_customer_board_1_InfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= BOBK_CAELUM_CUSTOMER_1_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= BOBK_CAELUM_CUSTOMER_1_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= BOBK_CAELUM_CUSTOMER_1_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= BOBK_CAELUM_CUSTOMER_1_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= BOBK_CAELUM_CUSTOMER_1_GPP_POL_LOW,
+	.gppPolarityValMid		= BOBK_CAELUM_CUSTOMER_1_GPP_POL_MID,
+	.gppPolarityValHigh		= 0,
+
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+
+	/* NAND init params */
+	.nandFlashReadParams		= BOBK_CAELUM_CUSTOMER_1_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= BOBK_CAELUM_CUSTOMER_1_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= BOBK_CAELUM_CUSTOMER_1_BOARD_NAND_CONTROL,
+	/* NOR init params */
+	.norFlashReadParams		= BOBK_CAELUM_CUSTOMER_1_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= BOBK_CAELUM_CUSTOMER_1_BOARD_NOR_WRITE_PARAMS,
+	.isSmiExternalPp		= MV_TRUE,
+	.smiExternalPpIndex		= 1,
+	.isSdMmcConnected		= MV_TRUE
+};
+
+
 MV_BOARD_INFO *customerBOBKBoardInfoTbl[] = {
-	&bobk_customer_board_0_Info,
-	&bobk_customer_board_0_Info,
+	&bobk_cetus_customer_board_0_Info,
+	&bobk_caelum_customer_board_1_Info,
 };
 
 /*******************************************************************************
@@ -704,9 +813,9 @@ MV_BOARD_INFO bc2_rd_mtlInfo = {
 };
 
 /*********************************************************************************/
-/*******************************/
-/* BOBK-DB-98DX4235-12XG BOARD */
-/*******************************/
+/*************************************/
+/* BOBK-CETUS-DB-98DX4235-12XG BOARD */
+/*************************************/
 #define DB_DX_BOBK_BOARD_NAND_READ_PARAMS	0x000C0282
 #define DB_DX_BOBK_BOARD_NAND_WRITE_PARAMS	0x00010305
 /*NAND care support for small page chips*/
@@ -716,7 +825,7 @@ MV_BOARD_INFO bc2_rd_mtlInfo = {
 #define DB_DX_BOBK_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
 
 /* TODO */
-MV_BOARD_TWSI_INFO	db_dx_bobkInfoBoardTwsiDev[] = {
+MV_BOARD_TWSI_INFO	db_dx_bobkCetusInfoBoardTwsiDev[] = {
 /* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
 	{BOARD_DEV_TWSI_PLD, 0x18, ADDR7_BIT},		/* Access to control PLD reg file */
 	{BOARD_DEV_TWSI_ZARLINK, 0x1B, ADDR7_BIT},		/* Access to Zarlink	*/
@@ -730,20 +839,20 @@ MV_BOARD_TWSI_INFO	db_dx_bobkInfoBoardTwsiDev[] = {
 	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x75, ADDR7_BIT}          /* PCA9548 I2C mux 2	*/
 };
 
-MV_BOARD_MAC_INFO db_dx_bobkInfoBoardMacInfo[] = {
+MV_BOARD_MAC_INFO db_dx_bobkCetusInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
 	{BOARD_MAC_SPEED_AUTO, -1, -1, MV_FALSE},
 	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0, MV_TRUE},
 };
 
-MV_BOARD_MODULE_TYPE_INFO db_dx_bobkInfoBoardModTypeInfo[] = {
+MV_BOARD_MODULE_TYPE_INFO db_dx_bobkCetusInfoBoardModTypeInfo[] = {
 	{
 		.boardMppMod		= MV_BOARD_AUTO,
 	}
 };
 
 /* TO DE */
-MV_DEV_CS_INFO db_dx_bobkInfoBoardDeCsInfo[] = {
+MV_DEV_CS_INFO db_dx_bobkCetusInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth }*/
 #if defined(MV_INCLUDE_SPI)
 	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
@@ -756,36 +865,36 @@ MV_DEV_CS_INFO db_dx_bobkInfoBoardDeCsInfo[] = {
 #endif
 };
 
-MV_BOARD_MPP_INFO db_dx_bobkInfoBoardMppConfigValue[] = {
+MV_BOARD_MPP_INFO db_dx_bobkCetusInfoBoardMppConfigValue[] = {
 	{ {
 #if defined(MV_INCLUDE_NOR)
-	DB_DX_BOBK_NOR_MPP0_7,
-	DB_DX_BOBK_NOR_MPP8_15,
+	DB_DX_BOBK_CETUS_NOR_MPP0_7,
+	DB_DX_BOBK_CETUS_NOR_MPP8_15,
 #else
-	DB_DX_BOBK_MPP0_7,
-	DB_DX_BOBK_MPP8_15,
+	DB_DX_BOBK_CETUS_MPP0_7,
+	DB_DX_BOBK_CETUS_MPP8_15,
 #endif
-	DB_DX_BOBK_MPP16_23,
-	DB_DX_BOBK_MPP24_31,
-	DB_DX_BOBK_MPP32_39,
+	DB_DX_BOBK_CETUS_MPP16_23,
+	DB_DX_BOBK_CETUS_MPP24_31,
+	DB_DX_BOBK_CETUS_MPP32_39,
 	} },
 };
 
-MV_BOARD_INFO db_dx_bobkInfo = {
+MV_BOARD_INFO db_dx_bobkCetusInfo = {
 	.boardName			= "DB-98DX4235-12XG",
-	.numBoardMppTypeValue		= ARRSZ(db_dx_bobkInfoBoardModTypeInfo),
-	.pBoardModTypeValue		= db_dx_bobkInfoBoardModTypeInfo,
-	.numBoardMppConfigValue		= ARRSZ(db_dx_bobkInfoBoardMppConfigValue),
-	.pBoardMppConfigValue		= db_dx_bobkInfoBoardMppConfigValue,
+	.numBoardMppTypeValue		= ARRSZ(db_dx_bobkCetusInfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db_dx_bobkCetusInfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(db_dx_bobkCetusInfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= db_dx_bobkCetusInfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
-	.numBoardDeviceIf		= ARRSZ(db_dx_bobkInfoBoardDeCsInfo),
-	.pDevCsInfo			= db_dx_bobkInfoBoardDeCsInfo,
-	.numBoardTwsiDev		= ARRSZ(db_dx_bobkInfoBoardTwsiDev),
-	.pBoardTwsiDev			= db_dx_bobkInfoBoardTwsiDev,
-	.numBoardMacInfo		= ARRSZ(db_dx_bobkInfoBoardMacInfo),
-	.pBoardMacInfo			= db_dx_bobkInfoBoardMacInfo,
+	.numBoardDeviceIf		= ARRSZ(db_dx_bobkCetusInfoBoardDeCsInfo),
+	.pDevCsInfo			= db_dx_bobkCetusInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(db_dx_bobkCetusInfoBoardTwsiDev),
+	.pBoardTwsiDev			= db_dx_bobkCetusInfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db_dx_bobkCetusInfoBoardMacInfo),
+	.pBoardMacInfo			= db_dx_bobkCetusInfoBoardMacInfo,
 	.numBoardGppInfo		= 0,
 	.pBoardGppInfo			= NULL,
 	.activeLedsNumber		= 0,
@@ -793,14 +902,14 @@ MV_BOARD_INFO db_dx_bobkInfo = {
 	.ledsPolarity			= 0,
 
 	/* GPP values */
-	.gppOutEnValLow			= DB_DX_BOBK_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid			= DB_DX_BOBK_GPP_OUT_ENA_MID,
+	.gppOutEnValLow			= DB_DX_BOBK_CETUS_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_DX_BOBK_CETUS_GPP_OUT_ENA_MID,
 	.gppOutEnValHigh		= 0,
-	.gppOutValLow			= DB_DX_BOBK_GPP_OUT_VAL_LOW,
-	.gppOutValMid			= DB_DX_BOBK_GPP_OUT_VAL_MID,
+	.gppOutValLow			= DB_DX_BOBK_CETUS_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_DX_BOBK_CETUS_GPP_OUT_VAL_MID,
 	.gppOutValHigh			= 0,
-	.gppPolarityValLow		= DB_DX_BOBK_GPP_POL_LOW,
-	.gppPolarityValMid		= DB_DX_BOBK_GPP_POL_MID,
+	.gppPolarityValLow		= DB_DX_BOBK_CETUS_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_DX_BOBK_CETUS_GPP_POL_MID,
 	.gppPolarityValHigh		= 0,
 
 	/* External Switch Configuration */
@@ -816,7 +925,116 @@ MV_BOARD_INFO db_dx_bobkInfo = {
 	.norFlashWriteParams		= DB_DX_BOBK_BOARD_NOR_WRITE_PARAMS,
 	.isSmiExternalPp		= MV_TRUE,
 	.smiExternalPpIndex		= 0,
-	.modelName			= "BobK Development Board",
+	.modelName			= "BobK Cetus Development Board",
+	.isSdMmcConnected		= MV_TRUE
+};
+
+/*********************************************************************************/
+/**************************************/
+/* BOBK-CAELUM-DB-98DX4203-12XG BOARD */
+/**************************************/
+
+MV_BOARD_TWSI_INFO	db_dx_bobkCaelumInfoBoardTwsiDev[] = {
+/* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{BOARD_DEV_TWSI_PLD, 0x18, ADDR7_BIT},		/* Access to control PLD reg file */
+	{BOARD_DEV_TWSI_ZARLINK, 0x1B, ADDR7_BIT},		/* Access to Zarlink	*/
+	{BOARD_DEV_TWSI_SATR, 0x4C, ADDR7_BIT},         /* SatR bios 0		*/
+	{BOARD_DEV_TWSI_SATR, 0x4D, ADDR7_BIT},         /* SatR bios 1		*/
+	{BOARD_DEV_TWSI_SATR, 0x4E, ADDR7_BIT},          /* SatR bios 2		*/
+	{BOARD_DEV_TWSI_SATR, 0x4F, ADDR7_BIT},          /* SatR bios 3		*/
+	{BOARD_DEV_TWSI_INIT_EPROM, 0x50, ADDR7_BIT},          /* Serial Init EPROM	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x70, ADDR7_BIT},          /* PCA9548 I2C mux 0	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x71, ADDR7_BIT},          /* PCA9548 I2C mux 1	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x75, ADDR7_BIT}          /* PCA9548 I2C mux 2	*/
+};
+
+MV_BOARD_MAC_INFO db_dx_bobkCaelumInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_AUTO, -1, -1, MV_FALSE},
+	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0, MV_TRUE},
+};
+
+MV_BOARD_MODULE_TYPE_INFO db_dx_bobkCaelumInfoBoardModTypeInfo[] = {
+	{
+		.boardMppMod		= MV_BOARD_AUTO,
+	}
+};
+
+/* TO DE */
+MV_DEV_CS_INFO db_dx_bobkCaelumInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NOR)
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
+#endif
+#if defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE} /* NAND DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO db_dx_bobkCaelumInfoBoardMppConfigValue[] = {
+	{ {
+#if defined(MV_INCLUDE_NOR)
+	DB_DX_BOBK_CAELUM_NOR_MPP0_7,
+	DB_DX_BOBK_CAELUM_NOR_MPP8_15,
+#else
+	DB_DX_BOBK_CAELUM_MPP0_7,
+	DB_DX_BOBK_CAELUM_MPP8_15,
+#endif
+	DB_DX_BOBK_CAELUM_MPP16_23,
+	DB_DX_BOBK_CAELUM_MPP24_31,
+	DB_DX_BOBK_CAELUM_MPP32_39,
+	} },
+};
+
+MV_BOARD_INFO db_dx_bobkCaelumInfo = {
+	.boardName			= "DB-98DX4203-12XG",
+	.numBoardMppTypeValue		= ARRSZ(db_dx_bobkCaelumInfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db_dx_bobkCaelumInfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(db_dx_bobkCaelumInfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= db_dx_bobkCaelumInfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(db_dx_bobkCaelumInfoBoardDeCsInfo),
+	.pDevCsInfo			= db_dx_bobkCaelumInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(db_dx_bobkCaelumInfoBoardTwsiDev),
+	.pBoardTwsiDev			= db_dx_bobkCaelumInfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db_dx_bobkCaelumInfoBoardMacInfo),
+	.pBoardMacInfo			= db_dx_bobkCaelumInfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= DB_DX_BOBK_CAELUM_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_DX_BOBK_CAELUM_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= DB_DX_BOBK_CAELUM_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_DX_BOBK_CAELUM_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= DB_DX_BOBK_CAELUM_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_DX_BOBK_CAELUM_GPP_POL_MID,
+	.gppPolarityValHigh		= 0,
+
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+
+	/* NAND init params */
+	.nandFlashReadParams		= DB_DX_BOBK_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_DX_BOBK_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_DX_BOBK_BOARD_NAND_CONTROL,
+	/* NOR init params */
+	.norFlashReadParams		= DB_DX_BOBK_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= DB_DX_BOBK_BOARD_NOR_WRITE_PARAMS,
+	.isSmiExternalPp		= MV_TRUE,
+	.smiExternalPpIndex		= 1,
+	.modelName			= "BobK Caelum Development Board",
 	.isSdMmcConnected		= MV_TRUE
 };
 
@@ -1288,7 +1506,8 @@ MV_BOARD_INFO *marvellBC2BoardInfoTbl[] = {
 };
 
 MV_BOARD_INFO *marvellBOBKBoardInfoTbl[] = {
-	&db_dx_bobkInfo
+	&db_dx_bobkCetusInfo,
+	&db_dx_bobkCaelumInfo
 };
 
 MV_BOARD_INFO *marvellAC3BoardInfoTbl[] = {

@@ -75,22 +75,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 /************************************* Customer Boards Topology *************************************/
 MV_HWS_TOPOLOGY_MAP TopologyMap[]=  {{
-    /* 1st Customer board */
+    /* 1st Customer board: Cetus_-Customer-Board-0*/
     0x10, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                             speed_bin      mem_dev_width mem_size frequency   casL casWL     temperature */
  {  {{{0x3,1,0,0}, {0x3,1,0,0}, {0x3,1,0,0}, {0x3,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
-    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
-    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
-    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,1,0}, {3,2,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_8, MEM_4G,	DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
-    INTERFACE_BUS_MASK_32BIT  /* Buses mask */
+    INTERFACE_BUS_MASK_32BIT/*INTERFACE_BUS_MASK_32BIT  Buses mask */
+    },
+    {
+    /* 2nd Customer board: Caelum-Customer-Board-1*/
+    0x10, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                             speed_bin      mem_dev_width mem_size frequency   casL casWL     temperature */
+ {  {{{0x3,1,0,0}, {0x3,1,0,0}, {0x3,1,0,0}, {0x3,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,1,0}, {3,2,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_8, MEM_4G,	DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
+    INTERFACE_BUS_MASK_32BIT/*INTERFACE_BUS_MASK_32BIT  Buses mask */
     },
  };
 
 #else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 /************************************* Marvell Boards Topology *************************************/
 MV_HWS_TOPOLOGY_MAP TopologyMap[] =  {{
-    /* 1st Marvell board */
+    /* 1st Marvell board: Cetus-DB */
     0x10, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                         speed_bin           memory_device_width  mem_size  frequency  casL casWL      temperature */
  {  {{{0x3,1,0,0}, {0x3,1,0,0}, {0x3,1,0,0}, {0x3,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
@@ -100,6 +111,17 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =  {{
     {{{0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,1,0}, {3,2,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_8, MEM_4G,	DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
     INTERFACE_BUS_MASK_32BIT/*INTERFACE_BUS_MASK_32BIT  Buses mask */
     },
+    {
+    /* 2nd Marvell board: Caelum-DB */
+    0x10, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                         speed_bin           memory_device_width  mem_size  frequency  casL casWL      temperature */
+ {  {{{0x3,1,0,0}, {0x3,1,0,0}, {0x3,1,0,0}, {0x3,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,1,0}, {3,2,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_8, MEM_4G,	DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
+    INTERFACE_BUS_MASK_32BIT/*INTERFACE_BUS_MASK_32BIT  Buses mask */
+    }
  };
 
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */

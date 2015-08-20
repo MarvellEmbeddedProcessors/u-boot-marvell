@@ -99,7 +99,8 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 	MV_U32			cpuClk[] = MV_CPU_CLK_TBL_AXP;
 	MV_CPUDDR_MODE	bc2ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BC2;
 	MV_CPUDDR_MODE	ac3ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_AC3;
-	MV_CPUDDR_MODE	bobkClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BOBK;
+	MV_CPUDDR_MODE	bobkCetusClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BOBK_CETUS;
+	MV_CPUDDR_MODE	bobkCaelumClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BOBK_CAELUM;
 	MV_U16			family = mvCtrlDevFamilyIdGet(0);
 	MV_U32			sar2;
 
@@ -116,9 +117,21 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 		freqMhz = bc2ClockRatioTbl[idx].cpuFreq * 1000000;
 	else if (family == MV_ALLEYCAT3_DEV_ID)
 		freqMhz = ac3ClockRatioTbl[idx].cpuFreq * 1000000;
-	else if (family == MV_BOBK_DEV_ID)
-		freqMhz = bobkClockRatioTbl[idx].cpuFreq * 1000000;
-	else
+	else if (family == MV_BOBK_DEV_ID) {
+		switch (mvBoardIdGet()) {
+		case BOBK_CETUS_DB_ID:
+		case BOBK_CETUS_CUSTOMER_BOARD_ID0:
+			freqMhz = bobkCetusClockRatioTbl[idx].cpuFreq * 1000000;
+			break;
+		case BOBK_CAELUM_DB_ID:
+		case BOBK_CAELUM_CUSTOMER_BOARD_ID1:
+			freqMhz = bobkCaelumClockRatioTbl[idx].cpuFreq * 1000000;
+			break;
+		default:
+			mvOsPrintf("ERROR: Unknown BoardID %d, CPU freq get failed\n", mvBoardIdGet());
+			return 0xFFFFFFFF;
+		}
+	} else
 		return 0xFFFFFFFF;
 
 	return freqMhz;
@@ -146,7 +159,8 @@ MV_U32 mvCpuDdrClkGet(MV_VOID)
 	MV_U32			freqMhz;
 	MV_CPUDDR_MODE	bc2ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BC2;
 	MV_CPUDDR_MODE	ac3ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_AC3;
-	MV_CPUDDR_MODE	bobkClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BOBK;
+	MV_CPUDDR_MODE	bobkCetusClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BOBK_CETUS;
+	MV_CPUDDR_MODE	bobkCaelumClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BOBK_CAELUM;
 	MV_U16			family = mvCtrlDevFamilyIdGet(0);
 	MV_U32			sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
 
@@ -155,9 +169,21 @@ MV_U32 mvCpuDdrClkGet(MV_VOID)
 		freqMhz = bc2ClockRatioTbl[idx].ddrFreq * 1000000;
 	else if (family == MV_ALLEYCAT3_DEV_ID)
 		freqMhz = ac3ClockRatioTbl[idx].ddrFreq * 1000000;
-	else if (family == MV_BOBK_DEV_ID)
-		freqMhz = bobkClockRatioTbl[idx].ddrFreq * 1000000;
-	else
+	else if (family == MV_BOBK_DEV_ID) {
+		switch (mvBoardIdGet()) {
+		case BOBK_CETUS_DB_ID:
+		case BOBK_CETUS_CUSTOMER_BOARD_ID0:
+			freqMhz = bobkCetusClockRatioTbl[idx].ddrFreq * 1000000;
+			break;
+		case BOBK_CAELUM_DB_ID:
+		case BOBK_CAELUM_CUSTOMER_BOARD_ID1:
+			freqMhz = bobkCaelumClockRatioTbl[idx].ddrFreq * 1000000;
+			break;
+		default:
+			mvOsPrintf("ERROR: Unknown BoardID %d, DDR freq get failed\n", mvBoardIdGet());
+			return 0xFFFFFFFF;
+		}
+	} else
 		return 0xFFFFFFFF;
 
 	return freqMhz;
@@ -185,7 +211,8 @@ MV_U32 mvCpuPllClkGet(MV_VOID)
 	MV_U32		freqMhz;
 	MV_CPUDDR_MODE	bc2ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BC2;
 	MV_CPUDDR_MODE	ac3ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_AC3;
-	MV_CPUDDR_MODE	bobkClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BOBK;
+	MV_CPUDDR_MODE	bobkCetusClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BOBK_CETUS;
+	MV_CPUDDR_MODE	bobkCaelumClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BOBK_CAELUM;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 	MV_U32		sar2;
 
@@ -195,19 +222,26 @@ MV_U32 mvCpuPllClkGet(MV_VOID)
 	sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
 
 	idx = MSAR_CPU_DDR_CLK(0, sar2);
-	switch (family) {
-	case MV_BOBCAT2_DEV_ID:
+	if (family == MV_BOBCAT2_DEV_ID)
 		freqMhz = bc2ClockRatioTbl[idx].pllClk * 1000000;
-		break;
-	case MV_ALLEYCAT3_DEV_ID:
+	else if (family == MV_ALLEYCAT3_DEV_ID)
 		freqMhz = ac3ClockRatioTbl[idx].pllClk * 1000000;
-		break;
-	case MV_BOBK_DEV_ID:
-		freqMhz = bobkClockRatioTbl[idx].pllClk * 1000000;
-		break;
-	default:
+	else if (family == MV_BOBK_DEV_ID) {
+		switch (mvBoardIdGet()) {
+		case BOBK_CETUS_DB_ID:
+		case BOBK_CETUS_CUSTOMER_BOARD_ID0:
+			freqMhz = bobkCetusClockRatioTbl[idx].pllClk * 1000000;
+			break;
+		case BOBK_CAELUM_DB_ID:
+		case BOBK_CAELUM_CUSTOMER_BOARD_ID1:
+			freqMhz = bobkCaelumClockRatioTbl[idx].pllClk * 1000000;
+			break;
+		default:
+			mvOsPrintf("ERROR: Unknown BoardID %d, PLL freq get failed\n", mvBoardIdGet());
+			return 0xFFFFFFFF;
+		}
+	} else
 		return 0xFFFFFFFF;
-	}
 
 	return freqMhz;
 }

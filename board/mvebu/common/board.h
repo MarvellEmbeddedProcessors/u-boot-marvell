@@ -24,21 +24,8 @@
 #include <asm/arch/soc-info.h>
 #include <linux/compiler.h>
 #include "sar.h"
-#include "config.h"
 
 #define MAX_BOARD_NAME		32
-
-/*
- * mvebu_board_config  - Describes board configuration features
- *
- * sar_cnt - number of suported SAR options
- * supported_sar - array of supported SAR variables
- * sar_override - table that overrides the default sar table
- */
-struct mvebu_board_config {
-	int cfg_cnt;
-	enum cfg_variables active_cfg[MAX_SAR];
-};
 
 /*
  * mvebu_board_info - Describes board specific features
@@ -59,9 +46,6 @@ struct mvebu_board_info {
 	char name[MAX_BOARD_NAME];
 	u32  id;
 
-	/* Only for development boards */
-	bool configurable;
-	struct mvebu_board_config *config_data;
 	/* Configure MPP for different board configurations */
 	int (*configure_mpp)(void);
 };
@@ -81,9 +65,6 @@ struct mvebu_board_family {
 	int  board_cnt;
 	struct mvebu_board_info *curr_board;
 	struct mvebu_board_info **boards_info;
-
-	/* Only for development boards */
-	struct cfg_data *cfg;
 };
 
 /* APIs required from all board families */

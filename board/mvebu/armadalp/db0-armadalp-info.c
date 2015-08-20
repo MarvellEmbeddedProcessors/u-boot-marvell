@@ -23,6 +23,5 @@
 struct mvebu_board_info db0_armadalp_info = {
 	.name = "DB0-MV-ARMADALP",
 	.id = ARMADA_LP_DB0_ID,
-	.configurable = 1,
 };
 

@@ -17,13 +17,12 @@
 #
 
 obj-y	+= board-common.o
-obj-y	+= entry.o
 obj-y	+= init.o
 obj-$(CONFIG_MVEBU_NAND) += nand_init.o
 obj-$(CONFIG_CMD_NET)	+= eth_init.o
 
 ifdef CONFIG_DEVEL_BOARD
 obj-y	+= sar.o
-obj-y	+= config.o
+obj-n	+= config.o
 obj-y	+= devel-board.o
 endif

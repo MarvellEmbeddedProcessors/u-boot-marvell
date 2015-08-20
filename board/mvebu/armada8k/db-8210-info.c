@@ -23,6 +23,5 @@
 struct mvebu_board_info a8021_db_info = {
 	.name = "DB-MV8021",
 	.id = ARMADA_8021_DB_ID,
-	.configurable = 1,
 };
 

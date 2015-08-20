@@ -28,14 +28,7 @@
 int mvebu_devel_board_init(struct mvebu_board_family *brd_fam)
 {
 	struct mvebu_board_info *brd = brd_fam->curr_board;
-	int cfg_id;
 
-	/* Update SAR and CFG for board */
-	if (brd->configurable) {
-		/* Deactivate all CFG entries */
-		for (cfg_id = 0; cfg_id < MAX_CFG; cfg_id++)
-			brd_fam->cfg->cfg_lookup[cfg_id].active = 0;
-	}
 	sar_init();
 
 	/* Update MPP configurations */
@@ -43,27 +36,5 @@ int mvebu_devel_board_init(struct mvebu_board_family *brd_fam)
 		(*brd->configure_mpp)();
 
 	return 0;
-}
-
-struct cfg_data *board_get_cfg(void)
-{
-	struct mvebu_board_family *brd_fam = get_board_family();
-
-	if (brd_fam->curr_board->configurable &&
-	    brd_fam->curr_board->config_data->cfg_cnt)
-		return brd_fam->cfg;
-	else
-		return NULL;
-}
-
-struct cfg_var *board_get_cfg_table(void)
-{
-	struct mvebu_board_family *brd_fam = get_board_family();
-
-	if (brd_fam->curr_board->configurable &&
-	    brd_fam->curr_board->config_data->cfg_cnt)
-		return brd_fam->cfg->cfg_lookup;
-	else
-		return NULL;
 }
 

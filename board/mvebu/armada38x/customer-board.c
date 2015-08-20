@@ -23,6 +23,5 @@
 struct mvebu_board_info a38x_customer_info = {
 	.name = "CUSTOMER-BOARD",
 	.id = ARMADA_38X_CUSTOMER_ID,
-	.configurable = 0,
 };
 

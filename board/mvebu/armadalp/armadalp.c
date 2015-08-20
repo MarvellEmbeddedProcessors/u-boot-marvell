@@ -30,14 +30,24 @@
 struct mvebu_board_info *mvebu_board_info_get(enum fdt_compat_id compat_id)
 {
 	switch (compat_id) {
+#ifdef CONFIG_ARMADA_LP_DB0
 	case COMPAT_MVEBU_ARMADA_LP_DB0:
 		return &db0_armadalp_info;
+#endif
+#ifdef CONFIG_ARMADA_LP_DB1
 	case COMPAT_MVEBU_ARMADA_LP_DB1:
 		return &db1_armadalp_info;
+#endif
+#ifdef CONFIG_ARMADA_LP_CUSTOMER
 	case COMPAT_MVEBU_ARMADA_LP_CUSTOMER:
 		return &armadalp_customer_info;
+#endif
 	default:
 		error("Missing board information for compatible string = %d\n", compat_id);
+#ifdef CONFIG_ARMADA_LP_DB0
 		return &db0_armadalp_info;
+#else
+		return NULL;
+#endif
 	}
 }

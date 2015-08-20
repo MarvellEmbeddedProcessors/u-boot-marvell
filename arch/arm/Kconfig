@@ -852,7 +852,7 @@ source "arch/arm/cpu/armv7/zynq/Kconfig"
 source "arch/arm/cpu/armv7/Kconfig"
 
 source "arch/arm/cpu/mvebu-common/Kconfig"
-source "board/mvebu/common/Kconfig"
+source "board/mvebu/Kconfig"
 
 source "board/aristainetos/Kconfig"
 source "board/BuR/kwb/Kconfig"

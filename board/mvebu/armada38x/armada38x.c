@@ -28,14 +28,24 @@
 struct mvebu_board_info *mvebu_board_info_get(enum fdt_compat_id compat_id)
 {
 	switch (compat_id) {
+#ifdef CONFIG_ARMADA_38X_DB
 	case COMPAT_MVEBU_ARMADA_38X_DB:
 		return &a38x_db_info;
+#endif
+#ifdef CONFIG_ARMADA_38X_RD
 	case COMPAT_MVEBU_ARMADA_38X_RD:
 		return &a38x_rd_info;
+#endif
+#ifdef CONFIG_ARMADA_38X_CUSTOMER
 	case COMPAT_MVEBU_ARMADA_38X_CUSTOMER:
 		return &a38x_customer_info;
+#endif
 	default:
 		error("Missing board information for compatible string = %d\n", compat_id);
+#ifdef CONFIG_ARMADA_38X_DB
 		return &a38x_db_info;
+#else
+		return NULL;
+#endif
 	}
 }

@@ -17,6 +17,6 @@
 #
 
 obj-y	+= armada38x.o
-obj-y	+= db-88f6820-info.o
-obj-y	+= rd-88f6820-info.o
-obj-y	+= customer-board.o
+obj-$(CONFIG_ARMADA_38X_DB)	+= db-88f6820-info.o
+obj-$(CONFIG_ARMADA_38X_RD)	+= rd-88f6820-info.o
+obj-$(CONFIG_ARMADA_38X_CUSTOMER) += customer-board.o

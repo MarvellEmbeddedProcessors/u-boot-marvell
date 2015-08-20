@@ -1,0 +1,24 @@
+menu "Armada 8k boards"
+	depends on TARGET_ARMADA_8K
+
+config APN_806_DB
+	bool "Support Marvell Armada-8K DB board"
+	depends on DEVEL_BOARD
+	default y
+	help
+	  Choose this option to add
+	  support for Marvell Armada-8K
+	  DB board. Say N unless you really
+	  work on this board
+
+config APN_806_RD
+	bool "Support Marvell Armada-8K RD board"
+	depends on DEVEL_BOARD
+	default y
+	help
+	  Choose this option to add
+	  support for Marvell Armada-8K
+	  RD board. Say N unless you really
+	  work on this board
+
+endmenu

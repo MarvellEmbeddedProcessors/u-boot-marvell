@@ -1,0 +1,34 @@
+menu "Armada 38x boards"
+	depends on TARGET_ARMADA_38X
+
+config ARMADA_38X_DB
+	bool "Support Marvell Armada-38x DB board"
+	depends on DEVEL_BOARD
+	default y
+	help
+	  Choose this option to add
+	  support for Marvell Armada-38x
+	  DB board. Say N unless you really
+	  work on this board
+
+config ARMADA_38X_RD
+	bool "Support Marvell Armada-38x RD board"
+	depends on DEVEL_BOARD
+	default y
+	help
+	  Choose this option to add
+	  support for Marvell Armada-38x
+	  RD board. Say N unless you really
+	  work on this board
+
+config ARMADA_38X_CUSTOMER
+	bool "Support Marvell Armada-38x Customer board"
+	depends on CUSTOMER_BOARD
+	default y
+	help
+	  Choose this option to add
+	  support for Marvell Armada-38x
+	  Customer board. Say N unless you really
+	  work on this board
+
+endmenu

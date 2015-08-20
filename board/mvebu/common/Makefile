@@ -23,6 +23,5 @@ obj-$(CONFIG_CMD_NET)	+= eth_init.o
 
 ifdef CONFIG_DEVEL_BOARD
 obj-y	+= sar.o
-obj-n	+= config.o
 obj-y	+= devel-board.o
 endif

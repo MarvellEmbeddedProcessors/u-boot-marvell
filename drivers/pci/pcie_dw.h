@@ -37,6 +37,7 @@ int dw_pcie_link_up(uintptr_t regs_base);
 int dw_pcie_init(int host_id, uintptr_t regs_base, struct pcie_win *mem_win,
 		struct pcie_win *cfg_win, int first_busno);
 int dw_pcie_set_endpoint(u32 hid, u32 regs_base);
+void dw_pcie_configure(uintptr_t regs_base);
 
 /* Must be implemented by SoC wrapper layer. */
 int soc_pcie_link_up(uintptr_t regs_base);

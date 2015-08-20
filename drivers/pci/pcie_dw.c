@@ -58,6 +58,14 @@ DECLARE_GLOBAL_DATA_PTR;
 #define PCIE_ATU_FUNC(x)		(((x) & 0x7) << 16)
 #define PCIE_ATU_UPPER_TARGET		0x91C
 
+#define PCIE_LINK_CTL_2			0xA0
+#define TARGET_LINK_SPEED_MASK		0xF
+#define LINK_SPEED_GEN_1		0x1
+
+#define PCIE_GEN3_RELATED		0x890
+#define GEN3_EQU_DISABLE		(1 << 16)
+#define GEN3_ZRXDC_NON_COMP		(1 << 0)
+
 /*
  * iATU region setup
  */
@@ -134,7 +142,7 @@ static int dw_pcie_read_config(struct pci_controller *hose, pci_dev_t bdf,
 	debug("PCIE CFG read:  (b,d,f)=(%2ld,%2ld,%2ld) ", PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
 
 	if (!dw_pcie_addr_valid(bdf, hose->first_busno)) {
-		debug("address out of range\n");
+		debug("- out of range\n");
 		*val = 0xffffffff;
 		return 1;
 	}
@@ -159,7 +167,7 @@ static int dw_pcie_write_config(struct pci_controller *hose, pci_dev_t bdf,
 	debug("(addr,val)=(0x%04x, 0x%08x)\n", where, val);
 
 	if (!dw_pcie_addr_valid(bdf, hose->first_busno)) {
-		debug("address out of range\n");
+		debug("- out of range\n");
 		return 1;
 	}
 
@@ -168,6 +176,24 @@ static int dw_pcie_write_config(struct pci_controller *hose, pci_dev_t bdf,
 	writel(val, va_address);
 
 	return 0;
+}
+
+void dw_pcie_configure(uintptr_t regs_base)
+{
+#ifdef CONFIG_PALLADIUM
+	u32 reg;
+
+	/*  Set link to GEN 1 */;
+	reg  = readl(regs_base + PCIE_LINK_CTL_2);
+	reg &= ~TARGET_LINK_SPEED_MASK;
+	reg |= LINK_SPEED_GEN_1;
+	writel(reg, regs_base + PCIE_LINK_CTL_2);
+
+	reg  = readl(regs_base + PCIE_GEN3_RELATED);
+	reg |= GEN3_EQU_DISABLE;
+	reg |= GEN3_ZRXDC_NON_COMP;
+	writel(reg, regs_base + PCIE_GEN3_RELATED);
+#endif
 }
 
 /*

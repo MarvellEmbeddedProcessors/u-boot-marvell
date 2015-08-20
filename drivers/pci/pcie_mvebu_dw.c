@@ -32,28 +32,69 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#define PCIE_LINK_UP_TIMEOUT_US		(1000000)
+#define PCIE_LINK_UP_TIMEOUT_US		(1000)
+
+#define PCIE_GLOBAL_CONTROL		0x8000
+#define PCIE_APP_LTSSM_EN		(1 << 2)
+#define PCIE_DEVICE_TYPE_OFFSET		(4)
+#define PCIE_DEVICE_TYPE_MASK		(0xF)
+#define PCIE_DEVICE_TYPE_EP		(0x0) /* Endpoint */
+#define PCIE_DEVICE_TYPE_LEP		(0x1) /* Legacy endpoint */
+#define PCIE_DEVICE_TYPE_RC		(0x2) /* Root complex */
 
 #define PCIE_GLOBAL_STATUS		0x8008
 #define PCIE_GLB_STS_RDLH_LINK_UP	(1 << 1)
 #define PCIE_GLB_STS_PHY_LINK_UP	(1 << 9)
 
+#define PCIE_ARCACHE_TRC		0x8050
+#define PCIE_AWCACHE_TRC		0x8054
+#define ARCACHE_SHAREABLE_CACHEABLE	0x3511
+#define AWCACHE_SHAREABLE_CACHEABLE	0x5311
+
+
 static int mvebu_pcie_link_up(uintptr_t regs_base)
 {
-	u32 reg, mask;
+	u32 reg;
 	int timeout = PCIE_LINK_UP_TIMEOUT_US;
+	u32 mask = PCIE_GLB_STS_RDLH_LINK_UP | PCIE_GLB_STS_PHY_LINK_UP;
 
 	while (timeout > 0) {
-		/* Check for link. */
 		reg = readl(regs_base + PCIE_GLOBAL_STATUS);
-		mask = PCIE_GLB_STS_RDLH_LINK_UP | PCIE_GLB_STS_PHY_LINK_UP;
 		if ((reg & mask) == mask)
 			return 1;
-		udelay(10);
+
+		udelay(1);
 		timeout--;
 	}
 
 	return 0;
+}
+
+int dw_pcie_link_up(uintptr_t regs_base)
+{
+	u32 reg;
+
+	/* Disable LTSSM state machine to enable configuration
+	 * ans set the device to root complex mode */
+	reg = readl(regs_base + PCIE_GLOBAL_CONTROL);
+	reg &= ~(PCIE_APP_LTSSM_EN);
+	reg &= ~(PCIE_DEVICE_TYPE_MASK << PCIE_DEVICE_TYPE_OFFSET);
+	reg |= PCIE_DEVICE_TYPE_RC << PCIE_DEVICE_TYPE_OFFSET;
+	writel(reg, regs_base + PCIE_GLOBAL_CONTROL);
+
+	/* Set the PCIe master AXI attributes */
+	writel(ARCACHE_SHAREABLE_CACHEABLE, regs_base + PCIE_ARCACHE_TRC);
+	writel(AWCACHE_SHAREABLE_CACHEABLE, regs_base + PCIE_AWCACHE_TRC);
+
+	/* DW pre link configurations */
+	dw_pcie_configure(regs_base);
+
+	/* Configuration done. Start LTSSM */
+	reg = readl(regs_base + PCIE_GLOBAL_CONTROL);
+	reg |= PCIE_APP_LTSSM_EN;
+	writel(reg, regs_base + PCIE_GLOBAL_CONTROL);
+
+	return mvebu_pcie_link_up(regs_base);
 }
 
 void pci_init_board(void)
@@ -64,7 +105,7 @@ void pci_init_board(void)
 	const void *blob = gd->fdt_blob;
 	struct pcie_win mem_win, cfg_win;
 	uintptr_t regs_base;
-	int err, link;
+	int err;
 
 	count = fdtdec_find_aliases_for_id(blob, "pcie-controller",
 			COMPAT_MVEBU_DW_PCIE, &bus_node, 1);
@@ -90,8 +131,11 @@ void pci_init_board(void)
 		}
 
 		/* Don't register host if link is down */
-		if (!dw_pcie_link_up(regs_base))
+		if (!dw_pcie_link_up(regs_base)) {
+			printf("PCIE-%d: Link down\n", host_id);
 			continue;
+		}
+		printf("PCIE-%d: Link up (Bus %d)\n", host_id, first_busno);
 
 		err = fdtdec_get_int_array(blob, port_node, "mem", (u32 *)&mem_win, 2);
 		if (err) {
@@ -108,13 +152,9 @@ void pci_init_board(void)
 		/* If all is well register the host */
 		first_busno = dw_pcie_init(host_id, regs_base, &mem_win, &cfg_win, first_busno);
 		if (first_busno < 0)
-			/* Print error message, and try to initialize other
-			** hosts. */
+			/* Print error message, and try to initialize other hosts */
 			printf("Failed to initialize PCIe host %d.\n", host_id);
 
-		/* Check the link status - for info only */
-		link = mvebu_pcie_link_up(regs_base);
-		printf("PCIE-%d: Link %s (Bus %d)\n", host_id, (link ? "Up" : "Down"), first_busno);
 	}
 }
 

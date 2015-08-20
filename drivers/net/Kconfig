@@ -1,0 +1,11 @@
+menu "Network drivers"
+
+config ENC28J60
+	bool "ENC28J60 driver"
+	default n
+	help
+	  Choose this option to add support
+	  for eth-spi (enc28j60) which
+	  enable receiving ethernet packets
+	  using spi interface.
+endmenu

@@ -1,3 +1,5 @@
+menu "Misc drivers"
+
 config MVEBU_CCU
 	bool "CCU address decoding driver"
 	default n
@@ -46,3 +48,5 @@ config MVEBU_FLC
 	  for Final Level Cache for the Marvell McKinley
 	  Memory Controller driver.
 	  This driver enable FLC and open the FLC windows.
+
+endmenu

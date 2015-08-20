@@ -29,6 +29,7 @@
 		device_type = "memory";
 		reg = <0x00000000 0x10000000 0 0>; /* 256 MB */
 	};
+
 	/* This should go only into devel boards */
 	sar {
 		compatible = "marvell,sample-at-reset";

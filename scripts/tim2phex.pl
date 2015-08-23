@@ -94,7 +94,7 @@ sub tim2hex
 		while (read($src, $byte, 1)) {
 			if ($byte_idx == 0) {
 				# Print image address @ row start position
-				print $dst sprintf("%08x/", $addr);
+				print $dst sprintf("\n%08x/", $addr);
 			} else {
 				print $dst ";";
 			}
@@ -104,7 +104,7 @@ sub tim2hex
 
 			# end of row
 			if ($byte_idx == 16) {
-				print $dst "\n";
+				#print $dst "\n";
 				$byte_idx = 0;
 				$addr += 16;
 			}

@@ -35,6 +35,14 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define MAX_PCIE_PORTS	10
 
+/* PCI Config space registers */
+#define PCIE_CONFIG_BAR0		0x10
+
+/* Resizable bar capability registers */
+#define RESIZABLE_BAR_CAP		0x250
+#define RESIZABLE_BAR_CTL0		0x254
+#define RESIZABLE_BAR_CTL1		0x258
+
 /* iATU registers */
 #define PCIE_ATU_VIEWPORT		0x900
 #define PCIE_ATU_REGION_INBOUND		(0x1 << 31)
@@ -196,6 +204,31 @@ void dw_pcie_configure(uintptr_t regs_base)
 #endif
 }
 
+void dw_pcie_set_host_bars(uintptr_t regs_base)
+{
+	u32 size = gd->ram_size;
+	u64 max_size;
+	u32 reg;
+	u32 bar0;
+
+	/* verify the maximal BAR size */
+	reg = readl(regs_base + RESIZABLE_BAR_CAP);
+	max_size = 1 << (5 + (reg + (1 << 4)));
+
+	if (size > max_size) {
+		size = max_size;
+		printf("Warning: PCIe BARs can't map all DRAM space\n");
+	}
+
+	/* Set the BAR base and size towards DDR */
+	bar0  = CONFIG_SYS_SDRAM_BASE & (~0xF);
+	bar0 |= PCI_BASE_ADDRESS_MEM_TYPE_32;
+	writel(CONFIG_SYS_SDRAM_BASE, regs_base + PCIE_CONFIG_BAR0);
+
+	reg = ((size >> 20) - 1) << 12;
+	writel(size, regs_base + RESIZABLE_BAR_CTL0);
+}
+
 /*
  * We dont use a host bridge so don't let the
  * stack skip CFG cycle for dev = 0 func = 0
@@ -244,6 +277,8 @@ int dw_pcie_init(int host_id, uintptr_t regs_base, struct pcie_win *mem_win,
 	reg &= ~(0xFFFF << 16);
 	reg |= (PCI_CLASS_BRIDGE_PCI << 16);
 	writel(reg, regs_base + PCI_CLASS_REVISION);
+
+	dw_pcie_set_host_bars(regs_base);
 
 	/* Register the host */
 	pci_register_hose(hose);

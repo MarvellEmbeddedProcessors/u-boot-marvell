@@ -139,9 +139,9 @@ MV_U32 mvCtrlGetCpuNum(MV_VOID)
 	cpu1Enabled = mvCtrlSatRRead(MV_SATR_CPU1_ENABLE);
 	if (cpu1Enabled == MV_ERROR) {
 		DB(mvOsPrintf("%s: Error: MV_SATR_CPU1_ENABLE is not active for board (using default)\n", __func__));
-		return 0;
+		return 1;
 	} else
-		return cpu1Enabled;
+		return cpu1Enabled + 1;
 }
 
 /*******************************************************************************

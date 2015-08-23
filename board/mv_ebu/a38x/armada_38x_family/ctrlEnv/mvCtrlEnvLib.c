@@ -290,7 +290,7 @@ MV_BOOL mvCtrlPortIsSerdesRxaui(MV_U32 ethPort)
 *******************************************************************************/
 MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
-	return MV_REG_READ(SOC_COHERENCY_FABRIC_CFG_REG) & FABRIC_CPU_NUMBER_CFG_MASK;
+	return (MV_REG_READ(SOC_COHERENCY_FABRIC_CFG_REG) & FABRIC_CPU_NUMBER_CFG_MASK) + 1;
 }
 
 #ifdef MV_INCLUDE_PEX

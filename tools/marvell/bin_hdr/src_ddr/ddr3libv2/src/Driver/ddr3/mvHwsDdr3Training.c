@@ -577,9 +577,8 @@ GT_STATUS    mvHwsDdr3TipInitController
             /* SRMode */
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, SDRAM_CONFIGURATION_REG, dataValue, 0x100FFFF));
 
-			/* Intrleave first command pre-charge enable (TBD) */
+            /* Interleave first command pre-charge enable (TBD) */
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, SDRAM_OPEN_PAGE_CONTROL_REG, (1 << 10), (1 << 10)));
-            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, SDRAM_OPEN_PAGE_CONTROL_REG, 0x0, 0x3C0));
 
             /* PHY configuration*/
             /* Postamble Length = 1.5cc, Addresscntl to clk skew \BD, Preamble length normal, parralal ADLL enable*/

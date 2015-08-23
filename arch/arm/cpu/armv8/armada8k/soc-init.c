@@ -68,7 +68,7 @@ static void soc_pcie_init(void)
 	reg |= (1 << 14);
 
 	/* Enable PCIe unit */
-	reg = 1;
+	reg |= 1;
 
 	writel(reg, MVEBU_PCIE_MAC_CTL);
 }

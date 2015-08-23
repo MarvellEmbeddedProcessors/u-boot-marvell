@@ -237,7 +237,7 @@ enum nfc_driver_type {
 *******************************************************************************/
 void ft_board_setup(void *blob, bd_t *bd)
 {
-	int err;			/* error number */
+	int err, skip = 1;		/* error number */
 	char *env;			/* env value */
 	update_fnc_t **update_fnc_ptr;
 
@@ -247,6 +247,16 @@ void ft_board_setup(void *blob, bd_t *bd)
 		mv_fdt_debug = 1;
 	else
 		mv_fdt_debug = 0;
+
+	env = getenv("fdt_skip_update");
+	if (env && ((strncmp(env, "yes", 3) == 0))) {
+		skip = 1;
+		printf("\n   Skipping Device Tree update ('fdt_skip_update' = yes)\n");
+	}
+	else {
+		skip = 0;
+		printf("\n   Starting Device Tree update ('fdt_skip_update' = no)\n");
+	}
 
 	/* Update dt information for all SoCs */
 	/* Update dt bootargs from commandline */
@@ -279,16 +289,18 @@ void ft_board_setup(void *blob, bd_t *bd)
 	/* Update memory node */
 	fixup_memory_node(blob);
 	mv_fdt_dprintf("Memory node updated\n");
-	/* Make updates of functions in update_sequence */
-	for (update_fnc_ptr = update_sequence; *update_fnc_ptr; ++update_fnc_ptr) {
-		err = (*update_fnc_ptr)(blob);
-		if (err < 0)
-			goto bs_fail;
+
+	if (!skip) {
+		/* Make updates of functions in update_sequence */
+		for (update_fnc_ptr = update_sequence; *update_fnc_ptr; ++update_fnc_ptr) {
+			err = (*update_fnc_ptr)(blob);
+			if (err < 0)
+				goto bs_fail;
+		}
+		printf("Updating device tree successful\n");
 	}
 
-	printf("Updating device tree successful\n");
 	return;
-
 bs_fail:
 	printf("Updating device tree failed\n");
 	return;

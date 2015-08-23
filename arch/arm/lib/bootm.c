@@ -432,8 +432,7 @@ static int create_fdt(bootm_headers_t *images)
 	ulong *initrd_end = &images->initrd_end;
 	struct lmb *lmb = &images->lmb;
 	ulong rd_len;
-	int ret, skip = 1;
-	char *env;
+	int ret;
 
 	debug("using: FDT\n");
 
@@ -451,22 +450,10 @@ static int create_fdt(bootm_headers_t *images)
 
 	fdt_chosen(*of_flat_tree, 1);
 
-	env = getenv("fdt_skip_update");
-	if (env && ((strncmp(env, "yes", 3) == 0))) {
-		printf("\n   Skipping Device Tree update ('fdt_skip_update' = yes)\n");
-		fixup_memory_node(*of_flat_tree);
-		fdt_fixup_ethernet(*of_flat_tree);
-	}
-	else {
-		skip = 0;
-		printf("\n   Starting Device Tree update ('fdt_skip_update' = no)\n");
-	}
-
 	fdt_initrd(*of_flat_tree, *initrd_start, *initrd_end, 1);
 
 #ifdef CONFIG_OF_BOARD_SETUP
-	if (!skip)
-		ft_board_setup(*of_flat_tree, gd->bd);
+	ft_board_setup(*of_flat_tree, gd->bd);
 #endif
 
 	return 0;

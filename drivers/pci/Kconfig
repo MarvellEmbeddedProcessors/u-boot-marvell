@@ -1,5 +1,13 @@
 menu "PCI Bus Support"
 
+config MVEBU_PCI
+	bool "PCIE support"
+	default n
+	select CMD_PCI
+	help
+	  Choose this option to add
+	  support for MVEBU PCI driver
+
 config DW_PCIE
 	bool "Enable DesignWare PCIe3 driver"
 	default n

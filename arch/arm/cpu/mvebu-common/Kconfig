@@ -54,17 +54,6 @@ config MVEBU_SPI
 	  driver.
 	  base address is configured under MVEBU_SPI_BASE
 
-
-config MVEBU_PCI
-	bool "PCIE support"
-	default n
-	select CMD_PCI
-	help
-	  Choose this option to add support
-	  for PCI driver, using mvebu_pci
-	  driver.
-	  base address is configured under MVEBU_PCI_BASE
-
 config MVEBU_MPP_BUS
 	bool "MPP bus support"
 	depends on (DEVEL_BOARD && MVEBU_PINCTL)

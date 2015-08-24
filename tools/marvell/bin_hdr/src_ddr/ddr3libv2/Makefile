@@ -121,6 +121,11 @@ endif
 #flag to support ODT test debug function( unset by default)
 #CFLAGS += -DODT_TEST_SUPPORT
 
+# Flag to enable RX IO BIST Test
+# CFLAGS += -DMV_HWS_RX_IO_BIST
+# Flag enable IO BIST of CMD/ADDR Test (in addition to MV_HWS_RX_IO_BIST)
+# CFLAGS += -DMV_HWS_RX_IO_BIST_ETP
+
 #############end of global flags #############################################
 
 

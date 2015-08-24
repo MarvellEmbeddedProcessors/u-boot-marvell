@@ -208,6 +208,10 @@ static GT_STATUS ddr3TipSetTiming
     MV_HWS_DDR_FREQ			frequency
 );
 
+#if defined(MV_HWS_RX_IO_BIST) || defined(MV_HWS_RX_IO_BIST_ETP)
+GT_STATUS mvHwsIoBistTest(GT_U8 devNum);
+#endif
+
 /************************** global data ******************************/
 
 static PageElement pageParam[] =
@@ -2314,6 +2318,16 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
                 return GT_FAIL; 
             }
         }
+
+#if defined(MV_HWS_RX_IO_BIST) || defined(MV_HWS_RX_IO_BIST_ETP)
+        /* Run RX IO BIST */
+        retVal = mvHwsIoBistTest((GT_U8)devNum);
+        if (retVal != GT_OK)
+        {
+            DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("mvHwsIoBistTest failure \n"));
+            return retVal;
+        }
+#endif
     }
 
 #ifdef STATIC_ALGO_SUPPORT

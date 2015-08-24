@@ -660,8 +660,15 @@ int mvHwsAvagoSerdesTemperatureGet
 *******************************************************************************/
 unsigned int mvHwsAvagoSerdesCalCodeSet(int devNum, int portGroup, int serdesNum, int calCode, BOOL mode)
 {
+    unsigned int data;
+
+    /* get the calibration code */
+    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x28, 0x4000 | (mode << 15), &data));
+    /* get only bits #7-15 */
+    data &= 0xFF80;
+
     /* set calibration code */
-    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x28, 0x480 | calCode | (mode<<15), NULL));
+    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x28, data | calCode | (mode<<15), NULL));
 
     return GT_OK;
 }
@@ -691,7 +698,7 @@ unsigned int mvHwsAvagoSerdesCalCodeGet(int devNum, int portGroup, int serdesNum
     unsigned int data;
 
     /* get the calibration code */
-    mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x28, 0x4480 | (mode << 15), &data);
+    mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x28, 0x4000 | (mode << 15), &data);
 
     /* cf code are only bits 0..6 */
     return data & 0x7F;

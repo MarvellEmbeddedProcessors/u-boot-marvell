@@ -44,6 +44,8 @@ extern GT_U32 firstActiveIf;
 extern MV_HWS_DDR_FREQ initFreq;
 extern GT_U32 delayEnable, ckDelay, caDelay;
 extern GT_U32 dfsLowFreq;
+extern GT_U32 mode2T;
+
 GT_U32  pipeMulticastMask;
 GT_BOOL ddr3AsyncModeAtTF = GT_FALSE;
 #define A38X_NUM_BYTES                  (3)
@@ -650,6 +652,11 @@ static GT_STATUS ddr3TipInitA38xSilicon
 	calibrationUpdateControl = 1;
 
 	initFreq = topologyMap->interfaceParams[firstActiveIf].memoryFreq;
+
+#ifdef CONFIG_ARMADA_38X
+    /* For a38x Only, change to 2T mode to resolve low freq instability */
+    mode2T = 1;
+#endif
 
 #ifdef CONFIG_DDR3
     ddr3TipA38xGetMediumFreq(devNum, &mediumFreq);

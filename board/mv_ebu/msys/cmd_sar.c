@@ -94,7 +94,7 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 #elif defined(CONFIG_BOBK)
 	int defaultValue[] = { 0,	/* Core clock */
 						   3,	/* CPU/DDR clock */
-						   3,	/* TM frequency */
+						   2,	/* TM frequency */
 						   1,	/* JTAG CPU 1 == MSYS */
 						   0,	/* Board ID */
 						   0,	/* PCIe mode */

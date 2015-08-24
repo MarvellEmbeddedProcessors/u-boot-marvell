@@ -18,4 +18,3 @@
 
 obj-y	+= armada8021-pxp.o
 obj-$(CONFIG_APN_806_DB)	+= db-8210-info.o
-obj-$(CONFIG_APN_806_RD)	+= rd-8210-info.o

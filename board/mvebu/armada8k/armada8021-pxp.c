@@ -34,10 +34,6 @@ struct mvebu_board_info *mvebu_board_info_get(enum fdt_compat_id compat_id)
 	case COMPAT_MVEBU_APN_806_DB:
 		return &a8021_db_info;
 #endif
-#ifdef CONFIG_APN_806_RD
-	case COMPAT_MVEBU_APN_806_RD:
-		return &a8021_rd_info;
-#endif
 	case COMPAT_MVEBU_APN_806_CUSTOMER:
 	default:
 		error("Missing board information for compatible string = %d\n", compat_id);

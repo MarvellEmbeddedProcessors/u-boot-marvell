@@ -24,6 +24,11 @@ C_EXCLUDE_FILE_LIST = mvHwsDdr3TrainingStub.c
 
 CFLAGS += -DDDR_VIEWER_TOOL -DMV_HWS_EXCLUDE_DEBUG_PRINTS
 
+# To enable RX IO BIST Test un-mark below line
+# CFLAGS += -DMV_HWS_RX_IO_BIST
+# To enable CMD/ADDR Test un-mark below line
+# CFLAGS += -DMV_HWS_RX_IO_BIST_ETP
+
 ##################################################
 ##################################################
 include $(PROJ_BASE)/gtTopMake

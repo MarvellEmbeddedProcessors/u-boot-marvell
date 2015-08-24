@@ -70,16 +70,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ddr3_hws_hw_training_def.h"
 
-/*Allow topolgy update from board TWSI device*/
+/*Allow topology update from board TWSI device*/
 #ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
 #define MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI
 #endif
 
 #define ECC_SUPPORT
 
-/*Controler bus divider 1 for 32 bit, 2 for 64 bit*/
+/*Controller bus divider 1 for 32 bit, 2 for 64 bit*/
 #define MV_DDR_CONTROLLER_BUS_WIDTH_MULTIPLIER		1
 
+#ifdef CONFIG_ARMADA_38X
 /*Tune internal training params values*/
 #define MV_TUNE_TRAINING_PARAMS_CK_DELAY 		160
 #define MV_TUNE_TRAINING_PARAMS_PHYREG3VAL		0xA
@@ -102,11 +103,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_TUNE_TRAINING_PARAMS_P_ODT_DATA_DDR4	0xD
 #define MV_TUNE_TRAINING_PARAMS_DIC_DDR4		0x0
 #define MV_TUNE_TRAINING_PARAMS_ODT_CONFIG_DDR4	0x330012
-#define MV_TUNE_TRAINING_PARAMS_RTT_NOM_DDR4	0x600 /*RZQ/3 = 0x600*/
-#define MV_TUNE_TRAINING_PARAMS_RTT_WR			0x400 /*RZQ/1 = 0x400*/
+#define MV_TUNE_TRAINING_PARAMS_RTT_NOM_DDR4	0x400 /*RZQ/3 = 0x600*/
+#define MV_TUNE_TRAINING_PARAMS_RTT_WR			0x200 /*RZQ/1 = 0x400*/
 #else
-#define MV_TUNE_TRAINING_PARAMS_RTT_WR		0x0 /*off*/
-#endif
+#define MV_TUNE_TRAINING_PARAMS_RTT_WR			0x0   /*off*/
+#endif /* CONFIG_DDR4 */
+#endif /* CONFIG_ARMADA_38X */
 
 #define MARVELL_BOARD MARVELL_BOARD_ID_BASE
 

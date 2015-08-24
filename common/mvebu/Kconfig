@@ -11,7 +11,7 @@ config CMD_MVEBU_MISC
 
 config CMD_MVEBU_SAR
 	bool "SatR"
-	depends on DEVEL_BOARD
+	depends on MVEBU_SAR
 	default n
 	help
 	  SatR - Modify SOC's sample at reset (SAR) values

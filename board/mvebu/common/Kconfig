@@ -1,0 +1,13 @@
+menu "Development Board Utilities"
+	depends on DEVEL_BOARD
+
+config MVEBU_SAR
+	bool "Support MVEBU SAR Utility"
+	default y
+	help
+	  Say Y here to add support for Sample
+	  at Reset Utility. You need this only if
+	  you work on a Marvell development board.
+	  If not, keep this off to reduce code size
+
+endmenu

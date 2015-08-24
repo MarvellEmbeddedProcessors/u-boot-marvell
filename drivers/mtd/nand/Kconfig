@@ -6,6 +6,14 @@ config SYS_NAND_SELF_INIT
 	  This option, if enabled, provides more flexible and linux-like
 	  NAND initialization process.
 
+config MVEBU_NAND
+	bool "MVEBU NAND support"
+	default n
+	select CMD_NAND
+	help
+	  Choose this option to add support
+	  for MVEBU NAND driver
+
 if !SPL_BUILD
 
 config NAND_DENALI

@@ -33,27 +33,6 @@ config MVEBU_SPL_DIFFRENT_BASE_ADDR
 
 menu "IO support"
 
-config MVEBU_NAND
-	bool "NAND flash support"
-	default n
-	select CMD_NAND
-	help
-	  Choose this option to add support
-	  for NAND driver, using pxa3xx nand
-	  driver.
-	  base address is configured under MVEBU_NAND_BASE
-
-config MVEBU_SPI
-	bool "SPI flash support"
-	default n
-	select CMD_SF
-	select CMD_SPI
-	help
-	  Choose this option to add support
-	  for SPI driver, using mvebu_spi
-	  driver.
-	  base address is configured under MVEBU_SPI_BASE
-
 config MVEBU_MPP_BUS
 	bool "MPP bus support"
 	depends on (DEVEL_BOARD && MVEBU_PINCTL)
@@ -72,15 +51,6 @@ config MVEBU_UART_ARLP
 	  for UART driver on ArmadaLP, which
 	  is not using COM1 NS16550 driver.
 	  And base address is configured in FDT file.
-
-config MVEBU_I2C
-	bool "I2C support"
-	default n
-	help
-	  Choose this option to add support
-	  for I2C driver, using Marvell mvebu_i2c.c
-	  driver.
-	  base address is configured under MVEBU_I2C_BASE
 
 config MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 	bool "DDR over PCIE support in SPL"

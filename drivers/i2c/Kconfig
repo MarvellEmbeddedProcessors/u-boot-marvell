@@ -1,0 +1,11 @@
+menu "I2C Support"
+
+config MVEBU_I2C
+	bool "MVEBU I2C support"
+	default n
+	select CMD_I2C
+	help
+	  Choose this option to add support
+	  for Marvell's MVEBU I2C driver
+
+endmenu

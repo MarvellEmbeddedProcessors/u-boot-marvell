@@ -787,6 +787,11 @@ static MV_STATUS ddr3UpdateTopologyMap(MV_HWS_TOPOLOGY_MAP* topologyMap)
 {
 	MV_TOPOLOGY_UPDATE_INFO topologyUpdateInfo;
 
+/* when booting from UART , skip reading DDR configuration from SW EEPROM, since EEPROM is not configured at 1st boot */
+#if defined(MV_NO_PRINT)
+	return MV_OK;
+#endif
+
 	topologyUpdateInfo.mvUpdateWidth = MV_FALSE;
 	topologyUpdateInfo.mvUpdateECC = MV_FALSE;
 	topologyUpdateInfo.mvUpdateECCPup3Mode = MV_FALSE;

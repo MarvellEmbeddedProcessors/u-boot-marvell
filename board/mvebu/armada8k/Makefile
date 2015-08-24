@@ -16,5 +16,5 @@
 # ***************************************************************************
 #
 
-obj-y	+= armada8021-pxp.o
-obj-$(CONFIG_APN_806_DB)	+= db-8210-info.o
+obj-y	+= armada8k.o
+obj-$(CONFIG_APN_806_DB)	+= db-apn806-info.o

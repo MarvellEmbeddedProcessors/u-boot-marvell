@@ -127,7 +127,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define E6171_PHY_SMI_BUSY_BIT		    			15  /* Busy */
 #define E6171_PHY_SMI_BUSY_MASK					(1 << E6171_PHY_SMI_BUSY_BIT)
 #define E6171_PHY_TIMEOUT					10000
-#define MV_E6171_ENABLED_PORTS					((1 << 0)|(1 << 1)|(1 << 2)|(1 << 3)|(1 << 4)|(1 << 6))
+#define MV_E6171_ENABLED_PORTS					((1 << 0)|(1 << 1)|(1 << 2)|(1 << 3)|(1 << 4)|(1 << 5)|(1 << 6))
 
 /* E6172 related */
 #define MV_E6172_PRODUCT_NUM					0x172

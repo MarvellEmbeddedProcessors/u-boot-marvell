@@ -45,9 +45,17 @@ typedef unsigned long long u64;
 #define BITS_PER_LONG 32
 #endif	/* CONFIG_ARM64 */
 
-/* Dma addresses are 32-bits wide.  */
+/* Dma addresses are 32-bits or 64-bits wide.  */
+#if (defined(CONFIG_HIGHMEM) && defined(CONFIG_64BIT_PHYS_ADDR)) || \
+	defined(CONFIG_64BIT)
+typedef u64 dma_addr_t;
+
+#else
 
 typedef u32 dma_addr_t;
+
+#endif
+typedef u64 dma64_addr_t;
 
 typedef unsigned long phys_addr_t;
 typedef unsigned long phys_size_t;

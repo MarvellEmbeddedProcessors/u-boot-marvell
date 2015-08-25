@@ -647,7 +647,6 @@ MV_BOARD_INFO db_dx_bc2Info = {
 MV_BOARD_MAC_INFO rd_dx_bc2InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
 	{BOARD_MAC_SPEED_1000M, 0x0, 0x0, MV_TRUE},
-	{BOARD_MAC_SPEED_1000M, 0x1, 0x1, MV_TRUE},
 };
 
 MV_BOARD_MODULE_TYPE_INFO rd_dx_bc2InfoBoardModTypeInfo[] = {

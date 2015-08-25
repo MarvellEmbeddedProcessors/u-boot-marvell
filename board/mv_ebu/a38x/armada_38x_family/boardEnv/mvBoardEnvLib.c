@@ -196,6 +196,10 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	mvGppTypeSet(0, 0xFFFFFFFF, board->gppOutEnValLow);
 	mvGppTypeSet(1, 0xFFFFFFFF, board->gppOutEnValMid);
 	mvGppTypeSet(2, 0xFFFFFFFF, board->gppOutEnValHigh);
+
+	/* Call callback function for board specific post GPP configuration */
+	if (board->gppPostConfigCallBack)
+		board->gppPostConfigCallBack(board);
 }
 
 /*******************************************************************************

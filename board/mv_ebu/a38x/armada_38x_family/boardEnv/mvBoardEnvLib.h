@@ -351,6 +351,7 @@ typedef struct _boardInfo {
 	MV_U32 gppPolarityValLow;
 	MV_U32 gppPolarityValMid;
 	MV_U32 gppPolarityValHigh;
+	MV_VOID (*gppPostConfigCallBack) (struct _boardInfo *);
 
 	MV_BOARD_USB_INFO *pBoardUsbInfo;	/* usb2.0 and usb3.0 physical port mapping on board */
 	MV_U8 numBoardUsbInfo;

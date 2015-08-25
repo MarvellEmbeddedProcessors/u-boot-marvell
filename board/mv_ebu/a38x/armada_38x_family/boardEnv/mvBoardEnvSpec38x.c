@@ -216,17 +216,13 @@ MV_BOARD_INFO armada_38x_customer_board_0_info = {
  *******************************************************************************/
 MV_BOARD_TWSI_INFO armada_38x_customer_1_BoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,	0,	0x57, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
-	{ BOARD_DEV_TWSI_SATR,	1,	0x4C, ADDR7_BIT, MV_FALSE},
-	{ BOARD_DEV_TWSI_SATR,	2,	0x4D, ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_IO_EXPANDER,	0,	0x20, ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_IO_EXPANDER,	1,	0x21, ADDR7_BIT, MV_FALSE},
 };
 MV_BOARD_MAC_INFO armada_38x_customer_1_BoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr ,
 	   MV_32 boardEthSmiAddr0 , MV_BOOL boardMacEnabled;}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1, MV_TRUE},
 	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, MV_TRUE},
+	{ BOARD_MAC_SPEED_1000M, -1, -1, MV_TRUE},
 	{ BOARD_MAC_SPEED_AUTO,  -1,  -1, MV_TRUE}
 };
 
@@ -237,11 +233,11 @@ MV_DEV_CS_INFO armada_38x_customer_1_BoardDeCsInfo[] = {
 	{ DEVICE_CS2,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
 	{ DEVICE_CS3,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
 	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
-	{ SPI0_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE },	/* SPI0 DEV */
+	{ SPI0_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
 	{ SPI0_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
 	{ SPI0_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
 	{ SPI0_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
-	{ SPI1_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_TRUE },	/* SPI1 DEV */
 	{ SPI1_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
 	{ SPI1_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
 	{ SPI1_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE }	/* SPI1 DEV */
@@ -261,19 +257,12 @@ MV_BOARD_MPP_INFO armada_38x_customer_1_BoardMppConfigValue[] = {
 };
 
 struct MV_BOARD_IO_EXPANDER armada_38x_customer_1_IoExpanderInfo[] = {
-	{0, 6, 0x20}, /* Configuration registers: Bit on --> Input bits */
-	{0, 7, 0xC3}, /* Configuration registers: Bit on --> Input bits */
-	{0, 2, 0x1D}, /* Output Data, register#0 */
-	{0, 3, 0x3C}, /* Output Data, register#1 */
-	{1, 6, 0xC3}, /* Configuration registers: Bit on --> Input bits  */
-	{1, 7, 0x31}, /* Configuration registers: Bit on --> Input bits  */
-	{1, 2, 0x08}, /* Output Data, register#0 */
-	{1, 3, 0xC0}  /* Output Data, register#1 */
-};
-
-MV_BOARD_GPP_INFO armada_38x_customer_1_GppInfo[] = {
-	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
-/* USB_Host0 *//* //{BOARD_GPP_USB_VBUS,    44},*/ /* from MPP map */
+	{0, 2, 0x40}, /* Deassert both mini pcie reset signals */
+	{0, 6, 0xf9},
+	{0, 2, 0x46}, /* Assert reset signals and enable USB3 current limiter */
+	{0, 6, 0xb9},
+	{0, 3, 0x0}, /* Set SFP_TX_DIS to zero */
+	{0, 7, 0xbf}, /* Drive SFP_TX_DIS to zero */
 };
 
 MV_BOARD_USB_INFO armada_38x_customer_1_InfoBoardUsbInfo[] = {
@@ -283,10 +272,44 @@ MV_BOARD_USB_INFO armada_38x_customer_1_InfoBoardUsbInfo[] = {
 	{ USB_UNIT_ID,  0, MV_TRUE},
 };
 
+struct MV_BOARD_SWITCH_INFO cfSwitchInfo[] = {
+	{
+		.isEnabled = MV_TRUE,
+		.isCpuPortRgmii = MV_FALSE,
+		.switchIrq = -1,	/* set to -1 for using PPU*/
+		.switchPort = {0, 1, 2, 3, 4, 5, 6},
+		.cpuPort = 5,
+		.connectedPort = {5, -1},
+		.smiScanMode = MV_SWITCH_SMI_MULTI_ADDR_MODE,
+		.quadPhyAddr = 4,
+		.forceLinkMask = 0x60
+	}
+};
+
 MV_BOARD_IO_EXPANDER_TYPE_INFO armada_38x_customer_1_ioExpPinInfo[] = {
 /*	{ IO Type enum,			bit offset, Io.exp num,		reg Num */
-	{ MV_IO_EXPANDER_USB_VBUS,	7,		1,		3} /* VBUS_EN: IO.exp#1 (0x21), reg #3, bit 7 */
+	{ MV_IO_EXPANDER_USB_VBUS,	6,		0,		2} /* VBUS_EN: IO.exp#1 (0x21), reg #3, bit 7 */
 };
+
+void a38x_customer_board_1_gpp_callback(MV_BOARD_INFO *board) {
+	int i;
+	/* Toggle GPIO41 to reset onboard switch and phy */
+	MV_REG_BIT_RESET (0x18140, 0x200);
+	MV_REG_BIT_RESET (0x18144, 0x200);
+	mvOsDelay(1);
+	MV_REG_BIT_SET (0x18144, 0x200);
+	mvOsDelay(10);
+	for (i = 0; i < board->numIoExp; i++) {
+		if (MV_OK != mvBoardTwsiSet(BOARD_TWSI_IO_EXPANDER, board->pIoExp[i].addr,
+					    board->pIoExp[i].offset, &board->pIoExp[i].val, 1)) {
+			mvOsPrintf("%s: Write IO expander (addr=0x%x, offset=%d, value=0x%2x to  fail\n",
+				   __func__,
+				   mvBoardTwsiAddrGet(BOARD_TWSI_IO_EXPANDER, board->pIoExp[i].addr),
+				   board->pIoExp[i].offset,
+				   board->pIoExp[i].val);
+		}
+	}
+}
 
 MV_BOARD_INFO armada_38x_customer_board_1_info = {
 	.boardName			= "A38x-Customer-Board-1",
@@ -302,8 +325,8 @@ MV_BOARD_INFO armada_38x_customer_board_1_info = {
 	.pBoardTwsiDev			= armada_38x_customer_1_BoardTwsiDev,
 	.numBoardMacInfo		= ARRSZ(armada_38x_customer_1_BoardMacInfo),
 	.pBoardMacInfo			= armada_38x_customer_1_BoardMacInfo,
-	.numBoardGppInfo		= ARRSZ(armada_38x_customer_1_GppInfo),
-	.pBoardGppInfo			= armada_38x_customer_1_GppInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= 0,
 	.numBoardIoExpPinInfo		= ARRSZ(armada_38x_customer_1_ioExpPinInfo),
 	.pBoardIoExpPinInfo		= armada_38x_customer_1_ioExpPinInfo,
 	.activeLedsNumber		= 0,
@@ -321,6 +344,7 @@ MV_BOARD_INFO armada_38x_customer_board_1_info = {
 	.gppOutValMid			= A38x_CUSTOMER_BOARD_1_GPP_OUT_VAL_MID,
 	.gppPolarityValLow		= A38x_CUSTOMER_BOARD_1_GPP_POL_LOW,
 	.gppPolarityValMid		= A38x_CUSTOMER_BOARD_1_GPP_POL_MID,
+	.gppPostConfigCallBack		= a38x_customer_board_1_gpp_callback,
 
 	/* TDM */
 	.numBoardTdmInfo		= {},
@@ -333,24 +357,24 @@ MV_BOARD_INFO armada_38x_customer_board_1_info = {
 	.numBoardUsbInfo		= ARRSZ(armada_38x_customer_1_InfoBoardUsbInfo),
 
 	/* NAND init params */
-	.nandFlashReadParams		= A38x_CUSTOMER_BOARD_0_NAND_READ_PARAMS,
-	.nandFlashWriteParams		= A38x_CUSTOMER_BOARD_0_NAND_WRITE_PARAMS,
-	.nandFlashControl		= A38x_CUSTOMER_BOARD_0_NAND_CONTROL,
+	.nandFlashReadParams		= 0,
+	.nandFlashWriteParams		= 0,
+	.nandFlashControl		= 0,
 	.nandIfMode			= NAND_IF_NFC,
 
 	.isSdMmcConnected		= MV_TRUE,
 
 	/* NOR init params */
-	.norFlashReadParams		= A38x_CUSTOMER_BOARD_0_NOR_READ_PARAMS,
-	.norFlashWriteParams		= A38x_CUSTOMER_BOARD_0_NOR_WRITE_PARAMS,
+	.norFlashReadParams		= 0,
+	.norFlashWriteParams		= 0,
 	/* Enable modules auto-detection. */
 	.configAutoDetect		= MV_FALSE,
 	.numIoExp			= ARRSZ(armada_38x_customer_1_IoExpanderInfo),
 	.pIoExp				= armada_38x_customer_1_IoExpanderInfo,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	.isAmc				= MV_FALSE,
-	.pSwitchInfo			= NULL,
-	.switchInfoNum			= 0
+	.pSwitchInfo			= cfSwitchInfo,
+	.switchInfoNum			= ARRSZ(cfSwitchInfo)
 };
 
 /*

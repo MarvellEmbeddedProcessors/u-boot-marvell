@@ -24,6 +24,15 @@
 	model = "Marvell APN-806 Palladuim";
 	compatible = "marvell,apn-806-pd", "marvell,apn-806";
 
+	soc {
+
+		internal-regs {
+
+			spi0: spi@510600 {
+				spi-max-frequency = <51200>;
+			};
+		};
+	};
 };
 
 &pinctl {

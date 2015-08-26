@@ -60,7 +60,7 @@ void board_init_f(ulong silent)
 	gd = &gdata;
 	gd->baudrate = CONFIG_BAUDRATE;
 
-#ifndef CONFIG_TARGET_ARMADA_38X
+#if 0
 	if (silent)
 		gd->flags |= GD_FLG_SILENT;
 #endif

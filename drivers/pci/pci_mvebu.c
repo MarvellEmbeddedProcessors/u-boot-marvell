@@ -338,8 +338,15 @@ void pci_init_board(void)
 
 		if (!fdtdec_get_is_enabled(blob, port_node))
 			continue;
-
+#ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+		/* fdt_get_regs_offs function added the base address to base of
+		   the PCIe, when using DDR over PCI need to use fdtdec_get_addr
+		    to get the base address without adding the base of the SoC */
+		reg_base = (void *)((uintptr_t)fdtdec_get_addr(blob, port_node, "reg"));
+#else
 		reg_base = fdt_get_regs_offs(blob, port_node, "reg");
+#endif
+
 		if (reg_base == 0) {
 			error("Missing registers in PCIe node\n");
 			continue;

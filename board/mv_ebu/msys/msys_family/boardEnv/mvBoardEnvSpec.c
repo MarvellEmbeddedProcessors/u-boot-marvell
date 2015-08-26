@@ -737,7 +737,7 @@ MV_BOARD_TWSI_INFO	bc2_rd_mtlInfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO bc2_rd_mtlInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
-	{BOARD_MAC_SPEED_1000M, 0x0, 0x0, MV_TRUE},
+	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0, MV_TRUE},
 };
 
 MV_BOARD_MODULE_TYPE_INFO bc2_rd_mtlInfoBoardModTypeInfo[] = {

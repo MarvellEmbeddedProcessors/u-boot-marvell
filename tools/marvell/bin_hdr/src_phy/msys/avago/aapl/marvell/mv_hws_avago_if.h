@@ -53,7 +53,7 @@ extern "C" {
 #define  AVAGO_ETH_CONNECTION         1
 #define  AVAGO_I2C_CONNECTION         2
 #define  AVAGO_SBUS_CONNECTION        3
-#define  MAX_AVAGO_SPICO_NUMBER       15
+#define  MAX_AVAGO_SPICO_NUMBER       27 /* There are 26 Spico but numbering starts from 1 */
 #define  MAX_AVAGO_SERDES_NUMBER      40
 #define  MAX_AVAGO_SERDES_ADDRESS     255
 #define  NA_VALUE                     0

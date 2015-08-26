@@ -85,6 +85,18 @@ unsigned int mvAvagoDb = 0;
 
 GT_U8 serdesToAvagoMap[MAX_AVAGO_SERDES_NUMBER] =
 {
+    [0]  15,
+    [1]  16,
+    [2]  17,
+    [3]  18,
+    [4]  19,
+    [5]  20,
+    [6]  21,
+    [7]  22,
+    [8]  23,
+    [9]  24,
+    [10] 25,
+    [11] 26,
     [20] 14, /* Logical SERDES 20  == Physical SERDES 14 on SERDES chain */
     [24] 13, /* Logical SERDES 24  == Physical SERDES 13 on SERDES chain */
     [25] 12, /* Logical SERDES 25  == Physical SERDES 12 on SERDES chain */
@@ -104,6 +116,18 @@ GT_U8 serdesToAvagoMap[MAX_AVAGO_SERDES_NUMBER] =
 
 GT_U8 avagoToSerdesMap[MAX_AVAGO_SPICO_NUMBER] =
 {
+    [26] 11,
+    [25] 10,
+    [24] 9,
+    [23] 8,
+    [22] 7,
+    [21] 6,
+    [20] 5,
+    [19] 4,
+    [18] 3,
+    [17] 2,
+    [16] 1,
+    [15] 0,
     [14] 20, /* Logical SERDES 20  == Physical SERDES 14 on SERDES chain */
     [13] 24, /* Logical SERDES 24  == Physical SERDES 13 on SERDES chain */
     [12] 25, /* Logical SERDES 25  == Physical SERDES 12 on SERDES chain */
@@ -117,7 +141,6 @@ GT_U8 avagoToSerdesMap[MAX_AVAGO_SPICO_NUMBER] =
     [3]  33, /* Logical SERDES 33  == Physical SERDES 03 on SERDES chain */
     [2]  34, /* Logical SERDES 34  == Physical SERDES 02 on SERDES chain */
     [1]  35  /* Logical SERDES 35  == Physical SERDES 01 on SERDES chain */
-
     /* Temp Sensor = Physical SPICO 09 on SERDES chain */
 };
 

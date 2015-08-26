@@ -16,6 +16,7 @@
  * ***************************************************************************
  */
 
+#include <dt-bindings/comphy/comphy_data.h>
 / {
 
 	cpus {
@@ -94,6 +95,19 @@
 				windows = <0x0 0xfe000000 0x0 0x1f00000 0x05 /* PCIe window 31Mb for PCIe port*/
 					0x0 0xffe00000 0x0 0x100000 0x03 /* PCI-REG window 64Kb for PCIe-reg*/>;
 			};
+
+			comphy {
+				compatible = "marvell,mvebu-comphy", "marvell,comphy-ap806";
+				mux-bitcount = <1>;
+				max-lanes = <1>;
+				reg-comphy = <0x6F0120 0x8>;
+				reg-hpipe3 = <0x70000 0x8>;
+				phy0 {
+					phy-type = <PHY_TYPE_PEX0>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+			};
+
 		};
 		pcie-controller {
 			#address-cells = <1>;

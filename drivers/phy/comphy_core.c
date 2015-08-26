@@ -73,7 +73,7 @@ static char *get_type_string(enum phy_type type)
 	return type_strings[type];
 }
 
-void reg_set(void __iomem *addr, u32 mask, u32 data)
+void reg_set(void __iomem *addr, u32 data, u32 mask)
 {
 	u32 reg_data;
 	debug("Write to address = %#010lx, data = %#010x (mask = %#010x) - ", (unsigned long)addr, data, mask);

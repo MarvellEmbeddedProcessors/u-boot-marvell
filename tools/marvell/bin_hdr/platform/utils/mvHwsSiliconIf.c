@@ -39,6 +39,7 @@
 *
 *******************************************************************************/
 #include "mvSiliconIf.h"
+#include "mvSysEnvLib.h"
 
 /* store base address and unit index per unit per device type */
 static HWS_UNIT_INFO   hwsDeviceSpecUnitInfo[LAST_UNIT];
@@ -76,6 +77,15 @@ void  mvUnitInfoGet
 		return;
 
 	*baseAddr        = hwsDeviceSpecUnitInfo[unitId].baseAddr;
+
+#ifdef MV_MSYS_BOBK
+    if((unitId == SERDES_UNIT) && (unitNum >= 20))
+    {
+        /* in BobK, Serdes >= 20 has additional offset */
+        *baseAddr += MV_HWS_SERDES_20_OFFSET;
+    }
+#endif
+
 	*unitIndexOffset = hwsDeviceSpecUnitInfo[unitId].regOffset;
 }
 

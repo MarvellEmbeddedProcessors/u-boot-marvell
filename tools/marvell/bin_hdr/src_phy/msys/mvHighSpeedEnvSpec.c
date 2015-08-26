@@ -88,14 +88,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /************************************ definitions ***********************************/
 
-#if defined(MV_MSYS_BOBK)
-/* in BobK, serdes >= 20 has additional offset */
-#define MV_SERDES20_BASE				0x13040000
-#define MV_SERDES_BASE					MV_SERDES20_BASE
-#else /* AC3/BC2 */
 #define MV_SERDES_BASE					0x13000000
 #define MV_SERDES_PHY_BASE				0x13000800
-#endif
 #define MV_SERDES_OFFSET				0x1000
 #define MV_INTERNAL_OFFSET				0x1000
 

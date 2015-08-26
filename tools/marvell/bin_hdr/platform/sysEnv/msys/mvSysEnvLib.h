@@ -74,6 +74,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined CONFIG_BOBK
 #define MV_USB_UNIT                   /* define USB unit for BOBK */
 #define MV_HWS_AVAGO_SERDES
+#define MV_HWS_SERDES_20_OFFSET     0x40000
 #else /*CONFIG_BOBCAT2 */
 #define MV_HWS_COM_PHY_SERDES
 #endif

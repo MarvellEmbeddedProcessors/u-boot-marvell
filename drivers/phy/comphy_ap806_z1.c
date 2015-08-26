@@ -117,8 +117,11 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_addr
 	if (!pcie_by4)
 		comphy_pcie_release_soft_reset(hpipe_addr);
 
+	udelay(20000);
+
 	debug_exit();
-	return 0;
+	/* Return the status of the PLL */
+	return readl(hpipe_addr + HPIPE_LANE_STATUS0_REG) & HPIPE_LANE_STATUS0_PCLK_EN_MASK;
 }
 
 int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map)
@@ -126,7 +129,7 @@ int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 	struct comphy_map *ptr_comphy_map;
 	void __iomem *comphy_base_addr, *hpipe_base_addr;
 	void __iomem *hpipe_addr;
-	u32 comphy_max_count, lane;
+	u32 comphy_max_count, lane, ret = 0;
 	u32 pcie_by4 = 1;
 
 	debug_enter();
@@ -159,13 +162,15 @@ int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		case PEX1:
 		case PEX2:
 		case PEX3:
-			comphy_pcie_power_up(lane, pcie_by4, hpipe_addr);
+			ret = comphy_pcie_power_up(lane, pcie_by4, hpipe_addr);
 			udelay(20);
 			break;
 		default:
 			debug("Unknown SerDes type, skip initialize SerDes %d\n", lane);
 			break;
 		}
+		if (ret == 0)
+			error("PLL is not locked - Failed to initialize lane %d\n", lane);
 	}
 
 	/* SW reset for PCIe for all lanes after power up */

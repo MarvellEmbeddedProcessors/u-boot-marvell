@@ -33,7 +33,7 @@
 #include <errno.h>
 #include "aapl.h"
 
-#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY) || defined(WIN32)
 #include <common/siliconIf/mvSiliconIf.h>
 #else
 #include <gtOs/gtGenTypes.h>

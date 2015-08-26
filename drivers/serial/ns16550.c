@@ -129,10 +129,12 @@ int ns16550_calc_divisor(NS16550_t port, int clock, int baudrate)
 
 static void NS16550_setbrg(NS16550_t com_port, int baud_divisor)
 {
+#if !defined(CONFIG_SPL_BUILD) && defined(CONFIG_MVEBU)
 	serial_out(UART_LCR_BKSE | UART_LCRVAL, &com_port->lcr);
 	serial_out(baud_divisor & 0xff, &com_port->dll);
 	serial_out((baud_divisor >> 8) & 0xff, &com_port->dlm);
 	serial_out(UART_LCRVAL, &com_port->lcr);
+#endif
 }
 
 void NS16550_init(NS16550_t com_port, int baud_divisor)

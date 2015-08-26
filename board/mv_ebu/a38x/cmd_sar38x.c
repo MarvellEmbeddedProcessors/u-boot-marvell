@@ -47,7 +47,7 @@ typedef struct _boardSatrDefault {
 	MV_SATR_TYPE_ID satrId;
 	MV_U32 defauleValueForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_SATR_DEFAULT;
-#define MAX_DEFAULT_ENTRY	24
+#define MAX_DEFAULT_ENTRY	23
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 /* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_BP_68xx,	RD_WAP_68xx,	DB_AP_68xx , DB_GP_68xx,  DB_BP_6821,	DB-AMC */
 { MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c,		0x0c,	  0x4,		0x0c}},
@@ -69,7 +69,6 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_FULL_FLAVOR,		{0,		1,		0,		1,		1,	  1,		0} },
 { MV_SATR_TDM_CONNECTED,	{0,		1,		0,		0,		0,	  0,		0} },
 { MV_SATR_TDM_PLACE_HOLDER,	{0,		1,		0,		0,		0,	  0,		0} },
-{ MV_SATR_BOARD_SPEED,		{0,		0x1,		0,		0x1,		0x1,	  0,		0x1} },
 { MV_SATR_AVS_SKIP,		{0,		0x1,		0,		0x1,		0x1,	  0x1,		0x1} },
 { MV_SATR_PEX_FORCE_GEN1,	{0,		0,		0,		0,		0,	  0,		0x1} },
 {MV_SATR_BOOT_DEVICE,           {0,             0,              0,		0,		0,	  0,		0} },/* Dummy entry: default value taken from S@R register */
@@ -119,6 +118,7 @@ static MV_U32 getBoardSpeed(MV_U32 boardspeed)
  * The function returns MV_TRUE if the cpuMode is not limited on this board
  * by checking the 'boardspeed' field, otherwise returns MV_FALSE
  */
+/*
 static MV_BOOL isCpuModeSupportedForBoard(int index, MV_BOOL printError)
 {
 	MV_U32 tmp;
@@ -138,6 +138,7 @@ static MV_BOOL isCpuModeSupportedForBoard(int index, MV_BOOL printError)
 	}
 	return MV_TRUE;
 }
+*/
 
 int do_sar_default(void)
 {
@@ -213,7 +214,7 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		for (i=0; i <= MV_SAR_FREQ_MODES_EOT; i++) {
 			if (cpuDdrClkTbl[i].id == MV_SAR_FREQ_MODES_EOT)
 				break;
-			if (cpuDdrClkTbl[i].isDisplay && isCpuModeSupportedForBoard(i, MV_FALSE) == MV_TRUE)
+			if (cpuDdrClkTbl[i].isDisplay)
 				mvOsPrintf("| %2d |      %4d      |      %4d        |      %4d      | \n",
 					   cpuDdrClkTbl[i].id,
 					   cpuDdrClkTbl[i].cpuFreq,
@@ -552,8 +553,6 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 			mvOsPrintf("Write S@R failed!\n");
 			return 1;
 		}
-		if (isCpuModeSupportedForBoard(i, MV_TRUE) == MV_FALSE)
-			return 1;
 	}
 
 	/* verify requested entry is valid and map it's ID value */

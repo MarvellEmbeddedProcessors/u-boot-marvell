@@ -28,6 +28,10 @@
 
 		internal-regs {
 
+			tclk: tclk {
+				clock-frequency = <125000>;
+			};
+
 			spi0: spi@510600 {
 				spi-max-frequency = <51200>;
 			};

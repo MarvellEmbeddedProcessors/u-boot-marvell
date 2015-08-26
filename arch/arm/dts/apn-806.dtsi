@@ -43,7 +43,7 @@
 			tclk: tclk {
 				compatible = "marvell,tclk";
 				#clock-cells = <0>;
-				clock-frequency = <125000>;
+				clock-frequency = <200000000>;
 			};
 
 			i2c0: i2c@511000 {

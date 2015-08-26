@@ -22,9 +22,9 @@
 #include <asm/arch-mvebu/comphy.h>
 
 /* mapping addresses */
-#define DRAM_OFFSET					0
-#define PCI_CONFIGURATION_OFFSET	0x50000000
-#define DRAM_WIN_SIZE				0x10000000
+#define DRAM_OFFSET				0
+#define PCI_CONFIGURATION_OFFSET		0x50000000
+#define DRAM_WIN_SIZE				0x80000000
 
 /* BARs offset */
 #define BAR0_LOW_ADDR_OFFSET	0x10

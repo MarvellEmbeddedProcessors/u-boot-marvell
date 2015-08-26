@@ -24,6 +24,7 @@
 /* mapping addresses */
 #define DRAM_OFFSET				0
 #define PCI_CONFIGURATION_OFFSET		0x50000000
+#define PCI_DEVICE_CONFIG_SPACE			0xF1000000
 #define DRAM_WIN_SIZE				0x80000000
 
 /* BARs offset */
@@ -124,20 +125,16 @@ void dram_over_pci_init(const void *fdt_blob)
 	/* wait until the PCIE card finish */
 	udelay(PCI_DEVICE_INIT_DELAY);
 	comphy_init(fdt_blob);
-	udelay(PCI_DEVICE_INIT_DELAY);
 
 	pci_init();
 
-	/* set PCIE bars,
-	   bar 0 configuration address = 0x50000000
+	/* set device PCIE bars:
+	   bar 0 configuration space = 0xf1000000
 	   bar 1  address = 0x0 - dram address */
 	hose = pci_bus_to_hose(0);
-	hose->write_dword(hose, 0, BAR0_LOW_ADDR_OFFSET,
-					  PCI_CONFIGURATION_OFFSET);
+	hose->write_dword(hose, 0, BAR0_LOW_ADDR_OFFSET, PCI_DEVICE_CONFIG_SPACE);
 	hose->write_dword(hose, 0, BAR0_HIGH_ADDR_OFFSET, 0);
 
 	hose->write_dword(hose, 0, BAR1_LOW_ADDR_OFFSET, DRAM_OFFSET);
 	hose->write_dword(hose, 0, BAR1_HIGH_ADDR_OFFSET, 0);
-
-	udelay(PCI_DEVICE_INIT_DELAY);
 }

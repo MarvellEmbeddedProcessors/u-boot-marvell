@@ -115,8 +115,8 @@
 			compatible = "marvell,mvebu-pcie";
 
 			pcie@1,0 {
-				reg = <0xffe00000 0x2000>;
-				mem = <0xfe000000 0x1f00000>;
+				reg = <0x50000000 0x2000>;
+				mem = <0x0 0x10000000>;
 				status = "okay";
 			};
 		};

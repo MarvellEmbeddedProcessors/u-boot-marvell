@@ -77,6 +77,7 @@ int do_mem_cp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 int ir_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 int training_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 int do_mem_mtest(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_xorMemTest(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 
 /* Commands Table
  * Every new command is added here, Thus it must be declared in
@@ -94,7 +95,9 @@ cmd_tbl_t commands[] = {
 	{ "cp", 4, do_mem_cp, "memory copy", "[.b, .w, .l] source target count"},
 	{ "ir", 2, ir_cmd, "ir	- reading and changing MV internal register values.\n", "address"},
 	{ "training", 1, training_cmd, "training	- prints the results of the DDR3 Training.\n"},
-	{ "mtest", 5, do_mem_mtest, "simple RAM read/write test", "[start [end [pattern [iterations]]]]"}
+	{ "mtest", 5, do_mem_mtest, "simple RAM read/write test", "[start [end [pattern [iterations]]]]"},
+	{ "xormtest", 4, do_xorMemTest, "run memory test based on XOR engine",
+		"[source [destination [size(bytes) [iterations]]]]"}
 };
 
 /* local functions definitions */

@@ -110,10 +110,19 @@ MV_U32 mvBoardPortTypeGet(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_BOOL mvBoardIsUsb3PortDevice(MV_U32 port)
 {
+	MV_U32 boardId, satrReadResult;
+
 	if (port < 0 || port >= MV_USB3_MAX_HOST_PORTS)
 		return MV_FALSE;
 
-	if (mvBoardSatRRead((MV_U32)MV_SATR_DB_USB3_PORT0 + port))
+	boardId = mvBoardIdGet();
+	/* since 'usb3port0' and 'usb3port1' are only supported on
+	 * DB-BP and DB-6821-BP, return MV_FALSE if we are not on these boards */
+	if (!(boardId == DB_68XX_ID || boardId == DB_BP_6821_ID))
+		return MV_FALSE;
+
+	satrReadResult = mvBoardSatRRead((MV_U32)MV_SATR_DB_USB3_PORT0 + port);
+	if (satrReadResult != MV_ERROR && satrReadResult)
 		return MV_TRUE;
 
 	return MV_FALSE;

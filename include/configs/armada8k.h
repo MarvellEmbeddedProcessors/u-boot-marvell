@@ -47,8 +47,13 @@
 #define CONFIG_REMAKE_ELF
 
 /* Clock Definitions */
+#ifndef CONFIG_PALLADIUM
+#define COUNTER_FREQUENCY	(25 * 1000000)
+#define CONFIG_MSS_FREQUENCY	(200 * MHZ)
+#else
 #define COUNTER_FREQUENCY	(48000)
 #define CONFIG_MSS_FREQUENCY	(384000)
+#endif
 
 #ifdef CONFIG_SPL_BUILD
 /* SPL */

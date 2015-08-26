@@ -55,6 +55,7 @@ dtb-$(CONFIG_MVEBU) += armada-385-db.dtb
 dtb-$(CONFIG_MVEBU) += armada-lp-db.dtb
 dtb-$(CONFIG_MVEBU) += armada-lp-palladium.dtb
 dtb-$(CONFIG_MVEBU) += apn-806-db.dtb
+dtb-$(CONFIG_MVEBU) += apn-806-pd.dtb
 dtb-$(CONFIG_MVEBU) += apn-806-db-flc.dtb
 
 targets += $(dtb-y)

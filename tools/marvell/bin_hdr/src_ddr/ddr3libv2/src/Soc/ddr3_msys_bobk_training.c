@@ -157,15 +157,8 @@ GT_STATUS serverRegGet
 MV_STATUS ddr3SiliconPreInit(void)
 {
     MV_STATUS status;
-	MV_U8 devNum = 0;
-
 	/* initialize window to server */
 	configureServerWindows();
-
-	if (ddr3GetSdramAssignment(devNum) == TM_EN) {
-		mvPrintf("Error: DDR3 interface is used by Traffic Manager\n", 0);
-		return MV_FAIL;
-	}
 
 #if 0
 	MV_U32 uiReg;

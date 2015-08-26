@@ -115,40 +115,16 @@ void dram_over_pci_window_config(void)
 }
 #endif
 
-static void soc_pcie_init(void)
-{
-	u32 reg;
-
-	reg = readl(MVEBU_PCIE_MAC_CTL);
-
-	/* Set PCIe transactions towards A2 as:
-	 * - read allocate
-	 * - write non alocate
-	 * - outer sharable */
-	reg &= ~(0xF << 8);
-	reg |= (0x7 << 8);
-
-	/* Set the Port x4 */
-	reg |= (1 << 14);
-
-	/* Enable PCIe unit */
-	reg |= 1;
-
-	writel(reg, MVEBU_PCIE_MAC_CTL);
-}
-
 void dram_over_pci_init(const void *fdt_blob)
 {
 	struct pci_controller *hose;
 
-	soc_pcie_init();
+	dram_over_pci_window_config();
 
-	/* wait until the PCIE card finises */
+	/* wait until the PCIE card finish */
 	udelay(PCI_DEVICE_INIT_DELAY);
 	comphy_init(fdt_blob);
 	udelay(PCI_DEVICE_INIT_DELAY);
-
-	dram_over_pci_window_config();
 
 	pci_init();
 

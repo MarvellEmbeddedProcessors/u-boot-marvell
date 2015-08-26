@@ -23,12 +23,22 @@
 #include <asm/arch-mvebu/comphy_hpipe.h>
 #include <asm/arch-mvebu/mvebu.h>
 
-#define COMPHY_RESET_REG		0x0
+#define COMPHY_RESET_REG		0x120
 
 #define COMPHY_RESET_SW_OFFSET		14
 #define COMPHY_RESET_SW_MASK		(1 << COMPHY_RESET_SW_OFFSET)
 #define COMPHY_RESET_CORE_OFFSET	13
 #define COMPHY_RESET_CORE_MASK		(1 << COMPHY_RESET_CORE_OFFSET)
+
+#define COMPHY_PCI_MAC_CTRL		0x200
+
+#define COMPHY_PCI_EN_OFFSET		0
+#define COMPHY_PCI_EN_MASK		(0x1 << COMPHY_PCI_EN_OFFSET)
+#define COMPHY_PCI_AXI_CACHE_OFFSET	8
+#define COMPHY_PCI_AXI_CACHE_MASK	(0xF << COMPHY_PCI_AXI_CACHE_OFFSET)
+#define COMPHY_PCI_COHERENT		0x7
+#define COMPHY_PCI_X1_EN_OFFSET		14
+#define COMPHY_PCI_X1_EN_MASK		(0x1 << COMPHY_PCI_X1_EN_OFFSET)
 
 static void comphy_pcie_release_soft_reset(void __iomem *hpipe_addr)
 {
@@ -180,6 +190,33 @@ int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 			comphy_pcie_release_soft_reset(hpipe_addr);
 		}
 	}
+
+#ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+	u32 reg;
+	if (!pcie_by4) {
+		/* This change force the mac to work by 1 */
+		reg = readl(0x5000006c);
+		reg &= ~(0x3F << 4);
+		reg |= (1 << 4);
+		writel(reg, 0x5000006c);
+	}
+#endif
+
+	/* Set PCIe transactions towards A2 as:
+	 * - read allocate
+	 * - write non alocate
+	 * - outer sharable */
+	reg_set(comphy_base_addr + COMPHY_PCI_MAC_CTRL, COMPHY_PCI_COHERENT << COMPHY_PCI_AXI_CACHE_OFFSET,
+			COMPHY_PCI_AXI_CACHE_MASK);
+
+	/* Set the Port x1 */
+	if (pcie_by4)
+		reg_set(comphy_base_addr + COMPHY_PCI_MAC_CTRL, 0 << COMPHY_PCI_X1_EN_OFFSET, COMPHY_PCI_X1_EN_MASK);
+	else
+		reg_set(comphy_base_addr + COMPHY_PCI_MAC_CTRL, 1 << COMPHY_PCI_X1_EN_OFFSET, COMPHY_PCI_X1_EN_MASK);
+
+	/* Enable PCIe unit */
+	reg_set(comphy_base_addr + COMPHY_PCI_MAC_CTRL, 1 << COMPHY_PCI_EN_OFFSET, COMPHY_PCI_EN_MASK);
 
 	debug_exit();
 	return 0;

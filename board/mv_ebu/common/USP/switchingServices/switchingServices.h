@@ -137,6 +137,9 @@ struct partitionInformation {
 #define MARVELL_VENDOR_ID		0x11ab
 #define NP5_DEVICE_ID			0x2012
 
+/* align with the mvCtrlEnvRegs.h */
+#define DEVICE_FLAVOR_MASK		0x3FF
+
 #define INT_LVL_XCAT2_SWITCH		55	/* Switch MG interrupt */
 
 /*

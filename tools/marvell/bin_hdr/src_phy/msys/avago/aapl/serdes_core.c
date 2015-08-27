@@ -1229,6 +1229,21 @@ int avago_serdes_initialize_signal_ok(
     return return_code == aapl->return_code ? 0 : -1;
 }
 
+/** @brief   Returns whether or not the RX PLL is frequency locked. */
+/** @details NOTE: The PLL may be locked even when valid data is not */
+/**          present at the RX inputs. The user should generally rely */
+/**          on signal ok instead. */
+/** @return  Returns TRUE if the PLL is locked */
+/** @return  Returns FALSE if the PLL is not locked */
+BOOL avago_serdes_get_frequency_lock(
+    Aapl_t *aapl,       /**< [in] Pointer to Aapl_t structure. */
+    uint addr)          /**< [in] Device address number. */
+{
+    BOOL flock = (avago_serdes_mem_rd(aapl, addr, AVAGO_LSB, 0x1c) & 0x8000) >> 15;
+    AAPL_LOG_PRINT5(aapl,AVAGO_DEBUG5,__func__,__LINE__,"SBus %s, freq lock=%d\n", aapl_addr_to_str(addr), flock);
+    return flock;
+}
+
 /** @brief   Retrieves the value of the error counter. */
 /** @details Validates the SBus address refers to a 28nm SerDes.  A WARNING is issued */
 /** if the addr is the general SerDes broadcast address (0xFF).  SerDes DMA access */

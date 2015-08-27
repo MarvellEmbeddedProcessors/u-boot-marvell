@@ -209,7 +209,7 @@ EXT int  avago_serdes_get_signal_ok_threshold(Aapl_t *aapl, uint sbus_addr);
 
 EXT BOOL avago_serdes_get_signal_ok(Aapl_t *aapl, uint sbus_addr, BOOL reset);
 EXT int avago_serdes_initialize_signal_ok(Aapl_t *aapl, uint sbus_addr, int threshold);
-
+EXT BOOL avago_serdes_get_frequency_lock(Aapl_t *aapl, uint addr);
 EXT uint avago_serdes_get_errors(Aapl_t *aapl, uint sbus_addr,
                                  Avago_serdes_mem_type_t type, BOOL reset_count_after_get);
 

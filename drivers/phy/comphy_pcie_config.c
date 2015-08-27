@@ -142,7 +142,7 @@ void comphy_pcie_config_set(u32 comphy_max_count, struct comphy_map *serdes_map)
 		if (serdes_map->type < PEX0 || serdes_map->type > PEX3)
 			continue;
 		pex_index = serdes_map->type - PEX0;
-		reg_set(PEX_CAPABILITIES_REG(pex_index), 0xf << 20, 0x4 << 20);
+		reg_set(PEX_CAPABILITIES_REG(pex_index), 0x4 << 20, 0xf << 20);
 
 		switch (serdes_map->type) {
 		case PEX0:
@@ -161,7 +161,7 @@ void comphy_pcie_config_set(u32 comphy_max_count, struct comphy_map *serdes_map)
 			break;
 		}
 	}
-	reg_set(SOC_CONTROL_REG, 0x3, pex_enable_offs);
+	reg_set(SOC_CONTROL_REG, pex_enable_offs, 0x3);
 	udelay(10000);
 
 	debug_exit();
@@ -202,9 +202,9 @@ void comphy_pcie_config_detect(u32 comphy_max_count, struct comphy_map *serdes_m
 		}
 
 		reg_data = (first_bus << PXSR_PEX_BUS_NUM_OFFS) & PXSR_PEX_BUS_NUM_MASK;
-		reg_set(PEX_STATUS_REG(pex_index), PXSR_PEX_BUS_NUM_MASK, reg_data);
+		reg_set(PEX_STATUS_REG(pex_index), reg_data, PXSR_PEX_BUS_NUM_MASK);
 		reg_data = (1 << PXSR_PEX_DEV_NUM_OFFS) & PXSR_PEX_DEV_NUM_MASK;
-		reg_set(PEX_STATUS_REG(pex_index), PXSR_PEX_DEV_NUM_MASK, reg_data);
+		reg_set(PEX_STATUS_REG(pex_index), reg_data, PXSR_PEX_DEV_NUM_MASK);
 		printf("PCIe - %d: Link is Gen1, check the EP capability\n", pex_index);
 
 		/* link is Gen1, check the EP capability */
@@ -245,9 +245,9 @@ void comphy_pcie_unit_general_config(u32 pex_index)
 	/* the following should be done for PEXx1 and for PEX by 4-for the first lane only */
 	reg_set(SOC_CONTROL_REG, 0x4000, 0x4000);
 	/* Setup link width bit[9:4] */
-	reg_set(PEX_LINK_CAPABILITIES_REG(pex_index), 0x3F0, 0x10);
+	reg_set(PEX_LINK_CAPABILITIES_REG(pex_index), 0x10, 0x3F0);
 	/* Setup maximum link speed bit[3:0] */
-	reg_set(PEX_LINK_CAPABILITIES_REG(pex_index), 0xF, 0x2);
+	reg_set(PEX_LINK_CAPABILITIES_REG(pex_index), 0x2, 0xF);
 	/* Setup common clock configuration bit[6] */
 	reg_set(PEX_LINK_CTRL_STATUS_REG(pex_index), 0x40, 0x40);
 

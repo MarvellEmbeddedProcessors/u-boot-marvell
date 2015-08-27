@@ -26,9 +26,9 @@ void mvebu_sar_dump_reg(void)
 	u32 reg, val;
 	struct sar_info *sar;
 
-	printf("| SAR Name    | Mask       | Offset     | Value      |\n");
-	printf("Sample at reset register 0:\n");
+	printf("| SAR Name            | Mask       | Offset     | Value      |\n");
 	reg = readl(SAMPLE_AT_RESET_REG_0);
+	printf("Sample at reset register 0 [0x%08x]:\n", reg);
 	sar = sar_0;
 	while (sar->offset != -1) {
 		val = (reg & sar->mask) >> sar->offset;
@@ -37,8 +37,8 @@ void mvebu_sar_dump_reg(void)
 		sar++;
 	}
 
-	printf("Sample at reset register 1:\n");
 	reg = readl(SAMPLE_AT_RESET_REG_1);
+	printf("Sample at reset register 1 [0x%08x]:\n", reg);
 	sar = sar_1;
 	while (sar->offset != -1) {
 		val = (reg & sar->mask) >> sar->offset;

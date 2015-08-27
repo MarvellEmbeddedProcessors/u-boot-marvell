@@ -76,6 +76,10 @@ disclaimer.
 #define TWSI_SPEED_MSYS		20000 /* wa for bits 1,2 in 0x4c. Mmust lower
 					 100000 -> 20000 . adiy, erez*/
 typedef volatile unsigned long VUL;
+const char *chipStr[] = {"XCAT2", "NP5", "BC2", "BOBK", "AC3", "OTHER"};
+
+static int do_sar_read_msys(int silt, uint *value, int argc, char *const argv[]);
+
 
 static MV_U8 tread_msys(MV_U8 addr, int reg, MV_BOOL moreThen256)
 {
@@ -141,6 +145,8 @@ static int do_sar_list_msys(int silt, int argc, char *const argv[])
 {
 		const char *cmd;
 		int all = 0;
+		uint boardId = 0;
+		char *const boardIdArgv[1] = {"boardid"};
 
 		if (argc < 1)
 				goto usage;
@@ -162,13 +168,22 @@ static int do_sar_list_msys(int silt, int argc, char *const argv[])
 						printf("\n");
 				}
 				else if (silt == SILT_BOBK) {
-						printf("coreclock (0x4d 0:2): Determines the CORE frequency:\n");
-						printf("\t0x0 = 365MHz\n");
-						printf("\t0x1 = 220MHz\n");
-						printf("\t0x2 = 250MHz\n");
-						printf("\t0x3 = 200MHz\n");
-						printf("\t0x4 = 167MHz\n");
-						printf("\n");
+						if (do_sar_read_msys(SILT_BOBK, &boardId, 1, boardIdArgv) || (boardId >= BOBK_BOARDID_MAX)) {
+								printf("Read BoardId failed, unknown Board\n");
+								printf("\n");
+								return 1;
+						}
+						else {
+								printf("coreclock (0x4d 0:2): Determines the CORE frequency:\n");
+								printf("\t0x0 = 365MHz\n");
+								printf("\t0x1 = 220MHz\n");
+								printf("\t0x2 = 250MHz\n");
+								printf("\t0x3 = 200MHz\n");
+								printf("\t0x4 = 167MHz\n");
+								if (boardId == BOBK_DB_98DX4203_12XG_BOARDID)
+									printf("\t0x5 = 133MHz\n");
+								printf("\n");
+						}
 				}
 		}
 
@@ -181,14 +196,23 @@ static int do_sar_list_msys(int silt, int argc, char *const argv[])
 						printf("\n");
 				}
 				else if (silt == SILT_BOBK) {
-						printf("freq (0x4c 3:4 + 0x4f 0:0): Determines the CPU and DDR frequencies:\n");
-						printf("\t0x0 = CPU 400MHz, DDR 400MHz\n");
-						printf("\t0x1 = CPU 1000MHZ, DDR 667MHz\n");
-						printf("\t0x2 = CPU 667MHz, DDR 667MHz\n");
-						printf("\t0x3 = CPU 800MHz, DDR 800MHz\n");
-						printf("\t0x4 = CPU 1200MHz, DDR 800MHz\n");
-						printf("\t0x5 = CPU 800MHz, DDR 400MHz\n");
-						printf("\n");
+						if (do_sar_read_msys(SILT_BOBK, &boardId, 1, boardIdArgv) || (boardId >= BOBK_BOARDID_MAX)) {
+								printf("Read BoardId failed, unknown Board\n");
+								printf("\n");
+								return 1;
+						}
+						else {
+								printf("freq (0x4c 3:4 + 0x4f 0:0): Determines the CPU and DDR frequencies:\n");
+								printf("\t0x0 = CPU 400MHz, DDR 400MHz\n");
+								if (boardId == BOBK_DB_98DX4235_12XG_BOARDID)
+										printf("\t0x1 = CPU 1000MHZ, DDR 667MHz\n");
+								printf("\t0x2 = CPU 667MHz, DDR 667MHz\n");
+								printf("\t0x3 = CPU 800MHz, DDR 800MHz\n");
+								if (boardId == BOBK_DB_98DX4235_12XG_BOARDID)
+										printf("\t0x4 = CPU 1200MHz, DDR 800MHz\n");
+								printf("\t0x5 = CPU 800MHz, DDR 400MHz\n");
+								printf("\n");
+						}
 				}
 		}
 
@@ -239,6 +263,31 @@ static int do_sar_list_msys(int silt, int argc, char *const argv[])
 				}
 		}
 
+		if ((strcmp(cmd, "boardid") == 0) || all) {
+				if (silt == SILT_BC2) {
+					printf("boardid (0x50.7 0:2): Determines the board ID (0-7)\n");
+					printf("\t0x0 = Board is DB-DXBC2-MM\n");
+					printf("\t0x1 = Board is RD-DXBC2-48G-12XG2XLG\n");
+					printf("\t0x2 = Board is RD-MTL-BC2-48G-12XG2XLG\n");
+					printf("\n");
+				}
+				if (silt == SILT_BOBK) {
+					printf("boardid (0x50.7 0:2): Determines the board ID (0-7)\n");
+					printf("\t0x0 = Board is DB-98DX4235-12XG (Cetus)\n");
+					printf("\t0x1 = Board is DB-98DX4203-12XG (Caelum)\n");
+					printf("\n");
+				}
+				if (silt == SILT_AC3) {
+					printf("boardid (0x50.7 0:2): Determines the board ID (0-7)\n");
+					printf("\t0x0 = Board is DB-XC3-24G4XG\n");
+					printf("\t0x1 = Board is RD-XC3-48G4XG-A\n");
+					printf("\t0x2 = Board is RD-XC3-48G2XG2XXG-A\n");
+					printf("\t0x3 = Board is DB-XC3-24G-4G\n");
+					printf("\t0x4 = Board is RD-XC3-24G-4SFP\n");
+					printf("\n");
+				}
+		}
+
 		if ((strcmp(cmd, "forcegen1") == 0) || all) {
 				if (silt == SILT_BC2 || silt == SILT_BOBK) {
 					printf("forcegen1 (0x57.3 2:2): Determines if whether to force PCI-e");
@@ -256,7 +305,7 @@ static int do_sar_list_msys(int silt, int argc, char *const argv[])
 		return 1;
 }
 
-static int do_sar_read_msys(int silt, int argc, char *const argv[])
+static int do_sar_read_msys(int silt, uint *value, int argc, char *const argv[])
 {
 
 /*
@@ -291,6 +340,7 @@ static int do_sar_read_msys(int silt, int argc, char *const argv[])
 				((tread_msys(0x4f, 0, moreThen256)&0x1f) << 15);
 				printf("MSYS S@R raw register = 0x%08x\n", satr_reg);
 
+				*value = satr_reg;
 				return 0;
 		}
 
@@ -322,6 +372,7 @@ static int do_sar_read_msys(int silt, int argc, char *const argv[])
 
 				printf("MSYS S@R freq = 0x%x\n", satr_reg);
 
+				*value = satr_reg;
 				return 0;
 		}
 
@@ -349,6 +400,14 @@ static int do_sar_read_msys(int silt, int argc, char *const argv[])
 				bit_mask = 0x1;
 		}
 
+		else if (strcmp(cmd, "boardid") == 0) {
+						twsi_Addr = 0x50;
+						field_Offs = 0;
+						bit_mask = 0x7;
+						twsi_Reg = 7;
+						moreThen256 = MV_TRUE;
+		}
+
 		else if (strcmp(cmd, "forcegen1") == 0 &&
 				(silt == SILT_BC2 || silt == SILT_BOBK)) {
 				twsi_Addr = 0x57;
@@ -360,13 +419,14 @@ static int do_sar_read_msys(int silt, int argc, char *const argv[])
 
 		else {
 				printf("'%s' is not supported by %s board SAR\n",
-					cmd, silt == SILT_BC2 ? "BC2" : "BOBK");
+					cmd, chipStr[silt]);
 				return -1;
 		}
 
 		satr_reg = (tread_msys(twsi_Addr, twsi_Reg, moreThen256) >> field_Offs) & bit_mask;
 		printf("MSYS S@R %s = 0x%02x\n", cmd, satr_reg);
 
+		*value = satr_reg;
 		return 0;
 }
 
@@ -436,6 +496,14 @@ static int do_sar_write_msys(int silt, int argc, char *const argv[])
 				bit_mask = 0x1;
 		}
 
+		else if (strcmp(cmd, "boardid") == 0) {
+				twsi_Addr = 0x50;
+				bit_mask = 0x7;
+				twsi_Reg = 7;
+				moreThen256 = MV_TRUE;
+				write_Mask = 0xff;
+		}
+
 		else if (strcmp(cmd, "forcegen1") == 0 &&
 				(silt == SILT_BC2 || silt == SILT_BOBK)) {
 				twsi_Addr = 0x57;
@@ -448,7 +516,7 @@ static int do_sar_write_msys(int silt, int argc, char *const argv[])
 
 		else {
 				printf("'%s' is not supported by %s board SAR\n",
-					cmd, silt == SILT_BC2 ? "BC2" : "BOBK");
+					cmd, chipStr[silt]);
 				return -1;
 		}
 
@@ -471,11 +539,12 @@ MV_STATUS check_twsi_msys(void)
 				return MV_OK;
 }
 
-/* Now only support BC2 and BOBK*/
+/* Now only support BC2 and BOBK, AC3 only support "boardid" field */
 int do_sar_msys(cmd_tbl_t * cmdtp, int flag, int silt, int argc, char * const argv[])
 {
 
 		const char *cmd;
+		uint value;
 
 		/* need at least two arguments */
 		if (argc < 2)
@@ -493,17 +562,22 @@ int do_sar_msys(cmd_tbl_t * cmdtp, int flag, int silt, int argc, char * const ar
 				return 1;
 		}
 
+		/* Only support "boardid" field on AC3 */
+		if (silt == SILT_AC3 && (strcmp(*(argv + 2), "boardid") != 0)) {
+				printf("Only support \"boardid\" filed on AC3 boards\n");
+				goto usage;
+		}
 
 		if (strcmp(cmd, "list") == 0)
 				return do_sar_list_msys(silt, argc - 2, argv + 2);
 
 		else if (strcmp(cmd, "read") == 0)
-				return do_sar_read_msys(silt, argc - 2, argv + 2);
+				return do_sar_read_msys(silt, &value, argc - 2, argv + 2);
 
 
 		else if (strcmp(cmd, "write") == 0) {
 				if (do_sar_write_msys(silt, argc - 2, argv + 2) == 0)
-						return do_sar_read_msys(silt, argc - 2, argv + 2);
+						return do_sar_read_msys(silt, &value, argc - 2, argv + 2);
 
 				return -1;
 
@@ -511,47 +585,58 @@ int do_sar_msys(cmd_tbl_t * cmdtp, int flag, int silt, int argc, char * const ar
 
 		usage:
 		printf("\n");
-		if (silt == SILT_BC2)
+		if (silt == SILT_AC3)
+				printf("AC3 DB Sample At Reset sub-system\n");
+		else if (silt == SILT_BC2)
 				printf("BC2 DB Sample At Reset sub-system\n");
 		else if (silt == SILT_BOBK)
 				printf("BOBK DB Sample At Reset sub-system\n");
 
-		printf("SatR list coreclock  - print coreclock list\n");
-		printf("SatR list freq   - print freq list\n");
-		printf("SatR list tmfreq    - print tmfreq list\n");
-		printf("SatR list bootsrc   - print boolsel list\n");
-		printf("SatR list jtagcpu   - print jtagcpu list\n");
+		if (silt == SILT_BC2 || silt == SILT_BOBK) {
+				printf("SatR list coreclock  - print coreclock list\n");
+				printf("SatR list freq   - print freq list\n");
+				printf("SatR list tmfreq    - print tmfreq list\n");
+				printf("SatR list bootsrc   - print boolsel list\n");
+				printf("SatR list jtagcpu   - print jtagcpu list\n");
+				printf("SatR list forcegen1  - print forcegen1 list\n");
+		}
 		if (silt == SILT_BC2)
 				printf("SatR list ptppll    - print ptppll list\n");
 
-		printf("SatR list forcegen1  - print forcegen1 list\n");
-
+		printf("SatR list boardid  - print boardid list\n");
 		printf("\n");
 
-		printf("SatR read devid     - read device id\n");
-		printf("SatR read coreclock  - read CORE frequency\n");
-		printf("SatR read freq   - read CPU frequency\n");
-		printf("SatR read tmfreq    - read TM frequency\n");
-		printf("SatR read bootsrc   - read Boot select\n");
-		printf("SatR read jtagcpu   - read JTAG CPU selection\n");
+		if (silt == SILT_BC2 || silt == SILT_BOBK) {
+				printf("SatR read devid     - read device id\n");
+				printf("SatR read coreclock  - read CORE frequency\n");
+				printf("SatR read freq   - read CPU frequency\n");
+				printf("SatR read tmfreq    - read TM frequency\n");
+				printf("SatR read bootsrc   - read Boot select\n");
+				printf("SatR read jtagcpu   - read JTAG CPU selection\n");
+		}
 		if (silt == SILT_BC2) {
 				printf("SatR read ptppll    - read PTP PLL setting\n");
 				printf("SatR read forcegen1  - read Force PCIe GEN1 setting\n");
 		}
-		printf("SatR read dump      - read all values\n");
+		printf("SatR read boardid      - read Board ID\n");
+		if (silt == SILT_BC2 || silt == SILT_BOBK)
+				printf("SatR read dump      - read all values\n");
 		printf("\n");
 
-		printf("SatR write devid    <val> - write device id\n");
-		printf("SatR write coreclock <val> - write CORE frequency\n");
-		printf("SatR write freq  <val> - write CPU  frequency\n");
-		printf("SatR write tmfreq   <val> - write TM frequency\n");
-		printf("SatR write bootsrc  <val> - write Boot select\n");
-		printf("SatR write jtagcpu  <val> - write JTAG CPU selection\n");
+		if (silt == SILT_BC2 || silt == SILT_BOBK) {
+				printf("SatR write devid    <val> - write device id\n");
+				printf("SatR write coreclock <val> - write CORE frequency\n");
+				printf("SatR write freq  <val> - write CPU  frequency\n");
+				printf("SatR write tmfreq   <val> - write TM frequency\n");
+				printf("SatR write bootsrc  <val> - write Boot select\n");
+				printf("SatR write jtagcpu  <val> - write JTAG CPU selection\n");
+		}
 		if (silt == SILT_BC2) {
 				printf("SatR write ptppll   <val> - write PTP PLL setting\n");
 				printf("SatR write forcegen1 <val> - write Force PCIe GEN1 setting\n");
 		}
 
+		printf("SatR write boardid   <val> - write Board ID\n");
 		return 1;
 }
 
@@ -591,7 +676,7 @@ static int do_qsgmii_sel(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv
 
 U_BOOT_CMD(
 		  qsgmii_sel,      2,     1,      do_qsgmii_sel,
-		  " Select SFP or QSGMII modes on bc2.\n",
+		  " Select SFP or QSGMII modes on bc2/bobk.\n",
 		  " apply 16 bit array to select SFP or QSGMII modes"
 		  );
 

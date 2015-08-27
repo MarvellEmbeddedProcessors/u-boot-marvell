@@ -159,9 +159,29 @@ typedef enum {	// special device enum
 		SILT_NP5,
 		SILT_BC2,
 		SILT_BOBK,
+		SILT_AC3,
 		SILT_OTHER,
 		SILT_NOT_DETECT = 0x5a5a
 } SILICON_TYPE;
+
+/* Bobcat2 marvell boardid index */
+#define BC2_DB_DX_MM_BOARDID			0
+#define BC2_RD_DX_48G_12XG2XLG_BOARDID	1
+#define BC2_RD_MTL_48G_12XG2XLG_BOARDID	2
+#define BC2_BOARDID_MAX					3
+
+/* BOBK marvell boardid index */
+#define BOBK_DB_98DX4235_12XG_BOARDID	0/* Cetus DB */
+#define BOBK_DB_98DX4203_12XG_BOARDID	1/* Caelum DB */
+#define BOBK_BOARDID_MAX				2
+
+/* AlleyCat3 marvell boardid index */
+#define AC3_DB_24G4XG_BOARDID			0
+#define AC3_RD_48G4XG_A_BOARDID			1
+#define AC3_RD_48G2XG2XXG_A_BOARDID		2
+#define AC3_DB_24G_4G_BOARDID			3
+#define AC3_RD_24G_4SFP_BOARDID			4
+#define AC3_BOARDID_MAX					5
 
 SILICON_TYPE get_attached_silicon_type(void);
 int do_sar_msys(cmd_tbl_t * cmdtp, int flag, int silt, int argc, char * const argv[]);

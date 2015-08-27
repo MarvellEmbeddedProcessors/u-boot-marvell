@@ -42,9 +42,10 @@
 #ifndef __mvHwsDdr3_BOBK_H
 #define __mvHwsDdr3_BOBK_H
 
+#if !defined(CPSS_BUILD)
 #include "config_marvell.h"     /* Required to identify SOC and Board */
 #include "mvSysEnvLib.h"
-
+#endif
 #include "mvDdr3TrainingIpStatic.h"
 #include "mvDdr3TrainingIp.h"
 

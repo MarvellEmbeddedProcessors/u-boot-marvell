@@ -733,4 +733,9 @@ extern int nand_get_env_offs(void);
 
 #define CONFIG_STACKSIZE        (1 << 20)       /* regular stack - up to 4M (in case of exception)*/
 
+/*
+ * ERRATA
+ */
+#define ERRATA_FE_3124064
+
 #endif /* __CONFIG_H */

@@ -891,6 +891,108 @@ U_BOOT_CMD(
 
 #endif /* CONFIG_MV_XSMI */
 
+#if defined(CONFIG_MV_ETH_FW_DOWNLOAD)
+#include "eth-phy/mvEthFwDownload.h"
+
+/*******************************************************************************
+* mvEthXcvrFwDwnld - Downloads firmware to x3220/x3310 Ethernet transceiver PHY.
+*
+* DESCRIPTION:
+*	   This function downloads firmware to x3220/x3110 Ethernet transceiver PHY.
+*
+* INPUT:
+*	   fwImgAddr	   - FW image address in RAM.
+*	   fwImgSz		 - Size of FW image.
+*	   slaveImgAddr	- Slave image address in RAM.
+*	   slaveImgSz	  - Size of slave image.
+*	   xsmiPortNumber - XSMI port number
+*
+* OUTPUT:
+*	   TBD.
+*
+* RETURN:
+*	   MV_OK if download successful, MV_FAIL otherwise.
+*
+*******************************************************************************/
+static MV_STATUS mvEthXcvrFwDwnld(MV_U8 * fwImgAddr, MV_U32 fwImgSz, MV_U8 * slaveImgAddr,
+		 MV_U32 slaveImgSz, MV_U8 xsmiPortNumber) {
+	/* Check here the correctness of inputs, if required. */
+
+	CTX_PTR_TYPE	contextPtr = NULL;
+
+	MV_STATUS  retCode = MV_OK;
+	MV_U16	 errCode;
+
+	retCode = mvUpdateFlashImage(contextPtr, xsmiPortNumber, (MV_U8 *)fwImgAddr, (MV_U32)fwImgSz,
+									(MV_U8 *)slaveImgAddr, (MV_U32)slaveImgSz, &errCode);
+
+	printf("\n");
+
+	if (retCode == MV_FAIL) {
+		printf("mvUpdateFlashImage() failed.\n");
+		return MV_FAIL;
+	} else {
+		printf("mvUpdateFlashImage() succeeded.\n");
+	}
+
+	retCode = mvRemovePhyMdioDownloadMode(contextPtr, xsmiPortNumber);
+	if (retCode == MV_FAIL) {
+		printf("mvRemovePhyMdioDownloadMode() failed.\n");
+		return MV_FAIL;
+	} else {
+		printf("mvRemovePhyMdioDownloadMode() succeeded.\n");
+	}
+
+	return MV_OK;
+}
+
+/**
+ * eth_xcvr_fw_dwnld() - Handle the "ethXcvrFwDwnld" command-line command
+ * @cmdtp:  Command data struct pointer
+ * @flag:   Command flag
+ * @argc:   Command-line argument count
+ * @argv:   Array of command-line arguments
+ *
+ * Returns zero on success and one on error.
+ */
+static int eth_xcvr_fw_dwnld(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	MV_STATUS retCode = MV_OK;
+
+	if (argc < 6) {
+		printf("command expects five arguments\n");
+		cmd_usage(cmdtp);
+		return 1;
+	}
+	printf("Starting Ethernet transceiver PHY firmware download.\n"
+		"This process takes some time to complete...\n");
+	retCode = mvEthXcvrFwDwnld((MV_U8 *)simple_strtoul(argv[1], NULL, 16),
+		(MV_U32)simple_strtoul(argv[2], NULL, 10),
+		(MV_U8 *)simple_strtoul(argv[3], NULL, 16),
+		(MV_U32)simple_strtoul(argv[4], NULL, 10),
+		(MV_U8)simple_strtoul(argv[5], NULL, 10));
+
+	if (retCode == MV_FAIL) {
+		printf("Ethernet transceiver PHY firmware download failed.\n");
+		return 1;
+	}
+	else
+		printf("Ethernet transceiver PHY firmware download succeeded.\n");
+
+	return 0;
+}
+
+U_BOOT_CMD(
+        ethXcvrFwDwnld,      6,     0,  eth_xcvr_fw_dwnld,
+        "ethXcvrFwDwnld - Downloads x3220/3310 Ethernet transceiver PHY firmware.\n",
+        "\t<FW Image Addr, Hex> <FW Image Size, Bytes> <Slave Image Addr, Hex> <Slave Image Size, Bytes>"
+		" <XSMI Port Number>\n"
+		"\t(Marvell>> ethXcvrFwDwnld 0x2010000 167972 0x2000000 9948 8)\n"
+        "\tDownloads x3220/3310 Ethernet transceiver PHY firmware.\n"
+);
+
+#endif
+
 #if defined(MV_INCLUDE_GIG_ETH)
 
 #include "eth-phy/mvEthPhy.h"

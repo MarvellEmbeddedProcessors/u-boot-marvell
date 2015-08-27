@@ -92,6 +92,7 @@ HAL_OBJS =	$(HAL_SPI_DIR)/mvSpi.o		\
 		$(HAL_PCIIF_UTIL_DIR)/mvPciUtils.o
 HAL_OBJS-$(CONFIG_MV_XSMI) = $(HAL_ETHPHY_DIR)/mvEthPhyXsmi.o
 HAL_OBJS-$(CONFIG_MV_ETH_10G) += $(HAL_ETHPHY_DIR)/mvEth10gPhy.o
+HAL_OBJS-$(CONFIG_MV_ETH_FW_DOWNLOAD) += $(HAL_ETHPHY_DIR)/mvEthFwDownload.o
 HAL_OBJS += $(sort $(HAL_OBJS-y))
 
 USP_OBJS =	$(USP_DIR)/mv_spi.o		\

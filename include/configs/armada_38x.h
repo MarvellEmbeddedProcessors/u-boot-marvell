@@ -478,6 +478,7 @@ extern int nand_get_env_offs(void);
 #define CONFIG_NET_COMPLEX
 #define CONFIG_MV_XSMI
 #define CONFIG_MV_ETH_10G
+#define CONFIG_MV_ETH_FW_DOWNLOAD
 #endif
 /* to change the default ethernet port, use this define (options: 0, 1, 2) */
 #define CONFIG_NET_MULTI

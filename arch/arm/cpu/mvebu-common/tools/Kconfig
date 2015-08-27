@@ -5,7 +5,7 @@ depends on MVEBU_TOOLS_SUPPORT
 config MVEBU_SPL_MEMORY_TEST
 	bool "Memory test"
 	depends on SPL
-	default y
+	default n
 	help
 	To add this option you need to edit the
 	defconfig and add the following line:

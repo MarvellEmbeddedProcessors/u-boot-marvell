@@ -43,3 +43,11 @@ u32 soc_timer_clk_get(void)
 {
 	return 800000000;
 }
+
+void soc_print_clock_info(void)
+{
+	printf("       CPU    @ %d [MHz]\n", soc_cpu_clk_get() / 1000000);
+	printf("       L2     @ %d [MHz]\n", soc_l2_clk_get() / 1000000);
+	printf("       TClock @ %d [MHz]\n", soc_tclk_get() / 1000000);
+	printf("       DDR    @ %d [MHz]\n", soc_ddr_clk_get() / 1000000);
+}

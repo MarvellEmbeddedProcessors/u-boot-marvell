@@ -69,35 +69,9 @@ void print_soc_specific_info(void) __attribute__((weak, alias("__print_soc_speci
 
 void mvebu_print_soc_info(void)
 {
-#if 0
-	char *device, *rev;
-	char name[50];
-	if (!mvCtrlIsValidSatR())
-		printf("       Custom configuration\n");
-	device = soc_get_device_name();
-	device = soc_get_rev_name();
-	printf("SoC:   %s-%s\n", device, rev);
-	if (soc_get_cpu_cnt())
-		printf("       running %d CPUs\n", mvCtrlGetCpuNum()+1);
-
-	mvCpuNameGet(name);
-	printf("CPU:   %s LE",  name);
-	if (mvCtrlGetCpuNum())
-		printf("       CPU %d\n",  whoAmI());
-#endif
-	printf("       CPU    @ %d [MHz]\n", soc_cpu_clk_get() / 1000000);
-	printf("       L2     @ %d [MHz]\n", soc_l2_clk_get() / 1000000);
-	printf("       TClock @ %d [MHz]\n", soc_tclk_get() / 1000000);
-	printf("       DDR    @ %d [MHz]\n", soc_ddr_clk_get() / 1000000);
-#if 0
-	printf("       DDR %dBit Width, %s Memory Access\n", mvCtrlDDRBusWidth(), mvCtrlDDRThruXbar()?"XBAR":"FastPath");
-#if defined(CONFIG_ECC_SUPPORT)
-	printf("       DDR ECC %s\n", mvCtrlDDRECC()?"Enabled":"Disabled");
-#endif
-#endif
+	soc_print_clock_info();
 
 	print_soc_specific_info();
-
 }
 
 /*

@@ -19,9 +19,9 @@
 #ifndef _MVEBU_CLOCK_H_
 #define _MVEBU_CLOCK_H_
 
-#define KHZ			1000
-#define MHZ			1000000
-#define GHZ			1000000000
+#define KHz			1000
+#define MHz			1000000
+#define GHz			1000000000
 
 u32 soc_tclk_get(void);
 u32 soc_l2_clk_get(void);
@@ -31,5 +31,6 @@ u32 soc_timer_clk_get(void);
 
 u32 soc_clock_get(const void *blob, int node);
 u32 get_fdt_tclk(const void *blob, int node);
+void soc_print_clock_info(void);
 
 #endif /* _MVEBU_CLOCK_H_ */

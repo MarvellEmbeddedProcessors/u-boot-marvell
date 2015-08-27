@@ -24,7 +24,7 @@
 
 u32 soc_tclk_get(void)
 {
-	return MHZ * 200;
+	return MHz * 200;
 }
 
 u32 soc_cpu_clk_get(void)
@@ -62,10 +62,18 @@ u32 get_fdt_tclk(const void *blob, int node)
 
 	switch (tclk) {
 	case 0:
-		return MHZ * 250;
+		return MHz * 250;
 	case 1:
-		return MHZ * 200;
+		return MHz * 200;
 	default:
-		return MHZ * 250;
+		return MHz * 250;
 	}
+}
+
+void soc_print_clock_info(void)
+{
+	printf("       CPU    @ %d [MHz]\n", soc_cpu_clk_get() / 1000000);
+	printf("       L2     @ %d [MHz]\n", soc_l2_clk_get() / 1000000);
+	printf("       TClock @ %d [MHz]\n", soc_tclk_get() / 1000000);
+	printf("       DDR    @ %d [MHz]\n", soc_ddr_clk_get() / 1000000);
 }

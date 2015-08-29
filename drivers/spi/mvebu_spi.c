@@ -169,7 +169,7 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 			spi_bus.base_reg = fdt_get_regs_offs(gd->fdt_blob, node, "reg");
 			spi_bus.max_freq = fdtdec_get_int(gd->fdt_blob, node, "spi-max-frequency", CONFIG_MIN_SPI_CLK);
 			clock = soc_clock_get(gd->fdt_blob, node);
-			cpol = (1 << cs) & fdtdec_get_int(gd->fdt_blob, node, "cpol-cs-bitmap", (1 << cs));
+			cpol = (1 << cs) & fdtdec_get_int(gd->fdt_blob, node, "cpol-cs-bitmap", 0);
 		}
 	}
 

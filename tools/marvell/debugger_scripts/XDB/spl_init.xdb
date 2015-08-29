@@ -23,9 +23,15 @@ IF (@strcmp(@SOC, "ARMv7") == 0) THEN
 	SET SYSREGISTER /"COPROCESSOR_1" ARM_CONTROL=0xC53078
 ELSE
 	IF (@strcmp(@SOC, "ARMv8") == 0) THEN
-		SET REG SCTLR_EL3=0xC50838
+		! Jump to BootRom to disable MMU and clean caches
+		SET REGISTER X1=0x0
+		SET REGISTER PC=0xffff0668
+		! Before run the BootRom, set breakpoint to the start of the U-Boot
+		SET BREAKPOINT AT (0x0) HARD
+		RUN
 	END
 END
+PRINT "Load specific U-Boot now"
 
 ! For loading and execution of u-boot, uncomment the following lines:
 !PRINT /DBVAR=cmd "LOAD /SEGMENT /DEBUG /GLOBAL /INIT=\"\" OF \"./u-boot\""

@@ -90,15 +90,15 @@ void comphy_print(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map
 	u32 lane;
 	char *speed_str, *type_str;
 
-	printf("COMPHY lanes details:\n");
-	printf(" | Lane # | Speed     | Type         |\n");
-	printf(" -------------------------------------\n");
+	printf("COMPHY setup:\n");
+	printf("Lane #   Speed       Type\n");
+	printf("-----------------------------------\n");
 	for (lane = 0; lane < ptr_chip_cfg->comphy_lanes_count; lane++, comphy_map_data++) {
 		speed_str = get_speed_string(comphy_map_data->speed);
 		type_str = get_type_string(comphy_map_data->type);
-		printf(" |    %-4d| %-10s| %-13s|\n", lane, speed_str, type_str);
+		printf("%s %-4d  %-10s  %-13s\n", " ", lane, speed_str, type_str);
 	}
-	printf(" -------------------------------------\n");
+	printf("\n");
 }
 
 u32 comphy_init(const void *blob)
@@ -115,7 +115,6 @@ u32 comphy_init(const void *blob)
 	if (chip_count <= 0)
 		return 1;
 
-	printf("COMPHY init sequence\n");
 	for (i = 0; i < chip_count ; i++) {
 		node = comphy_list[i];
 		if (node <= 0)

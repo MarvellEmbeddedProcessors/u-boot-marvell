@@ -915,7 +915,7 @@ DOIMAGE_LIBS_CHECK = \
 doimage: $(obj)/u-boot.bin $(SPLIMAGE)
 		@$(DOIMAGE_LIBS_CHECK)
 		$(DOIMAGE) $(DOIMAGE_FLAGS)
-		mv u-boot_h.bin u-boot-$(CONFIG_SYS_SOC).bin
+		mv u-boot_h.bin u-boot-spl.bin
 
 bin2phex: doimage
 		$(TIM2PHEX) -i $(DOIMAGE_CFG) -o u-boot-$(CONFIG_SYS_SOC).hex

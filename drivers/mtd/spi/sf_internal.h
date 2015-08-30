@@ -43,12 +43,14 @@ enum {
 	SST_BP		= 1 << 3,
 	SST_WP		= 1 << 4,
 	WR_QPP		= 1 << 5,
+	ADDR_CYC_4	= 1 << 6
 };
 
 #define SST_WR		(SST_BP | SST_WP)
 
 #define SPI_FLASH_3B_ADDR_LEN		3
-#define SPI_FLASH_CMD_LEN		(1 + SPI_FLASH_3B_ADDR_LEN)
+#define SPI_FLASH_4B_ADDR_LEN		4
+#define SPI_FLASH_CMD_LEN		(1 + SPI_FLASH_4B_ADDR_LEN)
 #define SPI_FLASH_16MB_BOUN		0x1000000
 
 /* CFI Manufacture ID's */

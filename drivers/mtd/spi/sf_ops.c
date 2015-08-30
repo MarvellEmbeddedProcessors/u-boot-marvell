@@ -17,12 +17,23 @@
 
 #include "sf_internal.h"
 
-static void spi_flash_addr(u32 addr, u8 *cmd)
+static void spi_flash_addr(u32 addr, u8 *cmd, u8 addr_cycles)
 {
 	/* cmd[0] is actual command */
-	cmd[1] = addr >> 16;
-	cmd[2] = addr >> 8;
-	cmd[3] = addr >> 0;
+	switch (addr_cycles) {
+	case(4):
+		cmd[1] = addr >> 24;
+		cmd[2] = addr >> 16;
+		cmd[3] = addr >> 8;
+		cmd[4] = addr;
+		break;
+	case(3):
+	default:
+		cmd[1] = addr >> 16;
+		cmd[2] = addr >> 8;
+		cmd[3] = addr >> 0;
+		break;
+	}
 }
 
 int spi_flash_cmd_read_status(struct spi_flash *flash, u8 *rs)
@@ -270,12 +281,12 @@ int spi_flash_cmd_erase_ops(struct spi_flash *flash, u32 offset, size_t len)
 		if (ret < 0)
 			return ret;
 #endif
-		spi_flash_addr(erase_addr, cmd);
+		spi_flash_addr(erase_addr, cmd, flash->addr_cycles);
 
 		debug("SF: erase %2x %2x %2x %2x (%x)\n", cmd[0], cmd[1],
 		      cmd[2], cmd[3], erase_addr);
 
-		ret = spi_flash_write_common(flash, cmd, sizeof(cmd), NULL, 0);
+		ret = spi_flash_write_common(flash, cmd, flash->addr_cycles + 1, NULL, 0);
 		if (ret < 0) {
 			debug("SF: erase failed\n");
 			break;
@@ -319,12 +330,12 @@ int spi_flash_cmd_write_ops(struct spi_flash *flash, u32 offset,
 			chunk_len = min(chunk_len,
 					(size_t)flash->spi->max_write_size);
 
-		spi_flash_addr(write_addr, cmd);
+		spi_flash_addr(write_addr, cmd, flash->addr_cycles);
 
 		debug("SF: 0x%p => cmd = { 0x%02x 0x%02x%02x%02x } chunk_len = %zu\n",
 		      buf + actual, cmd[0], cmd[1], cmd[2], cmd[3], chunk_len);
 
-		ret = spi_flash_write_common(flash, cmd, sizeof(cmd),
+		ret = spi_flash_write_common(flash, cmd, flash->addr_cycles + 1,
 					buf + actual, chunk_len);
 		if (ret < 0) {
 			debug("SF: write failed\n");
@@ -382,7 +393,7 @@ int spi_flash_cmd_read_ops(struct spi_flash *flash, u32 offset,
 		return 0;
 	}
 
-	cmdsz = SPI_FLASH_CMD_LEN + flash->dummy_byte;
+	cmdsz = flash->addr_cycles + 1 + flash->dummy_byte;
 	cmd = calloc(1, cmdsz);
 	if (!cmd) {
 		debug("SF: Failed to allocate cmd\n");
@@ -409,7 +420,7 @@ int spi_flash_cmd_read_ops(struct spi_flash *flash, u32 offset,
 		else
 			read_len = remain_len;
 
-		spi_flash_addr(read_addr, cmd);
+		spi_flash_addr(read_addr, cmd, flash->addr_cycles);
 
 		ret = spi_flash_read_common(flash, cmd, cmdsz, data, read_len);
 		if (ret < 0) {

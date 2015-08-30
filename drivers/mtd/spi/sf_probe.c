@@ -165,6 +165,7 @@ static int spi_flash_validate_params(struct spi_slave *spi, u8 *idcode,
 	}
 	flash->page_size <<= flash->shift;
 	flash->sector_size = params->sector_size << flash->shift;
+	flash->addr_cycles = ((params->flags & ADDR_CYC_4) ? 4 : 3);
 	flash->size = flash->sector_size * params->nr_sectors << flash->shift;
 #ifdef CONFIG_SF_DUAL_FLASH
 	if (flash->dual_flash & SF_DUAL_STACKED_FLASH)

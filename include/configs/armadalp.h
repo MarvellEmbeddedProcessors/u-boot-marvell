@@ -20,7 +20,6 @@
 #define __ARMADA_LP_H
 
 /* Version */
-#define CONFIG_IDENT_STRING		" Marvell version: 2015_T2.0"
 #define CONFIG_BOOTP_VCI_STRING		" U-boot.armv8.armadalp"
 
 /* Platform */

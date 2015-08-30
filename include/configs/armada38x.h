@@ -19,9 +19,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-/* Version */
-#define CONFIG_IDENT_STRING	" Marvell version: 2014_T2.0"
-
 /* Platform */
 #define CONFIG_MVEBU_CA9
 #define CONFIG_MVEBU_TIMER

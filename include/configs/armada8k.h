@@ -20,7 +20,6 @@
 #define __ARMADA_8K_H
 
 /* Version */
-#define CONFIG_IDENT_STRING             " Armada8k"
 #define CONFIG_BOOTP_VCI_STRING         "U-boot.armv8.armada8k"
 
 /*

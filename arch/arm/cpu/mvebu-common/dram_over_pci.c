@@ -69,6 +69,9 @@
 #define RFU_WIN_PEX_CFG_ADDR_SHIFT	16
 #define RFU_WIN_PEX_ALR_ADDR_OFFSET 4
 
+/* MAC regsisters */
+#define	PCIE_DEBUG_STATUS		(PCI_CONFIGURATION_OFFSET + 0x1A64)
+
 void dram_over_pci_window_config(void)
 {
 	u32 alr, ahr, val;
@@ -118,6 +121,7 @@ void dram_over_pci_window_config(void)
 
 void dram_over_pci_init(const void *fdt_blob)
 {
+	int linkup_timeout_ms = 1000;
 	struct pci_controller *hose;
 
 	dram_over_pci_window_config();
@@ -125,6 +129,20 @@ void dram_over_pci_init(const void *fdt_blob)
 	/* wait until the PCIE card finish */
 	udelay(PCI_DEVICE_INIT_DELAY);
 	comphy_init(fdt_blob);
+
+	/* wait untill link training is done */
+	while (linkup_timeout_ms) {
+		if ((readl(PCIE_DEBUG_STATUS) & 0x7F) == 0x7E)
+			break;
+		udelay(1000);
+		linkup_timeout_ms--;
+	}
+
+	/* Check for linkup */
+	if (linkup_timeout_ms == 0) {
+		error("PCIe didn't reach linkup");
+		printf("LTSSM reg = 0x%08x\n", readl(PCIE_DEBUG_STATUS));
+	}
 
 	pci_init();
 

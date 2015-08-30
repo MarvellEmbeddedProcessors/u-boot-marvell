@@ -286,7 +286,6 @@
 	#ifdef CONFIG_DEVEL_BOARD
 		#define CONFIG_EEPRO100
 		#define CONFIG_E1000
-		#define CONFIG_MVEBU_NET
 	#endif
 #endif
 
@@ -294,23 +293,20 @@
 
 /* Neta */
 #ifdef CONFIG_MV_ETH_NETA
-	#define CONFIG_MVEBU_NET
 	#define MV_INCLUDE_GIG_ETH
 	#define CONFIG_MV_INCLUDE_GIG_ETH
 	#define MV_ETH_NETA
 #endif /* CONFIG_MV_ETH_NETA */
 
-/* General Networking */
-#ifdef CONFIG_MVEBU_NET
-
+/* Add network parameters when network command is enabled */
+#ifdef CONFIG_CMD_NET
 	/* Environment */
 	#define CONFIG_IPADDR           10.4.50.154
 	#define CONFIG_SERVERIP         10.4.50.3
 	#define CONFIG_NETMASK          255.255.255.0
 	#define ETHADDR                 "00:00:00:00:51:81"
 	#define ENV_ETH_PRIME           "e1000#0"
-
-#endif /* CONFIG_MVEBU_NET */
+#endif /* CONFIG_CMD_NET */
 
 /* SATA AHCI over PCIe */
 #ifndef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT

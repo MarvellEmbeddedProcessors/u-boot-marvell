@@ -1481,7 +1481,7 @@ int process_image(USER_OPTIONS	*opt)
 	int			i;
 	int 		override[2];
 	char 		*buf_in = NULL;
-	int 		err = 1;
+	int 		err = 0;
 
 	/* check if the output image exist */
 	printf(" ");
@@ -1641,10 +1641,8 @@ int process_image(USER_OPTIONS	*opt)
 			fprintf(stderr, "Error writing %s file \n", opt->fname.out);
 			goto end;
 		}
-
-		fprintf(stdout, "====>>>> %s was created\n", opt->fname_arr[IMG_FILE_INDX]);
-
 	} /* if (opt->header_mode != HDR_ONLY) */
+	fprintf(stdout, "====>>>> %s was created\n", opt->fname_arr[IMG_FILE_INDX]);
 
 end:
 	/* close handles */

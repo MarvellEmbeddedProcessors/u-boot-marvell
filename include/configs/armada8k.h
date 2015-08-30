@@ -109,13 +109,17 @@ extern char __end_of_spl[];
 #else /* Real SOC settings */
 #define CONFIG_BOOTARGS		"console=ttyS0,115200 earlycon=uart8250,mmio32,0xf0512000 root=/dev/ram0 rw"
 
-#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x2000000\0"	\
-					"fdt_addr=0x1000000\0"		\
-					"fdt_high=0xa0000000\0"		\
-					"ramfs_addr=0x3000000\0"	\
-					"initrd_high=0xffffffffffffffff\0"
+#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x2000000\0"		\
+					"fdt_addr=0x1000000\0"			\
+					"fdt_high=0xa0000000\0"			\
+					"ramfs_addr=0x3000000\0"		\
+					"initrd_high=0xffffffffffffffff\0"	\
+					"image_name=Image\0"			\
+					"ramfs_name=u_rootfs.ext2.gz\0"		\
+					"fdt_file=armada-apn806-db.dtb\0"
 
-#define CONFIG_BOOTCOMMAND		"booti $kernel_addr $ramfs_addr $fdt_addr"
+#define CONFIG_BOOTCOMMAND		"tftp $kernel_addr $image_name; tftp $ramfs_addr $ramfs_name;"\
+					"tftp $fdt_addr $fdt_file; booti $kernel_addr $ramfs_addr $fdt_addr"
 
 #endif /*CONFIG_PALLADIUM*/
 

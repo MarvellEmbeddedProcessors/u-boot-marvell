@@ -145,5 +145,12 @@
 			pin-count = <1>;
 			pins = <13 1>;
 		};
+		mpp-bus3 {
+			compatible = "marvell,mvebu-mpp-bus";
+			bus-name = "uart0";
+			bank-name = "apn-806";
+			pin-count = <2>;
+			pins = <2 1  3 1>;
+		};
 	};
 };

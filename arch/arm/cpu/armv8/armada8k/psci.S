@@ -104,12 +104,19 @@ psci_0_2_cpu_on_64:
 
 	/* set the cpu start address */
 	add	x3, x0, #0x640
-	mov	x2, #2 /* WA reset adderrs - CPU reset vector address - must be alined to 0x10000 -
-			    use PSCI first address at 0x20000
-			    first instruction - jump to _armada8k_cpu_entry */
+
+	/* CPU reset vector address - must be aligned to 0x10000
+	use __secure_start - _start as PSCI first address
+	first instruction - jump to _armada8k_cpu_entry */
+	adr     x2, _secure_base
+	ldr     x2, [x2]
+	adr     x4, _start_base
+	ldr     x4, [x4]
+	sub	x2, x2, x4
+	lsr	x2, x2, #16	/* align to 0x10000 */
 	str 	w2, [x3]
 
-	/* save the Linux out of reset address */
+	/* save the Linux out of reset address to unused register */
 	adr	x1, _target_pc
 	ldr	x1, [x1]
 	add	x3, x0, #0x644 /* WA reset adderrs - use reserved register */
@@ -194,6 +201,12 @@ _armada8k_cpu_entry:
 	.align 4
 _target_pc:
 	.quad 0x0
+
+_secure_base:
+	.quad __secure_start
+
+_start_base:
+	.quad	_start
 
 text_end:
 	.popsection

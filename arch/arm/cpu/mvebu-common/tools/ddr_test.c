@@ -233,7 +233,7 @@ static ulong mem_test_alt(vu_long *buf, ulong start_addr, ulong end_addr, vu_lon
 int run_memory_test(void)
 {
 	ulong start, end;
-	vu_long *buf, *dummy;
+	vu_long *buf, dummy;
 	int iteration_limit;
 	int ret;
 	ulong errs = 0;	/* number of errors */
@@ -247,13 +247,12 @@ int run_memory_test(void)
 	debug("%s:%d: start %#08lx end %#08lx\n", __func__, __LINE__, start, end);
 
 	buf = map_sysmem(start, end - start);
-	dummy = map_sysmem(0, sizeof(vu_long));
 	for (iteration = 0;
 			!iteration_limit || iteration < iteration_limit;
 			iteration++) {
 		printf("Iteration: %6d\r", iteration + 1);
 		debug("\n");
-		errs += mem_test_alt(buf, start, end, dummy);
+		errs += mem_test_alt(buf, start, end, &dummy);
 	}
 
 	printf("Tested %d iteration(s) with %lu errors.\n", iteration, errs);

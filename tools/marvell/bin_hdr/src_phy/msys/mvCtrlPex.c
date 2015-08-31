@@ -68,6 +68,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bin_hdr_twsi.h"
 #include "mvUart.h"
 #include "util.h"
+#include "mvSiliconIf.h"
 #include "mvCtrlPex.h"
 #include "ddr3_hws_hw_training_def.h"
 
@@ -432,5 +433,8 @@ MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32
 *******************************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-	return MV_MSYS_DEV_ID;
+   	MV_U32 data;
+
+    mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, MV_MSYS_DEV_VERSION_ID_REG, &data, 0xFFFF);
+    return (data & 0xFFFF);
 }

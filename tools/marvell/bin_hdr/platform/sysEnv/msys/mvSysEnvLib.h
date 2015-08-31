@@ -160,8 +160,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	#define MV_MSYS_DEV_ID				MV_BOBK_DEV_ID
 #endif
 
+/* Device-ID number of the PCIe DevID register address
+   for BC2, AC3 and BOBK                              */
+#define MV_MSYS_DEV_VERSION_ID_REG		       0xF8240	/* under server space */
+
 /* Bobcat2 device revision */
-#define BC2_DEV_VERSION_ID_REG		           0xF8240	/* under server space */
 #define BC2_JTAG_DEV_ID_STATUS_REG_ADDR        0x000F8244
 #define BC2_REVISON_ID_OFFS			              16
 #define BC2_JTAG_DEV_ID_STATUS_VERSION_OFFSET     28

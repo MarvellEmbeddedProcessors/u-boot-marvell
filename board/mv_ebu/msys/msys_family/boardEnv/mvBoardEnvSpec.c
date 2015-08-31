@@ -311,6 +311,7 @@ MV_BOARD_TWSI_INFO	bobk_caelum_customer_board_1_InfoBoardTwsiDev[] = {
 	{BOARD_DEV_TWSI_SATR, 0x4E, ADDR7_BIT},          /* SatR bios 2		*/
 	{BOARD_DEV_TWSI_SATR, 0x4F, ADDR7_BIT},          /* SatR bios 3		*/
 	{BOARD_DEV_TWSI_INIT_EPROM, 0x50, ADDR7_BIT},          /* Serial Init EPROM	*/
+	{BOARD_DEV_TWSI_PCA9555_IO_EXPANDER, 0x20, ADDR7_BIT},          /* Qsgmii/sfp mux control PCA9555 IO expander */
 	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x70, ADDR7_BIT},          /* PCA9548 I2C mux 0	*/
 	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x71, ADDR7_BIT},          /* PCA9548 I2C mux 1	*/
 	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x75, ADDR7_BIT}          /* PCA9548 I2C mux 2	*/
@@ -942,6 +943,7 @@ MV_BOARD_TWSI_INFO	db_dx_bobkCaelumInfoBoardTwsiDev[] = {
 	{BOARD_DEV_TWSI_SATR, 0x4E, ADDR7_BIT},          /* SatR bios 2		*/
 	{BOARD_DEV_TWSI_SATR, 0x4F, ADDR7_BIT},          /* SatR bios 3		*/
 	{BOARD_DEV_TWSI_INIT_EPROM, 0x50, ADDR7_BIT},          /* Serial Init EPROM	*/
+	{BOARD_DEV_TWSI_PCA9555_IO_EXPANDER, 0x20, ADDR7_BIT},          /* Qsgmii/sfp mux control PCA9555 IO expander */
 	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x70, ADDR7_BIT},          /* PCA9548 I2C mux 0	*/
 	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x71, ADDR7_BIT},          /* PCA9548 I2C mux 1	*/
 	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x75, ADDR7_BIT}          /* PCA9548 I2C mux 2	*/

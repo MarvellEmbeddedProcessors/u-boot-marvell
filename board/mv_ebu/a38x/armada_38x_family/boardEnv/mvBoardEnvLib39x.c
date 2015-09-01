@@ -393,6 +393,8 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			/*option 0: MAC0=>SerDeses 5+6 using RAXUAI
 				       MAC1=>SerDes 4 using switch*/
 			mvBoardSdioConnectionSet(MV_FALSE);
+			mvBoardTdmConnectionSet(MV_TRUE);
+			mvBoardSetDevState(0, BOARD_DEV_SPI_FLASH, MV_TRUE);
 			netComplexOptions |= defaultNetComplex;
 			break;
 		case MV_GP_CONFIG_EAP_1G:

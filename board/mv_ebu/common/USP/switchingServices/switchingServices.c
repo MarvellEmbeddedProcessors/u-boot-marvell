@@ -952,6 +952,11 @@ SILICON_TYPE get_attached_silicon_type(void)
 		unsigned short DeviceID;
 		pci_dev_t dev;
 		SILICON_TYPE silt = SILT_OTHER;
+		char* env = getenv("skip_switch_pci_scan");
+
+		if (env && (strncmp(env, "yes", 3) == 0)) {
+			return silt;
+		}
 
 		for (BusNum = 0; BusNum < 10; BusNum ++)
 				for (Device = 0; Device < PCI_MAX_PCI_DEVICES; Device++) {

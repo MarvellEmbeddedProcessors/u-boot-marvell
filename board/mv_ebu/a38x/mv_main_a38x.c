@@ -502,10 +502,12 @@ void misc_init_r_env(void)
 	env = getenv("bootargs_dflt");
 	if (!env)
 #if defined(CONFIG_ARMADA_39X)
+		setenv("skip_switch_pci_scan", "yes");
 		setenv("bootargs_dflt", "$console $nandEcc $mtdparts_lgcy $bootargs_root nfsroot=$serverip:$rootpath "
 			   "ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
 			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel $nss_emac_map");
 #else
+		setenv("skip_switch_pci_scan", "no");
 		setenv("bootargs_dflt", "$console $nandEcc $mtdparts_lgcy $bootargs_root nfsroot=$serverip:$rootpath "
 			   "ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
 			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");

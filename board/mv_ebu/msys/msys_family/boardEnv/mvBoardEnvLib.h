@@ -394,9 +394,7 @@ MV_VOID mvBoardUpdateConfigforDT(MV_VOID);
 MV_BOOL mvBoardisSdioConnected(void);
 #endif
 void mvBoardGetModelName(char *pNameBuff);
-#ifdef MV_PP_SMI
 MV_BOOL mvBoardIsPpSmi(void);
-#endif
 void mvBoardPinCtrlNameGet(char *compatibleBuf);
 
 #ifdef __cplusplus

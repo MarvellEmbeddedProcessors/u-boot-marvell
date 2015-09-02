@@ -2081,6 +2081,9 @@ MV_VOID mvEthE1512PhyBasicInit(MV_U32 ethPortNum)
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0);
 */
 
+#ifdef CONFIG_CUSTOMER_BOARD_1
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x0, 0x8000);
+#endif
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x00FF);
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x11, 0x214B);
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x10, 0x2144);

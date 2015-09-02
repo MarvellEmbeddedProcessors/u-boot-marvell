@@ -33,6 +33,9 @@
 #define CCU_WIN_ALR_OFFSET(win)		(MVEBU_ADEC_AP_BASE + 0x8 + (0x10 * win))
 #define CCU_WIN_AHR_OFFSET(win)		(MVEBU_ADEC_AP_BASE + 0xC + (0x10 * win))
 
+#define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
+#define RFU_SW_RESET_OFFSET		0
+
 int soc_early_init_f(void)
 {
 	return 0;
@@ -84,4 +87,12 @@ int dram_init(void)
 #endif
 
 	return 0;
+}
+
+void reset_cpu(ulong ignored)
+{
+	u32 reg;
+	reg = readl(RFU_GLOBAL_SW_RST);
+	reg &= ~(1 << RFU_SW_RESET_OFFSET);
+	writel(reg, RFU_GLOBAL_SW_RST);
 }

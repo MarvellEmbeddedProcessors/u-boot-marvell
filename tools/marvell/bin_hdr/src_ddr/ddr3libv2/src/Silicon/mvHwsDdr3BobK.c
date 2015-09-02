@@ -93,7 +93,7 @@ GT_STATUS ddr3TipBobKSetDivider
 static GT_STATUS ddr3TipTmSetDivider
 (
 	GT_U8							devNum,
-	GT_U8                			interfaceId,
+	GT_U32                			interfaceId,
     MV_HWS_DDR_FREQ                 frequency
 );
 
@@ -807,6 +807,9 @@ GT_STATUS    ddr3TipBobKSelectCPUDdrController
     GT_BOOL  enable
 )
 {
+    /* avoid warnings */
+    devNum =devNum;
+    enable = enable;
     return GT_OK;
 }
 
@@ -1257,7 +1260,7 @@ static GT_U8 ddr3TipClockMode( GT_U32 frequency )
 static GT_STATUS ddr3TipTmSetDivider
 (
 	GT_U8							devNum,
-	GT_U8							interfaceId,
+	GT_U32							interfaceId,
     MV_HWS_DDR_FREQ                 frequency
 )
 {
@@ -1266,6 +1269,8 @@ static GT_STATUS ddr3TipTmSetDivider
 
 	DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("TM PLL Config\n"));
 
+    /* avoid warnings */
+    interfaceId = interfaceId;
     /* Calc SAR */
    /*CHECK_STATUS(ddr3TipTmGetInitFreq(devNum, &sarFreq));*/
     /* calc SAR */

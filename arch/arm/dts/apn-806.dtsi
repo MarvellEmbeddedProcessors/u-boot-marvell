@@ -38,7 +38,7 @@
 			compatible = "marvell,internal-regs";
 			#address-cells = <1>;
 			#size-cells = <1>;
-			reg = <0xf0000000 0x4>;
+			ranges = <0x0000 0xf0000000 0x1000000>;
 
 			tclk: tclk {
 				compatible = "marvell,tclk";

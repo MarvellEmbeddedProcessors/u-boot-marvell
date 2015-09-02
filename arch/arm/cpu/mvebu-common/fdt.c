@@ -24,29 +24,35 @@ DECLARE_GLOBAL_DATA_PTR;
 
 void *fdt_get_regs_offs(const void *blob, int node, const char *prop_name)
 {
-	void *base;
-	u32 reg;
-
-	base = fdt_get_regs_base();
+	uintptr_t reg;
 	reg = fdtdec_get_addr(blob, node, prop_name);
 	if (reg == FDT_ADDR_T_NONE)
 		return NULL;
-
-	return base + reg;
+	return fdt_get_regs_base(blob, node, reg);
 }
 
-void *fdt_get_regs_base(void)
+void *fdt_get_regs_base(const void *blob, int node, uintptr_t reg)
 {
-	int node;
+	int parent;
+	struct fdt_range bus_info, *ranges;
 
-	if (gd->arch.reg_base)
-		return gd->arch.reg_base;
+	parent = fdt_parent_offset(blob, node);
+	/* check if we reached the root */
+	if (parent <= 0)
+		return (void *)reg;
 
-	node = fdt_node_offset_by_compatible(gd->fdt_blob, -1, "marvell,internal-regs");
+	ranges = &bus_info;
 #if defined(CONFIG_MVEBU_SPL_DIFFRENT_BASE_ADDR) && defined(CONFIG_SPL_BUILD)
-	gd->arch.reg_base = (void *)((uintptr_t)fdtdec_get_addr(gd->fdt_blob, node, "reg-spl"));
+	if (strncmp(fdt_get_name(blob, parent, NULL), "internal-regs", 13) == 0)
+		if (fdtdec_get_int_array_count(blob, parent, "ranges-spl", (u32 *)ranges, 3) == -FDT_ERR_NOTFOUND)
+			return NULL;
 #else
-	gd->arch.reg_base = (void *)((uintptr_t)fdtdec_get_addr(gd->fdt_blob, node, "reg"));
+	/* if there is no "ranges" property in current node then skip it */
+	if (fdtdec_get_int_array_count(blob, parent, "ranges", (u32 *)ranges, 3) == -FDT_ERR_NOTFOUND)
+		return fdt_get_regs_base(blob, parent, reg);
 #endif
-	return gd->arch.reg_base;
+	if (reg < ranges->child_bus_address || reg > (ranges->child_bus_address + ranges->size))
+		printf("%s register base address not in the ranges\n", fdt_get_name(blob, node, NULL));
+	reg = reg + ranges->parent_bus_address - ranges->child_bus_address;
+	return fdt_get_regs_base(blob, parent, reg);
 }

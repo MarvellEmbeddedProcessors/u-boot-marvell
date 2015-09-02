@@ -97,7 +97,7 @@ static ulong get_load_addr(void)
 #ifdef CONFIG_SPI_FLASH
 static int spi_burn_image(int image_size)
 {
-	int ret, erase_size;
+	int ret;
 	struct spi_flash *flash;
 
 	/* Probe the SPI bus to get the flash device */
@@ -112,25 +112,12 @@ static int spi_burn_image(int image_size)
 	spi_flash_protect(flash, 0);
 #endif
 
-	/* Erase the U-BOOT image space */
-	erase_size = ((image_size / flash->erase_size) + 1) * flash->erase_size;
-	printf("Erasing 0x%x - 0x%x:...", 0, erase_size);
-	ret = spi_flash_erase(flash, 0, erase_size);
-	if (ret) {
-		printf("Error!\n");
-		goto error;
-	}
-	printf("Done!\n");
-
-	/* Write the image tp flash */
-	printf("Writing image:...");
-	ret = spi_flash_write(flash, 0, image_size, (void *)get_load_addr());
+	ret = spi_flash_update(flash, 0, image_size, (void *)get_load_addr());
 	if (ret)
-		printf("\t\tError!\n");
+		printf("Error!\n");
 	else
-		printf("\t\tDone!\n");
+		printf("Done!\n");
 
-error:
 #ifdef CONFIG_SPI_FLASH_PROTECTION
 	spi_flash_protect(flash, 1);
 #endif

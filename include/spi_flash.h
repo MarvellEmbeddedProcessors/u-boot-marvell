@@ -198,5 +198,6 @@ static inline int spi_flash_erase(struct spi_flash *flash, u32 offset,
 
 void spi_boot(void) __noreturn;
 void spi_spl_load_image(uint32_t offs, unsigned int size, void *vdst);
+int spi_flash_update(struct spi_flash *flash, u32 offset, size_t len, const char *buf);
 
 #endif /* _SPI_FLASH_H_ */

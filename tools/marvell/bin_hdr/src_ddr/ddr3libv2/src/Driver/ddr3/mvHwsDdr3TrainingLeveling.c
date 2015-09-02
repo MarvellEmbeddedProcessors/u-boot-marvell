@@ -33,9 +33,13 @@
 #include "mvDdrTopologyDef.h"
 
 #define WL_ITERATION_NUM            (10)
-#define ONE_CLOCK_ERROR_SHIFT   (2)
-#define ALIGN_ERROR_SHIFT       (-2)
 #define MATRIX_MEM_ADDRESS      (0xfd000)
+
+#define NO_PHASE_SHIFT				(0)
+#define ONE_CLOCK_ERROR_SHIFT		(2)
+#define TWO_CLOCK_ERROR_SHIFT		(4)
+#define THREE_CLOCK_ERROR_SHIFT		(6)
+#define ALIGN_ERROR_SHIFT			(-2)
 
 static GT_U32 pupMaskTable[]=
 {
@@ -72,39 +76,37 @@ static GT_STATUS    ddr3TipDynamicPerBitReadLevelingSeq
 (
     GT_U32   devNum
 );
-static GT_STATUS    ddr3TipWlSuppAlignErrShift
-(
-	GT_U32 devNum,
-	GT_U32 interfaceId,
-	GT_U32 busId,
-	GT_U32 busIdDelta
-);
 
 static GT_STATUS    ddr3TipWlSuppAlignPhaseShift
 (
 	GT_U32 devNum,
-	GT_U32 interfaceId,
-	GT_U32 busId,
-	GT_U32  offset,
-	GT_U32 busIdDelta
+    GT_U32 interfaceId,
+    GT_U32 busId
 );
 
 static GT_STATUS    ddr3TipXsbCompareTest
 (
+    GT_U32 devNum,
+    GT_U32 interfaceId,
+    GT_U32 busId,
+    GT_8 offset
+);
+
+#if 0 /* remove this if it's not in use */
+static GT_STATUS    ddr3TipWlSuppAlignErrShift
+(
 	GT_U32 devNum,
 	GT_U32 interfaceId,
-	GT_U32 busId,
-	GT_32  edgeOffset,
-	GT_U32 busIdDelta
+	GT_U32 busId
 );
 
 static GT_STATUS    ddr3TipWlSuppOneClkErrShift
 (
 	GT_U32 devNum,
 	GT_U32 interfaceId,
-	GT_U32 busId,
-	GT_U32 busIdDelta
+	GT_U32 busId
 );
+#endif
 
 /*****************************************************************************
 mvHwsDdr3TipMaxCSGet
@@ -875,10 +877,10 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 				{
        				VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busCnt)
 					/* training status */
-					CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, maskResultsPupRegMap[busCnt], dataRead, (1 << 25)));
+					CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, maskResultsPupRegMap[busCnt], dataRead, MASK_ALL_BITS));
     				regData = dataRead[interfaceId];
 					DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("WL: IF %d BUS %d reg 0x%x\n", interfaceId, busCnt,regData));
-					if (regData == 0)
+					if((regData & (1 << 25)) == 0 )
 					{
 						resValues[(interfaceId * octetsPerInterfaceNum) + busCnt] = GT_TRUE;
 					}
@@ -1030,7 +1032,7 @@ GT_STATUS    ddr3TipDynamicWriteLevelingSupp
             writeSuppResultTable[interfaceId][busId].isPupFail = GT_TRUE;
             CHECK_STATUS(mvHwsDdr3TipBUSRead(  devNum, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WRITE_CENTRALIZATION_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, &data));
             DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("WL Supp: adllOffset=0 data delay = %d \n", data));
-            if (ddr3TipWlSuppAlignPhaseShift(devNum, interfaceId, busId, 0, 0) == GT_OK)
+            if (ddr3TipWlSuppAlignPhaseShift(devNum, interfaceId, busId) == GT_OK)
             {
                 DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("WL Supp: IF %d busId %d adllOffset=0 Success !\n", interfaceId, busId));
                 continue;
@@ -1041,7 +1043,7 @@ GT_STATUS    ddr3TipDynamicWriteLevelingSupp
             CHECK_STATUS(mvHwsDdr3TipBUSRead(  devNum, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WRITE_CENTRALIZATION_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, &dataTmp));
             DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("WL Supp: adllOffset= %d data delay = %d \n", adllOffset, dataTmp));
 
-            if (ddr3TipWlSuppAlignPhaseShift(devNum, interfaceId, busId, adllOffset, 0) == GT_OK)
+            if (ddr3TipWlSuppAlignPhaseShift(devNum, interfaceId, busId) == GT_OK)
             {
                 DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("WL Supp: IF %d busId %d adllOffset= %d Success !\n", interfaceId, busId, adllOffset));
                 continue;
@@ -1051,7 +1053,7 @@ GT_STATUS    ddr3TipDynamicWriteLevelingSupp
             CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WRITE_CENTRALIZATION_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, data + adllOffset));
             CHECK_STATUS(mvHwsDdr3TipBUSRead(  devNum, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WRITE_CENTRALIZATION_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, &dataTmp));
             DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("WL Supp: adllOffset= %d data delay = %d \n", adllOffset, dataTmp));
-            if (ddr3TipWlSuppAlignPhaseShift(devNum, interfaceId, busId, adllOffset, 0) == GT_OK)
+            if (ddr3TipWlSuppAlignPhaseShift(devNum, interfaceId, busId) == GT_OK)
             {
                 DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("WL Supp: IF %d busId %d adllOffset= %d Success !\n", interfaceId, busId, adllOffset));
                 continue;
@@ -1090,41 +1092,60 @@ Phase Shift
 static GT_STATUS    ddr3TipWlSuppAlignPhaseShift
 (
 	GT_U32 devNum,
-	GT_U32 interfaceId,
-	GT_U32 busId,
-	GT_U32 offset,
-	GT_U32 busIdDelta
+    GT_U32 interfaceId,
+    GT_U32 busId
 )
 {
-     writeSuppResultTable[interfaceId][busId].stage = PHASE_SHIFT;
-     if (ddr3TipXsbCompareTest(devNum, interfaceId, busId, 0, busIdDelta) == GT_OK)
-    {
-        writeSuppResultTable[interfaceId][busId].isPupFail = GT_FALSE;
-        return GT_OK;
-    }
-    /* 1 clock error */
-    else if (ddr3TipXsbCompareTest(devNum, interfaceId, busId, ONE_CLOCK_ERROR_SHIFT,busIdDelta) == GT_OK)
-    {
-        writeSuppResultTable[interfaceId][busId].stage = CLOCK_SHIFT;
-        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("Supp: 1 error clock for if %d pup %d with ofsset %d success\n", interfaceId, busId, offset));
-        ddr3TipWlSuppOneClkErrShift(devNum, interfaceId, busId, 0);
-        writeSuppResultTable[interfaceId][busId].isPupFail = GT_FALSE;
-        return GT_OK;
-    }
-    /* align error */
-    else if (ddr3TipXsbCompareTest(devNum, interfaceId, busId, ALIGN_ERROR_SHIFT, busIdDelta) == GT_OK)
-    {
-        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("Supp: align error for if %d pup %d with ofsset %d success\n", interfaceId, busId, offset));
-        writeSuppResultTable[interfaceId][busId].stage = ALIGN_SHIFT;
-        ddr3TipWlSuppAlignErrShift(devNum, interfaceId, busId, 0);
-        writeSuppResultTable[interfaceId][busId].isPupFail = GT_FALSE;
-        return GT_OK;
-    }
-    else
-    {
-        writeSuppResultTable[interfaceId][busId].isPupFail = GT_TRUE;
-        return GT_FAIL;
-    }
+	GT_U32 originalPhase;
+    GT_U32 data, writeData;
+
+    writeSuppResultTable[interfaceId][busId].stage = PHASE_SHIFT;
+	if( GT_OK == ddr3TipXsbCompareTest(devNum, interfaceId, busId, 0))
+		return GT_OK;
+
+	/*Read the current phase */
+    CHECK_STATUS(mvHwsDdr3TipBUSRead(devNum, interfaceId,  ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, &data));
+	originalPhase = data >> 6 & 0x7;
+
+	/*--- set phase(0x0[6-8]) -2  ---*/
+	if( originalPhase >= 1){
+		if( originalPhase == 1) writeData = (data & ~0x1DF);
+		else writeData = (data & ~0x1C0) | ( (originalPhase - 2) << 6);
+		mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, writeData);
+
+		CHECK_STATUS(ddr3TipXsbCompareTest(devNum, interfaceId, busId, -2 ))
+	}
+
+	/*--- set phase(0x0[6-8]) +2  ---*/
+	if( originalPhase <= 5){
+		writeData = (data & ~0x1C0) | ( (originalPhase + 2) << 6);
+		mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, writeData);
+
+		CHECK_STATUS(ddr3TipXsbCompareTest(devNum, interfaceId, busId, 2))
+	}
+
+	/*--- set phase(0x0[6-8]) +4  ---*/
+	if( originalPhase <= 3){
+		writeData = (data & ~0x1C0) | ( (originalPhase + 4) << 6);
+		mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, writeData);
+
+		CHECK_STATUS(ddr3TipXsbCompareTest(devNum, interfaceId, busId, 4))
+	}
+
+	/*--- set phase(0x0[6-8]) +6  ---*/
+	if( originalPhase <= 1){
+		writeData = (data & ~0x1C0) | ( (originalPhase + 6) << 6);
+		mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, writeData);
+
+		CHECK_STATUS(ddr3TipXsbCompareTest(devNum, interfaceId, busId, 6))
+	}
+
+	/*Nothing sucess, go ahead*/
+
+	/*Write original WL result back*/
+	mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, data);
+	writeSuppResultTable[interfaceId][busId].isPupFail = GT_TRUE;
+	return GT_FAIL;
 }
 
 /*****************************************************************************
@@ -1132,21 +1153,17 @@ Compare Test
 ******************************************************************************/
 static GT_STATUS    ddr3TipXsbCompareTest
 (
-	GT_U32 devNum,
-	GT_U32 interfaceId,
-	GT_U32 busId,
-	GT_32  edgeOffset,
-	GT_U32 busIdDelta
+    GT_U32 devNum,
+    GT_U32 interfaceId,
+    GT_U32 busId,
+    GT_8 edgeOffset
 )
 {
-    GT_32  absOffset;
     GT_U32 numOfSuccByteCompare, wordInPattern;
     GT_U32 wordOffset,i;
     GT_U32 readPattern[TEST_PATTERN_LENGTH*2];
 	PatternInfo *patternTable = ddr3TipGetPatternTable();
 	GT_U32 patternTestPatternTable[8];
-
-    busIdDelta = busIdDelta; /* avoid warnings */
 
 	for(i = 0; i < 8; i++) {
 		patternTestPatternTable[i] = patternTableGetWord(devNum, PATTERN_TEST, (GT_U8)i);
@@ -1166,55 +1183,55 @@ static GT_STATUS    ddr3TipXsbCompareTest
     numOfSuccByteCompare = 0;
     for(wordInPattern = startXsbOffset; wordInPattern < (TEST_PATTERN_LENGTH*2) ; wordInPattern++)
     {
-        wordOffset = wordInPattern + edgeOffset;
-        if ( wordOffset > (TEST_PATTERN_LENGTH*2 - 1) )
+        wordOffset = wordInPattern;
+        if ((wordOffset > (TEST_PATTERN_LENGTH*2 - 1))||(wordOffset < 0))
             continue;
         if ((readPattern[wordInPattern] & pupMaskTable[busId]) == (patternTestPatternTable[wordOffset] & pupMaskTable[busId]))
         {
-            /*DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("ddr3TipDynamicWriteLevelingSupp equal to Offset pattern !! \n"));*/
+            /*DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("ddr3TipDynamicWriteLevelingSupp equal to Ofsset pattern !! \n"));*/
             numOfSuccByteCompare++;
         }
     }
-    absOffset = (edgeOffset > 0) ? edgeOffset : -edgeOffset;
-    if (numOfSuccByteCompare == ((TEST_PATTERN_LENGTH*2) - absOffset - startXsbOffset))
+    if (numOfSuccByteCompare == ((TEST_PATTERN_LENGTH*2) - startXsbOffset))
     {
-        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: IF %d busId %d numOfSuccByteCompare %d - Success \n", interfaceId, busId, numOfSuccByteCompare));
+		writeSuppResultTable[interfaceId][busId].stage = edgeOffset;
+		DEBUG_LEVELING(DEBUG_LEVEL_TRACE,("supplementary: shift to %d for if %d pup %d success\n",
+											edgeOffset, interfaceId, busId));
+		writeSuppResultTable[interfaceId][busId].isPupFail = GT_FALSE;
         return GT_OK;
     }
     else
     {
-
-        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: IF %d busId %d numOfSuccByteCompare %d - Fail ! \n", interfaceId, busId, numOfSuccByteCompare));
-
-        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: expected 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n", patternTestPatternTable[0],patternTestPatternTable[1],
-                                            patternTestPatternTable[2],patternTestPatternTable[3],patternTestPatternTable[4],patternTestPatternTable[5],patternTestPatternTable[6],patternTestPatternTable[7]));
-        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: recieved 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n", readPattern[0],readPattern[1],
-                                            readPattern[2],readPattern[3],readPattern[4],readPattern[5],readPattern[6],readPattern[7]));
-
-        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: IF %d busId %d numOfSuccByteCompare %d - Fail ! \n", interfaceId, busId, numOfSuccByteCompare));
-
-
+        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: IF %d busId %d numOfSuccByteCompare %d - Fail ! \n", 
+											interfaceId, busId, numOfSuccByteCompare));
+        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: expected 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n", 
+											patternTestPatternTable[0],patternTestPatternTable[1],
+                                            patternTestPatternTable[2],patternTestPatternTable[3],patternTestPatternTable[4],
+											patternTestPatternTable[5],patternTestPatternTable[6],patternTestPatternTable[7]));
+        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: recieved 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n", 
+											readPattern[0],readPattern[1],readPattern[2],readPattern[3],
+											readPattern[4],readPattern[5],readPattern[6],readPattern[7]));
+        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: IF %d busId %d numOfSuccByteCompare %d - Fail ! \n", 
+											interfaceId, busId, numOfSuccByteCompare));
         return GT_FAIL;
     }
 }
 
+#if 0 /* remove this if it's not in use */
 /*****************************************************************************
-Clock error shift - function moves the write leveling delay 1cc forward
+Clock error shift - function moves the write levelling delay 1cc forward
 ******************************************************************************/
 static GT_STATUS    ddr3TipWlSuppOneClkErrShift
 (
-	GT_U32 devNum,
-	GT_U32 interfaceId,
-	GT_U32 busId,
-	GT_U32 busIdDelta
+    GT_U32 devNum,
+    GT_U32 interfaceId,
+    GT_U32 busId
 )
 {
     GT_32 phase,  adll;
     GT_U32 data;
 
     DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("OneClkErrShift\n"));
-
-    busIdDelta = busIdDelta; /* avoid warnings */
 
     CHECK_STATUS(mvHwsDdr3TipBUSRead(   devNum, interfaceId,  ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG, &data));
     phase = ((data>>6) & 0x7);
@@ -1237,7 +1254,7 @@ static GT_STATUS    ddr3TipWlSuppOneClkErrShift
     else
     {
         /*phase 3*/
-        return GT_FAIL; 
+        return GT_FAIL;
     }
     return GT_OK;
 }
@@ -1247,17 +1264,13 @@ Align error shift
 ******************************************************************************/
 static GT_STATUS    ddr3TipWlSuppAlignErrShift
 (
-	GT_U32 devNum,
-	GT_U32 interfaceId,
-	GT_U32 busId,
-	GT_U32 busIdDelta
+    GT_U32 devNum,
+    GT_U32 interfaceId,
+    GT_U32 busId
 )
 {
     GT_32 phase, adll;
     GT_U32 data;
-
-    busIdDelta = busIdDelta; /* avoid warnings */
-
     /* Shift WL result 1 phase back*/
     CHECK_STATUS(mvHwsDdr3TipBUSRead(   devNum, interfaceId,  ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG, &data));
     phase = ((data>>6) & 0x7);
@@ -1279,7 +1292,6 @@ static GT_STATUS    ddr3TipWlSuppAlignErrShift
                 CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum,  ACCESS_TYPE_UNICAST, interfaceId,  busId, DDR_PHY_DATA,  1,  data , 0x1f));
                 return GT_OK;
             }
-            
         }
         else
         {
@@ -1301,6 +1313,7 @@ static GT_STATUS    ddr3TipWlSuppAlignErrShift
     }
     return GT_OK;
 }
+#endif
 
 /*****************************************************************************
 Dynamic write leveling sequence

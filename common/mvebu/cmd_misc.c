@@ -20,6 +20,7 @@
 #include <common.h>
 #include <command.h>
 #include <cli.h>
+#include <environment.h>
 
 #include <asm/io.h>
 #include <asm/arch-mvebu/thermal.h>
@@ -203,5 +204,22 @@ U_BOOT_CMD(
 	tsen, 1, 1, thermal_sensor_cmd,
 	"tsen - Display the SoC temperature.\n",
 	"\n\tDisplay the SoC temperature as read from the on chip thermal sensor.\n"
+);
+#endif
+
+#if defined(MV_INCLUDE_NOR) || defined(CONFIG_MVEBU_NAND_BOOT) || defined(CONFIG_MVEBU_SPI_BOOT)
+int resetenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	set_default_env("## Resetting to default environment\n");
+	saveenv();
+
+	return 1;
+}
+
+U_BOOT_CMD(
+	resetenv,      1,     1,      resetenv_cmd,
+	"resetenv - reset all variables to default\n",
+	"\n"
+	"\t Reset all variables to default, and save to the flash\n"
 );
 #endif

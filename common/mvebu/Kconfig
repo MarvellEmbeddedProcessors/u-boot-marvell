@@ -4,10 +4,11 @@ config CMD_MVEBU_MISC
 	bool "map, remap, units, ir"
 	default y
 	help
-	  map   - Display address decode windows
-	  remap - Remap the output address of a window
-	  units	- Display and modify active units
-	  ir    - Reading and changing internal register values
+	  map      - Display address decode windows
+	  remap    - Remap the output address of a window
+	  units	   - Display and modify active units
+	  ir       - Reading and changing internal register values
+	  resetenv - Reset the environment variables, and set to default
 
 config CMD_MVEBU_SAR
 	bool "SatR"

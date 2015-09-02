@@ -3079,7 +3079,6 @@ void mvBoardGetModelName(char *pNameBuff)
 	mvOsSPrintf(pNameBuff, "Marvell MSYS %s %s", board->modelName, board->boardName);
 }
 
-#ifdef MV_PP_SMI
 /*******************************************************************************
 * mvBoardIsPpSmi
 * DESCRIPTION:
@@ -3094,7 +3093,6 @@ MV_BOOL mvBoardIsPpSmi(void)
 {
 	return board->isSmiExternalPp;
 }
-#endif
 
 /*******************************************************************************
 * mvBoardPinCtrlNameGet

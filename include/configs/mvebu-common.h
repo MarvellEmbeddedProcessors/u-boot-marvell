@@ -307,7 +307,7 @@
 	#define CONFIG_IPADDR           10.4.50.154
 	#define CONFIG_SERVERIP         10.4.50.3
 	#define CONFIG_NETMASK          255.255.255.0
-	#define ETHADDR                 "00:00:00:00:51:81"
+	#define CONFIG_ETHADDR          00:00:00:00:51:81
 	#define ENV_ETH_PRIME           "e1000#0"
 #endif /* CONFIG_CMD_NET */
 

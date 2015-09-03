@@ -109,6 +109,15 @@
 				};
 			};
 
+			thermal: thermal@6f8084 {
+				compatible = "marvell,thermal-sensor-v2";
+				gain = <425>;
+				offset = <153400>;
+				divisor = <1000>;
+				reg = <0x6f8084 0x12>;
+				status = "okay";
+			};
+
 		};
 		pcie-controller {
 			#address-cells = <1>;

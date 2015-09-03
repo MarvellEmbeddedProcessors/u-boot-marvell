@@ -224,9 +224,7 @@ static int initr_unlock_ram_in_cache(void)
 #ifdef CONFIG_PCI
 static int initr_pci(void)
 {
-#ifndef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 	pci_init();
-#endif
 
 	return 0;
 }

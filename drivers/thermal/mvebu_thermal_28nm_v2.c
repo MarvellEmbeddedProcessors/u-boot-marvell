@@ -16,8 +16,6 @@
  * ***************************************************************************
  */
 
-#define DEBUG
-
 #include <common.h>
 #include <asm/io.h>
 #include <fdtdec.h>
@@ -32,13 +30,16 @@ struct tsen_info {
 	u32 tsen_offset;
 	u32 tsen_gain;
 	u32 tsen_ready;
+	u32 tsen_divisor;
 };
 
 struct tsen_info __attribute__((section(".data")))tsen_config;
 struct tsen_info __attribute__((section(".data")))*tsen = &tsen_config;
 
+#define THERMAL_TIMEOUT		1000
+
 #define THERMAL_SEN_CTRL_LSB				0x0
-#define THERMAL_SEN_CTRL_LSB_STRT_OFFSET		1
+#define THERMAL_SEN_CTRL_LSB_STRT_OFFSET		0
 #define THERMAL_SEN_CTRL_LSB_STRT_MASK			(0x1 << THERMAL_SEN_CTRL_LSB_STRT_OFFSET)
 #define THERMAL_SEN_CTRL_LSB_RST_OFFSET			1
 #define THERMAL_SEN_CTRL_LSB_RST_MASK			(0x1 << THERMAL_SEN_CTRL_LSB_RST_OFFSET)
@@ -70,13 +71,13 @@ u32 mvebu_thermal_sensor_read(void)
 	if (reg >= THERMAL_SEN_OUTPUT_MSB)
 		reg -= THERMAL_SEN_OUTPUT_COMP;
 
-	return ((tsen->tsen_gain * reg) + tsen->tsen_offset) / 1000;
+	return ((tsen->tsen_gain * reg) + tsen->tsen_offset) / tsen->tsen_divisor;
 }
 
 u32 mvebu_thermal_sensor_probe(void)
 {
 	const void *blob = gd->fdt_blob;
-	u32 node, reg;
+	u32 node, reg, timeout = 0;
 
 	debug_enter();
 	debug("Initializing thermal sensor V2 unit\n");
@@ -105,6 +106,11 @@ u32 mvebu_thermal_sensor_probe(void)
 		debug("%s: missing offset field for thermal sensor node", __func__);
 		return -1;
 	}
+	tsen->tsen_divisor = fdtdec_get_int(blob, node, "divisor", -1);
+	if (tsen->tsen_divisor == -1) {
+		debug("%s: divisor offset field for thermal sensor node", __func__);
+		return -1;
+	}
 
 	/* Initialize thermal sensor hardware reset once */
 	reg = readl(tsen->regs_base + THERMAL_SEN_CTRL_LSB);
@@ -113,8 +119,12 @@ u32 mvebu_thermal_sensor_probe(void)
 	reg |= THERMAL_SEN_CTRL_LSB_STRT_MASK; /* Set TSEN_START to 1 */
 	writel(reg, tsen->regs_base + THERMAL_SEN_CTRL_LSB);
 
-	udelay(10); /* wait 10 ms and check if the TSEN is ready */
 	reg = readl(tsen->regs_base + THERMAL_SEN_CTRL_STATS);
+	while ((reg & THERMAL_SEN_CTRL_STATS_VALID_MASK) == 0 && timeout < THERMAL_TIMEOUT) {
+		udelay(1);
+		reg = readl(tsen->regs_base + THERMAL_SEN_CTRL_STATS);
+		timeout++;
+	}
 	if ((reg & THERMAL_SEN_CTRL_STATS_VALID_MASK) == 0) {
 		error("%s: thermal sensor is not ready\n", __func__);
 		return -1;

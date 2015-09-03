@@ -25,7 +25,7 @@ T(in celsius) = (T(read value) * 425 + 153400) / 1000
 Example:
 	thermal: thermal@ {
 		compatible = "marvell,thermal-sensor-v2";
-		reg = <0x7F0084 0x12>;
+		reg = <0x6f8084 0x12>;
 		gain = <425>;
 		offset = <153400>;
 		divisor = <1000>;

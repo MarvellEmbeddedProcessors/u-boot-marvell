@@ -633,7 +633,8 @@ MV_BOARD_INFO db_dx_bc2Info = {
 	.norFlashWriteParams		= DB_DX_BC2_BOARD_NOR_WRITE_PARAMS,
 	.modelName			= "BobCat2 Development Board",
 	.isSmiExternalPp		= MV_FALSE,
-	.isSdMmcConnected		= MV_TRUE
+	.isSdMmcConnected		= MV_TRUE,
+	.isCm3				= MV_TRUE
 };
 
 /**********************************************************************************/
@@ -718,7 +719,8 @@ MV_BOARD_INFO rd_dx_bc2Info = {
 	.nandFlashControl		= RD_DX_BC2_BOARD_NAND_CONTROL,
 	.modelName			= "BobCat2 Reference Design Board",
 	.isSmiExternalPp		= MV_FALSE,
-	.isSdMmcConnected		= MV_TRUE
+	.isSdMmcConnected		= MV_TRUE,
+	.isCm3				= MV_TRUE
 };
 
 /**********************************************************************************/
@@ -809,7 +811,8 @@ MV_BOARD_INFO bc2_rd_mtlInfo = {
 	.nandFlashControl		= RD_MTL_BC2_BOARD_NAND_CONTROL,
 	.modelName			= "BobCat2 Reference Design Board",
 	.isSmiExternalPp		= MV_FALSE,
-	.isSdMmcConnected		= MV_TRUE
+	.isSdMmcConnected		= MV_TRUE,
+	.isCm3				= MV_TRUE
 };
 
 /*********************************************************************************/
@@ -926,7 +929,8 @@ MV_BOARD_INFO db_dx_bobkCetusInfo = {
 	.isSmiExternalPp		= MV_TRUE,
 	.smiExternalPpIndex		= 0,
 	.modelName			= "BobK Cetus Development Board",
-	.isSdMmcConnected		= MV_TRUE
+	.isSdMmcConnected		= MV_TRUE,
+	.isCm3				= MV_TRUE,
 };
 
 /*********************************************************************************/
@@ -1036,7 +1040,8 @@ MV_BOARD_INFO db_dx_bobkCaelumInfo = {
 	.isSmiExternalPp		= MV_TRUE,
 	.smiExternalPpIndex		= 1,
 	.modelName			= "BobK Caelum Development Board",
-	.isSdMmcConnected		= MV_TRUE
+	.isSdMmcConnected		= MV_TRUE,
+	.isCm3				= MV_TRUE
 };
 
 /*********************************************************************************/
@@ -1147,7 +1152,7 @@ MV_BOARD_INFO db_dx_ac3Info = {
 	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
 
 	.modelName			= "AlleyCat3 Development Board",
-	.isSmiExternalPp		= MV_FALSE,
+	.isSmiExternalPp		= MV_FALSE
 };
 
 /*********************************************************************************/
@@ -1209,7 +1214,7 @@ MV_BOARD_INFO rd_mtl_4xg_ac3Info = {
 	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
 
 	.modelName			= "AlleyCat3 Reference Design Board",
-	.isSmiExternalPp		= MV_FALSE,
+	.isSmiExternalPp		= MV_FALSE
 };
 /*********************************************************************************/
 /***********************************/
@@ -1270,7 +1275,7 @@ MV_BOARD_INFO rd_mtl_2xxg_2xg_ac3Info = {
 	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
 
 	.modelName			= "AlleyCat3 Reference Design Board",
-	.isSmiExternalPp		= MV_FALSE,
+	.isSmiExternalPp		= MV_FALSE
 };
 
 /*********************************************************************************/
@@ -1332,7 +1337,7 @@ MV_BOARD_INFO db_misl_24G_4xg_ac3Info = {
 	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
 
 	.modelName			= "AlleyCat3 Reference Design Board",
-	.isSmiExternalPp		= MV_FALSE,
+	.isSmiExternalPp		= MV_FALSE
 };
 
 /*********************************************************************************/
@@ -1394,7 +1399,7 @@ MV_BOARD_INFO rd_mtl_24G_ac3Info = {
 	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
 
 	.modelName			= "AlleyCat3 Reference Design Board",
-	.isSmiExternalPp		= MV_FALSE,
+	.isSmiExternalPp		= MV_FALSE
 };
 
 /***************************************************************************************/

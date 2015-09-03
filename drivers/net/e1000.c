@@ -5339,7 +5339,7 @@ e1000_initialize(bd_t * bis)
 	DEBUGFUNC();
 
 	/* Find and probe all the matching PCI devices */
-	for (i = 0; (devno = pci_find_devices(e1000_supported, i)) >= 0; i++) {
+	for (i = 0; (devno = pci_find_devices(e1000_supported, i)) != -1ul; i++) {
 		u32 val;
 
 		/*

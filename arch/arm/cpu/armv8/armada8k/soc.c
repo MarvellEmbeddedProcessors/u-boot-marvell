@@ -23,6 +23,7 @@
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-armada8k/armada8k.h>
 #include <asm/arch/regs-base.h>
+#include <linux/sizes.h>
 
 #define ADDRESS_SHIFT			(20)
 #define MAX_CCU_WINDOWS			(8)
@@ -61,8 +62,7 @@ void soc_init(void)
 int dram_init(void)
 {
 #ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
-	/* set static dram size 256MB*/
-	gd->ram_size = 0x10000000;
+	gd->ram_size = CONFIG_DDR_OVER_PCI_SIZE;
 #elif defined(CONFIG_PALLADIUM)
 	gd->ram_size = 0x20000000;
 #else

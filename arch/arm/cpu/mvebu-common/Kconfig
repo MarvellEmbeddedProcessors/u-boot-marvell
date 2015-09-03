@@ -63,6 +63,16 @@ config MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 	  Choose this option to add support
 	  for DDR over PCIE support
 
+config DDR_OVER_PCI_SIZE
+	int "size of DDR over PCI"
+	depends on MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+	default  536870912
+	help
+	  Defines the size of DRAM over
+	  on the PCI endpoint. Relvant
+	  only when DDR over PCI is
+	  used.
+
 endmenu
 
 

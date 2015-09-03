@@ -284,13 +284,10 @@
 	#define CONFIG_PCI_PNP  /* Enable plug-and-play */
 	/*#define CONFIG_MVEBU_PCI_EP*/ /* Set PCI host as end point */
 
-#ifndef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 	/* Enable PCIE NIC for devel boards */
 	#ifdef CONFIG_DEVEL_BOARD
-		#define CONFIG_EEPRO100
 		#define CONFIG_E1000
 	#endif
-#endif
 
 #endif /* CONFIG_MVEBU_PCI */
 
@@ -312,7 +309,6 @@
 #endif /* CONFIG_CMD_NET */
 
 /* SATA AHCI over PCIe */
-#ifndef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 #if defined(CONFIG_DEVEL_BOARD) && (defined(CONFIG_MVEBU_PCI) || defined(CONFIG_MVEBU_DW_PCIE))
 
 	#define CONFIG_CMD_SCSI
@@ -344,7 +340,6 @@
 
 	/* Add support for Magni 9215 and Magni 9235 */
 	#define CONFIG_SCSI_DEV_LIST		{ 0x1B4B, 0x9215 }, { 0x1B4B, 0x9235 }, { 0, 0 }
-#endif
 #endif
 
 /* NAND */

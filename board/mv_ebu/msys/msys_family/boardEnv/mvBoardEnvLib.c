@@ -2931,7 +2931,13 @@ MV_U8 mvBoardCompatibleNameGet(char *pNameBuff)
 		len += sprintf(pNameBuff + len, "marvell,msys-ac3-db") + 1;
 	} else if (boardId >= BOBK_MARVELL_BOARD_ID_BASE && boardId < BOBK_MARVELL_MAX_BOARD_ID) {
 		len += sprintf(pNameBuff + len, "marvell,msys-bobk") + 1;
-		len += sprintf(pNameBuff + len, "marvell,msys-bobk-db") + 1;
+		if (boardId == BOBK_CETUS_DB_ID) {
+			len += sprintf(pNameBuff + len, "marvell,msys-bobk-cetus") + 1;
+			len += sprintf(pNameBuff + len, "marvell,msys-bobk-cetus-db") + 1;
+		} else if (boardId == BOBK_CAELUM_DB_ID) {
+			len += sprintf(pNameBuff + len, "marvell,msys-bobk-caelum") + 1;
+			len += sprintf(pNameBuff + len, "marvell,msys-bobk-caelum-db") + 1;
+		}
 	}
 	len += sprintf(pNameBuff + len, "marvell,armada-370-xp") + 1;
 
@@ -3108,3 +3114,41 @@ void mvBoardPinCtrlNameGet(char *compatibleBuf)
 {
 	mvOsSPrintf(compatibleBuf, "marvell,bc2-ac3-pinctrl");
 }
+
+#ifdef MV_CM3
+/*******************************************************************************
+* mvBoardIsCm3
+* DESCRIPTION:
+*	checks whether CM3 is used or not
+*
+* INPUT:  None
+* OUTPUT: None.
+* RETURN: MV_TRUE CM3 is used
+*	  MV_FALSE otherwise
+*******************************************************************************/
+MV_BOOL mvBoardIsCm3(void)
+{
+	return board->isCm3;
+}
+
+/*******************************************************************************
+* mvBoardCm3CompatibleNameGet
+*
+* DESCRIPTION:
+*       This function returns the compatible string of cm3
+*
+* OUTPUT:
+*       compatibleBuf - Buffer to contain cm3 compatible string
+*
+*******************************************************************************/
+void mvBoardCm3CompatibleNameGet(char *compatibleBuf)
+{
+	if (gBoardId >=  BOBK_MARVELL_BOARD_ID_BASE &&
+			gBoardId < BOBK_MARVELL_MAX_BOARD_ID)
+		mvOsSPrintf(compatibleBuf, "marvell,msys-bobk-cm3");
+	else if (gBoardId >=  BC2_MARVELL_BOARD_ID_BASE &&
+			gBoardId < BC2_MARVELL_MAX_BOARD_ID)
+		mvOsSPrintf(compatibleBuf, "marvell,msys-bc2-cm3");
+
+}
+#endif

@@ -694,6 +694,10 @@ extern int nand_get_env_offs(void);
 #define CONFIG_BZIP2
 #define MV_SWITCH_ADDRESS_COMPLETION
 
+#if defined(CONFIG_BOBCAT2) || defined(CONFIG_BOBK)
+	#define MV_CM3
+#endif
+
 /* for running from L2 SRAM
 #define CONFIG_STACKSIZE	(128 << 10)
 */

@@ -145,6 +145,12 @@ static int mv_fdt_update_usb_vbus(void *fdt);
 #ifdef MV_INCLUDE_USB_DEVICE
 static int mv_fdt_update_usb_device(void *fdt);
 #endif
+#ifdef MV_CM3
+static int mv_fdt_update_cm3(void *fdt);
+#endif
+#ifdef MV_PP_SMI
+static int mv_fdt_update_external_mdio(void *fdt);
+#endif
 
 #if 0 /* not compiled, since this routine is currently not in use  */
 static int mv_fdt_remove_prop(void *fdt, const char *path,
@@ -194,6 +200,12 @@ update_fnc_t *update_sequence[] = {
 #endif
 #ifdef MV_INCLUDE_USB_DEVICE
 	mv_fdt_update_usb_device,
+#endif
+#ifdef MV_CM3
+	mv_fdt_update_cm3,
+#endif
+#ifdef MV_PP_SMI
+	mv_fdt_update_external_mdio,
 #endif
 	NULL,
 };
@@ -541,6 +553,100 @@ static int mv_fdt_update_tdm(void *fdt)
 	return 0;
 }
 #endif
+
+#ifdef MV_CM3
+/*******************************************************************************
+* mv_fdt_update_cm3
+*
+* DESCRIPTION:
+* target		: update status and compatible field of cm3 node.
+* node, properties	: -property status @ node cm3.
+* dependencies		: isCm3 entry in board structure.
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
+static int mv_fdt_update_cm3(void *fdt)
+{
+	char propval[128];				/* property value */
+	const char *prop;				/* property name */
+	const char *node = "cm3";			/* node name */
+
+	/* update status */
+	if (mvBoardIsCm3() == MV_TRUE)
+		sprintf(propval, "okay");
+	else
+		sprintf(propval, "disabled");
+
+	prop = "status";
+	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
+		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+		return 0;
+	}
+
+	if (mvBoardIsCm3() == MV_FALSE)
+		return 0;
+
+	/* update cm3 compatible string */
+	prop = "compatible";
+	mvBoardCm3CompatibleNameGet(propval);
+	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
+		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+		return 0;
+	}
+
+	return 0;
+}
+#endif /* MV_CM3 */
+
+#ifdef MV_PP_SMI
+/*******************************************************************************
+* mv_fdt_update_external_mdio
+*
+* DESCRIPTION:
+* target		: update pp-smi-interface field of external (Switch SMI unit) mdio node.
+* node, properties	: -property pp-smi-interface @ node mdio.
+* dependencies		: smiExternalPpIndex entry in board structure.
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
+static int mv_fdt_update_external_mdio(void *fdt)
+{
+	MV_U32 propval;					/* property value */
+	const char *prop;				/* property name */
+	const char *node_path = "/soc/mdio";		/* node name */
+	const char *node = "mdio";
+	MV_U32 nodeoffset;
+
+	nodeoffset = fdt_path_offset(fdt, node_path);
+	if (mvBoardIsPpSmi() == MV_FALSE)
+		return 0;
+
+	/* update pp-smi-intercace */
+	prop = "pp-smi-interface";
+	mvBoardPPSmiIndexGet(&propval);
+	propval = htonl(propval);
+	if (fdt_setprop(fdt, nodeoffset, prop, &propval, sizeof(propval)) < 0)
+		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+
+	return 0;
+}
+#endif /* MV_PP_SMI */
 
 #ifdef MV_USB_VBUS_CYCLE
 /*******************************************************************************

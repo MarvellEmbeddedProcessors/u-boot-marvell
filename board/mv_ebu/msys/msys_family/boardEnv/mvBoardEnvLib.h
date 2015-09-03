@@ -271,6 +271,7 @@ typedef struct _boardInfo {
 	MV_BOOL isSdMmcConnected;
 
 	char modelName[MV_BOARD_MODEL_NAME_LEN];
+	MV_BOOL isCm3;
 } MV_BOARD_INFO;
 
 MV_VOID mvBoardEnvInit(MV_VOID);
@@ -396,6 +397,10 @@ MV_BOOL mvBoardisSdioConnected(void);
 void mvBoardGetModelName(char *pNameBuff);
 MV_BOOL mvBoardIsPpSmi(void);
 void mvBoardPinCtrlNameGet(char *compatibleBuf);
+#ifdef MV_CM3
+MV_BOOL mvBoardIsCm3(void);
+void mvBoardCm3CompatibleNameGet(char *compatibleBuf);
+#endif
 
 #ifdef __cplusplus
 }

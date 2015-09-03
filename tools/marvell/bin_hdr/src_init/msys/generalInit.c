@@ -191,13 +191,15 @@ MV_STATUS mvBypassCoreClockWA(void)
 
 	mvSysBypassCoreFreqGet(&coreClock);
 	if ((coreClock < 0) || (coreClock >= (sizeof(bypass_coreclock_val)/sizeof(bypass_coreclock_val[0])))) {
-		mvPrintf("Unknown setting (%d) for coreclock, skip WA\n", coreClock);
-		return MV_BAD_PARAM;
+		mvPrintf("Unknown setting (%d) for bypass_coreclock, using default configuration\n", coreClock);
+		/* use default ByPass value, in case EEPROM has invalid value */
+		coreClock = MV_MSYS_CORECLOCK_OVERIDE_VAL;
 	}
 
 	if (!bypass_coreclock_val[coreClock].enable) {
-		mvPrintf("Bypass freq(%dM) is not enabled, skip WA\n", bypass_coreclock_val[coreClock].freq);
-		return MV_BAD_PARAM;
+		mvPrintf("Bypass freq(%dM) is not enabled, using default configuration\n", bypass_coreclock_val[coreClock].freq);
+		/* use default ByPass value, in case EEPROM has invalid value */
+		coreClock = MV_MSYS_CORECLOCK_OVERIDE_VAL;
 	}
 
 	mvPrintf("Core PLL('coreclock') is in bypass mode, run WA\n");

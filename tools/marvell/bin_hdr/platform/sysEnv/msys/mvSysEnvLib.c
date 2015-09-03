@@ -239,7 +239,11 @@ MV_STATUS mvSysBypassCoreFreqGet(MV_U8 *value)
 	twsiSlave.moreThen256 = MV_TRUE;
 
 	if (MV_ERROR == mvTwsiRead(0, &twsiSlave, &bypass_coreclock, 1))
+	{
+		mvPrintf("%s: Twsi failed to read bypass_coreclock, using default configuration\n", __func__);
+		*value = MV_MSYS_CORECLOCK_OVERIDE_VAL;
 		return MV_ERROR;
+	}
 
 	*value = (bypass_coreclock & 0x7);
 

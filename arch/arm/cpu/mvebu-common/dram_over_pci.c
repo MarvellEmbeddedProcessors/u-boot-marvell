@@ -123,6 +123,7 @@ void dram_over_pci_init(const void *fdt_blob)
 {
 	int linkup_timeout_ms = 1000;
 	struct pci_controller *hose;
+	pci_dev_t bdf;
 
 	dram_over_pci_window_config();
 
@@ -146,13 +147,24 @@ void dram_over_pci_init(const void *fdt_blob)
 
 	pci_init();
 
-	/* set device PCIE bars:
+	/* open 0 - 2G for address space beyound the main switch */
+	hose = pci_bus_to_hose(1);
+	bdf  = PCI_BDF(1, 0, 0);
+	hose->write_dword(hose, bdf, 0x20, 0x7fff0000);
+
+	/* open 0 - 1G for PCAC located behind for switch port */
+	hose = pci_bus_to_hose(2);
+	bdf  = PCI_BDF(2, 2, 0);
+	hose->write_dword(hose, bdf, 0x20, 0x3fff0000);
+	hose->write_dword(hose, bdf, 0x0, 0x0);
+
+	/* set DRAM device PCIE bars:
 	   bar 0 configuration space = 0xf1000000
 	   bar 1  address = 0x0 - dram address */
-	hose = pci_bus_to_hose(0);
-	hose->write_dword(hose, 0, BAR0_LOW_ADDR_OFFSET, PCI_DEVICE_CONFIG_SPACE);
-	hose->write_dword(hose, 0, BAR0_HIGH_ADDR_OFFSET, 0);
-
-	hose->write_dword(hose, 0, BAR1_LOW_ADDR_OFFSET, DRAM_OFFSET);
-	hose->write_dword(hose, 0, BAR1_HIGH_ADDR_OFFSET, 0);
+	hose = pci_bus_to_hose(3);
+	bdf  = PCI_BDF(3, 0, 0);
+	hose->write_dword(hose, bdf, BAR0_LOW_ADDR_OFFSET, PCI_DEVICE_CONFIG_SPACE);
+	hose->write_dword(hose, bdf, BAR0_HIGH_ADDR_OFFSET, 0);
+	hose->write_dword(hose, bdf, BAR1_LOW_ADDR_OFFSET, DRAM_OFFSET);
+	hose->write_dword(hose, bdf, BAR1_HIGH_ADDR_OFFSET, 0);
 }

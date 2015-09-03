@@ -85,6 +85,11 @@
 #define PCIE_LINK_CTL_OFF(x)	(x + 0x70)
 
 #define MAX_PCIE_PORTS		10
+#ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+#define FIRST_PCI_BUS		1
+#else
+#define FIRST_PCI_BUS		0
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -134,11 +139,24 @@ static int mvebu_pcie_write_config(struct pci_controller *hose, pci_dev_t bdf,
 		return 1;
 	}
 
-	writel(PCIE_CONF_ADDR(bdf, where), hose->cfg_addr);
-	writel(val, hose->cfg_data);
+#if defined(CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT) && !defined(CONFIG_SPL_BUILD)
+	/* Control modifications to switch ports that host
+	 * the DDR controller maintain DDR access over PCI */
+	if ((bdf == PCI_BDF(1, 0, 0)) || (bdf == PCI_BDF(2, 2, 0))) {
+		/* Never disable Master & Memory capabilities */
+		if (where == PCI_COMMAND)
+			val |= (PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY);
 
+		/* Avoid changing the main bridge BARs */
+		if (where == PCI_MEMORY_BASE)
+			return 0;
+	}
+#endif
 	debug_cfg("PCIE CFG write: (b,d,f)=(%2ld,%2ld,%2ld) (addr,val)=(0x%04x, 0x%08x)\n",
 		  PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf), where, val);
+
+	writel(PCIE_CONF_ADDR(bdf, where), hose->cfg_addr);
+	writel(val, hose->cfg_data);
 
 	return 0;
 }
@@ -218,6 +236,7 @@ static void mvebu_pcie_setup_mapping(void __iomem *reg_base)
 	writel(((size - 1) & 0xffff0000) | PCIE_BAR_ENABLE, PCIE_BAR_CTRL_OFF(reg_base, 1));
 }
 
+
 static void mvebu_pcie_hw_init(void __iomem *reg_base, int first_busno)
 {
 	u32 cmd;
@@ -245,6 +264,14 @@ static void mvebu_pcie_hw_init(void __iomem *reg_base, int first_busno)
  */
 int pci_skip_dev(struct pci_controller *hose, pci_dev_t dev)
 {
+#if defined(CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT) && !defined(CONFIG_SPL_BUILD)
+	/* skip the switch port connected to the DRAM
+	 * PCIe controller to retain its configuration */
+	if (dev == PCI_BDF(3, 0, 0)) {
+		debug_cfg("Skipping (b,d,f)=(%2ld,%2ld,%2ld)\n", PCI_BUS(dev), PCI_DEV(dev), PCI_FUNC(dev));
+		return 1;
+	}
+#endif
 	return 0;
 }
 
@@ -279,6 +306,7 @@ static int mvebu_pcie_init(int host_id, void __iomem *reg_base, struct pcie_win 
 	hose->cfg_data = (unsigned char *)PCIE_CONF_DATA_OFF(reg_base);
 
 	hose->first_busno = first_busno;
+	hose->current_busno = first_busno;
 
 	/* Register the host */
 	pci_register_hose(hose);
@@ -320,7 +348,7 @@ static void mvebu_pcie_set_endpoint(u32 hid, void __iomem *reg_base)
 void pci_init_board(void)
 {
 	int host_id = -1;
-	int first_busno = 0;
+	int first_busno = FIRST_PCI_BUS;
 	int bus_node, port_node, count;
 	const void *blob = gd->fdt_blob;
 	struct pcie_win win;

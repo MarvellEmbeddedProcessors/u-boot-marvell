@@ -1066,6 +1066,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 	const char *node;		/* node name */
 	int depth = 1;
 	int err;
+	MV_BOOL phy_node_update;
 
 
 	/* Get number of ethernet nodes */
@@ -1161,32 +1162,38 @@ static int mv_fdt_update_ethnum(void *fdt)
 			if (phandle == NULL || len == 0) {
 				mv_fdt_dprintf("Empty \"phy\" property value for port %d\n", port);
 #ifdef CONFIG_NET_COMPLEX
-				/*nic0 has no SMI phy but XSMI phy, there is no phy property for nic0*/
-				continue;
+				/* nic0 has no SMI phy but XSMI phy, there is no phy property for nic0.
+				    for nic0, we can't update the phy property, but we need to update the other
+				    attributes, e,g. "phy-mode" and "status" */
+				phy_node_update = MV_FALSE;
 #else
 				return 0;
 #endif
-			}
-			phyoffset = fdt_node_offset_by_phandle(fdt, ntohl(*phandle));
-			if (phyoffset < 0) {
-				mv_fdt_dprintf("Failed to get PHY node by phandle %x\n", ntohl(*phandle));
-				return 0;
-			}
+			} else
+				phy_node_update = MV_TRUE;
 
-			/* Setup PHY address in DT in "reg" property of an appropriate PHY node for
-			   Neta/PP3 driver.
-			   This value is HEX number, not a string, and uses network byte order */
-			phyAddr = htonl(phyAddr);
-			sprintf(prop, "reg");
+			if (MV_TRUE == phy_node_update) {
+				phyoffset = fdt_node_offset_by_phandle(fdt, ntohl(*phandle));
+				if (phyoffset < 0) {
+					mv_fdt_dprintf("Failed to get PHY node by phandle %x\n", ntohl(*phandle));
+					return 0;
+				}
 
-			mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, &phyAddr, sizeof(phyAddr)));
-			if (err < 0) {
-				mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n",
-							prop, fdt_get_name(fdt, phyoffset, NULL));
-				return 0;
+				/* Setup PHY address in DT in "reg" property of an appropriate PHY node for
+				   Neta/PP3 driver.
+				   This value is HEX number, not a string, and uses network byte order */
+				phyAddr = htonl(phyAddr);
+				sprintf(prop, "reg");
+
+				mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, &phyAddr, sizeof(phyAddr)));
+				if (err < 0) {
+					mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n",
+								prop, fdt_get_name(fdt, phyoffset, NULL));
+					return 0;
+				}
+				mv_fdt_dprintf("Set property '%s' of node '%s' to %#010x\n",
+							prop, fdt_get_name(fdt, phyoffset, NULL), ntohl(phyAddr));
 			}
-			mv_fdt_dprintf("Set property '%s' of node '%s' to %#010x\n",
-                                                   prop, fdt_get_name(fdt, phyoffset, NULL), ntohl(phyAddr));
 
 			/* Configure PHY mode */
 			switch (mvBoardPortTypeGet(port)) {

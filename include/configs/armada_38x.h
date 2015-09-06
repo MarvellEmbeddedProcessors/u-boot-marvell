@@ -68,7 +68,7 @@
 #define MV_DDR_64BIT
 #define MV_BOOTROM
 
-#if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1)
+#if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1) || defined (CONFIG_CLEARFOG_BOARD)
 #define CONFIG_CUSTOMER_BOARD_SUPPORT
 #endif
 
@@ -509,8 +509,13 @@ extern int nand_get_env_offs(void);
 	#define CONFIG_DOS_PARTITION
 	#define CONFIG_ISO_PARTITION
 	#define ENV_USB0_MODE   "host"
+#ifdef CONFIG_CLEARFOG_BOARD
+	#define ENV_USB_ACTIVE        "1"
+	#define ENV_USB_MODE          "3"	/* 3 = USB3.0 | 2 = USB2.0 */
+#else
 	#define ENV_USB_ACTIVE        "0"
 	#define ENV_USB_MODE          "2"	/* 3 = USB3.0 | 2 = USB2.0 */
+#endif
 
 	#define CONFIG_USB_HOST_ETHER
 	#define CONFIG_USB_ETHER_ASIX

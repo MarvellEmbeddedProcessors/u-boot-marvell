@@ -13,7 +13,7 @@ sub HELP_MESSAGE
 	print "Options:\n";
 	print "\t-f\tBoot device. Accepts spi, nor, nand, mmc\n";
 	print "\t-b\tBoard type. Accepts:\tavanta_lp , avanta_lp_customer0 , avanta_lp_customer1\n";
-	print "\t\t\t\t\tarmada_38x, armada_38x_customer0, armada_38x_customer1\n";
+	print "\t\t\t\t\tarmada_38x, armada_38x_clearfog, armada_38x_customer0, armada_38x_customer1\n";
 	print "\t\t\t\t\tarmada_39x, armada_39x_customer0, armada_39x_customer1\n";
 	print "\t\t\t\t\tarmada_375, armada_375_customer0, armada_375_customer1\n";
 	print "\t\t\t\t\tbobcat2_db, bobcat2_rd, bobcat2_customer0, bobcat2_customer1\n";
@@ -95,6 +95,7 @@ if(($opt_b eq "armada_xp_dbgp") or
 	($opt_b eq "armada_375_customer0") or
 	($opt_b eq "armada_375_customer1") or
 	($opt_b eq "armada_38x") or
+	($opt_b eq "armada_38x_clearfog") or
 	($opt_b eq "armada_38x_customer0") or
 	($opt_b eq "armada_38x_customer1") or
 	($opt_b eq "armada_39x") or
@@ -152,10 +153,11 @@ if(($opt_b eq "armada_xp_dbgp") or
 		$targetBoard = substr $board, 8;
 		$ddr3LibBuild="yes";
 	}
-	# if board string contains "customer", use customer define for binary_header
-	if (index($board, "customer") != -1){
+	# if board string contains "customer" (Or A38x-SolidRun Clear fog board), use customer define for binary_header
+	if ((index($board, "customer") != -1) or (index($board, "clearfog") != -1)) {
 		system("echo \"#define CONFIG_CUSTOMER_BOARD_SUPPORT 1\" >> include/config.h");
 	}
+
 }
 else
 {

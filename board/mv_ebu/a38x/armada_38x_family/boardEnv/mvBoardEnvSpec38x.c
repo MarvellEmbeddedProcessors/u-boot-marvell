@@ -66,6 +66,7 @@
 #include "boardEnv/mvBoardEnvSpec.h"
 #include "twsi/mvTwsi.h"
 #include "pex/mvPexRegs.h"
+#include "gpp/mvGppRegs.h"
 
 /***************************************** Customer Boards *****************************************/
 /*******************************************************************************
@@ -271,6 +272,7 @@ struct MV_BOARD_IO_EXPANDER armada_38x_customer_1_IoExpanderInfo[] = {
 	{1, 3, 0xC0}  /* Output Data, register#1 */
 };
 
+
 MV_BOARD_GPP_INFO armada_38x_customer_1_GppInfo[] = {
 	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
 /* USB_Host0 *//* //{BOARD_GPP_USB_VBUS,    44},*/ /* from MPP map */
@@ -353,12 +355,175 @@ MV_BOARD_INFO armada_38x_customer_board_1_info = {
 	.switchInfoNum			= 0
 };
 
+/*******************************************************************************
+ * A38x SolidRun ClearFog
+ *******************************************************************************/
+MV_BOARD_TWSI_INFO armada_38x_clearfog_BoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{ BOARD_TWSI_IO_EXPANDER,	0,	0x20, ADDR7_BIT, MV_FALSE},
+};
+MV_BOARD_MAC_INFO armada_38x_clearfog_BoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr ,
+	   MV_32 boardEthSmiAddr0 , MV_BOOL boardMacEnabled;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, MV_TRUE},
+	{ BOARD_MAC_SPEED_1000M, -1, -1, MV_TRUE},
+	{ BOARD_MAC_SPEED_AUTO,  -1,  -1, MV_TRUE}
+};
+
+MV_DEV_CS_INFO armada_38x_clearfog_BoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS1,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS2,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS3,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
+	{ SPI0_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI1_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_TRUE },	/* SPI1 DEV */
+	{ SPI1_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE }	/* SPI1 DEV */
+};
+
+MV_BOARD_MPP_INFO armada_38x_clearfog_BoardMppConfigValue[] = {
+	{ {
+		A38x_CLEARFOG_BOARD_MPP0_7,
+		A38x_CLEARFOG_BOARD_MPP8_15,
+		A38x_CLEARFOG_BOARD_MPP16_23,
+		A38x_CLEARFOG_BOARD_MPP24_31,
+		A38x_CLEARFOG_BOARD_MPP32_39,
+		A38x_CLEARFOG_BOARD_MPP40_47,
+		A38x_CLEARFOG_BOARD_MPP48_55,
+		A38x_CLEARFOG_BOARD_MPP56_63,
+	} }
+};
+
+struct MV_BOARD_IO_EXPANDER armada_38x_clearfog_IoExpanderInfo[] = {
+	{0, 2, 0x40}, /* Deassert both mini pcie reset signals */
+	{0, 6, 0xf9},
+	{0, 2, 0x46}, /* Assert reset signals and enable USB3 current limiter */
+	{0, 6, 0xb9},
+	{0, 3, 0x0}, /* Set SFP_TX_DIS to zero */
+	{0, 7, 0xbf}, /* Drive SFP_TX_DIS to zero */
+};
+
+MV_BOARD_USB_INFO armada_38x_clearfog_InfoBoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB3_UNIT_ID, 0, MV_TRUE},
+	{ USB3_UNIT_ID, 1, MV_TRUE},    /* xHCI port#1 connected only via USB2.0 UTMI (not via USB3.0 SerDes lane) */
+	{ USB_UNIT_ID,  0, MV_TRUE},
+};
+
+struct MV_BOARD_SWITCH_INFO armada_38x_clearfog_InfoSwitchInfo[] = {
+	{
+		.isEnabled = MV_TRUE,
+		.isCpuPortRgmii = MV_FALSE,
+		.switchIrq = -1,	/* set to -1 for using PPU*/
+		.switchPort = {0, 1, 2, 3, 4, 5, 6},
+		.cpuPort = 5,
+		.connectedPort = {-1, 5, -1},
+		.smiScanMode = MV_SWITCH_SMI_MULTI_ADDR_MODE,
+		.quadPhyAddr = 4,
+		.forceLinkMask = 0x60
+	}
+};
+
+MV_BOARD_IO_EXPANDER_TYPE_INFO armada_38x_clearfog_ioExpPinInfo[] = {
+/*	{ IO Type enum,			bit offset, Io.exp num,		reg Num */
+	{ MV_IO_EXPANDER_USB_VBUS,	6,		0,		2} /* VBUS_EN: IO.exp#1 (0x21), reg #3, bit 7 */
+};
+
+void A38x_CLEARFOG_BOARD_gpp_callback(MV_BOARD_INFO *board) {
+	/* Toggle GPIO41 to reset on-board switch and phy */
+	/* Set GPIO41 as output enabled */
+	MV_REG_BIT_RESET (GPP_DATA_OUT_REG(1), BIT9);
+	/* reset output value */
+	MV_REG_BIT_RESET (GPP_DATA_OUT_EN_REG(1), BIT9);
+	/* set output value */
+	mvOsDelay(1);
+	MV_REG_BIT_SET (GPP_DATA_OUT_EN_REG(1), BIT9);
+	mvOsDelay(10);
+
+	/* update on-Board IO expander with pre-defined values:
+	 * USB3 current limiter, and SFP_TX_DIS, Deassert and assert 2*mini PCIe reset signals, */
+	mvBoardIoExpanderUpdate();
+}
+
+MV_BOARD_INFO armada_38x_clearfog_board_info = {
+	.boardName				= "SolidRun ClearFog-A1 REV2.0",
+	.numBoardNetComplexValue		= 0,
+	.pBoardNetComplexInfo			= NULL,
+	.pBoardMppConfigValue			= armada_38x_clearfog_BoardMppConfigValue,
+	.intsGppMaskLow				= 0,
+	.intsGppMaskMid				= 0,
+	.intsGppMaskHigh			= 0,
+	.numBoardDeviceIf			= ARRSZ(armada_38x_clearfog_BoardDeCsInfo),
+	.pDevCsInfo					= armada_38x_clearfog_BoardDeCsInfo,
+	.numBoardTwsiDev			= ARRSZ(armada_38x_clearfog_BoardTwsiDev),
+	.pBoardTwsiDev				= armada_38x_clearfog_BoardTwsiDev,
+	.numBoardMacInfo			= ARRSZ(armada_38x_clearfog_BoardMacInfo),
+	.pBoardMacInfo				= armada_38x_clearfog_BoardMacInfo,
+	.numBoardGppInfo			= 0,
+	.pBoardGppInfo				= 0,
+	.numBoardIoExpPinInfo			= ARRSZ(armada_38x_clearfog_ioExpPinInfo),
+	.pBoardIoExpPinInfo			= armada_38x_clearfog_ioExpPinInfo,
+	.activeLedsNumber			= 0,
+	.pLedGppPin				= NULL,
+	.ledsPolarity				= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity			= 0,
+	.pmuPwrUpDelay				= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow				= A38x_CLEARFOG_BOARD_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid				= A38x_CLEARFOG_BOARD_GPP_OUT_ENA_MID,
+	.gppOutValLow				= A38x_CLEARFOG_BOARD_GPP_OUT_VAL_LOW,
+	.gppOutValMid				= A38x_CLEARFOG_BOARD_GPP_OUT_VAL_MID,
+	.gppPolarityValLow			= A38x_CLEARFOG_BOARD_GPP_POL_LOW,
+	.gppPolarityValMid			= A38x_CLEARFOG_BOARD_GPP_POL_MID,
+	.gppPostConfigCallBack			= A38x_CLEARFOG_BOARD_gpp_callback,
+
+	/* TDM */
+	.numBoardTdmInfo			= {},
+	.pBoardTdmInt2CsInfo			= {},
+	.boardTdmInfoIndex			= -1,
+
+	.pBoardSpecInit				= NULL,
+
+	.pBoardUsbInfo				= armada_38x_clearfog_InfoBoardUsbInfo,
+	.numBoardUsbInfo			= ARRSZ(armada_38x_clearfog_InfoBoardUsbInfo),
+
+	/* NAND init params */
+	.nandFlashReadParams			= 0,
+	.nandFlashWriteParams			= 0,
+	.nandFlashControl			= 0,
+	.nandIfMode					= NAND_IF_NFC,
+
+	.isSdMmcConnected			= MV_TRUE,
+
+	/* NOR init params */
+	.norFlashReadParams			= 0,
+	.norFlashWriteParams			= 0,
+	/* Enable modules auto-detection. */
+	.configAutoDetect			= MV_FALSE,
+	.numIoExp				= ARRSZ(armada_38x_clearfog_IoExpanderInfo),
+	.pIoExp					= armada_38x_clearfog_IoExpanderInfo,
+	.boardOptionsModule			= MV_MODULE_NO_MODULE,
+	.isAmc					= MV_FALSE,
+	.pSwitchInfo				= armada_38x_clearfog_InfoSwitchInfo,
+	.switchInfoNum				= ARRSZ(armada_38x_clearfog_InfoSwitchInfo)
+};
+
 /*
  * All supported A380 customer boards
  */
 MV_BOARD_INFO *customerBoardInfoTbl[] = {
 	&armada_38x_customer_board_0_info,
-	&armada_38x_customer_board_1_info
+	&armada_38x_customer_board_1_info,
+	&armada_38x_clearfog_board_info
 };
 
 

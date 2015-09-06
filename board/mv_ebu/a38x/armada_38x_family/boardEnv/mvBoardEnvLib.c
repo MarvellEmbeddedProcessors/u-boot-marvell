@@ -2284,6 +2284,8 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		gBoardId = CUSTOMER_BOARD_ID0;
 	#elif CONFIG_CUSTOMER_BOARD_1
 		gBoardId = CUSTOMER_BOARD_ID1;
+	#elif CONFIG_CLEARFOG_BOARD
+		gBoardId = A38X_CLEARFOG_BOARD_ID;
 	#endif
 #else /* !CONFIG_CUSTOMER_BOARD_SUPPORT */
 	/* Temporarily set generic board struct pointer, to set/get EEPROM i2c address, and read board ID */

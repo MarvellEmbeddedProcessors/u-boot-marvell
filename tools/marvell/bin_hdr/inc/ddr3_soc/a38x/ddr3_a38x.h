@@ -76,15 +76,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI
 #endif
 
-#define CONFIG_AVS_FROM_EFUSE /* Read pre-burnt EFUSE values, to derive requested AVS value for current chip */
+#ifndef CONFIG_CLEARFOG_BOARD /* clear fog board has no pre-burnt AVS values on EFUSE */
+	#define CONFIG_AVS_FROM_EFUSE /* Read pre-burnt EFUSE values, to derive requested AVS value for current chip */
+#endif
 #define ECC_SUPPORT
 
 /*Controler bus divider 1 for 32 bit, 2 for 64 bit*/
 #define MV_DDR_CONTROLLER_BUS_WIDTH_MULTIPLIER		1
 
 /*Tune internal training params values*/
-#define MV_TUNE_TRAINING_PARAMS_CK_DELAY 		160
-#define MV_TUNE_TRAINING_PARAMS_PHYREG3VAL		0xA
+#ifdef CONFIG_CLEARFOG_BOARD
+	/* SolidRun Armada 38x MicroSOM has short traces on it's DDR clock.
+	   using increased internal delay inside the SoC to compensate for that */
+	#define MV_TUNE_TRAINING_PARAMS_CK_DELAY 	260
+#else
+	#define MV_TUNE_TRAINING_PARAMS_CK_DELAY 	160
+#endif
+#define MV_TUNE_TRAINING_PARAMS_PHYREG3VAL	0xA
 
 #define MV_TUNE_TRAINING_PARAMS_PRI_DATA	123
 #define MV_TUNE_TRAINING_PARAMS_NRI_DATA	123

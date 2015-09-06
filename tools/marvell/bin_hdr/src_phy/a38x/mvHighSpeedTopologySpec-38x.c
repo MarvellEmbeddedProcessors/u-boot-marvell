@@ -93,6 +93,14 @@ SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
 	{ SATA3,		__3Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
 	{ SATA2,		__3Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
 	{ USB3_HOST1,	__5Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
+},
+{	/* SolidRun ClearFog-A1 REV2.0 Topology */
+	{ SATA0,	__3Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ SGMII1,	__1_25Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ PEX1,	  	__5Gbps,	PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+	{ USB3_HOST1,	__5Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ PEX2,	  	__5Gbps,	PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+	{ SGMII2,	__1_25Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
 }};
 
 
@@ -125,6 +133,7 @@ loadTopologyFuncPtr loadTopologyFuncArr[] =
 {
 	loadTopologyCustomer,   	  /* Customer Board 0 */
 	loadTopologyCustomer,   	  /* Customer Board 1*/
+	loadTopologyCustomer,   	  /* SolidRun ClearFog Board */
 };
 
 #else /* CONFIG_CUSTOMER_BOARD_SUPPORT */

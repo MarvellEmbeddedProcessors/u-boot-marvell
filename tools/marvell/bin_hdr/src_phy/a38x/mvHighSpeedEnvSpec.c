@@ -568,9 +568,21 @@ MV_OP_PARAMS usb2PowerUpParams[] =
 	{ 0xC000C ,        0x0 /*NA*/,	0x1000000,  {0x1000000},  0,        0}, /* Phy0 register 3  - TX Channel control 0 */
 	{ 0xC200C ,        0x0 /*NA*/,	0x1000000,  {0x1000000},  0,        0}, /* Phy0 register 3  - TX Channel control 0 */
 	{ 0xC400C ,        0x0 /*NA*/,	0x1000000,  {0x1000000},  0,        0}, /* Phy0 register 3  - TX Channel control 0 */
-	{ 0xC0008 ,        0x0 /*NA*/,	0x80800000, {0x80800000}, 1,     1000}, /* check PLLCAL_DONE is set and IMPCAL_DONE is set*/
-	{ 0xC0018 ,        0x0 /*NA*/,	0x80000000, {0x80000000}, 1,     1000}, /* check REG_SQCAL_DONE  is set*/
-	{ 0xC0000 ,        0x0 /*NA*/,	0x80000000, {0x80000000}, 1,     1000}  /* check PLL_READY  is set*/
+	{ 0xC000C ,        0x0 /*NA*/,	0xf000,     {0x1000},     0,        0}, /* Decrease the amplitude of the low speed eye to meet the spec */
+	{ 0xC200C ,        0x0 /*NA*/,	0xf000,     {0x1000},     0,        0}, /* Decrease the amplitude of the low speed eye to meet the spec */
+	{ 0xC400C ,        0x0 /*NA*/,	0xf000,     {0x1000},     0,        0}, /* Decrease the amplitude of the low speed eye to meet the spec */
+	{ 0xC0008 ,        0x0 /*NA*/,	0x700,      {0x600},      0,        0}, /* Change the High speed impedance threshold */
+	{ 0xC2008 ,        0x0 /*NA*/,	0x700,      {0x600},      0,        0}, /* Change the High speed impedance threshold */
+	{ 0xC4008 ,        0x0 /*NA*/,	0x700,      {0x600},      0,        0}, /* Change the High speed impedance threshold */
+	{ 0xC0014 ,        0x0 /*NA*/,	0xf,        {0x8},        0,        0}, /* Change the squelch level of the receiver to meet the receiver electrical measurements(squelch and receiver sensitivity tests) */
+	{ 0xC2014 ,        0x0 /*NA*/,	0xf,        {0x8},        0,        0}, /* Change the squelch level of the receiver to meet the receiver electrical measurements(squelch and receiver sensitivity tests) */
+	{ 0xC4014 ,        0x0 /*NA*/,	0xf,        {0x8},        0,        0}, /* Change the squelch level of the receiver to meet the receiver electrical measurements(squelch and receiver sensitivity tests) */
+	{ 0xC0008 ,        0x0 /*NA*/,	0x80800000, {0x80800000}, 1,     1000}, /* Check PLLCAL_DONE is set and IMPCAL_DONE is set*/
+	{ 0xC0018 ,        0x0 /*NA*/,	0x80000000, {0x80000000}, 1,     1000}, /* Check REG_SQCAL_DONE  is set*/
+	{ 0xC0000 ,        0x0 /*NA*/,	0x80000000, {0x80000000}, 1,     1000}, /* Check PLL_READY  is set*/
+	{ 0xC0008 ,        0x0 /*NA*/,	0x2000,     {0x2000},     0,        0}, /* Start calibrate of high seed impedance */
+	{ 0x0 ,            0x0 /*NA*/,	0x0,        {0x0},        10,       0},
+	{ 0xC0008 ,        0x0 /*NA*/,	0x2000,     {0x0},        0,        0}, /* De-assert  the calibration signal */
 };
 
 /*****************/

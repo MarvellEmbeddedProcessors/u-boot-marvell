@@ -192,7 +192,7 @@ MV_BOOL isSkippingAVSFromEfuse()
 *	+-------+---------+
 *	| Field | Version |
 *	+-------+---------+
-*	| bits  | 26-29   |
+*	| bits  | 24-27   |
 *	+-------+---------+
 * INPUT:
 *	satrFreq	- controller CPU frequency

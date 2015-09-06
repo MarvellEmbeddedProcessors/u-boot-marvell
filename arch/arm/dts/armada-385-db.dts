@@ -140,24 +140,22 @@
 					0xE6000000 0x2000000 ATTR(0x1, 0x4, 0xB8)
 					0xfd000000 0x1000000 ATTR(0x0, 0x1, 0x2F)>;
 			};
-		};
+			pcie-controller {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "marvell,mvebu-pcie";
 
+				pcie@1,0 {
+					reg = <0x80000 0x2000>;
+					mem = <0xE0000000 0x2000000>;
+					status = "okay";
+				};
 
-		pcie-controller {
-			#address-cells = <1>;
-			#size-cells = <1>;
-			compatible = "marvell,mvebu-pcie";
-
-			pcie@1,0 {
-				reg = <0x80000 0x2000>;
-				mem = <0xE0000000 0x2000000>;
-				status = "okay";
-			};
-
-			pcie@2,0 {
-				reg = <0x40000 0x2000>;
-				mem = <0xE2000000 0x2000000>;
-				status = "okay";
+				pcie@2,0 {
+					reg = <0x40000 0x2000>;
+					mem = <0xE2000000 0x2000000>;
+					status = "okay";
+				};
 			};
 		};
 	};

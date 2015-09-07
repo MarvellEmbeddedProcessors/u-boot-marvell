@@ -400,6 +400,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 					MAC1=>SerDes 4 using switch*/
 			mvBoardSdioConnectionSet(MV_FALSE);
 			netComplexOptions |= (MV_NETCOMP_GE_MAC0_2_SGMII_L6 | MV_NETCOMP_GE_MAC1_2_SGMII_L4);
+			mvBoardAudioConnectionSet(MV_TRUE); /*Enabled for Marvell 88CE156 I2S/TDM Codec*/
 			break;
 		case MV_GP_CONFIG_HGW_AP_2_5G_SATA:
 			/* one of the uses of this configuration is to use the board as AMC board.

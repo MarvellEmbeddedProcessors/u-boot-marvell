@@ -416,6 +416,8 @@ extern "C" {
 #define MV_88F69XX_Z1_NAME		"Z1"
 #define MV_88F69XX_A0_ID		0x6
 #define MV_88F69XX_A0_NAME		"A0"
+#define MV_88F69XX_A1_ID		0x8
+#define MV_88F69XX_A1_NAME		"A1"
 
 #define MV_88F68XX_69XX_ID_ARRAY { \
 	MV_88F68XX_Z1_NAME,\
@@ -425,6 +427,8 @@ extern "C" {
 	MV_88F68XX_A0_NAME,\
 	NULL,\
 	MV_88F69XX_A0_NAME,\
+	NULL,\
+	MV_88F69XX_A1_NAME,\
 };
 
 /* Armada 39x Family */

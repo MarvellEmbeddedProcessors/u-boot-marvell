@@ -82,16 +82,17 @@
 
 MV_BOARD_TWSI_INFO armada_38x_customer_0_BoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,	0,	0x57, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
-	{ BOARD_DEV_TWSI_SATR,	1,	0x4C, ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_IO_EXPANDER,	0,	0x20, ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_IO_EXPANDER,	1,	0x21, ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		0,	0x57,	ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4C,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	0,	0x21,	ADDR7_BIT, MV_FALSE},
 };
+
 MV_BOARD_MAC_INFO armada_38x_customer_0_BoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr ,
 	   MV_32 boardEthSmiAddr0 , MV_BOOL boardMacEnabled;}} */
 	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, MV_TRUE},
 	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1, MV_TRUE},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, MV_FALSE},
 };
 
 MV_DEV_CS_INFO armada_38x_customer_0_BoardDeCsInfo[] = {
@@ -125,14 +126,10 @@ MV_BOARD_MPP_INFO armada_38x_customer_0_BoardMppConfigValue[] = {
 };
 
 struct MV_BOARD_IO_EXPANDER armada_38x_customer_0_IoExpanderInfo[] = {
-	{0, 6, 0xF4}, /* Configuration registers: Bit on --> Input bits  */
-	{0, 7, 0xC3}, /* Configuration registers: Bit on --> Input bits  */
-	{0, 2, 0x0B}, /* Output Data, register#0 */
-	{0, 3, 0x18}, /* Output Data, register#1 */
-	{1, 6, 0xE7}, /* Configuration registers: Bit on --> Input bits  */
-	{1, 7, 0xF9}, /* Configuration registers: Bit on --> Input bits  */
-	{1, 2, 0x08}, /* Output Data, register#0 */
-	{1, 3, 0x00}  /* Output Data, register#1 */
+	{0, 6, 0xFF}, /* Config reg#0: all bits as input (BIT on = Input) */
+	{0, 7, 0xFC}, /* Config reg#1: BIT0(USB3.0 current limit), BIT1(USB3.1 current limit)*/
+	{0, 2, 0xFF}, /* Output Data, reg#0  - no output bits*/
+	{0, 3, 0xFF}, /* Output Data, reg#1:  BIT0,USB3.0_CURRENT=1, BIT1,USB3.1_CURRENT=1 */
 };
 
 MV_BOARD_GPP_INFO armada_38x_customer_0_GppInfo[] = {

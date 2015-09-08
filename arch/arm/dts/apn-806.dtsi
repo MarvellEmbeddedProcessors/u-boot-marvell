@@ -120,16 +120,16 @@
 				status = "okay";
 			};
 
-		};
-		pcie-controller {
-			#address-cells = <1>;
-			#size-cells = <1>;
-			compatible = "marvell,mvebu-pcie";
+			pcie-controller {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "marvell,mvebu-pcie";
 
-			pcie@1,0 {
-				reg = <0x50000000 0x2000>;
-				mem = <0x40000000 0x40000000>;
-				status = "okay";
+				pcie@1,0 {
+					reg = <0x50000000 0x2000>;
+					mem = <0x40000000 0x40000000>;
+					status = "okay";
+				};
 			};
 		};
 	};

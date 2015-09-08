@@ -163,6 +163,7 @@ extern unsigned int mvUartPortGet(void);
 #define CONFIG_CMD_RCVR
 #define CONFIG_CMD_BOOT_MENU
 #define CONFIG_CMD_SYS_RESTORE
+
 /* Open this define for enabling Secure Boot Mode eFuses modification
 #define CONFIG_CMD_EFUSE
 */
@@ -557,6 +558,14 @@ extern int nand_get_env_offs(void);
 //#define CONFIG_MMC_TRACE
 /* Boot from MMC settings */
 #if defined(MV_MMC_BOOT)
+/* the following commands are supported only with SPI/NAND interfaces */
+#if (!defined(MV_INCLUDE_SPI) && !defined(MV_NAND))
+	#undef CONFIG_CMD_SOURCE	/* cmd_mvsource.c supports script burning to SPI/NAND only */
+	#undef CONFIG_CMD_STAGE_BOOT
+	#undef CONFIG_CMD_RCVR
+	#undef CONFIG_CMD_BOOT_MENU
+	#undef CONFIG_CMD_SYS_RESTORE
+#endif
 	#define CONFIG_ENV_IS_IN_MMC	/* Environment is at absolute location (RAW) */
 //	#define CONFIG_ENV_IS_IN_FAT	/* Environment is in file on FAT partition */
 //	#define CONFIG_FAT_WRITE

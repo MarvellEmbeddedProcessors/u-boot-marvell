@@ -76,6 +76,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI
 #endif
 
+#define CONFIG_AVS_FROM_EFUSE /* Read pre-burnt EFUSE values, to derive requested AVS value for current chip */
 #define ECC_SUPPORT
 
 /*Controler bus divider 1 for 32 bit, 2 for 64 bit*/

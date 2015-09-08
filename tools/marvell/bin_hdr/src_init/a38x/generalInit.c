@@ -211,6 +211,11 @@ MV_BOOL mvGetAvsValFromEfuse(MV_U32 satrFreq, MV_U32 *avsVal)
 	MV_BOARD_AVS_EFUSE_MAP efuse_freq_val[] = EFUSE_FREQ_VAL_INFO;
 	int i;
 
+#ifndef CONFIG_AVS_FROM_EFUSE
+	mvPrintf("AVS selection from EFUSE disabled (Skip reading EFUSE values)\n");
+		return MV_FALSE;
+#endif
+
 #ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
 	if (mvBoardIdGet() == DB_AMC_6820_ID) {
 		mvPrintf("Skipping AVS selection from EFUSE when run on AMC card\n");

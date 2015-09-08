@@ -30,6 +30,7 @@ ENTRY(psci_0_2_cpu_on_64)
 ENTRY(psci_0_2_affinity_info_64)
 ENTRY(psci_0_2_migrate_64)
 ENTRY(psci_0_2_migrate_info_up_cpu_64)
+ENTRY(psci_0_2_system_reset)
 	mov	x0, #ARM_PSCI_RET_NI	/* Return -1 (Not Implemented) */
 	ret
 ENDPROC(psci_0_2_cpu_suspend_64)
@@ -37,11 +38,13 @@ ENDPROC(psci_0_2_cpu_on_64)
 ENDPROC(psci_0_2_affinity_info_64)
 ENDPROC(psci_0_2_migrate_64)
 ENDPROC(psci_0_2_migrate_info_up_cpu_64)
+ENDPROC(psci_0_2_system_reset)
 .weak psci_0_2_cpu_suspend_64
 .weak psci_0_2_cpu_on_64
 .weak psci_0_2_affinity_info_64
 .weak psci_0_2_migrate_64
 .weak psci_0_2_migrate_info_up_cpu_64
+.weak psci_0_2_system_reset
 
 ENTRY(psci_0_2_psci_version)
 	mov	x0, #2			/* Return Major = 0, Minor = 2*/
@@ -51,6 +54,7 @@ ENDPROC(psci_0_2_psci_version)
 .align 4
 _psci_0_2_table:
 	PSCI_FN(PSCI_0_2_FN_PSCI_VERSION, psci_0_2_psci_version)
+	PSCI_FN(PSCI_0_2_FN_SYSTEM_RESET, psci_0_2_system_reset)
 	PSCI_FN(PSCI_0_2_FN64_CPU_SUSPEND, psci_0_2_cpu_suspend_64)
 	PSCI_FN(PSCI_0_2_FN64_CPU_ON, psci_0_2_cpu_on_64)
 	PSCI_FN(PSCI_0_2_FN64_AFFINITY_INFO, psci_0_2_affinity_info_64)

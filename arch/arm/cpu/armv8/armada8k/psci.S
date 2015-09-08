@@ -27,6 +27,7 @@
 #define MVEBU_CCU_HTC_ASET_REG	0x4264
 #define MVEBU_PRIVATE_UID_REG	0x30
 #define MVEBU_IO_AFFINITY	0xF00
+#define MVEBU_RFU_GLOBL_SW_RST	0x84
 
 .pushsection ._secure.text, "ax"
 
@@ -80,6 +81,14 @@ psci_build_stack:
 	lsl	x5, x5, #12
 	sub	sp, x5, x4		/* here's our stack! */
 
+	ret
+
+.globl	psci_0_2_system_reset
+psci_0_2_system_reset:
+	mov	x0, #(MVEBU_RFU_BASE)
+	add	x3, x0, #(MVEBU_RFU_GLOBL_SW_RST)
+	mov	w0, #0
+	str	w0, [x3]
 	ret
 
 	/* x1 = target CPU */

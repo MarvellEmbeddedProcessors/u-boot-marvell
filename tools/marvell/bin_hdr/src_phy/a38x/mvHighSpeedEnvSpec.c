@@ -700,16 +700,15 @@ MV_U32 mvHwsSerdesTopologyVerify(SERDES_TYPE serdesType, MV_U32 serdesId, SERDES
 		   }
 		}
 		SerdesLaneInUseCount[unitId][unitNumb]--;			/* update amount of required Serdes lanes for current type */
-		if (SerdesLaneInUseCount[unitId][unitNumb] == 0){	/* if reached the exact amount of required Serdes lanes for current type */
-		if (((serdesType <= PEX3)) && ((serdesMode == PEX_END_POINT_x4) || (serdesMode == PEX_ROOT_COMPLEX_x4)))
-			serdesUnitCount[PEX_UNIT_ID] +=2;				/* PCiex4 uses 2 SerDes */
-		else
-			serdesUnitCount[unitId]++;
+        if (SerdesLaneInUseCount[unitId][unitNumb] == 0)/* if reached the exact amount of required Serdes lanes for current type */
+        {
+		    if((serdesType <= PEX3) && ((serdesMode == PEX_END_POINT_x4) || (serdesMode == PEX_ROOT_COMPLEX_x4)))
+			    serdesUnitCount[PEX_UNIT_ID] +=2;				/* PCiex4 uses 2 SerDes */
+		    else
+                serdesUnitCount[unitId]++;
 
-		if (serdesUnitCount[unitId] > serdMaxNumb)			/* test SoC unit count limitation */
-			testResult = WRONG_NUMBER_OF_UNITS;
-		else if (unitNumb >= serdMaxNumb)					/* test SoC unit number limitation */
-			testResult = UNIT_NUMBER_VIOLATION;
+            if (serdesUnitCount[unitId] > serdMaxNumb)			/* test SoC unit count limitation */
+                testResult = WRONG_NUMBER_OF_UNITS;
 		}
 	}
 
@@ -725,12 +724,6 @@ MV_U32 mvHwsSerdesTopologyVerify(SERDES_TYPE serdesType, MV_U32 serdesId, SERDES
 		return MV_FAIL;
 	}
 
-	else if (testResult == UNIT_NUMBER_VIOLATION) {
-		mvPrintf("%s: Warning: serdes lane %d type is %s: ",
-				__func__, serdesId, serdesTypeToString[serdesType]);
-		mvPrintf("current device support only %d units of this type.\n", serdMaxNumb);
-		return MV_FAIL;
-	}
 	return MV_OK;
 }
 
@@ -1228,6 +1221,90 @@ MV_STATUS mvSerdesPolarityConfig(MV_U32 serdesNum, MV_BOOL isRx)
 	return MV_OK;
 }
 
+MV_VOID mvHwsUpdateSerdesPhySelectorsOptions  ( MV_VOID)
+{
+	MV_U32 devId, currType,currLane;
+
+    /* update selectors options according to Device limitation*/
+	if ( mvSysEnvDeviceRevGet() == MV_88F69XX_Z1_ID) /* for Z1 SGMII(v3)_0  cannot be defined on lane6 */
+	   commonPhysSelectorsSerdesRev2Map[SGMIIv3_0][6] = NA;
+
+	/* Read HW device ID from S@R */
+	devId = mvSysEnvDeviceIdGet();
+
+    switch (devId)
+    {
+	case MV_6810:
+        /* lane 4 is not in use in 6810*/
+        for (currType = 0;currType < LAST_SERDES_TYPE; currType++)
+            commonPhysSelectorsSerdesRev2Map[currType][4] = NA;
+        /* SATA 2 and SATA 3 are not functional in 6810*/
+        for (currLane =0; currLane < MAX_SERDES_LANES; currLane++)
+        {
+            commonPhysSelectorsSerdesRev2Map[SATA3][currLane] = NA;
+            commonPhysSelectorsSerdesRev2Map[SATA2][currLane] = NA;
+        }
+        break;
+	case MV_6811:
+        /* no QSGMII in 6811*/
+        for (currLane =0; currLane < MAX_SERDES_LANES; currLane++)
+            commonPhysSelectorsSerdesRev2Map[QSGMII][currLane] = NA;
+        /* SATA 2 and SATA 3 and SGMII2 are not functional in 6811*/
+        for (currLane =0; currLane < MAX_SERDES_LANES; currLane++)
+        {
+            commonPhysSelectorsSerdesRev2Map[SATA3][currLane] = NA;
+            commonPhysSelectorsSerdesRev2Map[SATA2][currLane] = NA;
+            commonPhysSelectorsSerdesRev2Map[SGMII2][currLane] = NA;
+        }
+
+        /* no lanes 4 and 5 in 6811 */
+        for (currType = 0;currType < LAST_SERDES_TYPE; currType++)
+        {
+            commonPhysSelectorsSerdesRev2Map[currType][4] = NA;
+            commonPhysSelectorsSerdesRev2Map[currType][5] = NA;
+        }
+        break;
+	case MV_6820:
+        /* SATA 2 and SATA 3 are not functional in 6820*/
+        for (currLane =0; currLane < MAX_SERDES_LANES; currLane++)
+        {
+            commonPhysSelectorsSerdesRev2Map[SATA3][currLane] = NA;
+            commonPhysSelectorsSerdesRev2Map[SATA2][currLane] = NA;
+        }
+        break;
+	case MV_6828:
+        /* no limitations in 6828 */
+        break;
+    case /* 4 */	MV_NONE:
+        break;
+    case /* 5 */MV_6920:
+        /* no SATA ,USB3_HOST1, USB3_DEVICE,QSGMII*/
+        for (currLane =0; currLane < MAX_SERDES_LANES; currLane++)
+        {
+            commonPhysSelectorsSerdesRev2Map[SATA0][currLane] = NA;
+            commonPhysSelectorsSerdesRev2Map[SATA1][currLane] = NA;
+            commonPhysSelectorsSerdesRev2Map[SATA2][currLane] = NA;
+            commonPhysSelectorsSerdesRev2Map[SATA3][currLane] = NA;
+            commonPhysSelectorsSerdesRev2Map[USB3_HOST1][currLane] = NA;
+            commonPhysSelectorsSerdesRev2Map[USB3_DEVICE][currLane] = NA;
+            commonPhysSelectorsSerdesRev2Map[QSGMII][currLane] = NA;
+        }
+         break;
+    case/* 6 */	MV_6928:
+        /* no limitations in 6928 */
+        break;
+
+    case 7/* MV_6925 */:
+        /* SATA 2 and SATA 3 are not functional in 6925*/
+        for (currLane =0; currLane < MAX_SERDES_LANES; currLane++)
+        {
+            commonPhysSelectorsSerdesRev2Map[SATA3][currLane] = NA;
+            commonPhysSelectorsSerdesRev2Map[SATA2][currLane] = NA;
+        }
+	    break;
+    }
+
+}
 /***************************************************************************/
 MV_STATUS mvHwsPowerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 {
@@ -1243,6 +1320,9 @@ MV_STATUS mvHwsPowerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
                                              unit will be initialized after Serdes power-up */
 
 	DEBUG_INIT_FULL_S("\n### mvHwsPowerUpSerdesLanes ###\n");
+
+    /* update Table of selectors options according to Device limitation*/
+    mvHwsUpdateSerdesPhySelectorsOptions();
 
 	/* COMMON PHYS SELECTORS register configuration */
 	DEBUG_INIT_FULL_S("mvHwsPowerUpSerdesLanes: Updating COMMON PHYS SELECTORS reg\n");
@@ -1734,7 +1814,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 /***************************************************************************/
 MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 {
-	MV_U32 laneData, serdesIdx,serdesLaneHwNum, regData = 0;
+	MV_U32 laneData, serdesIdx,serdesLaneHwNum,devId,regData = 0;
 	SERDES_TYPE serdesType;
 	SERDES_MODE serdesMode;
 	MV_U8       selectBitOff;
@@ -1749,6 +1829,9 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 	} else {
 		selectBitOff = 4;
 	}
+	/* Read HW device ID from S@R */
+	devId = mvSysEnvDeviceIdGet();
+
 	/* update selectors  for Z1*/
 	if ( mvSysEnvDeviceRevGet() == MV_88F69XX_Z1_ID) /* for Z1 SGMII(v3)_0  cannot be defined on lane6 */
 	   commonPhysSelectorsSerdesRev2Map[SGMIIv3_0][6] = NA;
@@ -1759,12 +1842,18 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 		serdesMode = serdesConfigMap[serdesIdx].serdesMode;
 		serdesLaneHwNum = mvHwsGetPhysicalSerdesNum(serdesIdx);
 
-		laneData = mvHwsSerdesGetPhySelectorVal(serdesLaneHwNum, serdesType);
+		if (((devId == MV_6810) || (devId == MV_6811)) &&
+			((serdesMode == PEX_END_POINT_x4) || (serdesMode == PEX_ROOT_COMPLEX_x4))) {
+			mvPrintf("%s: Warning: PCIeX4 mode is not supported in this device \n",__func__);
+			serdesConfigMap[serdesIdx].serdesType = DEFAULT_SERDES;
+	        }
 
 		if(serdesType == DEFAULT_SERDES) {
 			continue;
 		}
-		if (mvHwsSerdesTopologyVerify(serdesType,serdesIdx,serdesMode) != MV_OK){
+		laneData = mvHwsSerdesGetPhySelectorVal(serdesLaneHwNum, serdesType);
+
+		if (mvHwsSerdesTopologyVerify(serdesType,serdesIdx,serdesMode) != MV_OK) {
 			serdesConfigMap[serdesIdx].serdesType = DEFAULT_SERDES;
 			mvPrintf("%s: SerDes lane #%d is  disabled\n",__func__, serdesLaneHwNum);
 			updatedTopologyPrint = MV_TRUE;

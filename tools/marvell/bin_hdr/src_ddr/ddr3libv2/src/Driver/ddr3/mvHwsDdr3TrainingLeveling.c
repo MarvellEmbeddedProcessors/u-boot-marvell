@@ -1064,11 +1064,10 @@ GT_STATUS    ddr3TipDynamicWriteLevelingSupp
                 isIfFail = GT_TRUE;
             }
         }
-        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("WL Supp: IF %d busId %d isPupFail %d\n", interfaceId, busId, isIfFail));
 
         if (isIfFail == GT_TRUE)
         {
-            DEBUG_LEVELING(DEBUG_LEVEL_ERROR,  ("WL Supp: IF %d failed\n", interfaceId));
+            DEBUG_LEVELING(DEBUG_LEVEL_ERROR,  ("WL Supp CS# %d: IF %d failed\n", effective_cs ,interfaceId));
             trainingResult[trainingStage][interfaceId] = TEST_FAILED;
         }
         else
@@ -1160,31 +1159,34 @@ static GT_STATUS    ddr3TipXsbCompareTest
 )
 {
     GT_U32 numOfSuccByteCompare, wordInPattern;
-    GT_U32 wordOffset,i;
+    GT_U32 wordOffset,i,numOfWordMult;
     GT_U32 readPattern[TEST_PATTERN_LENGTH*2];
 	PatternInfo *patternTable = ddr3TipGetPatternTable();
 	GT_U32 patternTestPatternTable[8];
 
-	for(i = 0; i < 8; i++) {
+    numOfWordMult = (topologyMap->activeBusMask == 3 /*INTERFACE_BUS_MASK_16BIT*/) ? 1:2; 
+
+    	for(i = 0; i < 8; i++) {
 		patternTestPatternTable[i] = patternTableGetWord(devNum, PATTERN_TEST, (GT_U8)i);
 	}
 
+
     /* extern write, than read and compare */
-    CHECK_STATUS(ddr3TipExtWrite(devNum, interfaceId, (patternTable[PATTERN_TEST].startAddr + ((SDRAM_CS_SIZE + 1)  * effective_cs)), 1, patternTestPatternTable));
+	CHECK_STATUS(ddr3TipLoadPatternToMem(devNum, PATTERN_TEST));	
 
     CHECK_STATUS(ddr3TipResetFifoPtr(devNum));
 
-    CHECK_STATUS(ddr3TipExtRead(devNum, interfaceId, (patternTable[PATTERN_TEST].startAddr + ((SDRAM_CS_SIZE + 1)  * effective_cs)), 1, readPattern));
+    CHECK_STATUS(ddr3TipExtRead(devNum, interfaceId, ((patternTable[PATTERN_TEST].startAddr<<3) + ((SDRAM_CS_SIZE + 1)  * effective_cs)), 1, readPattern));
 
-    DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: IF %d busId %d 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
+    DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt CS#%d: IF %d busId %d 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",effective_cs,
 										interfaceId, busId, readPattern[0],readPattern[1],readPattern[2],readPattern[3],
 										readPattern[4],readPattern[5],readPattern[6],readPattern[7]));
     /* compare byte per pup */
     numOfSuccByteCompare = 0;
-    for(wordInPattern = startXsbOffset; wordInPattern < (TEST_PATTERN_LENGTH*2) ; wordInPattern++)
+    for(wordInPattern = startXsbOffset; wordInPattern < (TEST_PATTERN_LENGTH*numOfWordMult) ; wordInPattern++)
     {
         wordOffset = wordInPattern;
-        if ((wordOffset > (TEST_PATTERN_LENGTH*2 - 1))||(wordOffset < 0))
+        if (wordOffset > (TEST_PATTERN_LENGTH*2 - 1))
             continue;
         if ((readPattern[wordInPattern] & pupMaskTable[busId]) == (patternTestPatternTable[wordOffset] & pupMaskTable[busId]))
         {
@@ -1192,7 +1194,7 @@ static GT_STATUS    ddr3TipXsbCompareTest
             numOfSuccByteCompare++;
         }
     }
-    if (numOfSuccByteCompare == ((TEST_PATTERN_LENGTH*2) - startXsbOffset))
+    if (numOfSuccByteCompare == ((TEST_PATTERN_LENGTH*numOfWordMult) - startXsbOffset))
     {
 		writeSuppResultTable[interfaceId][busId].stage = edgeOffset;
 		DEBUG_LEVELING(DEBUG_LEVEL_TRACE,("supplementary: shift to %d for if %d pup %d success\n",
@@ -1202,16 +1204,16 @@ static GT_STATUS    ddr3TipXsbCompareTest
     }
     else
     {
-        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: IF %d busId %d numOfSuccByteCompare %d - Fail ! \n", 
+        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt CS# %d: IF %d busId %d numOfSuccByteCompare %d - Fail ! \n",effective_cs, 
 											interfaceId, busId, numOfSuccByteCompare));
         DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: expected 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n", 
 											patternTestPatternTable[0],patternTestPatternTable[1],
                                             patternTestPatternTable[2],patternTestPatternTable[3],patternTestPatternTable[4],
 											patternTestPatternTable[5],patternTestPatternTable[6],patternTestPatternTable[7]));
-        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: recieved 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n", 
+        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: received 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n", 
 											readPattern[0],readPattern[1],readPattern[2],readPattern[3],
 											readPattern[4],readPattern[5],readPattern[6],readPattern[7]));
-        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt: IF %d busId %d numOfSuccByteCompare %d - Fail ! \n", 
+        DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("XsbCompt CS# %d: IF %d busId %d numOfSuccByteCompare %d - Fail ! \n", effective_cs,
 											interfaceId, busId, numOfSuccByteCompare));
         return GT_FAIL;
     }

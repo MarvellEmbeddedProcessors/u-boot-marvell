@@ -264,12 +264,12 @@ static GT_U8 bobKRatePerFreq[DDR_FREQ_LIMIT] =
 /* Bit mapping (for PBS) */
 GT_U32 bobKDQbitMap2Phypin[] =
 {
-/*#warning "DQ mapping is updated for Interface4 only!" !!!*/
+/*#warning "DQ mapping is updated for Interface 0 and 4 only!" !!!*/
 	    /* Interface 0 */
-	    0,0,0,0,0,0,0,0 , /* dq[0:7]   */
-	    0,0,0,0,0,0,0,0 , /* dq[8:15]  */
-	    0,0,0,0,0,0,0,0 , /* dq[16:23] */
-	    0,0,0,0,0,0,0,0 , /* dq[24:31] */
+        2,0,3,9,7,8,6,1 , /* dq[0:7]   */
+        3,2,1,6,0,9,7,8 , /* dq[8:15]  */
+        9,6,3,2,1,7,0,8 , /* dq[16:23] */
+        3,1,7,2,0,8,9,6 , /* dq[24:31] */
         0,0,0,0,0,0,0,0 , /* dq[ECC]   */
 
 	    /* Interface 1 */

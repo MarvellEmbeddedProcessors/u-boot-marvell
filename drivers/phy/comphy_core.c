@@ -75,14 +75,19 @@ static char *get_type_string(enum phy_type type)
 
 void reg_set(void __iomem *addr, u32 data, u32 mask)
 {
-	u32 reg_data;
 	debug("Write to address = %#010lx, data = %#010x (mask = %#010x) - ", (unsigned long)addr, data, mask);
 	debug("old value = %#010x ==> ", readl(addr));
+	reg_set_silent(addr, data, mask);
+	debug("new value %#010x\n", readl(addr));
+}
+
+void reg_set_silent(void __iomem *addr, u32 data, u32 mask)
+{
+	u32 reg_data;
 	reg_data = readl(addr);
 	reg_data &= ~mask;
 	reg_data |= data;
 	writel(reg_data, addr);
-	debug("new value %#010x\n", readl(addr));
 }
 
 void comphy_print(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *comphy_map_data)

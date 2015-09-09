@@ -23,6 +23,7 @@
 #include <asm/arch-mvebu/comphy_hpipe.h>
 #include <asm/arch-mvebu/mvebu.h>
 
+#define HPIPE_ADDR(base, lane)		(base + 0x800 * lane)
 #define COMPHY_RESET_REG		0x120
 
 #define COMPHY_RESET_SW_OFFSET		14
@@ -42,6 +43,14 @@
 
 static void comphy_pcie_release_soft_reset(void __iomem *hpipe_addr)
 {
+	/* Set MAX PLL Calibration */
+	reg_set(hpipe_addr + HPIPE_KVCO_CALIB_CTRL_REG,
+		0x1 << HPIPE_KVCO_CALIB_CTRL_MAX_PLL_OFFSET, HPIPE_KVCO_CALIB_CTRL_MAX_PLL_MASK);
+	reg_set(hpipe_addr + HPIPE_LANE_CONFIG0_REG,
+		0x1 << HPIPE_LANE_CONFIG0_MAX_PLL_OFFSET, HPIPE_LANE_CONFIG0_MAX_PLL_MASK);
+	reg_set(hpipe_addr + HPIPE_LANE_CONFIG0_REG,
+		0x1 << HPIPE_LANE_CONFIG0_GEN2_PLL_OFFSET, HPIPE_LANE_CONFIG0_GEN2_PLL_MASK);
+
 	/* DFE reset sequence */
 	reg_set(hpipe_addr + HPIPE_PWR_CTR_REG,
 		0x1 << HPIPE_PWR_CTR_RST_DFE_OFFSET, HPIPE_PWR_CTR_RST_DFE_MASK);
@@ -55,10 +64,6 @@ static void comphy_pcie_release_soft_reset(void __iomem *hpipe_addr)
 	udelay(10);
 	reg_set(hpipe_addr + HPIPE_PWR_CTR_REG,
 		0x0 << HPIPE_PWR_CTR_SFT_RST_OFFSET, HPIPE_PWR_CTR_SFT_RST_MASK);
-
-	/* release PIPE RESET - release PHY from reset */
-	reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG,
-		0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
 }
 
 static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_addr)
@@ -123,10 +128,16 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_addr
 	reg_set(hpipe_addr + HPIPE_CLK_SRC_HI_REG,
 		master_val << HPIPE_CLK_SRC_HI_LANE_MASTER_OFFSET, HPIPE_CLK_SRC_HI_LANE_MASTER_MASK);
 
-	/* SW reset for PCIe by 1 - for PCIe by4 need to reset after configure all 4 lanes*/
-	if (!pcie_by4)
-		comphy_pcie_release_soft_reset(hpipe_addr);
+	/* For PCIe by4 need to reset after configure all 4 lanes */
+	if (pcie_by4) {
+		debug_exit();
+		return 1;
+	}
 
+	comphy_pcie_release_soft_reset(hpipe_addr);
+	/* release PIPE RESET - release PHY from reset */
+	reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG,
+		0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
 	udelay(20000);
 
 	debug_exit();
@@ -138,7 +149,6 @@ int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 {
 	struct comphy_map *ptr_comphy_map;
 	void __iomem *comphy_base_addr, *hpipe_base_addr;
-	void __iomem *hpipe_addr;
 	u32 comphy_max_count, lane, ret = 0;
 	u32 pcie_by4 = 1;
 
@@ -163,7 +173,6 @@ int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 	for (lane = 0, ptr_comphy_map = serdes_map; lane < comphy_max_count; lane++, ptr_comphy_map++) {
 		debug("Initialize serdes number %d\n", lane);
 		debug("Serdes type = 0x%x\n", ptr_comphy_map->type);
-		hpipe_addr = hpipe_base_addr + 0x800 * lane;
 		switch (ptr_comphy_map->type) {
 		case UNCONNECTED:
 			continue;
@@ -172,7 +181,7 @@ int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		case PEX1:
 		case PEX2:
 		case PEX3:
-			ret = comphy_pcie_power_up(lane, pcie_by4, hpipe_addr);
+			ret = comphy_pcie_power_up(lane, pcie_by4, HPIPE_ADDR(hpipe_base_addr, lane));
 			udelay(20);
 			break;
 		default:
@@ -186,8 +195,23 @@ int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 	/* SW reset for PCIe for all lanes after power up */
 	if (pcie_by4) {
 		for (lane = 0; lane < 4; lane++) {
-			hpipe_addr = hpipe_base_addr + 0x800 * lane;
-			comphy_pcie_release_soft_reset(hpipe_addr);
+			comphy_pcie_release_soft_reset(HPIPE_ADDR(hpipe_base_addr, lane));
+		}
+
+		/* release PIPE RESET - release PHY from reset
+		   need to release the lanes withot delay between them */
+		debug("%s: Release PIPE reset for PCIe-By4, write to Reset Clock control register\n", __func__);
+		for (lane = 0; lane < 4; lane++) {
+			reg_set_silent(HPIPE_ADDR(hpipe_base_addr, lane) + HPIPE_RST_CLK_CTRL_REG,
+				       0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
+		}
+
+		udelay(20000);
+		for (lane = 0; lane < 4; lane++) {
+			ret = readl(HPIPE_ADDR(hpipe_base_addr, lane) +
+				   HPIPE_LANE_STATUS0_REG) & HPIPE_LANE_STATUS0_PCLK_EN_MASK;
+			if (ret == 0)
+				error("PLL is not locked - Failed to initialize lane %d\n", lane);
 		}
 	}
 

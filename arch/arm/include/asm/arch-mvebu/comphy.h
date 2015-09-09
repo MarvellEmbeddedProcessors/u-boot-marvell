@@ -85,6 +85,7 @@ struct chip_serdes_phy_config {
 };
 
 void reg_set(void __iomem *addr, u32 data, u32 mask);
+void reg_set_silent(void __iomem *addr, u32 data, u32 mask);
 u32 comphy_init(const void *blob);
 
 #ifdef CONFIG_TARGET_ARMADA_38X

@@ -696,7 +696,13 @@ INLINE GT_U32 patternTableGetWord
 			}
 			break;
 		case PATTERN_TEST:
-			pattern = PATTERN_0080;
+			/*pattern = PATTERN_0080;*/
+           if((index == 0) || (index == 3)){
+				pattern = 0x00000000;
+			}
+			else{
+				pattern = 0xFFFFFFFF;
+			}
 			break;
 		case PATTERN_FULL_SSO0:
 			pattern = 0x0000FFFF;

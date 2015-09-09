@@ -653,7 +653,7 @@ GT_STATUS    ddr3TipExtRead
 {
     GT_U32 burstNum;
 
-    for(burstNum=0 ; burstNum < numOfBursts*8; burstNum++)
+    for(burstNum=0 ; burstNum < numOfBursts*4; burstNum++)// 4 per 16 bit I/F
     {
 		data[burstNum] = * (volatile unsigned int *) (regAddr + 4* burstNum);
     }

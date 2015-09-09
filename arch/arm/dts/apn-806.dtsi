@@ -102,10 +102,22 @@
 			comphy {
 				compatible = "marvell,mvebu-comphy", "marvell,comphy-ap806";
 				mux-bitcount = <1>;
-				max-lanes = <1>;
+				max-lanes = <4>;
 				reg-comphy = <0x6F0000 0x8>;
 				reg-hpipe3 = <0x70000 0x8>;
 				phy0 {
+					phy-type = <PHY_TYPE_PEX0>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_PEX0>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+				phy2 {
+					phy-type = <PHY_TYPE_PEX0>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+				phy3 {
 					phy-type = <PHY_TYPE_PEX0>;
 					phy-speed = <PHY_SPEED_5G>;
 				};

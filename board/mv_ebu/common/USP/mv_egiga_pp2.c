@@ -259,6 +259,7 @@ static int mvEgigaLoad(int port, char *name, char *enet_addr)
 	dev->priv = priv;
 	dev->iobase = 0;
 	dev->write_hwaddr = 0;
+	dev->index = port;
 	priv->port = port;
 	priv->devInit = MV_FALSE;
 	priv->devEnable = MV_FALSE;

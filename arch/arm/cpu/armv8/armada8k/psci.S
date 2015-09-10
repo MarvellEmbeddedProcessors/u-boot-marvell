@@ -58,7 +58,9 @@ psci_arch_init:
 	add     x29, x30, 0 /* keep return address */
 	bl	enable_affinity
 	bl	psci_build_stack
+#ifndef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 	bl	llc_enable
+#endif
 	ret	x29
 
 psci_build_stack:

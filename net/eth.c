@@ -231,7 +231,6 @@ int eth_write_hwaddr(struct eth_device *dev, const char *base_name,
 int eth_register(struct eth_device *dev)
 {
 	struct eth_device *d;
-	static int index;
 
 	assert(strlen(dev->name) < sizeof(dev->name));
 
@@ -246,7 +245,6 @@ int eth_register(struct eth_device *dev)
 
 	dev->state = ETH_STATE_INIT;
 	dev->next  = eth_devices;
-	dev->index = index++;
 
 	return 0;
 }

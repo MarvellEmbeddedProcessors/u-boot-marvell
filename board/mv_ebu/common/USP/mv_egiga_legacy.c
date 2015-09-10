@@ -153,6 +153,7 @@ static int mvEgigaLoad(int port, char *name, char *enet_addr)
 	dev->halt = (void*)mvEgigaHalt;
 	dev->send = (void*)mvEgigaTx;
 	dev->recv = (void*)mvEgigaRx;
+	dev->index = port;
 	dev->priv = priv;
 	dev->iobase = 0;
 	dev->port = port;

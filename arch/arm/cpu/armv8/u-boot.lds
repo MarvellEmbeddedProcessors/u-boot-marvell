@@ -39,6 +39,7 @@ SECTIONS
 	.secure_text CONFIG_ARMV8_SECURE_BASE :
 		AT(ADDR(.__secure_start) + SIZEOF(.__secure_start))
 	{
+		*(._startofsecure.text)
 		*(._secure.text)
 	}
 

@@ -17,7 +17,7 @@
         .quad __id; \
         .quad __fn
 
-.pushsection ._secure.text, "ax"
+.pushsection ._startofsecure.text, "ax"
 
 #ifdef CONFIG_TARGET_ARMADA_8K
 /* WA reset adderrs - CPU reset vector address - must be alined to 0x10000 */

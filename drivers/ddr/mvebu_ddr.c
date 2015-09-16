@@ -23,6 +23,10 @@
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/fdt.h>
 
+#ifdef CONFIG_MVEBU_DYNAMIC_SUPPORT
+#include <mvHwsDdrMckTraining.h>
+#endif
+
 #ifdef CONFIG_MVEBU_STATIC_SUPPORT
 static void static_dram_init(struct mvebu_dram_config *config)
 {

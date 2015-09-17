@@ -593,7 +593,9 @@ MV_OP_PARAMS usb2PowerUpParams[] =
 MV_OP_PARAMS qsgmiiPortPowerUpParams[] =
 {
 	/* unitBaseReg                    unitOffset   	mask         QSGMII data		waitTime   numOfLoops */
-	{ QSGMII_CONTROL_REG1,				0x0,  		0x40000000,	{ 0x40000000	}, 	   0,		  0 },	  /* Connect the QSGMII to Gigabit Ethernet units */
+	{ QSGMII_CONTROL_REG1,				0x0,  		0x44000000,	{ 0x44000000	}, 	   0,		  0 },	  /* Connect QSGMII to Gigabit Ethernet units;
+                                                                                                             Set sampling edge of Tx QSGMII to be positive
+                                                                                                             to achive port the stability - JIRA-1282    */
 	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,  		0xF0006,	{ 0x80002		}, 	   0,		  0 },	  /* Power Up */
 	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		0x7800,	    { 0x6000		}, 	   0,		  0 },	  /* Unreset */
 	{ POWER_AND_PLL_CTRL_REG,			0x800,		0xFF,	    { 0xFC81		}, 	   0,		  0 },	  /* Phy Selector */

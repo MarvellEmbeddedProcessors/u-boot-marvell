@@ -79,7 +79,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "polarssl/rsa.h"
 //#include "polarssl/aes.h"
 
-#define VERSION_NUMBER	"2.0"
+#define VERSION_NUMBER	"2.01"
 
 /* Security context */
 typedef struct secCtx_t {
@@ -481,7 +481,7 @@ int verify_sec_header (BHR_t *pHdr, int csk_idx)
 	secCtx.rsa.len = (mpi_msb(&secCtx.rsa.N) + 7) >> 3; /* key length in bytes */
 
 	/* Key length should include 4 bytes of the data block header */
-	rsaKeyLen = (((pSecHdr->cskArray[csk_idx]).Key)[csk_idx] << 8) + ((pSecHdr->cskArray[csk_idx]).Key)[3] + 4;
+	rsaKeyLen = (((pSecHdr->cskArray[csk_idx]).Key)[2] << 8) + ((pSecHdr->cskArray[csk_idx]).Key)[3] + 4;
 	sha2((unsigned char *)((pSecHdr->cskArray[csk_idx]).Key), rsaKeyLen, buf32, 0);
 	fprintf(stdout, "----------------------------------------------------------\n");
 	fprintf(stdout,"RSA key SHA256 digest for eFuse (CSK-%d):\n  BE FULL: ", csk_idx);

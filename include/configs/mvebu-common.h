@@ -46,6 +46,7 @@
 #define CONFIG_SYS_MALLOC_BASE          (CONFIG_SYS_TEXT_BASE + (3 << 20))  /* TEXT_BASE + 3M */
 #define CONFIG_SYS_MALLOC_LEN           (1 << 20)    /* Reserve 1MB for malloc*/
 #define CONFIG_NR_DRAM_BANKS		(2)
+
 /* maybe need to set back to 0x7fff0 */
 #define CONFIG_SYS_INIT_SP_ADDR         (CONFIG_SYS_TEXT_BASE + 0xFF0000)   /* End of 16M scrubbed by training in bootrom */
 #define CONFIG_SYS_GBL_DATA_SIZE        128	/* Size in bytes reserved for init data */
@@ -293,6 +294,20 @@
 	#endif
 
 #endif /* CONFIG_MVEBU_PCI */
+
+#ifdef CONFIG_MVEBU_ADVK_PCIE
+	#define CONFIG_PCI
+	#define CONFIG_PCI_PNP	/* Enable plug-and-play */
+	#define CONFIG_PCI_SCAN_SHOW
+	#define CONFIG_SYS_PCI_64BIT
+	#define CONFIG_PCI_ADDR_PREFIX
+	#define CONFIG_PCIE_RC_MODE
+
+	/* Enable PCIE NIC for devel boards */
+	#ifdef CONFIG_DEVEL_BOARD
+		#define CONFIG_E1000
+	#endif
+#endif /* CONFIG_MVEBU_ADVK_PCIE */
 
 /* Add network parameters when network command is enabled */
 #ifdef CONFIG_CMD_NET

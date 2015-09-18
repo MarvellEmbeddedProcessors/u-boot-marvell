@@ -55,6 +55,8 @@ Group Ltd.
 				Specify the UART interface for armadaLP, check doc/device-tree-bindings/serial/mvebu-serial.txt
 			2.1.7 /soc/internal-regs/neta/ node;
 				Specify the GBE interface for armadaLP, check doc/device-tree-bindings/net/mvebu-gbe.txt
+			2.1.8 /soc/internal-regs/pcie/ node;
+				Specify the PCIe interface for armadaLP, check doc/device-tree-bindings/pci/mvebu-pci.txt
 
 3) /sar/ node:
 	Specify the sample at reset database, check

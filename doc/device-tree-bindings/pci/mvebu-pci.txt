@@ -6,7 +6,8 @@ that make up PCIe bus.
 
 The mvebu-pcie requires the following proprties:
 	- compatible
-		should be "marvell,mvebu-pcie"
+		should be "marvell,mvebu-pcie" for legacy Marvell EBU PCIe IP,
+		and "marvell,advk-pcie" for Marvell Ardvark PCIe IP.
 	- pcie
 		a node describing a single PCIe port.
 		each pcie node contains the following properties

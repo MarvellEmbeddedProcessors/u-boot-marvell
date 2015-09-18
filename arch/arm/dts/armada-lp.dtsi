@@ -83,6 +83,17 @@
 					phy-speed = <PHY_SPEED_2_5G>;
 				};
 			};
+			pcie-controller {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "marvell,advk-pcie";
+
+				pcie@1,0 {
+					reg = <0x70000 0x20000>;
+					mem = <0xE8000000 0x8000000>;
+					status = "disabled";
+				};
+			};
 		};
 	};
 };

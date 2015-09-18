@@ -677,7 +677,7 @@ int pci_hose_scan_bus(struct pci_controller *hose, int bus)
 
 		if (pci_print_dev(hose, dev)) {
 			printf("%02x:%02x.%-*x - %04x:%04x - %s\n",
-			       PCI_BUS(dev), PCI_DEV(dev), 6 - indent, PCI_FUNC(dev),
+			       (u32)PCI_BUS(dev), (u32)PCI_DEV(dev), 6 - indent, (u32)PCI_FUNC(dev),
 			       vendor, device, pci_class_str(class >> 8));
 		}
 #endif

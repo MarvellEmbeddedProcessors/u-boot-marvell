@@ -116,6 +116,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_ARMADA_LP_DB0, "marvell,armada-lp-db0"),
 	COMPAT(MVEBU_ARMADA_LP_DB1, "marvell,armada-lp-db1"),
 	COMPAT(MVEBU_ARMADA_LP_CUSTOMER, "marvell,armada-lp-customer"),
+	COMPAT(MVEBU_ADVK_PCIE, "marvell,advk-pcie"),
 };
 
 const char *fdtdec_get_compatible(enum fdt_compat_id id)

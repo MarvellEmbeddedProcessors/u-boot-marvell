@@ -24,6 +24,11 @@
 			i2c: i2c@11000 {
 				status = "okay";
 			};
+			pcie-controller {
+				pcie@1,0 {
+					status = "okay";
+				};
+			};
 		};
 	};
 };

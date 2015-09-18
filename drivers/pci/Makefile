@@ -20,5 +20,6 @@ obj-$(CONFIG_TSI108_PCI) += tsi108_pci.o
 obj-$(CONFIG_WINBOND_83C553) += w83c553f.o
 obj-$(CONFIG_PCIE_LAYERSCAPE) += pcie_layerscape.o
 obj-$(CONFIG_MVEBU_PCI) += pci_mvebu.o
+obj-$(CONFIG_MVEBU_ADVK_PCIE) += pci_advk.o
 obj-$(CONFIG_DW_PCIE) += pcie_dw.o
 obj-$(CONFIG_MVEBU_DW_PCIE) += pcie_mvebu_dw.o

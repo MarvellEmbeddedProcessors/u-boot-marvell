@@ -8,6 +8,16 @@ config MVEBU_PCI
 	  Choose this option to add
 	  support for MVEBU PCI driver
 
+config MVEBU_ADVK_PCIE
+	bool "PCIE support for MVEBU Aardvark PCIe 3 driver"
+	default n
+	select CMD_PCI
+	help
+	  Choose this option to support
+	  MVEBU Aardvark PCIe 3 driver
+	  based on Ardvark IP.
+	  Ardvark supports X1 GEN 3
+
 config DW_PCIE
 	bool "Enable DesignWare PCIe3 driver"
 	default n

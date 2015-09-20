@@ -445,8 +445,11 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
     aaplSerdesDb[devNum]->devNum    = devNum;
     aaplSerdesDb[devNum]->portGroup = 0;
 
-    /*Take Avago device out of reset */
+    /* Take Avago device out of reset */
     user_supplied_sbus_soft_reset(aaplSerdesDb[devNum]);
+
+    /* Change the SBUS master clk divider to 16. 0x6007F828 is indirect address */
+    CHECK_STATUS(genRegisterSet(devNum, aaplSerdesDb[devNum]->portGroup, 0x6007F828, 0x4, 0xFFFF));
 
 #ifndef MV_HWS_BIN_HEADER
     if (avagoConnection == AVAGO_ETH_CONNECTION)

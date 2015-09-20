@@ -175,7 +175,8 @@ MV_BOARD_INFO bobcat2_customer_board_0_Info = {
 	.nandFlashControl		= BOBCAT2_CUSTOMER_0_BOARD_NAND_CONTROL,
 	/* NOR init params */
 	.norFlashReadParams		= BOBCAT2_CUSTOMER_0_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= BOBCAT2_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS
+	.norFlashWriteParams		= BOBCAT2_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS,
+	.configAutoDetect		= MV_FALSE	/* Enable modules auto-detection. */
 };
 
 MV_BOARD_INFO *customerBC2BoardInfoTbl[] = {
@@ -288,7 +289,8 @@ MV_BOARD_INFO bobk_cetus_customer_board_0_Info = {
 	.norFlashWriteParams		= BOBK_CETUS_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS,
 	.isSmiExternalPp		= MV_TRUE,
 	.smiExternalPpIndex		= 0,
-	.isSdMmcConnected		= MV_TRUE
+	.isSdMmcConnected		= MV_TRUE,
+	.configAutoDetect		= MV_FALSE	/* Enable modules auto-detection. */
 };
 
 /*******************************************************************************
@@ -397,7 +399,8 @@ MV_BOARD_INFO bobk_caelum_customer_board_1_Info = {
 	.norFlashWriteParams		= BOBK_CAELUM_CUSTOMER_1_BOARD_NOR_WRITE_PARAMS,
 	.isSmiExternalPp		= MV_TRUE,
 	.smiExternalPpIndex		= 1,
-	.isSdMmcConnected		= MV_TRUE
+	.isSdMmcConnected		= MV_TRUE,
+	.configAutoDetect		= MV_FALSE	/* Enable modules auto-detection. */
 };
 
 
@@ -511,7 +514,8 @@ MV_BOARD_INFO alleycat3_customer_board_0_Info = {
 	.nandFlashControl		= ALLEYCAT3_CUSTOMER_0_BOARD_NAND_CONTROL,
 	/* NOR init params */
 	.norFlashReadParams		= ALLEYCAT3_CUSTOMER_0_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= ALLEYCAT3_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS
+	.norFlashWriteParams		= ALLEYCAT3_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS,
+	.configAutoDetect		= MV_FALSE	/* Enable modules auto-detection. */
 };
 
 MV_BOARD_INFO *customerAC3BoardInfoTbl[] = {
@@ -634,6 +638,7 @@ MV_BOARD_INFO db_dx_bc2Info = {
 	.modelName			= "BobCat2 Development Board",
 	.isSmiExternalPp		= MV_FALSE,
 	.isSdMmcConnected		= MV_TRUE,
+	.configAutoDetect		= MV_TRUE,	/* Enable modules auto-detection. */
 	.isCm3				= MV_TRUE
 };
 
@@ -720,6 +725,7 @@ MV_BOARD_INFO rd_dx_bc2Info = {
 	.modelName			= "BobCat2 Reference Design Board",
 	.isSmiExternalPp		= MV_FALSE,
 	.isSdMmcConnected		= MV_TRUE,
+	.configAutoDetect		= MV_TRUE,	/* Enable modules auto-detection. */
 	.isCm3				= MV_TRUE
 };
 
@@ -812,6 +818,7 @@ MV_BOARD_INFO bc2_rd_mtlInfo = {
 	.modelName			= "BobCat2 Reference Design Board",
 	.isSmiExternalPp		= MV_FALSE,
 	.isSdMmcConnected		= MV_TRUE,
+	.configAutoDetect		= MV_TRUE,	/* Enable modules auto-detection. */
 	.isCm3				= MV_TRUE
 };
 
@@ -930,7 +937,8 @@ MV_BOARD_INFO db_dx_bobkCetusInfo = {
 	.smiExternalPpIndex		= 0,
 	.modelName			= "BobK Cetus Development Board",
 	.isSdMmcConnected		= MV_TRUE,
-	.isCm3				= MV_TRUE,
+	.configAutoDetect		= MV_TRUE,	/* Enable modules auto-detection. */
+	.isCm3				= MV_TRUE
 };
 
 /*********************************************************************************/
@@ -1041,6 +1049,7 @@ MV_BOARD_INFO db_dx_bobkCaelumInfo = {
 	.smiExternalPpIndex		= 1,
 	.modelName			= "BobK Caelum Development Board",
 	.isSdMmcConnected		= MV_TRUE,
+	.configAutoDetect		= MV_TRUE,	/* Enable modules auto-detection. */
 	.isCm3				= MV_TRUE
 };
 
@@ -1150,7 +1159,7 @@ MV_BOARD_INFO db_dx_ac3Info = {
 	/* NOR init params */
 	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
-
+	.configAutoDetect		= MV_TRUE,	/* Enable modules auto-detection. */
 	.modelName			= "AlleyCat3 Development Board",
 	.isSmiExternalPp		= MV_FALSE
 };
@@ -1212,7 +1221,7 @@ MV_BOARD_INFO rd_mtl_4xg_ac3Info = {
 	/* NOR init params */
 	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
-
+	.configAutoDetect		= MV_TRUE,	/* Enable modules auto-detection. */
 	.modelName			= "AlleyCat3 Reference Design Board",
 	.isSmiExternalPp		= MV_FALSE
 };
@@ -1273,7 +1282,7 @@ MV_BOARD_INFO rd_mtl_2xxg_2xg_ac3Info = {
 	/* NOR init params */
 	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
-
+	.configAutoDetect		= MV_TRUE,	/* Enable modules auto-detection. */
 	.modelName			= "AlleyCat3 Reference Design Board",
 	.isSmiExternalPp		= MV_FALSE
 };
@@ -1335,7 +1344,7 @@ MV_BOARD_INFO db_misl_24G_4xg_ac3Info = {
 	/* NOR init params */
 	.norFlashReadParams			= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
-
+	.configAutoDetect		= MV_TRUE,	/* Enable modules auto-detection. */
 	.modelName			= "AlleyCat3 Reference Design Board",
 	.isSmiExternalPp		= MV_FALSE
 };
@@ -1397,7 +1406,7 @@ MV_BOARD_INFO rd_mtl_24G_ac3Info = {
 	/* NOR init params */
 	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS,
-
+	.configAutoDetect		= MV_TRUE,	/* Enable modules auto-detection. */
 	.modelName			= "AlleyCat3 Reference Design Board",
 	.isSmiExternalPp		= MV_FALSE
 };
@@ -1498,7 +1507,7 @@ MV_BOARD_INFO db78X60amcInfo = {
 	.nandFlashReadParams		= DB_78X60_AMC_BOARD_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= DB_78X60_AMC_BOARD_NAND_WRITE_PARAMS,
 	.nandFlashControl		= DB_78X60_AMC_BOARD_NAND_CONTROL,
-
+	.configAutoDetect		= MV_TRUE,	/* Enable modules auto-detection. */
 	.modelName			= "AMC Development Board"
 };
 

@@ -2806,6 +2806,29 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 }
 
 /*******************************************************************************
+* mvBoardConfigAutoDetectEnabled
+*
+* DESCRIPTION:
+*	Indicate if the board supports auto configuration and detection of
+*	modules. This is usually enabled for DB boards only.
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*       MV_TRUE if auto-config/detection is enabled.
+*	MV_FALSE otherwise.
+*
+*******************************************************************************/
+MV_BOOL mvBoardConfigAutoDetectEnabled()
+{
+	return board->configAutoDetect;
+}
+
+/*******************************************************************************
 * mvBoardDebugLeg - Set the board debug Leds
 *
 * DESCRIPTION: turn on/off status leds.

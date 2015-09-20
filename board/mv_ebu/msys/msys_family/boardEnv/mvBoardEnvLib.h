@@ -270,6 +270,10 @@ typedef struct _boardInfo {
 	MV_U32 smiExternalPpIndex;
 	MV_BOOL isSdMmcConnected;
 
+	/* Indicates if auto-detection of modules is enabled on this board. */
+	/* Set to MV_FALSE for any board that is not a DB. */
+	MV_BOOL configAutoDetect;
+
 	char modelName[MV_BOARD_MODEL_NAME_LEN];
 	MV_BOOL isCm3;
 } MV_BOARD_INFO;
@@ -288,6 +292,7 @@ MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum);
 MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx);
+MV_BOOL mvBoardConfigAutoDetectEnabled(void);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
 MV_U32 mvBoardTclkGet(MV_VOID);
 MV_U32 mvBoardSysClkGet(MV_VOID);

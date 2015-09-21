@@ -6,6 +6,7 @@ config SYS_ARCH
 
 config ARM64
 	bool
+	select 64BIT
 
 config HAS_VBAR
         bool
@@ -113,6 +114,7 @@ config TARGET_ARMADA_38X
 config TARGET_ARMADA_LP
 	bool "Support Armada LP"
 	select SUPPORT_SPL
+	select ARM64
 
 config TARGET_SMDK2410
 	bool "Support smdk2410"
@@ -816,6 +818,9 @@ config ARCH_UNIPHIER
 	select OF_CONTROL if !SPL_BUILD
 
 endchoice
+
+config 64BIT
+	bool
 
 source "arch/arm/cpu/arm926ejs/davinci/Kconfig"
 

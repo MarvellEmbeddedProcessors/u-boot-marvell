@@ -759,7 +759,7 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
 
-        trainingResult[trainingStage][interfaceId] = TEST_SUCCESS;
+		trainingResult[trainingStage][interfaceId] = TEST_SUCCESS;
 
         /* save Read Data Sample Delay */
         CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, READ_DATA_SAMPLE_DELAY, readDataSampleDelayVals, MASK_ALL_BITS));
@@ -850,7 +850,7 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 				CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_TRAINING_TRIGGER_REG, dataRead, (1 << 2)));
 				if (dataRead[interfaceId] != 0)
 				{
-					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("WL: WL failed IF %d regData=0x%x\n",interfaceId,dataRead[interfaceId]));
+					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("WL 1: WL failed IF %d regData=0x%x\n",interfaceId,dataRead[interfaceId]));
 				}
 			}
 		}
@@ -869,7 +869,7 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 				regData = dataRead[interfaceId];
 				if (regData != 0)
 				{
-					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("WL: WL failed IF %d regData=0x%x\n",interfaceId,regData));
+					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("WL 2:  WL failed IF %d regData=0x%x\n",interfaceId,regData));
 				}
 
 				/* check for training completion per bus */

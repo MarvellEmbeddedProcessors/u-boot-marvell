@@ -28,6 +28,8 @@
 #ifndef MV_HWS_BIN_HEADER
 #include <common/siliconIf/mvSiliconIf.h>
 #else
+/* use mv_hws_avago_if.h for genRegisterSet/Get functions */
+#include <mv_hws_avago_if.h>
 #include <gtOs/gtGenTypes.h>
 #include <mvSiliconIf.h>
 #endif
@@ -41,18 +43,6 @@
 #define SBC_MASTER_BASE_ADDRESS       (0x60040000)
 #define SBC_MASTER_SERDES_NUM_SHIFT   (10)
 #define SBC_MASTER_REG_ADDR_SHIFT     (2)
-
-#ifdef MV_HWS_BIN_HEADER
-#define genRegisterSet(devNum, portGroup, address, sbus_data, mask) \
-     devNum = devNum; \
-     portGroup = portGroup; \
-     genSwitchRegisterSet(address, sbus_data, mask)
-
-#define genRegisterGet(devNum, portGroup, address, data_ptr, mask) \
-     devNum = devNum; \
-     portGroup = portGroup; \
-     genSwitchRegisterGet(address, data_ptr, mask)
-#endif
 
 /*******************************************************************************
 * user_supplied_pex_address

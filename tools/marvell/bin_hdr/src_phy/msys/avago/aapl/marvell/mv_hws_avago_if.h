@@ -77,11 +77,22 @@ extern "C" {
         return GT_INIT_ERROR; \
     } \
 }
+
 #ifdef MV_HWS_BIN_HEADER
 #define HWS_MAX_DEVICE_NUM 1
 #define osPrintf     mvPrintf
 
-#endif
+#define genRegisterSet(devNum, portGroup, address, sbus_data, mask) \
+     devNum = devNum; \
+     portGroup = portGroup; \
+     genSwitchRegisterSet(address, sbus_data, mask)
+
+#define genRegisterGet(devNum, portGroup, address, data_ptr, mask) \
+     devNum = devNum; \
+     portGroup = portGroup; \
+     genSwitchRegisterGet(address, data_ptr, mask)
+#endif /* MV_HWS_BIN_HEADER */
+
 /************************* Globals *******************************************************/
 int mvHwsAvagoInitializationCheck
 (

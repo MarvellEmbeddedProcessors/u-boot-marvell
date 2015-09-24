@@ -198,7 +198,7 @@ MV_STATUS genSwitchRegisterSet
 }
 
 /*******************************************************************************
-* genUnitRegisterGet
+* mvGenRegisterGet
 *
 * DESCRIPTION:
 *       Read access to device registers.
@@ -216,7 +216,7 @@ MV_STATUS genSwitchRegisterSet
 *       1  - on error
 *
 *******************************************************************************/
-MV_STATUS genRegisterGet
+MV_STATUS mvGenRegisterGet
 (
 	MV_U32			address,
 	MV_U32			*data,
@@ -228,7 +228,7 @@ MV_STATUS genRegisterGet
 }
 
 /*******************************************************************************
-* genRegisterSet
+* mvGenRegisterSet
 *
 * DESCRIPTION:
 *       Implement write access to device registers.
@@ -245,7 +245,7 @@ MV_STATUS genRegisterGet
 *       1  - on error
 *
 *******************************************************************************/
-MV_STATUS genRegisterSet
+MV_STATUS mvGenRegisterSet
 (
 	MV_U32			address,
 	MV_U32			data,
@@ -310,14 +310,14 @@ MV_STATUS mvGenUnitRegisterSet
 	case MG_UNIT:
 	case SERDES_UNIT:
 	case SERDES_PHY_UNIT:
-		/* Units requre address completion */
+		/* Units which require address completion */
 		CHECK_STATUS(genSwitchRegisterSet(address, data, mask));
 		break;
 	case INTERNAL_REG_UNIT:
 	case USB_REG_UNIT:
 	case SERVER_REG_UNIT:
 		/* Direct memory access units */
-		CHECK_STATUS(genRegisterSet(address, data, mask));
+		CHECK_STATUS(mvGenRegisterSet(address, data, mask));
 		break;
 	default:
 		return MV_BAD_PARAM;
@@ -370,14 +370,14 @@ MV_STATUS mvGenUnitRegisterGet
 	case MG_UNIT:
 	case SERDES_UNIT:
 	case SERDES_PHY_UNIT:
-		/* Units requre address completion */
+		/* Units which require address completion */
 		CHECK_STATUS(genSwitchRegisterGet(address, data, mask));
 		break;
 	case INTERNAL_REG_UNIT:
 	case USB_REG_UNIT:
 	case SERVER_REG_UNIT:
 		/* Direct memory access units */
-		CHECK_STATUS(genRegisterGet(address, data, mask));
+		CHECK_STATUS(mvGenRegisterGet(address, data, mask));
 		break;
 	default:
 		return MV_BAD_PARAM;

@@ -821,23 +821,23 @@ static GT_STATUS ddr3TipRev2RankControl(GT_U32 devNum, GT_U32 interfaceId)
     {
    		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busCnt)
         dataValue |= topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].csBitmask;
-      
+
         if (topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask == GT_TRUE)
-        { 
-        /* checking cs mask is same as cs_bitmask - if CS is enabled than  CS+4 bit in word shall be '1' */
-            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].csBitmask & 0x1) != 0)
+        {
+        /* checking mirrorEnableBitmask - if mirrorEnableBitmask is enabled - CS+4 bit in word shall be '1' */
+            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask & 0x1) != 0)
             {
                 dataValue |= (1 << 4);
             }
-            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].csBitmask & 0x2) != 0)
+            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask & 0x2) != 0)
             {
                 dataValue |= (1 << 5);
             }
-            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].csBitmask & 0x4) != 0)
+            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask & 0x4) != 0)
             {
                 dataValue |= (1 << 6);
             }
-            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].csBitmask & 0x8) != 0)
+            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask & 0x8) != 0)
             {
                 dataValue |= (1 << 7);
             }
@@ -845,7 +845,7 @@ static GT_STATUS ddr3TipRev2RankControl(GT_U32 devNum, GT_U32 interfaceId)
     }
 
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, RANK_CTRL_REG, dataValue, 0xFF));
-     
+
     return GT_OK;
 }
 
@@ -863,7 +863,6 @@ static GT_STATUS ddr3TipRev3RankControl(GT_U32 devNum, GT_U32 interfaceId)
 	}
 	dataValue |= topologyMap->interfaceParams[interfaceId].asBusParams[0].csBitmask;
 	dataValue |= topologyMap->interfaceParams[interfaceId].asBusParams[0].mirrorEnableBitmask << 4;
-
 	CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, RANK_CTRL_REG, dataValue, 0xFF));
 
     return GT_OK;

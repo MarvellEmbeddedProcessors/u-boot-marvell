@@ -115,43 +115,42 @@ if(($opt_b eq "armada_xp_dbgp") or
 	($opt_b eq "ac3_customer1") )
 {
 	$board = $opt_b;
-	$ddr3LibBuild="no";
+	$ddr3LibBuild="yes";
 	if( (substr $board,7 , 3) eq "370" ) {
 		$boardID="a370";
 		$targetBoard = substr $board, 11;
+		$ddr3LibBuild="no";
 	}
 	elsif ( (substr $board,7 , 2) eq "xp" ) {
 		$boardID="axp";
 		$targetBoard = substr $board, 10;
+		$ddr3LibBuild="no";
 	}
 	elsif ( (substr $board,7 , 2) eq "lp" ) {
 		$boardID="alp";
+		$ddr3LibBuild="no";
 	}
 	elsif ( (substr $board,7 , 3) eq "375" ) {
 		$boardID="a375";
+		$ddr3LibBuild="no";
 	}
 	elsif ( (substr $board,7 , 3) eq "38x" ) {
 		$boardID="a38x";
-		$ddr3LibBuild="yes";
 	}
 	elsif ( (substr $board,7 , 3) eq "39x" ) {
 		$boardID="a39x";
-		$ddr3LibBuild="yes";
 	}
 	elsif ( (substr $board,0 , 7) eq "bobcat2" ) {
 		$boardID="msys-bc2";
 		$targetBoard = substr $board, 8;
-		$ddr3LibBuild="yes";
 	}
 	elsif ( (substr $board,0 , 4) eq "bobk" ) {
 		$boardID="msys-bobk";
 		$targetBoard = substr $board, 5;
-		$ddr3LibBuild="yes";
 	}
 	elsif ( (substr $board,0 , 3) eq "ac3" ) {
 		$boardID="msys-ac3";
 		$targetBoard = substr $board, 8;
-		$ddr3LibBuild="yes";
 	}
 	# if board string contains "customer" (Or A38x-SolidRun Clear fog board), use customer define for binary_header
 	if ((index($board, "customer") != -1) or (index($board, "clearfog") != -1)) {

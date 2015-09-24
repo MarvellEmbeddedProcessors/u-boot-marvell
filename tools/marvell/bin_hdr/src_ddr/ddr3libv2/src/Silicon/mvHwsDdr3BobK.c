@@ -54,7 +54,8 @@
 #define TM_PLL_REG_DATA(a,b,c)  ((a << 12) + (b << 8) + (c << 2))
 #define R_MOD_W(writeData,readData,mask) ((writeData & mask) | (readData & (~mask)))
 
-#define MAX_TM_INTERFACE_NUM 1 /* TEMPORARY  TBD - should be defined per bobk type */
+#define CETUS_DEV_ID   0xBE00
+#define CAELUM_DEV_ID  0xBC00
 
 /************************** pre-declaration ******************************/
 
@@ -212,7 +213,9 @@ static GT_U32 csCbeReg[]=
 {
     0xE , 0xD, 0xB, 0x7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
-#endif
+
+GT_U32 devId, hwDdrIfMask, hwMaxDdrIfNum;
+
 static MV_DFX_ACCESS interfaceMap[] =
 {
 	/* Pipe	Client*/
@@ -222,7 +225,7 @@ static MV_DFX_ACCESS interfaceMap[] =
 	{   3,	 1	},
     {   0,	 0	} /* in BOBK interface 4 doesn't belong to TM*/
 };
-
+#endif
 static GT_U8 bobKBwPerFreq[DDR_FREQ_LIMIT] =
 {
     0x3, /*DDR_FREQ_LOW_FREQ*/
@@ -273,10 +276,10 @@ GT_U32 bobKDQbitMap2Phypin[] =
         0,0,0,0,0,0,0,0 , /* dq[ECC]   */
 
 	    /* Interface 1 */
-	    0,0,0,0,0,0,0,0 , /* dq[0:7]   */
-	    0,0,0,0,0,0,0,0 , /* dq[8:15]  */
-	    0,0,0,0,0,0,0,0 , /* dq[16:23] */
-	    0,0,0,0,0,0,0,0 , /* dq[24:31] */
+	    9,0,7,2,8,6,3,1 , /* dq[0:7]   */
+	    9,0,1,6,8,3,2,7 , /* dq[8:15]  */
+	    0,7,1,9,6,2,3,8 , /* dq[16:23] */
+	    9,0,8,3,7,6,2,1 , /* dq[24:31] */
         0,0,0,0,0,0,0,0 , /* dq[ECC]   */
 
 	    /* Interface 2 */
@@ -287,10 +290,10 @@ GT_U32 bobKDQbitMap2Phypin[] =
         0,0,0,0,0,0,0,0 , /* dq[ECC]   */
 
 	    /* Interface 3 */
-	    0,0,0,0,0,0,0,0 , /* dq[0:7]   */
-	    0,0,0,0,0,0,0,0 , /* dq[8:15]  */
-	    0,0,0,0,0,0,0,0 , /* dq[16:23] */
-	    0,0,0,0,0,0,0,0 , /* dq[24:31] */
+	    6,2,8,9,0,1,7,3 , /* dq[0:7]   */
+	    1,3,7,9,0,2,8,6 , /* dq[8:15]  */
+	    2,0,7,1,8,9,6,3 , /* dq[16:23] */
+	    1,6,8,2,0,7,3,9 , /* dq[24:31] */
         0,0,0,0,0,0,0,0 , /* dq[ECC]   */
 
         /* Interface 4 */
@@ -313,6 +316,17 @@ MV_HWS_TOPOLOGY_MAP bobKTopologyMap[] =
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} },
+    0xF  /* Buses mask */
+    },
+    /* 2nd board  - Caelum*/
+    {
+    0xB, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                         speed_bin           memory_width  mem_size  frequency  casL casWL      temperature */
+ {  {{{0x2,1,0,0}, {0x2,1,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x2,1,0,0}, {0x2,1,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x2,1,0,0}, {0x2,1,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} },
     0xF  /* Buses mask */
     }
@@ -393,7 +407,7 @@ GT_STATUS ddr3TipBobKGetFreqConfig
 
     return GT_OK;
 }
-
+#if defined(CPSS_BUILD)
 /*****************************************************************************
 Enable Pipe
 ******************************************************************************/
@@ -468,9 +482,30 @@ GT_STATUS    ddr3TipBobKSelectTMDdrController
 {
     GT_U32 interfaceId = 0, dataValue = 0;
 
-    for(interfaceId=0; interfaceId <MAX_TM_INTERFACE_NUM ;interfaceId++)
+    CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, 0x000F8240 ,  &devId, MASK_ALL_BITS));
+
+    if ((devId &0xFFFF) == CETUS_DEV_ID )
+    {
+        /* IN Cetus TM has only 1 IF #0*/
+        hwMaxDdrIfNum = 1;
+        hwDdrIfMask   = 1;
+    }
+    else if ((devId &0xFFFF) == CAELUM_DEV_ID )
+    {
+        /* in Caelum TM may use 3 IFs 0,1,and 3*/
+        hwMaxDdrIfNum = 4;
+        hwDdrIfMask   = 0xB;
+    }
+    else
+          mvPrintf ("Unsupported device ID %x\n", devId);
+
+    for (interfaceId = 0; interfaceId < hwMaxDdrIfNum; interfaceId++)
 	{
-			ddr3TipPipeEnable(devNum, ACCESS_TYPE_UNICAST, interfaceId, GT_TRUE);
+        if(IS_INTERFACE_ACTIVE(topologyMap->interfaceActiveMask, interfaceId) ==  0)/* if the interface doesnt exixst in HW :*/
+            continue;
+        else /* interface exist in HW*/
+        {
+            ddr3TipPipeEnable(devNum, ACCESS_TYPE_UNICAST, interfaceId, GT_TRUE);
 			if (IS_INTERFACE_ACTIVE(topologyMap->interfaceActiveMask, interfaceId) ==  0)
 			{
 				 /*disable in-active interfaces (so they won't be accessed upon multicast)*/
@@ -489,8 +524,9 @@ GT_STATUS    ddr3TipBobKSelectTMDdrController
 			ddr3TipPipeEnable(devNum, ACCESS_TYPE_UNICAST, interfaceId, GT_FALSE);
 
 		}
+    }
 		/* enable access to relevant pipes (according to the pipe mask) */
-		ddr3TipPipeEnable(devNum, ACCESS_TYPE_MULTICAST, interfaceId, GT_TRUE);
+	ddr3TipPipeEnable(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, GT_TRUE);
 
    if (enable)
     {
@@ -660,7 +696,7 @@ GT_STATUS    ddr3TipBobKTMWrite
 	if (interfaceAccess == ACCESS_TYPE_MULTICAST)
     {
         startIf = 0;
-        endIf = MAX_TM_INTERFACE_NUM-1;
+        endIf = hwMaxDdrIfNum-1;
     }
     else
     {
@@ -677,7 +713,7 @@ GT_STATUS    ddr3TipBobKTMWrite
    /* ddr3TipPipeEnable(devNum, interfaceAccess, interfaceId, GT_FALSE);*/
     return GT_OK;
 }
-#if !defined(CPSS_BUILD)
+#else /*!defined(CPSS_BUILD)*/
 /******************************************************************************
 * Name:     ddr3TipBobKWrite.
 * Desc:
@@ -829,7 +865,7 @@ static GT_STATUS ddr3TipInitBobKSilicon
     MV_HWS_TIP_CONFIG_FUNC_DB   configFunc;
 	MV_HWS_TOPOLOGY_MAP*        topologyMap = ddr3TipGetTopologyMap(devNum);
     GT_TUNE_TRAINING_PARAMS     tuneParams;
-	GT_U8 numOfBusPerInterface = 5;
+	GT_U8 numOfBusPerInterface;
 
 	if(topologyMap == NULL)
 	{
@@ -843,11 +879,13 @@ static GT_STATUS ddr3TipInitBobKSilicon
     boardId = boardId; /* avoid warnings */
 
 #if defined(CPSS_BUILD)
+    numOfBusPerInterface = 4; /* TM has only 4 buses*/
     configFunc.tipDunitReadFunc = ddr3TipBobKTMRead;
     configFunc.tipDunitWriteFunc = ddr3TipBobKTMWrite;
     configFunc.tipDunitMuxSelectFunc = ddr3TipBobKSelectTMDdrController;
 
 #else
+    numOfBusPerInterface = 5; /*MSYS may have 5 buses*/
     configFunc.tipDunitReadFunc = ddr3TipBobKIFRead;
     configFunc.tipDunitWriteFunc = ddr3TipBobKIFWrite;
     configFunc.tipDunitMuxSelectFunc = ddr3TipBobKSelectCPUDdrController;
@@ -880,7 +918,7 @@ static GT_STATUS ddr3TipInitBobKSilicon
 
 #if defined(CPSS_BUILD)
 	maskTuneFunc = ( INIT_CONTROLLER_MASK_BIT |
-					/*SET_MEDIUM_FREQ_MASK_BIT |*/
+					SET_MEDIUM_FREQ_MASK_BIT |
 					WRITE_LEVELING_MASK_BIT |
 					LOAD_PATTERN_2_MASK_BIT |
 					READ_LEVELING_MASK_BIT |
@@ -927,7 +965,7 @@ static GT_STATUS ddr3TipInitBobKSilicon
     tuneParams.PhyReg3Val = 0xA;
     tuneParams.gRttNom = 0x44;
     tuneParams.gDic = 0x2;
-    tuneParams.uiODTConfig = 0x30000;/*/0x120012;*/
+    tuneParams.uiODTConfig = 0x120012;
     tuneParams.gZpriData = 123;
     tuneParams.gZnriData = 123;
     tuneParams.gZpriCtrl = 74;
@@ -936,7 +974,7 @@ static GT_STATUS ddr3TipInitBobKSilicon
     tuneParams.gZnodtData = 45;
     tuneParams.gZpodtCtrl = 45;
     tuneParams.gZnodtCtrl = 45;
-    tuneParams.gRttWR = 0x400;/*0x0;*/
+    tuneParams.gRttWR = 0; /*0x400;0x0;*/
 
     CHECK_STATUS(ddr3TipTuneTrainingParams(devNum, &tuneParams));
 
@@ -998,7 +1036,8 @@ GT_STATUS ddr3TipInitBobK
 		#if defined(CPSS_BUILD)
 		/* for CPSS, since topology is not always initialized, it is
 		   needed to set it to default topology */
-		topologyMap = &bobKTopologyMap[0];
+		topologyMap = &bobKTopologyMap[boardId];
+        mvPrintf ("board ID %d, active interface mask = %x\n",boardId,topologyMap->interfaceActiveMask);
 		#else
 		return GT_FAIL;
 		#endif

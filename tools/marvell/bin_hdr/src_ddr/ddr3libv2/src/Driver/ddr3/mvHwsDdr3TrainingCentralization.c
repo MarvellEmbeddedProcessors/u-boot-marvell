@@ -404,7 +404,7 @@ GT_STATUS    ddr3TipSpecialRx
 
     maxWinSize = MAX_WINDOW_SIZE_RX;
     direction = OPER_READ;
-	patternId = PATTERN_VREF;
+	patternId = PATTERN_FULL_SSO1;
 
     /* start flow */
     ddr3TipIpTrainingWrapper(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST,

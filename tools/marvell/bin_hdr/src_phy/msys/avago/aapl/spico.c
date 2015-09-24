@@ -744,9 +744,16 @@ int avago_spico_upload_swap_image(
     BOOL st;
     Avago_addr_t addr_struct, start, stop, next;
 
+#if 0
     if( !aapl_check_ip_type(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 3, AVAGO_SERDES, AVAGO_SERDES_BROADCAST, AVAGO_M4) ||
-        !aapl_check_process(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 2, AVAGO_PROCESS_B, AVAGO_PROCESS_F) )
+        !aapl_check_process(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 2, AVAGO_PROCESS_B, AVAGO_PROCESS_F))
         return 0;
+#else
+    if( !aapl_check_ip_type(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 4, AVAGO_SPICO, AVAGO_SERDES, AVAGO_SERDES_BROADCAST, AVAGO_M4) ||
+        !aapl_check_process(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 2, AVAGO_PROCESS_B, AVAGO_PROCESS_F))
+        return 0;
+#endif
+
     avago_addr_to_struct(avago_make_sbus_master_addr(sbus_addr_in), &addr_struct);
 
     for( st = aapl_broadcast_first(aapl, &addr_struct, &start, &stop, &next);
@@ -797,7 +804,9 @@ int avago_spico_upload_swap_image(
             crc = avago_spico_int(aapl, sbus_addr, 0x04, 0);
         }
         if( crc == 1 )
+        {
             aapl_log_printf(aapl, AVAGO_DEBUG2, __func__,__LINE__,"SBus %s, Swap CRC passed\n", aapl_addr_to_str(sbus_addr));
+        }
         else
         {
             aapl_fail(aapl, __func__, __LINE__, "SBus %s, Swap CRC failed, interrupt returned %d\n", aapl_addr_to_str(sbus_addr), crc);

@@ -355,7 +355,6 @@ int mvHwsAvagoSpicoLoad(unsigned char devNum, unsigned int sbus_addr)
 #ifdef FW_DOWNLOAD_FROM_SERVER
     AVAGO_DBG(("Loading file: %s to SBus address %x\n", serdesFileName, sbus_addr));
     avago_spico_upload_file(aaplSerdesDb[devNum], sbus_addr, FALSE, serdesFileName);
-
     if (serdesSwapFileName != NULL)
     {
         AVAGO_DBG(("Loading swap file: %s to SBus address %x\n", serdesSwapFileName, sbus_addr));
@@ -363,13 +362,8 @@ int mvHwsAvagoSpicoLoad(unsigned char devNum, unsigned int sbus_addr)
     }
 #else /* Download from embedded firmware file */
     AVAGO_DBG(("Loading to SBus address %x data[0]=%x\n", sbus_addr, serdesFwPtr[0]));
-    CHECK_STATUS(avago_spico_upload(aaplSerdesDb[devNum], sbus_addr, FALSE,
-                                    AVAGO_SERDES_FW_IMAGE_SIZE, serdesFwPtr));
-#ifdef AVAGO_FW_SWAP_IMAGE_EXIST
-    CHECK_STATUS(avago_spico_upload_swap_image(aaplSerdesDb[devNum], sbus_addr,
-                                               AVAGO_SERDES_FW_SWAP_IMAGE_SIZE, serdesFwDataSwapPtr));
-#endif /* AVAGO_FW_SWAP_IMAGE_EXIST */
-
+    avago_spico_upload(aaplSerdesDb[devNum], sbus_addr, FALSE,
+                                    AVAGO_SERDES_FW_IMAGE_SIZE, serdesFwPtr);
 #endif /* FW_DOWNLOAD_FROM_SERVER */
 
     return GT_OK;
@@ -390,8 +384,19 @@ int mvHwsAvagoSbusMasterLoad(unsigned char devNum)
     avago_spico_upload_file(aaplSerdesDb[devNum], sbus_addr , FALSE, sbusMasterFileName);
 #else
     AVAGO_DBG(("Loading to SBus address %x  data[0]=%x\n", sbus_addr , sbusMasterFwPtr[0]));
-    CHECK_STATUS(avago_spico_upload(aaplSerdesDb[devNum], sbus_addr, FALSE,
-                                    AVAGO_SBUS_MASTER_FW_IMAGE_SIZE, sbusMasterFwPtr));
+    avago_spico_upload(aaplSerdesDb[devNum], sbus_addr, FALSE,
+                                    AVAGO_SBUS_MASTER_FW_IMAGE_SIZE, sbusMasterFwPtr);
+
+    if(aaplSerdesDb[devNum]->return_code < 0)
+    {
+        osPrintf("Avago FW Load Failed (return code 0x%x)\n", aaplSerdesDb[devNum]->return_code);
+        return GT_INIT_ERROR;
+    }
+#ifdef AVAGO_FW_SWAP_IMAGE_EXIST
+    AVAGO_DBG(("Loading SWAP to SBus address %x  data[0]=%x\n", sbus_addr , serdesFwDataSwapPtr[0]));
+    avago_spico_upload_swap_image(aaplSerdesDb[devNum], sbus_addr,
+                                               AVAGO_SERDES_FW_SWAP_IMAGE_SIZE, serdesFwDataSwapPtr);
+#endif /* AVAGO_FW_SWAP_IMAGE_EXIST */
 #endif /* FW_DOWNLOAD_FROM_SERVER */
 
     return GT_OK;
@@ -502,6 +507,11 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
             if (mvHwsAvagoCheckSerdesAccess(devNum, 0, serdes_num) == GT_NOT_INITIALIZED)
             {
                 CHECK_STATUS(mvHwsAvagoSpicoLoad(devNum, sbus_addr));
+                if(aaplSerdesDb[devNum]->return_code < 0)
+                {
+                    osPrintf("Avago FW Load Failed (return code 0x%x)\n", aaplSerdesDb[devNum]->return_code);
+                    return GT_INIT_ERROR;
+                }
             }
         }
     }

@@ -235,7 +235,7 @@ typedef enum
 #ifdef MV_MSYS_BOBK
 #define AVAGO_MG_ACCESS_THRESHOLD      5000  /**< Maximum "mop" to wait fbefore any MG access */
 #else
-#define AVAGO_MG_ACCESS_THRESHOLD      10000  /**< Maximum "mop" to wait fbefore any MG access */
+#define AVAGO_MG_ACCESS_THRESHOLD      12000  /**< Maximum "mop" to wait fbefore any MG access */
 #endif
 
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3

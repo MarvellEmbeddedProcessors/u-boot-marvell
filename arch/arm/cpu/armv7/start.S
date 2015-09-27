@@ -352,10 +352,12 @@ fixloop:
 	b	fixnext
 fixabs:
 	/* absolute fix: set location to (offset) symbol value */
+	ldr     r7, [r0]		/* r7 <- addend */
 	mov	r1, r1, LSR #4		/* r1 <- symbol index in .dynsym */
 	add	r1, r10, r1		/* r1 <- address of symbol in table */
 	ldr	r1, [r1, #4]		/* r1 <- symbol value */
 	add	r1, r1, r9		/* r1 <- relocated sym addr */
+	add     r1, r1, r7		/* include addend */
 	b	fixnext
 fixrel:
 	/* relative fix: increase location by offset */

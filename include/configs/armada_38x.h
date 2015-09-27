@@ -282,6 +282,9 @@ extern unsigned int mvUartPortGet(void);
 
 /* SPI Flash configuration   */
 /*****************************/
+#if defined(CONFIG_MV_INCLUDE_SPI)
+#define MV_INCLUDE_SPI
+#endif
 #if defined(MV_INCLUDE_SPI)
 	#define CONFIG_CMD_SPI
 	#define CONFIG_CMD_SF
@@ -553,6 +556,9 @@ extern int nand_get_env_offs(void);
 /*****************************/
 //#define CONFIG_MMC_TRACE
 /* Boot from MMC settings */
+#if defined(CONFIG_MV_MMC_BOOT)
+#define MV_MMC_BOOT
+#endif
 #if defined(MV_MMC_BOOT)
 	#define CONFIG_ENV_IS_IN_MMC	/* Environment is at absolute location (RAW) */
 //	#define CONFIG_ENV_IS_IN_FAT	/* Environment is in file on FAT partition */

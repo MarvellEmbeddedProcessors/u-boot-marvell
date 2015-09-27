@@ -477,6 +477,9 @@ ifndef CONFIG_SYS_UBOOT_START
 CONFIG_SYS_UBOOT_START := 0
 endif
 
+$(obj)u-boot.mmc: $(obj)u-boot.bin
+	echo y | $(obj)tools/marvell/doimage -T mmc -D 0x0 -E 0x0 -G $(obj)tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot.mmc
+
 $(obj)u-boot.img:	$(obj)u-boot.bin
 		$(obj)tools/mkimage -A $(ARCH) -T firmware -C none \
 		-O u-boot -a $(CONFIG_SYS_TEXT_BASE) \

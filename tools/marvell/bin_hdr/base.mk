@@ -177,7 +177,11 @@ ifeq "$(CONFIG_ALLEYCAT3)"  "y"
   CFLAGS += -DCONFIG_ALLEYCAT3
 endif
 
-CROSS    = $(CROSS_COMPILE_BH)
+ifneq "$(CROSS_COMPILE_BH)" ""
+  CROSS    = $(CROSS_COMPILE_BH)
+else
+  CROSS    = $(CROSS_COMPILE)
+endif
 LD       = $(CROSS)ld
 CC       = $(CROSS)gcc
 AS       = $(CROSS)as

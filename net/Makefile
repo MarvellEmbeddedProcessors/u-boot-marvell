@@ -40,6 +40,11 @@ COBJS-$(CONFIG_CMD_RARP) += rarp.o
 COBJS-$(CONFIG_CMD_SNTP) += sntp.o
 COBJS-$(CONFIG_CMD_NET)  += tftp.o
 COBJS-$(CONFIG_CMD_RCVR) += rcvr.o
+ifdef CONFIG_CMD_NET6
+COBJS-y  += net6.o
+COBJS-y  += ndisc.o
+COBJS-$(CONFIG_CMD_PING) += ping6.o
+endif
 
 COBJS	:= $(sort $(COBJS-y))
 SRCS	:= $(COBJS:.o=.c)

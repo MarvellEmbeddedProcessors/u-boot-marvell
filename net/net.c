@@ -84,6 +84,7 @@
 #include <command.h>
 #include <environment.h>
 #include <net.h>
+#include <net6.h>
 #if defined(CONFIG_STATUS_LED)
 #include <miiphy.h>
 #include <status_led.h>
@@ -274,9 +275,22 @@ static void NetInitLoop(void)
 #if defined(CONFIG_CMD_DNS)
 		NetOurDNSIP = getenv_IPaddr("dnsip");
 #endif
+#ifdef CONFIG_CMD_NET6
+		getenv_IP6addr("ipaddr6", &NetOurIP6);
+		getenv_IP6addr("gatewayip6", &NetOurGatewayIP6);
+		if (getenv("prefixlength6"))
+			NetPrefixLength =
+				simple_strtoul(getenv("prefixlength6"),
+					       NULL, 10);
+		else
+			NetPrefixLength = 64;
+#endif
 		env_changed_id = env_id;
 	}
 	memcpy(NetOurEther, eth_get_dev()->enetaddr, 6);
+#ifdef CONFIG_CMD_NET6
+	ip6_make_lladdr(&NetOurLinkLocalIP6, NetOurEther);
+#endif
 
 	return;
 }
@@ -309,6 +323,9 @@ void net_init(void)
 			NetRxPackets[i] = NetTxPacket + (i + 1) * PKTSIZE_ALIGN;
 
 		ArpInit();
+#ifdef CONFIG_CMD_NET6
+		ip6_NDISC_init();
+#endif
 		net_clear_handlers();
 
 		/* Only need to setup buffer pointers once. */
@@ -407,6 +424,11 @@ restart:
 		case PING:
 			ping_start();
 			break;
+#ifdef CONFIG_CMD_NET6
+		case PING6:
+			ping6_start();
+			break;
+#endif
 #endif
 #if defined(CONFIG_CMD_NFS)
 		case NFS:
@@ -499,6 +521,9 @@ restart:
 		}
 
 		ArpTimeoutCheck();
+#ifdef CONFIG_CMD_NET6
+		ip6_NDISC_TimeoutCheck();
+#endif
 
 		/*
 		 *	Check for a timeout, and run the timeout handler
@@ -1067,6 +1092,11 @@ NetReceive(uchar *inpkt, int len)
 		rarp_receive(ip, len);
 		break;
 #endif
+#ifdef CONFIG_CMD_NET6
+	case PROT_IP6:
+		NetIP6PacketHandler(et, (struct ip6_hdr *)ip, len);
+		break;
+#endif
 	case PROT_IP:
 		debug_cond(DEBUG_NET_PKT, "Got IP\n");
 		/* Before we start poking the header, make sure it is there */
@@ -1221,6 +1251,14 @@ static int net_check_prereq(enum proto_t protocol)
 			return 1;
 		}
 		goto common;
+#ifdef CONFIG_CMD_NET6
+	case PING6:
+		if (ip6_is_unspecified_addr(&NetPingIP6)) {
+			puts("*** ERROR: ping address not given\n");
+			return 1;
+		}
+		goto common;
+#endif
 #endif
 #if defined(CONFIG_CMD_SNTP)
 	case SNTP:

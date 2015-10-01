@@ -241,6 +241,7 @@ struct vlan_ethernet_hdr {
 #define VLAN_ETHER_HDR_SIZE	(sizeof(struct vlan_ethernet_hdr))
 
 #define PROT_IP		0x0800		/* IP protocol			*/
+#define PROT_IP6        0x86DD          /* IPv6 protocol		*/
 #define PROT_ARP	0x0806		/* IP ARP protocol		*/
 #define PROT_RARP	0x8035		/* IP ARP protocol		*/
 #define PROT_VLAN	0x8100		/* IEEE 802.1q protocol		*/
@@ -438,8 +439,8 @@ extern ushort		NetOurNativeVLAN;	/* Our Native VLAN */
 extern int		NetRestartWrap;		/* Tried all network devices */
 
 enum proto_t {
-	BOOTP, RARP, ARP, TFTPGET, DHCP, PING, DNS, NFS, CDP, NETCONS, SNTP,
-	TFTPSRV, TFTPPUT, LINKLOCAL, RCVR
+	BOOTP, RARP, ARP, TFTPGET, DHCP, PING, PING6, DNS, NFS, CDP, NETCONS, SNTP,
+	TFTPSRV, TFTPPUT, TFTP6, LINKLOCAL, RCVR
 };
 
 /* from net/net.c */

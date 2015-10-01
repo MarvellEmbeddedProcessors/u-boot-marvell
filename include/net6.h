@@ -40,4 +40,17 @@ struct ip6_hdr {
 	IP6addr_t	daddr;
 };
 
+/* ::ffff:0:0/96 is reserved for v4 mapped addresses */
+static inline int ipv6_addr_v4mapped(const IP6addr_t *a)
+{
+	return (a->u6_addr32[0] | a->u6_addr32[1] |
+			(a->u6_addr32[2] ^ htonl(0x0000ffff))) == 0;
+}
+
+/* Intra-Site Automatic Tunnel Addressing Protocol Address */
+static inline int ipv6_addr_is_isatap(const IP6addr_t *a)
+{
+	return (a->u6_addr32[2] | htonl(0x02000000)) == htonl(0x02005EFE);
+}
+
 #endif /* __NET6_H__ */

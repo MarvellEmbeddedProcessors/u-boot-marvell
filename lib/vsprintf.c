@@ -23,6 +23,7 @@
 #endif
 
 #include <div64.h>
+#include <net6.h>
 #define noinline __attribute__((noinline))
 
 /* some reluctance to put this into a new limits.h, so it is here */
@@ -276,6 +277,7 @@ static noinline char *put_dec(char *buf, u64 num)
 #define LEFT	16		/* left justified */
 #define SMALL	32		/* Must be 32 == 0x20 */
 #define SPECIAL	64		/* 0x */
+#define COMPRESSED 128		/* use compressed format */
 
 #ifdef CONFIG_SYS_VSNPRINTF
 /*
@@ -430,33 +432,9 @@ static char *mac_address_string(char *buf, char *end, u8 *addr, int field_width,
 		      flags & ~SPECIAL);
 }
 
-static char *ip6_addr_string(char *buf, char *end, u8 *addr, int field_width,
-			 int precision, int flags)
+static char *ip4_string(char *p, u8 *addr)
 {
-	/* (8 * 4 hex digits), 7 colons and trailing zero */
-	char ip6_addr[8 * 5];
-	char *p = ip6_addr;
-	int i;
-
-	for (i = 0; i < 8; i++) {
-		p = pack_hex_byte(p, addr[2 * i]);
-		p = pack_hex_byte(p, addr[2 * i + 1]);
-		if (!(flags & SPECIAL) && i != 7)
-			*p++ = ':';
-	}
-	*p = '\0';
-
-	return string(buf, end, ip6_addr, field_width, precision,
-		      flags & ~SPECIAL);
-}
-
-static char *ip4_addr_string(char *buf, char *end, u8 *addr, int field_width,
-			 int precision, int flags)
-{
-	/* (4 * 3 decimal digits), 3 dots and trailing zero */
-	char ip4_addr[4 * 4];
 	char temp[3];	/* hold each IP quad in reverse order */
-	char *p = ip4_addr;
 	int i, digits;
 
 	for (i = 0; i < 4; i++) {
@@ -468,6 +446,126 @@ static char *ip4_addr_string(char *buf, char *end, u8 *addr, int field_width,
 			*p++ = '.';
 	}
 	*p = '\0';
+
+	return p;
+}
+
+static char *ip6_compressed_string(char *p, u8 *addr)
+{
+	int i, j, range;
+	unsigned char zerolength[8];
+	int longest = 1;
+	int colonpos = -1;
+	u16 word;
+	u8 hi, lo;
+	int needcolon = 0;
+	int useIPv4;
+	IP6addr_t in6;
+
+	memcpy(&in6, addr, sizeof(IP6addr_t));
+
+	useIPv4 = ipv6_addr_v4mapped(&in6) || ipv6_addr_is_isatap(&in6);
+
+	memset(zerolength, 0, sizeof(zerolength));
+
+	if (useIPv4)
+		range = 6;
+	else
+		range = 8;
+
+	/* find position of longest 0 run */
+	for (i = 0; i < range; i++) {
+		for (j = i; j < range; j++) {
+			if (in6.u6_addr16[j] != 0)
+				break;
+			zerolength[i]++;
+		}
+	}
+	for (i = 0; i < range; i++) {
+		if (zerolength[i] > longest) {
+			longest = zerolength[i];
+			colonpos = i;
+		}
+	}
+	if (longest == 1)		/* don't compress a single 0 */
+		colonpos = -1;
+
+	/* emit address */
+	for (i = 0; i < range; i++) {
+		if (i == colonpos) {
+			if (needcolon || i == 0)
+				*p++ = ':';
+			*p++ = ':';
+			needcolon = 0;
+			i += longest - 1;
+			continue;
+		}
+		if (needcolon) {
+			*p++ = ':';
+			needcolon = 0;
+		}
+		/* hex u16 without leading 0s */
+		word = ntohs(in6.u6_addr16[i]);
+		hi = word >> 8;
+		lo = word & 0xff;
+		if (hi) {
+			if (hi > 0x0f)
+				p = pack_hex_byte(p, hi);
+			else
+				*p++ = hex_asc_lo(hi);
+			p = pack_hex_byte(p, lo);
+		} else if (lo > 0x0f)
+			p = pack_hex_byte(p, lo);
+		else
+			*p++ = hex_asc_lo(lo);
+		needcolon = 1;
+	}
+
+	if (useIPv4) {
+		if (needcolon)
+			*p++ = ':';
+		p = ip4_string(p, &in6.u6_addr8[12]);
+	}
+	*p = '\0';
+
+	return p;
+}
+
+static char *ip6_string(char *p, u8 *addr, int flags)
+{
+	int i;
+
+	for (i = 0; i < 8; i++) {
+		p = pack_hex_byte(p, addr[2 * i]);
+		p = pack_hex_byte(p, addr[2 * i + 1]);
+		if (!(flags & SPECIAL) && i != 7)
+			*p++ = ':';
+	}
+	*p = '\0';
+
+	return p;
+}
+
+static char *ip6_addr_string(char *buf, char *end, u8 *addr, int field_width,
+			 int precision, int flags)
+{
+	char ip6_addr[sizeof("xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:255.255.255.255")];
+
+	if (flags & COMPRESSED)
+		ip6_compressed_string(ip6_addr, addr);
+	else
+		ip6_string(ip6_addr, addr, flags);
+
+	return string(buf, end, ip6_addr, field_width, precision,
+		      flags & ~SPECIAL);
+}
+
+static char *ip4_addr_string(char *buf, char *end, u8 *addr, int field_width,
+			 int precision, int flags)
+{
+	char ip4_addr[sizeof("255.255.255.255")];
+
+	ip4_string(ip4_addr, addr);
 
 	return string(buf, end, ip4_addr, field_width, precision,
 		      flags & ~SPECIAL);
@@ -487,6 +585,8 @@ static char *ip4_addr_string(char *buf, char *end, u8 *addr, int field_width,
  *       decimal for v4 and colon separated network-order 16 bit hex for v6)
  * - 'i' [46] for 'raw' IPv4/IPv6 addresses, IPv6 omits the colons, IPv4 is
  *       currently the same
+ * - 'I6c' for IPv6 addresses printed as specified by
+ *       http://tools.ietf.org/html/rfc5952
  *
  * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
  * function pointers are really function descriptors, which contain a
@@ -517,9 +617,12 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
 		flags |= SPECIAL;
 		/* Fallthrough */
 	case 'I':
-		if (fmt[1] == '6')
+		if (fmt[1] == '6') {
+			if (fmt[2] == 'c')
+				flags |= COMPRESSED;
 			return ip6_addr_string(buf, end, ptr, field_width,
 					       precision, flags);
+		}
 		if (fmt[1] == '4')
 			return ip4_addr_string(buf, end, ptr, field_width,
 					       precision, flags);

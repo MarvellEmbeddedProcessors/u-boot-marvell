@@ -172,6 +172,8 @@ extern unsigned int mvUartPortGet(void);
 		#define MV_CROSS_FLASH_BOOT
 		#define CONFIG_CMD_BOARDCFG
 	#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+	/* Enable IPv6 for Armada-39x only */
+	#define CONFIG_CMD_NET6
 #endif /* CONFIG_ARMADA_39X */
 
 #define	CONFIG_ENV_MIN_ENTRIES 128

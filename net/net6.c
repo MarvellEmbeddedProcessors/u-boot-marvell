@@ -269,8 +269,8 @@ ip6_add_hdr(uchar *xip, IP6addr_t *src, IP6addr_t *dest,
 	ip6->payload_len = htons(payload_len);
 	ip6->nexthdr = nextheader;
 	ip6->hop_limit = hoplimit;
-	ip6->saddr = *src;
-	ip6->daddr = *dest;
+	memcpy(&ip6->saddr, src, sizeof(IP6addr_t));
+	memcpy(&ip6->daddr, dest, sizeof(IP6addr_t));
 
 	return sizeof(struct ip6_hdr);
 }

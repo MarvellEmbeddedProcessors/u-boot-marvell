@@ -10,6 +10,7 @@
 #include <common.h>
 #include <net.h>
 #include <net6.h>
+#include <asm/unaligned.h>
 #include "ndisc.h"
 
 /* IPv6 destination address of packet waiting for ND */
@@ -106,10 +107,10 @@ ip6_send_ns(IP6addr_t *neigh_addr)
 	msg->icmph.icmp6_type = IPV6_NDISC_NEIGHBOUR_SOLICITATION;
 	msg->icmph.icmp6_code = 0;
 	msg->icmph.icmp6_cksum = 0;
-	msg->icmph.icmp6_unused = 0;
+	put_unaligned(0, &msg->icmph.icmp6_unused);
 
 	/* Set the target address and llsaddr option */
-	msg->target = *neigh_addr;
+	memcpy(&msg->target, neigh_addr, sizeof(IP6addr_t));
 	ip6_ndisc_insert_option(msg, ND_OPT_SOURCE_LL_ADDR, NetOurEther,
 		INETHADDRSZ);
 
@@ -146,10 +147,10 @@ ip6_send_na(uchar *eth_dst_addr, IP6addr_t *neigh_addr, IP6addr_t *target)
 	msg->icmph.icmp6_type = IPV6_NDISC_NEIGHBOUR_ADVERTISEMENT;
 	msg->icmph.icmp6_code = 0;
 	msg->icmph.icmp6_cksum = 0;
-	msg->icmph.icmp6_unused = 0;
+	put_unaligned(0, &msg->icmph.icmp6_unused);
 
 	/* Set the target address and lltargetaddr option */
-	msg->target = *target;
+	memcpy(&msg->target, target, sizeof(IP6addr_t));
 	ip6_ndisc_insert_option(msg, ND_OPT_TARGET_LL_ADDR, NetOurEther,
 		INETHADDRSZ);
 

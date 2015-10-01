@@ -281,6 +281,7 @@ NetIP6PacketHandler(struct ethernet_hdr *et, struct ip6_hdr *ip6, int len)
 	struct icmp6hdr *icmp;
 	struct udp_hdr *udp;
 	__u16 csum;
+	__u16 hlen;
 
 	if (len < IP6_HDR_SIZE)
 		return;
@@ -292,12 +293,11 @@ NetIP6PacketHandler(struct ethernet_hdr *et, struct ip6_hdr *ip6, int len)
 	case IPPROTO_ICMPV6:
 		icmp = (struct icmp6hdr *)(((uchar *)ip6) + IP6_HDR_SIZE);
 		csum = icmp->icmp6_cksum;
+		hlen = ntohs(ip6->payload_len);
 		icmp->icmp6_cksum = 0;
 		/* checksum */
 		icmp->icmp6_cksum = csum_ipv6_magic(&ip6->saddr, &ip6->daddr,
-					ip6->payload_len, IPPROTO_ICMPV6,
-					csum_partial((__u8 *)icmp,
-						ip6->payload_len, 0));
+					hlen, IPPROTO_ICMPV6, csum_partial((__u8 *)icmp, hlen, 0));
 		if (icmp->icmp6_cksum != csum)
 			return;
 

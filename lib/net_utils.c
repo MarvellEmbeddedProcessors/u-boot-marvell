@@ -27,7 +27,6 @@
  */
 
 #include <common.h>
-#include <net6.h>
 #include <linux/ctype.h>
 
 IPaddr_t string_to_ip(const char *s)

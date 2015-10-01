@@ -847,6 +847,12 @@ static inline IPaddr_t getenv_IPaddr(char *var)
 	return string_to_ip(getenv(var));
 }
 
+#include <net6.h>
+static inline int getenv_IP6addr(char *var, IP6addr_t *a)
+{
+	return string_to_ip6(getenv(var), a);
+}
+
 /*
  * CONSOLE multiplexing.
  */

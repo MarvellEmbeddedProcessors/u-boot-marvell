@@ -38,12 +38,17 @@ IPaddr_t string_to_ip(const char *s)
 		return(0);
 
 	for (addr=0, i=0; i<4; ++i) {
-		ulong val = s ? simple_strtoul(s, &e, 10) : 0;
+		ulong val = simple_strtoul(s, &e, 10);
+		if (val > 255)
+			return 0;
 		addr <<= 8;
-		addr |= (val & 0xFF);
-		if (s) {
-			s = (*e) ? e+1 : e;
-		}
+		addr |= val;
+		if (*e == '.')
+			s = e+1;
+		else if (*e == '\0')
+			break;
+		else
+			return 0;
 	}
 
 	return (htonl(addr));

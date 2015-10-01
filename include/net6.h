@@ -53,4 +53,7 @@ static inline int ipv6_addr_is_isatap(const IP6addr_t *a)
 	return (a->u6_addr32[2] | htonl(0x02000000)) == htonl(0x02005EFE);
 }
 
+/* Convert a string to an ipv6 address */
+extern int string_to_ip6(const char *s, IP6addr_t *addr);
+
 #endif /* __NET6_H__ */

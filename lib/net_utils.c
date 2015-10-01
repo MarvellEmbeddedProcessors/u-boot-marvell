@@ -27,6 +27,8 @@
  */
 
 #include <common.h>
+#include <net6.h>
+#include <linux/ctype.h>
 
 IPaddr_t string_to_ip(const char *s)
 {
@@ -52,4 +54,116 @@ IPaddr_t string_to_ip(const char *s)
 	}
 
 	return (htonl(addr));
+}
+
+/**
+ * Parses an IP6addr_t from the given string. IPv6 address parsing is a bit
+ * more complicated than v4 due to the flexible format and some of the special
+ * cases (e.g. v4 mapped).
+ *
+ * Examples of valid strings:
+ *   2001:db8::0:1234:1
+ *   2001:0db8:0000:0000:0000:0000:1234:0001
+ *   ::1
+ *   ::ffff:192.168.1.1
+ *
+ * Examples of invalid strings
+ *   2001:db8::0::0          (:: can only appear once)
+ *   2001:db8:192.168.1.1::1 (v4 part can only appear at the end)
+ *   192.168.1.1             (we don't implicity map v4)
+ */
+int string_to_ip6(const char *strpt, IP6addr_t *addrpt)
+{
+	int colon_count = 0;
+	int found_double_colon = 0;
+	int xstart = 0;  /* first zero (double colon) */
+	int len = 7; /* numbers of zero words the double colon represents */
+	int i;
+	const char *s = strpt;
+
+	if (strpt == NULL)
+		return -1;
+
+	/* First pass, verify the syntax and locate the double colon */
+	for (;;) {
+		while (isxdigit((int)*s))
+			s++;
+		if (*s == '\0')
+			break;
+		if (*s != ':') {
+			if (*s == '.' && len >= 2) {
+				while (s != strpt && *(s-1) != ':')
+					--s;
+				if (string_to_ip(s) != 0) {
+					len -= 2;
+					break;
+				}
+			}
+			/* This could be a valid address */
+			break;
+		}
+		if (s == strpt) {
+			/* The address begins with a colon */
+			if (*++s != ':')
+				/* Must start with a double colon or a number */
+				goto out_err;
+		} else {
+			s++;
+			if (found_double_colon)
+				len--;
+			else
+				xstart++;
+		}
+
+		if (*s == ':') {
+			if (found_double_colon)
+				/* Two double colons are not allowed */
+				goto out_err;
+			found_double_colon = 1;
+			len -= xstart;
+			s++;
+		}
+
+		if (++colon_count == 7)
+			/* Found all colons */
+			break;
+	}
+
+	if (colon_count == 0 || colon_count > 7)
+		goto out_err;
+	if (*--s == ':')
+		len++;
+
+	/* Second pass, read the address */
+	s = strpt;
+	for (i = 0; i < 8; i++) {
+		int val = 0;
+		char *end;
+
+		if (found_double_colon && i >= xstart && i < xstart + len) {
+			addrpt->u6_addr16[i] = 0;
+			continue;
+		}
+		while (*s == ':')
+			s++;
+
+		if (i == 6 && isdigit((int)*s)) {
+			IPaddr_t v4 = string_to_ip(s);
+			if (v4 != 0) {
+				/* Ending with :IPv4-address */
+				addrpt->u6_addr32[3] = v4;
+				break;
+			}
+		}
+
+		val = simple_strtoul(s, &end, 16);
+		if (*end != '\0' && *end != ':')
+			goto out_err;
+		addrpt->u6_addr16[i] = htons(val);
+		s = end;
+	}
+	return 0;
+
+out_err:
+	return -1;
 }

@@ -764,11 +764,23 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 MV_U32 mvCtrlbootSrcGet(void)
 {
 	MV_U32 satrVal, bootSrc;
+	MV_U32 secBootCtrl = MV_REG_READ(SECURE_BOOT_REG);
 
-	satrVal = MV_REG_READ(MPP_SAMPLE_AT_RESET);
-	bootSrc = (satrVal & SATR_BOOT_SRC_MASK) >> SATR_BOOT_SRC_OFFS;
+	if ((secBootCtrl & SECURE_BOOT_ENA_MASK) != 0) {
+		/* Secure mode
+		 Once the secure mode activated by efuse, the actual
+		 boot device is always taken from the efuse by the HW
+		 and any other boot device configured by SatR is ignored.
+		*/
+		bootSrc = (secBootCtrl & SECURE_BOOT_DEVICE_MASK) >> SECURE_BOOT_DEVICE_OFFS;
+	} else {
 
-	DB(mvOsPrintf("%s: Read from S@R BOOTSRC = 0x%X\n", __func__, bootSrc));
+		satrVal = MV_REG_READ(MPP_SAMPLE_AT_RESET);
+		bootSrc = (satrVal & SATR_BOOT_SRC_MASK) >> SATR_BOOT_SRC_OFFS;
+
+		DB(mvOsPrintf("%s: Read from S@R BOOTSRC = 0x%X\n", __func__, bootSrc));
+	}
+
 	return bootSrc;
 }
 

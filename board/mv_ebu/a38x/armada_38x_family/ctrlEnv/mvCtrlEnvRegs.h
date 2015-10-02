@@ -228,6 +228,15 @@ extern "C" {
 #define GENERAL_PURPOSE_RESERVED1_REG		0x182E4
 #define GENERAL_PURPOSE_RESERVED1_DEFAULT_VALUE	(~BIT17)
 
+/*****************/
+/* Secure boot */
+/*****************/
+#define SECURE_BOOT_REG				0x18280
+#define SECURE_BOOT_ENA_OFFS			0
+#define SECURE_BOOT_ENA_MASK			(1 << SECURE_BOOT_ENA_OFFS)
+#define SECURE_BOOT_DEVICE_OFFS			8
+#define SECURE_BOOT_DEVICE_MASK			(0xFF << SECURE_BOOT_DEVICE_OFFS)
+
 /* USB3 registers */
 #define MV_USB3_WIN_BASE(dev)		(MV_USB3_REGS_BASE(dev) + 0x4000)
 

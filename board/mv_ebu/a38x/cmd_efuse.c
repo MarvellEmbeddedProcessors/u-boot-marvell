@@ -251,13 +251,19 @@ static int write_efuse_hw(efuseDef *efDef, MV_U32 values[])
 				val[2] = MV_EFUSE_REG_READ(EFUSE_BIT_64_ADDR(line));
 				DBPR("Read from %08X: [%08X]\n", EFUSE_BIT_64_ADDR(line), val[2]);
 
-				MV_EFUSE_REG_WRITE(EFUSE_BIT_31_0_ADDR(line), val[0]);
-				DBPR("Write to  %08X: [%08X]\n", EFUSE_BIT_31_0_ADDR(line), val[0]);
-				MV_EFUSE_REG_WRITE(EFUSE_BIT_63_32_ADDR(line), val[1]);
-				DBPR("Write to  %08X: [%08X]\n", EFUSE_BIT_63_32_ADDR(line), val[1]);
-				MV_EFUSE_REG_BIT_SET(EFUSE_BIT_64_ADDR(line), 0x1);
-				DBPR("Write to  %08X: [%08X]\n", EFUSE_BIT_64_ADDR(line), 0x1);
-				mvOsDelay(5);
+				if (val[2] == 0) { /* If the eFuse not yet burned by tester */
+					/* invalidate eFuse data before validating the row */
+					val[0] = 0xFFFFFFFF;
+					val[1] = 0x00FFFFFF;
+
+					MV_EFUSE_REG_WRITE(EFUSE_BIT_31_0_ADDR(line), val[0]);
+					DBPR("Write to  %08X: [%08X]\n", EFUSE_BIT_31_0_ADDR(line), val[0]);
+					MV_EFUSE_REG_WRITE(EFUSE_BIT_63_32_ADDR(line), val[1]);
+					DBPR("Write to  %08X: [%08X]\n", EFUSE_BIT_63_32_ADDR(line), val[1]);
+					MV_EFUSE_REG_BIT_SET(EFUSE_BIT_64_ADDR(line), 0x1);
+					DBPR("Write to  %08X: [%08X]\n", EFUSE_BIT_64_ADDR(line), 0x1);
+					mvOsDelay(5);
+				}
 			}
 		}
 

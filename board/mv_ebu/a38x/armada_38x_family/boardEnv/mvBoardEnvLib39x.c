@@ -668,7 +668,7 @@ MV_STATUS mvBoardNetComplexInfoUpdate(MV_VOID)
 	if (sysConfig6 == 0x2)
 		netComplexOptions |= MV_NETCOMP_GE_MAC3_2_SGMII_L6;
 	/* COMPHY6: 0xC = GBE v3 port 0 */
-	else if (sysConfig == 0xc)
+	else if (sysConfig6 == 0xc)
 		netComplexOptions |= MV_NETCOMP_GE_MAC0_2_SGMII_L6;
 
 	/* COMPHY3: 8 = XAUI, COMPHY4: 9 = XAUI, COMPHY5: 8 = XAUI, COMPHY6: 4 = XAUI */

@@ -103,6 +103,32 @@ static int check_debug_level(
     return 0;
 }
 
+#ifdef MV_HWS_AAPL_DEBUG_PRINT_ENABLE
+/** @brief  Prints message to the specified log. */
+/** @details If log_sel is one of the AVAGO_DEBUGn values, */
+/**  logging only occurs if the aapl->debug field is greater than or equal */
+/**  to the log_sel value. */
+/** @return void */
+void aapl_log_printf_reduce(
+    Aapl_t *aapl,               /**< [in] Pointer to Aapl_t structure. */
+    Aapl_log_type_t log_sel,    /**< [in] Type of message logging. */
+    const char *caller,         /**< [in] Caller's __func__ value, or 0. */
+    int line,                   /**< [in] Caller's __LINE__ value, or 0. */
+    const char *fmt,            /**< [in] printf format string. */
+    ...)                        /**< [in] printf arguments. */
+{
+    va_list ap;
+    if( check_debug_level(log_sel, aapl->debug) )
+        return;
+
+    va_start(ap, fmt);
+    char buf[AAPL_LOG_PRINTF_BUF_SIZE];
+    vsprintf(buf, fmt, ap);
+    printf("%s", buf);
+    va_end(ap);
+}
+#endif
+
 /** @brief  Prints message to the specified log. */
 /** @details If log_sel is one of the AVAGO_DEBUGn values, */
 /**  logging only occurs if the aapl->debug field is greater than or equal */

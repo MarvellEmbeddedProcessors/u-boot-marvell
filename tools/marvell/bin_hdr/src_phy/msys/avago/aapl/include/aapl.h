@@ -40,6 +40,8 @@
 #endif /* MV_HWS_REDUCED_BUILD */
 /*#define MV_HWS_REDUCED_BUILD_EXT_CM3*/
 
+/* #define MV_HWS_AAPL_DEBUG_PRINT_ENABLE */
+
 #ifdef MV_HWS_REDUCED_BUILD
 /* AAPL reduced package build */
 #ifdef WIN32
@@ -50,7 +52,11 @@
 #define  aapl_check_process(aapl, addr, function, line, error, args, arg, ...)  (TRUE)
 #define aapl_fail(aapl, function, line, msg, arg, ...) aapl_fail_reduce(aapl)
 #else /* WIN32*/
-#define aapl_log_printf(aapl, type, function, line, msg, arg...)
+#if (!defined MV_HWS_BIN_HEADER) && (defined MV_HWS_AAPL_DEBUG_PRINT_ENABLE)
+    #define aapl_log_printf(aapl, type, function, line, msg, arg...) aapl_log_printf_reduce(aapl, type, function, line, msg, arg)
+#else
+    #define aapl_log_printf(aapl, type, function, line, msg, arg...)
+#endif
 #define aapl_check_ip_type(aapl, addr, function, line, error, args, arg...) aapl_check_ip_type_reduce(aapl, addr, error, args, arg)
 #define aapl_check_firmware_rev(aapl, addr, function, line, error, args, arg...) aapl_check_firmware_rev_reduce(aapl, addr,  error, args, arg)
 #define  aapl_check_process(aapl, addr, function, line, error, args, arg...)  (TRUE)

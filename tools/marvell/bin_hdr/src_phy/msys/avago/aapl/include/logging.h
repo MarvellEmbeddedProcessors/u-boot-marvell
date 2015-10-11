@@ -45,6 +45,7 @@ typedef enum
 
 
 EXT int  aapl_fail_full(      Aapl_t *aapl, const char *caller, int line, const char *fmt, ...);
+EXT void aapl_log_printf_reduce(Aapl_t *aapl, Aapl_log_type_t log_sel, const char *caller, int line, const char * fmt, ...);
 EXT void aapl_log_printf_full(Aapl_t *aapl, Aapl_log_type_t log_sel, const char *caller, int line, const char * fmt, ...);
 EXT void aapl_log_add(   Aapl_t *aapl, Aapl_log_type_t log_sel, const char *string, const char *caller, int line);
 

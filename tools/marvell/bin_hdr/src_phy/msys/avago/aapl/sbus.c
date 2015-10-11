@@ -475,27 +475,26 @@ int avago_sbm_get_temperature(
     uint sensor)        /**< [in] Which sensor to get data for. */
 {
     const int invalid_data = 999999;
-    int data;
-    Avago_addr_t addr_struct;
-    uint addr = avago_make_sbus_master_addr(sensor_addr);
+    int data, i;
+    int retry=10;
 
-    if (!aapl_check_process(aapl, addr, __func__, __LINE__, TRUE, 1, AVAGO_TSMC_28)) return invalid_data;
-    if (!aapl_check_ip_type(aapl, sensor_addr, __func__, __LINE__, TRUE, 1, AVAGO_THERMAL_SENSOR)) return invalid_data;
+    /* trying to get the Temperature value maximum 10 times and set 1ms delay between each time */
+    for(i=0; i < retry; i++)
+    {
+        data = avago_spico_int(aapl, AVAGO_SBUS_MASTER_ADDRESS, 0x17, (0 << 12) | (sensor_addr & 0xff));
+        if (data & 0x8000)
+        {
+            data &= 0x0FFF;     /* Mask down to 12b temp value */
+            if (data & 0x0800)  /* Negative 12b temp value, do sign extension */
+                data = -1 * (((~data) & 0x0FFF) + 1);
 
-    if( !avago_spico_running(aapl,addr) )
-        return invalid_data;  /* spico not running return a bogus temp */
+            return (data / 8);  /* Scale to degrees */
+        }
 
-    avago_addr_to_struct(sensor_addr,&addr_struct);
-    data = avago_spico_int(aapl, addr, 0x17, (sensor << 12) | (addr_struct.sbus & 0xff) );
-    /* result is a 12b signed value in 1/8 degree increments */
-    if( data & 0x8000 )
-    {  /* bit[15] indicates result is good */
-        data &= 0x0FFF;     /* Mask down to 12b temp value */
-        if (data & 0x0800)  /* Negative 12b temp value, do sign extension */
-            data = -1 * (((~data) & 0x0FFF) + 1);
-
-        return (data / 8);   /* Scale to degrees. */
+        /* Delay in 1ms */
+        ms_sleep(1);
     }
+
     return invalid_data;  /* Temperature not valid */
 }
 

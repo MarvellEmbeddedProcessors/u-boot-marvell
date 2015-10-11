@@ -69,6 +69,7 @@
 unsigned int avagoConnection = AVAGO_SBUS_CONNECTION;
 Aapl_t* aaplSerdesDb[HWS_MAX_DEVICE_NUM] = {0};
 Aapl_t  aaplSerdesDbDef[HWS_MAX_DEVICE_NUM];
+EXT void  ms_sleep(uint msec);
 
 #ifndef MV_HWS_BIN_HEADER
 static unsigned int aacsServerEnable = 0;
@@ -1154,27 +1155,27 @@ int mvHwsAvagoSerdesSbmVoltageGet
 )
 {
 #ifndef ASIC_SIMULATION
-    unsigned int    sbus_addr;
-    GT_U32          data, interruptData;
-    Avago_addr_t    addr_struct;
-    unsigned int addr = avago_make_sbus_master_addr(sensorAddr);
+    GT_U32          data;
+    unsigned int    i;
+    unsigned int    retry=10;
 
-    CHECK_STATUS(mvHwsAvagoConvertSerdesToSbusAddr(devNum, serdesNum, &sbus_addr));
+    /* trying to get the Voltage value maximum 10 times and set 1ms delay between each time */
+    for(i=0; i < retry; i++)
+    {
+        data = avago_spico_int(aaplSerdesDb[devNum], AVAGO_SBUS_MASTER_ADDRESS, 0x18, (0 << 12) | (9 & 0xff));
+        if (data & 0x8000)
+        {
+            data &= 0x0FFF;         /* Mask down to 12b voltage value */
+            *voltage = (data / 2);  /* Scale to milli-volt */
 
-    avago_addr_to_struct(sensorAddr, &addr_struct);
+            return GT_OK;
+        }
 
-    interruptData = (sbus_addr << 12) | (addr_struct.sbus & 0xff);
-    data = avago_spico_int(aaplSerdesDb[devNum], addr, 0x18, interruptData);
-    CHECK_AVAGO_RET_CODE();
-
-    /* result is a 12b signed value in 0.5mv increments */
-    if(data & 0x8000)
-    {  /* bit[15] indicates result is good */
-        data &= 0x0FFF;         /* Mask down to 12b voltage value */
-        *voltage = (data / 2);  /* Scale to milli-volt. */
+        /* Delay in 1ms */
+        ms_sleep(1);
     }
-    else
-        return GT_BAD_VALUE;  /* voltage not valid */
+
+    return GT_BAD_VALUE;  /* voltage not valid */
 
 #endif /* ASIC_SIMULATION */
     return GT_OK;

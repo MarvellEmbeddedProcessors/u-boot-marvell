@@ -88,6 +88,12 @@
 #    define ASIC_SIMULATION
 #endif
 
+#ifdef MV_HWS_BIN_HEADER
+#    ifndef ms_sleep
+#        define ms_sleep(a) Sleep(a * 1000)
+#    endif
+#endif
+
 #ifndef ASIC_SIMULATION
 #if (defined __MINGW32__ || defined WIN32)
 #    pragma warning( disable : 4996)

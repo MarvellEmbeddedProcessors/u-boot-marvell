@@ -53,7 +53,11 @@ u32 soc_get_mss_clk(void)
 
 u32 soc_tclk_get(void)
 {
+#ifndef CONFIG_PALLADIUM
 	return soc_get_mss_clk();
+#else
+	return CONFIG_MSS_FREQUENCY;
+#endif
 }
 
 u32 soc_get_cpu_clk(void)

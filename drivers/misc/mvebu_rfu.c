@@ -124,7 +124,8 @@ static void rfu_enable_win(struct rfu_win *win, u32 trgt_id)
 	}
 
 	alr = (u32)((start_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
-	alr |= WIN_ENABLE_BIT;
+	if (trgt_id != PCIE_REGS_TID)
+		alr |= WIN_ENABLE_BIT;
 	writel(alr, rfu_alr_offset_get(trgt_id));
 }
 

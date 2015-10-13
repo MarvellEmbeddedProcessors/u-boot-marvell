@@ -144,7 +144,8 @@
 
 /* Memory commands / tests. */
 #ifdef CONFIG_CMD_MEMTEST
-#define CONFIG_SYS_ALT_MEMTEST	/* More comprehensive mtest algorithm */
+#define CONFIG_SYS_ALT_MEMTEST		/* More comprehensive mtest algorithm */
+#define CONFIG_SYS_MEMTEST_SCRATCH	0x10800000
 #endif
 
 

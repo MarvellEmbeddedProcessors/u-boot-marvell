@@ -176,10 +176,25 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray);
  ***************************************************************************/
 MV_STATUS loadTopologyDB_GP(SERDES_MAP  *serdesMapArray);
 
+/**************************************************************************
+ * loadTopologyDBAMC -
+ *
+ * DESCRIPTION:		Loads the board topology for the DB_A38X_AMC board
+ * INPUT:		serdesMapArray	-   The struct that will contain
+ *				the board topology map
+ * OUTPUT:		The board topology map.
+ * RETURNS:		MV_OK		-   for success
+ *			MV_FAIL		-   for failure (a wrong
+ *						topology mode was read
+ *						from the board)
+ ***************************************************************************/
+MV_STATUS loadTopologyDBAMC(SERDES_MAP  *serdesMapArray);
+
 loadTopologyFuncPtr loadTopologyFuncArr[] =
 {
 	loadTopologyDB,		/* DB */
 	loadTopologyDB_GP,    /* A395RD */
+	loadTopologyDBAMC,	/* DB-AMC */
 };
 
 /*********************************** Globals **********************************/
@@ -288,6 +303,17 @@ SERDES_MAP HGW_AP_2_5G_SATA_ConfigDefault[MAX_SERDES_LANES] =
 	 { SGMIIv3_0,    __3_125Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE }
 };
 
+SERDES_MAP DbAmcConfigDefault[MAX_SERDES_LANES] =
+{
+/* 0 */ { PEX0, 		__5Gbps,		PEX_ROOT_COMPLEX_x4,		MV_FALSE,	MV_FALSE },
+/* 1 */ { PEX0, 		__5Gbps,		PEX_ROOT_COMPLEX_x4,		MV_FALSE,	MV_FALSE },
+/* 2 */ { PEX0, 		__5Gbps,		PEX_ROOT_COMPLEX_x4,		MV_FALSE,	MV_FALSE },
+/* 3 */ { PEX0, 		__5Gbps,		PEX_ROOT_COMPLEX_x4,		MV_FALSE,	MV_FALSE },
+/* 4 */ { SGMIIv3_3,		__1_25Gbps,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+/* 5 */ { SGMII2,		__1_25Gbps,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+/* 6 */ { SGMIIv3_0,            __3_125Gbps,            SERDES_DEFAULT_MODE,            MV_FALSE,       MV_FALSE },
+};
+
 /*************************** Functions implementation *************************/
 /***************************************************************************/
 
@@ -370,6 +396,28 @@ MV_STATUS loadTopologyDB_GP(SERDES_MAP  *serdesMapArray)
 	return res;
 }
 
+
+MV_STATUS loadTopologyDBAMC(SERDES_MAP  *serdesMapArray)
+{
+	MV_U32 laneNum;
+	SERDES_MAP* serdesTopology;
+
+	DEBUG_INIT_FULL_S("\n### loadTopologyDBAMC ###\n");
+
+	mvPrintf("\nInitialize DB-AMC board topology\n");
+	serdesTopology = DbAmcConfigDefault;
+
+	/* Updating the topology map */
+	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
+		serdesMapArray[laneNum].serdesMode  = serdesTopology[laneNum].serdesMode;
+		serdesMapArray[laneNum].serdesSpeed = serdesTopology[laneNum].serdesSpeed;
+		serdesMapArray[laneNum].serdesType  = serdesTopology[laneNum].serdesType;
+		serdesMapArray[laneNum].swapRx      = serdesTopology[laneNum].swapRx;
+		serdesMapArray[laneNum].swapTx      = serdesTopology[laneNum].swapTx;
+	}
+
+	return MV_OK;
+}
 
 #ifdef CONFIG_CMD_BOARDCFG
 /*******************************************************************************

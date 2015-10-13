@@ -182,3 +182,25 @@
 #define GP_EAP_10G_88f6925_GPP_POL_LOW		0x0
 #define GP_EAP_10G_88f6925_GPP_POL_MID		0x0
 
+/*******************************************************************************
+* A39X-AMC (DB-88F6925-AMC) board
+*******************************************************************************/
+#define DB_AMC_88F69XX_MPP0_7           0x00111111
+#define DB_AMC_88F69XX_MPP8_15          0x70000000
+#define DB_AMC_88F69XX_MPP16_23         0x55066007
+#define DB_AMC_88F69XX_MPP24_31         0x05055550
+#define DB_AMC_88F69XX_MPP32_39         0x05055555
+#define DB_AMC_88F69XX_MPP40_47         0x01106565 /* ND[IO6,RBn0,IO7,RBn1],I2C_TO_BOARD_EN,REF_CLK_OUT[0,1],Brd_Led0*/
+#define DB_AMC_88F69XX_MPP48_55         0x40000000 /* Brd_Led_[1,2,3,4], Dbg_JP[0,3,2], SPI1_CSn1 */
+#define DB_AMC_88F69XX_MPP56_63         0x00004444 /* SPI1_[MOSI,SCK,MISO,CSn0] */
+
+#define DB_AMC_88F69XX_GPP_OUT_ENA_LOW  (~(BIT29))      /* GPIO29: QS_SMI_ENA */
+#define DB_AMC_88F69XX_GPP_OUT_ENA_MID  (~(BIT12 | BIT17 | BIT18 | BIT20 | BIT21)) /* 44:I2C_EXT_EN, 49,50,52,53:Leds*/
+#define DB_AMC_88F69XX_GPP_OUT_ENA_HIGH 0xFFFFFFFF
+#define DB_AMC_88F69XX_GPP_OUT_VAL_LOW  (BIT29) /* GPIO29: QS_SMI_ENA = OUT VAL High */
+#define DB_AMC_88F69XX_GPP_OUT_VAL_MID  0x0 /* (was BIT12): GPIO44 I2C_EXT_EN = FALSE (False = OUT VAL Low) */
+#define DB_AMC_88F69XX_GPP_OUT_VAL_HIGH 0x0
+#define DB_AMC_88F69XX_GPP_POL_LOW      0x0
+#define DB_AMC_88F69XX_GPP_POL_MID      0x0
+#define DB_AMC_88F69XX_GPP_POL_HIGH     0x0
+

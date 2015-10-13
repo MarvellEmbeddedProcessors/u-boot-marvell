@@ -544,6 +544,9 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 
 		mvBoardFlashDeviceUpdate();
 		break;
+	case A39x_DB_AMC_69XX_ID:
+		/* nothing to be updated at run-time for AMC board */
+		break;
 	default:
 		mvOsPrintf("%s: Error: Auto detection update sequence is not supported by current board.\n" , __func__);
 	}

@@ -26,6 +26,6 @@ config ARMV8_PSCI
 
 config PALLADIUM
 	bool "Support palladium emulation"
-	default y
+	default n
 endif
 

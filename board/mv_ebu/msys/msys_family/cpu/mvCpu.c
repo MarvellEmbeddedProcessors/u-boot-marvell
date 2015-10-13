@@ -118,17 +118,15 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 	else if (family == MV_ALLEYCAT3_DEV_ID)
 		freqMhz = ac3ClockRatioTbl[idx].cpuFreq * 1000000;
 	else if (family == MV_BOBK_DEV_ID) {
-		switch (mvBoardIdGet()) {
-		case BOBK_CETUS_DB_ID:
-		case BOBK_CETUS_CUSTOMER_BOARD_ID0:
+		switch (mvCtrlModelGet()) {
+		case MV_BOBK_CETUS_98DX4235_DEV_ID:
 			freqMhz = bobkCetusClockRatioTbl[idx].cpuFreq * 1000000;
 			break;
-		case BOBK_CAELUM_DB_ID:
-		case BOBK_CAELUM_CUSTOMER_BOARD_ID1:
+		case MV_BOBK_CAELUM_98DX4203_DEV_ID:
 			freqMhz = bobkCaelumClockRatioTbl[idx].cpuFreq * 1000000;
 			break;
 		default:
-			mvOsPrintf("ERROR: Unknown BoardID %d, CPU freq get failed\n", mvBoardIdGet());
+			mvOsPrintf("ERROR: Unknown DeviceID %d, CPU freq get failed\n", mvCtrlModelGet());
 			return 0xFFFFFFFF;
 		}
 	} else
@@ -170,17 +168,15 @@ MV_U32 mvCpuDdrClkGet(MV_VOID)
 	else if (family == MV_ALLEYCAT3_DEV_ID)
 		freqMhz = ac3ClockRatioTbl[idx].ddrFreq * 1000000;
 	else if (family == MV_BOBK_DEV_ID) {
-		switch (mvBoardIdGet()) {
-		case BOBK_CETUS_DB_ID:
-		case BOBK_CETUS_CUSTOMER_BOARD_ID0:
+		switch (mvCtrlModelGet()) {
+		case MV_BOBK_CETUS_98DX4235_DEV_ID:
 			freqMhz = bobkCetusClockRatioTbl[idx].ddrFreq * 1000000;
 			break;
-		case BOBK_CAELUM_DB_ID:
-		case BOBK_CAELUM_CUSTOMER_BOARD_ID1:
+		case MV_BOBK_CAELUM_98DX4203_DEV_ID:
 			freqMhz = bobkCaelumClockRatioTbl[idx].ddrFreq * 1000000;
 			break;
 		default:
-			mvOsPrintf("ERROR: Unknown BoardID %d, DDR freq get failed\n", mvBoardIdGet());
+			mvOsPrintf("ERROR: Unknown DeviceID %d, DDR freq get failed\n", mvCtrlModelGet());
 			return 0xFFFFFFFF;
 		}
 	} else
@@ -227,17 +223,15 @@ MV_U32 mvCpuPllClkGet(MV_VOID)
 	else if (family == MV_ALLEYCAT3_DEV_ID)
 		freqMhz = ac3ClockRatioTbl[idx].pllClk * 1000000;
 	else if (family == MV_BOBK_DEV_ID) {
-		switch (mvBoardIdGet()) {
-		case BOBK_CETUS_DB_ID:
-		case BOBK_CETUS_CUSTOMER_BOARD_ID0:
+		switch (mvCtrlModelGet()) {
+		case MV_BOBK_CETUS_98DX4235_DEV_ID:
 			freqMhz = bobkCetusClockRatioTbl[idx].pllClk * 1000000;
 			break;
-		case BOBK_CAELUM_DB_ID:
-		case BOBK_CAELUM_CUSTOMER_BOARD_ID1:
+		case MV_BOBK_CAELUM_98DX4203_DEV_ID:
 			freqMhz = bobkCaelumClockRatioTbl[idx].pllClk * 1000000;
 			break;
 		default:
-			mvOsPrintf("ERROR: Unknown BoardID %d, PLL freq get failed\n", mvBoardIdGet());
+			mvOsPrintf("ERROR: Unknown DeviceID %d, PLL freq get failed\n", mvCtrlModelGet());
 			return 0xFFFFFFFF;
 		}
 	} else

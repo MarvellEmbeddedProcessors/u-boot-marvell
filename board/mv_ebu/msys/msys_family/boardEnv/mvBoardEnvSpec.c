@@ -1054,6 +1054,100 @@ MV_BOARD_INFO db_dx_bobkCaelumInfo = {
 };
 
 /*********************************************************************************/
+/**************************************/
+/* BOBK-LEWIS-RD-LWS-12XG-A BOARD */
+/**************************************/
+
+
+MV_BOARD_TWSI_INFO	rd_dx_bobkLewisInfoBoardTwsiDev[] = {
+/* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{BOARD_DEV_TWSI_INIT_EPROM, 0x50, ADDR7_BIT},	/* Serial Init EPROM	*/
+};
+
+
+MV_BOARD_MAC_INFO rd_dx_bobkLewisInfoBoardMacInfo[] = {
+/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_AUTO, -1, -1, MV_FALSE},
+	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0, MV_TRUE},
+};
+
+MV_BOARD_MODULE_TYPE_INFO rd_dx_bobkLewisInfoBoardModTypeInfo[] = {
+	{
+		.boardMppMod		= MV_BOARD_AUTO,
+	}
+};
+
+/* TO DE */
+MV_DEV_CS_INFO rd_dx_bobkLewisInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NAND)
+	{DEVICE_CS0, N_A, BOARD_DEV_NAND_FLASH, 8, 8, 0, MV_TRUE} /* NAND DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO rd_dx_bobkLewisInfoBoardMppConfigValue[] = {
+	{ {
+	RD_DX_BOBK_LEWIS_MPP0_7,
+	RD_DX_BOBK_LEWIS_MPP8_15,
+	RD_DX_BOBK_LEWIS_MPP16_23,
+	RD_DX_BOBK_LEWIS_MPP24_31,
+	RD_DX_BOBK_LEWIS_MPP32_39,
+	} },
+};
+
+MV_BOARD_INFO rd_dx_bobkLewisInfo = {
+	.boardName			= "RD-LWS-12XG-A",
+	.numBoardMppTypeValue		= ARRSZ(rd_dx_bobkLewisInfoBoardModTypeInfo),
+	.pBoardModTypeValue		= rd_dx_bobkLewisInfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(rd_dx_bobkLewisInfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= rd_dx_bobkLewisInfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(rd_dx_bobkLewisInfoBoardDeCsInfo),
+	.pDevCsInfo			= rd_dx_bobkLewisInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(rd_dx_bobkLewisInfoBoardTwsiDev),
+	.pBoardTwsiDev			= rd_dx_bobkLewisInfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(rd_dx_bobkLewisInfoBoardMacInfo),
+	.pBoardMacInfo			= rd_dx_bobkLewisInfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= RD_DX_BOBK_LEWIS_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_DX_BOBK_LEWIS_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= RD_DX_BOBK_LEWIS_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_DX_BOBK_LEWIS_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= RD_DX_BOBK_LEWIS_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_DX_BOBK_LEWIS_GPP_POL_MID,
+	.gppPolarityValHigh		= 0,
+
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+
+	/* NAND init params */
+	.nandFlashReadParams		= DB_DX_BOBK_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_DX_BOBK_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_DX_BOBK_BOARD_NAND_CONTROL,
+	/* NOR init params */
+	.norFlashReadParams		= DB_DX_BOBK_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= DB_DX_BOBK_BOARD_NOR_WRITE_PARAMS,
+	.isSmiExternalPp		= MV_TRUE,
+	.smiExternalPpIndex		= 0,
+	.modelName			= "BobK Lewis Reference Design Board",
+	.isSdMmcConnected		= MV_TRUE
+};
+
+/*********************************************************************************/
 /***********************/
 /* ALLEYCAT3-DB-DX BOARD */
 /***********************/
@@ -1522,7 +1616,8 @@ MV_BOARD_INFO *marvellBC2BoardInfoTbl[] = {
 
 MV_BOARD_INFO *marvellBOBKBoardInfoTbl[] = {
 	&db_dx_bobkCetusInfo,
-	&db_dx_bobkCaelumInfo
+	&db_dx_bobkCaelumInfo,
+	&rd_dx_bobkLewisInfo
 };
 
 MV_BOARD_INFO *marvellAC3BoardInfoTbl[] = {

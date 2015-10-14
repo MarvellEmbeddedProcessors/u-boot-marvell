@@ -120,6 +120,8 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 	else if (family == MV_BOBK_DEV_ID) {
 		switch (mvCtrlModelGet()) {
 		case MV_BOBK_CETUS_98DX4235_DEV_ID:
+		case MV_BOBK_LEWIS_98DX8212_DEV_ID:
+			/* LEWIS RD board's CPU freq setting is the same as CETUS board */
 			freqMhz = bobkCetusClockRatioTbl[idx].cpuFreq * 1000000;
 			break;
 		case MV_BOBK_CAELUM_98DX4203_DEV_ID:
@@ -170,6 +172,8 @@ MV_U32 mvCpuDdrClkGet(MV_VOID)
 	else if (family == MV_BOBK_DEV_ID) {
 		switch (mvCtrlModelGet()) {
 		case MV_BOBK_CETUS_98DX4235_DEV_ID:
+		case MV_BOBK_LEWIS_98DX8212_DEV_ID:
+			/* LEWIS RD board's CPU freq setting is the same as CETUS board */
 			freqMhz = bobkCetusClockRatioTbl[idx].ddrFreq * 1000000;
 			break;
 		case MV_BOBK_CAELUM_98DX4203_DEV_ID:
@@ -225,6 +229,8 @@ MV_U32 mvCpuPllClkGet(MV_VOID)
 	else if (family == MV_BOBK_DEV_ID) {
 		switch (mvCtrlModelGet()) {
 		case MV_BOBK_CETUS_98DX4235_DEV_ID:
+		case MV_BOBK_LEWIS_98DX8212_DEV_ID:
+			/* LEWIS RD board's CPU freq setting is the same as CETUS board */
 			freqMhz = bobkCetusClockRatioTbl[idx].pllClk * 1000000;
 			break;
 		case MV_BOBK_CAELUM_98DX4203_DEV_ID:

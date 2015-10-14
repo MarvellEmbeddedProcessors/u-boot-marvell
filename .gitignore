@@ -3,7 +3,7 @@
 # subdirectories here. Add them in the ".gitignore" file
 # in that subdirectory instead.
 #
-# Normal rules
+# 	Normal rules
 #
 .gitignore
 *.rej

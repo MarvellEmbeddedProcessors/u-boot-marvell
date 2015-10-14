@@ -110,7 +110,8 @@ SERDES_MAP bobkSerdesDbTopology[MAX_SERDES_LANES] =
 SERDES_MAP* marvellBoardBobkSerdesTopology[] =
 {
 	bobkSerdesDbTopology,
-    bobkSerdesDbTopology
+	bobkSerdesDbTopology,
+	bobkSerdesDbTopology
 };
 
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */

@@ -819,6 +819,7 @@ int mv_get_arch_number(void)
 	case AC3_CUSTOMER_BOARD_ID1:
 	case BOBK_CETUS_DB_ID:
 	case BOBK_CAELUM_DB_ID:
+	case BOBK_LEWIS_RD_ID:
 	case BOBK_CETUS_CUSTOMER_BOARD_ID0:
 	case BOBK_CAELUM_CUSTOMER_BOARD_ID1:
 		return 3035;

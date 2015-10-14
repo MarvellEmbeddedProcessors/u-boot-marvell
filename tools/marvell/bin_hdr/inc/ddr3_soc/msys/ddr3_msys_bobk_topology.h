@@ -121,6 +121,17 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =  {{
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16,  MEM_4G,   DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x3,1,0,0}, {0x3,1,0,0}, {0x3,1,0,0}, {0x3,1,0,0}, {3,1,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16,  MEM_4G,   DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
     INTERFACE_BUS_MASK_32BIT/*INTERFACE_BUS_MASK_32BIT  Buses mask */
+    },
+    {
+    /* 3rd Marvell board: Lewis-RD */
+    0x10, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                             speed_bin      mem_dev_width mem_size frequency   casL casWL     temperature */
+{  {{{0x3,1,0,0}, {0x3,1,0,0}, {0x3,1,0,0}, {0x3,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {1,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16,  MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
+    INTERFACE_BUS_MASK_32BIT/*INTERFACE_BUS_MASK_32BIT  Buses mask */
     }
  };
 

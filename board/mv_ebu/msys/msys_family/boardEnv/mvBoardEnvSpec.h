@@ -108,14 +108,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BOBK_CUSTOMER_BOARD_ID_BASE	0x40
 #define BOBK_CETUS_CUSTOMER_BOARD_ID0		(BOBK_CUSTOMER_BOARD_ID_BASE + 0)
 #define BOBK_CAELUM_CUSTOMER_BOARD_ID1		(BOBK_CUSTOMER_BOARD_ID_BASE + 1)
-#define BOBK_CUSTOMER_MAX_BOARD_ID	(BOBK_CUSTOMER_BOARD_ID_BASE + 2)
-#define BOBK_CUSTOMER_BOARD_NUM		(BOBK_CUSTOMER_MAX_BOARD_ID - BOBK_CUSTOMER_BOARD_ID_BASE)
+#define BOBK_CUSTOMER_MAX_BOARD_ID			(BOBK_CUSTOMER_BOARD_ID_BASE + 2)
+#define BOBK_CUSTOMER_BOARD_NUM			(BOBK_CUSTOMER_MAX_BOARD_ID - BOBK_CUSTOMER_BOARD_ID_BASE)
 
 /* BobK Marvell Boards */
 #define BOBK_MARVELL_BOARD_ID_BASE	0x50
 #define BOBK_CETUS_DB_ID			(BOBK_MARVELL_BOARD_ID_BASE + 0)
 #define BOBK_CAELUM_DB_ID			(BOBK_MARVELL_BOARD_ID_BASE + 1)
-#define BOBK_MARVELL_MAX_BOARD_ID	(BOBK_MARVELL_BOARD_ID_BASE + 2)
+#define BOBK_LEWIS_RD_ID			(BOBK_MARVELL_BOARD_ID_BASE + 2)
+#define BOBK_MARVELL_MAX_BOARD_ID		(BOBK_MARVELL_BOARD_ID_BASE + 3)
 #define BOBK_MARVELL_BOARD_NUM		(BOBK_MARVELL_MAX_BOARD_ID - BOBK_MARVELL_BOARD_ID_BASE)
 
 /* AXP-AMC board: for Linux 2.6/3.4 usage only (AXP family is shared with MSYS in LSP) */
@@ -476,6 +477,68 @@ MPP#	NAME			IN/OUT
 
 #define DB_DX_BOBK_CAELUM_GPP_POL_LOW		0x0
 #define DB_DX_BOBK_CAELUM_GPP_POL_MID		0x0
+
+
+/************************************/
+/*   BOBK-LEWIS-RD-LWS-12XG-A    */
+/************************************/
+#define RD_DX_BOBK_LEWIS_MPP0_7	0x00042222 /* 0-3:SPI, 4:NF_CEn, 5:SFP_Data, 6:DIAG LED, 7:TWSI_SEL1 */
+#define RD_DX_BOBK_LEWIS_MPP8_15	0x11000000 /* 8:TWSI_SEL2,9:SFP_TX,10,TMP_INT,11:INIT_Done,12:MPP12,
+							13:USB_OC,14-15:I2C_[SCLK,SDA] */
+#define RD_DX_BOBK_LEWIS_MPP16_23	0x44444004 /* 16:NF_REn, 17:TWSI_SEL0, 18:NA, 19-23:NF_[Busy,WEn,IO[0,1,2]] */
+#define RD_DX_BOBK_LEWIS_MPP24_31	0x14444444 /* 24-30: NF_IO[3,4,5,6,7],NF_CLE,NF_ALE, 31: SMI_MST_MDC(SMI) */
+#define RD_DX_BOBK_LEWIS_MPP32_39	0x00000001 /* 32: SMI_MST_MDIO(SMI) */
+
+
+/* GPPs
+MPP#	NAME			IN/OUT
+----------------------------------------------
+0	SPI_SI			(in/out)
+1	SPI_SO			(in/out)
+2	SPI_SCK			(in/out)
+3	SPI_CS0n			(in/out)
+4	NF_CEn			(in/out) NAND Flash
+5	SFP_Data			(in)
+6	DIAG LED			(out)
+7	TWSI_SEL1		(out)
+8	TWSI_SEL2		(out)
+9	SFP_TX_DIS		(out)
+10	TMP_INT			(in)
+11	INIT_Done		(in)
+12	MPP12			(N/A)
+13	USB_OC			(in)
+14	I2C_SCLK			(out)
+15	I2C_SDA			(in/out)
+
+16	NF_REn			(in/out)NAND Flash
+17	TWSI_SEL0		(out)
+18	NA			(NA)
+19	NF_Busy			(in/out)NAND Flash
+20	NF_WEn			(in/out)NAND Flash
+21	NF_IO[0]			(in/out)NAND Flash
+22	NF_IO[1]			(in/out)NAND Flash
+23	NF_IO[2]			(in/out)NAND Flash
+24	NF_IO[3]			(in/out)NAND Flash
+25	NF_IO[4]			(in/out)NAND Flash
+26	NF_IO[5]			(in/out)NAND Flash
+27	NF_IO[6]			(in/out)NAND Flash
+28	NF_IO[7]			(in/out)NAND Flash
+29	NF_CLE			(in/out)NAND Flash
+30	NF_ALE			(in/out)NAND Flash
+31	SMI_MST_MDC		(out)
+32	SMI_MST_MDIO		(in/out)
+
+*/
+#define RD_DX_BOBK_LEWIS_GPP_OUT_ENA_LOW	(~(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT7 | BIT8\
+					| BIT9 | BIT14 | BIT17 | BIT31))
+#define RD_DX_BOBK_LEWIS_GPP_OUT_ENA_MID	(~(0))
+
+#define RD_DX_BOBK_LEWIS_GPP_OUT_VAL_LOW	(~(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT9\
+					| BIT14 | BIT17 | BIT31))
+#define RD_DX_BOBK_LEWIS_GPP_OUT_VAL_MID	0x0
+
+#define RD_DX_BOBK_LEWIS_GPP_POL_LOW		0x0
+#define RD_DX_BOBK_LEWIS_GPP_POL_MID		0x0
 
 /********************************************
 *		AlleyCat3 Boards

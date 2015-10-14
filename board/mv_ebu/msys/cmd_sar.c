@@ -730,6 +730,7 @@ we can't select the settings with "ifdef", so update it in runtime*/
 		switch (mvBoardIdGet()) {
 		case BOBK_CETUS_DB_ID:
 		case BOBK_CETUS_CUSTOMER_BOARD_ID0:
+		case BOBK_LEWIS_RD_ID:	/*the setting of Lewis is the same with Cetus*/
 			coreClockTbl = coreClockTblBobkCetus;
 			coreClockTblSize = ARRAY_SIZE(coreClockTblBobkCetus);
 			cpuDdrClkTbl = cpuDdrClkTblBobkCetus;

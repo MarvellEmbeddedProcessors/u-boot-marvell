@@ -481,10 +481,12 @@ GT_STATUS    ddr3TipBobKSelectTMDdrController
 )
 {
     GT_U32 interfaceId = 0, dataValue = 0;
-
+#ifndef ASIC_SIMULATION
     CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, 0x000F8240 ,  &devId, MASK_ALL_BITS));
-
-    if ((devId &0xFFFF) == CETUS_DEV_ID )
+#else
+    devId = 0xBC00; /* CAELUM_DEV_ID */
+#endif
+    if ((devId & 0xFFFF) == CETUS_DEV_ID )
     {
         /* IN Cetus TM has only 1 IF #0*/
         hwMaxDdrIfNum = 1;

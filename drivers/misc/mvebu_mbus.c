@@ -48,14 +48,6 @@ struct mbus_fdt_info {
 	u32 flags;
 };
 
-struct mbus_win {
-	u32 target;
-	uintptr_t base_addr;
-	uintptr_t win_size;
-	u32 attribute;
-	u32 remapped;
-	u32 enabled;
-};
 
 static void mbus_win_check(struct mbus_win *win, u32 win_num)
 {
@@ -72,7 +64,6 @@ static void mbus_win_check(struct mbus_win *win, u32 win_num)
 		printf("Align up the size to 0x%lx\n", win->win_size);
 	}
 }
-
 static void mbus_win_set(struct mbus_win *win, u32 win_num)
 {
 	u32 base_reg, ctrl_reg, size_reg, win_size, remap_low;
@@ -99,6 +90,72 @@ static void mbus_win_set(struct mbus_win *win, u32 win_num)
 		if (MBUS_REMAP_SIZE_64 == mbus_info->remap_size)
 			writel(0x0, mbus_info->mbus_base + MBUS_WIN_REMAP_HIGH_REG(win_num));
 	}
+	return;
+}
+
+/*
+ * mbus_win_get
+ *
+ * This function gets one CPU decode window configuration
+ * according to input window number by reading CPU decode
+ * window registers.
+ *
+ * @input:
+ *     - win_num: number of CPU decode window
+ *
+ * @output:
+ *     - win: configuration of this CPU decode window
+ *
+ * @return:  N/A
+ */
+static void mbus_win_get(struct mbus_win *win, u32 win_num)
+{
+	u32 base_reg, ctrl_reg, size_reg;
+
+	ctrl_reg = readl(mbus_info->mbus_base + MBUS_WIN_CTRL_REG(win_num));
+	base_reg = readl(mbus_info->mbus_base + MBUS_WIN_BASE_REG(win_num));
+	size_reg = readl(mbus_info->mbus_base + MBUS_WIN_SIZE_REG(win_num));
+
+	win->base_addr = (base_reg & MBUS_BR_BASE_MASK) >> MBUS_BR_BASE_OFFS;
+	win->win_size = (size_reg & MBUS_CR_WIN_SIZE_MASK) >> MBUS_CR_WIN_SIZE_OFFS;
+	win->target = (ctrl_reg & MBUS_CR_WIN_TARGET_MASK) >> MBUS_CR_WIN_TARGET_OFFS;
+	win->attribute = (ctrl_reg & MBUS_CR_WIN_ATTR_MASK) >> MBUS_CR_WIN_ATTR_OFFS;
+	win->enabled = ctrl_reg & MBUS_CR_WIN_ENABLE;
+
+	return;
+}
+
+/*
+ * mbus_win_map_build
+ *
+ * This function builds CPU-DRAM windows mapping
+ * by reading CPU-DRAM decode windows registers,
+ * so other units like SATA could configure its own
+ * DRAM address decode windows correctly.
+ *
+ * @input: N/A
+ *
+ * @output:
+ *     - win_map: configuration of CPU-DRAM decode window
+ *
+ * @return:  N/A
+ */
+void mbus_win_map_build(struct mbus_win_map *win_map)
+{
+	int win_id;
+	struct mbus_win win;
+
+	memset(win_map, 0, sizeof(struct mbus_win_map));
+	for (win_id = 0; win_id < mbus_info->max_win; win_id++) {
+		mbus_win_get(&win, win_id);
+
+		if ((win.enabled == 0) || (win.target != MBUS_TARGET_DRAM_NUM))
+			continue;
+
+		memcpy(&(win_map->mbus_windows[win_map->mbus_win_num]), &win, sizeof(win));
+		win_map->mbus_win_num++;
+	}
+
 	return;
 }
 

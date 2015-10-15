@@ -54,9 +54,10 @@ dtb-$(CONFIG_SOCFPGA) += socfpga_cyclone5_socrates.dtb
 dtb-$(CONFIG_MVEBU) += armada-385-db.dtb
 dtb-$(CONFIG_MVEBU) += armada-lp-db.dtb
 dtb-$(CONFIG_MVEBU) += armada-lp-palladium.dtb
-dtb-$(CONFIG_MVEBU) += apn-806-db.dtb
-dtb-$(CONFIG_MVEBU) += apn-806-pd.dtb
-dtb-$(CONFIG_MVEBU) += apn-806-db-flc.dtb
+dtb-$(CONFIG_MVEBU) += apn-806-db.dtb \
+		       apn-806-pd.dtb \
+		       apn-806-db-flc.dtb \
+		       apn-806-db-dop.dtb
 
 targets += $(dtb-y)
 

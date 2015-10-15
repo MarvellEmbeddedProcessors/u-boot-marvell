@@ -323,10 +323,10 @@ MV_HWS_TOPOLOGY_MAP bobKTopologyMap[] =
     {
     0xB, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                         speed_bin           memory_width  mem_size  frequency  casL casWL      temperature */
- {  {{{0x2,1,0,0}, {0x2,1,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
-    {{{0x2,1,0,0}, {0x2,1,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+ {  {{{0x2,0,0,0}, {0x2,0,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x2,0,0,0}, {0x2,0,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
-    {{{0x2,1,0,0}, {0x2,1,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x2,0,0,0}, {0x2,0,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} },
     0xF  /* Buses mask */
     }

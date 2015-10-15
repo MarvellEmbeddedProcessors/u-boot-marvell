@@ -824,21 +824,21 @@ static GT_STATUS ddr3TipRev2RankControl(GT_U32 devNum, GT_U32 interfaceId)
         if (topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask == GT_TRUE)
         {
         /* checking mirrorEnableBitmask - if mirrorEnableBitmask is enabled - CS+4 bit in word shall be '1' */
-            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask & 0x1) != 0)
+            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].csBitmask & 0x1) != 0)
             {
-                dataValue |= (1 << 4);
+                dataValue |= (topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask << 4);
             }
-            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask & 0x2) != 0)
+            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].csBitmask & 0x2) != 0)
             {
-                dataValue |= (1 << 5);
+                dataValue |= (topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask << 5);
             }
-            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask & 0x4) != 0)
+            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].csBitmask & 0x4) != 0)
             {
-                dataValue |= (1 << 6);
+                dataValue |= (topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask << 6);
             }
-            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask & 0x8) != 0)
+            if ((topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].csBitmask & 0x8) != 0)
             {
-                dataValue |= (1 << 7);
+                dataValue |= (topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].mirrorEnableBitmask << 7);
             }
         }
     }

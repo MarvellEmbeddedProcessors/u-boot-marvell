@@ -25,14 +25,8 @@
 #include <asm/arch/regs-base.h>
 #include <linux/sizes.h>
 
-#define ADDRESS_SHIFT			(20)
-#define MAX_CCU_WINDOWS			(8)
-#define DRAM_0_TID			0x03
-#define CCU_WIN_CR_OFFSET(win)		(MVEBU_ADEC_AP_BASE + 0x0 + (0x10 * win))
-#define CCU_TARGET_ID_OFFSET		(8)
-#define CCU_TARGET_ID_MASK		(0x7F)
-#define CCU_WIN_ALR_OFFSET(win)		(MVEBU_ADEC_AP_BASE + 0x8 + (0x10 * win))
-#define CCU_WIN_AHR_OFFSET(win)		(MVEBU_ADEC_AP_BASE + 0xC + (0x10 * win))
+#define MVEBU_MCKINLEY_REGS_BASE	(MVEBU_REGS_BASE + 0x20000)
+#define MVEBU_MC_MEM_ADDR_MAP_REG	(MVEBU_MCKINLEY_REGS_BASE + 0x200)
 
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
@@ -66,27 +60,45 @@ int dram_init(void)
 #elif defined(CONFIG_PALLADIUM)
 	gd->ram_size = 0x20000000;
 #else
-	u32 alr, ahr;
-	u32 target_id, ctrl;
-	u32 win;
+	u32 dram_length, ram_size;
 
-	for (win = 0; win < MAX_CCU_WINDOWS; win++) {
-		ctrl = readl(CCU_WIN_CR_OFFSET(win));
-		target_id = (ctrl >> CCU_TARGET_ID_OFFSET) & CCU_TARGET_ID_MASK;
-
-		if (target_id == DRAM_0_TID) {
-			alr = readl(CCU_WIN_ALR_OFFSET(win)) << ADDRESS_SHIFT;
-			ahr = readl(CCU_WIN_AHR_OFFSET(win)) << ADDRESS_SHIFT;
-			gd->ram_size = ahr - alr + 1;
-			gd->bd->bi_dram[0].size = gd->ram_size;
-			gd->bd->bi_dram[0].start = alr;
-
-			debug("DRAM base 0x%08x size 0x%x\n", alr, (uint)gd->ram_size);
-		}
+	dram_length = (readl(MVEBU_MC_MEM_ADDR_MAP_REG) >> 16) & 0x1F;
+	if (dram_length > 0x3) {
+		dram_length -= 0x7;
+		ram_size = 8 * SZ_1M;
+	} else {
+		ram_size = 384 * SZ_1M;
 	}
+
+	gd->ram_size = (u64)((u64)ram_size << dram_length);
 #endif
 
 	return 0;
+}
+
+phys_size_t get_effective_memsize(void)
+{
+	/* Set Memory size of U-Boot to 1GB only - for relocation only */
+	if (gd->ram_size < SZ_1G)
+		return gd->ram_size;
+
+	return SZ_1G;
+}
+
+void dram_init_banksize(void)
+{
+	/* Config 2 DRAM banks:
+	** Bank 0 - max size 4G - 256M
+	** Bank 1 - max size 4G */
+	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
+	if (gd->ram_size <= SZ_4G) {
+		gd->bd->bi_dram[0].size = min(gd->ram_size, (phys_size_t)(SZ_4G - SZ_256M));
+		return;
+	}
+
+	gd->bd->bi_dram[0].size = SZ_4G - SZ_256M;
+	gd->bd->bi_dram[1].start = SZ_4G;
+	gd->bd->bi_dram[1].size = gd->ram_size - SZ_4G;
 }
 
 void reset_cpu(ulong ignored)

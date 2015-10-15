@@ -85,7 +85,9 @@
 #define PCIE_LINK_CTL_OFF(x)	(x + 0x70)
 
 #define MAX_PCIE_PORTS		10
-#ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+#ifdef CONFIG_TARGET_ARMADA_8K
+/* Set First PCIe Bus to 1. Because when set to 0, Linux bus enumeration
+** for PCIe bridge does not work. */
 #define FIRST_PCI_BUS		1
 #else
 #define FIRST_PCI_BUS		0

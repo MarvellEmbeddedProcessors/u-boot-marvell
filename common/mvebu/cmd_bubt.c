@@ -492,7 +492,7 @@ int do_bubt_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 }
 
 U_BOOT_CMD(
-	bubt, 4, 1, do_bubt_cmd,
+	bubt, 4, 0, do_bubt_cmd,
 	"Burn a u-boot image to flash",
 	"[file-name] [destination [source]]\n"
 	"\t-file-name     The image file name to burn. default = u-boot.bin\n"

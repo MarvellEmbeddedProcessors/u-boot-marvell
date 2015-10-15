@@ -17,3 +17,5 @@ const char *serdesSwapFileName = NULL;
 
 #endif /*FW_DOWNLOAD_FROM_SERVER*/
 #endif /*AVAGO_FW_Data_H_H_*/
+
+

@@ -12176,3 +12176,5 @@ const short serdes0x1055_0045Data[AVAGO_SERDES_FW_IMAGE_SIZE] = {
 const short *serdesFwPtr = serdes0x1055_0045Data;
 
 #endif /* AVAGO_SERDES_0x1055_0045Data_H_ */
+
+

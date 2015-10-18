@@ -101,7 +101,7 @@ static GT_STATUS ddr3TipTmSetDivider
 static GT_STATUS ddr3TipCpuSetDivider
 (
 	GT_U8							devNum,
-	GT_U8                			interfaceId,
+	GT_U32                			interfaceId,
     MV_HWS_DDR_FREQ                 frequency
 );
 
@@ -1363,7 +1363,7 @@ static GT_STATUS ddr3TipTmSetDivider
 static GT_STATUS ddr3TipCpuSetDivider
 (
 	GT_U8							devNum,
-	GT_U8							interfaceId,
+	GT_U32							interfaceId,
     MV_HWS_DDR_FREQ                 frequency
 )
 {

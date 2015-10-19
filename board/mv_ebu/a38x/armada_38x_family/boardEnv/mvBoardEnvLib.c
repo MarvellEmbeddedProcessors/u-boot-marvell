@@ -3579,8 +3579,7 @@ MV_U32 mvBoardSysConfigGet(MV_CONFIG_TYPE_ID configField)
 {
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 
-	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
-		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
+	if (mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
 		DB(mvOsPrintf("%s: Error: Requested board config is invalid for this board" \
 						" (%d)\n", __func__, configField));
 		return MV_ERROR;
@@ -3606,8 +3605,7 @@ MV_STATUS mvBoardSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value)
 {
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 
-	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
-		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
+	if (mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
 		DB(mvOsPrintf("Error: Requested board config is invalid for this board" \
 						" (%d)\n", configField));
 		return MV_ERROR;

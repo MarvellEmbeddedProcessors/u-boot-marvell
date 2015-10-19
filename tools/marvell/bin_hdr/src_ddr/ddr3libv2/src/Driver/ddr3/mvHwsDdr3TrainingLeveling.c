@@ -847,6 +847,12 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 			}
 			else
 			{
+                #if defined(CONFIG_ARMADA_38X) /* JIRA #1498 for 16 bit with ECC */
+                if(topologyMap->activeBusMask == 0xB)
+                {
+                    break;
+                }
+                #endif
 				CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_TRAINING_TRIGGER_REG, dataRead, (1 << 2)));
 				if (dataRead[interfaceId] != 0)
 				{
@@ -867,6 +873,13 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 			{
 				CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_TRAINING_STATUS_REG, dataRead, (1 << 2)));
 				regData = dataRead[interfaceId];
+                #if defined(CONFIG_ARMADA_38X) /* JIRA #1498 for 16 bit with ECC */
+                if(topologyMap->activeBusMask == 0xB)
+                {
+                    /* set data to 0 in order to skip the check */
+                    regData = 0;
+                }
+                #endif
 				if (regData != 0)
 				{
 					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("WL 2:  WL failed IF %d regData=0x%x\n",interfaceId,regData));

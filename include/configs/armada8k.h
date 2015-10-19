@@ -109,7 +109,7 @@ extern char __end_of_spl[];
 
 #define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x2000000\0"		\
 					"fdt_addr=0x1000000\0"			\
-					"fdt_high=0xa0000000\0"			\
+					"fdt_high=0xffffffffffffffff\0"		\
 					"ramfs_addr=0x3000000\0"		\
 					"initrd_high=0xffffffffffffffff\0"	\
 					"image_name=Image\0"			\

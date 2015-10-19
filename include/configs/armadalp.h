@@ -53,13 +53,14 @@
 
 /* DRAM detection stuff */
 #define MV_DRAM_AUTO_SIZE
-#define CONFIG_SYS_DRAM_BANKS           1
+#define CONFIG_SYS_DRAM_BANKS		1
 
 #ifdef CONFIG_SPL_BUILD
 /* SPL */
 /* Defines for SPL */
-#define CONFIG_SPL_TEXT_BASE	 0xFFE1C048
-#define CONFIG_SPL_MAX_SIZE		(0x1ffc0)
+/*#define CONFIG_SPL_TEXT_BASE		0xF0000000 - CM3 SRAM, 0x01000000 - DRAM */
+#define CONFIG_SPL_TEXT_BASE		0x01000000
+#define CONFIG_SPL_MAX_SIZE		0x00020000	/* 128K */
 
 #ifndef __ASSEMBLY__
 extern char __end_of_spl[];
@@ -86,7 +87,7 @@ extern char __end_of_spl[];
  */
 #include "mvebu-common.h"
 
-
+#define CONFIG_SYS_PCI_64BIT	/* enable 64-bit PCI resources */
 
 /*
  * SOC specific overrides
@@ -102,7 +103,11 @@ extern char __end_of_spl[];
 #define CONFIG_BOOTDELAY                -1
 
 #undef CONFIG_BAUDRATE
+#ifdef CONFIG_PALLADIUM
+#define CONFIG_BAUDRATE                 300
+#else
 #define CONFIG_BAUDRATE                 4000
+#endif
 
 #undef CONFIG_BOOTARGS
 #define CONFIG_BOOTARGS			"console=ttyS0,300 earlycon=arlp_uart,0xd0012000"

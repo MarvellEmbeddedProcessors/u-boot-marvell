@@ -38,6 +38,10 @@ struct chip_serdes_phy_config chip_config[] = {
 	{.compat = CP110,
 	 .ptr_comphy_chip_init = comphy_cp110_init },
 #endif
+#ifdef CONFIG_TARGET_ARMADA_LP
+	{.compat = COMPAT_COMPHY_ARMADA_LP,
+	 .ptr_comphy_chip_init = comphy_armada_lp_init },
+#endif
 	{.compat = COMPAT_UNKNOWN}
 };
 

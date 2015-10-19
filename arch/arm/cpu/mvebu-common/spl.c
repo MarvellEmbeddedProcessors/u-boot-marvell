@@ -39,6 +39,9 @@
 #ifdef CONFIG_MVEBU_SPL_SAR_DUMP
 extern void mvebu_sar_dump_reg(void);
 #endif
+#ifdef CONFIG_TARGET_ARMADA_LP
+void (*ptr_uboot_start)(void);
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -59,7 +62,6 @@ void board_init_f(ulong silent)
 {
 	gd = &gdata;
 	gd->baudrate = CONFIG_BAUDRATE;
-
 #if 0
 	if (silent)
 		gd->flags |= GD_FLG_SILENT;
@@ -83,7 +85,8 @@ void board_init_f(ulong silent)
 #ifndef CONFIG_PALLADIUM
 	mvebu_dram_init(gd->fdt_blob);
 #endif
-#else
+
+#else /* CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT */
 	dram_over_pci_init(gd->fdt_blob);
 #endif /* CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT */
 
@@ -102,4 +105,9 @@ void board_init_f(ulong silent)
 		printf("**** DRAM test failed ****\n");
 #endif
 
+#ifdef CONFIG_TARGET_ARMADA_LP
+	ptr_uboot_start = 0;
+	/* Jump from SPL to u-boot start address */
+	ptr_uboot_start();
+#endif
 }

@@ -1,5 +1,6 @@
 #define ATTR(remapped, target, attributes) (((remapped) << 12) | ((target) << 8) | (attributes))
 
+#include <dt-bindings/comphy/comphy_data.h>
 / {
 	model = "Marvell Armada_LP Development Board";
 	compatible = "marvell,armada-lp";
@@ -66,6 +67,21 @@
 				compatible = "marvell,armadalp-i2c";
 				reg = <0x11000 0x100>;
 				status = "disabled";
+			};
+			comphy {
+				compatible = "marvell,mvebu-comphy", "marvell,comphy-armadalp";
+				mux-bitcount = <1>;
+				max-lanes = <2>;
+				reg-comphy = <0x18300 0x28>;
+				reg-hpipe3 = <0x1F300 0x3D000>;
+				phy0 {
+					phy-type = <PHY_TYPE_PEX0>;
+					phy-speed = <PHY_SPEED_2_5G>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_SGMII1>;
+					phy-speed = <PHY_SPEED_2_5G>;
+				};
 			};
 		};
 	};

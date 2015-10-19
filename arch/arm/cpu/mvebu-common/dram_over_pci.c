@@ -95,6 +95,12 @@ void dram_over_pci_window_config(void)
 	writel(val, RFU_WIN_PEX_CFG);
 }
 
+#elif defined(CONFIG_TARGET_ARMADA_LP)
+
+void dram_over_pci_window_config(void)
+{
+}
+
 #elif defined(CONFIG_TARGET_ARMADA_38X)
 
 void dram_over_pci_window_config(void)
@@ -131,6 +137,8 @@ void dram_over_pci_init(const void *fdt_blob)
 	udelay(PCI_DEVICE_INIT_DELAY);
 	comphy_init(fdt_blob);
 
+#ifdef CONFIG_TARGET_ARMADA_8K
+
 	/* wait untill link training is done */
 	while (linkup_timeout_ms) {
 		if ((readl(PCIE_DEBUG_STATUS) & 0x7F) == 0x7E)
@@ -144,6 +152,10 @@ void dram_over_pci_init(const void *fdt_blob)
 		error("PCIe didn't reach linkup");
 		printf("LTSSM reg = 0x%08x\n", readl(PCIE_DEBUG_STATUS));
 	}
+#else
+	mdelay(linkup_timeout_ms);
+
+#endif /* CONFIG_TARGET_ARMADA_8K */
 
 	pci_init();
 

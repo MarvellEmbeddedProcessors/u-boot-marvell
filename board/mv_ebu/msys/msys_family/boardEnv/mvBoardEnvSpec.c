@@ -294,7 +294,7 @@ MV_BOARD_INFO bobk_cetus_customer_board_0_Info = {
 };
 
 /*******************************************************************************
-	BobK Caelum customer board - Based on BOBK-CAELUM-DB-98DX4203-12XG
+	BobK Caelum customer board - Based on BOBK-CAELUM-DB-98DX4203-48G12XG
 *******************************************************************************/
 #define BOBK_CAELUM_CUSTOMER_1_BOARD_NAND_READ_PARAMS	0x000C0282
 #define BOBK_CAELUM_CUSTOMER_1_BOARD_NAND_WRITE_PARAMS	0x00010305
@@ -943,7 +943,7 @@ MV_BOARD_INFO db_dx_bobkCetusInfo = {
 
 /*********************************************************************************/
 /**************************************/
-/* BOBK-CAELUM-DB-98DX4203-12XG BOARD */
+/* BOBK-CAELUM-DB-98DX4203-48G12XG BOARD */
 /**************************************/
 
 MV_BOARD_TWSI_INFO	db_dx_bobkCaelumInfoBoardTwsiDev[] = {
@@ -1003,7 +1003,7 @@ MV_BOARD_MPP_INFO db_dx_bobkCaelumInfoBoardMppConfigValue[] = {
 };
 
 MV_BOARD_INFO db_dx_bobkCaelumInfo = {
-	.boardName			= "DB-98DX4203-12XG",
+	.boardName			= "DB-98DX4203-48G12XG",
 	.numBoardMppTypeValue		= ARRSZ(db_dx_bobkCaelumInfoBoardModTypeInfo),
 	.pBoardModTypeValue		= db_dx_bobkCaelumInfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(db_dx_bobkCaelumInfoBoardMppConfigValue),

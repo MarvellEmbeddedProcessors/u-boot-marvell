@@ -274,7 +274,7 @@ static int do_sar_list_msys(int silt, int argc, char *const argv[])
 				if (silt == SILT_BOBK) {
 					printf("boardid (0x50.7 0:2): Determines the board ID (0-7)\n");
 					printf("\t0x0 = Board is DB-98DX4235-12XG (Cetus)\n");
-					printf("\t0x1 = Board is DB-98DX4203-12XG (Caelum)\n");
+					printf("\t0x1 = Board is DB-98DX4203-48G12XG (Caelum)\n");
 					printf("\n");
 				}
 				if (silt == SILT_AC3) {

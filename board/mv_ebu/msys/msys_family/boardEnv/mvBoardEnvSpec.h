@@ -332,7 +332,7 @@ MPP#	NAME		IN/OUT
 #define BOBK_CETUS_CUSTOMER_0_GPP_POL_MID		0x0
 
 /*******************************************************************************
-* BobK Caelum Customer board - Based on BOBK-CAELUM-DB-98DX4203-12XG
+* BobK Caelum Customer board - Based on BOBK-CAELUM-DB-98DX4203-48G12XG
 *******************************************************************************/
 
 #define BOBK_CAELUM_CUSTOMER_1_MPP0_7		0x22242222
@@ -416,7 +416,7 @@ MPP#	NAME			IN/OUT
 #define DB_DX_BOBK_CETUS_GPP_POL_MID		0x0
 
 /*************************************/
-/*   BOBK-CAELUM-DB-98DX4203-12XG    */
+/*   BOBK-CAELUM-DB-98DX4203-48G12XG    */
 /*************************************/
 #define DB_DX_BOBK_CAELUM_MPP0_7	0x22242222
 #define DB_DX_BOBK_CAELUM_MPP8_15	0x11122222

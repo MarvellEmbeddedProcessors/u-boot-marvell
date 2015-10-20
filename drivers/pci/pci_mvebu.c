@@ -23,6 +23,7 @@
 #include <asm/arch/memory-map.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <errno.h>
+#include <linux/sizes.h>
 
 /* #define DEBUG */
 /* #define DEBUG_CFG_CYCLE */
@@ -190,11 +191,12 @@ static void mvebu_pcie_set_local_dev_nr(void __iomem *reg_base, int nr)
  */
 static void mvebu_pcie_setup_mapping(void __iomem *reg_base)
 {
-	u32 size;
+	u64 size;
+	u32 ctrl, attr;
 	int i;
 
 	/*
-	 * First, disable and clear BARs and windows except
+	 * Disable and clear BARs and windows except
 	 * BAR0 which is fixed to internal registers
 	 */
 	for (i = 1; i < PCIE_BAR_CNT; i++) {
@@ -209,35 +211,31 @@ static void mvebu_pcie_setup_mapping(void __iomem *reg_base)
 		writel(0, PCIE_WIN_REMAP_OFF(reg_base, i));
 	}
 
-	/* Setup XBAR windows for DDR banks. */
-	for (i = 0; i < CONFIG_NR_DRAM_BANKS; i++) {
-		u32 size, base, attr, ctrl;
-
-		if (gd->bd->bi_dram[i].size == 0)
-			continue;
-
-		base = gd->bd->bi_dram[i].start & 0xFFFF0000;
-		size = (gd->bd->bi_dram[i].size - 1) & 0xFFFF0000;
-		attr = ~(1 << i) & 0xF; /* Zero bit indicates the CS */
-		ctrl = size | (attr << 8) | (PCIE_DDR_TARGET_ID << 4) | 1;
-
-		writel(base, PCIE_WIN_BASE_OFF(reg_base, i));
-		writel(ctrl, PCIE_WIN_CTRL_OFF(reg_base, i));
-		writel(0, PCIE_WIN_REMAP_OFF(reg_base, i));
-		debug("PCIE WIN-%d base = 0x%08x ctrl = 0x%08x\n", i, base, ctrl);
-	}
-
-	/* Round up 'size' to the nearest power of two. */
-	size = gd->ram_size;
-	if ((size & (size - 1)) != 0)
-		size = 1 << fls(size);
-
-	/* Setup BAR[1] to all DRAM banks. */
-	writel(gd->bd->bi_dram[0].start | PCIE_BAR_TYPE_MEM, PCIE_BAR_LO_OFF(reg_base, 1));
+	/* Config BAR 1 - to 4G */
+	size = (SZ_4G - 1) & 0xFFFF0000;
+	writel(PCIE_BAR_TYPE_MEM, PCIE_BAR_LO_OFF(reg_base, 1));
 	writel(0, PCIE_BAR_HI_OFF(reg_base, 1));
-	writel(((size - 1) & 0xffff0000) | PCIE_BAR_ENABLE, PCIE_BAR_CTRL_OFF(reg_base, 1));
-}
+	writel(size | PCIE_BAR_ENABLE, PCIE_BAR_CTRL_OFF(reg_base, 1));
 
+	/* Config XWindow 0 */
+	writel(0, PCIE_WIN_BASE_OFF(reg_base, 0));
+	attr = ~(1 << 0) & 0xF; /* Zero bit indicates the CS */
+	ctrl = size | (attr << 8) | (PCIE_DDR_TARGET_ID << 4) | 1;
+	writel(ctrl, PCIE_WIN_CTRL_OFF(reg_base, 0));
+	writel(0, PCIE_WIN_REMAP_OFF(reg_base, 0));
+
+	/* Config BAR 2 - to 4G */
+	writel(PCIE_BAR_TYPE_MEM, PCIE_BAR_LO_OFF(reg_base, 2));
+	writel(0x1, PCIE_BAR_HI_OFF(reg_base, 2));
+	writel(size | PCIE_BAR_ENABLE, PCIE_BAR_CTRL_OFF(reg_base, 2));
+
+	/* Config XWindow 1 */
+	writel(0, PCIE_WIN_BASE_OFF(reg_base, 1));
+	attr = ~(1 << 1) & 0xF; /* Zero bit indicates the CS */
+	ctrl = size | (attr << 8) | (PCIE_DDR_TARGET_ID << 4) | (0x1 << 1) | 0x1;
+	writel(ctrl, PCIE_WIN_CTRL_OFF(reg_base, 1));
+	writel(0, PCIE_WIN_REMAP_OFF(reg_base, 1));
+}
 
 static void mvebu_pcie_hw_init(void __iomem *reg_base, int first_busno)
 {

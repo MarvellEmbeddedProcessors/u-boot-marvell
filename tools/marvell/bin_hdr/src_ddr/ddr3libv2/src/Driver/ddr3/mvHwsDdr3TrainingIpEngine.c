@@ -307,13 +307,13 @@ MV_HWS_EdgeCompare          trainEdgeCompare;
 GT_U32                      trainCsNum;
 GT_U32                      trainIfAcess, trainIfId, trainPupAccess;
 #ifdef CONFIG_DDR4
-GT_U32                      maxPollingForDone = 10000000;  /* this counter was increased for DDR4
-                                                              due to A390 DB-GP DDR4 failure */
+GT_U32                      maxPollingForDone = 100000000;  /* this counter was increased for DDR4
+                                                               due to A390 DB-GP DDR4 failure */
 #else /* DDR3 */
 #ifdef CONFIG_BOBK
 GT_U32                      maxPollingForDone = 1000;
 #else
-GT_U32                      maxPollingForDone = 1000000; 
+GT_U32                      maxPollingForDone = 1000000;
 #endif /* CONFIG_BOBK */
 #endif /* CONFIG_DDR4 */
 extern MV_HWS_RESULT trainingResult[MAX_STAGE_LIMIT][MAX_INTERFACE_NUM];

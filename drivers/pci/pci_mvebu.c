@@ -284,7 +284,7 @@ static int mvebu_pcie_init(int host_id, void __iomem *reg_base, struct pcie_win 
 	struct pci_controller *hose = &pci_hose[host_id];
 	u32 link, speed, width;
 
-	memset(hose, 0, sizeof(hose));
+	memset(hose, 0, sizeof(struct pci_controller));
 
 	/* Setup the HW */
 	mvebu_pcie_hw_init(reg_base, first_busno);

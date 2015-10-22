@@ -437,6 +437,31 @@ int spi_flash_cmd_read_ops(struct spi_flash *flash, u32 offset,
 	return ret;
 }
 
+int spi_flash_cmd_4B_addr_switch(struct spi_flash *flash, int enable)
+{
+	int ret;
+	u8 cmd;
+
+	cmd = enable ? CMD_ENTER_4B_ADDR : CMD_EXIT_4B_ADDR;
+
+	ret = spi_claim_bus(flash->spi);
+	if (ret) {
+		debug("SF: unable to claim SPI bus\n");
+		return ret;
+	}
+
+	ret = spi_flash_cmd_write_enable(flash);
+	if (ret < 0) {
+		spi_release_bus(flash->spi);
+		debug("SF: enabling write failed\n");
+		return ret;
+	}
+
+	ret = spi_flash_cmd(flash->spi, cmd, NULL, 0);
+	spi_release_bus(flash->spi);
+	return ret;
+}
+
 #ifdef CONFIG_SPI_FLASH_SST
 static int sst_byte_write(struct spi_flash *flash, u32 offset, const void *buf)
 {

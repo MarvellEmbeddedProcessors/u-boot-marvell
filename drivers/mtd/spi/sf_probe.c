@@ -250,6 +250,12 @@ static int spi_flash_validate_params(struct spi_slave *spi, u8 *idcode,
 	}
 #endif
 
+	if (params->flags & ADDR_CYC_4) {
+		/* Switch to 4 address cycles if the flash supports it. */
+		if (spi_flash_cmd_4B_addr_switch(flash, 1) < 0)
+			debug("SF: enter 4B address mode failed\n");
+	}
+
 	/* Flash powers up read-only, so clear BP# bits */
 #if defined(CONFIG_SPI_FLASH_ATMEL) || \
 	defined(CONFIG_SPI_FLASH_MACRONIX) || \

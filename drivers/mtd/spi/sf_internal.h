@@ -76,6 +76,10 @@ enum {
 #define CMD_READ_CONFIG		0x35
 #define CMD_FLAG_STATUS		0x70
 
+/* Used to switch to / from 4-addr cycles mode */
+#define	CMD_ENTER_4B_ADDR		0xB7
+#define	CMD_EXIT_4B_ADDR		0xE9
+
 /* Read commands */
 #define CMD_READ_ARRAY_SLOW		0x03
 #define CMD_READ_ARRAY_FAST		0x0b
@@ -174,6 +178,9 @@ int spi_flash_cmd_read_config(struct spi_flash *flash, u8 *rc);
 
 /* Program the config register */
 int spi_flash_cmd_write_config(struct spi_flash *flash, u8 wc);
+
+/* Switch to 4 address cycles */
+int spi_flash_cmd_4B_addr_switch(struct spi_flash *flash, int enable);
 
 /* Enable writing on the SPI flash */
 static inline int spi_flash_cmd_write_enable(struct spi_flash *flash)

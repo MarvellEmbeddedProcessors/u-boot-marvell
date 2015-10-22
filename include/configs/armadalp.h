@@ -110,7 +110,7 @@ extern char __end_of_spl[];
 #endif
 
 #undef CONFIG_BOOTARGS
-#define CONFIG_BOOTARGS			"console=ttyS0,300 earlycon=arlp_uart,0xd0012000"
+#define CONFIG_BOOTARGS			"console=ttyS0,300 earlycon=ar3700_uart,0xd0012000 swiotlb=4096"
 
 #undef  CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x107ffc0\0"	\

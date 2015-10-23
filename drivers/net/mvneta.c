@@ -1745,7 +1745,7 @@ int mvneta_initialize(bd_t *bis)
 	int node_list[CONFIG_MAX_NETA_PORT_NUM], node;
 	int i, count, phy_addr, phy_mode;
 	unsigned long neta_reg_base;
-	const char **phy_mode_name = 0;
+	const char *phy_mode_name;
 	int err, loop;
 
 	/* in dts file, go through all the 'neta' nodes.
@@ -1780,7 +1780,7 @@ int mvneta_initialize(bd_t *bis)
 			return 0;
 		}
 		/* fetch 'phy mode' propertiy from 'neta' node */
-		err = fdt_get_string(gd->fdt_blob, node, "phy_mode", phy_mode_name);
+		err = fdt_get_string(gd->fdt_blob, node, "phy_mode", &phy_mode_name);
 		if (err < 0) {
 			error("failed to get phy_mode_name, initialization skipped!\n");
 			return 0;
@@ -1788,13 +1788,13 @@ int mvneta_initialize(bd_t *bis)
 
 		/* translate phy_mode from phy_mode_name */
 		for (loop = 0; loop < (sizeof(phy_mode_str) / sizeof(char *)); loop++)
-			if (!strcmp(*phy_mode_name, phy_mode_str[loop])) {
+			if (!strcmp(phy_mode_name, phy_mode_str[loop])) {
 				phy_mode = loop;
 				break;
 			}
 
 		if (loop >= (sizeof(phy_mode_str) / sizeof(char *))) {
-			error("could not find phy_mode by str: %s\n", *phy_mode_name);
+			error("could not find phy_mode by str: %s\n", phy_mode_name);
 			return 0;
 		}
 

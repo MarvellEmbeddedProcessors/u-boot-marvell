@@ -943,7 +943,8 @@ int board_late_init(void)
 	mvBoardDebugLed(0);
 #ifdef CONFIG_SWITCHING_SERVICES
 	/* Some additional tasks maybe required for slave BC2 device, like QSGMII select */
-	if (mvBoardisAmc() && (get_attached_silicon_type() == SILT_BC2))
+	if (mvBoardisAmc() && ((get_attached_silicon_type() == SILT_BC2)
+			|| (get_attached_silicon_type() == SILT_BOBK)))
 		hwServicesLateInit();
 #endif
 	return 0;

@@ -97,6 +97,7 @@
 #include <command.h>
 #include "mvCommon.h"
 #include "uart/mvUart.h"
+#include "switchingServices/switchingServices.h"
 
 /* #define MV_DEBUG */
 #ifdef MV_DEBUG
@@ -584,6 +585,10 @@ void misc_init_r_env(void){
 #ifdef BOARD_LATE_INIT
 int board_late_init (void)
 {
+	/* Init the qsgmii_sel to 0xfff on Caelum DB board */
+	if (mvBoardIdGet() == BOBK_CAELUM_DB_ID)
+		hwServicesLateInit();
+
 	mvBoardDebugLed(0);
 	return 0;
 }

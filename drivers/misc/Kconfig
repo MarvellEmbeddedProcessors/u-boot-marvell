@@ -39,6 +39,16 @@ config MVEBU_MBUS
 	  This driver initialize the MBUS windows
 	  only.
 
+config MVEBU_MBUS_SPL_ONLY
+	bool "MBUS address decoding driver in SPL only"
+	depends on MVEBU_MBUS
+	default n
+	help
+	  Choose this option to do MBUS windows
+	  modifications in SPL executable only
+	  In regular u-boot image MBUS driver will
+	  only read memory windows information from DT
+
 config MVEBU_MBUS_SKIP_DRAM_WIN
 	bool "skip DRAM window configuration in MBUS driver"
 	depends on MVEBU_MBUS
@@ -59,5 +69,13 @@ config MVEBU_FLC
 	  for Final Level Cache for the Marvell McKinley
 	  Memory Controller driver.
 	  This driver enable FLC and open the FLC windows.
+
+config MVEBU_A3700_IO_ADDR_DEC
+	bool "Armada-3700 Address decoding support"
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+	default n
+	help
+	  Choose this option to add support
+	  for Marvell Armada-3700 address decoding driver
 
 endmenu

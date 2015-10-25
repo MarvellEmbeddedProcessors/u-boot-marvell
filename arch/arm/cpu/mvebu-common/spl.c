@@ -35,6 +35,12 @@
 #ifdef CONFIG_MVEBU_FLC
 #include <asm/arch-mvebu/flc.h>
 #endif
+#ifdef CONFIG_MVEBU_A3700_IO_ADDR_DEC
+#include <asm/arch-mvebu/io_addr_dec.h>
+#endif
+#ifdef CONFIG_MVEBU_MBUS
+#include <asm/arch-mvebu/mbus.h>
+#endif
 
 #ifdef CONFIG_MVEBU_SPL_SAR_DUMP
 extern void mvebu_sar_dump_reg(void);
@@ -100,12 +106,20 @@ void board_init_f(ulong silent)
 	init_flc();
 #endif
 
+#ifdef CONFIG_MVEBU_MBUS
+	init_mbus();
+#endif
+#ifdef CONFIG_MVEBU_A3700_IO_ADDR_DEC
+	init_a3700_io_addr_dec();
+#endif
+
 #ifdef CONFIG_MVEBU_SPL_MEMORY_TEST
 	if (run_memory_test())
 		printf("**** DRAM test failed ****\n");
 #endif
 
 #ifdef CONFIG_TARGET_ARMADA_LP
+	debug("SPL processing done. Jumping to u-boot\n\n");
 	ptr_uboot_start = 0;
 	/* Jump from SPL to u-boot start address */
 	ptr_uboot_start();

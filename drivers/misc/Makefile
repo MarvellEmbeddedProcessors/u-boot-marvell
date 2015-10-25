@@ -33,3 +33,4 @@ obj-$(CONFIG_MVEBU_RFU) += mvebu_rfu.o
 obj-$(CONFIG_MVEBU_IOB) += mvebu_iob.o
 obj-$(CONFIG_MVEBU_MBUS) += mvebu_mbus.o
 obj-$(CONFIG_MVEBU_FLC) += mvebu_flc.o
+obj-$(CONFIG_MVEBU_A3700_IO_ADDR_DEC) += mvebu_io_addr_dec.o

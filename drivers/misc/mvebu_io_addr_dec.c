@@ -16,28 +16,19 @@
  * ***************************************************************************
  */
 
-#ifndef _MBUS_H_
-#define _MBUS_H_
+#define DEBUG
+#include <common.h>
+#include <asm/arch-mvebu/mvebu.h>
 
-#define MBUS_WIN_MAP_NUM_MAX	8
+int init_a3700_io_addr_dec(void)
+{
+	int	rval = 0;
 
-struct mbus_win {
-	u32 target;
-	uintptr_t base_addr;
-	uintptr_t win_size;
-	u32 attribute;
-	u32 remapped;
-	u32 enabled;
-};
+	debug_enter();
 
-struct  mbus_win_map {
-	struct mbus_win mbus_windows[MBUS_WIN_MAP_NUM_MAX];
-	int mbus_win_num;
-};
-void dump_mbus(void);
-int init_mbus(void);
-int remap_mbus(phys_addr_t input, phys_addr_t output);
-void mbus_win_map_build(struct mbus_win_map *win_map);
+	/* Add units configuration code here */
 
-#endif /* _MBUS_H_ */
+	debug_exit();
+	return rval;
+}
 

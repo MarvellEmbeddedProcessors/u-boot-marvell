@@ -558,8 +558,8 @@ GT_STATUS    ddr3TipIpTraining
 		        /*need to check results for this Dunit */
 		        for(pollCnt=0;pollCnt < maxPollingForDone;pollCnt++)
 		        {
-		            CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, indexCnt, ODPG_TRAINING_STATUS_REG, &regData, MASK_ALL_BITS));
-		             if ((regData & 0x2) != 0)
+		            CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, indexCnt, ODPG_TRAINING_STATUS_REG, readData, MASK_ALL_BITS));
+		            if ((readData[indexCnt] & 0x2) != 0)
 		            {
 		                /*done */
 						trainStatus[indexCnt] = MV_HWS_TrainingIpStatus_SUCCESS;

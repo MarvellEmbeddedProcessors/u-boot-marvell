@@ -27,5 +27,13 @@ config ARMV8_PSCI
 config PALLADIUM
 	bool "Support palladium emulation"
 	default n
+
+config MVEBU_LLC_ENABLE
+	depends on TARGET_ARMADA_8K && !MVEBU_SPL_DDR_OVER_PCI_SUPPORT && !SPL_BUILD
+	bool "Enable LLC support"
+	default y
+	help
+	  Enable LLC in PSCI code
+
 endif
 

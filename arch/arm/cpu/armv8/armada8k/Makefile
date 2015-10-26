@@ -19,4 +19,4 @@
 obj-y += soc.o
 obj-y += clock.o
 obj-$(CONFIG_ARMV8_PSCI)	+= psci.o
-obj-$(CONFIG_ARMV8_PSCI)	+= cache_llc.o
+obj-$(CONFIG_MVEBU_LLC_ENABLE)	+= cache_llc.o

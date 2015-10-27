@@ -452,6 +452,9 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
     /* Change the SBUS master clk divider to 16. 0x6007F828 is indirect address */
     CHECK_STATUS(genRegisterSet(devNum, aaplSerdesDb[devNum]->portGroup, 0x6007F828, 0x4, 0xFFFF));
 
+    /* Change the Sensor clk divider to 78 */
+    CHECK_STATUS(genRegisterSet(devNum, aaplSerdesDb[devNum]->portGroup, 0x60042004, 0x4E, 0xFFFF));
+
 #ifndef MV_HWS_BIN_HEADER
     if (avagoConnection == AVAGO_ETH_CONNECTION)
     {

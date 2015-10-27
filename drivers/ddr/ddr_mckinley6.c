@@ -549,7 +549,7 @@ struct mvebu_mckinley_config mckinley_mac_config[] = {
 };
 
 struct mvebu_mckinley_config mckinley_phy_config[] = {
-/*  reg_offset  325_HZ  650_HZ */
+/*  reg_offset  650_HZ */
 	{ 0x800, { 0x00044050} },
 	{ 0x804, { 0xe447744b} },
 	{ 0x808, { 0xcff00443} },

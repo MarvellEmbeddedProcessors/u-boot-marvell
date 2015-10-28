@@ -15,7 +15,7 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * ***************************************************************************
 */
-/* #define DEBUG */
+#define DEBUG
 #include <common.h>
 #include <fdtdec.h>
 #include <asm/io.h>
@@ -40,7 +40,7 @@ struct chip_serdes_phy_config chip_config[] = {
 #endif
 #ifdef CONFIG_TARGET_ARMADA_LP
 	{.compat = COMPAT_COMPHY_ARMADA_LP,
-	 .ptr_comphy_chip_init = comphy_armada_lp_init },
+	 .ptr_comphy_chip_init = comphy_a3700_init },
 #endif
 	{.compat = COMPAT_UNKNOWN}
 };
@@ -92,6 +92,23 @@ void reg_set_silent(void __iomem *addr, u32 data, u32 mask)
 	reg_data &= ~mask;
 	reg_data |= data;
 	writel(reg_data, addr);
+}
+
+void reg_set16(void __iomem *addr, u16 data, u16 mask)
+{
+	debug("Write to address = %#010lx, data = %#06x (mask = %#06x) - ", (unsigned long)addr, data, mask);
+	debug("old value = %#06x ==> ", readw(addr));
+	reg_set_silent16(addr, data, mask);
+	debug("new value %#06x\n", readw(addr));
+}
+
+void reg_set_silent16(void __iomem *addr, u16 data, u16 mask)
+{
+	u16 reg_data;
+	reg_data = readw(addr);
+	reg_data &= ~mask;
+	reg_data |= data;
+	writew(reg_data, addr);
 }
 
 void comphy_print(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *comphy_map_data)

@@ -294,7 +294,7 @@ SERDES_MAP HGW_AP_2G_ConfigDefault[MAX_SERDES_LANES] =
 
 SERDES_MAP HGW_AP_2_5G_SATA_ConfigDefault[MAX_SERDES_LANES] =
 {
-	 { PEX0,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
+	 { SATA0,        __6Gbps,                   SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
 	 { USB3_HOST0,   __5Gbps,                   SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
 	 { PEX1,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
 	 { PEX3,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },

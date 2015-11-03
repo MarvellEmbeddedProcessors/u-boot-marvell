@@ -481,18 +481,14 @@ GT_STATUS    ddr3TipBobKSelectTMDdrController
 )
 {
     GT_U32 interfaceId = 0, dataValue = 0;
-#ifndef ASIC_SIMULATION
-    CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, 0x000F8240 ,  &devId, MASK_ALL_BITS));
-#else
-    devId = 0xBC00; /* CAELUM_DEV_ID */
-#endif
-    if ((devId & 0xFFFF) == CETUS_DEV_ID )
+
+    if (devId == CETUS_DEV_ID)
     {
         /* IN Cetus TM has only 1 IF #0*/
         hwMaxDdrIfNum = 1;
         hwDdrIfMask   = 1;
     }
-    else if ((devId &0xFFFF) == CAELUM_DEV_ID )
+    else if (devId == CAELUM_DEV_ID)
     {
         /* in Caelum TM may use 3 IFs 0,1,and 3*/
         hwMaxDdrIfNum = 4;
@@ -1036,10 +1032,27 @@ GT_STATUS ddr3TipInitBobK
 	if(NULL == topologyMap)
 	{
 		#if defined(CPSS_BUILD)
+#ifndef ASIC_SIMULATION
+		CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, 0x000F8240 ,  &devId, MASK_ALL_BITS));
+		devId &= 0xFFFF;
+#else
+		devId = 0xBC00; /* CAELUM_DEV_ID */
+#endif
+
+		if (devId == CETUS_DEV_ID)
+		{
+			boardId = 0;
+		}
+		else if (devId == CAELUM_DEV_ID)
+		{
+			boardId = 1;
+		}
+		else
+			mvPrintf ("Unsupported device ID %x\n", devId);
+
 		/* for CPSS, since topology is not always initialized, it is
 		   needed to set it to default topology */
 		topologyMap = &bobKTopologyMap[boardId];
-        mvPrintf ("board ID %d, active interface mask = %x\n",boardId,topologyMap->interfaceActiveMask);
 		#else
 		return GT_FAIL;
 		#endif

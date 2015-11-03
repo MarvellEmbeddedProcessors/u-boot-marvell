@@ -121,18 +121,28 @@
 #define CONFIG_SYS_BARGSIZE             CONFIG_SYS_CBSIZE       /* Boot Argument Buffer Size */
 #define CONFIG_BOOTDELAY                3
 #define CONFIG_ROOTPATH                 "/srv/nfs/"             /* Default Dir for NFS */
-#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x200000\0"	\
+#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x2000000\0"	\
 					"initrd_addr=0xa00000\0"	\
 					"initrd_size=0x2000000\0"	\
-					"fdt_addr=0x100000\0"		\
-					"fdt_high=0xa0000000\0"
+					"fdt_addr=0x1000000\0"		\
+					"loadaddr=0x2000000\0"		\
+					"fdt_high=0xffffffffffffffff\0"	\
+					"hostname=marvell\0"		\
+					"ramfs_name=-\0"		\
+					"fdt_name=fdt.dtb\0"		\
+					"netdev=eth0\0"			\
+					"image_name=Image\0"		\
+					"get_ramfs=if test \"${ramfs_name}\" != \"-\"; then tftp $ramfs_addr "	\
+					"$ramfs_name; else setenv ramfs_addr -;fi\0"				\
+					"get_images=tftp $kernel_addr $image_name; tftp $fdt_addr $fdt_name; "	\
+						"run get_ramfs\0"						\
+					"console=console=ttyS0,115200\0"					\
+					"root=root=/dev/nfs rw\0"						\
+					"set_bootargs=setenv bootargs $console $root "				\
+						"ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:none "\
+						"nfsroot=$serverip:$rootpath $extra_params"
 
-#define CONFIG_BOOTARGS			"console=ttyS0,115200 earlyprintk root=/dev/ram0"
-#define CONFIG_BOOTCOMMAND		"bootm $kernel_addr - $fdt_addr"
-
-/* Marvell specific env*/
-#define MV_BOOTARGS_END			":10.4.50.254:255.255.255.0:Marvell:eth0:none"
-#define MV_BOOTARGS_END_SWITCH		":::Marvell:eth0:none"
+#define CONFIG_BOOTCOMMAND		"run get_images; run set_bootargs; booti $kernel_addr $ramfs_addr $fdt_addr"
 
 /* U-Boot Commands */
 /* #define CONFIG_BOOTP_MASK       (CONFIG_BOOTP_DEFAULT | CONFIG_BOOTP_BOOTFILESIZE) */
@@ -312,9 +322,10 @@
 /* Add network parameters when network command is enabled */
 #ifdef CONFIG_CMD_NET
 	/* Environment */
-	#define CONFIG_IPADDR           10.4.50.154
-	#define CONFIG_SERVERIP         10.4.50.3
+	#define CONFIG_IPADDR			/* In order to cause an error if not set */
+	#define CONFIG_SERVERIP			/* In order to cause an error if not set */
 	#define CONFIG_NETMASK          255.255.255.0
+	#define CONFIG_GATEWAYIP	10.4.50.254
 	#define CONFIG_ETHADDR          00:00:00:00:51:81
 	#define ENV_ETH_PRIME           "e1000#0"
 #endif /* CONFIG_CMD_NET */

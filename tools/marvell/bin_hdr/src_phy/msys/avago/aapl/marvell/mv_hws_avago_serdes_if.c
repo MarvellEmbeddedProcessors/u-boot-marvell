@@ -272,7 +272,7 @@ GT_STATUS mvHwsAvagoSerdesDebugInit
 {
     void * params = (void *)(GT_UINTPTR)devNum;
 
-    if((osTaskCreate(name, 250, _8KB, taskRoutine, params, &avagoAACS_ServerTid)) != GT_OK)
+    if((osTaskCreate(name, 250, _8K, taskRoutine, params, &avagoAACS_ServerTid)) != GT_OK)
     {
         return GT_FAIL;
     }

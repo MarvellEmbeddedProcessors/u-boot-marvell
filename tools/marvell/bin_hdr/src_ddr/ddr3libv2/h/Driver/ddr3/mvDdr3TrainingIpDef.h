@@ -42,16 +42,14 @@
 #ifndef __mvDdr3TrainingIPDef_H
 #define __mvDdr3TrainingIPDef_H
 
-#include <gtOs/gtGenTypes.h>
 #include "common/siliconIf/mvSiliconIf.h"
 
 #if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+/* general define to be used instead of CHX_FAMILY & EXMXPM_FAMILY */
 #define CPSS_BUILD
-#endif
-
-#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
-#define osMemCpy	hwsOsMemCopyFuncPtr
+#include <common/os/hwsEnv.h>
 #else
+/* for bin header and other env */
 #include <gtOs/gtOsMem.h>
 #include <gtOs/gtOsIo.h>
 #endif

@@ -67,9 +67,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
-#include <cpss/generic/config/private/prvCpssConfigTypes.h> /* for cpssOsPrintf */
-#define mvPrintf cpssOsPrintf
-#define osPrintf cpssOsPrintf
+#include <common/os/hwsEnv.h>
+#define mvPrintf	hwsPrintf
 #elif defined(WIN32)
 #define mvPrintf printf
 #else /* RTOS or uBoot */

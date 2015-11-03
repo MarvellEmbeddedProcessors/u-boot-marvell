@@ -655,6 +655,8 @@ GT_STATUS    mvHwsDdr3TipInitController
 	            cwlVal = topologyMap->interfaceParams[interfaceId].casWL;
 	            DEBUG_TRAINING_IP(DEBUG_LEVEL_TRACE, ("clValue 0x%x cwlVal 0x%x \n", clValue, cwlVal));
 
+                tWR = TIME_2_CLOCK_CYCLES(speedBinTable(speedBinIndex,speedBinTableElements_tWR), tCKCLK);
+
 	            dataValue = ((clMaskTable[clValue] & 0x1) << 2) | ((clMaskTable[clValue] & 0xE)  <<  3);
 	            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, MR0_REG, dataValue, (0x7 << 4) | (1 << 2)));
 				CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, MR0_REG, (twrMaskTable[tWR + 1] << 9), (0x7 << 9)));
@@ -1428,6 +1430,7 @@ GT_STATUS    ddr3TipFreqSet
 )
 {
     GT_U32 clValue = 0, cwlValue = 0, memMask = 0, dataValue = 0, tHCLK = 0, tWR = 0, refreshIntervalCnt = 0, cntId, interfaceIdx = 0;
+    GT_U32 tCKCLK = 0;
 	GT_U32 startIf, endIf;
     GT_U32 tREFI = 0;
     GT_BOOL isDllOff = GT_FALSE;
@@ -1502,8 +1505,9 @@ GT_STATUS    ddr3TipFreqSet
     /*DFS  - CL/CWL parameters after exiting SR*/
 
     /*DFS  - Enter Self-Refresh*/
-    tWR = speedBinTable(speedBinIndex,speedBinTableElements_tWR);
-    tWR = (tWR / 1000);
+    tCKCLK = (MEGA/freqVal[frequency]);
+    tWR = TIME_2_CLOCK_CYCLES(speedBinTable(speedBinIndex,speedBinTableElements_tWR), tCKCLK);
+
     /* dataValue = (clMaskTable[clValue] << 8) |  (cwlMaskTable[cwlValue] << 12) | (1 << 1) | (1 << 2) | (twrMaskTable[tWR+1] << 16);*/
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DFS_REG, (clMaskTable[clValue] << 8) , 0xF00));
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DFS_REG, (cwlMaskTable[cwlValue] << 12) , 0x7000));
@@ -1651,6 +1655,7 @@ GT_STATUS    ddr3TipFreqSet
 )
 {
     GT_U32 clValue = 0, cwlValue = 0, memMask = 0, dataValue = 0, busCnt = 0, tHCLK = 0, tWR = 0, refreshIntervalCnt = 0, cntId;
+    GT_U32 tCKCLK;
     GT_U32 endIf, startIf;
     GT_U32 tREFI = 0;
     GT_U32 busIndex = 0;
@@ -1809,8 +1814,10 @@ GT_STATUS    ddr3TipFreqSet
         /*DFS  - CL/CWL/WR parameters after exiting SR*/
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, DFS_REG, (clMaskTable[clValue] << 8) , 0xF00)); 
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, DFS_REG, (cwlMaskTable[cwlValue] << 12) , 0x7000));
-        tWR = speedBinTable(speedBinIndex,speedBinTableElements_tWR);
-        tWR = (tWR / 1000);
+
+        tCKCLK = (MEGA/freqVal[frequency]);
+        tWR = TIME_2_CLOCK_CYCLES(speedBinTable(speedBinIndex,speedBinTableElements_tWR), tCKCLK);
+
        /* dataValue = (clMaskTable[clValue] << 8) |  (cwlMaskTable[cwlValue] << 12) | (1 << 1) | (1 << 2) | (twrMaskTable[tWR+1] << 16);*/
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, DFS_REG, (twrMaskTable[tWR+1] << 16) , 0x70000));
 	

@@ -1892,7 +1892,7 @@ GT_STATUS    ddr3TipFreqSet
         /*ODT TIMING */
         dataValue = ((clValue-cwlValue+1) << 4) |  ((clValue-cwlValue+6) << 8) |  ((clValue-1) << 12) |  ((clValue+6) << 16);
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, ODT_TIMING_LOW, dataValue, 0xFFFF0));
-        dataValue = 0x71 | ((cwlValue - 1) << 8) | ((cwlValue+5) << 12);
+        dataValue = 0x91 | ((cwlValue - 1) << 8) | ((cwlValue+5) << 12);
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, ODT_TIMING_HI_REG, dataValue, 0xFFFF));
         /* ODT Active*/
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, DUNIT_ODT_CONTROL_REG, 0xF, 0xF));
@@ -1936,7 +1936,7 @@ static GT_STATUS ddr3TipWriteOdt
 	dataValue |= (((clValue-1)>>4) << 22) |  (((clValue+6)>>4) << 23);
 
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, ODT_TIMING_LOW, dataValue, 0xFFFF0));
-    dataValue = 0x71 | ((cwlValue - 1) << 8) | ((cwlValue+5) << 12);
+    dataValue = 0x91 | ((cwlValue - 1) << 8) | ((cwlValue+5) << 12);
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, ODT_TIMING_HI_REG, dataValue, 0xFFFF));
 	if (odtAdditional == 1) 
 	{

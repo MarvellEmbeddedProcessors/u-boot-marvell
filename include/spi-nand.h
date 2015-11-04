@@ -98,6 +98,10 @@
 #define BL_L_1_2_LOCKED		0x54
 #define BL_ALL_UNLOCKED		0X00
 
+/* die select */
+#define DIE_SELECT_MASK		0x40
+#define DIE_SELECT_DS0		0x00
+#define DIE_SELECT_DS1		0x40
 
 #define SPI_NAND_MT29F_ECC_MASK		0x70
 #define SPI_NAND_MT29F_ECC_0_BIT		0x00
@@ -223,12 +227,14 @@ struct spi_nand_chip {
 	u32		block_size;
 	u16		page_size;
 	u16		oob_size;
+	u8		lun_shift;
 	u8		block_shift;
 	u8		page_shift;
 	u16		page_mask;
 	u32		options;
 	u32		ecc_strength;
 	u8		refresh_threshold;
+	u8		lun;
 	struct nand_ecclayout *ecclayout;
 	struct spi_nand_onfi_params	 onfi_params;
 };
@@ -240,7 +246,8 @@ struct spi_nand_flash {
 	u32		page_size;
 	u32		oob_size;
 	u32		pages_per_blk;
-	u32		blks_per_chip;
+	u32		blks_per_lun;
+	u32		luns_per_chip;
 	u32		ecc_strength;
 	u32		options;
 };
@@ -263,10 +270,11 @@ enum {
 };
 
 #define SPI_NAND_INFO(nm, mid, did, pagesz, oobsz, pg_per_blk,\
-	blk_per_chip, ecc_stren, opts)				\
+	blk_per_lun, lun_per_chip, ecc_stren, opts)		\
 	{ .name = (nm), .mfr_id = (mid), .dev_id = (did),\
 	.page_size = (pagesz), .oob_size = (oobsz),\
-	.pages_per_blk = (pg_per_blk), .blks_per_chip = (blk_per_chip),\
+	.pages_per_blk = (pg_per_blk), .blks_per_lun = (blk_per_lun),\
+	.luns_per_chip = (lun_per_chip),			\
 	.ecc_strength = (ecc_stren), .options = (opts) }
 
 /*SPI NAND chip options*/

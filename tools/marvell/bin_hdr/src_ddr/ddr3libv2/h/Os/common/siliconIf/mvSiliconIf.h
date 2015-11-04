@@ -85,7 +85,7 @@ extern GT_STATUS gtStatus;
 
 /* max number of devices supported by driver */
 #if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
-#define HWS_MAX_DEVICE_NUM (16)
+#define HWS_MAX_DEVICE_NUM (128)
 #else
 #define HWS_MAX_DEVICE_NUM (1)
 #endif

@@ -1,0 +1,22 @@
+
+wtmi.elf:     file format elf32-littlearm
+
+
+Disassembly of section .ro:
+
+200100f0 <_Reset>:
+200100f0:	e7fe      	b.n	200100f0 <_Reset>
+
+Disassembly of section .ARM.attributes:
+
+00000000 <.ARM.attributes>:
+   0:	00002041 	andeq	r2, r0, r1, asr #32
+   4:	61656100 	cmnvs	r5, r0, lsl #2
+   8:	01006962 	tsteq	r0, r2, ror #18
+   c:	00000016 	andeq	r0, r0, r6, lsl r0
+  10:	726f4305 	rsbvc	r4, pc, #335544320	; 0x14000000
+  14:	2d786574 	cfldr64cs	mvdx6, [r8, #-464]!	; 0xfffffe30
+  18:	0600334d 	streq	r3, [r0], -sp, asr #6
+  1c:	094d070a 	stmdbeq	sp, {r1, r3, r8, r9, sl}^
+  20:	Address 0x0000000000000020 is out of bounds.
+

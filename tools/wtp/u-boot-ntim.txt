@@ -6,7 +6,7 @@ Issue Date:                  0x02272015			; today's date
 OEM UniqueID:                0x21796B53			; Sky!
 Processor Type:              <undefined>
 Boot Flash Signature:        0x5350490A			; Select SPI'0A
-Number of Images:            3
+Number of Images:            4
 Size of Reserved in bytes:   44
 
 Image ID:                   0x54494D48				; TIMH
@@ -18,16 +18,24 @@ Partition Number:           0x00000000
 Image Filename: TIM_UBOOT_NON_TRUSTED.bin
 
 Image ID:                   0x4F424d49				; OBMI
-Next Image ID:              0x4F534C4F				; OSLO next
+Next Image ID:              0x57544d49				; WTMI next
 Flash Entry Address:        0x00004000				; OBMI flash addr
-Load Address:               0x61000000				; OBMI RAM addr
+Load Address:               0x1FFF0000				; OBMI RAM addr
 Image Size To CRC in bytes: 0x00000000
 Partition Number:           0x00000000
 Image Filename: spl/u-boot-spl.bin
 
+Image ID:                   0x57544d49				; WTMI
+Next Image ID:              0x4F534C4F				; OSLO next
+Flash Entry Address:        0x00024000				; WTMI flash addr
+Load Address:               0x200100F0				; WTMI RAM addr
+Image Size To CRC in bytes: 0x00000000
+Partition Number:           0x00000000
+Image Filename: tools/wtp/wtmi.bin
+
 Image ID:                   0x4F534C4F				; OSLO
 Next Image ID:              0xFFFFFFFF				; NONE
-Flash Entry Address:        0x00024000				; OSLO flash addr
+Flash Entry Address:        0x00026000				; OSLO flash addr
 Load Address:               0x60000000				; OSLO RAM addr
 Image Size To CRC in bytes: 0x00000000
 Partition Number:           0x00000000
@@ -40,9 +48,9 @@ Reserved Data:
 0x0000001C	; Size of CRV2 package in bytes
 0x00000002	; Number of cores to release
 0x00000000	; Core_ID: 0 - AP0, 1 - AP1, 2 - CM3
-0x01000000	; PC address for Core_ID above
+0xF0000000	; PC address for Core_ID above
 0x00000002	; Core_ID: 0 - AP0, 1 - AP1, 2 - CM3
-0x1fff0081	; PC address for Core_ID above
+0x200100F0	; PC address for Core_ID above
 0x5465726D	;Term
 0x00000008	; Size of this package in bytes
 

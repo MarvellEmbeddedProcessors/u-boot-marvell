@@ -60,6 +60,16 @@ config MVEBU_MBUS_SKIP_DRAM_WIN
 	  be at the beginning, and could not be
 	  configured by anyway (keep the default value).
 
+config MVEBU_SPL_A3700_GPIO
+	bool "GPIO configuration for A3700 in SPL"
+	depends on TARGET_ARMADA_LP
+	default y
+	help
+	  Choose this option to enable GPIO
+	  configuration for A3700 in SPL.
+	  This will be removed later, and be
+	  implemented by MPP/PIN-CTRL driver.
+
 config MVEBU_FLC
 	bool "MBUS Final Level Cache driver"
 	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT

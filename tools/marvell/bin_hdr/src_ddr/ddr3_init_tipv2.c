@@ -127,6 +127,20 @@ extern MV_VOID  ddr3TipSetTopologyMap
     MV_HWS_TOPOLOGY_MAP     *topology
 );
 
+extern MV_STATUS ddr3TipGetFirstActiveIf
+(
+    MV_U8   devNum,
+    MV_U32  interfaceMask,
+    MV_U32  *ifId
+);
+
+extern MV_STATUS    mvCalcCsNum
+(
+    MV_U32          devNum,
+	MV_U32          interfaceId,
+	MV_U32          *csNum
+);
+
 extern MV_U32 ddr3TipGetInitFreq();
 
 extern MV_VOID ddr3HwsSetLogLevel(
@@ -143,6 +157,9 @@ extern MV_STATUS ddr3TipTuneTrainingParams
 #ifdef SUPPORT_STATIC_DUNIT_CONFIG
 static MV_U32 ddr3GetStaticDdrMode(void);
 #endif
+
+/* global parameter (defined in TIP lib which holds the DDR topology */
+extern MV_HWS_TOPOLOGY_MAP *topologyMap;
 
 /*Set 1 to use dynamic DUNIT configuration,
 	set 0(supported for A380 and AC3) to configure DUNIT in values set by ddr3TipInitSpecificRegConfig*/
@@ -830,7 +847,17 @@ static MV_STATUS ddr3UpdateTopologyMap(MV_HWS_TOPOLOGY_MAP* topologyMap)
 static MV_STATUS ddr3HwsTuneTrainingParams(MV_U8 devNum)
 {
 	MV_TUNE_TRAINING_PARAMS params;
+	MV_U32 interfaceId;
+	MV_U32 csNum;
 	MV_STATUS status;
+
+	/* initilaize the global ddr topology */
+	CHECK_STATUS(ddr3GetTopologyMap(&topologyMap));
+
+	/* get first active interface */
+	CHECK_STATUS(ddr3TipGetFirstActiveIf(devNum, topologyMap->interfaceActiveMask, &interfaceId));
+
+	CHECK_STATUS(mvCalcCsNum(devNum, interfaceId, &csNum));
 
 	/*NOTE: do not remove any field initilization*/
 	params.ckDelay = MV_TUNE_TRAINING_PARAMS_CK_DELAY;
@@ -847,14 +874,22 @@ static MV_STATUS ddr3HwsTuneTrainingParams(MV_U8 devNum)
 	params.gZnodtCtrl = MV_TUNE_TRAINING_PARAMS_N_ODT_CTRL;
 
 	params.gDic = MV_TUNE_TRAINING_PARAMS_DIC;
-	params.uiODTConfig = MV_TUNE_TRAINING_PARAMS_ODT_CONFIG;
 	params.gRttNom = MV_TUNE_TRAINING_PARAMS_RTT_NOM;
-	params.gRttWR =  MV_TUNE_TRAINING_PARAMS_RTT_WR;
 
-#ifdef CONFIG_DDR4
+#ifdef CONFIG_DDR3
+	if (csNum == 1) {
+		params.gRttWR = MV_TUNE_TRAINING_PARAMS_RTT_WR_1CS;
+		params.uiODTConfig = MV_TUNE_TRAINING_PARAMS_ODT_CONFIG_1CS;
+	} else {
+		params.gRttWR = MV_TUNE_TRAINING_PARAMS_RTT_WR_2CS;
+		params.uiODTConfig = MV_TUNE_TRAINING_PARAMS_ODT_CONFIG_2CS;
+	}
+#else /* CONFIG_DDR3 */
+	/* DDR4 */
 	params.gZpodtData = MV_TUNE_TRAINING_PARAMS_P_ODT_DATA_DDR4;
 	params.uiODTConfig = MV_TUNE_TRAINING_PARAMS_ODT_CONFIG_DDR4;
 	params.gRttNom = MV_TUNE_TRAINING_PARAMS_RTT_NOM_DDR4;
+	params.gRttWR =  MV_TUNE_TRAINING_PARAMS_RTT_WR;
 	params.gDic = MV_TUNE_TRAINING_PARAMS_DIC_DDR4;
 #endif
 

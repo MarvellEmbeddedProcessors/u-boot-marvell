@@ -275,6 +275,52 @@ ip6_add_hdr(uchar *xip, IP6addr_t *src, IP6addr_t *dest,
 	return sizeof(struct ip6_hdr);
 }
 
+int
+net_send_udp_packet6(uchar *ether, IP6addr_t *dest, int dport, int sport, int len)
+{
+	uchar *pkt;
+	struct udp_hdr *udp;
+
+	udp = (struct udp_hdr *)((uchar *)NetTxPacket + NetEthHdrSize() + IP6_HDR_SIZE);
+
+	udp->udp_dst = htons(dport);
+	udp->udp_src = htons(sport);
+	udp->udp_len = htons(len + IP6_UDPHDR_SIZE);
+	/* checksum */
+	udp->udp_xsum = 0;
+	udp->udp_xsum = csum_ipv6_magic(&NetOurIP6, dest, len + IP6_UDPHDR_SIZE,
+		IPPROTO_UDP, csum_partial((__u8 *) udp, len + IP6_UDPHDR_SIZE, 0));
+
+	/* if MAC address was not discovered yet, save the packet and do neighbour discovery */
+	if (memcmp(ether, NetEtherNullAddr, 6) == 0)
+	{
+
+		memcpy(&NetNDSolPacketIP6, dest, sizeof(*dest));
+		NetNDPacketMAC = ether;
+
+		pkt = NetNDTxPacket;
+		pkt += NetSetEther(pkt, NetNDPacketMAC, PROT_IP6);
+		pkt += ip6_add_hdr(pkt, &NetOurIP6, dest, IPPROTO_UDP, 64, len + IP6_UDPHDR_SIZE);
+		memcpy(pkt, (uchar *)udp, len + IP6_UDPHDR_SIZE);
+
+		/* size of the waiting packet */
+		NetNDTxPacketSize = (pkt - NetNDTxPacket) + IP6_UDPHDR_SIZE + len;
+
+		/* and do the neighbor solicitation */
+		NetNDTry = 1;
+		NetNDTimerStart = get_timer(0);
+		ip6_NDISC_Request();
+		return 1;	/* waiting */
+	}
+
+	pkt = (uchar *)NetTxPacket;
+	pkt += NetSetEther(pkt, ether, PROT_IP6);
+	pkt += ip6_add_hdr(pkt, &NetOurIP6, dest, IPPROTO_UDP, 64, len + IP6_UDPHDR_SIZE);
+	(void) eth_send(NetTxPacket, (pkt - NetTxPacket) + IP6_UDPHDR_SIZE + len);
+
+	return 0;	/* transmitted */
+}
+
 void
 NetIP6PacketHandler(struct ethernet_hdr *et, struct ip6_hdr *ip6, int len)
 {
@@ -322,14 +368,12 @@ NetIP6PacketHandler(struct ethernet_hdr *et, struct ip6_hdr *ip6, int len)
 
 	case IPPROTO_UDP:
 		udp = (struct udp_hdr *)(((uchar *)ip6) + IP6_HDR_SIZE);
-		/* check udp checksum - TODO */
 		csum = udp->udp_xsum;
+		hlen = ntohs(ip6->payload_len);
 		udp->udp_xsum = 0;
 		/* checksum */
 		udp->udp_xsum = csum_ipv6_magic(&ip6->saddr, &ip6->daddr,
-				ip6->payload_len, IPPROTO_UDP,
-					csum_partial((__u8 *)udp,
-						ip6->payload_len, 0));
+				hlen, IPPROTO_UDP, csum_partial((__u8 *)udp, hlen, 0));
 		if (csum != udp->udp_xsum)
 			return;
 

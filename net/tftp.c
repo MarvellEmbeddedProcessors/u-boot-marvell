@@ -91,6 +91,10 @@ static int	TftpFinalBlock;	/* 1 if we have sent the last block */
 #else
 #define TftpWriting	0
 #endif
+#ifdef CONFIG_CMD_NET6
+/* 1 if using IPv6, else 0 */
+static int      tftp6_active;
+#endif
 
 #define STATE_SEND_RRQ	1
 #define STATE_DATA	2
@@ -126,6 +130,8 @@ static char tftp_filename[MAX_LEN];
 #else
 #define TFTP_MTU_BLOCKSIZE 1468
 #endif
+/* IPv6 adds 20 bytes extra overhead */
+#define TFTP_MTU_BLOCKSIZE6 (TFTP_MTU_BLOCKSIZE - 20)
 
 static unsigned short TftpBlkSize = TFTP_BLOCK_SIZE;
 static unsigned short TftpBlkSizeOption = TFTP_MTU_BLOCKSIZE;
@@ -329,6 +335,11 @@ TftpSend(void)
 	 *	We will always be sending some sort of packet, so
 	 *	cobble together the packet headers now.
 	 */
+#ifdef CONFIG_CMD_NET6
+	if (tftp6_active)
+		pkt = NetTxPacket + NetEthHdrSize() + IP6_HDR_SIZE + IP6_UDPHDR_SIZE;
+	else
+#endif
 	pkt = NetTxPacket + NetEthHdrSize() + IP_UDP_HDR_SIZE;
 
 	switch (TftpState) {
@@ -427,6 +438,12 @@ TftpSend(void)
 		break;
 	}
 
+#ifdef CONFIG_CMD_NET6
+	if (tftp6_active)
+		net_send_udp_packet6(NetServerEther, &NetServerIP6,
+					TftpRemotePort, TftpOurPort, len);
+	else
+#endif
 	NetSendUDPPacket(NetServerEther, TftpRemoteIP, TftpRemotePort,
 			 TftpOurPort, len);
 }
@@ -738,6 +755,17 @@ void TftpStart(enum proto_t protocol)
 	}
 
 	printf("Using %s device\n", eth_get_name());
+#ifdef CONFIG_CMD_NET6
+	tftp6_active = (protocol == TFTP6);
+	if (tftp6_active) {
+		printf("TFTP from server %pI6c; our IP address is %pI6c",
+		       &NetServerIP6,
+		       &NetOurIP6);
+		if (TftpBlkSizeOption > TFTP_MTU_BLOCKSIZE6)
+			TftpBlkSizeOption = TFTP_MTU_BLOCKSIZE6;
+	}
+	else
+#endif
 	printf("TFTP %s server %pI4; our IP address is %pI4",
 #ifdef CONFIG_CMD_TFTPPUT
 	       protocol == TFTPPUT ? "to" : "from",
@@ -747,6 +775,15 @@ void TftpStart(enum proto_t protocol)
 		&TftpRemoteIP, &NetOurIP);
 
 	/* Check if we need to send across this subnet */
+#ifdef CONFIG_CMD_NET6
+	if (tftp6_active) {
+		if (!ip6_addr_in_subnet(&NetOurIP6, &NetServerIP6,
+					NetPrefixLength)) {
+			printf("; sending through gateway %pI6c",
+			       &NetOurGatewayIP6);
+		}
+	} else
+#endif
 	if (NetOurGatewayIP && NetOurSubnetMask) {
 		IPaddr_t OurNet	= NetOurIP    & NetOurSubnetMask;
 		IPaddr_t RemoteNet	= TftpRemoteIP & NetOurSubnetMask;

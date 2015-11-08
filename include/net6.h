@@ -260,6 +260,10 @@ extern void ping6_start(void);
 extern void ping6_receive(struct ethernet_hdr *et, struct ip6_hdr *ip6,
 	int len);
 
+/* Transmit UDP packet using IPv6, performing neighbour discovery if needed */
+extern int net_send_udp_packet6(uchar *ether, IP6addr_t *dest,
+				int dport, int sport, int len);
+
 /* handler for incoming IPv6 echo packet */
 extern void NetIP6PacketHandler(struct ethernet_hdr *et, struct ip6_hdr *ip6,
 	int len);

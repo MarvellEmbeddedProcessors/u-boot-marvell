@@ -88,4 +88,11 @@ config MVEBU_A3700_IO_ADDR_DEC
 	  Choose this option to add support
 	  for Marvell Armada-3700 address decoding driver
 
+config MVEBU_A3700_MISC_INIT
+	bool "Armada-3700 miscellaneous initialization procedures support"
+	default n
+	help
+	  Choose this option to add support
+	  for Marvell Armada-3700 miscellaneous init procedures
+
 endmenu

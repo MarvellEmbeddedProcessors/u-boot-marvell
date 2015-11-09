@@ -1,7 +1,4 @@
-/*
- * ***************************************************************************
- * Copyright (C) 2015 Marvell International Ltd.
- * ***************************************************************************
+/* ***************************************************************************
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation, either version 2 of the License, or any later version.
@@ -16,19 +13,11 @@
  * ***************************************************************************
  */
 
-#include <common.h>
-#include <asm/io.h>
-#include <asm/arch-mvebu/mvebu.h>
+#ifndef _MVEBU_MISC_H_
+#define _MVEBU_MISC_H_
 
-int init_a3700_io_addr_dec(void)
-{
-	int	rval = 0;
+void misc_init_cci400(void);
 
-	debug_enter();
+#endif /* _MVEBU_MISC_H_ */
 
-	/* Add units configuration code here */
-
-	debug_exit();
-	return rval;
-}
 

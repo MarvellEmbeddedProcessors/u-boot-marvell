@@ -20,15 +20,22 @@
 #include <asm/io.h>
 #include <asm/arch-mvebu/mvebu.h>
 
-int init_a3700_io_addr_dec(void)
+void misc_init_cci400(void)
 {
-	int	rval = 0;
-
 	debug_enter();
+
+	/*
+	   CCI-400 enable snoop and dvm on S3 port.
+	   For details see the <CoreLink CCI-400 Cache Coherent Interconnect> document.
+	   bit[0] - Enable issuing of snoop requests from this slave interface.
+	   bit[1] - Enable issuing of DVM message requests from this slave interface
+	   bit[29:2] - Reserved
+	   bit[30] - Slave interface supports snoops
+	   bit[31] - Slave interface supports DVM messages
+	 */
+	writel(0xC0000003, MVEBU_CCI_S3_SNOOP_CTRL_REG);
 
 	/* Add units configuration code here */
 
 	debug_exit();
-	return rval;
 }
-

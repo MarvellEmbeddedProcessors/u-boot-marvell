@@ -44,6 +44,9 @@
 #ifdef CONFIG_MVEBU_SPL_A3700_GPIO
 #include <asm/arch-mvebu/a3700_gpio.h>
 #endif
+#ifdef CONFIG_MVEBU_A3700_MISC_INIT
+#include <asm/arch-mvebu/mvebu_misc.h>
+#endif
 
 #ifdef CONFIG_MVEBU_SPL_SAR_DUMP
 extern void mvebu_sar_dump_reg(void);
@@ -79,6 +82,9 @@ void board_init_f(ulong silent)
 	setup_fdt();
 #ifdef CONFIG_MVEBU_SPL_A3700_GPIO
 	mvebu_a3700_gpio();
+#endif
+#ifdef CONFIG_MVEBU_A3700_MISC_INIT
+	misc_init_cci400();
 #endif
 	preloader_console_init();
 

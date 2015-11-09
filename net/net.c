@@ -278,6 +278,7 @@ static void NetInitLoop(void)
 #ifdef CONFIG_CMD_NET6
 		getenv_IP6addr("ipaddr6", &NetOurIP6);
 		getenv_IP6addr("gatewayip6", &NetOurGatewayIP6);
+		getenv_IP6addr("serverip6", &NetServerIP6);
 		if (getenv("prefixlength6"))
 			NetPrefixLength =
 				simple_strtoul(getenv("prefixlength6"),

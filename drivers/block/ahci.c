@@ -507,6 +507,10 @@ static void ahci_set_feature(u8 port)
 	memcpy((unsigned char *)pp->cmd_tbl, fis, sizeof(fis));
 	ahci_fill_cmd_slot(pp, cmd_fis_len);
 	ahci_dcache_flush_sata_cmd(pp);
+
+	/* clearing IRQ status register on Read/Write operations */
+	writel_with_flush(0xffffffff, port_mmio + PORT_IRQ_STAT);
+
 	writel(1, port_mmio + PORT_CMD_ISSUE);
 	readl(port_mmio + PORT_CMD_ISSUE);
 
@@ -616,6 +620,9 @@ static int ahci_device_data_io(u8 port, u8 *fis, int fis_len, u8 *buf,
 	sg_count = ahci_fill_sg(port, buf, buf_len);
 	opts = (fis_len >> 2) | (sg_count << 16) | (is_write << 6);
 	ahci_fill_cmd_slot(pp, opts);
+
+	/* clearing IRQ status register on Read/Write operations */
+	writel_with_flush(0xffffffff, port_mmio + PORT_IRQ_STAT);
 
 	ahci_dcache_flush_sata_cmd(pp);
 	ahci_dcache_flush_range((unsigned long)buf, (unsigned long)buf_len);
@@ -1004,6 +1011,9 @@ static int ata_io_flush(u8 port)
 
 	memcpy((unsigned char *)pp->cmd_tbl, fis, 20);
 	ahci_fill_cmd_slot(pp, cmd_fis_len);
+
+	/* clearing IRQ status register on Read/Write operations */
+	writel_with_flush(0xffffffff, port_mmio + PORT_IRQ_STAT);
 	writel_with_flush(1, port_mmio + PORT_CMD_ISSUE);
 
 	if (waiting_for_cmd_completed(port_mmio + PORT_CMD_ISSUE,

@@ -1,0 +1,17 @@
+Marvell EBU SATA bindings
+====================
+
+This SATA driver supports Marvell EBU SoC, which implements the SATA core operations.
+The node name is sata0 to show that it's SATA-0, for SATA-1 should be sata1.
+
+The SATA node requires the following properties:
+	- compatible
+		should be "marvell,mvebu-sata".
+	- reg: the base address of the SATA unit.
+
+Example for SATA-0 node:
+	sata: sata@e0000 {
+		compatible = "marvell,mvebu-sata";
+		reg = <0xe0000 0x20>;
+		status = "disabled";
+	};

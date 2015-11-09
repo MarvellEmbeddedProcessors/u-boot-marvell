@@ -19,6 +19,8 @@
 #include <libata.h>
 #include <linux/ctype.h>
 #include <ahci.h>
+#include <fdtdec.h>
+#include <asm/arch-mvebu/fdt.h>
 
 static int ata_io_flush(u8 port);
 
@@ -934,7 +936,7 @@ void scsi_low_level_init(int busdevfunc)
 }
 
 #ifdef CONFIG_SCSI_AHCI_PLAT
-int ahci_init(void __iomem *base)
+int ahci_init_dev(void __iomem *base)
 {
 	int i, rc = 0;
 	u32 linkmap;
@@ -985,7 +987,63 @@ void __weak scsi_init(void)
 {
 }
 
-#endif
+#ifdef CONFIG_OF_CONTROL
+
+DECLARE_GLOBAL_DATA_PTR;
+
+#define MAX_SATA_PORT_NUM 4
+
+int ahci_init(void)
+{
+	int node_list[MAX_SATA_PORT_NUM], node;
+	int i, count;
+	unsigned long sata_reg_base;
+	int err;
+
+	/* in dts file, go through all the 'sata' nodes.
+	 */
+	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "sata",
+			COMPAT_MVEBU_SATA, node_list, MAX_SATA_PORT_NUM);
+	if (count == 0) {
+		error("could not find sata node in FDT, initialization skipped!\n");
+		return -ENXIO;
+	}
+	for (i = 0; i < count ; i++) {
+		node = node_list[i];
+
+		if (node <= 0)
+			continue;
+
+		/* in dts file, there should be several "sata" nodes that are enabled, and in
+		 * dtsi file there are the 'reg' attribute for register base of each SATA unit.
+		 */
+		/* fetch 'reg' propertiy from 'sata' node */
+		sata_reg_base = (unsigned long)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
+		if (sata_reg_base == FDT_ADDR_T_NONE) {
+			error("could not find reg in sata node, initialization skipped!\n");
+			return -ENXIO;
+		}
+
+		/* call 'real' ahci init routine */
+		err = ahci_init_dev((void __iomem *)sata_reg_base);
+		if (err) {
+			error("ahci_init_dev failed, initialization skipped!\n");
+			return err;
+		}
+	}
+
+	return 0;
+}
+
+#else
+int ahci_init(void __iomem *base)
+{
+	return ahci_init_dev(base);
+}
+
+#endif /* CONFIG_OF_CONTROL */
+
+#endif /* CONFIG_SCSI_AHCI_PLAT */
 
 /*
  * In the general case of generic rotating media it makes sense to have a

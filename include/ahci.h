@@ -160,7 +160,11 @@ struct ahci_probe_ent {
 	u32	link_port_map; /*linkup port map*/
 };
 
+#ifdef CONFIG_OF_CONTROL
+int ahci_init(void);
+#else
 int ahci_init(void __iomem *base);
+#endif
 int ahci_reset(void __iomem *base);
 
 #endif

@@ -90,6 +90,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_TCLOCK, "marvell,tclk"),
 	COMPAT(MVEBU_I2C, "marvell,mvebu-i2c"),
 	COMPAT(MVEBU_ARLP_I2C, "marvell,armadalp-i2c"),
+	COMPAT(MVEBU_SATA, "marvell,mvebu-sata"),
 	COMPAT(MVEBU_SAR, "marvell,sample-at-reset"),
 	COMPAT(MVEBU_PINCTL, "marvell,mvebu-pinctl"),
 	COMPAT(MVEBU_MPP_BUS, "marvell,mvebu-mpp-bus"),

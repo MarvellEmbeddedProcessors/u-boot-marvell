@@ -212,10 +212,8 @@ static void mvebu_pcie_setup_mapping(void __iomem *reg_base)
 	}
 
 	/* Config BAR 0 - to internal regs */
-	size = (SZ_16M - 1) & 0xFFFF0000;
 	writel(PCIE_BAR_TYPE_MEM | MVEBU_REGS_BASE  , PCIE_BAR_LO_OFF(reg_base, 0));
 	writel(0, PCIE_BAR_HI_OFF(reg_base, 0));
-	writel(size | PCIE_BAR_ENABLE, PCIE_BAR_CTRL_OFF(reg_base, 0));
 
 	/* Config BAR 1 - to 4G */
 	size = (SZ_4G - 1) & 0xFFFF0000;

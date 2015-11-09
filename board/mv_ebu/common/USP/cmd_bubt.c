@@ -589,7 +589,7 @@ int burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 #if defined(MV_MMC_BOOT)
 U_BOOT_CMD(
-		bubt,      3,     1,      burn_uboot_cmd,
+		bubt,      3,     0,      burn_uboot_cmd,
 		"bubt	- Burn an image on the Boot device.\n",
 		" file-name \n"
 		"[file-name] [source] \n"
@@ -598,7 +598,7 @@ U_BOOT_CMD(
 );
 #else
 U_BOOT_CMD(
-		bubt,      4,     1,      burn_uboot_cmd,
+		bubt,      4,     0,      burn_uboot_cmd,
 		"bubt	- Burn an image on the Boot flash device.\n",
 		"[file-name] [destination [source]] \n"
 		"\tBurn a binary image on the Boot Device, default file-name is u-boot.bin .\n"

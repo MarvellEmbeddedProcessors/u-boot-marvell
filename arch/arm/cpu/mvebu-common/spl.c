@@ -38,6 +38,9 @@
 #ifdef CONFIG_MVEBU_A3700_IO_ADDR_DEC
 #include <asm/arch-mvebu/io_addr_dec.h>
 #endif
+#ifdef CONFIG_MVEBU_A3700_CLOCK
+#include <asm/arch-mvebu/clock.h>
+#endif
 #ifdef CONFIG_MVEBU_MBUS
 #include <asm/arch-mvebu/mbus.h>
 #endif
@@ -83,6 +86,12 @@ void board_init_f(ulong silent)
 #ifdef CONFIG_MVEBU_SPL_A3700_GPIO
 	mvebu_a3700_gpio();
 #endif
+
+	/* Clock should be enabeld before initialize the I/O units */
+#ifdef CONFIG_MVEBU_A3700_CLOCK
+	init_a3700_clock();
+#endif
+
 #ifdef CONFIG_MVEBU_A3700_MISC_INIT
 	misc_init_cci400();
 #endif

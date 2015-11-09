@@ -33,4 +33,6 @@ u32 soc_clock_get(const void *blob, int node);
 u32 get_fdt_tclk(const void *blob, int node);
 void soc_print_clock_info(void);
 
+int init_a3700_clock(void);
+
 #endif /* _MVEBU_CLOCK_H_ */

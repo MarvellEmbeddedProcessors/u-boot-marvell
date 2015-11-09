@@ -36,3 +36,4 @@ obj-$(CONFIG_MVEBU_FLC) += mvebu_flc.o
 obj-$(CONFIG_MVEBU_A3700_IO_ADDR_DEC) += mvebu_io_addr_dec.o
 obj-$(CONFIG_MVEBU_SPL_A3700_GPIO) += mvebu_gpio.o
 obj-$(CONFIG_MVEBU_A3700_MISC_INIT) += mvebu_misc_init.o
+obj-$(CONFIG_MVEBU_A3700_CLOCK) += mvebu_clock.o

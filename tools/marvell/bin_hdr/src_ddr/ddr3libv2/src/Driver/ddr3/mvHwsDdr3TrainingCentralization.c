@@ -446,8 +446,8 @@ GT_STATUS    ddr3TipSpecialRx
 			{
 				for( bitId = 0 ; bitId < BUS_WIDTH_IN_BITS ; bitId++)
 				{
-					PadNum = dqMapTable[bitId+pupId*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*octetsPerInterfaceNum];
-					CHECK_STATUS(mvHwsDdr3TipBUSRead(  devNum, interfaceId, ACCESS_TYPE_UNICAST, pupId,  DDR_PHY_DATA,  PBS_RX_PHY_REG+PadNum +  effective_cs * 0x10, &temp));
+					PadNum = dqMapTable[bitId+pupId*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*MAX_BUS_NUM];
+                    CHECK_STATUS(mvHwsDdr3TipBUSRead(  devNum, interfaceId, ACCESS_TYPE_UNICAST, pupId,  DDR_PHY_DATA,  PBS_RX_PHY_REG+PadNum +  effective_cs * 0x10, &temp));
 					temp = (temp + 0xA > 31)?(31):(temp + 0xA);
 					CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,ACCESS_TYPE_UNICAST,interfaceId, ACCESS_TYPE_UNICAST,pupId, DDR_PHY_DATA, PBS_RX_PHY_REG+PadNum + effective_cs * 0x10, temp));
 				}

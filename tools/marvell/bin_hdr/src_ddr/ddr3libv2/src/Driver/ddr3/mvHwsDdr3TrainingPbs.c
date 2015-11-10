@@ -516,8 +516,8 @@ GT_STATUS    ddr3TipPbs
 					DEBUG_PBS_ENGINE(DEBUG_LEVEL_ERROR,("dqMapTable not initializaed\n"));
 					return GT_FAIL;
 				 }
-				PadNum = dqMapTable[bit+pup*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*octetsPerInterfaceNum];
-				DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,("Result_MAT: %d " ,Result_MAT[interfaceId][pup][bit]));
+				PadNum = dqMapTable[bit+pup*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*MAX_BUS_NUM];
+                DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,("Result_MAT: %d " ,Result_MAT[interfaceId][pup][bit]));
 				regAddr = (pbsMode == PBS_RX_MODE) ? (PBS_RX_PHY_REG + effective_cs * 0x10) : (PBS_TX_PHY_REG + effective_cs * 0x10);
 				CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,  ACCESS_TYPE_UNICAST,   interfaceId, ACCESS_TYPE_UNICAST,  pup, DDR_PHY_DATA, regAddr+PadNum, Result_MAT[interfaceId][pup][bit]));
 			}

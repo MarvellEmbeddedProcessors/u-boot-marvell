@@ -276,10 +276,10 @@ GT_U32 bobKDQbitMap2Phypin[] =
         0,0,0,0,0,0,0,0 , /* dq[ECC]   */
 
 	    /* Interface 1 */
-	    9,0,7,2,8,6,3,1 , /* dq[0:7]   */
-	    9,0,1,6,8,3,2,7 , /* dq[8:15]  */
-	    0,7,1,9,6,2,3,8 , /* dq[16:23] */
-	    9,0,8,3,7,6,2,1 , /* dq[24:31] */
+        9,0,1,6,8,3,2,7 , /* dq[0:7]   */
+	    9,0,7,2,8,6,3,1 , /* dq[8:15]  */
+        9,0,8,3,7,6,2,1 , /* dq[16:23] */
+	    0,7,1,9,6,2,3,8 , /* dq[24:31] */
         0,0,0,0,0,0,0,0 , /* dq[ECC]   */
 
 	    /* Interface 2 */
@@ -920,6 +920,8 @@ static GT_STATUS ddr3TipInitBobKSilicon
 					WRITE_LEVELING_MASK_BIT |
 					LOAD_PATTERN_2_MASK_BIT |
 					READ_LEVELING_MASK_BIT |
+                    PBS_RX_MASK_BIT |
+					PBS_TX_MASK_BIT |
 					SET_TARGET_FREQ_MASK_BIT |
 					WRITE_LEVELING_TF_MASK_BIT |
 					READ_LEVELING_TF_MASK_BIT |

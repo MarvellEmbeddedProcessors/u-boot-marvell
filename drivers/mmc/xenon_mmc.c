@@ -735,13 +735,6 @@ static int xenon_mmc_init(struct mmc *mmc)
 	debug("reg_base(%llx) version(%d) quirks(%x) clk(%d) bus_width(%d)\n",
 	      mmc_cfg->reg_base, mmc_cfg->version, mmc_cfg->quirks, mmc_cfg->clk, mmc_cfg->bus_width);
 
-#ifdef CONFIG_PALLADIUM
-	/* Enable clock */
-	ctrl = readl(MVEBU_NB_CLK_BASE + ARLP_NB_CLK_SEL_REG);
-	writel((ctrl | 0x1), MVEBU_NB_CLK_BASE + ARLP_NB_CLK_SEL_REG);
-
-#endif
-
 	/* Set FIFO */
 	xenon_mmc_writel(mmc_cfg, SDHC_SLOT_FIFO_CTRL, 0x315);
 

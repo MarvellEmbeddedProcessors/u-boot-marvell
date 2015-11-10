@@ -165,9 +165,6 @@
 #define MMC_TIMING_MMC_HS200	8
 #define MMC_TIMING_MMC_HS400	10
 
-/* North bridge clock select offset*/
-#define ARLP_NB_CLK_SEL_REG	0x10
-
 /* Data time out default value 0xE: TMCLK x 227 */
 #define DATA_TIMEOUT_DEF_VAL	0xe
 
@@ -180,12 +177,6 @@
 #define XENON_MMC_PORTS_MAX	2
 
 #define  SDHCI_RETUNE_EVT_INTSIG	0x00001000
-
-/* Fabric decode window */
-#define SDHCI_WIN_CTRL(dev, win)		((MVEBU_SD_MMC_DECODE_BASE(dev) + (10 * win)))
-#define SDHCI_WIN_BASE(dev, win)		((MVEBU_SD_MMC_DECODE_BASE(dev) + (10 * win) + 4))
-#define SDHCI_WIN_REMAP(dev, win)		((MVEBU_SD_MMC_DECODE_BASE(dev) + (10 * win) + 8))
-#define SDHCI_WIN_ATTR(dev)			((MVEBU_SD_MMC_DECODE_BASE(dev) + 0xE0))
 
 struct xenon_mmc_cfg {
 	u64 reg_base;

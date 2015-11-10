@@ -91,6 +91,8 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_I2C, "marvell,mvebu-i2c"),
 	COMPAT(MVEBU_ARLP_I2C, "marvell,armadalp-i2c"),
 	COMPAT(MVEBU_SATA, "marvell,mvebu-sata"),
+	COMPAT(MVEBU_USB, "marvell,mvebu-usb"),
+	COMPAT(MVEBU_SDIO, "marvell,mvebu-sdio"),
 	COMPAT(MVEBU_SAR, "marvell,sample-at-reset"),
 	COMPAT(MVEBU_PINCTL, "marvell,mvebu-pinctl"),
 	COMPAT(MVEBU_MPP_BUS, "marvell,mvebu-mpp-bus"),

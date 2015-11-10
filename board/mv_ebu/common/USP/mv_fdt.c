@@ -149,7 +149,7 @@ static int mv_fdt_update_usb_device(void *fdt);
 static int mv_fdt_update_cm3(void *fdt);
 #endif
 #ifdef MV_PP_SMI
-static int mv_fdt_update_external_mdio(void *fdt);
+static int mv_fdt_update_external_smi(void *fdt);
 #endif
 
 #if 0 /* not compiled, since this routine is currently not in use  */
@@ -205,7 +205,7 @@ update_fnc_t *update_sequence[] = {
 	mv_fdt_update_cm3,
 #endif
 #ifdef MV_PP_SMI
-	mv_fdt_update_external_mdio,
+	mv_fdt_update_external_smi,
 #endif
 	NULL,
 };
@@ -608,11 +608,11 @@ static int mv_fdt_update_cm3(void *fdt)
 
 #ifdef MV_PP_SMI
 /*******************************************************************************
-* mv_fdt_update_external_mdio
+* mv_fdt_update_external_smi
 *
 * DESCRIPTION:
-* target		: update pp-smi-interface field of external (Switch SMI unit) mdio node.
-* node, properties	: -property pp-smi-interface @ node mdio.
+* target		: update the SMI register base for the OOB PHY.
+* node, properties	: -ranges @ node switch.
 * dependencies		: smiExternalPpIndex entry in board structure.
 *
 * INPUT:
@@ -625,24 +625,26 @@ static int mv_fdt_update_cm3(void *fdt)
 *	-1 on error os 0 otherwise.
 *
 *******************************************************************************/
-static int mv_fdt_update_external_mdio(void *fdt)
+static int mv_fdt_update_external_smi(void *fdt)
 {
-	MV_U32 propval;					/* property value */
-	const char *prop;				/* property name */
-	const char *node_path = "/soc/mdio";		/* node name */
-	const char *node = "mdio";
+	uint32_t smi_base_size[2];			/* property value */
+	MV_U32 smi_external_pp_index;			/* smi external pp index */
+	/* Since extern SMI register belongs to switch MG register region */
+	/* it is under '/switch' node out of '/soc' node */
+	const char *node_path = "/switch/mdio";		/* node path */
 	MV_U32 nodeoffset;
 
 	nodeoffset = fdt_path_offset(fdt, node_path);
 	if (mvBoardIsPpSmi() == MV_FALSE)
 		return 0;
 
-	/* update pp-smi-intercace */
-	prop = "pp-smi-interface";
-	mvBoardPPSmiIndexGet(&propval);
-	propval = htonl(propval);
-	if (fdt_setprop(fdt, nodeoffset, prop, &propval, sizeof(propval)) < 0)
-		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+	/* update external smi register base and size */
+	mvBoardPPSmiIndexGet(&smi_external_pp_index);
+	smi_base_size[0] = htonl(MV_PP_SMI_BASE(smi_external_pp_index));	/* set external smi register base */
+	smi_base_size[1] = htonl(8);		/* external smi remap size is fixed to 8 now */
+
+	if (fdt_setprop(fdt, nodeoffset, "reg", smi_base_size, sizeof(smi_base_size)) < 0)
+		mv_fdt_dprintf("Failed to set property 'reg' of node '%s' in device tree\n", node_path);
 
 	return 0;
 }
@@ -1367,16 +1369,6 @@ static int mv_fdt_update_ethnum(void *fdt)
 					mv_fdt_modify(fdt, err,
 						fdt_setprop(fdt, emacoffset, prop, propval, strlen(propval)+1));
 				}
-			}
-#endif
-#ifdef MV_PP_SMI
-			/* BobK utilizes external SMI access,
-			 * Initially integrated with mainline NETA driver */
-			if (mvBoardIsPpSmi() == MV_TRUE) {
-				sprintf(prop, "compatible");
-				sprintf(propval, "marvell,armada-370-neta");
-				mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
-							propval, strlen(propval)+1));
 			}
 #endif
 			/* Last property to set is the "status" - common for valid and non-valid ports */

@@ -15,7 +15,7 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * ***************************************************************************
 */
-#define DEBUG
+/* #define DEBUG */
 #include <common.h>
 #include <fdtdec.h>
 #include <asm/io.h>

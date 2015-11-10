@@ -687,8 +687,9 @@ int mvHwsAvagoSerdesTemperatureGet
 *       devNum    - device number
 *       portGroup - port group (core) number
 *       serdesNum - SERDES number
-*       calCode   - Rx or Tx calibration code
-*       mode      - True for Rx mode, False for Tx mode
+*       mode      - True for Tx mode, False for Rx mode
+*       therm     - Thermometer of VCO
+*       bin       - bin of VCO
 *
 * OUTPUTS:
 *       None.
@@ -698,17 +699,15 @@ int mvHwsAvagoSerdesTemperatureGet
 *       1  - on error
 *
 *******************************************************************************/
-unsigned int mvHwsAvagoSerdesCalCodeSet(int devNum, int portGroup, int serdesNum, int calCode, BOOL mode)
+unsigned int mvHwsAvagoSerdesCalCodeSet(int devNum, int portGroup, int serdesNum, BOOL mode, int therm, int bin)
 {
-    unsigned int data;
+    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x18, 0x4002 | (mode << 9), NULL));
 
-    /* get the calibration code */
-    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x28, 0x4000 | (mode << 15), &data));
-    /* get only bits #7-15 */
-    data &= 0xFF80;
+    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x19, therm, NULL));
 
-    /* set calibration code */
-    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x28, data | calCode | (mode<<15), NULL));
+    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x18, 0x4003 | (mode << 9), NULL));
+
+    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x19, bin, NULL));
 
     return GT_OK;
 }
@@ -723,25 +722,79 @@ unsigned int mvHwsAvagoSerdesCalCodeSet(int devNum, int portGroup, int serdesNum
 *       devNum    - device number
 *       portGroup - port group (core) number
 *       serdesNum - SERDES number
-*       mode      - True for Rx mode, False for Tx mode
+*       mode      - True for Tx mode, False for Rx mode
 *
 * OUTPUTS:
-*       None
+*       therm - Thermometer of VCO
+*       bin   - bin of VCO
 *
 * RETURNS:
 *       0  - on success
 *       1  - on error
 *
 *******************************************************************************/
-unsigned int mvHwsAvagoSerdesCalCodeGet(int devNum, int portGroup, int serdesNum, BOOL mode)
+unsigned int mvHwsAvagoSerdesCalCodeGet(int devNum, int portGroup, int serdesNum, BOOL mode, unsigned int *therm, unsigned int *bin)
 {
-    unsigned int data;
+    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x18, 0x4002 | (mode << 9), NULL));
 
-    /* get the calibration code */
-    mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x28, 0x4000 | (mode << 15), &data);
+    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x1A, 0, therm));
 
-    /* cf code are only bits 0..6 */
-    return data & 0x7F;
+    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x18, 0x4003 | (mode << 9), NULL));
+
+    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x1A, 0, bin));
+
+    return GT_OK;
+}
+
+/*******************************************************************************
+* mvHwsAvagoCalCodeShift
+*
+* DESCRIPTION:
+*       Shift the calcode according to the amount value
+*
+* INPUTS:
+*       devNum    - device number
+*       portGroup - port group (core) number
+*       serdesNum - SERDES number
+*       mode      - True for Tx mode, False for Rx mode
+*       shift     - amount of cal-code shift
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+unsigned int mvHwsAvagoCalCodeShift (int devNum, int portGroup, int serdesNum, BOOL mode, int shift)
+{
+    unsigned int therm, bin, res;
+    int bin_portion;
+
+    res = mvHwsAvagoSerdesCalCodeGet(devNum, portGroup, serdesNum, mode, &therm, &bin);
+    if (res != GT_OK)
+    {
+        osPrintf("mvHwsAvagoSerdesCalCodeGet failed (%d)\n", res);
+        return GT_FAIL;
+    }
+
+    bin_portion = (bin & 0x7) + shift;
+
+    therm = (bin_portion > 7) ? ((therm  <<1 )+1): therm;
+    therm = (bin_portion < 0) ? (therm >> 1) : therm;
+
+    bin_portion &=0x7;
+    bin = (bin & 0xFFF8)| bin_portion;
+
+    res = mvHwsAvagoSerdesCalCodeSet(devNum, portGroup, serdesNum, mode, therm, bin);
+    if (res != GT_OK)
+    {
+        osPrintf("mvHwsAvagoSerdesCalCodeSet failed (%d)\n", res);
+        return GT_FAIL;
+    }
+
+    return GT_OK;
 }
 
 /*******************************************************************************
@@ -766,52 +819,39 @@ unsigned int mvHwsAvagoSerdesCalCodeGet(int devNum, int portGroup, int serdesNum
 *******************************************************************************/
 unsigned int mvHwsAvagoSerdesVcoConfig
 (
-    unsigned char       devNum,
-    unsigned int        portGroup,
-    unsigned int        serdesNum
+    unsigned char   devNum,
+    unsigned int    portGroup,
+    unsigned int    serdesNum
 )
 {
-    int temperature, res;
-    unsigned int rxCalCode = mvHwsAvagoSerdesCalCodeGet(devNum, portGroup, serdesNum, TRUE);
-    unsigned int txCalCode = mvHwsAvagoSerdesCalCodeGet(devNum, portGroup, serdesNum, FALSE);
+    int temperature, shift=0;
+    unsigned int res;
 
     /* get the Temperature from Serdes #20 */
     CHECK_STATUS(mvHwsAvagoSerdesTemperatureGet(devNum, portGroup, 20, &temperature));
 
     if (temperature < -20)
-    {
-        rxCalCode += 2;
-        txCalCode += 2;
-    }
+        shift = 2;
     else if ((temperature >= -20) && (temperature <= 0))
-    {
-        rxCalCode += 1;
-        txCalCode += 1;
-    }
+        shift = 1;
     else if ((temperature > 30) && (temperature <= 75))
-    {
-        rxCalCode -= 1;
-        txCalCode -= 1;
-    }
+        shift = -1;
     else if ((temperature > 75) && (temperature <= 125))
-    {
-        rxCalCode -= 2;
-        txCalCode -= 2;
-    }
+        shift = -2;
 
-    /* Set the calibration code for Rx */
-    res = mvHwsAvagoSerdesCalCodeSet(devNum, portGroup, serdesNum, rxCalCode, TRUE);
+    /* Shift the calibration code for Tx */
+    res = mvHwsAvagoCalCodeShift(devNum, portGroup, serdesNum, TRUE, shift);
     if (res != GT_OK)
     {
-        osPrintf("mvHwsAvagoSerdesCalCodeSet failed (%d)\n", res);
+        osPrintf("mvHwsAvagoCalCodeShift failed (%d)\n", res);
         return GT_FAIL;
     }
 
-    /* Set the calibration code for Tx */
-    res = mvHwsAvagoSerdesCalCodeSet(devNum, portGroup, serdesNum, txCalCode, FALSE);
+    /* shift the calibration code for Rx */
+    res = mvHwsAvagoCalCodeShift(devNum, portGroup, serdesNum, FALSE, shift);
     if (res != GT_OK)
     {
-        osPrintf("mvHwsAvagoSerdesCalCodeSet failed (%d)\n", res);
+        osPrintf("mvHwsAvagoCalCodeShift failed (%d)\n", res);
         return GT_FAIL;
     }
 

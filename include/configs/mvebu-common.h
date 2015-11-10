@@ -128,6 +128,7 @@
 					"loadaddr=0x2000000\0"		\
 					"fdt_high=0xffffffffffffffff\0"	\
 					"hostname=marvell\0"		\
+					"ramfs_addr=0x3000000\0"	\
 					"ramfs_name=-\0"		\
 					"fdt_name=fdt.dtb\0"		\
 					"netdev=eth0\0"			\
@@ -329,8 +330,8 @@
 /* Add network parameters when network command is enabled */
 #ifdef CONFIG_CMD_NET
 	/* Environment */
-	#define CONFIG_IPADDR			/* In order to cause an error if not set */
-	#define CONFIG_SERVERIP			/* In order to cause an error if not set */
+	#define CONFIG_IPADDR		0.0.0.0	/* In order to cause an error */
+	#define CONFIG_SERVERIP		0.0.0.0	/* In order to cause an error */
 	#define CONFIG_NETMASK          255.255.255.0
 	#define CONFIG_GATEWAYIP	10.4.50.254
 	#define CONFIG_ETHADDR          00:00:00:00:51:81

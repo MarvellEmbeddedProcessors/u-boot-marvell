@@ -725,7 +725,6 @@ static void xenon_mmc_set_ios(struct mmc *mmc)
 static int xenon_mmc_init(struct mmc *mmc)
 {
 	u32 status;
-	u32 ctrl;
 	u8  var;
 	u32 timeout = 1000; /* Wait max 1s */
 

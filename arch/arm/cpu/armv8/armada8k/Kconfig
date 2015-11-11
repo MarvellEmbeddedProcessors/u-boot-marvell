@@ -35,5 +35,43 @@ config MVEBU_LLC_ENABLE
 	help
 	  Enable LLC in PSCI code
 
-endif
+config MVEBU_CCU
+	bool "CCU address decoding driver"
+	default n
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+	help
+	  Choose this option to add support
+	  for CCU address decoding driver.
+	  This driver initialize the CCU windows
+	  only.
 
+config MVEBU_IOB
+	bool "IOB address decoding driver"
+	default n
+	help
+	  Choose this option to add support
+	  for IOB address decoding driver.
+	  This driver initialize the IOB windows
+	  only.
+
+config MVEBU_RFU
+	bool "RFU address decoding driver"
+	default n
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+	help
+	  Choose this option to add support
+	  for RFU address decoding driver.
+	  This driver initialize the RFU windows
+	  which come after the CCU window.
+
+config MVEBU_FLC
+	bool "MBUS Final Level Cache driver"
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+	default n
+	help
+	  Choose this option to add support
+	  for Final Level Cache for the Marvell McKinley
+	  Memory Controller driver.
+	  This driver enable FLC and open the FLC windows.
+
+endif

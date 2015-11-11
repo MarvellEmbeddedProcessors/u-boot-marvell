@@ -147,7 +147,7 @@ static void print_flc_mmap_reg_val(u32 reg_val, u32 reg_val_high)
 	start_addr = alr | ((u64)reg_val_high << 32);
 
 	printf("0x%016llx   %s\n", start_addr,
-		   mapping_flc_size[(reg_val >> FLC_SIZE_OFFSET) & FLC_SIZE_MASK]);
+	       mapping_flc_size[(reg_val >> FLC_SIZE_OFFSET) & FLC_SIZE_MASK]);
 }
 
 static u32 get_flc_mmap_reg_val(struct flc_map *memory_map)

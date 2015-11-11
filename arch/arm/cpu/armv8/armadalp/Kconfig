@@ -27,5 +27,40 @@ config ARMV8_PSCI
 config PALLADIUM
 	bool "Support palladium emulation"
 	default y
+
+config MVEBU_SPL_A3700_GPIO
+	bool "GPIO configuration for A3700 in SPL"
+	depends on TARGET_ARMADA_LP
+	default y
+	help
+	  Choose this option to enable GPIO
+	  configuration for A3700 in SPL.
+	  This will be removed later, and be
+	  implemented by MPP/PIN-CTRL driver.
+
+config MVEBU_A3700_IO_ADDR_DEC
+	bool "Armada-3700 Address decoding support"
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+	default n
+	help
+	  Choose this option to add support
+	  for Marvell Armada-3700 address decoding driver
+
+config MVEBU_A3700_MISC_INIT
+	bool "Armada-3700 miscellaneous initialization procedures support"
+	default n
+	help
+	  Choose this option to add support
+	  for Marvell Armada-3700 miscellaneous init procedures
+
+config MVEBU_A3700_CLOCK
+	bool "Armada-3700  clock support"
+	default n
+	help
+	  Choose this option to support
+	  Marvell Armada-3700 clock driver.
+	  For the first stage all clocks will be enabled
+	  by default.
+
 endif
 

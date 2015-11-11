@@ -147,7 +147,6 @@ static void ccu_enable_win(struct ccu_win *win, u32 win_id)
 	ccu_win_reg = WIN_ENABLE_BIT;
 	ccu_win_reg |= (win->target_id & CCU_TARGET_ID_MASK) << CCU_TARGET_ID_OFFSET;
 	writel(ccu_win_reg, CCU_WIN_CR_OFFSET(win_id));
-
 }
 
 void dump_ccu(void)

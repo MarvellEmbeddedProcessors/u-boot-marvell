@@ -1,34 +1,5 @@
 menu "Misc drivers"
 
-config MVEBU_CCU
-	bool "CCU address decoding driver"
-	default n
-	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
-	help
-	  Choose this option to add support
-	  for CCU address decoding driver.
-	  This driver initialize the CCU windows
-	  only.
-
-config MVEBU_IOB
-	bool "IOB address decoding driver"
-	default n
-	help
-	  Choose this option to add support
-	  for IOB address decoding driver.
-	  This driver initialize the IOB windows
-	  only.
-
-config MVEBU_RFU
-	bool "RFU address decoding driver"
-	default n
-	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
-	help
-	  Choose this option to add support
-	  for RFU address decoding driver.
-	  This driver initialize the RFU windows
-	  which come after the CCU window.
-
 config MVEBU_MBUS
 	bool "MBUS address decoding driver"
 	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
@@ -59,49 +30,5 @@ config MVEBU_MBUS_SKIP_DRAM_WIN
 	  For some Soc, DRAM MBUS window has to
 	  be at the beginning, and could not be
 	  configured by anyway (keep the default value).
-
-config MVEBU_SPL_A3700_GPIO
-	bool "GPIO configuration for A3700 in SPL"
-	depends on TARGET_ARMADA_LP
-	default y
-	help
-	  Choose this option to enable GPIO
-	  configuration for A3700 in SPL.
-	  This will be removed later, and be
-	  implemented by MPP/PIN-CTRL driver.
-
-config MVEBU_FLC
-	bool "MBUS Final Level Cache driver"
-	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
-	default n
-	help
-	  Choose this option to add support
-	  for Final Level Cache for the Marvell McKinley
-	  Memory Controller driver.
-	  This driver enable FLC and open the FLC windows.
-
-config MVEBU_A3700_IO_ADDR_DEC
-	bool "Armada-3700 Address decoding support"
-	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
-	default n
-	help
-	  Choose this option to add support
-	  for Marvell Armada-3700 address decoding driver
-
-config MVEBU_A3700_MISC_INIT
-	bool "Armada-3700 miscellaneous initialization procedures support"
-	default n
-	help
-	  Choose this option to add support
-	  for Marvell Armada-3700 miscellaneous init procedures
-
-config MVEBU_A3700_CLOCK
-	bool "Armada-3700  clock support"
-	default n
-	help
-	  Choose this option to support
-	  Marvell Armada-3700 clock driver.
-	  For the first stage all clocks will be enabled
-	  by dfault.
 
 endmenu

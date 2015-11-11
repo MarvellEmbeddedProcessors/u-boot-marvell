@@ -402,6 +402,8 @@ MV_STATUS loadTopologyDBAMC(SERDES_MAP  *serdesMapArray)
 	MV_U32 laneNum;
 	SERDES_MAP* serdesTopology;
 
+	MV_STATUS res = MV_OK;
+	res = mvSysEnvConfigInit();
 	DEBUG_INIT_FULL_S("\n### loadTopologyDBAMC ###\n");
 
 	mvPrintf("\nInitialize DB-AMC board topology\n");
@@ -416,7 +418,7 @@ MV_STATUS loadTopologyDBAMC(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].swapTx      = serdesTopology[laneNum].swapTx;
 	}
 
-	return MV_OK;
+	return res;
 }
 
 #ifdef CONFIG_CMD_BOARDCFG

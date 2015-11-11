@@ -268,6 +268,11 @@
 	#define CONFIG_SYS_NVRAM_BASE_ADDR DEVICE_CS1_BASE      /* dummy */
 #endif
 
+/* USB 3.0 */
+#ifdef CONFIG_USB_XHCI_HCD
+#define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS 2
+#endif
+
 /* USB */
 #ifdef MV_INCLUDE_USB
 	#define CONFIG_CMD_USB

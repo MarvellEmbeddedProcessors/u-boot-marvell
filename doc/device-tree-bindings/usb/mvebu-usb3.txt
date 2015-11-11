@@ -1,0 +1,17 @@
+Marvell EBU USB 3.0 bindings
+====================
+
+This USB 3.0 driver is based on mainline xHCI, and it supports Marvell EBU SoC,
+which implements the xHCI core operations.
+
+The USB 3.0 node requires the following properties:
+	- compatible
+		should be "marvell,mvebu-usb3".
+	- reg: the base address of the xHCI unit.
+
+Example for USB 3.0 node:
+	usb3: usb3@58000 {
+		compatible = "marvell,mvebu-usb3";
+		reg = <0x58000 0x450>;
+		status = "disabled";
+	};

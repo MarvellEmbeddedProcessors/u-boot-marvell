@@ -15,6 +15,16 @@ config USB_XHCI
 	---help---
 	  TODO: rename after most boards switch to Kconfig
 
+config USB_XHCI_MVEBU
+	bool "mvebu USB 3.0 support"
+	default y
+	depends on MVEBU && USB_XHCI_HCD
+	---help---
+	  Choose this option to add support
+	  for USB 3.0 driver on mvebu SoCs,
+	  which includes Armada8K, Armada3700
+	  and other Armada family SoCs.
+
 if USB_XHCI_HCD
 
 endif

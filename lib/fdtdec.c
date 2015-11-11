@@ -103,6 +103,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_PCIE, "marvell,mvebu-pcie"),
 	COMPAT(MVEBU_DW_PCIE, "marvell,mvebu-dw-pcie"),
 	COMPAT(MVEBU_COMPHY, "marvell,mvebu-comphy"),
+	COMPAT(MVEBU_USB3, "marvell,mvebu-usb3"),
 	COMPAT(COMPHY_ARMADA_38X, "marvell,comphy-armada38x"),
 	COMPAT(COMPAT_COMPHY_AP806, "marvell,comphy-ap806"),
 	COMPAT(COMPAT_COMPHY_ARMADA_LP, "marvell,comphy-armadalp"),

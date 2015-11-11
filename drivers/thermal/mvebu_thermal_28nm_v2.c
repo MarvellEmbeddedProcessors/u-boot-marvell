@@ -121,7 +121,7 @@ u32 mvebu_thermal_sensor_probe(void)
 
 	reg = readl(tsen->regs_base + THERMAL_SEN_CTRL_STATS);
 	while ((reg & THERMAL_SEN_CTRL_STATS_VALID_MASK) == 0 && timeout < THERMAL_TIMEOUT) {
-		udelay(1);
+		udelay(10);
 		reg = readl(tsen->regs_base + THERMAL_SEN_CTRL_STATS);
 		timeout++;
 	}

@@ -35,6 +35,9 @@
 			mmc0: mmc@D8000 {
 				status = "okay";
 			};
+			usb3: usb3@58000 {
+				status = "okay";
+			};
 		};
 	};
 };

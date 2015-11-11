@@ -97,6 +97,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_PINCTL, "marvell,mvebu-pinctl"),
 	COMPAT(MVEBU_MPP_BUS, "marvell,mvebu-mpp-bus"),
 	COMPAT(MVEBU_MBUS, "marvell,mvebu-mbus"),
+	COMPAT(MVEBU_MBUS_IO_DEC, "marvell,mvebu-io-decode"),
 	COMPAT(MVEBU_CCU, "marvell,mvebu-ccu"),
 	COMPAT(MVEBU_RFU, "marvell,mvebu-rfu"),
 	COMPAT(MVEBU_IOB, "marvell,mvebu-iob"),

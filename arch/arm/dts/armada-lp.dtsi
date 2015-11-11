@@ -1,4 +1,5 @@
 #define ATTR(remapped, target, attributes) (((remapped) << 12) | ((target) << 8) | (attributes))
+#define IO_ATTR(max_win, max_remap, remap_size, win_offset) (((max_win) << 24) | ((max_remap) << 16) | ((remap_size) << 8) | (win_offset))
 
 #include <dt-bindings/comphy/comphy_data.h>
 / {
@@ -49,6 +50,18 @@
 					0xF0000000 0x20000 ATTR(0x1, 0x7, 0x0)
 					0x80000000 0x10000000 ATTR(0x1, 0x3, 0x0)>;
 			};
+
+			io-decode {
+				compatible = "marvell,mvebu-io-decode";
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				unit_io_decode_info =
+					/* reg_base, range, IO_ATTR(max_win, max_remap, remap_size, win_offset) */
+					<0xcb00 0x30 IO_ATTR(3, 0, 32, 0x10) /* eMMC */
+					0xc800 0x30 IO_ATTR(3, 0, 32, 0x10)> /* SATA */;
+			};
+
 			neta0: neta@30000 {
 				compatible = "marvell,armadalp-neta";
 				reg = <0x30000 0x20>;
@@ -93,16 +106,6 @@
 					mem = <0xE8000000 0x8000000>;
 					status = "disabled";
 				};
-			};
-			sata: sata@e0000 {
-				compatible = "marvell,mvebu-sata";
-				reg = <0xe0000 0x200>;
-				status = "disabled";
-			};
-			mmc0: mmc@D8000 {
-				compatible = "marvell,xenon-sdhci";
-				reg = <0xD8000 0x300>;
-				status = "disabled";
 			};
 		};
 	};

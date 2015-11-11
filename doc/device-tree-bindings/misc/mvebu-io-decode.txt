@@ -1,0 +1,32 @@
+Marvell IO address decoding bindings
+=====================================
+
+The io decode node includes description about the address decoding configuration.
+
+The MBUS I/O decode node requires the following properties:
+	- compatible
+		should be "marvell,mvebu-io-decode"
+	- unit_io_decode_info: the IO unit information which should map their
+	decode window to DRAM.
+		- reg_base: base address of this I/O unit decode window
+		- range: range of this I/O unit decode window in unit of byte
+		- IO_ATTR: describle the I/O attributes
+			- max_win: the decode window number that this unit has
+			- max_remap: the decode window number including remapping that this unit has
+			- remap_size: remap window size in unit of bits, normally should be 32 or
+			64
+			- win_offset: the offset between continuous decode windows with the
+			same unit, typically it is 0x10
+
+Example:
+	io-decode {
+		compatible = "marvell,mvebu-io-decode";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		unit_io_decode_info =
+			/* reg_base, range, IO_ATTR(max_win, max_remap, remap_size, win_offset) */
+			<0xcb00 0x30 IO_ATTR(3, 0, 32, 0x10) /* eMMC */
+			0xc800 0x30 IO_ATTR(3, 0, 32, 0x10)> /* SATA */;
+	};
+

@@ -979,7 +979,7 @@ static GT_STATUS ddr3TipInitBobKSilicon
     CHECK_STATUS(ddr3TipTuneTrainingParams(devNum, &tuneParams));
 
     /* frequency and general parameters */
-    ddr3TipBobKGetMediumFreq(devNum, firstActiveIf, &mediumFreq);
+    CHECK_STATUS(ddr3TipBobKGetMediumFreq(devNum, firstActiveIf, &mediumFreq));
     initFreq = topologyMap->interfaceParams[firstActiveIf].memoryFreq;
 	freqVal[DDR_FREQ_LOW_FREQ] = dfsLowFreq = 130;
     dfsLowPhy1 = PhyReg1Val;

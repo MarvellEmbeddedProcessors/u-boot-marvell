@@ -98,7 +98,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		#elif CONFIG_CUSTOMER_BOARD_1
 			gBoardId = AC3_CUSTOMER_BOARD_ID1;
 		#endif
-	#elif defined (CONFIG_BOBCAT)/* BC2 */
+	#elif defined (CONFIG_BOBCAT2)
 		#ifdef CONFIG_CUSTOMER_BOARD_0
 			gBoardId = BC2_CUSTOMER_BOARD_ID0;
 		#elif CONFIG_CUSTOMER_BOARD_1

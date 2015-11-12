@@ -58,15 +58,22 @@
 #ifdef CONFIG_SPL_BUILD
 /* SPL */
 /* Defines for SPL */
-/*#define CONFIG_SPL_TEXT_BASE		0xF0000000 - CM3 SRAM, 0x01000000 - DRAM */
+/*#define CONFIG_SPL_TEXT_BASE	0xF0000000 - CM3 SRAM, 0x01000000 - DRAM */
+/* SRAM is 128K in total:      0xF0000000 - 0xF001FFFF
+   SPL code occupies addresses 0xF0000000 - 0xF000FFFF
+   SPL data can use addresses  0xF0010000 - 0xF0014000
+   WTMI starts at address      0xF00140F0
+   CM3 BootROM uses adresses   0xF0016000 - 0xF001FFFF
+   CM3 mapping for SRAM is     0x1FFF0000 - 0x20010000
+ */
 #define CONFIG_SPL_TEXT_BASE		0xF0000000
-#define CONFIG_SPL_MAX_SIZE		0x00020000	/* 128K */
+#define CONFIG_SPL_MAX_SIZE		0x00010000	/* 64K */
 
 #ifndef __ASSEMBLY__
 extern char __end_of_spl[];
 #endif /* __ASSEMBLY__ */
 #define CONFIG_SYS_SPL_MALLOC_START	((ulong)__end_of_spl)
-#define CONFIG_SYS_SPL_MALLOC_SIZE	(0x4000)
+#define CONFIG_SYS_SPL_MALLOC_SIZE	(0x4000)	/* 16K */
 #endif /* CONFIG_SPL_BUILD */
 #define CONFIG_SPL_LDSCRIPT		"arch/arm/cpu/mvebu-common/u-boot-armv8-spl.lds"
 

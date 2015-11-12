@@ -1,6 +1,6 @@
 SECTIONS
 {
-  . = 0x200100F0;
+  . = 0x200040F0;
   .ro : {
     wtmi.o (.text)
     *(.text)

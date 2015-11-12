@@ -17,7 +17,7 @@ Image Size To CRC in bytes: 0x00000000
 Partition Number:           0x00000000
 Image Filename: TIM_UBOOT_NON_TRUSTED.bin
 
-Image ID:                   0x4F424d49				; OBMI
+Image ID:                   0x4F424d49				; OBMI - 64K code + 16K data
 Next Image ID:              0x57544d49				; WTMI next
 Flash Entry Address:        0x00004000				; OBMI flash addr
 Load Address:               0x1FFF0000				; OBMI RAM addr
@@ -28,10 +28,10 @@ Image Filename: spl/u-boot-spl.bin
 Image ID:                   0x57544d49				; WTMI
 Next Image ID:              0x4F534C4F				; OSLO next
 Flash Entry Address:        0x00024000				; WTMI flash addr
-Load Address:               0x200100F0				; WTMI RAM addr
+Load Address:               0x200040F0				; WTMI RAM addr
 Image Size To CRC in bytes: 0x00000000
 Partition Number:           0x00000000
-Image Filename: tools/wtp/wtmi.bin
+Image Filename: tools/wtp/wtmi.dummy
 
 Image ID:                   0x4F534C4F				; OSLO
 Next Image ID:              0xFFFFFFFF				; NONE
@@ -50,7 +50,7 @@ Reserved Data:
 0x00000000	; Core_ID: 0 - AP0, 1 - AP1, 2 - CM3
 0xF0000000	; PC address for Core_ID above
 0x00000002	; Core_ID: 0 - AP0, 1 - AP1, 2 - CM3
-0x200100F0	; PC address for Core_ID above
+0x200040F0	; PC address for Core_ID above
 0x5465726D	;Term
 0x00000008	; Size of this package in bytes
 

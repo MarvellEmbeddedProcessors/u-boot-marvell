@@ -16,7 +16,7 @@
  * ***************************************************************************
  */
 
-#define DEBUG
+/* #define DEBUG */
 #include <common.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/mbus.h>
@@ -81,7 +81,7 @@ int set_io_addr_dec(struct mbus_win_map *win_map, struct dec_win_config *dec_win
 
 		/* set base address*/
 		writel(base, MVEBU_DEC_WIN_BASE_REG(dec_win->dec_win_base, id, dec_win->win_offset));
-		/* set remap window */
+		/* set remap window, some unit does not have remap window */
 		if (id < dec_win->max_remap)
 			writel(base, MVEBU_DEC_WIN_REMAP_REG(dec_win->dec_win_base, id, dec_win->win_offset));
 		/* set control register */
@@ -90,10 +90,14 @@ int set_io_addr_dec(struct mbus_win_map *win_map, struct dec_win_config *dec_win
 		ctrl |= win->enabled << MVEBU_DEC_WIN_CTRL_EN_OFF;
 		writel(ctrl, MVEBU_DEC_WIN_CTRL_REG(dec_win->dec_win_base, id, dec_win->win_offset));
 
-		debug("set_io_addr_dec %d ctrl(0x%x) base(0x%x) remap(%x)\n",
+		debug("set_io_addr_dec %d result: ctrl(0x%x) base(0x%x)",
 		      id, readl(MVEBU_DEC_WIN_CTRL_REG(dec_win->dec_win_base, id, dec_win->win_offset)),
-		      readl(MVEBU_DEC_WIN_BASE_REG(dec_win->dec_win_base, id, dec_win->win_offset)),
-		      readl(MVEBU_DEC_WIN_REMAP_REG(dec_win->dec_win_base, id, dec_win->win_offset)));
+		      readl(MVEBU_DEC_WIN_BASE_REG(dec_win->dec_win_base, id, dec_win->win_offset)));
+		if (id < dec_win->max_remap)
+			debug(" remap(%x)\n",
+			      readl(MVEBU_DEC_WIN_REMAP_REG(dec_win->dec_win_base, id, dec_win->win_offset)));
+		else
+			debug("\n");
 	}
 	return 0;
 }

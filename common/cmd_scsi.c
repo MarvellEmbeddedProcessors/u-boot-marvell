@@ -69,7 +69,6 @@ static ulong scsi_read(int device, lbaint_t blknr, lbaint_t blkcnt,
 static ulong scsi_write(int device, lbaint_t blknr,
 			lbaint_t blkcnt, const void *buffer);
 
-
 /*********************************************************************************
  * (re)-scan the scsi bus and reports scsi device info
  * to the user if mode = 1
@@ -179,22 +178,15 @@ int scsi_get_disk_count(void)
 	return scsi_max_devs;
 }
 
-#if defined(CONFIG_PCI) && (!defined(CONFIG_SCSI_AHCI_PLAT))
-/* This routine applies for SATA over PCI only, since it scans SATA device
-  * with routine pci_find_device, and use scsi_device_list as input which
-  * has PCI device ID in it.
-  * So when SATA is over SATA controller, another scsi_init routine is needed.
-  * which will be invoked by routine board_init_r.
-  * But when a SoC has both SATA over controller and PCI (for other device),
-  * there will be two routines scsi_init compiled, and that is a link error.
-  *
-  * That is the reason of not compiled this routine when SATA is on controller but
-  * not over PCI.
-*/
+#ifdef CONFIG_PCI
 void scsi_init(void)
 {
 	int busdevfunc;
 	int i;
+
+#ifdef CONFIG_SCSI_AHCI_PLAT
+	board_ahci_init();
+#endif
 	/*
 	 * Find a device from the list, this driver will support a single
 	 * controller.

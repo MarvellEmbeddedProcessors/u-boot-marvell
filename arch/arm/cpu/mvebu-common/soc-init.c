@@ -43,7 +43,7 @@
 #endif
 
 #ifdef CONFIG_SCSI_AHCI_PLAT
-void scsi_init(void)
+void board_ahci_init(void)
 {
 	ahci_init();
 	/* use mode 1 for scsi_scan, so scsi device info will

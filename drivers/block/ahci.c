@@ -985,6 +985,11 @@ err_out:
 
 void __weak scsi_init(void)
 {
+	/* if PCI is not defined, and CONFIG_SCSI_AHCI_PLAT is,
+	  * which means that there is no SATA over PCI, but only
+	  * SATA over platform controller.
+	*/
+	board_ahci_init();
 }
 
 #ifdef CONFIG_OF_CONTROL

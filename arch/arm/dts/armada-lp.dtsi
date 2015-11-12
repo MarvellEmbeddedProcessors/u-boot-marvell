@@ -107,6 +107,16 @@
 					status = "disabled";
 				};
 			};
+			sata: sata@e0000 {
+				compatible = "marvell,mvebu-sata";
+				reg = <0xe0000 0x200>;
+				status = "disabled";
+			};
+			mmc0: mmc@D8000 {
+				compatible = "marvell,xenon-sdhci";
+				reg = <0xD8000 0x300>;
+				status = "disabled";
+			};
 		};
 	};
 };

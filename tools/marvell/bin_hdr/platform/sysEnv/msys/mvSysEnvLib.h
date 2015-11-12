@@ -253,6 +253,10 @@ typedef enum _mvSuspendWakeupStatus {
 #define PLL_CORE_PARAM_IADJ_OFFSET	29
 #define PLL_CORE_PARAM_IADJ_MASK	(0x7<<PLL_CORE_PARAM_IADJ_OFFSET)
 
+#define DEVICE_GENERAL_CONTROL_17	0xF8294
+#define DEVICE_GENERAL_CONTROL_20	0xF82A0
+#define DEVICE_GENERAL_CONTROL_21	0xF82A4
+
 /* BobK Core Clock setting index*/
 typedef enum _mvBypassCoreClcokFreq {
 	MV_MSYS_CORECLOCK_365M = 0,

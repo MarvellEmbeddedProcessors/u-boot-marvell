@@ -107,6 +107,28 @@ REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE] =
 	REF_CLOCK_UNSUPPORTED   /* DEFAULT_SERDES */
 };
 
+#ifdef CONFIG_INTERNAL_CPLL_FOR_SERDES_REFCLK
+
+enum  mv_hws_cpll_number {
+	CPLL0,
+	CPLL1,
+	CPLL2,
+	MV_HWS_MAX_CPLL_NUMBER
+};
+
+/* CPLL Data Arrey ref clock map */
+#define MAX_CPLL_DATA_INDEX 36
+MV_U32 cpllDataArray156to156[MAX_CPLL_DATA_INDEX] = {
+	0x7010005,  0x0,        0x7080000,  0x0,        0x7080000,  0x0,        0x711080A,
+	0x0,        0x711080A,  0x0,        0x70E1B18,  0x0,        0x726E641,  0x0,
+	0x7200420,  0x0,        0x71f3800,  0x0,        0x719449D,  0x0,        0x7275600,
+	0x0,        0x709C010,  0x0,        0x70D4400,  0x0,        0x70A8000,  0x0,
+	0x70B0000,  0x0,        0x709C030,  0x0,        0x709C010,  0x0,        0x7080010,
+	0x0
+};
+
+#endif
+
 /*****************/
 /*    USB2       */
 /*****************/
@@ -590,6 +612,90 @@ MV_U8 mvHwsSerdesRevGet(MV_VOID)
     return MV_SERDES_AVAGO_REV_0;
 }
 
+#ifdef CONFIG_INTERNAL_CPLL_FOR_SERDES_REFCLK
+/*******************************************************************************
+* mvHwsCpllControl
+* DESCRIPTION:
+*       Configure the requested CPLL (0, 2) or bypass on specific CPLL
+* INPUTS:
+*       cpllNum  - cpll number
+* OUTPUTS:
+*       None.
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*******************************************************************************/
+MV_STATUS mvHwsCpllControl(enum  mv_hws_cpll_number cpllNum)
+{
+	MV_U32	i, mask, mask1, mask2;
+	MV_U32	*data_ptr;
+	MV_U32	data;
+	mask2 = 0xFFFFFFFF;
+
+	switch (cpllNum) {
+	case CPLL0: /* clum_gop_cpll1_bypass */
+		mask  = 0xFCFFFFFF;
+		mask1 = 0x400;
+		break;
+	case CPLL2:/* CPLL2 Setting with register writing */
+		mask  = 0xF9FFFFFF;
+		mask1 = 0x100;
+		break;
+	default:
+	return MV_BAD_PARAM;
+	}
+	/* clear bit #19 in DEVICE_GENERAL_CONTROL_17*/
+	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, DEVICE_GENERAL_CONTROL_17, &data, mask2));
+	CHECK_STATUS(mvGenUnitRegisterSet(SERVER_REG_UNIT, 0, DEVICE_GENERAL_CONTROL_17, (data & ~(1 << 19)), mask2));
+
+	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, DEVICE_GENERAL_CONTROL_20, &data, mask2));
+	CHECK_STATUS(mvGenUnitRegisterSet(SERVER_REG_UNIT, 0, DEVICE_GENERAL_CONTROL_20, data|mask1, mask2));
+
+	data_ptr = &cpllDataArray156to156[0];
+	for (i = 0; i < MAX_CPLL_DATA_INDEX; i++) {
+		CHECK_STATUS(mvGenUnitRegisterSet(SERVER_REG_UNIT, 0, DEVICE_GENERAL_CONTROL_21, *(data_ptr+i), mask));
+		mvOsDelay(10);
+	}
+
+	return MV_OK;
+}
+
+static MV_STATUS CPLL_Initialization(MV_VOID)
+{
+	MV_U32 serdesNum;
+	MV_U32 data;
+
+	mvPrintf("CPLL clocking setting Initialization\n");
+
+	if (mvBoardIdGet() == BOBK_CAELUM_DB_ID) {
+		/* Configure serdes 0 to 11 with second clock for Caelum board */
+		CHECK_STATUS(mvHwsCpllControl(CPLL0));
+		for (serdesNum = 0; serdesNum < 12; serdesNum++) {
+			CHECK_STATUS(mvGenUnitRegisterSet(SERDES_UNIT, serdesNum,
+					SERDES_EXTERNAL_CONFIGURATION_0, (1 << 8), (1 << 8)));
+
+			/*clear bit #11 in DEVICE_GENERAL_CONTROL_20 */
+			CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0,
+					DEVICE_GENERAL_CONTROL_20, &data, 0xFFFFFFFF));
+			CHECK_STATUS(mvGenUnitRegisterSet(SERVER_REG_UNIT, 0,
+					DEVICE_GENERAL_CONTROL_20, (data & ~(1 << 11)), 0xFFFFFFFF));
+		}
+	}
+
+	if ((mvBoardIdGet() == BOBK_CAELUM_DB_ID) || (mvBoardIdGet() == BOBK_CETUS_DB_ID)) {
+		/* Configure serdes 20 (OOB) serdes 24 to 35 with second clock for Caelum and Cetus board */
+		CHECK_STATUS(mvHwsCpllControl(CPLL2));
+		CHECK_STATUS(mvGenUnitRegisterSet(SERDES_UNIT, 20,
+				SERDES_EXTERNAL_CONFIGURATION_0, (1 << 8), (1 << 8)));
+		for (serdesNum = 24; serdesNum < 36; serdesNum++) {
+			CHECK_STATUS(mvGenUnitRegisterSet(SERDES_UNIT, serdesNum,
+					SERDES_EXTERNAL_CONFIGURATION_0, (1 << 8), (1 << 8)));
+		}
+	}
+	return MV_OK;
+}
+#endif
+
 /* BOBK: init silicon related configurations *********************************/
 MV_STATUS mvSiliconInit(MV_VOID)
 {
@@ -616,7 +722,10 @@ MV_STATUS mvSiliconInit(MV_VOID)
 	}
 
 	mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
-
+	/** CPLL setting **/
+#ifdef CONFIG_INTERNAL_CPLL_FOR_SERDES_REFCLK
+	CPLL_Initialization();
+#endif
 	return MV_OK;
 }
 
@@ -655,7 +764,13 @@ MV_STATUS mvHwsAvagoSerdesTxIfSelect(MV_U32 serdesNum)
 /*BOBK: Set Ref Clock**********************************************/
 MV_STATUS mvHwsRefClockGet (MV_U32 serdesNum ,MV_U8 *refClockSource)
 {
-	*refClockSource = PRIMARY; /* in BOBK all serdes has to use the same reference clock = PRIMARY */
+#ifdef CONFIG_INTERNAL_CPLL_FOR_SERDES_REFCLK
+	/* This is the source clock for OOB serdes. When using internal CPLL,
+	    the secondary clock should be selected. */
+	*refClockSource = SECONDARY;
+#else
+	*refClockSource = PRIMARY;
+#endif
 
 	return MV_OK;
 }

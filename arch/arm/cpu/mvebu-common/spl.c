@@ -96,7 +96,7 @@ void board_init_f(ulong silent)
 /* when DDR over PCIE is enabled, add delay before and after the comphy_init
    to verify that the PCIE card init done, before setting the comphy to avoid
    collisions. and no ddr init require */
-#if CONFIG_MVEBU_COMPHY_SUPPORT
+#ifdef CONFIG_MVEBU_COMPHY_SUPPORT
 	if (comphy_init(gd->fdt_blob))
 		error("COMPHY initialization failed\n");
 #endif

@@ -31,6 +31,19 @@
 #include <pci.h>
 #include <asm/arch-mvebu/fdt.h>
 
+/* #define DEBUG */
+/* #define DEBUG_CFG_CYCLE */
+/* During PCIe scan, PCIe drive will check the target BDF(bus, device, function) for many times,
+ * here use a local debug flag to control the print in PIO read and write routines, to make sure
+ * there will not be too much prints when global DEBUG is enabled.
+ * By default this flag(DEBUG_CFG_CYCLE) is disabled.
+ */
+#ifdef DEBUG_CFG_CYCLE
+#define debug_cfg(fmt, args...) printf(fmt, ##args)
+#else
+#define debug_cfg(fmt, args...)
+#endif
+
 DECLARE_GLOBAL_DATA_PTR;
 
 struct pcie_win {
@@ -167,8 +180,8 @@ int advk_pcie_pio_read_config(struct pci_controller *hose, pci_dev_t bdf, int wh
 	int ret = 0;
 
 	if (!advk_pcie_addr_valid(bdf, hose->first_busno)) {
-		debug("CFG read: address out of range (%ld,%ld,%ld)\n",
-		      PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
+		debug_cfg("CFG read: address out of range (%ld,%ld,%ld)\n",
+			  PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
 		*val = 0xFFFFFFFF;
 		return 1;
 	}
@@ -239,8 +252,8 @@ int advk_pcie_pio_write_config(struct pci_controller *hose, pci_dev_t bdf, int w
 	int ret = 0;
 
 	if (!advk_pcie_addr_valid(bdf, hose->first_busno)) {
-		debug("CFG write: address out of range (%ld,%ld,%ld)\n",
-		      PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
+		debug_cfg("CFG write: address out of range (%ld,%ld,%ld)\n",
+			  PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
 		return 1;
 	}
 

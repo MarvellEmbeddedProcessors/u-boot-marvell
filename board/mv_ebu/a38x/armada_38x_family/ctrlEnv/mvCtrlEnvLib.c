@@ -2369,8 +2369,8 @@ MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 	MV_32 reg = 0;
 
 	/* Initiates TSEN hardware reset once */
-	if ((MV_REG_READ(TSEN_CONF_REG) & TSEN_CONF_RST_MASK) == 0)
-		MV_REG_BIT_SET(TSEN_CONF_REG, TSEN_CONF_RST_MASK);
+	if ((MV_REG_READ(TSEN_CONTROL_MSB_REG) & TSEN_CONTROL_MSB_RST_MASK) == 0)
+		MV_REG_BIT_SET(TSEN_CONTROL_MSB_REG, TSEN_CONTROL_MSB_RST_MASK);
 	mvOsDelay(10);
 
 	/* Check if the readout field is valid */

@@ -940,11 +940,11 @@ GT_BOOL GetWL(GT_32 WL[12*4]);
 
 GT_STATUS    ddr3TipResetFifoPtr(GT_U32 devNum);
 
-GT_BOOL readPupValue(GT_32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAddr, GT_U32 mask);
+GT_BOOL mvHwsDdr3TipReadPupValue(GT_U32 devNum, GT_32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAddr, GT_U32 mask);
 
-GT_BOOL readAdllValue(GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAddr, GT_U32 mask);
+GT_BOOL mvHwsDdr3TipReadAdllValue(GT_U32 devNum,GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAddr, GT_U32 mask);
 
-GT_BOOL writeAdllValue(GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAddr);
+GT_BOOL mvHwsDdr3TipWriteAdllValue(GT_U32 devNum,GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAddr);
 
 
 /******************************************************************************

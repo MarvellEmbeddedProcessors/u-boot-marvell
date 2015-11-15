@@ -128,7 +128,7 @@ GT_STATUS    ddr3TipPbs
     }
 
     regAddr = (pbsMode == PBS_RX_MODE ) ? (READ_CENTRALIZATION_PHY_REG + (effective_cs * CS_REGISTER_ADDR_OFFSET)) : (WRITE_CENTRALIZATION_PHY_REG + (effective_cs * CS_REGISTER_ADDR_OFFSET));
-    readAdllValue(nominalAdll, regAddr , MASK_ALL_BITS );
+    mvHwsDdr3TipReadAdllValue(devNum,nominalAdll, regAddr, MASK_ALL_BITS );
     /* stage 1 shift ADLL */
     /*ddr3TipIpTrainingPerbitMultiCast( SearchDirection, Direction, InitValue, NumberOfIterations, pbsPattern,  SearchEDGE_ , MV_HWS_ControlElement_ADLL);*/
 
@@ -551,7 +551,7 @@ GT_STATUS    ddr3TipPbs
     }
     /*Write back to the phy the default values */
     regAddr = (pbsMode == PBS_RX_MODE) ? (READ_CENTRALIZATION_PHY_REG + effective_cs * 4) : (WRITE_CENTRALIZATION_PHY_REG + effective_cs * 4);
-	writeAdllValue(nominalAdll, regAddr);
+	mvHwsDdr3TipWriteAdllValue(devNum,nominalAdll, regAddr);
 
 
    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)

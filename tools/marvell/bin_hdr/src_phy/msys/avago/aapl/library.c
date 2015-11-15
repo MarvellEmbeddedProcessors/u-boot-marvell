@@ -229,6 +229,10 @@ void ms_sleep(
         req = rem;
     }
 
+#elif defined(HWS_ENV_DEFINED)
+
+    hwsDelayMs(ms_delay);
+
 #else
 
 	clock_t end = clock() + (ms_delay * CLOCKS_PER_SEC / 1000);
@@ -427,9 +431,13 @@ char *aapl_hex_2_bin(
 /**         terminating null byte, or 0 if the results do not fit. */
 size_t aapl_local_strftime(char *buf, size_t size_of_buf, const char *format)
 {
+#ifdef HWS_ENV_DEFINED
+    return hwsStrfTime(buf, size_of_buf, format, hwsTime());
+#else
     time_t t = time(0);
     struct tm *tm_info = localtime(&t);
     return strftime(buf, size_of_buf, format, tm_info);
+#endif
 }
 #ifndef MV_HWS_REDUCED_BUILD
 

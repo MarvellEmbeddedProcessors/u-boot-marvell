@@ -95,7 +95,7 @@
 /*      value to 0. Do not comment or remove a define as that may */
 /*      cause compile failures. */
 
-#ifndef MV_HWS_BIN_HEADER
+#if !defined(MV_HWS_BIN_HEADER) && !defined(CPSS_BLOB)
 #define AAPL_ALLOW_AACS                1  /**< Set to 0 to remove AVAGO_AACS_SBUS, AVAGO_AACS_MDIO, and AVAGO_AACS_I2C communication methods. */
 #else
 #define AAPL_ALLOW_AACS                0  /**< Set to 0 to remove AVAGO_AACS_SBUS, AVAGO_AACS_MDIO, and AVAGO_AACS_I2C communication methods. */
@@ -110,7 +110,7 @@
 #define AAPL_ALLOW_USER_SUPPLIED_SBUS  1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_SBUS_DIRECT communication method. */
 #endif /* !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER */
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined(MV_HWS_REDUCED_BUILD_EXT_CM3) && !defined(CPSS_BLOB)
 /* Set value to 0 to disable corresponding feature support: */
 #define AAPL_ENABLE_AACS_SERVER        1  /**< Enable the AACS server. */
 #define AAPL_ENABLE_FILE_IO            1  /**< Enable use of file IO and the FILE type. */
@@ -274,6 +274,7 @@ typedef enum
 /*   NOTE: If a USER_SUPPLIED_LOGGING_FUNCTION has been provided, then data will be */
 /*   sent there instead of being placed into AAPL logs. */
 
+#ifndef CPSS_BLOB
 /** Sets the stdio stream to write debug and info messages. */
 /** @see aapl_log_printf(). */
 /** */
@@ -302,6 +303,7 @@ typedef enum
 /** @see AAPL_STREAM */
 /** */
 #define AAPL_STREAM_ERR stderr
+#endif
 
 /** @brief Default value for Aapl_t::enable_debug_logging. */
 /** This value also can be changed at run time. */
@@ -417,5 +419,9 @@ typedef enum
 /* Clear warning */
 extern int snprintf(char *str, size_t size, const char *format, ...);
 extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
+
+#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+#include "../marvell/marvell_API_mapping.h"
+#endif
 
 #endif

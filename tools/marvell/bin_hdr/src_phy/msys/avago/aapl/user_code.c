@@ -26,6 +26,10 @@
 /** @brief User-supplied functions. */
 
 #include "mv_hws_avago_if.h"
+#ifdef CPSS_BLOB
+/* disable */
+#define ASIC_SIMULATION
+#endif
 #ifndef ASIC_SIMULATION
 #include <sys/ioctl.h>
 #endif

@@ -71,12 +71,14 @@ Aapl_t* aaplSerdesDb[HWS_MAX_DEVICE_NUM] = {0};
 Aapl_t  aaplSerdesDbDef[HWS_MAX_DEVICE_NUM];
 EXT void  ms_sleep(uint msec);
 
+#if AAPL_ENABLE_AACS_SERVER
 #ifndef MV_HWS_BIN_HEADER
 static unsigned int aacsServerEnable = 0;
 
 /* Avago server process Id */
 static GT_U32 avagoAACS_ServerTid;
 #endif /*MV_HWS_BIN_HEADER*/
+#endif /* AAPL_ENABLE_AACS_SERVER */
 
 #ifdef MARVELL_AVAGO_DB_BOARD
 unsigned int mvAvagoDb = 1;
@@ -545,6 +547,7 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
 
     AVAGO_DBG(("Done\n"));
 
+#if AAPL_ENABLE_AACS_SERVER
 #ifndef MV_HWS_BIN_HEADER
     if (avagoConnection != AVAGO_ETH_CONNECTION)
     {
@@ -554,6 +557,7 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
         }
     }
 #endif /* MV_HWS_BIN_HEADER */
+#endif /* AAPL_ENABLE_AACS_SERVER */
 
     return GT_OK;
 }

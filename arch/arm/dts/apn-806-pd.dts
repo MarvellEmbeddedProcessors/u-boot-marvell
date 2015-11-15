@@ -18,13 +18,13 @@
 
 /dts-v1/;
 
-#include "apn-806.dtsi"
+#include "apn-806-z1.dtsi"
 
 / {
 	model = "Marvell APN-806 Palladuim";
 	compatible = "marvell,apn-806-pd", "marvell,apn-806";
 
-	soc {
+	ap-806 {
 
 		internal-regs {
 

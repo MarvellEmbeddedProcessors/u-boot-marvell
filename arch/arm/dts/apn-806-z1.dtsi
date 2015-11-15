@@ -19,6 +19,9 @@
 #include <dt-bindings/comphy/comphy_data.h>
 / {
 
+	#address-cells = <2>;
+	#size-cells = <2>;
+
 	cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -29,7 +32,7 @@
 		};
 	};
 
-	soc {
+	ap-806 {
 		compatible = "marvell,mvebu-apn-806";
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -143,38 +146,6 @@
 				mem = <0xfe000000 0x1f00000>;
 				status = "okay";
 			};
-		};
-	};
-	/* This should go only into devel boards */
-	mpp-buses {
-		mpp-bus0 {
-			compatible = "marvell,mvebu-mpp-bus";
-			bus-name = "spi0";
-			bank-name = "apn-806";
-			pin-count = <5>;
-			pins = <4 1  5 1  6 1  7 1  8 1>;
-		};
-		mpp-bus1 {
-			compatible = "marvell,mvebu-mpp-bus";
-			bus-name = "i2c";
-			bank-name = "apn-806";
-			pin-count = <2>;
-			pins = <0 1  1 1>;
-		};
-		mpp-bus2 {
-			/* the RX pin is directly connected to uart1 */
-			compatible = "marvell,mvebu-mpp-bus";
-			bus-name = "uart1";
-			bank-name = "apn-806";
-			pin-count = <1>;
-			pins = <13 1>;
-		};
-		mpp-bus3 {
-			compatible = "marvell,mvebu-mpp-bus";
-			bus-name = "uart0";
-			bank-name = "apn-806";
-			pin-count = <2>;
-			pins = <2 1  3 1>;
 		};
 	};
 };

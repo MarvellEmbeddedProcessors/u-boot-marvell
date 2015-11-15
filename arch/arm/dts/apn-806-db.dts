@@ -20,3 +20,12 @@
 
 #include "apn-806-db.dtsi"
 
+/ {
+	model = "DB-88FA806-DDR4-MODULAR";
+	compatible = "marvell,apn-806-db", "marvell,apn-806";
+
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x10000000 0 0>; /* 256 MB */
+	};
+};

@@ -798,6 +798,41 @@ unsigned int mvHwsAvagoCalCodeShift (int devNum, int portGroup, int serdesNum, B
 }
 
 /*******************************************************************************
+* mvHwsAvagoSerdesShiftCalc
+*
+* DESCRIPTION:
+*       Calculate the Shift value according to the Temperature
+*
+* INPUTS:
+*       devNum    - device number
+*       portGroup - port group (core) number
+*
+* OUTPUTS:
+*       shift - Shift value for calibration code in Rx and Tx
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+unsigned int mvHwsAvagoSerdesShiftCalc
+(
+    unsigned char   devNum,
+    unsigned int    portGroup,
+    int             *shift
+)
+{
+    int temperature;
+
+    /* get the Temperature from Serdes #20 */
+    CHECK_STATUS(mvHwsAvagoSerdesTemperatureGet(devNum, portGroup, 20, &temperature));
+
+    *shift = (-7*temperature + 460)/120;
+
+    return GT_OK;
+}
+
+/*******************************************************************************
 * mvHwsAvagoSerdesVcoConfig
 *
 * DESCRIPTION:
@@ -824,20 +859,16 @@ unsigned int mvHwsAvagoSerdesVcoConfig
     unsigned int    serdesNum
 )
 {
-    int temperature, shift=0;
+    int shift=0;
     unsigned int res;
 
-    /* get the Temperature from Serdes #20 */
-    CHECK_STATUS(mvHwsAvagoSerdesTemperatureGet(devNum, portGroup, 20, &temperature));
-
-    if (temperature < -20)
-        shift = 2;
-    else if ((temperature >= -20) && (temperature <= 0))
-        shift = 1;
-    else if ((temperature > 30) && (temperature <= 75))
-        shift = -1;
-    else if ((temperature > 75) && (temperature <= 125))
-        shift = -2;
+    /* Calculate the Shift value according to the Temperature */
+    res = mvHwsAvagoSerdesShiftCalc(devNum, portGroup, &shift);
+    if (res != GT_OK)
+    {
+        osPrintf("mvHwsAvagoSerdesShiftCalc failed (%d)\n", res);
+        return GT_FAIL;
+    }
 
     /* Shift the calibration code for Tx */
     res = mvHwsAvagoCalCodeShift(devNum, portGroup, serdesNum, TRUE, shift);

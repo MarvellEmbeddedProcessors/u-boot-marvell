@@ -714,12 +714,11 @@ GT_STATUS ddr3TipRegisterXsbInfo
 /*****************************************************************************
 Read ADLL Value
 ******************************************************************************/
-GT_BOOL readAdllValue(GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAddr, GT_U32 mask)
+GT_BOOL mvHwsDdr3TipReadAdllValue(GT_U32 devNum, GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAddr, GT_U32 mask)
 {
     GT_U32  dataValue;
     GT_U32 interfaceId = 0, busId = 0;
-    GT_U32 devNum = 0;
-	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+    GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* multi CS support - regAddr is calucalated in calling function with CS offset */
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
@@ -739,10 +738,10 @@ GT_BOOL readAdllValue(GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAd
 /*****************************************************************************
 Write ADLL Value
 ******************************************************************************/
-GT_BOOL writeAdllValue(GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAddr)
+GT_BOOL mvHwsDdr3TipWriteAdllValue(GT_U32 devNum, GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAddr)
 {
     GT_U32 interfaceId = 0, busId = 0;
-    GT_U32 devNum = 0, data;
+    GT_U32 data;
 	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* multi CS support - regAddr is calucalated in calling function with CS offset */
@@ -765,11 +764,10 @@ GT_BOOL writeAdllValue(GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regA
 /*****************************************************************************
 Read Phase Value
 ******************************************************************************/
-GT_BOOL readPhaseValue(GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAddr, GT_U32 mask)
+GT_BOOL readPhaseValue(GT_U32 devNum,GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAddr, GT_U32 mask)
 {
     GT_U32  dataValue;
     GT_U32 interfaceId = 0, busId = 0;
-    GT_U32 devNum = 0;
 	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* multi CS support - regAddr is calucalated in calling function with CS offset */
@@ -790,10 +788,10 @@ GT_BOOL readPhaseValue(GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regA
 /*****************************************************************************
 Write Leveling Value
 ******************************************************************************/
-GT_BOOL writeLevelingValue(GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], GT_U32 PupPhValues[MAX_INTERFACE_NUM*MAX_BUS_NUM],int regAddr)
+GT_BOOL writeLevelingValue(GT_U32 devNum,GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], GT_U32 PupPhValues[MAX_INTERFACE_NUM*MAX_BUS_NUM],int regAddr)
 {
     GT_U32 interfaceId = 0, busId = 0;
-    GT_U32 devNum = 0, data;
+    GT_U32 data;
 	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* multi CS support - regAddr is calucalated in calling function with CS offset */
@@ -1468,7 +1466,7 @@ GT_BOOL ddr3TipRunSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direction, GT
 		ctrlADLL[adll] = 0;
 	}
 	/*Save DQS value(after algorithm run)*/
-	readAdllValue(ctrlADLL, (reg + (uiCs * CS_REGISTER_ADDR_OFFSET)) , MASK_ALL_BITS );
+	mvHwsDdr3TipReadAdllValue(devNum,ctrlADLL, (reg + (uiCs * CS_REGISTER_ADDR_OFFSET)) , MASK_ALL_BITS );
 
 	/*Sweep ADLL  from 0:31 on all I/F on all Pup and perform BIST on each stage.*/
 	for(pup=startPup; pup <=endPup; pup++)
@@ -1529,9 +1527,9 @@ GT_BOOL ddr3TipRunSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direction, GT
 		mvPrintf("\n");
 	}
 	/*Write back to the phy the Rx DQS value, we store in the begging. */
-	writeAdllValue(ctrlADLL, (reg +  uiCs * CS_REGISTER_ADDR_OFFSET));
+	mvHwsDdr3TipWriteAdllValue(devNum,ctrlADLL, (reg +  uiCs * CS_REGISTER_ADDR_OFFSET));
 	/* print adll results */
-	readAdllValue(ctrlADLL, (reg + uiCs * CS_REGISTER_ADDR_OFFSET), MASK_ALL_BITS);
+	mvHwsDdr3TipReadAdllValue(devNum,ctrlADLL, (reg + uiCs * CS_REGISTER_ADDR_OFFSET), MASK_ALL_BITS);
 	mvPrintf("%s,DQS,ADLL,,,",(direction==0) ? "Tx":"Rx");
 	printAdll(devNum, ctrlADLL);
     }
@@ -1588,11 +1586,11 @@ GT_BOOL ddr3TipRunLevelingSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direc
 			ctrlADLL1[adll] = 0;
 		}
 		/*Save Leveling value(after algorithm run)*/
-		readAdllValue(ctrlADLL, (reg + (uiCs * CS_REGISTER_ADDR_OFFSET)) , 0x1F );
-		readPhaseValue(ctrlLevelPhase, (reg + (uiCs * CS_REGISTER_ADDR_OFFSET)) , 0x7<<6 );
+		mvHwsDdr3TipReadAdllValue(devNum,ctrlADLL, (reg + (uiCs * CS_REGISTER_ADDR_OFFSET)) , 0x1F );
+		readPhaseValue(devNum,ctrlLevelPhase, (reg + (uiCs * CS_REGISTER_ADDR_OFFSET)) , 0x7<<6 );
 		if(direction == 0)
 		{
-			readAdllValue(ctrlADLL1, (0x1 + (uiCs * CS_REGISTER_ADDR_OFFSET)) , MASK_ALL_BITS );
+			mvHwsDdr3TipReadAdllValue(devNum,ctrlADLL1, (0x1 + (uiCs * CS_REGISTER_ADDR_OFFSET)) , MASK_ALL_BITS );
 		}
 		/*Sweep ADLL  from 0:31 on all I/F on all Pup and perform BIST on each stage.*/
 		for(pup=startPup; pup <=endPup; pup++)
@@ -1694,13 +1692,13 @@ GT_BOOL ddr3TipRunLevelingSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direc
 			mvPrintf("\n");
 		}
 		/*Write back to the phy the Rx DQS value, we store in the begging. */
-		writeLevelingValue(ctrlADLL,ctrlLevelPhase, (reg +  uiCs * CS_REGISTER_ADDR_OFFSET));
+		writeLevelingValue(devNum,ctrlADLL,ctrlLevelPhase, (reg +  uiCs * CS_REGISTER_ADDR_OFFSET));
 		if(direction == 0)
 		{
-			writeAdllValue(ctrlADLL1, (0x1 + (uiCs * CS_REGISTER_ADDR_OFFSET)));
+			mvHwsDdr3TipWriteAdllValue(devNum,ctrlADLL1, (0x1 + (uiCs * CS_REGISTER_ADDR_OFFSET)));
 		}
 		/* print adll results */
-		readAdllValue(ctrlADLL, (reg + uiCs * CS_REGISTER_ADDR_OFFSET), MASK_ALL_BITS);
+		mvHwsDdr3TipReadAdllValue(devNum,ctrlADLL, (reg + uiCs * CS_REGISTER_ADDR_OFFSET), MASK_ALL_BITS);
 		mvPrintf("%s,DQS,Leveling,,,",(direction==0) ? "Tx":"Rx");
 		printAdll(devNum, ctrlADLL);
 		printPh(devNum, ctrlLevelPhase);

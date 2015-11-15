@@ -656,8 +656,8 @@ GT_STATUS    mvHwsDdr3TipInitController
 	            DEBUG_TRAINING_IP(DEBUG_LEVEL_TRACE, ("clValue 0x%x cwlVal 0x%x \n", clValue, cwlVal));
 
 	            dataValue = ((clMaskTable[clValue] & 0x1) << 2) | ((clMaskTable[clValue] & 0xE)  <<  3);
-	            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, MR0_REG, dataValue,(0x7 << 4) | (1 << 2)));
-				CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, MR0_REG, twrMaskTable[tWR + 1],0xE00));
+	            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, MR0_REG, dataValue, (0x7 << 4) | (1 << 2)));
+				CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, MR0_REG, (twrMaskTable[tWR + 1] << 9), (0x7 << 9)));
 
 				/* MR1: Set RTT and DIC Design GL values configured by user */
 				CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, MR1_REG, gDic | gRttNom, 0x266));

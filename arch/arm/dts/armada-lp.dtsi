@@ -23,7 +23,7 @@
 			serial: serial@12000 {
 				compatible = "marvell,armadalp-uart";
 				reg = <0x12000 0x20>;
-				clock_frequency = <40000000>;
+				clock_frequency = <25804800>;
 				baudrate = <115200>;
 				status = "disabled";
 			};

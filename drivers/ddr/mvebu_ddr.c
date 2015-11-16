@@ -69,6 +69,10 @@ void mvebu_dram_init(const void *blob)
 		error("missing DDR PHY base address in DDR PHY node\n");
 		return;
 	}
+
+	/* Use default DRAM params, till we get the values from DT. */
+	config->cs_count = 0;
+
 #ifdef CONFIG_MVEBU_STATIC_SUPPORT
 	static_dram_init(config);
 #elif CONFIG_MVEBU_DYNAMIC_SUPPORT

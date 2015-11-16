@@ -21,6 +21,11 @@
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/ddr.h>
 
+#define MCK6_USER_COMMAND_0_REG	(0x20)
+#define SDRAM_INIT_REQ_MASK	(0x1)
+#define CMD_CH_ENABLE(c)	(1 << (28 + c))
+#define CMD_CS_MASK(m)		((m) << 24)
+
 enum mvebu_mck_freq_support {
 	FREQ_650_HZ = 0,
 	MAX_HZ_SUPPORTED,
@@ -1007,7 +1012,6 @@ struct mvebu_mckinley_config mckinley_phy_config[] = {
 	{ 0x820, { 0x20000000} },
 	{ 0x820, { 0x40000000} },
 	{ 0x820, { 0x80000000} },
-	{ 0x020, { 0x1f000001} },
 	{ 0x850, { 0x00000603} },
 	{ 0x854, { 0x00000603} },
 	{ 0x858, { 0x00000703} },
@@ -1033,7 +1037,6 @@ struct mvebu_mckinley_config mckinley_phy_config[] = {
 	{ 0x8d0, { 0x00000019} },
 	{ 0x8e0, { 0x00012000} },
 	{ 0x8d0, { 0x00000019} },
-	{ 0x020, { 0x1f000001} },
 	{-1, {-1} },
 };
 
@@ -1064,7 +1067,7 @@ void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config)
 {
 	void __iomem *base_addr = dram_config->phy_base;
 	struct mvebu_mckinley_config *phy_config = &mckinley_phy_config[0];
-	u32 freq_indx;
+	u32 freq_indx, reg, cs_mask;
 
 	debug_enter();
 	/* for now set the frequency to 650 (index 0) */
@@ -1073,5 +1076,15 @@ void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config)
 		debug("0x%p - 0x08%x\n", base_addr + phy_config->reg_offset, phy_config->values[freq_indx]);
 		writel(phy_config->values[freq_indx], base_addr + phy_config->reg_offset);
 	}
+
+	/* Trigger DDR init for Channel 0, all Chip-Selects */
+	reg = SDRAM_INIT_REQ_MASK;
+	reg |= CMD_CH_ENABLE(0);
+	cs_mask = 1;
+	if (dram_config->cs_count)
+		cs_mask = (1 << dram_config->cs_count) - 1;
+	reg |= CMD_CS_MASK(cs_mask);
+	writel(reg, base_addr + MCK6_USER_COMMAND_0_REG);
+
 	debug_exit();
 }

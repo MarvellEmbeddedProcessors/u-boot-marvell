@@ -2960,6 +2960,9 @@ MV_U8 mvBoardCompatibleNameGet(char *pNameBuff)
 		} else if (boardId == BOBK_CAELUM_DB_ID) {
 			len += sprintf(pNameBuff + len, "marvell,msys-bobk-caelum") + 1;
 			len += sprintf(pNameBuff + len, "marvell,msys-bobk-caelum-db") + 1;
+		} else if (boardId == BOBK_LEWIS_RD_ID) {
+			len += sprintf(pNameBuff + len, "marvell,msys-bobk-lewis") + 1;
+			len += sprintf(pNameBuff + len, "marvell,msys-bobk-lewis-rd") + 1;
 		}
 	}
 	len += sprintf(pNameBuff + len, "marvell,armada-370-xp") + 1;

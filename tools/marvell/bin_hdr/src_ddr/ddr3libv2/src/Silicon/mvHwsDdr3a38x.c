@@ -313,8 +313,14 @@ GT_U32 ddr3CtrlGetJuncTemp(GT_U8 devNum)
 	GT_32 reg = 0;
 
 	/* Initiates TSEN hardware reset once */
-	if ((MV_REG_READ(TSEN_CONTROL_MSB_REG) & TSEN_CONTROL_MSB_RST_MASK) == 0)
+	if ((MV_REG_READ(TSEN_CONTROL_MSB_REG) & TSEN_CONTROL_MSB_RST_MASK) == 0) {
 		MV_REG_BIT_SET(TSEN_CONTROL_MSB_REG, TSEN_CONTROL_MSB_RST_MASK);
+		/* set TSEN TC Trim value */
+		reg = MV_REG_READ(TSEN_CONTROL_LSB_REG);
+		reg &= ~TSEN_CONTROL_LSB_TC_TRIM_MASK;
+		reg |= 0x3 << TSEN_CONTROL_LSB_TC_TRIM_OFFSET;
+		MV_REG_WRITE(TSEN_CONTROL_LSB_REG, reg);
+	}
 	mvOsDelay(10);
 
 	/* Check if the readout field is valid */

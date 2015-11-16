@@ -172,6 +172,8 @@ typedef enum {
 
 /* Termal Sensor Registers */
 #define TSEN_CONTROL_LSB_REG					0xE4070
+#define TSEN_CONTROL_LSB_TC_TRIM_OFFSET				0
+#define TSEN_CONTROL_LSB_TC_TRIM_MASK				(0x7 << TSEN_CONTROL_LSB_TC_TRIM_OFFSET)
 
 #define TSEN_CONTROL_MSB_REG					0xE4074
 #define TSEN_CONTROL_MSB_RST_OFFSET				8

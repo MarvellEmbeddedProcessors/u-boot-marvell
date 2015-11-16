@@ -72,6 +72,8 @@ void mvebu_dram_init(const void *blob)
 
 	/* Use default DRAM params, till we get the values from DT. */
 	config->cs_count = 0;
+	config->bus_width = 0;
+	config->size_mb = 0;
 
 #ifdef CONFIG_MVEBU_STATIC_SUPPORT
 	static_dram_init(config);

@@ -19,11 +19,21 @@
 #ifndef _MVEBU_DDR_H_
 #define _MVEBU_DDR_H_
 
+/*
+** ecc_enabled - when true, DRAM ecc is enabled.
+** cs_count - Number of DRAM chip-selects.
+** bus_width - 16, 32 or 64 bit DDR.
+** size_mb - when != 0, override DDR size according to this value (in MB)
+*/
 struct mvebu_dram_config {
 	void __iomem *mac_base;
 	void __iomem *phy_base;
-	u32 ecc_enabled;
+
+	/* DRAM configuration options. */
+	bool ecc_enabled;
 	u32 cs_count;
+	u32 bus_width;
+	u32 size_mb;
 };
 
 void mvebu_dram_init(const void *blob);

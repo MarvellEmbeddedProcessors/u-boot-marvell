@@ -18,6 +18,7 @@
 
 #include <common.h>
 #include <asm/io.h>
+#include <asm/utils.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/ddr.h>
 
@@ -25,6 +26,14 @@
 #define SDRAM_INIT_REQ_MASK	(0x1)
 #define CMD_CH_ENABLE(c)	(1 << (28 + c))
 #define CMD_CS_MASK(m)		((m) << 24)
+
+#define MCK6_CTRL_0_REG		(0x44)
+#define CTRL_DATA_WIDTH_MASK	(0xF << 8)
+#define CTRL_DATA_WIDTH(w)	(((w) / 8) << 8)
+
+#define MCK6_MMAP0_LOW_CH0_REG	(0x200)
+#define MMAP_AREA_LEN_MASK	(0x1F << 16)
+#define MMAP_AREA_LEN(x)	((x) << 16)
 
 enum mvebu_mck_freq_support {
 	FREQ_650_HZ = 0,
@@ -902,10 +911,8 @@ struct mvebu_mckinley_config mckinley_phy_config[] = {
 	{ 0x8c0, { 0xc1000000} },
 	{ 0x98 , { 0x0040004e} },
 	{ 0x108, { 0xffff0002} },
-	{ 0x200, { 0x00100001} },
 	{ 0x204, { 0x00000000} },
 	{ 0x220, { 0x11010642} },
-	{ 0x44 , { 0x00030300} },
 	{ 0x2c0, { 0x0000e000} },
 	{ 0x2c4, { 0x00000020} },
 	{ 0x300, { 0x00000709} },
@@ -1044,7 +1051,7 @@ void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config)
 {
 	void __iomem *base_addr = dram_config->mac_base;
 	struct mvebu_mckinley_config *mac_config = &mckinley_mac_config[0];
-	u32 freq_indx;
+	u32 freq_indx, reg, idx, size;
 
 	debug_enter();
 	debug("Set bypass to clock gate: 0xF06f0098 - 0x0040004e\n");
@@ -1060,6 +1067,40 @@ void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config)
 		debug("0x%p - 0x08%x\n", base_addr + mac_config->reg_offset, mac_config->values[freq_indx]);
 		writel(mac_config->values[freq_indx], base_addr + mac_config->reg_offset);
 	}
+
+	/* Override the above configurations, with user parameters. */
+	if (dram_config->bus_width != 0) {
+		/* DRAM width */
+		reg = readl(base_addr + MCK6_CTRL_0_REG);
+		reg &= ~CTRL_DATA_WIDTH_MASK;
+		reg |= CTRL_DATA_WIDTH(dram_config->bus_width);
+		writel(reg, base_addr + MCK6_CTRL_0_REG);
+		debug("DRAM width set to %d.\n", dram_config->bus_width);
+	}
+
+	if (dram_config->size_mb != 0) {
+		/* DRAM size */
+		reg = readl(base_addr + MCK6_MMAP0_LOW_CH0_REG);
+		reg &= ~(MMAP_AREA_LEN_MASK);
+
+		switch (dram_config->size_mb) {
+		case(384):
+		case(786):
+		case(1536):
+		case(3072):
+			reg |= MMAP_AREA_LEN(log_2_n_round_down(dram_config->size_mb / 384));
+			size = dram_config->size_mb;
+			break;
+		default:
+			idx = log_2_n_round_down(dram_config->size_mb / 8);
+			reg |= MMAP_AREA_LEN(idx + 7);
+			size = (1 << idx) * 8;
+			break;
+		}
+		writel(reg, base_addr + MCK6_MMAP0_LOW_CH0_REG);
+		debug("DRAM size set to %dMB.\n", size);
+	}
+
 	debug_exit();
 }
 

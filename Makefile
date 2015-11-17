@@ -890,6 +890,7 @@ else ifeq ($(CONFIG_TARGET_ARMADA_LP), y)
 
 BIN2PHEX	:= $(srctree)/scripts/bin2phex.pl
 TIM2PHEX	:= $(srctree)/scripts/tim2phex.pl
+TIM2IMG		:= $(srctree)/scripts/tim2img.pl
 ifdef CONFIG_MVEBU_SECURE_BOOT
 DOIMAGE		:= $(shell which tbb_linux.exe)
 DOIMAGE_CFG	:= $(srctree)/tools/wtp/u-boot-tim.txt
@@ -915,7 +916,7 @@ DOIMAGE_LIBS_CHECK = \
 doimage: $(obj)/u-boot.bin $(SPLIMAGE)
 		@$(DOIMAGE_LIBS_CHECK)
 		$(DOIMAGE) $(DOIMAGE_FLAGS)
-		mv u-boot_h.bin u-boot-spl.bin
+		$(TIM2IMG) -i $(DOIMAGE_CFG) -o u-boot-spl.img
 
 bin2phex: doimage
 		$(TIM2PHEX) -i $(DOIMAGE_CFG) -o u-boot-$(CONFIG_SYS_SOC).hex

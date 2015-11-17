@@ -35,6 +35,12 @@
 #define MMAP_AREA_LEN_MASK	(0x1F << 16)
 #define MMAP_AREA_LEN(x)	((x) << 16)
 
+#define mck6_writel(v, c)					\
+	do {							\
+		debug("0x%p - 0x08%x\n", c, v);			\
+		writel(v, c);					\
+	} while (0)
+
 enum mvebu_mck_freq_support {
 	FREQ_650_HZ = 0,
 	MAX_HZ_SUPPORTED,
@@ -1063,10 +1069,8 @@ void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config)
 
 	/* for now set the frequency to 650 (index 0) */
 	freq_indx = 0;
-	for (; mac_config->reg_offset != -1 ; mac_config++) {
-		debug("0x%p - 0x08%x\n", base_addr + mac_config->reg_offset, mac_config->values[freq_indx]);
-		writel(mac_config->values[freq_indx], base_addr + mac_config->reg_offset);
-	}
+	for (; mac_config->reg_offset != -1 ; mac_config++)
+		mck6_writel(mac_config->values[freq_indx], base_addr + mac_config->reg_offset);
 
 	/* Override the above configurations, with user parameters. */
 	if (dram_config->bus_width != 0) {
@@ -1074,7 +1078,7 @@ void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config)
 		reg = readl(base_addr + MCK6_CTRL_0_REG);
 		reg &= ~CTRL_DATA_WIDTH_MASK;
 		reg |= CTRL_DATA_WIDTH(dram_config->bus_width);
-		writel(reg, base_addr + MCK6_CTRL_0_REG);
+		mck6_writel(reg, base_addr + MCK6_CTRL_0_REG);
 		debug("DRAM width set to %d.\n", dram_config->bus_width);
 	}
 
@@ -1097,7 +1101,7 @@ void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config)
 			size = (1 << idx) * 8;
 			break;
 		}
-		writel(reg, base_addr + MCK6_MMAP0_LOW_CH0_REG);
+		mck6_writel(reg, base_addr + MCK6_MMAP0_LOW_CH0_REG);
 		debug("DRAM size set to %dMB.\n", size);
 	}
 
@@ -1113,10 +1117,8 @@ void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config)
 	debug_enter();
 	/* for now set the frequency to 650 (index 0) */
 	freq_indx = 0;
-	for (; phy_config->reg_offset != -1 ; phy_config++) {
-		debug("0x%p - 0x08%x\n", base_addr + phy_config->reg_offset, phy_config->values[freq_indx]);
-		writel(phy_config->values[freq_indx], base_addr + phy_config->reg_offset);
-	}
+	for (; phy_config->reg_offset != -1 ; phy_config++)
+		mck6_writel(phy_config->values[freq_indx], base_addr + phy_config->reg_offset);
 
 	/* Trigger DDR init for Channel 0, all Chip-Selects */
 	reg = SDRAM_INIT_REQ_MASK;
@@ -1125,7 +1127,7 @@ void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config)
 	if (dram_config->cs_count)
 		cs_mask = (1 << dram_config->cs_count) - 1;
 	reg |= CMD_CS_MASK(cs_mask);
-	writel(reg, base_addr + MCK6_USER_COMMAND_0_REG);
+	mck6_writel(reg, base_addr + MCK6_USER_COMMAND_0_REG);
 
 	debug_exit();
 }

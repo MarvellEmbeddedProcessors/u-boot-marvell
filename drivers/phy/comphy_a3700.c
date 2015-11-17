@@ -633,7 +633,7 @@ static int comphy_sgmii_power_up(u32 lane)
  ***************************************************************************************************/
 static void comphy_dedicated_phys_init(void)
 {
-	int node, subnode, count, ret = 1;
+	int node, count, ret = 1;
 	const void *blob = gd->fdt_blob;
 
 	debug_enter();
@@ -642,40 +642,48 @@ static void comphy_dedicated_phys_init(void)
 			COMPAT_MVEBU_USB, &node, A3700_MAX_USB_CNT);
 
 	if (count > 0) {
-		fdt_for_each_subnode(blob, subnode, node) {
-			if (fdtdec_get_is_enabled(blob, subnode)) {
-				ret = comphy_usb2_power_up();
-				if (ret == 0)
-					error("Failed to initialize USB2 PHY\n");
-			}
-		}
-	}
+		if (fdtdec_get_is_enabled(blob, node)) {
+			ret = comphy_usb2_power_up();
+			if (ret == 0)
+				error("Failed to initialize USB2 PHY\n");
+			else
+				debug("USB PHY init succeed\n");
+		} else
+			debug("USB node is disabled\n");
+	} else
+		debug("No USB node in DT\n");
 
 	count = fdtdec_find_aliases_for_id(blob, "sata",
-			COMPAT_MVEBU_USB, &node, A3700_MAX_SATA_CNT);
+			COMPAT_MVEBU_SATA, &node, A3700_MAX_SATA_CNT);
 
 	if (count > 0) {
-		fdt_for_each_subnode(blob, subnode, node) {
-			if (fdtdec_get_is_enabled(blob, subnode)) {
-				ret = comphy_sata_power_up();
-				if (ret == 0)
-					error("Failed to initialize SATA PHY\n");
-			}
-		}
-	}
+		if (fdtdec_get_is_enabled(blob, node)) {
+			ret = comphy_sata_power_up();
+			if (ret == 0)
+				error("Failed to initialize SATA PHY\n");
+			else
+				debug("SATA PHY init succeed\n");
+		} else
+			debug("SATA node is disabled\n");
+	}  else
+		debug("No SATA node in DT\n");
+
 
 	count = fdtdec_find_aliases_for_id(blob, "sdio",
-		 COMPAT_MVEBU_USB, &node, A3700_MAX_SDIO_CNT);
+		 COMPAT_MVEBU_SDIO, &node, A3700_MAX_SDIO_CNT);
 
 	if (count > 0) {
-		fdt_for_each_subnode(blob, subnode, node) {
-			if (fdtdec_get_is_enabled(blob, subnode)) {
-				ret = comphy_emmc_power_up();
-				if (ret == 0)
-					error("Failed to initialize SDIO/eMMC PHY\n");
-			}
-		}
-	}
+		if (fdtdec_get_is_enabled(blob, node)) {
+			ret = comphy_emmc_power_up();
+			if (ret == 0)
+				error("Failed to initialize SDIO/eMMC PHY\n");
+			else
+				debug("SDIO/eMMC PHY init succeed\n");
+		} else
+			debug("SDIO/eMMC node is disabled\n");
+	}  else
+		debug("No SDIO/eMMC node in DT\n");
+
 
 	debug_exit();
 }

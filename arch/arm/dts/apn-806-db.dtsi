@@ -16,9 +16,22 @@
  * ***************************************************************************
  */
 
+#include <dt-bindings/ddr/ddr_data.h>
 #include "apn-806-z1.dtsi"
 
 / {
+	soc {
+		internal-regs {
+
+			ddr-mac {
+				cs_count = <1>;
+				bus_width = <DDR_BUS_WIDTH_32>;
+				cs0 {
+					size = <0x00000001 0x00000000>;
+				};
+			};
+		};
+	};
 	/* This should go only into devel boards */
 	sar {
 		compatible = "marvell,sample-at-reset";

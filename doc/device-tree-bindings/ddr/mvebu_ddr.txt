@@ -1,0 +1,39 @@
+Marvell DDR bindings
+====================
+
+The DDR node includes description about the DDR controller and PHY configuration.
+The driver runs in SPL mode, and is responsible to initial the DDR PHY and controller
+according to user define paramters.
+
+The DDR PHY node requires the following properties:
+	- compatible: "marvell,mvebu-ddr-phy"
+	- reg: Base address of the DDR PHY registers.
+
+The DDR MAC node requires the following properties:
+	- compatible: "marvell,mvebu-ddr-mac"
+	- reg: Base address of the DDR MAC registers.
+	- cs_count: Number of DDR Chip-Selects on board.
+	- bus_width: DDR bus width
+	  One out of DDR_BUS_WIDTH_16, DDR_BUS_WIDTH_32, DDR_BUS_WIDTH_64
+	- cs#i: Holds porting information for each of the connected chip-selects.
+		+ size: Size of DDR connected to Chip-Select (As 64-bit value).
+
+Example:
+	ddr-phy {
+		compatible = "marvell,mvebu-ddr-phy";
+		reg = <0x20000 0x10>;
+		status = "okay";
+	};
+
+	ddr-mac {
+		compatible = "marvell,mvebu-ddr-mac";
+		reg = <0x20000 0x20>;
+		status = "okay";
+
+		cs_count = <1>;
+		bus_width = <DDR_BUS_WIDTH_32>;
+		cs0 {
+			size = <0x00000000 0x20000000>;
+		};
+	};
+

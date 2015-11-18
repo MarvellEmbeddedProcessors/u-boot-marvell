@@ -56,6 +56,7 @@ dtb-$(CONFIG_MVEBU) += armada-lp-db.dtb
 dtb-$(CONFIG_MVEBU) += armada-lp-palladium.dtb
 dtb-$(CONFIG_MVEBU) += apn-806-db.dtb \
 		       apn-806-pd.dtb \
+		       apn-806-a0-pd.dtb \
 		       apn-806-db-dop.dtb \
 		       armada-80x0-db.dtb \
 		       armada-70x0-db.dtb

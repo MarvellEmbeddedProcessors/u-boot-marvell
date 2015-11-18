@@ -1,0 +1,107 @@
+/*
+ * ***************************************************************************
+ * Copyright (C) 2015 Marvell International Ltd.
+ * ***************************************************************************
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ***************************************************************************
+ */
+
+/ {
+
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a57";
+			reg = <0>;
+		};
+	};
+
+	ap-806 {
+		compatible = "marvell,mvebu-apn-806";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		internal-regs {
+			compatible = "marvell,internal-regs";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0x0000 0xf0000000 0x1000000>;
+
+			tclk: tclk {
+				compatible = "marvell,tclk";
+				#clock-cells = <0>;
+				clock-frequency = <200000000>;
+			};
+
+			i2c0: i2c@511000 {
+				compatible = "marvell,mvebu-i2c";
+				reg = <0x511000 0x4>;
+				clock = <&tclk>;
+				support-256-offset;
+				status = "okay";
+			};
+
+			spi0: spi@510600 {
+				compatible = "marvell,orion-spi";
+				reg = <0x510600 0x50>;
+				spi-max-frequency = <10000000>;
+				clock = <&tclk>;
+				cpol-cs-bitmap = <1>; /* bit i is set if the CPOL of
+							 CS-i is enabled or not */
+				status = "okay";
+			};
+
+			pinctl: pinctl@6F008C {
+				compatible = "marvell,mvebu-pinctl";
+				bank-name ="apn-806";
+				reg = <0x6F4000 0x10>;
+				pin-count = <20>;
+				max-func = <1>;
+				reverse-reg;
+			};
+
+			ddr-mac {
+				compatible = "marvell,mvebu-ddr-mac";
+				reg = <0x20000 0x20>;
+				status = "okay";
+			};
+
+			ddr-phy {
+				compatible = "marvell,mvebu-ddr-phy";
+				reg = <0x20000 0x10>;
+				status = "okay";
+			};
+
+			ccu {
+				compatible = "marvell,mvebu-ccu";
+				reg = <0x4000 0x50>;
+				max-win = <8>;
+				windows = <0x0 0xf2000000 0x0 0xe000000 0x00 /* IO window */>;
+			};
+
+			thermal: thermal@6f8084 {
+				compatible = "marvell,thermal-sensor-v2";
+				gain = <425>;
+				offset = <153400>;
+				divisor = <1000>;
+				reg = <0x6f8084 0x12>;
+				status = "okay";
+			};
+		};
+	};
+};

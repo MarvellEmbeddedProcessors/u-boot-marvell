@@ -42,11 +42,18 @@ void mvebu_a3700_gpio(void)
 	writel(reg_val, MVEBU_A3700_GPIO_SB_SEL);
 
 	/*
-	  * I2C GPIO
+	  * I2C, SPI GPIO
 	  */
 	reg_val = readl(MVEBU_A3700_GPIO_NB_SEL);
 	/* enable GPIO for I2C */
 	reg_val = reg_val & (~(1 << MVEBU_A3700_GPIO_TW1_GPIO_EN_OFF));
+	/* enable GPIO for SPI
+	  * In A3700 Register Spec, it says that In North bridge GPIO configuration,
+	  * bit 18 is for SPI quad mode, but this is not accurate description.
+	  * In fact, bit 18 controls HOLD and WP pins for SPI, which is needed for all
+	  * SPI mode, single, dual, and quad.
+	*/
+	reg_val = reg_val & (~(1 << MVEBU_A3700_GPIO_SPI_GPIO_EN_OFF));
 	writel(reg_val, MVEBU_A3700_GPIO_NB_SEL);
 
 	return;

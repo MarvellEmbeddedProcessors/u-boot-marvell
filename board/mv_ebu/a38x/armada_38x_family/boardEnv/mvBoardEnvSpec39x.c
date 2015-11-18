@@ -283,6 +283,11 @@ MV_BOARD_TDM_INFO armada_39x_customer_1_Tdm880[] = { {0} };
 
 MV_BOARD_TDM_SPI_INFO armada_39x_customer_1_TdmSpiInfo[] = { {1} };
 
+MV_BOARD_GPP_INFO armada_39x_customer_1_InfoBoardGppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS devClass, MV_U8 gppPinNum}} */
+/* USB_Host0 */		{BOARD_GPP_USB_VBUS,	39}, /*from MPP map */
+};
+
 MV_BOARD_INFO armada_39x_customer_board_1_info = {
 	.boardName			= "A39x-Customer-Board-1",
 	.numBoardNetComplexValue	= ARRSZ(armada_39x_customer_1_InfoBoardNetComplexInfo),
@@ -297,8 +302,8 @@ MV_BOARD_INFO armada_39x_customer_board_1_info = {
 	.pBoardTwsiDev			= armada_39x_customer_1_BoardTwsiDev,
 	.numBoardMacInfo		= ARRSZ(armada_39x_customer_1_BoardMacInfo),
 	.pBoardMacInfo			= armada_39x_customer_1_BoardMacInfo,
-	.numBoardGppInfo		= 0,
-	.pBoardGppInfo			= 0,
+	.numBoardGppInfo		= ARRSZ(armada_39x_customer_1_InfoBoardGppInfo),
+	.pBoardGppInfo			= armada_39x_customer_1_InfoBoardGppInfo,
 	.activeLedsNumber		= 0,
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,

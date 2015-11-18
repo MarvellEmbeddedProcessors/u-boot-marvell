@@ -71,8 +71,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlEnv/mvCtrlEnvLib.h"
 
 #if defined(CONFIG_CMD_DATE)
-
+/* This define for WA in rtc read */
+#define SAMPLE_NR 100
 static int rtc_ready = -1;
+
 
 /*******************************************************/
 void rtc_init(void)
@@ -104,38 +106,71 @@ void rtc_init(void)
 	rtc_ready = 1;
 }
 
+#ifdef ERRATA_FE_3124064
+struct _strTime2Freq {
+	unsigned long nTime;
+	unsigned int  nFreq;
+
+};
+#endif
+
 /*******************************************************/
 int rtc_get(struct rtc_time *tm)
 {
-	unsigned long time, time_check;
+#ifdef ERRATA_FE_3124064
+	/* Functional Errata Ref #: FE-3124064 - WA for failing time read attempts.
+	 * Description:
+	 *      The device supports CPU write and read access to the RTC Time register.
+	 *	However, due to this erratum, Write to RTC TIME register may fail.
+	 *	Read from RTC TIME register may fail.
+	 * Workaround:
+	 *	Before writing to RTC TIME register, issue a dummy write of 0x0 twice to
+	 *	RTC Status register.
+	 *	Configure maximum value (0x3FF) in write clock period in RTC Mbus Bridge
+	 *	Timing Control register.
+	 *	Before writing to RTC TIME register, issue a dummy write of 0x0 twice to
+	 *	RTC Status register.
+	 *      RTC TIME register should be read 100 times, then find the result
+	 *	that appear most frequently, use this result as the correct value.
+	 */
+	unsigned long nTimeArray[SAMPLE_NR], i, j, nTime, nMax = 0, indexMax = SAMPLE_NR - 1;
+	struct _strTime2Freq sTimeToFreq[SAMPLE_NR];
+#endif
 
 	if (rtc_ready != 1)
 		rtc_init();
-
-	time = RTC_READ_REG(RTC_TIME_REG_OFFS);
 #ifdef ERRATA_FE_3124064
-	/* Functional Errata Ref #: FE-3124064 -  WA for failing time read attempts.
-	 * Description:
-	 * 	The device supports CPU write and read access to the RTC Time register.
-	 * 	However, due to this erratum, Write to RTC TIME register may fail.
-	 * 	Read from RTC TIME register may fail.
-	 * Workaround:
-	 * 	Before writing to RTC TIME register, issue a dummy write of 0x0 twice to RTC Status register.
-	 * 	RTC TIME register should be read twice, the second read will return a proper value.
-	 * 	Configure maximum value (0x3FF) in write clock period in RTC Mbus Bridge Timing Control register.
-	 * Functional Impact After Workaround is applied:
-	 * 	No functional impact after WA is applied
-	 */
-	time_check = RTC_READ_REG(RTC_TIME_REG_OFFS);
-	if ((time_check - time) > 1)
-		time_check = RTC_READ_REG(RTC_TIME_REG_OFFS);
+	/* read RTC TIME register 100 times and save the values in array,
+	   initialize the counters to zero */
+	for (i = 0; i < SAMPLE_NR; i++) {
+		sTimeToFreq[i].nFreq = 0;
+		nTimeArray[i] = RTC_READ_REG(RTC_TIME_REG_OFFS);
+	}
+	for (i = 0; i < SAMPLE_NR; i++) {
+		nTime = nTimeArray[i];
+		/* if nTime appears in sTimeToFreq array so add the counter of nTime value,
+		   if didn't appear yet in counters array then allocate new member of
+		   sTimeToFreq array with counter = 1 */
+		for (j = 0; j < SAMPLE_NR; j++) {
+			if (sTimeToFreq[j].nFreq == 0 || sTimeToFreq[j].nTime == nTime)
+				break;
+		}
+		if (sTimeToFreq[j].nFreq == 0)
+			sTimeToFreq[j].nTime = nTime;
+		sTimeToFreq[j].nFreq++;
+		/*find the most common result*/
+		if (nMax < sTimeToFreq[j].nFreq) {
+			indexMax = j;
+			nMax = sTimeToFreq[j].nFreq;
+		}
+	}
+
+	to_tm(sTimeToFreq[indexMax].nTime, tm);
+#else
+	to_tm(RTC_READ_REG(RTC_TIME_REG_OFFS), tm);
 #endif
-
-	to_tm(time_check, tm);
-
 	return 0;
 }
-
 /*******************************************************/
 int rtc_set(struct rtc_time *tm)
 {

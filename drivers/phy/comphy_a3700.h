@@ -177,6 +177,10 @@
 #define rh_vs0_a			(SAHCI_BASE + 0xA0)
 #define rh_vs0_d			(SAHCI_BASE + 0xA4)
 
+#define vphy_sync_pattern_reg	0x224
+#define bs_txd_inv				BIT10
+#define bs_rxd_inv				BIT11
+
 #define vphy_loopback_reg0		0x223
 #define bs_phyintf_40bit		0x0C00
 #define bs_pll_ready_tx			0x10

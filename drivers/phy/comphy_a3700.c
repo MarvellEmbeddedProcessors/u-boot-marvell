@@ -247,6 +247,12 @@ static int comphy_sata_power_up(void)
 	debug_enter();
 
 	/*
+	 * 0. Swap SATA TX lines
+	 */
+	reg_set((void __iomem *)rh_vsreg_addr, vphy_sync_pattern_reg, 0);
+	reg_set((void __iomem *)rh_vsreg_data, bs_txd_inv, bs_txd_inv);
+
+	/*
 	 * 1. Select 40-bit data width width
 	 */
 	reg_set((void __iomem *)rh_vsreg_addr, vphy_loopback_reg0, 0);

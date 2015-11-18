@@ -148,6 +148,14 @@ MV_BOARD_MPP_INFO armada_39x_customer_0_BoardMppConfigValue[] = {
 	} }
 };
 
+/* gpp_callback is a generic place holder routine for special GPIO pull-up/sown sequence
+ * this routine is called as the final step of mvBoardEnvInit flow
+ * for example see implementation for SolidRun's clearFog board: A38x_CLEARFOG_BOARD_gpp_callback*/
+void A39x_CUSTOMER_BOARD_0_gpp_callback(MV_BOARD_INFO *board) {
+
+	/* implement special GPIO/MPP post configuration here */
+}
+
 MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.boardName			= "A39x-Customer-Board-0",
 	.numBoardNetComplexValue	= ARRSZ(armada_39x_customer_0_InfoBoardNetComplexInfo),
@@ -179,6 +187,7 @@ MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.gppOutValMid			= A39X_CUSTOMER_BOARD_0_GPP_OUT_VAL_MID,
 	.gppPolarityValLow		= A39X_CUSTOMER_BOARD_0_GPP_POL_LOW,
 	.gppPolarityValMid		= A39X_CUSTOMER_BOARD_0_GPP_POL_MID,
+	.gppPostConfigCallBack		= A39x_CUSTOMER_BOARD_0_gpp_callback,
 
 	.pBoardUsbInfo			= armada_39x_customer_0_BoardUsbInfo,
 	.numBoardUsbInfo		= ARRSZ(armada_39x_customer_0_BoardUsbInfo),

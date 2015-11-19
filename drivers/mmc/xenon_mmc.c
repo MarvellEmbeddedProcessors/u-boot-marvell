@@ -824,9 +824,6 @@ static const struct mmc_ops xenon_mmc_ops = {
 int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk)
 {
 	u32 caps;
-#ifndef CONFIG_PALLADIUM
-	u32 caps2;
-#endif
 	struct xenon_mmc_cfg *mmc_cfg = NULL;
 
 	mmc_cfg = (struct xenon_mmc_cfg *)calloc(1, sizeof(struct xenon_mmc_cfg));
@@ -848,9 +845,6 @@ int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk)
 	mmc_cfg->cfg.ops = &xenon_mmc_ops;
 
 	caps = xenon_mmc_readl(mmc_cfg, SDHCI_CAPABILITIES);
-#ifndef CONFIG_PALLADIUM
-	caps2 = xenon_mmc_readl(mmc_cfg, SDHCI_CAPABILITIES_1);
-#endif
 
 #ifdef CONFIG_MMC_SDMA
 	if (!(caps & SDHCI_CAN_DO_SDMA)) {
@@ -909,8 +903,7 @@ int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk)
 
 	/* Do not enable DDR mode for palladium since it is quite slow */
 #ifndef CONFIG_PALLADIUM
-	if (caps2 & SDHCI_SUPPORT_DDR50)
-		mmc_cfg->cfg.host_caps |= MMC_MODE_DDR_52MHz;
+	mmc_cfg->cfg.host_caps |= MMC_MODE_DDR_52MHz;
 #endif
 	if (SDHCI_GET_VERSION(mmc_cfg) >= SDHCI_SPEC_300) {
 		if (caps & SDHCI_CAN_DO_8BIT)

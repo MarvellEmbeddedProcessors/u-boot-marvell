@@ -8,6 +8,10 @@
 #ifndef	__ASM_GBL_DATA_H
 #define __ASM_GBL_DATA_H
 
+#ifdef CONFIG_MVEBU_SYS_INFO
+#include <asm/arch-mvebu/system_info.h>
+#endif
+
 #ifdef CONFIG_OMAP
 #include <asm/omap_boot.h>
 #endif
@@ -56,6 +60,9 @@ struct arch_global_data {
 	void *soc_family;
 	void *board_family;
 	void *reg_base;
+#ifdef CONFIG_MVEBU_SYS_INFO
+	struct sys_info local_sys_info[MAX_OPTION];
+#endif
 #ifdef CONFIG_ENV_IS_IN_BOOTDEV
 	struct env_func_ptr env_func;
 #endif

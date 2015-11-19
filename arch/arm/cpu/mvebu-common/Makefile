@@ -17,6 +17,7 @@
 #
 
 obj-y += soc-init.o
+obj-$(CONFIG_MVEBU_SYS_INFO) += system_info.o
 obj-y += misc.o
 obj-$(CONFIG_MVEBU_MPP_BUS) += mpp-bus.o
 obj-y += fdt.o

@@ -121,6 +121,16 @@ config MVEBU_TOOLS_SUPPORT
 	  for different tools function for
 	  U-Boot/SPL code
 
+config MVEBU_SYS_INFO
+	bool "System info transmitted to u-boot"
+	default y
+	help
+	  Choose this option to add support
+	  for system information in u-boot.
+	  If you want to transfer information
+	  from spl to u-boot, you need to choose
+	  this option.
+
 if MVEBU_TOOLS_SUPPORT
 source "arch/arm/cpu/mvebu-common/tools/Kconfig"
 endif

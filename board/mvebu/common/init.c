@@ -26,6 +26,7 @@
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/pinctl.h>
 #include <asm/arch-mvebu/mpp.h>
+#include <asm/arch-mvebu/system_info.h>
 #include "board.h"
 #ifdef CONFIG_DEVEL_BOARD
 #include "devel-board.h"
@@ -52,6 +53,11 @@ int soc_early_init_f(void)
 int board_early_init_f(void)
 {
 	soc_early_init_f();
+#ifdef CONFIG_MVEBU_SYS_INFO
+/* Call this function to transfer data from address 0x4000000
+   into a global struct, before code relocation. */
+	sys_info_init();
+#endif
 	return 0;
 }
 #endif

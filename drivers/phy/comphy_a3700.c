@@ -362,7 +362,7 @@ static int comphy_usb3_power_up(void)
 	 * 10. Release SW reset
 	 */
 	reg_set16((void __iomem *)GLOB_PHY_CTRL0_ADDR(USB3),
-		  rb_mode_core_clk_freq_sel | rb_mode_pipe_width_32 | 0x20, bf_mode_refdiv);
+		  rb_mode_core_clk_freq_sel | rb_mode_pipe_width_32 | 0x20, 0xFFFF);
 
 	/* Wait for > 55 us to allow PCLK be enabled */
 	udelay(PLL_SET_DELAY_US);

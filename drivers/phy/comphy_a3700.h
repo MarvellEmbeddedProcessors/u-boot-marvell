@@ -190,7 +190,7 @@
 #define vphy_calctl_reg			0x202
 #define bs_max_pll_rate			BIT12
 
-#define vphy_reserve_reg		0x20e
+#define vphy_reserve_reg		0x0e
 #define bs_phyctrl_frm_pin		BIT13
 
 #define vsata_ctrl_reg			0x00

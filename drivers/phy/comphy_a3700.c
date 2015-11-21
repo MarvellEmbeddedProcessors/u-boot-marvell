@@ -249,19 +249,19 @@ static int comphy_sata_power_up(void)
 	/*
 	 * 0. Swap SATA TX lines
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_sync_pattern_reg, 0);
+	reg_set((void __iomem *)rh_vsreg_addr, vphy_sync_pattern_reg, 0xFFFFFFFF);
 	reg_set((void __iomem *)rh_vsreg_data, bs_txd_inv, bs_txd_inv);
 
 	/*
 	 * 1. Select 40-bit data width width
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_loopback_reg0, 0);
+	reg_set((void __iomem *)rh_vsreg_addr, vphy_loopback_reg0, 0xFFFFFFFF);
 	reg_set((void __iomem *)rh_vsreg_data, 0x800, bs_phyintf_40bit);
 
 	/*
 	 * 2. Select reference clock and PHY mode (SATA)
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_power_reg0, 0);
+	reg_set((void __iomem *)rh_vsreg_addr, vphy_power_reg0, 0xFFFFFFFF);
 	if (comphy_get_ref_clk() == 40)
 		reg_set((void __iomem *)rh_vsreg_data, 0x3, 0x00FF); /* 40 MHz */
 	else
@@ -270,26 +270,26 @@ static int comphy_sata_power_up(void)
 	/*
 	 * 3. Use maximum PLL rate (no power save)
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_calctl_reg, 0);
+	reg_set((void __iomem *)rh_vsreg_addr, vphy_calctl_reg, 0xFFFFFFFF);
 	reg_set((void __iomem *)rh_vsreg_data, bs_max_pll_rate, bs_max_pll_rate);
 
 	/*
 	 * 4. Reset reserved bit (??)
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_reserve_reg, 0);
+	reg_set((void __iomem *)rh_vsreg_addr, vphy_reserve_reg, 0xFFFFFFFF);
 	reg_set((void __iomem *)rh_vsreg_data, 0, bs_phyctrl_frm_pin);
 
 	/*
 	 * 5. Set vendor-specific configuration (??)
 	 */
-	reg_set((void __iomem *)rh_vs0_a, vsata_ctrl_reg, 0);
-	reg_set((void __iomem *)rh_vs0_d, bs_phy_pu_pll, 0);
+	reg_set((void __iomem *)rh_vs0_a, vsata_ctrl_reg, 0xFFFFFFFF);
+	reg_set((void __iomem *)rh_vs0_d, bs_phy_pu_pll, bs_phy_pu_pll);
 
 	/* Wait for > 55 us to allow PLL be enabled */
 	udelay(PLL_SET_DELAY_US);
 
 	/* Assert SATA PLL enabled */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_loopback_reg0, 0);
+	reg_set((void __iomem *)rh_vsreg_addr, vphy_loopback_reg0, 0xFFFFFFFF);
 	ret = comphy_poll_reg((void *)rh_vsreg_data,	/* address */
 			      bs_pll_ready_tx,		/* value */
 			      bs_pll_ready_tx,		/* mask */

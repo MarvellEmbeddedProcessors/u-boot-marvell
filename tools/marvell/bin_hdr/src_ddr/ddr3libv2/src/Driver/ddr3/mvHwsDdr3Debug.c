@@ -1431,7 +1431,7 @@ GT_BOOL ddr3TipRunSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direction, GT
     MV_HWS_ACCESS_TYPE  pupAccess;
     GT_U32 uiCs;
     GT_U32 maxCs = mvHwsDdr3TipMaxCSGet(devNum);
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     RepeatNum = RepeatNum;
 	RepeatNum = 2;
@@ -1550,7 +1550,7 @@ GT_BOOL ddr3TipRunLevelingSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direc
     MV_HWS_ACCESS_TYPE  pupAccess;
     GT_U32 uiCs;
     GT_U32 maxCs = mvHwsDdr3TipMaxCSGet(devNum);
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
     RepeatNum = RepeatNum;
 	RepeatNum = 3;
     if ( mode == 1)

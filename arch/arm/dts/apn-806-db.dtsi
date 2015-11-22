@@ -20,7 +20,7 @@
 #include "apn-806-z1.dtsi"
 
 / {
-	soc {
+	ap-806 {
 		internal-regs {
 
 			ddr-mac {

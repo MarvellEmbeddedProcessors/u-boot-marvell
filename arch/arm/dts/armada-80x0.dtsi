@@ -18,7 +18,7 @@
 
 #include "apn-806-db.dtsi"
 #include "cp110-master.dtsi"
-#include "cp110-master.dtsi"
+#include "cp110-slave.dtsi"
 
 / {
 	compatible = "marvell,armada-80x0";

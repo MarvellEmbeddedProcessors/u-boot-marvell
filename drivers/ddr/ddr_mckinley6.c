@@ -29,7 +29,8 @@
 
 #define MCK6_CTRL_0_REG		(0x44)
 #define CTRL_DATA_WIDTH_MASK	(0xF << 8)
-#define CTRL_DATA_WIDTH(w)	(((w) / 8) << 8)
+#define BUS_WIDTH_2_IDX(w)	(((w) <= 16) ? ((w) / 8) : (((w) / 32) + 2))
+#define CTRL_DATA_WIDTH(w)	(BUS_WIDTH_2_IDX(w) << 8)
 
 #define MCK6_MMAP0_LOW_CH0_REG	(0x200)
 #define MMAP_AREA_LEN_MASK	(0x1F << 16)

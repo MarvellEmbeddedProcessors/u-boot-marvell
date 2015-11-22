@@ -118,6 +118,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_ARMADA_38X_CUSTOMER, "marvell,armada-38x-customer"),
 	COMPAT(MVEBU_APN_806_DB, "marvell,apn-806-db"),
 	COMPAT(MVEBU_APN_806_CUSTOMER, "marvell,apn-806-customer"),
+	COMPAT(MVEBU_ARMADA_70X0_DB, "marvell,armada-70x0-db"),
 	COMPAT(MVEBU_ARMADA_LP_DB0, "marvell,armada-lp-db0"),
 	COMPAT(MVEBU_ARMADA_LP_DB1, "marvell,armada-lp-db1"),
 	COMPAT(MVEBU_ARMADA_LP_CUSTOMER, "marvell,armada-lp-customer"),

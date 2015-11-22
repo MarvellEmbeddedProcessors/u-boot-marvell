@@ -11,4 +11,13 @@ config APN_806_DB
 	  DB board. Say N unless you really
 	  work on this board
 
+config ARMADA_70X0_DB
+	bool "Support Marvell Armada-70x0 board"
+	depends on DEVEL_BOARD
+	help
+	  Choose this option to add
+	  support for Marvell Armada-70x0
+	  DB board. Say N unless you really
+	  work on this board
+
 endmenu

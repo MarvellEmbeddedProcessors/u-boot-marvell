@@ -688,8 +688,8 @@ int mvHwsAvagoSerdesTemperatureGet
 *       portGroup - port group (core) number
 *       serdesNum - SERDES number
 *       mode      - True for Tx mode, False for Rx mode
-*       therm     - Thermometer of VCO
-*       bin       - bin of VCO
+*       therm     - Thermometer of VCO (0...0xFFFF)
+*       bin       - bin of VCO (0...0xFFFF)
 *
 * OUTPUTS:
 *       None.
@@ -725,8 +725,8 @@ unsigned int mvHwsAvagoSerdesCalCodeSet(int devNum, int portGroup, int serdesNum
 *       mode      - True for Tx mode, False for Rx mode
 *
 * OUTPUTS:
-*       therm - Thermometer of VCO
-*       bin   - bin of VCO
+*       therm - Thermometer of VCO  (0...0xFFFF)
+*       bin   - bin of VCO  (0...0xFFFF)
 *
 * RETURNS:
 *       0  - on success

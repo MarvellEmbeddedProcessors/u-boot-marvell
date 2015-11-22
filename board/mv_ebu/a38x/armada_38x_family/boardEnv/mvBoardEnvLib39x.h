@@ -253,10 +253,10 @@ typedef enum _mvConfigTypeID {
 { MV_CONFIG_LANE5,		0xF0,	4,	3,	{1, 1, 0} }, \
 { MV_CONFIG_LANE6,		0x0F,	0,	4,	{1, 1, 0} }, \
 { MV_CONFIG_NSS_EN,		0x01,	0,	5,	{1, 1, 0} }, \
-{ MV_CONFIG_DDR_BUSWIDTH,	0x02,	1,	5,	{1, 1, 0} }, \
-{ MV_CONFIG_DDR_ECC_EN,		0x04,	2,	5,	{1, 1, 0} }, \
-{ MV_CONFIG_BOARDCFG_EN,	0x08,	3,	5,	{1, 1, 0} }, \
-{ MV_CONFIG_BOARDCFG_VALID,	0x0F,	0,	6,	{1, 1, 0} }, \
+{ MV_CONFIG_DDR_BUSWIDTH,	0x02,	1,	5,	{1, 1, 1} }, \
+{ MV_CONFIG_DDR_ECC_EN,		0x04,	2,	5,	{1, 1, 1} }, \
+{ MV_CONFIG_BOARDCFG_EN,	0x08,	3,	5,	{1, 1, 1} }, \
+{ MV_CONFIG_BOARDCFG_VALID,	0x0F,	0,	6,	{1, 1, 1} }, \
 { MV_CONFIG_5_SMI_MODE,		0x10,	4,      5,      {1, 1, 0} }, \
 { MV_CONFIG_6_SMI_MODE,		0x20,	5,      5,      {1, 1, 0} }, \
 { MV_CONFIG_GP_CONFIG,		0xC0,	6,      5,      {1, 1, 0} }, \

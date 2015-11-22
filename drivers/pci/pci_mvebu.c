@@ -396,3 +396,32 @@ void pci_init_board(void)
 		first_busno = mvebu_pcie_init(host_id, reg_base, &win, first_busno);
 	}
 }
+
+#ifdef CONFIG_MVEBU_PCI_BURST_RELAX
+#define PCIE_CAP_DCR			0x8
+#define DCR_MAX_READ_REQ_SIZE_MASK	(7 << 12)
+void board_pci_fixup_dev(struct pci_controller *hose, pci_dev_t dev,
+			 unsigned short vendor, unsigned short device,
+			 unsigned short class)
+{
+	int pcie_cap_pos, pci_dcr;
+	u32 temp32;
+
+	/* Get PCIe capability structure. */
+	pcie_cap_pos = pci_hose_find_capability(hose, dev, PCI_CAP_ID_EXP);
+	if (pcie_cap_pos == 0) {
+		error("Could not find PCIE CAP structure.\n");
+		return;
+	}
+
+	/* Get the PCIe Device Control Register */
+	pci_dcr = pcie_cap_pos + PCIE_CAP_DCR;
+	pci_hose_read_config_dword(hose, dev, pci_dcr, &temp32);
+	/* Set Max-Read-Request-Size field to 0x0 -> 128B */
+	temp32 &= ~DCR_MAX_READ_REQ_SIZE_MASK;
+	pci_hose_write_config_dword(hose, dev, pci_dcr, temp32);
+	pci_hose_read_config_dword(hose, dev, pci_dcr, &temp32);
+	printf("Set PCIe device capability (DCR/Read-Req-Size to 128B - 0x%x).\n", temp32);
+}
+#endif /* CONFIG_MVEBU_PCI_BURST_RELAX */
+

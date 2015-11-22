@@ -311,6 +311,9 @@
 #if defined(CONFIG_MVEBU_PCI) || defined(CONFIG_MVEBU_DW_PCIE)
 	#define CONFIG_PCI
 	#define CONFIG_PCI_PNP  /* Enable plug-and-play */
+	#ifdef CONFIG_MVEBU_PCI_BURST_RELAX
+	#define CONFIG_PCI_FIXUP_DEV
+	#endif
 	/*#define CONFIG_MVEBU_PCI_EP*/ /* Set PCI host as end point */
 
 	/* Enable PCIE NIC for devel boards */

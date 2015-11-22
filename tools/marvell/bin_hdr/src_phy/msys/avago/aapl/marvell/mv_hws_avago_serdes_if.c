@@ -962,8 +962,18 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     avago_serdes_init_config(&configDef);
     config = &configDef;
 
-    /* Change the config struct values from their defaults: */
-    if (divider != NA_VALUE) config->tx_divider = config->rx_divider = divider;
+    /* Change the tx_divider and rx_divider according to refClock */
+    if (divider != NA_VALUE)
+    {
+        if (refClock == _156dot25Mhz)
+        {
+            config->tx_divider = config->rx_divider = divider;
+        }
+        else if(refClock == _78Mhz)
+        {
+            config->tx_divider = config->rx_divider = divider * 2;
+        }
+    }
 
     /* initializes the Avago_serdes_init_config_t struct */
     config->sbus_reset = FALSE;

@@ -21,4 +21,11 @@
 
 / {
 	compatible = "marvell,armada-70x0";
+	ap-806 {
+		internal-regs {
+			spi@510600 {
+				status = "disabled";
+			};
+		};
+	};
 };

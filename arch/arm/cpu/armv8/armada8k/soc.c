@@ -21,6 +21,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch-mvebu/soc.h>
+#include <asm/arch-mvebu/system_info.h>
 #include <asm/arch-armada8k/armada8k.h>
 #include <asm/arch/regs-base.h>
 #include <linux/sizes.h>
@@ -107,4 +108,11 @@ void reset_cpu(ulong ignored)
 	reg = readl(RFU_GLOBAL_SW_RST);
 	reg &= ~(1 << RFU_SW_RESET_OFFSET);
 	writel(reg, RFU_GLOBAL_SW_RST);
+}
+
+void print_soc_specific_info(void)
+{
+#ifdef CONFIG_MVEBU_SYS_INFO
+	printf("\tDDR %d Bit width\n", get_info(DRAM_BUS_WIDTH));
+#endif
 }

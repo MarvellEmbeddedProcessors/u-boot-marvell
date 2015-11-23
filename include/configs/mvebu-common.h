@@ -44,7 +44,11 @@
 #define CONFIG_SYS_SDRAM_BASE           0x00000000
 #define CONFIG_SYS_RESET_ADDRESS        0xffff0000
 #define CONFIG_SYS_MALLOC_BASE          (CONFIG_SYS_TEXT_BASE + (3 << 20))  /* TEXT_BASE + 3M */
+#ifdef CONFIG_PALLADIUM
+#define CONFIG_SYS_MALLOC_LEN           (1 << 19)	/* Reserve 0.5MB for malloc*/
+#else
 #define CONFIG_SYS_MALLOC_LEN           (5 << 20)	/* Reserve 5MB for malloc*/
+#endif
 #define CONFIG_NR_DRAM_BANKS		(2)
 
 /* maybe need to set back to 0x7fff0 */

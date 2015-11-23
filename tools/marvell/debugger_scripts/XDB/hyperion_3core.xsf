@@ -13,7 +13,7 @@ Template=true
 Version=2:2
 [SETTINGS]
 Global=-plg ".\..\plugin\common\vt100\vt100.dll " -sync "EctHardware"
-CS=-plg ".\..\plugin\arm\trace\etmtrace.dll " -L "tcp:127.0.0.1:3020:usb:" -target override=ap:1,debug:0x80030000,cti:0x80038000 scanchain=JTAG_CS_CS_CS_dap4_jcs_hyperion hotdebug device=mjc
-CS$2=-plg ".\..\plugin\arm\trace\etmtrace.dll " -L "tcp:127.0.0.1:3020:usb:" -target override=ap:1,debug:0x80032000,cti:0x80039000 -target scanchain=JTAG_CS_CS_CS_dap4_jcs_hyperion hotdebug device=mjc
-CS$3=-plg ".\..\plugin\arm\trace\etmtrace.dll " -L "tcp:127.0.0.1:3020:usb:" -target override=ap:3 -target scanchain=JTAG_CS_CS_CS_dap4_jcs_hyperion hotdebug lowlevel device=mjc
+CS=-plg ".\..\plugin\arm\trace\etmtrace.dll " -L "tcp:127.0.0.1:3020:usb:" -target override=ap:1,debug:0x80030000,cti:0x80038000 scanchain=JTAG_CS_CS_CS_dap4_jcs_hyperion_v8 hotdebug tckoverwrite=10.0MHz device=mjc
+CS$2=-plg ".\..\plugin\arm\trace\etmtrace.dll " -L "tcp:127.0.0.1:3020:usb:" -target override=ap:1,debug:0x80032000,cti:0x80039000 -target scanchain=JTAG_CS_CS_CS_dap4_jcs_hyperion_v8 hotdebug tckoverwrite=10.0MHz device=mjc
+CS$3=-plg ".\..\plugin\arm\trace\etmtrace.dll " -L "tcp:127.0.0.1:3020:usb:" -target override=ap:3 -target scanchain=JTAG_CS_CS_CS_dap4_jcs_hyperion hotdebug tckoverwrite=10.0MHz device=mjc
 

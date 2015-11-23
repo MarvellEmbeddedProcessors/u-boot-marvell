@@ -1538,6 +1538,14 @@ static int mvneta_init_u_boot(struct eth_device *dev, bd_t *bis)
 		}
 		/* Full init on first call */
 		mvneta_probe(dev);
+		/* mark this port being fully inited,
+		 * otherwise it will be inited again
+		 * during next networking transaction,
+		 * including memory allocatation for
+		 * TX/RX queue, PHY connect/configuration
+		 * and address decode configuration.
+		 */
+		pp->init = 1;
 #endif
 	} else {
 		/* Upon all following calls, this is enough */

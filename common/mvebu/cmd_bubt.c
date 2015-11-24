@@ -318,7 +318,7 @@ static int check_image_header(void)
 
 	return 0;
 }
-#else /* A38x */
+#elif defined(CONFIG_TARGET_ARMADA_38X) /* A38x */
 u8 do_checksum8(void *start, u32 len, u8 csum)
 {
 	register u8 sum = csum;
@@ -359,6 +359,23 @@ static int check_image_header(void)
 	printf("Image checksum...OK!\n");
 
 	return 0;
+}
+#elif defined(CONFIG_TARGET_ARMADA_LP) /* ArmadaLP */
+static int check_image_header(void)
+{
+	/* Armada3700 has different Image, without mvebu
+	  * header at begining.
+	  * BootRom will also do the image check, if something
+	  * is not right, CM3 would not run the image.
+	  */
+	/* printf("Image checksum...OK!\n"); */
+	return 0;
+}
+#else
+static int check_image_header(void)
+{
+	printf("bubt cmd does not support this device !\n");
+	return -ENOEXEC;
 }
 #endif
 

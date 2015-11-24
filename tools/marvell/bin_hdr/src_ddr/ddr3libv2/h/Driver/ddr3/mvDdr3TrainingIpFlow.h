@@ -362,7 +362,7 @@ Address Bits   Value   Description
 #define CS_REGISTER_ADDR_OFFSET  4
 #define CALIBRATED_OBJECTS_REG_ADDR_OFFSET   0x10
 
-#define MAX_POLLING_ITERATIONS              (100000)
+#define MAX_POLLING_ITERATIONS              (1000000)
 
 #define NUM_BYTES                   (3)
 

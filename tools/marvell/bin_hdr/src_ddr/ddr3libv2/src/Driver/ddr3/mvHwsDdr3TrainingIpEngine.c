@@ -310,12 +310,11 @@ GT_U32                      trainIfAcess, trainIfId, trainPupAccess;
 GT_U32                      maxPollingForDone = 100000000;  /* this counter was increased for DDR4
                                                                due to A390 DB-GP DDR4 failure */
 #else /* DDR3 */
-#ifdef CONFIG_BOBK
-GT_U32                      maxPollingForDone = 1000;
-#else
+
 GT_U32                      maxPollingForDone = 1000000;
-#endif /* CONFIG_BOBK */
+
 #endif /* CONFIG_DDR4 */
+
 extern MV_HWS_RESULT trainingResult[MAX_STAGE_LIMIT][MAX_INTERFACE_NUM];
 extern AUTO_TUNE_STAGE trainingStage;
 
@@ -566,10 +565,6 @@ GT_STATUS    ddr3TipIpTraining
 		                break;
 		            }
 		        }
-#ifdef CONFIG_BOBK
-                 /* WA to avoid training stucking */
-                hwsOsExactDelayPtr((GT_U8)devNum, devNum, 50); /* 50 mSec */
-#endif
 		        if (pollCnt == maxPollingForDone)
 		        {
 		            trainStatus[indexCnt] = MV_HWS_TrainingIpStatus_TIMEOUT;
@@ -578,7 +573,6 @@ GT_STATUS    ddr3TipIpTraining
 			/*Be sure that ODPG done*/
 		    CHECK_STATUS(isOdpgAccessDone(devNum, indexCnt));
 		}
-
 		/*Write ODPG done in Dunit*/
 		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_STATUS_DONE_REG, 0, 0x1));
 	}
@@ -613,19 +607,13 @@ GT_STATUS    ddr3TipIpTraining
                     break;
                 }
             }
-#ifdef CONFIG_BOBK
-            /* WA to avoid training stucking */
-             hwsOsExactDelayPtr((GT_U8)devNum, devNum, 50);
-#endif
             if (pollCnt == maxPollingForDone)
             {
                 trainStatus[indexCnt] = MV_HWS_TrainingIpStatus_TIMEOUT;
             }
         }
     }
-
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_DATA_CONTROL_REG, 0, MASK_ALL_BITS));
-
     return GT_OK;
 }
 

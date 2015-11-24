@@ -27,10 +27,6 @@
 #define POLL_16B_REG			1
 #define POLL_32B_REG			0
 
-#define A3700_MAX_USB_CNT		1
-#define A3700_MAX_SATA_CNT		1
-#define A3700_MAX_SDIO_CNT		1
-
 /*************************/
 /* COMPHY SB definitions */
 /************************/
@@ -69,6 +65,7 @@
 #define USB32H_BASE			(MVEBU_REGS_BASE + 0x058000) /* usb3 host */
 #define USB3PHY_BASE			(MVEBU_REGS_BASE + 0x05C000)
 #define USB2PHY_BASE			(MVEBU_REGS_BASE + 0x05D000)
+#define USB2PHY2_BASE			(MVEBU_REGS_BASE + 0x05F000)
 #define USB32_CTRL_BASE			(MVEBU_REGS_BASE + 0x05D800)
 #define USB3PHY_SHFT			2
 

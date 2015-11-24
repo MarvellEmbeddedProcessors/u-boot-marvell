@@ -386,11 +386,15 @@ static int comphy_usb3_power_up(void)
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_usb2_power_up(void)
+static int comphy_usb2_power_up(u8 usb32)
 {
 	int	ret;
 
 	debug_enter();
+
+	/* TODO - add support for second USB2 UTMI - JIRA SYSTEMSW-2055 */
+	if (usb32 == 0)
+		return 1;
 
 	/*
 	 * 1. PHY pull up and disable USB2 suspend
@@ -639,28 +643,34 @@ static int comphy_sgmii_power_up(u32 lane)
  ***************************************************************************************************/
 static void comphy_dedicated_phys_init(void)
 {
-	int node, count, ret = 1;
+	int node, count, usb32, ret = 1;
 	const void *blob = gd->fdt_blob;
 
 	debug_enter();
 
-	count = fdtdec_find_aliases_for_id(blob, "usb",
-			COMPAT_MVEBU_USB, &node, A3700_MAX_USB_CNT);
+	for (usb32 = 0; usb32 <= 1; usb32++) {
+		/* There are 2 UTMI PHYs in this SOC.
+		   One is independendent and one is paired with USB3 port (OTG) */
+		if (usb32 == 0)
+			count = fdtdec_find_aliases_for_id(blob, "usb", COMPAT_MVEBU_USB, &node, 1);
+		else
+			count = fdtdec_find_aliases_for_id(blob, "usb3", COMPAT_MVEBU_USB3, &node, 1);
 
-	if (count > 0) {
-		if (fdtdec_get_is_enabled(blob, node)) {
-			ret = comphy_usb2_power_up();
-			if (ret == 0)
-				error("Failed to initialize USB2 PHY\n");
-			else
-				debug("USB PHY init succeed\n");
+		if (count > 0) {
+			if (fdtdec_get_is_enabled(blob, node)) {
+				ret = comphy_usb2_power_up(usb32);
+				if (ret == 0)
+					error("Failed to initialize UTMI PHY\n");
+				else
+					debug("UTMI PHY init succeed\n");
+			} else
+				debug("USB%d node is disabled\n", usb32 == 0 ? 2 : 3);
 		} else
-			debug("USB node is disabled\n");
-	} else
-		debug("No USB node in DT\n");
+			debug("No USB%d node in DT\n", usb32 == 0 ? 2 : 3);
+	}
 
 	count = fdtdec_find_aliases_for_id(blob, "sata",
-			COMPAT_MVEBU_SATA, &node, A3700_MAX_SATA_CNT);
+			COMPAT_MVEBU_SATA, &node, 1);
 
 	if (count > 0) {
 		if (fdtdec_get_is_enabled(blob, node)) {
@@ -676,7 +686,13 @@ static void comphy_dedicated_phys_init(void)
 
 
 	count = fdtdec_find_aliases_for_id(blob, "sdio",
-		 COMPAT_MVEBU_SDIO, &node, A3700_MAX_SDIO_CNT);
+		 COMPAT_MVEBU_SDIO, &node, 1);
+
+	if (count <= 0) {
+		debug("No SDIO node in DT, looking for MMC one\n");
+		count = fdtdec_find_aliases_for_id(blob, "mmc0",
+			COMPAT_MVEBU_XENON_MMC, &node, 1);
+	}
 
 	if (count > 0) {
 		if (fdtdec_get_is_enabled(blob, node)) {

@@ -53,6 +53,15 @@
 #define PCIE_BAR_ENABLE			(0x1)
 #define PCIE_BAR_CNT			(3)
 
+#define PCIE_CONTROL			(0x1A00)
+#define PCIE_OUTSTANDING_REQ_MASK	(3 << 8)
+
+#define PCIE_FLOW_CONTROL		(0x1A20)
+#define POSTED_CREDIT_MASK		(0xFF)
+#define POSTED_CREDIT(x)		(0xFF)
+#define NONPOSTED_CREDIT_MASK		(0xFF << 8)
+#define NONPOSTED_CREDIT(x)		(x << 8)
+
 /* Memory access control */
 #define PCIE_WIN_OFF(n)			((n < 5) ? (0x0) : (0x10))
 #define PCIE_WIN_CTRL_OFF(x, n)		(x + 0x1820 + PCIE_WIN_OFF(n) + (0x10 * n))
@@ -245,6 +254,20 @@ static void mvebu_pcie_hw_init(void __iomem *reg_base, int first_busno)
 {
 	u32 cmd;
 
+#ifdef CONFIG_MVEBU_PCI_BURST_RELAX
+	u32 reg;
+	/* Set posted / non-posted credits to 0x0. */
+	reg = readl(reg_base + PCIE_FLOW_CONTROL);
+	reg &= ~(POSTED_CREDIT_MASK | NONPOSTED_CREDIT_MASK);
+	reg |= (POSTED_CREDIT(1) | NONPOSTED_CREDIT(1));
+	writel(reg, reg_base + PCIE_FLOW_CONTROL);
+
+	/* Set outstanding requests to 1 */
+	reg = readl(reg_base + PCIE_CONTROL);
+	reg &= ~PCIE_OUTSTANDING_REQ_MASK;
+	writel(reg, reg_base + PCIE_CONTROL);
+#endif /* CONFIG_MVEBU_PCI_BURST_RELAX */
+
 	/*
 	 * Set our controller as device No 1 to avoid
 	 * Answering CFG cycle by our host (memory controller)
@@ -364,6 +387,7 @@ void pci_init_board(void)
 
 	if (count <= 0)
 		return;
+
 
 	fdt_for_each_subnode(blob, port_node, bus_node) {
 		host_id++;

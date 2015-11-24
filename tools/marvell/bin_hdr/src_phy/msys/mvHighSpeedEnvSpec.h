@@ -137,6 +137,16 @@ typedef enum {
 } REF_CLOCK;
 
 /* Serdes sequences */
+
+typedef enum
+{
+    _156dot25Mhz,
+    _78Mhz,
+    _25Mhz,
+    _125Mhz
+
+}MV_HWS_REF_CLOCK;
+
 typedef enum {
 	SGMII_EXT_SPEED_CONFIG_SEQ,
 	SGMII_INT_SPEED_CONFIG_SEQ,

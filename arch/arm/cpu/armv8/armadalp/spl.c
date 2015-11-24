@@ -22,7 +22,7 @@
 #include <asm/arch-mvebu/io_addr_dec.h>
 #include <asm/arch-mvebu/clock.h>
 #include <asm/arch-mvebu/mbus.h>
-#include <asm/arch-mvebu/a3700_gpio.h>
+#include <asm/arch-armadalp/gpio.h>
 #include <asm/arch-mvebu/mvebu_misc.h>
 
 void (*ptr_uboot_start)(void);

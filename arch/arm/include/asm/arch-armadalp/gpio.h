@@ -16,9 +16,26 @@
  * ***************************************************************************
  */
 
-#ifndef _A3700_GPIO_H_
-#define _A3700_GPIO_H_
+#ifndef _MVEBU_GPIO_H_
+#define _MVEBU_GPIO_H_
 
+#define MVEBU_GPIO_NB_OUTPUT_EN_REG		(MVEBU_GPIO_NB_REG_BASE)
+#define MVEBU_GPIO_NB_OUTPUT_EN_HIGH_REG	(MVEBU_GPIO_NB_REG_BASE + 0x4)
+#define MVEBU_GPIO_NB_OUTPUT_SPI_EN_OFF		(28)/* This is hidden bit which is reserved in function spec */
+#define MVEBU_GPIO_NB_OUTPUT_VAL_REG		(MVEBU_GPIO_NB_REG_BASE + 0x18)
+#define MVEBU_GPIO_NB_SEL_REG			(MVEBU_GPIO_NB_REG_BASE + 0x30)
+#define MVEBU_GPIO_TW1_GPIO_EN_OFF		(10)
+#define MVEBU_GPIO_SPI_GPIO_EN_OFF		(18)
+
+#define MVEBU_GPIO_SB_OUTPUT_EN_REG		(MVEBU_GPIO_SB_REG_BASE)
+#define MVEBU_GPIO_SB_OUTPUT_VAL_REG		(MVEBU_GPIO_SB_REG_BASE + 0x18)
+#define MVEBU_GPIO_PCIE_RESET_OFF		(3)
+#define MVEBU_GPIO_SB_SEL_REG			(MVEBU_GPIO_SB_REG_BASE + 0x30)
+#define MVEBU_GPIO_RGMII_GPIO_EN_OFF		(3)
+#define MVEBU_GPIO_PCIE_EN_OFF			(4)
+
+
+void mvebu_a3700_reset_pcie_dev(void);
 void mvebu_a3700_gpio(void);
 
-#endif /* _A3700_GPIO_H_ */
+#endif /* _MVEBU_GPIO_H_ */

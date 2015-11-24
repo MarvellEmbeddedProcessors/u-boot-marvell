@@ -30,6 +30,7 @@
 #include <asm/arch/pcie-core.h>
 #include <pci.h>
 #include <asm/arch-mvebu/fdt.h>
+#include <asm/arch-armadalp/gpio.h>
 
 /* #define DEBUG */
 /* #define DEBUG_CFG_CYCLE */
@@ -323,6 +324,9 @@ static int advk_pcie_init(int host_id, void __iomem *reg_base, struct pcie_win *
 	debug_enter();
 
 	memset(hose, 0, sizeof(hose));
+
+	/* reset PCIe device in RC mode */
+	mvebu_a3700_reset_pcie_dev();
 
 	/* Enable PU */
 	state = readl(PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_PHY_REF_CLK_REG));

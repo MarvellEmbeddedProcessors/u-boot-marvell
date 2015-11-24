@@ -16,9 +16,40 @@
  * ***************************************************************************
  */
 
-
 #include <common.h>
 #include <asm/io.h>
+#include <asm/arch-armadalp/gpio.h>
+
+/*
+ * reset PCIe device
+ */
+void mvebu_a3700_reset_pcie_dev(void)
+{
+	u32 reg_val;
+
+	/* Set PCIe reset to 0 */
+	reg_val = readl(MVEBU_GPIO_SB_OUTPUT_VAL_REG);
+	reg_val &= ~(1 << MVEBU_GPIO_PCIE_RESET_OFF);
+	writel(reg_val, MVEBU_GPIO_SB_OUTPUT_VAL_REG);
+
+	/* Set to GPIO output mode */
+	reg_val = readl(MVEBU_GPIO_SB_OUTPUT_EN_REG);
+	reg_val |= (1 << MVEBU_GPIO_PCIE_RESET_OFF);
+	writel(reg_val, MVEBU_GPIO_SB_OUTPUT_EN_REG);
+
+	/* Set PCIe to GPIO mode */
+	reg_val = readl(MVEBU_GPIO_SB_SEL_REG);
+	reg_val |= (1 << MVEBU_GPIO_PCIE_EN_OFF);
+	writel(reg_val, MVEBU_GPIO_SB_SEL_REG);
+
+	/* typical delay for NIC to finish reset from NIC specification */
+	udelay(100);
+
+	/* Release PCIe reset */
+	reg_val = readl(MVEBU_GPIO_SB_OUTPUT_VAL_REG);
+	reg_val |= (1 << MVEBU_GPIO_PCIE_RESET_OFF);
+	writel(reg_val, MVEBU_GPIO_SB_OUTPUT_VAL_REG);
+}
 
 /*
  * mvebu_a3700_gpio
@@ -34,39 +65,40 @@ void mvebu_a3700_gpio(void)
 	u32 reg_val;
 
 	/*
-	  * NETA GPIO
-	  * on Palladium, RGMII is used
-	  */
-	reg_val = readl(MVEBU_A3700_GPIO_SB_SEL);
-	reg_val = reg_val & (~(1 << MVEBU_A3700_GPIO_RGMII_GPIO_EN_OFF));
-	writel(reg_val, MVEBU_A3700_GPIO_SB_SEL);
+	 * NETA GPIO
+	 * on Palladium, RGMII is used
+	 */
+	reg_val = readl(MVEBU_GPIO_SB_SEL_REG);
+	reg_val = reg_val & (~(1 << MVEBU_GPIO_RGMII_GPIO_EN_OFF));
+	writel(reg_val, MVEBU_GPIO_SB_SEL_REG);
 
 	/*
-	  * I2C, SPI GPIO
-	  */
-	reg_val = readl(MVEBU_A3700_GPIO_NB_SEL);
+	 * I2C, SPI GPIO
+	 */
+	reg_val = readl(MVEBU_GPIO_NB_SEL_REG);
 	/* enable GPIO for I2C */
-	reg_val = reg_val & (~(1 << MVEBU_A3700_GPIO_TW1_GPIO_EN_OFF));
+	reg_val = reg_val & (~(1 << MVEBU_GPIO_TW1_GPIO_EN_OFF));
 	/* enable GPIO for SPI
-	  * In A3700 Register Spec, it says that In North bridge GPIO configuration,
-	  * bit 18 is for SPI quad mode, but this is not accurate description.
-	  * In fact, bit 18 controls HOLD and WP pins for SPI, which is needed for all
-	  * SPI mode, single, dual, and quad.
-	*/
-	reg_val = reg_val & (~(1 << MVEBU_A3700_GPIO_SPI_GPIO_EN_OFF));
-	writel(reg_val, MVEBU_A3700_GPIO_NB_SEL);
+	 * In A3700 Register Spec, it says that In North bridge GPIO configuration,
+	 * bit 18 is for SPI quad mode, but this is not accurate description.
+	 * In fact, bit 18 controls HOLD and WP pins for SPI, which is needed for all
+	 * SPI mode, single, dual, and quad.
+	 */
+	reg_val = reg_val & (~(1 << MVEBU_GPIO_SPI_GPIO_EN_OFF));
+	writel(reg_val, MVEBU_GPIO_NB_SEL_REG);
 
 	/* set hiden GPIO setting for SPI
-	  * in north_bridge_test_pin_out_en register 13804,
-	  * bit 28 is the one which enables CS, CLK pin to be
-	  * output, need to set it to 1.
-	  * it is not in any document, but in UART boot mode,
-	  * CS, CLK pin will be twisted and be used for input.
-	  * which breaks SPI functionality.
-	  */
-	reg_val = readl(MVEBU_A3700_NB_TEST_PIN_OUTPUT_EN);
-	reg_val = reg_val | (1 << MVEBU_A3700_NB_TEST_PIN_OUTPUT_SPI_EN_OFF);
-	writel(reg_val, MVEBU_A3700_NB_TEST_PIN_OUTPUT_EN);
+	 * in north_bridge_test_pin_out_en register 13804,
+	 * bit 28 is the one which enables CS, CLK pin to be
+	 * output, need to set it to 1.
+	 * normally, it is needed only in UART boot mode,
+	 * but after trying all other modes, it is OK to set it.
+	 * later, we could read the SAR register, and do not
+	 * set it in other boot mode.
+	 */
+	reg_val = readl(MVEBU_GPIO_NB_OUTPUT_EN_HIGH_REG);
+	reg_val = reg_val | (1 << MVEBU_GPIO_NB_OUTPUT_SPI_EN_OFF);
+	writel(reg_val, MVEBU_GPIO_NB_OUTPUT_EN_HIGH_REG);
 
 	return;
 }

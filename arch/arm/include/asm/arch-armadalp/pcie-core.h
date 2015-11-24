@@ -66,10 +66,13 @@
  * Used in PIO read/write
  * Should choose this value more carefully
  */
-#define PCIE_CORE_PIO_TIMEOUT_NUM	100
+#define PCIE_CORE_PIO_TIMEOUT_NUM	1000
 #define PCIE_CORE_PIO_ADDR_MASK	0xfffffffc
 /* This defines the size of VPD RAM */
 #define PCIE_CORE_VPD_RAM_SIZE	0x400 /*1K*/
+
+/* Time out number to get PCIe link up */
+#define PCIE_LINK_TIMEOUT_NUM	1000
 
 /* Transaction types */
 #define PCIE_MEM_RD		0x0
@@ -290,6 +293,7 @@
 #define PHY_ERR_REPORT		BIT6
 #define LTSSM_STATE_SHIFT	24
 #define LTSSM_STATE_MASK	0x3f000000
+#define LTSSM_STATE_L0		0x10
 #define PHY_CONF_REG1		0x4
 #define DLL_TIMER_CONF		0x8
 #define REPLAY_TIMEOUT_MASK	0xffff
@@ -397,17 +401,8 @@
 /* Get the LMI register address of a PCIE device, 0x6000 is the offset of control register block */
 #define PCIE_CORE_LMI_REG_ADDR(baseaddr, offset) ((u64)baseaddr + LMI_BASE_ADDR + offset)
 
-/* Get the PHY register address of a PCIE device, 0x7000 is the offset of control register block */
-#define PCIE_CORE_PHY_REG_ADDR(baseaddr, offset) ((u64)baseaddr + PHY_BASE_ADDR + offset)
-
 /* Get PCIe controller core configuration addresses of a PCIe device, 0x180000 is the offset of controller core block */
 #define PCIE_CTRL_CORE_REG_ADDR(baseaddr, offset) ((u64)baseaddr + PCIE_CTRL_CORE_BASE_ADDR + offset)
-
-/*
- * Get PCIe controller interrupt configuration addresses of a PCIe device,
- * 0x1B0000 is the offset of controller interrupt block
- */
-#define PCIE_CTRL_INT_REG_ADDR(baseaddr, offset) ((u64)baseaddr + PCIE_CTRL_INT_BASE_ADDR + offset)
 
 #endif /* _PCIE_CORE_H_ */
 

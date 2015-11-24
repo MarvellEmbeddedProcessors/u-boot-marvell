@@ -219,7 +219,8 @@ int advk_pcie_pio_read_config(struct pci_controller *hose, pci_dev_t bdf, int wh
 		is_done = readl(PCIE_CORE_PIO_REG_ADDR(hose->cfg_addr, PCIE_CORE_PIO_ISR));
 		if ((!reg32) && is_done)
 			break;
-		udelay(1000);
+		/* do not check the PIO state too frequently, 100us delay is appropriate */
+		udelay(100);
 	}
 
 	if (i == PCIE_CORE_PIO_TIMEOUT_NUM) {
@@ -292,6 +293,8 @@ int advk_pcie_pio_write_config(struct pci_controller *hose, pci_dev_t bdf, int w
 		reg32 = readl(PCIE_CORE_PIO_REG_ADDR(hose->cfg_addr, PCIE_CORE_PIO_START));
 		if (!reg32)
 			break;
+		/* do not check the PIO state too frequently, 100us delay is appropriate */
+		udelay(100);
 	}
 	if (i == PCIE_CORE_PIO_TIMEOUT_NUM) {
 		printf("%s(%d): wait for PIO time out\n", __func__, __LINE__);
@@ -312,42 +315,10 @@ int advk_pcie_pio_write_config(struct pci_controller *hose, pci_dev_t bdf, int w
 	return ret;
 }
 
-static int advk_pcie_init(int host_id, void __iomem *reg_base, struct pcie_win *win, int first_busno)
+static int advk_pcie_link_init(void __iomem *reg_base)
 {
+	int i;
 	u32 state;
-	u32 speed;
-	u32 width;
-	u32 region_id = 0;
-
-	struct pci_controller *hose = &pci_hose[host_id];
-
-	debug_enter();
-
-	memset(hose, 0, sizeof(hose));
-
-	/* reset PCIe device in RC mode */
-	mvebu_a3700_reset_pcie_dev();
-
-	/* Enable PU */
-	state = readl(PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_PHY_REF_CLK_REG));
-	state |= PCIE_CORE_EN_PU;
-	writel(state, PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_PHY_REF_CLK_REG));
-
-	/* Select AMP */
-	state = readl(PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_PHY_REF_CLK_REG));
-	state &= ~(PCIE_CORE_SEL_AMP_MASK << PCIE_CORE_SEL_AMP_SHIFT);
-	state |= (0x3 << PCIE_CORE_SEL_AMP_SHIFT);
-	writel(state, PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_PHY_REF_CLK_REG));
-
-	/* Disable RX */
-	state = readl(PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_PHY_REF_CLK_REG));
-	state &= ~PCIE_CORE_EN_RX;
-	writel(state, PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_PHY_REF_CLK_REG));
-
-	/* Enable TX */
-	state = readl(PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_PHY_REF_CLK_REG));
-	state |= PCIE_CORE_EN_TX;
-	writel(state, PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_PHY_REF_CLK_REG));
 
 	/* Set Advanced Error Capabilities and Control PF0 register
 	 * ECRC_CHCK_RCV (RD0070118h [8]) = 1h
@@ -397,10 +368,51 @@ static int advk_pcie_init(int host_id, void __iomem *reg_base, struct pcie_win *
 	state |= (1 << PCIE_CORE_LINK_TRAINING_SHIFT);
 	writel(state, PCIE_CORE_CONFIG_REG_ADDR(reg_base, PCIE_CORE_LINK_CTRL_STAT_REG));
 
+	/* Poll the link state */
+	for (i = 0; i < PCIE_LINK_TIMEOUT_NUM; i++) {
+		state = readl(PCIE_CORE_LMI_REG_ADDR(reg_base, PHY_CONF_REG0));
+		if (((state & LTSSM_STATE_MASK) >> LTSSM_STATE_SHIFT) == LTSSM_STATE_L0)
+			break;
+		udelay(100);
+	}
+	if (i == PCIE_LINK_TIMEOUT_NUM) {
+		debug("%s(%d): time out to get PCIe link\n", __func__, __LINE__);
+		return 1;
+	}
+
 	/* Set PCIe Control 2 register
-	 * bit[1:0] ASPM Control, set to 1 to enable L0S entry
+	 * bit[1:0] ASPM Control, set to 0 to disable L0S entry
 	 */
-	writel(0x00100001, PCIE_CORE_CONFIG_REG_ADDR(reg_base, PCIE_CORE_LINK_CTRL_STAT_REG));
+	state = readl(PCIE_CORE_CONFIG_REG_ADDR(reg_base, PCIE_CORE_LINK_CTRL_STAT_REG));
+	state &= ~0x3;
+	writel(state, PCIE_CORE_CONFIG_REG_ADDR(reg_base, PCIE_CORE_LINK_CTRL_STAT_REG));
+
+	return 0;
+}
+
+static int advk_pcie_init(int host_id, void __iomem *reg_base, struct pcie_win *win, int first_busno)
+{
+	int ret = 0;
+	u32 state;
+	u32 speed;
+	u32 width;
+	u32 region_id = 0;
+
+	struct pci_controller *hose = &pci_hose[host_id];
+
+	debug_enter();
+
+	memset(hose, 0, sizeof(hose));
+
+	/* reset PCIe device in RC mode */
+	mvebu_a3700_reset_pcie_dev();
+
+	/* start link training */
+	ret = advk_pcie_link_init(reg_base);
+	if (ret) {
+		debug("%s(%d): ignore PCIe register since there is no link\n", __func__, __LINE__);
+		return hose->last_busno;
+	}
 
 	/* Enable BUS, IO, Memory space assess
 	 * bit2: Memory IO Request
@@ -410,9 +422,6 @@ static int advk_pcie_init(int host_id, void __iomem *reg_base, struct pcie_win *
 	state = readl(PCIE_CORE_CONFIG_REG_ADDR(reg_base, 4));
 	state |= 0x7;
 	writel(state, PCIE_CORE_CONFIG_REG_ADDR(reg_base, 4));
-
-	/* Don't know why to delay 1 ms. Just leave it as legacy code. */
-	mdelay(1);
 
 	/* Set config address */
 	hose->cfg_addr = (unsigned int *)reg_base;
@@ -468,13 +477,13 @@ static void advk_pcie_set_core_mode(int host_id, void __iomem *reg_base, int mod
 {
 	u32 config;
 
-	/* Set PCI global control register to RC mode */
+	/* Set PCI global control register to RC or EP mode */
 	config = readl(PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_CTRL0_REG));
 	config &= ~(PCIE_CTRL_MODE_MASK << IS_RC_SHIFT);
 	config |= ((mode & PCIE_CTRL_MODE_MASK) << IS_RC_SHIFT);
 	writel(config, PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_CTRL0_REG));
 
-	/* Set PCI core control register to RC mode */
+	/* Set PCI core control register to RC or EP mode */
 	config = readl(PCIE_CTRL_CORE_REG_ADDR(reg_base, PCIE_CTRL_CONFIG_REG));
 	config &= ~(PCIE_CTRL_MODE_MASK << PCIE_CTRL_MODE_SHIFT);
 	config |= ((mode & PCIE_CTRL_MODE_MASK) << PCIE_CTRL_MODE_SHIFT);

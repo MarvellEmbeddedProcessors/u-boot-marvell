@@ -113,9 +113,6 @@ static u16 sgmii_phy_init[512] = {
 /* 1F8 */	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
 	};
 
-static u8 sp_2g5 = 1;
-
-
 /***************************************************************************************************
   * comphy_get_ref_clk
   *
@@ -155,7 +152,7 @@ static u32 comphy_poll_reg(void *addr, u32 val, u32 mask, u32 timeout, u8 op_typ
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_pcie_power_up(void)
+static int comphy_pcie_power_up(enum phy_speed speed)
 {
 	int	ret;
 
@@ -308,7 +305,7 @@ static int comphy_sata_power_up(void)
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_usb3_power_up(void)
+static int comphy_usb3_power_up(enum phy_speed speed)
 {
 	int	ret;
 
@@ -508,7 +505,7 @@ static int comphy_emmc_power_up(void)
   *
   * return:
  ***************************************************************************************************/
-static void comphy_sgmii_phy_init(u32 lane, u8 sp_2g5)
+static void comphy_sgmii_phy_init(u32 lane, enum phy_speed speed)
 {
 	int		addr, fix_idx;
 	const int	fix_arr_sz = sizeof(sgmii_phy_init_fix) / sizeof(struct sgmii_phy_init_data_fix);
@@ -516,7 +513,11 @@ static void comphy_sgmii_phy_init(u32 lane, u8 sp_2g5)
 
 	fix_idx = 0;
 	for (addr = 0; addr < 512; addr++) {
-		if ((sp_2g5 != 0) && (sgmii_phy_init_fix[fix_idx].addr == addr)) {
+		/* All PHY register values are defined in full for 3.125Gbps SERDES speed
+		   The values required for 1.25 Gbps are almost the same and only
+		   few registers should be "fixed" in comparison to 3.125 Gbps values.
+		   These register values are stored in "sgmii_phy_init_fix" array */
+		if ((speed != __1_25gbps) && (sgmii_phy_init_fix[fix_idx].addr == addr)) {
 			/* Use new value */
 			val = sgmii_phy_init_fix[fix_idx].value;
 			if (fix_idx < fix_arr_sz)
@@ -534,7 +535,7 @@ static void comphy_sgmii_phy_init(u32 lane, u8 sp_2g5)
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_sgmii_power_up(u32 lane)
+static int comphy_sgmii_power_up(u32 lane, enum phy_speed speed)
 {
 	int	ret;
 
@@ -553,7 +554,7 @@ static int comphy_sgmii_power_up(u32 lane)
 	 */
 	reg_set((void __iomem *)COMPHY_PHY_CFG1_ADDR(lane),
 		rb_pin_reset_comphy | rb_pin_tx_idle | rb_pin_pu_iveref, /* data - fields to set */
-		rb_pin_pu_pll | rb_pin_pu_rx | rb_pin_pu_tx); /* mask - fields to reset */
+		rb_pin_reset_core | rb_pin_pu_pll | rb_pin_pu_rx | rb_pin_pu_tx); /* mask - fields to reset */
 
 	/*
 	  5. Release reset to the PHY by setting PIN_RESET=0.
@@ -563,30 +564,70 @@ static int comphy_sgmii_power_up(u32 lane)
 	/*
 	  7. Set PIN_PHY_GEN_TX[3:0] and PIN_PHY_GEN_RX[3:0] to decide COMPHY bit rate
 	 */
-	if (sp_2g5 == 1) { /* 3.125 GHz */
+	if (speed == __3_125gbps) { /* 3.125 GHz */
 		reg_set((void __iomem *)COMPHY_PHY_CFG1_ADDR(lane),
 			(0x8 << rf_gen_rx_sel_shift) | (0x8 << rf_gen_tx_sel_shift), /* data - fields to set */
 			rf_gen_rx_select | rf_gen_tx_select); /* mask - fields to reset */
 
-	} else { /* 1.25 GHz */
+	} else if (speed == __1_25gbps) { /* 1.25 GHz */
 		reg_set((void __iomem *)COMPHY_PHY_CFG1_ADDR(lane),
 			(0x6 << rf_gen_rx_sel_shift) | (0x6 << rf_gen_tx_sel_shift), /* data - fields to set */
 			rf_gen_rx_select | rf_gen_tx_select); /* mask - fields to reset */
+	} else {
+		error("Unsupported COMPHY speed!\n");
+		return 0;
 	}
 
-	debug("Running C-DPI phy init %s mode\n", sp_2g5 != 0 ? "2G5" : "1G");
-	comphy_sgmii_phy_init(lane, sp_2g5);
+	/* 8. Wait 1mS for bandgap and reference clocks to stabilize; then start SW programming. */
+	udelay(10000);
 
-	phy_write16(lane, PHY_REG_IFACE_REF_CLK_CTRL_ADDR,
-		    rb_ref1m_gen_div_force | (0x4 << rf_ref1m_gen_div_value_shift),
-		    rb_ref1m_gen_div_force | rf_ref1m_gen_div_value_mask);
+	/* 9. Program COMPHY register PHY_MODE */
+	phy_write16(lane, PHY_PWR_PLL_CTRL_ADDR, (PHY_MODE_SGMII << rf_phy_mode_shift), rf_phy_mode_mask);
 
-	phy_write16(lane, PHY_REG_ERR_CNT_CONST_CTRL_ADDR, rb_fast_dfe_enable, rb_fast_dfe_enable);
+	/* 10. Set COMPHY register REFCLK_SEL to select the correct REFCLK source */
+	phy_write16(lane, PHY_MISC_REG0_ADDR, 0, rb_ref_clk_sel);
 
-	phy_write16(lane, PHY_REG_UNIT_CTRL_ADDR, rb_idle_sync_en, rb_idle_sync_en);
+	/* 11. Set correct reference clock frequency in COMPHY register REF_FREF_SEL. */
+	if (comphy_get_ref_clk() == 40)
+		phy_write16(lane, PHY_PWR_PLL_CTRL_ADDR, (0x4 << rf_ref_freq_sel_shift), rf_ref_freq_sel_mask);
+	else /* 25MHz */
+		phy_write16(lane, PHY_PWR_PLL_CTRL_ADDR, (0x1 << rf_ref_freq_sel_shift), rf_ref_freq_sel_mask);
 
-	phy_write16(lane, PHY_REG_KVCO_CAL_CTRL_ADDR, rb_force_calibration_done, rb_force_calibration_done);
+	/* 12. Program COMPHY register PHY_GEN_MAX[1:0] */
+	/* This step is mentioned in the flow received from verification team.
+	   However the PHY_GEN_MAX value is only meaningful for other interfaces (not SGMII)
+	   For instance, it selects SATA speed 1.5/3/6 Gbps or PCIe speed  2.5/5 Gbps */
 
+	/* 13. Program COMPHY register SEL_BITS to set correct parallel data bus width */
+	phy_write16(lane, PHY_DIG_LB_EN_ADDR, 0, rf_data_width_mask); /* 10bit */
+
+	/* 14. As long as DFE function needs to be enabled in any mode,
+	   COMPHY register DFE_UPDATE_EN[5:0] shall be programmed to 0x3F
+	   for real chip during COMPHY power on.
+	*/
+	/* The step 14 exists (and empty) in the original initialization flow obtained from
+	   the verification team. According to the functional specification DFE_UPDATE_EN
+	   already has the default value 0x3F */
+
+	/* 15. Program COMPHY GEN registers.
+	   These registers should be programmed based on the lab testing result
+	   to achieve optimal performance. Please contact the CEA group to get
+	   the related GEN table during real chip bring-up.
+	   We only requred to run though the entire registers programming flow
+	   defined by "comphy_sgmii_phy_init" when the REF clock is 40 MHz.
+	   For REF clock 25 MHz the default values stored in PHY registers are OK.
+	*/
+	debug("Running C-DPI phy init %s mode\n", speed == __3_125gbps ? "2G5" : "1G");
+	if (comphy_get_ref_clk() == 40)
+		comphy_sgmii_phy_init(lane, speed);
+
+	/* 16. [Simulation Only] should not be used for real chip.
+	   By pass power up calibration by programming EXT_FORCE_CAL_DONE
+	   (R02h[9]) to 1 to shorten COMPHY simulation time.
+	*/
+	/* 17. [Simulation Only: should not be used for real chip]
+	   Program COMPHY register FAST_DFE_TIMER_EN=1 to shorten RX training simulation time.
+	*/
 	/*
 	   18. Set PHY input ports PIN_PU_PLL, PIN_PU_TX and PIN_PU_RX to 1 to start
 	   PHY power up sequence. All the PHY register programming should be done before
@@ -736,17 +777,17 @@ int comphy_a3700_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 			break;
 
 		case PEX0:
-			ret = comphy_pcie_power_up();
+			ret = comphy_pcie_power_up(ptr_comphy_map->speed);
 			break;
 
 		case USB3_HOST0:
 		case USB3_DEVICE:
-			ret = comphy_usb3_power_up();
+			ret = comphy_usb3_power_up(ptr_comphy_map->speed);
 			break;
 
 		case SGMII0:
 		case SGMII1:
-			ret = comphy_sgmii_power_up(lane);
+			ret = comphy_sgmii_power_up(lane, ptr_comphy_map->speed);
 			break;
 
 		default:

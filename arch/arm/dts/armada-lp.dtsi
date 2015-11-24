@@ -93,7 +93,7 @@
 				};
 				phy1 {
 					phy-type = <PHY_TYPE_SGMII1>;
-					phy-speed = <PHY_SPEED_2_5G>;
+					phy-speed = <PHY_SPEED_1_25G>;
 				};
 			};
 			pcie-controller {

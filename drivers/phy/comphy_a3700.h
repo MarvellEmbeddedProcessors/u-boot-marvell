@@ -35,6 +35,7 @@
 
 #define COMPHY_PHY_CFG1_ADDR(lane)	(MVEBU_REGS_BASE + 0x018300 + (lane) * 0x28)
 #define rb_pin_pu_iveref		BIT1
+#define rb_pin_reset_core		BIT11
 #define rb_pin_reset_comphy		BIT12
 #define rb_pin_pu_pll			BIT16
 #define rb_pin_pu_rx			BIT17
@@ -82,22 +83,33 @@
 #define PHY_BASE(unit)			((unit == PCIE) ? PCIEPHY_BASE : USB3PHY_BASE)
 #define PHY_SHFT(unit)			((unit == PCIE) ? PCIEPHY_SHFT : USB3PHY_SHFT)
 
-#define PWR_PLL_CTRL_ADDR(unit)		(0x01 * PHY_SHFT(unit) + PHY_BASE(unit))
+#define PHY_PWR_PLL_CTRL_ADDR		0x01	/* for phy_read16 and phy_write16 */
+#define PWR_PLL_CTRL_ADDR(unit)		(PHY_PWR_PLL_CTRL_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
+#define rf_phy_mode_shift		5
+#define rf_phy_mode_mask		(0x7 << rf_phy_mode_shift)
+#define rf_ref_freq_sel_shift		0
+#define rf_ref_freq_sel_mask		(0x1F << rf_ref_freq_sel_shift)
+#define PHY_MODE_SGMII			0x4
 
 #define PHY_REG_KVCO_CAL_CTRL_ADDR	0x02	/* for phy_read16 and phy_write16 */
 #define KVCO_CAL_CTRL_ADDR(unit)	(PHY_REG_KVCO_CAL_CTRL_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define rb_use_max_pll_rate		BIT12
 #define rb_force_calibration_done	BIT9
 
-#define DIG_LB_EN_ADDR(unit)		(0x23 * PHY_SHFT(unit) + PHY_BASE(unit))
+#define PHY_DIG_LB_EN_ADDR		0x23	/* for phy_read16 and phy_write16 */
+#define DIG_LB_EN_ADDR(unit)		(PHY_DIG_LB_EN_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
+#define rf_data_width_shift		10
+#define rf_data_width_mask		(0x3 << rf_data_width_shift)
 
 #define PHY_REG_UNIT_CTRL_ADDR		0x48	/* for phy_read16 and phy_write16 */
 #define UNIT_CTRL_ADDR(unit)		(PHY_REG_UNIT_CTRL_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define rb_idle_sync_en			BIT12
 
-#define MISC_REG0_ADDR(unit)		(0x4F * PHY_SHFT(unit) + PHY_BASE(unit))
+#define PHY_MISC_REG0_ADDR		0x4F	/* for phy_read16 and phy_write16 */
+#define MISC_REG0_ADDR(unit)		(PHY_MISC_REG0_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define rb_clk100m_125m_en		BIT4
 #define rb_clk500m_en			BIT7
+#define rb_ref_clk_sel			BIT10
 
 #define PHY_REG_IFACE_REF_CLK_CTRL_ADDR		0x51	/* for phy_read16 and phy_write16 */
 #define UNIT_IFACE_REF_CLK_CTRL_ADDR(unit)	(PHY_REG_IFACE_REF_CLK_CTRL_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))

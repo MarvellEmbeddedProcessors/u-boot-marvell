@@ -17,5 +17,3 @@
 #
 
 obj-y	+= armada8k.o
-obj-$(CONFIG_APN_806_DB)	+= db-apn806-info.o
-obj-$(CONFIG_ARMADA_70X0_DB)	+= db-a70x0-info.o

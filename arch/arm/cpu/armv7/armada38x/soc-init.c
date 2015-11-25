@@ -21,6 +21,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch-mvebu/soc.h>
+#include <asm/arch-mvebu/mpp.h>
 #include <asm/arch-armada38x/armada38x.h>
 
 #define MBUS_SDRAM_WIN_ENABLE			0x1
@@ -29,8 +30,23 @@
 #define MBUS_SDRAM_SIZE_MASK			(0xFF << 24)
 #define MBUS_SDRAM_SIZE_ALIGN			(1 << 24)
 
+int a38x_configure_mpp(void)
+{
+#ifdef CONFIG_MVEBU_MPP_BUS
+#ifdef CONFIG_MVEBU_NAND_BOOT
+	mpp_enable_bus("nand");
+#endif
+#ifdef CONFIG_MVEBU_SPI_BOOT
+	mpp_enable_bus("spi0");
+#endif
+#endif
+	return 0;
+}
+
+
 int soc_early_init_f(void)
 {
+	a38x_configure_mpp();
 	return 0;
 }
 

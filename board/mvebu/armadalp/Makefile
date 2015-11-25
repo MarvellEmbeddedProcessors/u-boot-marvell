@@ -17,6 +17,3 @@
 #
 
 obj-y	+= armadalp.o
-obj-$(CONFIG_ARMADA_LP_DB0)	+= db0-armadalp-info.o
-obj-$(CONFIG_ARMADA_LP_DB1)	+= db1-armadalp-info.o
-obj-$(CONFIG_ARMADA_LP_CUSTOMER)	+= customer-board.o

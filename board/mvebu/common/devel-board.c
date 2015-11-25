@@ -25,17 +25,11 @@
 
 #include "sar.h"
 
-int mvebu_devel_board_init(struct mvebu_board_info *brd)
+int mvebu_devel_board_init(void)
 {
-
 #ifdef CONFIG_MVEBU_SAR
 	sar_init();
 #endif
-
-	/* Update MPP configurations */
-	if (brd->configure_mpp)
-		(*brd->configure_mpp)();
-
 	return 0;
 }
 

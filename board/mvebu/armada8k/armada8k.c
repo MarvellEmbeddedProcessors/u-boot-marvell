@@ -19,33 +19,10 @@
 /* #define DEBUG*/
 
 #include <common.h>
-#include <malloc.h>
-#include <errno.h>
-#include <netdev.h>
-#include <asm/io.h>
-#include <asm/arch-armada8k/armada8k.h>
 #include <linux/compiler.h>
-#include "board-info.h"
 
-struct mvebu_board_info *mvebu_board_info_get(enum fdt_compat_id compat_id)
+int mvebu_board_id_get(void)
 {
-	switch (compat_id) {
-#ifdef CONFIG_APN_806_DB
-	case COMPAT_MVEBU_APN_806_DB:
-		return &a8021_db_info;
-#endif
-#ifdef CONFIG_ARMADA_70X0_DB
-	case COMPAT_MVEBU_ARMADA_70X0_DB:
-		return &a70x0_db_info;
-#endif
-	case COMPAT_MVEBU_APN_806_CUSTOMER:
-	default:
-		error("Missing board information for compatible string = %d\n", compat_id);
-#ifdef CONFIG_APN_806_DB
-		return &a8021_db_info;
-#else
-		return NULL;
-#endif
-	}
+	/* stub function for future use */
+	return 0;
 }
-

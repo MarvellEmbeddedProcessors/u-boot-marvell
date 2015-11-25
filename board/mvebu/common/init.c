@@ -100,52 +100,29 @@ int mvebu_io_init(void)
 	return 0;
 }
 
-int mvebu_print_info(char *board_name)
+int mvebu_print_info(void)
 {
-	printf("Board: %s\n", board_name);
+	const void *blob = gd->fdt_blob;
+	char *brd_name;
+
+	fdt_get_string(blob, 0, "model", (const char **)&brd_name);
+	printf("Board: %s\n", brd_name);
 	mvebu_print_soc_info();
 
 	return 0;
 }
 
-struct mvebu_board_info *mvebu_fdt_get_board(void)
-{
-	const void *blob = gd->fdt_blob;
-	struct mvebu_board_info *brd;
-	u32 compt_id;
-
-	compt_id = fdtdec_lookup(blob, 0);
-	brd = mvebu_board_info_get(compt_id);
-
-	return brd;
-}
-
-int mvebu_fdt_board_info_update(struct mvebu_board_info *brd)
-{
-	const void *blob = gd->fdt_blob;
-	fdt_get_string(blob, 0, "model", (const char **)&brd->name);
-	return 0;
-}
-
 int mvebu_board_init(void)
 {
-	struct mvebu_board_info *brd;
-
 	debug("Initializing board\n");
 
-	brd = mvebu_fdt_get_board();
-	mvebu_fdt_board_info_update(brd);
-
-	mvebu_print_info(brd->name);
-
+	mvebu_print_info();
 #ifdef CONFIG_MVEBU_MPP_BUS
 	mpp_bus_probe();
 #endif
-
 #ifdef CONFIG_DEVEL_BOARD
-	mvebu_devel_board_init(brd);
+	mvebu_devel_board_init();
 #endif
-
 	return 0;
 }
 

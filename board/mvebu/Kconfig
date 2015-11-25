@@ -20,8 +20,5 @@ config CUSTOMER_BOARD
 	  customer board.
 	  If not, keep this off to reduce code size
 
-source "board/mvebu/armada8k/Kconfig"
-source "board/mvebu/armada38x/Kconfig"
-source "board/mvebu/armadalp/Kconfig"
 source "board/mvebu/common/Kconfig"
 endmenu

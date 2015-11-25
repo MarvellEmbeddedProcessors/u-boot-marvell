@@ -22,6 +22,6 @@
 #include <common.h>
 #include "board.h"
 
-int mvebu_devel_board_init(struct mvebu_board_info *brd);
+int mvebu_devel_board_init(void);
 
 #endif /* _DEVEL_BOARD_H_ */

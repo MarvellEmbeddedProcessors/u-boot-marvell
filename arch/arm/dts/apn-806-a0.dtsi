@@ -66,13 +66,12 @@
 				status = "okay";
 			};
 
-			pinctl: pinctl@6F008C {
+			pinctl: pinctl@6F4000 {
 				compatible = "marvell,mvebu-pinctl";
 				bank-name ="apn-806";
 				reg = <0x6F4000 0x10>;
 				pin-count = <20>;
-				max-func = <1>;
-				reverse-reg;
+				max-func = <3>;
 			};
 
 			ddr-mac {

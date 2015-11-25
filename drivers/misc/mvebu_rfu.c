@@ -163,7 +163,8 @@ int init_rfu(bool sw_init)
 	struct rfu_win memory_map[RFU_MAX_TID], *win;
 	const void *blob = gd->fdt_blob;
 	u32 win_id, win_reg, trgt_id;
-	u32 node, win_count;
+	u32 win_count;
+	int node;
 
 	debug_enter();
 	debug("Initializing RFU Address decoding\n");
@@ -171,9 +172,10 @@ int init_rfu(bool sw_init)
 	/* Get address decoding node from the FDT blob */
 	node = fdt_node_offset_by_compatible(blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_RFU));
 	if (node < 0) {
-		error("No RFU address decoding node found in FDT blob\n");
-		return -1;
+		debug("No RFU address decoding node found in FDT blob\n");
+		return 0;
 	}
+
 	/* Get the base address of the address decoding MBUS */
 	rfu_base = (void *)fdt_get_regs_offs(blob, node, "reg");
 

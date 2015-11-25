@@ -638,7 +638,7 @@ INLINE GT_U32 patternTableGetWord
 		case PATTERN_SSO_FULL_XTALK_DQ5:
 		case PATTERN_SSO_FULL_XTALK_DQ6:
 		case PATTERN_SSO_FULL_XTALK_DQ7:
-			pattern = patternTableGetSsoFullXtalkWord(type - PATTERN_SSO_FULL_XTALK_DQ0, index);
+			pattern = patternTableGetSsoFullXtalkWord((GT_U8)(type - PATTERN_SSO_FULL_XTALK_DQ0), index);
 			break;
 		case PATTERN_SSO_XTALK_FREE_DQ0:
 		case PATTERN_SSO_XTALK_FREE_DQ1:
@@ -648,7 +648,7 @@ INLINE GT_U32 patternTableGetWord
 		case PATTERN_SSO_XTALK_FREE_DQ5:
 		case PATTERN_SSO_XTALK_FREE_DQ6:
 		case PATTERN_SSO_XTALK_FREE_DQ7:
-			pattern = patternTableGetSsoXtalkFreeWord(type - PATTERN_SSO_XTALK_FREE_DQ0, index);
+			pattern = patternTableGetSsoXtalkFreeWord((GT_U8)(type - PATTERN_SSO_XTALK_FREE_DQ0), index);
 			break;
 		case PATTERN_ISI_XTALK_FREE:
 			pattern = patternTableGetISIWord( index);
@@ -723,7 +723,7 @@ INLINE GT_U32 patternTableGetWord
 		case PATTERN_SSO_FULL_XTALK_DQ5:
 		case PATTERN_SSO_FULL_XTALK_DQ6:
 		case PATTERN_SSO_FULL_XTALK_DQ7:
-			pattern = patternTableGetSsoFullXtalkWord_16(type - PATTERN_SSO_FULL_XTALK_DQ0, index);
+			pattern = patternTableGetSsoFullXtalkWord_16((GT_U8)(type - PATTERN_SSO_FULL_XTALK_DQ0), index);
 			break;
 		case PATTERN_SSO_XTALK_FREE_DQ0:
 		case PATTERN_SSO_XTALK_FREE_DQ1:
@@ -733,7 +733,7 @@ INLINE GT_U32 patternTableGetWord
 		case PATTERN_SSO_XTALK_FREE_DQ5:
 		case PATTERN_SSO_XTALK_FREE_DQ6:
 		case PATTERN_SSO_XTALK_FREE_DQ7:
-			pattern = patternTableGetSsoXtalkFreeWord_16(type - PATTERN_SSO_XTALK_FREE_DQ0, index);
+			pattern = patternTableGetSsoXtalkFreeWord_16((GT_U8)(type - PATTERN_SSO_XTALK_FREE_DQ0), index);
 			break;
 		case PATTERN_ISI_XTALK_FREE:
 			pattern = patternTableGetISIWord_16( index);

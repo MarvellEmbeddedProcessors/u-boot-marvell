@@ -92,7 +92,7 @@ extern char __end_of_spl[];
 
 #undef CONFIG_BOOTARGS
 #define CONFIG_BOOTARGS		"console=ttyS0,24000 earlycon=uart8250,mmio32,0xf0512000 " \
-				"mem=128M init=/bin/sh root=/dev/ram0 rw"
+				"mem=256M init=/bin/sh root=/dev/ram0 rw"
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x180000\0"	\

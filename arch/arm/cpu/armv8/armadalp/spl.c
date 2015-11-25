@@ -17,60 +17,55 @@
  */
 
 #include <common.h>
-#include <spl.h>
-#include <fdtdec.h>
-#include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/spl.h>
+#include <asm/arch-mvebu/comphy.h>
+#include <asm/arch-mvebu/io_addr_dec.h>
+#include <asm/arch-mvebu/clock.h>
+#include <asm/arch-mvebu/mbus.h>
+#include <asm/arch-mvebu/a3700_gpio.h>
+#include <asm/arch-mvebu/mvebu_misc.h>
 
-#ifdef CONFIG_MVEBU_SPL_SAR_DUMP
-extern void mvebu_sar_dump_reg(void);
-#endif
+void (*ptr_uboot_start)(void);
 
-static int setup_fdt(void)
+void early_spl_init(void)
 {
-#ifdef CONFIG_OF_CONTROL
-#ifdef CONFIG_OF_EMBED
-	/* Get a pointer to the FDT */
-	gd->fdt_blob = __dtb_dt_begin;
-#else
-	#error "Support only embedded FDT mode in SPL"
+#ifdef CONFIG_MVEBU_SPL_A3700_GPIO
+	mvebu_a3700_gpio();
 #endif
+
+	/* Clock should be enabeld before initialize the I/O units */
+#ifdef CONFIG_MVEBU_A3700_CLOCK
+	init_a3700_clock();
 #endif
-	return 0;
+
+#ifdef CONFIG_MVEBU_A3700_MISC_INIT
+	misc_init_cci400();
+#endif
 }
 
-void board_init_f(ulong silent)
+void late_spl_init(void)
 {
-	gd = &gdata;
-	gd->baudrate = CONFIG_BAUDRATE;
-#if 0
-	if (silent)
-		gd->flags |= GD_FLG_SILENT;
+#ifdef CONFIG_MVEBU_COMPHY_SUPPORT
+	if (comphy_init(gd->fdt_blob))
+		error("COMPHY initialization failed\n");
+#endif
+#ifdef CONFIG_MVEBU_SPL_DDR_SUPPORT
+	mvebu_dram_init(gd->fdt_blob);
 #endif
 
-	/* Update the pointer to the FDT */
-	setup_fdt();
-
-	/* Init all drivers before UART initialization */
-	early_spl_init();
-
-	/* UART init */
-	preloader_console_init();
-
-#ifdef CONFIG_MVEBU_SPL_SAR_DUMP
-	/* Sample at reset dump register */
-	mvebu_sar_dump_reg();
+#ifdef CONFIG_MVEBU_MBUS
+	init_mbus();
 #endif
 
-	/* Init all relevant drivers (e.g. DDR, comphy...) */
-	late_spl_init();
-
-#ifdef CONFIG_MVEBU_SPL_MEMORY_TEST
-	/* Momory test */
-	if (run_memory_test())
-		printf("**** DRAM test failed ****\n");
+#ifdef CONFIG_MVEBU_A3700_IO_ADDR_DEC
+	init_a3700_io_addr_dec();
 #endif
+}
 
-	/* Jump to U-Boot if needed */
-	soc_spl_jump_uboot();
+void soc_spl_jump_uboot(void)
+{
+	debug("SPL processing done. Jumping to u-boot\n\n");
+	ptr_uboot_start = 0;
+	/* Jump from SPL to u-boot start address */
+	ptr_uboot_start();
 }

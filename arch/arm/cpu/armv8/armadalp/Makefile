@@ -17,6 +17,7 @@
 #
 
 obj-y += soc-init.o
+obj-y += spl.o
 obj-y += clock.o
 obj-$(CONFIG_ARMV8_PSCI)	+= psci.o
 obj-$(CONFIG_MVEBU_A3700_IO_ADDR_DEC) += mvebu_io_addr_dec.o

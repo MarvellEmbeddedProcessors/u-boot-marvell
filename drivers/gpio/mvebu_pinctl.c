@@ -21,12 +21,11 @@
 #include <asm/system.h>
 #include <asm/io.h>
 #include <fdtdec.h>
-#include <malloc.h>
 #include <errno.h>
 #include <asm/arch-mvebu/fdt.h>
 
 #define CONFIG_MAX_PINCTL_BANKS		4
-#define CONFIG_MAX_PINS_PER_BANK	70
+#define CONFIG_MAX_PINS_PER_BANK	100
 #define CONFIG_MAX_FUNC			0xF
 
 #define BITS_PER_PIN		4
@@ -44,6 +43,7 @@ struct pinctl_data {
 	const char    *bank_name;
 };
 struct pinctl_data __attribute__((section(".data"))) bank_data[CONFIG_MAX_PINCTL_BANKS];
+u32 __attribute__((section(".data"))) pin_func_buf[CONFIG_MAX_PINS_PER_BANK];
 
 int pinctl_set_pin_func(int bank, int pin_id, int func)
 {
@@ -136,6 +136,7 @@ int mvebu_pinctl_probe(void)
 	int count, i, err, pin;
 	u32 *pin_func;
 
+
 	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "pinctl",
 			COMPAT_MVEBU_PINCTL, node_list, CONFIG_MAX_PINCTL_BANKS);
 
@@ -163,11 +164,12 @@ int mvebu_pinctl_probe(void)
 		if (fdtdec_get_bool(blob, node, "reverse-reg"))
 			pinctl->reg_direction = -1;
 
-		pin_func = malloc(pinctl->pin_cnt * sizeof(u32));
+		pin_func = &pin_func_buf[0];
 		if (pin_func == NULL) {
 			error("pinctl: no memory for pin_func array\n");
 			continue;
 		}
+
 		err = fdtdec_get_int_array(blob, node, "pin-func", pin_func, pinctl->pin_cnt);
 		if (err) {
 			error("Failed reading pin functions for bank %s\n", pinctl->bank_name);

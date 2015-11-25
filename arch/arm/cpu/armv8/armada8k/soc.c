@@ -24,6 +24,7 @@
 #include <asm/arch-mvebu/system_info.h>
 #include <asm/arch-armada8k/armada8k.h>
 #include <asm/arch/regs-base.h>
+#include <asm/arch-mvebu/pinctl.h>
 #include <linux/sizes.h>
 
 #define MVEBU_MCKINLEY_REGS_BASE	(MVEBU_REGS_BASE + 0x20000)
@@ -34,6 +35,9 @@
 
 int soc_early_init_f(void)
 {
+#ifdef CONFIG_MVEBU_PINCTL
+	mvebu_pinctl_probe();
+#endif
 	return 0;
 }
 

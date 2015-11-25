@@ -133,9 +133,6 @@ int mvebu_board_init(void)
 
 	debug("Initializing board\n");
 
-#ifdef CONFIG_MVEBU_PINCTL
-	mvebu_pinctl_probe();
-#endif
 	brd = mvebu_fdt_get_board();
 	mvebu_fdt_board_info_update(brd);
 

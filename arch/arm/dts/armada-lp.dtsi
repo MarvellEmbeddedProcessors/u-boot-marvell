@@ -73,7 +73,7 @@
 				compatible = "marvell,armadalp-neta";
 				reg = <0x40000 0x20>;
 				phy_addr = <0x1>;
-				phy_mode = "rgmii";
+				phy_mode = "sgmii";
 				status = "disabled";
 			};
 			i2c: i2c@11000 {

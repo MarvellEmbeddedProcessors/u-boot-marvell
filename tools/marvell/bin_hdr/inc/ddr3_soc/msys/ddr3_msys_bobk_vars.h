@@ -68,6 +68,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_msys_bobk_config.h"
 #include "mvDdrTopologyDef.h"
 
+#define ECC_SUPPORT
+
 /*Tune internal training params values*/
 #define MV_TUNE_TRAINING_PARAMS_CK_DELAY 	150
 #define MV_TUNE_TRAINING_PARAMS_PHYREG3VAL	0xA

@@ -464,35 +464,33 @@ static int comphy_emmc_power_up(void)
 	/*
 	 * 1. Bus power ON, Bus voltage 1.8V
 	 */
-	reg_set((void __iomem *)SDIO_HOST_CTRL1_ADDR, 0xB00, 0x100);
+	reg_set((void __iomem *)SDIO_HOST_CTRL1_ADDR, 0xB00, 0xF00);
 
 	/*
 	 * 2. Set FIFO parameters
 	 */
-	reg_set((void __iomem *)SDIO_SDHC_FIFO_ADDR, 0x315, 0);
-
+	reg_set((void __iomem *)SDIO_SDHC_FIFO_ADDR, 0x315, 0xFFFFFFFF);
 
 	/*
 	 * 3. Set Capabilities 1_2
 	 */
-	reg_set((void __iomem *)SDIO_CAP_12_ADDR, 0x25FAC8B2, 0);
+	reg_set((void __iomem *)SDIO_CAP_12_ADDR, 0x25FAC8B2, 0xFFFFFFFF);
 
 	/*
 	 * 4. Set Endian
 	 */
 	reg_set((void __iomem *)SDIO_ENDIAN_ADDR, 0x00c00000, 0);
 
-
 	/*
 	 * 4. Init PHY
 	 */
-	reg_set((void __iomem *)SDIO_PHY_TIMING_ADDR, 0x80000000, 0);
-	reg_set((void __iomem *)SDIO_PHY_PAD_CTRL0_ADDR, 0x50000000, 0);
+	reg_set((void __iomem *)SDIO_PHY_TIMING_ADDR, 0x80000000, 0x80000000);
+	reg_set((void __iomem *)SDIO_PHY_PAD_CTRL0_ADDR, 0x50000000, 0xF0000000);
 
 	/*
 	 * 5. DLL reset
 	 */
-	reg_set((void __iomem *)SDIO_DLL_RST_ADDR, 0xFFFFFFFF, 0);
+	reg_set((void __iomem *)SDIO_DLL_RST_ADDR, 0xFFFEFFFF, 0);
 	reg_set((void __iomem *)SDIO_DLL_RST_ADDR, 0x00010000, 0);
 
 	debug_exit();

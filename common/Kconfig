@@ -267,6 +267,14 @@ config CMD_PING
 	help
 	  Send ICMP ECHO_REQUEST to network host
 
+config CMD_MII
+	bool "mii"
+	help
+	  MII utility commands - read/write MII PHY.4
+	  This provides a bit-banged interface to
+	  the ethernet MII management channel.
+	  Support general MII register bit mapping and register information
+
 config CMD_CDP
 	bool "cdp"
 	help

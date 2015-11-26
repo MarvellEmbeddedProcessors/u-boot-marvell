@@ -532,8 +532,17 @@ int pci_skip_dev(struct pci_controller *hose, pci_dev_t dev)
 	return 0;
 }
 
+/*
+** first_busno & last_busno management logic:
+** In order to support some PCIe switches, we need to match bus enumerations
+** between U-Boot and Linux.
+** We need to increment the bus number for each PCIe interface we scan, and not
+** only for populated interfaces.
+*/
 void pci_init_board(void)
 {
+
+
 	/* Pex scan skipped by secondary CPUs*/
 	if (whoAmI() != 0)
 		return;
@@ -546,7 +555,6 @@ void pci_init_board(void)
 	struct pci_controller *pci;
 	char *env;
 	int status;
-	MV_U32 link_found, lastPexIfWithFoundLink;
 #ifdef CONFIG_PCIE_IF_MAPPING
 	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
 #endif
@@ -575,24 +583,21 @@ void pci_init_board(void)
 
 		/* Set bus numbers in U-BOOT stack */
 		if (pexIf == 0) {
-			pci->first_busno = 0;
-			pci->last_busno = 0;
-			link_found = 0;
-			lastPexIfWithFoundLink = 0;
+			pci->first_busno = 1;
+		} else {
+			/* Start the enumeration for this interface, from where
+			** the last interface finished. */
+			pci->first_busno = pci_hose[pexIf-1].last_busno + 1;
 		}
-		else if (!link_found) {
-			/* No link was found in previous PEX interfaces */
-			pci->first_busno = 0;
-			DB(printf("Set first,last=%d,%d bus numbers in U-BOOT stack for pexIf %d\n",
-			pci->first_busno, pci->last_busno, pexIf));
-		}
-		else {
-			pci->first_busno = pci_hose[lastPexIfWithFoundLink].last_busno + 1;
-			pci->last_busno = pci->first_busno;
-			DB(printf("Set first,last=%d,%d bus numbers in U-BOOT stack according to previously found pexIf.last_busno=%d.%d\n",
-				  pci->first_busno, pci->last_busno, lastPexIfWithFoundLink,
-				  pci_hose[lastPexIfWithFoundLink].last_busno));
-		}
+
+		/* last_busno is used as the starting point for next loop (in
+		** case no link is found). In case a link is found, then it
+		** will be updated as a result of the scan process.
+		*/
+		pci->last_busno = pci->first_busno;
+
+		DB(printf("Set first,last=%d,%d bus numbers in U-BOOT stack for pexIf %d\n",
+					pci->first_busno, pci->last_busno, pexIf));
 
 		pci->config_table = mv_config_table;
 		/* Check if PEX IF is powered */
@@ -625,10 +630,6 @@ void pci_init_board(void)
 			       pexHWInf, pexIf);
 		else {
 			if (status == MV_OK) {
-				/* Start counting PCI buses since at least one interface was found with LINK UP */
-				link_found = 1;
-				lastPexIfWithFoundLink = pexIf;
-
 				/* Link detected. Set U-BOOT scan parameters */
 				pci->current_busno = pci->first_busno;
 				pci->last_busno = 0xff;
@@ -648,10 +649,6 @@ void pci_init_board(void)
 			}else  {
 				/* Interface with no link */
 				printf("PCI-e %d: Detected No Link.\n", pexIf);
-				if (pci->first_busno) {
-					pci->first_busno = 0;
-					pci->last_busno = 0;
-				}
 				continue;
 			}
 		}
@@ -660,10 +657,8 @@ void pci_init_board(void)
 		mv_pci_bus_mode_display(pexIf, pci->first_busno);
 
 		/* Skip scan if link is down */
-		if (status == MV_NO_SUCH) {
-			pci->last_busno = pci->first_busno;
+		if (status == MV_NO_SUCH)
 			continue;
-		}
 
 		/* Get the address decode windows */
 		DB(printf("Setting memory regions\n"));

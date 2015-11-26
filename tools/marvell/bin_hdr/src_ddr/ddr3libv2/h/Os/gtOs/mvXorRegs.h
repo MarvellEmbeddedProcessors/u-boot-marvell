@@ -68,7 +68,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define XOR_UNIT(chan)	((chan) >> 1)
 #define XOR_CHAN(chan)  ((chan) & 1)
 
-#ifdef CONFIG_ALLEYCAT3
+#if defined (CONFIG_ALLEYCAT3) || defined (CONFIG_BOBK) /* bobk and AC3 have the same offset */
 #define MV_XOR_REGS_OFFSET(unit)		(0xf0800)
 #else
 #define MV_XOR_REGS_OFFSET(unit)		(0x60900)

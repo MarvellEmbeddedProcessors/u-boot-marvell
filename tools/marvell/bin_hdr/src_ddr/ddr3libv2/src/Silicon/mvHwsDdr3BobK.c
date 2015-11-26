@@ -945,6 +945,14 @@ static GT_STATUS ddr3TipInitBobKSilicon
 						CENTRALIZATION_RX_MASK_BIT |
 						CENTRALIZATION_TX_MASK_BIT
 						);
+
+   	/*Supplementary not supported for ECC modes*/
+	if( ddr3IfEccEnabled())
+    {
+		maskTuneFunc &=	~WRITE_LEVELING_SUPP_TF_MASK_BIT;
+		maskTuneFunc &=	~WRITE_LEVELING_SUPP_MASK_BIT;
+	}
+
 #endif
 	/*Skip mid freq stages for 400Mhz DDR speed*/
 	if( (topologyMap->interfaceParams[firstActiveIf].memoryFreq == DDR_FREQ_400) ){

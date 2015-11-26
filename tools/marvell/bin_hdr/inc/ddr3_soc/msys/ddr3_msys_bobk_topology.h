@@ -68,8 +68,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_msys_bobk_config.h"
 #include "mvDdr3LoggingDef.h"
 
-#define INTERFACE_BUS_MASK_32BIT	0xF
-#define INTERFACE_BUS_MASK_16BIT				0x3 
+#define INTERFACE_BUS_MASK_32BIT	            0xF
+#define INTERFACE_BUS_MASK_16BIT				0x3
+#define INTERFACE_BUS_MASK_32BIT_ECC			0x1F
 #define DYNAMIC_CS_SIZE_CONFIG
 
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
@@ -109,7 +110,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =  {{
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0x1,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,1,0}, {3,2,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_8,  MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
-    INTERFACE_BUS_MASK_32BIT/*INTERFACE_BUS_MASK_32BIT  Buses mask */
+    INTERFACE_BUS_MASK_32BIT_ECC/*INTERFACE_BUS_MASK_32BIT  Buses mask */
     },
     {
     /* 2nd Marvell board: Caelum-DB */

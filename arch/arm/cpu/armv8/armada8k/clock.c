@@ -74,8 +74,8 @@ u32 soc_get_ddr_clk(void)
 
 void soc_print_clock_info(void)
 {
-	printf("Clock: CPU     %-4d [MHz]\n", soc_get_cpu_clk() / MHz);
-	printf("       DDR     %-4d [MHz]\n", soc_get_ddr_clk() / MHz);
-	printf("       FABRIC  %-4d [MHz]\n", soc_get_ring_clk() / MHz);
-	printf("       MSS     %-4d [MHz]\n", soc_get_mss_clk() / MHz);
+	printf("Clock:  CPU     %-4d [MHz]\n", soc_get_cpu_clk() / MHz);
+	printf("\tDDR     %-4d [MHz]\n", soc_get_ddr_clk() / MHz);
+	printf("\tFABRIC  %-4d [MHz]\n", soc_get_ring_clk() / MHz);
+	printf("\tMSS     %-4d [MHz]\n", soc_get_mss_clk() / MHz);
 }

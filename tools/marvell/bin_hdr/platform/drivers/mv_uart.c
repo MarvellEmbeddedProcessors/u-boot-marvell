@@ -121,15 +121,21 @@ MV_VOID mvUartInit(void)
 #if !defined(MV_NO_PRINT)
 	MV_U32  tmpTClkRate;
 	MV_U32 baudDivisor = 0;
+#if defined(MV88F68XX) || defined(MV_MSYS_BOBK)
+	MV_U32 board_id = mvBoardIdGet();
+#endif /* defined(MV88F68XX) || defined(MV_MSYS_BOBK) */
 
 	tmpTClkRate = mvBoardTclkGet();
 
 #if defined (MV88F68XX)
 	/* UART1 on DB-AP board is the default UART interface
 	 - Update the global Uart interface to use UART1 register offset */
-	if( mvBoardIdGet() == DB_AP_68XX_ID)
+	if (board_id == DB_AP_68XX_ID)
 		uartOffset = UART1_REG_OFFSET;
-#endif
+#elif defined(MV_MSYS_BOBK)
+	if (board_id == BOBK_CETUS_DB_ID)
+		uartOffset = UART1_REG_OFFSET;
+#endif /* defined(MV88F68XX) || defined(MV_MSYS_BOBK) */
 	volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + uartOffset);
 	/*  UART Init */
 	switch (tmpTClkRate) {

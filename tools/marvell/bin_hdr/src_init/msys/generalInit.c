@@ -302,9 +302,21 @@ MV_STATUS mvBypassCoreClockWA(void)
 }
 #endif
 
+static inline MV_VOID mvMppConfig()
+{
+	MV_U32 regData;
+
+	/* UART1 MPP's (MPP[11:12] = 0x2) - UART1 on BobK */
+	regData = (MV_REG_READ(MPP_CONTROL_REG(1))  & MPP_UART1_SET_MASK) | MPP_UART1_SET_DATA;
+	MV_REG_WRITE(MPP_CONTROL_REG(1), regData);
+}
+
 /*****************************************************************************/
 MV_STATUS mvGeneralInit(void)
 {
+	if (mvBoardIdGet() == BOBK_CETUS_DB_ID)
+		mvMppConfig(); /* MPP must be configured prior to UART access */
+
 	mvMbusWinConfig();
 #if !defined(MV_NO_PRINT)
 	mvUartInit();

@@ -729,6 +729,14 @@ int misc_init_r (void)
 	return 0;
 }
 
+MV_U32 mvUartPortGet(void)
+{
+	if (mvBoardIdGet() == BOBK_CETUS_DB_ID)
+		return 1;
+
+	return CONFIG_SYS_DUART_CHAN;
+}
+
 MV_U32 mvTclkGet(void)
 {
 	DECLARE_GLOBAL_DATA_PTR;

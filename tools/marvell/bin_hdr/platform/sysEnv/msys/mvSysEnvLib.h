@@ -223,6 +223,11 @@ typedef enum _mvSuspendWakeupStatus {
 	#define REG_DEVICE_SAR1_OVERRIDE_ADDR				0xF82D8
 #endif
 
+/* MPP */
+#define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
+#define MPP_UART1_SET_MASK			(~(0xff000))
+#define MPP_UART1_SET_DATA			0x22000
+
 /* defines for DFX reg, used in core clock WA */
 #if defined CONFIG_BOBK
 #define REG_SERVER_RESET_CTRL		0xF800C

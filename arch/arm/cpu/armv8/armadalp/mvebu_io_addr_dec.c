@@ -44,9 +44,9 @@ struct io_dec_fdt_info {
 #define IO_UNIT_NUM_MAX		(14)
 struct io_dec_fdt_info __attribute__((section(".data")))io_dec_fdt_arr[IO_UNIT_NUM_MAX];
 
-#define MVEBU_DEC_WIN_CTRL_REG(base, win, off)	(base + (win * off))
-#define MVEBU_DEC_WIN_BASE_REG(base, win, off)	(base + (win * off) + 0x4)
-#define MVEBU_DEC_WIN_REMAP_REG(base, win, off)	(base + (win * off) + 0x8)
+#define MVEBU_DEC_WIN_CTRL_REG(base, win, off)	(MVEBU_REGS_BASE + base + (win * off))
+#define MVEBU_DEC_WIN_BASE_REG(base, win, off)	(MVEBU_REGS_BASE + base + (win * off) + 0x4)
+#define MVEBU_DEC_WIN_REMAP_REG(base, win, off)	(MVEBU_REGS_BASE + base + (win * off) + 0x8)
 
 #define MVEBU_DEC_WIN_CTRL_SIZE_OFF	(16)
 #define MVEBU_DEC_WIN_CTRL_ATTR_OFF	(8)
@@ -175,4 +175,3 @@ int init_a3700_io_addr_dec(void)
 	debug_exit();
 	return ret;
 }
-

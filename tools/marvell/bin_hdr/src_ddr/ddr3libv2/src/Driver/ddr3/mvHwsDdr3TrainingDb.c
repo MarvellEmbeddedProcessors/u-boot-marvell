@@ -355,13 +355,13 @@ GT_U32 speedBinTable
 			break;
 		case speedBinTableElements_tRRD1K:
 			if(index < 3) result = 10000;
-			else if(index < 6) result = 7005;
+			else if(index < 6) result = 7500;
 			else if(index < 14) result = 6000;
 			else result = 5000;
 			break;
 		case speedBinTableElements_tRRD2K:
 			if(index < 6) result = 10000;
-			else if(index < 14) result = 7005;
+			else if(index < 14) result = 7500;
 			else result = 6000;
 			break;
 		case speedBinTableElements_tPD:

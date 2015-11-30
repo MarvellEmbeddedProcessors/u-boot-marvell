@@ -56,6 +56,18 @@ void mvebu_a3700_gpio(void)
 	reg_val = reg_val & (~(1 << MVEBU_A3700_GPIO_SPI_GPIO_EN_OFF));
 	writel(reg_val, MVEBU_A3700_GPIO_NB_SEL);
 
+	/* set hiden GPIO setting for SPI
+	  * in north_bridge_test_pin_out_en register 13804,
+	  * bit 28 is the one which enables CS, CLK pin to be
+	  * output, need to set it to 1.
+	  * it is not in any document, but in UART boot mode,
+	  * CS, CLK pin will be twisted and be used for input.
+	  * which breaks SPI functionality.
+	  */
+	reg_val = readl(MVEBU_A3700_NB_TEST_PIN_OUTPUT_EN);
+	reg_val = reg_val | (1 << MVEBU_A3700_NB_TEST_PIN_OUTPUT_SPI_EN_OFF);
+	writel(reg_val, MVEBU_A3700_NB_TEST_PIN_OUTPUT_EN);
+
 	return;
 }
 

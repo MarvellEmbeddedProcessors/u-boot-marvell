@@ -344,42 +344,42 @@ GT_U32 speedBinTable
 			result = speedBinTableTRcdTRp[index];
 			break;
 		case speedBinTableElements_tRAS:
-			if(index < 6) result = 37500;
-			else if(index < 10) result = 36000;
-			else if(index < 14) result = 35000;
-			else if(index < 18) result = 34000;
+			if(index <= SPEED_BIN_DDR_1066G) result = 37500;
+			else if(index <= SPEED_BIN_DDR_1333J) result = 36000;
+			else if(index <= SPEED_BIN_DDR_1600K) result = 35000;
+			else if(index <= SPEED_BIN_DDR_1866M) result = 34000;
 			else result = 33000;
 			break;
 		case speedBinTableElements_tRC:
 			result = speedBinTableTRc[index];
 			break;
-		case speedBinTableElements_tRRD1K:
-			if(index < 3) result = 10000;
-			else if(index < 6) result = 7500;
-			else if(index < 14) result = 6000;
+        case speedBinTableElements_tRRD1K:
+            if(index <= SPEED_BIN_DDR_800E) result = 10000;
+			else if(index <= SPEED_BIN_DDR_1066G) result = 7500;
+			else if(index <= SPEED_BIN_DDR_1600K) result = 6000;
 			else result = 5000;
 			break;
 		case speedBinTableElements_tRRD2K:
-			if(index < 6) result = 10000;
-			else if(index < 14) result = 7500;
+			if(index <= SPEED_BIN_DDR_1066G) result = 10000;
+			else if(index <= SPEED_BIN_DDR_1600K) result = 7500;
 			else result = 6000;
 			break;
 		case speedBinTableElements_tPD:
-			if(index < 3) result = 7500;
-			else if(index < 10) result = 5625;
+			if(index <= SPEED_BIN_DDR_800E) result = 7500;
+			else if(index <= SPEED_BIN_DDR_1333J) result = 5625;
 			else result = 5000;
 			break;
 		case speedBinTableElements_tFAW1K:
-			if(index < 3) result = 40000;
-			else if(index < 6) result = 37500;
-			else if(index < 14) result = 30000;
-			else if(index < 18) result = 27000;
+			if(index <= SPEED_BIN_DDR_800E) result = 40000;
+			else if(index <= SPEED_BIN_DDR_1066G) result = 37500;
+			else if(index <= SPEED_BIN_DDR_1600K) result = 30000;
+			else if(index <= SPEED_BIN_DDR_1866M) result = 27000;
 			else result = 25000;
 			break;
 		case speedBinTableElements_tFAW2K:
-			if(index < 6) result = 50000;
-			else if(index < 10) result = 45000;
-			else if(index < 14) result = 40000;
+			if(index <= SPEED_BIN_DDR_1066G) result = 50000;
+			else if(index <= SPEED_BIN_DDR_1333J) result = 45000;
+			else if(index <= SPEED_BIN_DDR_1600K) result = 40000;
 			else result = 35000;
 			break;
 		case speedBinTableElements_tWTR:

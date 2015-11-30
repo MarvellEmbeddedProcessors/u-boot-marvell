@@ -23,6 +23,8 @@
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-armadalp/armadalp.h>
 #include <netdev.h>
+#include <asm/arch/mbus_reg.h>
+#include <asm/arch-mvebu/mbus.h>
 
 
 int soc_early_init_f(void)
@@ -114,27 +116,24 @@ int dram_init(void)
 	/* NO DRAM init sequence in Pallaidum, so set static DRAM size of 256MB */
 	gd->ram_size = 0x20000000;
 #else
+	struct mbus_win_map win_map;
+	struct mbus_win *win;
 	int cs;
-	u32 ctrl, size, base;
+	u32 size;
 
 	gd->ram_size = 0;
-	/*
-	* We assume the DDR training code has configured
-	* The SDRAM adec windows so we pull our info from there
-	*/
 
-	for (cs = 0; cs < CONFIG_NR_DRAM_BANKS; cs++) {
-		ctrl = readl(MBUS_SDRAM_CTRL_REG(cs));
-		if (ctrl & MBUS_SDRAM_WIN_ENABLE) {
-			base = readl(MBUS_SDRAM_BASE_REG(cs));
-			size = (ctrl & MBUS_SDRAM_SIZE_MASK) + MBUS_SDRAM_SIZE_ALIGN;
-			gd->bd->bi_dram[cs].start = base;
+	/* get DRAM window configuration from MBUS */
+	mbus_win_map_build(&win_map);
+
+	for (cs = 0, win = &win_map.mbus_windows[cs]; cs < win_map.mbus_win_num; cs++, win++) {
+			gd->bd->bi_dram[cs].start = win->base_addr;
+			size = (win->win_size + 1) * MBUS_CR_WIN_SIZE_ALIGNMENT;
 			gd->bd->bi_dram[cs].size = size;
 
 			gd->ram_size += size;
 
-			debug("DRAM bank %d base 0x%08x size 0x%x ", cs, base, size);
-		}
+			debug("DRAM bank %d base 0x%08x size 0x%x ", cs, (u32)win->base_addr, size);
 	}
 
 	if (gd->ram_size == 0) {

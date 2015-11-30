@@ -127,6 +127,55 @@
 				GBE1_CORE_CLK_EN | GBE0_125_CLK_EN | GBE1_125_CLK_EN | GBE0_50_CLK_DIS_EN |\
 				GBE1_50_CLK_DIS_EN)
 
+/* south bridge clock enable register */
+#define MVEBU_SOUTH_CLOCK_TBG_SELECT_REG		0x0
+#define MVEBU_SOUTH_CLOCK_GBE_125_CLK_SEL_OFFSET	(10)
+#define MVEBU_SOUTH_CLOCK_GBE_125_CLK_SEL_MASK	(0x3)
+#define MVEBU_SOUTH_CLOCK_CLK_SCR_SEL_TBG_B_S	(3)
+
+#define MVEBU_SOUTH_CLOCK_DIVIDER_SELECT1_REG	0x8
+#define MVEBU_SOUTH_CLOCK_GBE_125_CLK_PRSCL_MASK	(0x7)
+#define MVEBU_SOUTH_CLOCK_GBE_125_CLK_PRSCL1_OFF	(9)
+#define MVEBU_SOUTH_CLOCK_GBE_125_CLK_PRSCL2_OFF	(6)
+
+#define MVEBU_SOUTH_CLOCK_DIVIDER_2			(2)
+#define MVEBU_SOUTH_CLOCK_DIVIDER_3			(3)
+
+void init_a3700_neta_clock(void)
+{
+	u32 reg_value;
+
+	/* configure GBE_125 clock */
+	/* with default configuration, GBE_125 clock source is TBG-A_S, and it gets 75MHz,
+	  * which is not enough (125MHz), TX would not work in 1GB mode.
+	  * To get a right clock, change GBE_125 clock source to be TBG-B_S, change
+	  * GBE 125MHz clock prescalar_1 from 4 to 3, and prescalar_2 from 4 to 2,
+	  * this way GBE_125 gets 133.33MHz, which is not perfect, but it works for
+	  * GBE TX in 1GB mode.
+	  */
+	/* change clock source */
+	reg_value = readl(MVEBU_SOUTH_CLOCK_REGS_BASE + MVEBU_SOUTH_CLOCK_TBG_SELECT_REG);
+	reg_value = reg_value & ~(MVEBU_SOUTH_CLOCK_GBE_125_CLK_SEL_MASK << MVEBU_SOUTH_CLOCK_GBE_125_CLK_SEL_OFFSET);
+	reg_value = reg_value | (MVEBU_SOUTH_CLOCK_CLK_SCR_SEL_TBG_B_S << MVEBU_SOUTH_CLOCK_GBE_125_CLK_SEL_OFFSET);
+	writel(reg_value, MVEBU_SOUTH_CLOCK_REGS_BASE + MVEBU_SOUTH_CLOCK_TBG_SELECT_REG);
+	debug("South bridge CLK_TBG_SEL are 0x%x\n",
+	      readl(MVEBU_SOUTH_CLOCK_REGS_BASE + MVEBU_SOUTH_CLOCK_TBG_SELECT_REG));
+
+	/* change gbe_125 prescalor value */
+	reg_value = readl(MVEBU_SOUTH_CLOCK_REGS_BASE + MVEBU_SOUTH_CLOCK_DIVIDER_SELECT1_REG);
+	/* set prescalor 1 */
+	reg_value = reg_value & ~(MVEBU_SOUTH_CLOCK_GBE_125_CLK_PRSCL_MASK << MVEBU_SOUTH_CLOCK_GBE_125_CLK_PRSCL1_OFF);
+	reg_value = reg_value | (MVEBU_SOUTH_CLOCK_DIVIDER_3 << MVEBU_SOUTH_CLOCK_GBE_125_CLK_PRSCL1_OFF);
+	/* set prescalor 2 */
+	reg_value = reg_value & ~(MVEBU_SOUTH_CLOCK_GBE_125_CLK_PRSCL_MASK << MVEBU_SOUTH_CLOCK_GBE_125_CLK_PRSCL2_OFF);
+	reg_value = reg_value | (MVEBU_SOUTH_CLOCK_DIVIDER_2 << MVEBU_SOUTH_CLOCK_GBE_125_CLK_PRSCL2_OFF);
+	writel(reg_value, MVEBU_SOUTH_CLOCK_REGS_BASE + MVEBU_SOUTH_CLOCK_DIVIDER_SELECT1_REG);
+	debug("South bridge CLK_PRSCL are 0x%x\n",
+	      readl(MVEBU_SOUTH_CLOCK_REGS_BASE + MVEBU_SOUTH_CLOCK_DIVIDER_SELECT1_REG));
+
+	return;
+}
+
 int init_a3700_clock(void)
 {
 	int ret = 0;
@@ -156,6 +205,9 @@ int init_a3700_clock(void)
 	writel(SB_CLK_ENABLE, MVEBU_SOUTH_CLOCK_REGS_BASE + MVEBU_SOUTH_CLOCK_ENABLE_REG);
 	debug("South bridge clocks are enabled 0x%x\n",
 	      readl(MVEBU_SOUTH_CLOCK_REGS_BASE + MVEBU_SOUTH_CLOCK_ENABLE_REG));
+
+	/* configure GBE_125 clock */
+	init_a3700_neta_clock();
 
 	debug_exit();
 	return ret;

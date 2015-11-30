@@ -212,7 +212,7 @@ GT_U32 speedBinTableTRc[] =
 	43285,
 	44220,
 	45155,
-	46900
+	46090
 };
 
 GT_U32 speedBinTableTRcdTRp[] =
@@ -235,7 +235,7 @@ GT_U32 speedBinTableTRcdTRp[] =
 	12840,
 	13910,
 	10285,
-	11022,
+	11220,
 	12155,
 	13090,
 };

@@ -27,6 +27,9 @@
 
 #include <nand.h>
 
+#include <usb.h>
+#include <fs.h>
+
 #if defined(CONFIG_TARGET_ARMADA_8K)
 #define MAIN_HDR_MAGIC		0xB105B002
 
@@ -200,6 +203,8 @@ int is_nor_active(void)
 #ifdef CONFIG_USB_STORAGE
 static int usb_read_file(const char *file_name)
 {
+	loff_t act_read;
+
 	usb_stop();
 
 	if (usb_init() < 0) {
@@ -220,7 +225,7 @@ static int usb_read_file(const char *file_name)
 	}
 
 	/* Perfrom file read */
-	return fs_read(file_name, get_load_addr(), 0, 0);
+	return fs_read(file_name, get_load_addr(), 0, 0, &act_read);
 }
 
 int is_usb_active(void)

@@ -1978,7 +1978,7 @@ static GT_STATUS ddr3TipSetTiming
     tRRD = (pageSize == 1) ? speedBinTable(speedBinIndex,speedBinTableElements_tRRD1K) : speedBinTable(speedBinIndex,speedBinTableElements_tRRD2K);
     tRRD = GET_MAX_VALUE(tCKCLK * 4,tRRD);
     tRTP = GET_MAX_VALUE(tCKCLK * 4,speedBinTable(speedBinIndex,speedBinTableElements_tRTP));
-    /*tMOD = GET_MAX_VALUE(tCKCLK * 12, 15000);*/
+    tMOD = GET_MAX_VALUE(tCKCLK * 12, 15000);
 #ifdef CONFIG_DDR4
     tWTR = GET_MAX_VALUE(tCKCLK * 2, speedBinTable(speedBinIndex,speedBinTableElements_tWTR));
 #else
@@ -1992,9 +1992,6 @@ static GT_STATUS ddr3TipSetTiming
     tRRD = TIME_2_CLOCK_CYCLES(tRRD, tCKCLK);
     tRTP = TIME_2_CLOCK_CYCLES(tRTP, tCKCLK); 
     tRFC = TIME_2_CLOCK_CYCLES(rfcTable[memorySize]*1000, tCKCLK);
-
-
-	tMOD = GET_MAX_VALUE(tCKCLK * 24, 15000);
 	tMOD = TIME_2_CLOCK_CYCLES(tMOD, tCKCLK);
 
 	/* SDRAM Timing High*/ 

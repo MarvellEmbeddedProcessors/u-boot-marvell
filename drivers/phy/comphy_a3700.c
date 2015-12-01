@@ -328,7 +328,7 @@ static int comphy_usb3_power_up(enum phy_speed speed)
 	if (comphy_get_ref_clk() == 40)
 		reg_set16((void __iomem *)PWR_PLL_CTRL_ADDR(USB3), 0xFCA3, 0xFFFF); /* 40 MHz */
 	else
-		reg_set16((void __iomem *)PWR_PLL_CTRL_ADDR(USB3), 0xFCA1, 0xFFFF); /* 25 MHz */
+		reg_set16((void __iomem *)PWR_PLL_CTRL_ADDR(USB3), 0xFCA2, 0xFFFF); /* 25 MHz */
 
 	/*
 	 * 4. Change RX wait

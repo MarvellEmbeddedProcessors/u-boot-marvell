@@ -26,7 +26,14 @@ config ARMV8_PSCI
 
 config PALLADIUM
 	bool "Support palladium emulation"
-	default y
+	default n
+	help
+	  Choose this option to enable
+	  Palladium support.
+	  There are certain differences
+	  between palladium and real SoC,
+	  like Clock and PHY, this should
+	  not be enabled for real SoC.
 
 config MVEBU_SPL_A3700_GPIO
 	bool "GPIO configuration for A3700 in SPL"

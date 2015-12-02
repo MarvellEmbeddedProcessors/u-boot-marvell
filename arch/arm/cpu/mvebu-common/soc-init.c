@@ -96,9 +96,6 @@ int mvebu_soc_init()
 #ifdef CONFIG_MVEBU_IOB
 	init_iob();
 #endif
-#ifdef CONFIG_MVEBU_MBUS
-	init_mbus();
-#endif
 
 	mvebu_thermal_sensor_probe();
 

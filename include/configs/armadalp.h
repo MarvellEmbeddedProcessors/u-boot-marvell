@@ -107,6 +107,9 @@ extern char __end_of_spl[];
  */
 #include "mvebu-common.h"
 
+/* need board_early_init_f to invoke init_mbus, before dram_init */
+#define CONFIG_BOARD_EARLY_INIT_F
+
 #define CONFIG_SYS_PCI_64BIT	/* enable 64-bit PCI resources */
 
 /*

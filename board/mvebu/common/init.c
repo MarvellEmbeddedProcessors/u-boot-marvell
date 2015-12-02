@@ -27,6 +27,7 @@
 #include <asm/arch-mvebu/pinctl.h>
 #include <asm/arch-mvebu/mpp.h>
 #include <asm/arch-mvebu/system_info.h>
+#include <asm/arch-mvebu/mbus.h>
 #include "board.h"
 #ifdef CONFIG_DEVEL_BOARD
 #include "devel-board.h"
@@ -57,6 +58,18 @@ int board_early_init_f(void)
 /* Call this function to transfer data from address 0x4000000
    into a global struct, before code relocation. */
 	sys_info_init();
+#endif
+#ifdef CONFIG_MVEBU_MBUS
+	/* mbus driver must be inited before dram_init,
+	  * since mbus reads the DRAM window configuration
+	  * from FDT, and dram_init needs it to get the DRAM
+	  * size.
+	  *
+	  * the sequence of init_sequence_f is:
+	  * 1. board_early_init_f --> init_mubs
+	  * 2. dram_init
+	  */
+	init_mbus();
 #endif
 	return 0;
 }

@@ -42,6 +42,15 @@ config MVEBU_NETA_BYPASS_DEC_WIN
 	  bypass the first layer of GBE decode window by
 	  setting the first window to 4GB.
 
+config PHY_MARVELL
+	bool "marvell PHY driver"
+	default n
+	help
+	  Choose this option to add support
+	  for marvell PHY driver, which enables
+	  PHY layer and initialization support
+	  Supports general initialization for Alaska 88E1510/88E1518/88E1512
+
 config MAX_NETA_PORT_NUM
 	int "max port number in neta driver"
 	depends on MVNETA

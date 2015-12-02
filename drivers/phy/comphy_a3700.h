@@ -22,8 +22,8 @@
 #include <asm/arch-mvebu/comphy_hpipe.h>
 
 #define DEFAULT_REFCLK_MHZ		25
-#define PLL_SET_DELAY_US		60
-#define PLL_LOCK_TIMEOUT		10
+#define PLL_SET_DELAY_US		600
+#define PLL_LOCK_TIMEOUT		1000
 #define POLL_16B_REG			1
 #define POLL_32B_REG			0
 

@@ -22,6 +22,7 @@
 #include <asm/io.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/mvebu.h>
+#include <asm/arch-armadalp/clock.h>
 #include "comphy_a3700.h"
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -114,16 +115,6 @@ static u16 sgmii_phy_init[512] = {
 	};
 
 /***************************************************************************************************
-  * comphy_get_ref_clk
-  *
-  * return: reference clock in MHz (25 or 40)
- ***************************************************************************************************/
-static u32 comphy_get_ref_clk(void)
-{
-	return DEFAULT_REFCLK_MHZ;
-}
-
-/***************************************************************************************************
   * comphy_poll_reg
   *
   * return: 1 on success, 0 on timeout
@@ -147,6 +138,7 @@ static u32 comphy_poll_reg(void *addr, u32 val, u32 mask, u32 timeout, u8 op_typ
 	debug("Time out waiting (%p = %#010x)\n", addr, rval);
 	return 0;
 }
+
 /***************************************************************************************************
   * comphy_pcie_power_up
   *
@@ -197,7 +189,7 @@ static int comphy_pcie_power_up(enum phy_speed speed)
 	/*
 	 * 8. Check crystal jumper setting and program the Power and PLL Control accordingly
 	 */
-	if (comphy_get_ref_clk() == 40)
+	if (get_a3700_ref_clk() == 40)
 		reg_set16((void __iomem *)PWR_PLL_CTRL_ADDR(PCIE), 0xFC63, 0xFFFF); /* 40 MHz */
 	else
 		reg_set16((void __iomem *)PWR_PLL_CTRL_ADDR(PCIE), 0xFC62, 0xFFFF); /* 25 MHz */
@@ -259,7 +251,7 @@ static int comphy_sata_power_up(void)
 	 * 2. Select reference clock and PHY mode (SATA)
 	 */
 	reg_set((void __iomem *)rh_vsreg_addr, vphy_power_reg0, 0xFFFFFFFF);
-	if (comphy_get_ref_clk() == 40)
+	if (get_a3700_ref_clk() == 40)
 		reg_set((void __iomem *)rh_vsreg_data, 0x3, 0x00FF); /* 40 MHz */
 	else
 		reg_set((void __iomem *)rh_vsreg_data, 0x1, 0x00FF); /* 25 MHz */
@@ -325,7 +317,7 @@ static int comphy_usb3_power_up(enum phy_speed speed)
 	/*
 	 * 3. Check crystal jumper setting and program the Power and PLL Control accordingly
 	 */
-	if (comphy_get_ref_clk() == 40)
+	if (get_a3700_ref_clk() == 40)
 		reg_set16((void __iomem *)PWR_PLL_CTRL_ADDR(USB3), 0xFCA3, 0xFFFF); /* 40 MHz */
 	else
 		reg_set16((void __iomem *)PWR_PLL_CTRL_ADDR(USB3), 0xFCA2, 0xFFFF); /* 25 MHz */
@@ -586,7 +578,7 @@ static int comphy_sgmii_power_up(u32 lane, enum phy_speed speed)
 	phy_write16(lane, PHY_MISC_REG0_ADDR, 0, rb_ref_clk_sel);
 
 	/* 11. Set correct reference clock frequency in COMPHY register REF_FREF_SEL. */
-	if (comphy_get_ref_clk() == 40)
+	if (get_a3700_ref_clk() == 40)
 		phy_write16(lane, PHY_PWR_PLL_CTRL_ADDR, (0x4 << rf_ref_freq_sel_shift), rf_ref_freq_sel_mask);
 	else /* 25MHz */
 		phy_write16(lane, PHY_PWR_PLL_CTRL_ADDR, (0x1 << rf_ref_freq_sel_shift), rf_ref_freq_sel_mask);
@@ -616,7 +608,7 @@ static int comphy_sgmii_power_up(u32 lane, enum phy_speed speed)
 	   For REF clock 25 MHz the default values stored in PHY registers are OK.
 	*/
 	debug("Running C-DPI phy init %s mode\n", speed == __3_125gbps ? "2G5" : "1G");
-	if (comphy_get_ref_clk() == 40)
+	if (get_a3700_ref_clk() == 40)
 		comphy_sgmii_phy_init(lane, speed);
 
 	/* 16. [Simulation Only] should not be used for real chip.

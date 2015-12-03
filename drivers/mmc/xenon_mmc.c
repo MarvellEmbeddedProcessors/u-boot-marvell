@@ -43,8 +43,6 @@ DECLARE_GLOBAL_DATA_PTR;
 static const char driver_name[] = "XENON-SDHCI";
 const u32 block_size[4] = {512, 1024, 2048, 512};
 
-#define MVEBU_TARGET_DRAM 0
-
 static void xenon_mmc_writel(struct xenon_mmc_cfg *mmc_cfg, u32 offs, u32 val)
 {
 	writel(val, mmc_cfg->reg_base + (offs));
@@ -80,7 +78,7 @@ static void xenon_mmc_reset(struct xenon_mmc_cfg *mmc_cfg, u8 mask)
 	u32 timeout;
 
 	/* Wait max 100 ms */
-	timeout = 100;
+	timeout = 1000;
 	xenon_mmc_writeb(mmc_cfg, SDHCI_SOFTWARE_RESET, mask);
 	while (xenon_mmc_readb(mmc_cfg, SDHCI_SOFTWARE_RESET) & mask) {
 		if (timeout == 0) {
@@ -88,7 +86,7 @@ static void xenon_mmc_reset(struct xenon_mmc_cfg *mmc_cfg, u8 mask)
 			return;
 		}
 		timeout--;
-		udelay(1000);
+		udelay(100);
 	}
 }
 
@@ -96,7 +94,6 @@ int xenon_mmc_phy_init(struct xenon_mmc_cfg *mmc_cfg)
 {
 	u32 var;
 	u32 wait;
-	u32 wait2;
 	u16 clk_ctrl;
 	u32 cfg_info;
 	u32 clock = mmc_cfg->clk;
@@ -108,8 +105,6 @@ int xenon_mmc_phy_init(struct xenon_mmc_cfg *mmc_cfg)
 	xenon_mmc_writew(mmc_cfg, SDHCI_CLOCK_CONTROL, clk_ctrl | SDHCI_CLOCK_CARD_EN);
 	cfg_info = xenon_mmc_readl(mmc_cfg, SDHC_SYS_CFG_INFO);
 	xenon_mmc_writel(mmc_cfg, SDHC_SYS_CFG_INFO, cfg_info | (1 << SLOT_TYPE_SDIO_SHIFT));
-
-	udelay(10000);
 
 	/* Init PHY */
 	var = xenon_mmc_readl(mmc_cfg, EMMC_PHY_TIMING_ADJUST);
@@ -134,34 +129,22 @@ int xenon_mmc_phy_init(struct xenon_mmc_cfg *mmc_cfg)
 		clock = 100000;
 	/* Get the wait time in unit of ms */
 #ifdef CONFIG_PALLADIUM
-	wait = (wait * 1000 * 3000) / clock;
+	wait = (wait * 20000) / clock;
 #else
-	wait = (wait * 1000) / clock;
+	wait = wait / clock;
 #endif
 	wait++;
 
-	wait2 = wait;
-
 	/* Poll for host eMMC PHY init completes */
-	while (((var = xenon_mmc_readl(mmc_cfg, EMMC_PHY_TIMING_ADJUST)) & PHY_INITIALIZAION) &&
-		(wait)) {
-		wait--;
-		if (wait == 0) {
-			error("%s: fail to init eMMC PHY in time\n", mmc_cfg->cfg.name);
-			return -1;
-		}
-		udelay(1000);
-	}
+	while (1) {
+		var = xenon_mmc_readl(mmc_cfg, EMMC_PHY_TIMING_ADJUST);
+		var &= PHY_INITIALIZAION;
+		if (!var)
+			break;
 
-	var = xenon_mmc_readl(mmc_cfg, EMMC_PHY_TIMING_ADJUST);
-	var &= PHY_INITIALIZAION;
-	if (var) {
-		error("%s: eMMC PHY init cannot complete after %d us\n",
-		      mmc_cfg->cfg.name, wait2*1000);
-		return -1;
+		/* wait for host eMMC PHY init completes */
+		udelay(100);
 	}
-
-	udelay(10000);
 
 	/* Recover card inserted state and  SD bus clock */
 	xenon_mmc_writew(mmc_cfg, SDHCI_CLOCK_CONTROL, clk_ctrl);
@@ -177,9 +160,9 @@ void xenon_mmc_phy_set(struct xenon_mmc_cfg *mmc_cfg, u8 timing)
 
 	debug_enter();
 
-	/* Setup pad, set bit[28] and bits[26:24] */
+	/* Setup pad, set bit[30], bit[28] and bits[26:24] */
 	var = xenon_mmc_readl(mmc_cfg, EMMC_PHY_PAD_CONTROL);
-	var |= (OEN_QSN | AUTO_RECEN_CTRL);
+	var |= (AUTO_RECEN_CTRL | OEN_QSN | FC_QSP_RECEN | FC_CMD_RECEN | FC_DQ_RECEN);
 	xenon_mmc_writel(mmc_cfg, EMMC_PHY_PAD_CONTROL, var);
 
 	/*
@@ -384,7 +367,8 @@ static int xenon_mmc_transfer_data(struct xenon_mmc_cfg *mmc_cfg, struct mmc_dat
 	xenon_mmc_writeb(mmc_cfg, SDHCI_HOST_CONTROL, ctrl);
 #endif
 
-	timeout = 1000000;
+	/* wait 1s at max */
+	timeout = 100000;
 	rdy = SDHCI_INT_SPACE_AVAIL | SDHCI_INT_DATA_AVAIL;
 	mask = SDHCI_DATA_AVAILABLE | SDHCI_SPACE_AVAILABLE;
 	do {
@@ -458,7 +442,7 @@ static int xenon_mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 			debug("MMC(%d) busy\n", mmc_dev);
 			if (2 * cmd_timeout <= XENON_MMC_CMD_MAX_TIMEOUT) {
 				cmd_timeout += cmd_timeout;
-				debug("timeout increasing to: %u ms\n", cmd_timeout * 100);
+				debug("timeout increasing to: %u ms\n", cmd_timeout);
 			} else {
 				debug("timeout.\n");
 				if (cmd)
@@ -469,7 +453,7 @@ static int xenon_mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 			}
 		}
 		time++;
-		udelay(100000);
+		mdelay(1);
 	}
 
 	mask = SDHCI_INT_RESPONSE;
@@ -536,7 +520,7 @@ static int xenon_mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 			error("SDHCI_INT_ERROR stat(%x)\n", stat);
 			break;
 		}
-		udelay(100000);
+		udelay(100);
 
 		if (--retry == 0)
 			break;
@@ -633,7 +617,7 @@ static int xenon_mmc_set_clk(struct mmc *mmc, u32 clock)
 	xenon_mmc_writew(mmc_cfg, SDHCI_CLOCK_CONTROL, clk);
 
 	/* Wait max 20 ms */
-	timeout = 20;
+	timeout = 200;
 	while (!((clk = xenon_mmc_readw(mmc_cfg, SDHCI_CLOCK_CONTROL))
 		& SDHCI_CLOCK_INT_STABLE)) {
 		if (timeout == 0) {
@@ -641,7 +625,7 @@ static int xenon_mmc_set_clk(struct mmc *mmc, u32 clock)
 			return -1;
 		}
 		timeout--;
-		udelay(1000);
+		udelay(100);
 	}
 
 	clk |= SDHCI_CLOCK_CARD_EN;
@@ -726,7 +710,7 @@ static int xenon_mmc_init(struct mmc *mmc)
 {
 	u32 status;
 	u8  var;
-	u32 timeout = 1000; /* Wait max 1s */
+	u32 timeout = 1000; /* Wait max 100ms */
 
 	struct xenon_mmc_cfg *mmc_cfg = mmc->priv;
 
@@ -761,7 +745,7 @@ static int xenon_mmc_init(struct mmc *mmc)
 		while (((!(status & SDHCI_CARD_PRESENT)) ||
 		    (!(status & SDHCI_CARD_STATE_STABLE))) && timeout) {
 			timeout--;
-			udelay(1000);
+			udelay(100);
 			status = xenon_mmc_readl(mmc_cfg, SDHCI_PRESENT_STATE);
 		}
 
@@ -806,9 +790,6 @@ static int xenon_mmc_init(struct mmc *mmc)
 
 	/* Enable auto clock gating after init */
 	xenon_mmc_set_acg(mmc_cfg, true);
-
-	/* Extra delay by testing */
-	mdelay(1000);
 
 	debug_exit();
 

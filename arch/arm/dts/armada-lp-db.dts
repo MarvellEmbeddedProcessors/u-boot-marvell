@@ -17,12 +17,26 @@
 			};
 			neta0: neta@30000 {
 				status = "okay";
+				phy_addr = <0x0>;
+				phy_mode = "rgmii";
 			};
 			neta1: neta@40000 {
 				status = "okay";
+				phy_addr = <0x1>;
+				phy_mode = "sgmii";
 			};
 			i2c: i2c@11000 {
 				status = "okay";
+			};
+			comphy {
+				phy0 {
+					phy-type = <PHY_TYPE_PEX0>;
+					phy-speed = <PHY_SPEED_2_5G>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_SGMII1>;
+					phy-speed = <PHY_SPEED_1_25G>;
+				};
 			};
 			pcie-controller {
 				pcie@1,0 {

@@ -51,11 +51,15 @@ void board_init_f(ulong silent)
 	/* Update the pointer to the FDT */
 	setup_fdt();
 
-	/* Init all drivers before UART initialization */
-	early_spl_init();
-
-	/* UART init */
+	/* UART1 and UART2 clocks are sourced from XTAL by default
+	* (see RD0012010 register for the details). Additionally the GPIO
+	* control (RD0013830) sets the GPIO1[26:25] as the UART1 pins by default.
+	* Therefore it is safe to start using UART before call to early_spl_init()
+	*/
 	preloader_console_init();
+
+	/* Init all drivers requred at early stage (clocks, GPIO...) */
+	early_spl_init();
 
 #ifdef CONFIG_MVEBU_SPL_SAR_DUMP
 	/* Sample at reset dump register */

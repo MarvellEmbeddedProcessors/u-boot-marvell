@@ -4,7 +4,7 @@
 #include "armada-lp.dtsi"
 
 / {
-	model = "DB0-MV-ARMADALP";
+	model = "DB-88F3720-DDR3-Modular";
 	compatible = "marvell,armada-lp-db0", "marvell,armada-lp";
 
 	soc {

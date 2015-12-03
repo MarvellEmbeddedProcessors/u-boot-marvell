@@ -27,7 +27,8 @@
 #define L2X0_CLEAN_INV_WAY             0x7FC
 
 #define LLC_CTRL_EN	                1
-#define LLC_WAY_MASK				0xFFFFFFFF
+#define LLC_EXCLUSIVE_EN		0x100
+#define LLC_WAY_MASK			0xFFFFFFFF
 
 /* insert all LLC function to secure section - part of the PSCI FW */
 void llc_cache_sync(void) __attribute__ ((section (".secure_text")));
@@ -74,8 +75,18 @@ void llc_disable(void)
 
 void llc_enable(void)
 {
+	u32 val;
+
+	asm volatile("dsb sy");
 	llc_inv_all();
-	__raw_writel(LLC_CTRL_EN, MVEBU_LLC_BASE + LLC_CTRL);
+	asm volatile("dsb sy");
+
+	val = LLC_CTRL_EN;
+#ifdef CONFIG_MVEBU_LLC_EXCLUSIVE_EN
+	val |= LLC_EXCLUSIVE_EN;
+#endif
+	__raw_writel(val, MVEBU_LLC_BASE + LLC_CTRL);
+	asm volatile("dsb sy");
 }
 
 

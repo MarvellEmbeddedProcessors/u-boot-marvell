@@ -35,6 +35,16 @@ config MVEBU_LLC_ENABLE
 	help
 	  Enable LLC in PSCI code
 
+config MVEBU_LLC_EXCLUSIVE_EN
+	depends on MVEBU_LLC_ENABLE
+	bool "LLC Exclusive mode"
+	default n
+	help
+	  Enable LLC in exclusive mode.
+	  When Set
+	  1. Upon a Read hit, the CL is evicted from the LLC
+	  2. Read Allocate directive is ignored (i.e. no Linefilll done into LLC as a result of a read that misses)
+
 config MVEBU_CCU
 	bool "CCU address decoding driver"
 	default n

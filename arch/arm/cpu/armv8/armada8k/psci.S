@@ -55,10 +55,20 @@ enable_affinity:
 	msr S3_1_c15_c2_1, x0
 	ret
 
+l2_setup:
+
+#ifdef CONFIG_MVEBU_LLC_EXCLUSIVE_EN
+	mrs x5, s3_1_c15_c0_0 /* L2 Aux Ctrl */
+	orr x5, x5, #(1 << 14) /* Enable UniqueClean evictions with data */
+	msr s3_1_c15_c0_0, x5 /* L2 Aux Ctrl */
+#endif
+	ret
+
 .globl	psci_arch_init
 psci_arch_init:
 	add     x29, x30, 0 /* keep return address */
 	bl	enable_affinity
+	bl	l2_setup
 	bl	psci_build_stack
 #ifdef CONFIG_MVEBU_LLC_ENABLE
 	bl	llc_enable
@@ -172,6 +182,7 @@ _armada8k_cpu_entry:
 
 	bl	enable_affinity
 
+	bl	l2_setup
 	isb
 
 	/*

@@ -2209,8 +2209,7 @@ GT_STATUS    ddr3TipDDR3ResetPhyRegs
             CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, RL_PHY_REG + CS_BYTE_GAP(effective_cs), PhyReg2Val));
             CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, READ_CENTRALIZATION_PHY_REG + CS_BYTE_GAP(effective_cs), PhyReg3Val));
             CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, WRITE_CENTRALIZATION_PHY_REG + CS_BYTE_GAP(effective_cs), 0x0));
-			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x1f + (0x10 * effective_cs)	, 0x1f));
-			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x1F + CS_PBS_GAP(effective_cs), 0));
+			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x1F + CS_PBS_GAP(effective_cs), 0x1f));
 			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x5F + CS_PBS_GAP(effective_cs), 0));
 			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x14 + CS_PBS_GAP(effective_cs), 0));
 			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x54 + CS_PBS_GAP(effective_cs), 0));

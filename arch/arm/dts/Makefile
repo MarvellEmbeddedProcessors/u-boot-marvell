@@ -53,7 +53,8 @@ dtb-$(CONFIG_SOCFPGA) += socfpga_cyclone5_socrates.dtb
 
 dtb-$(CONFIG_TARGET_ARMADA_38X) += armada-385-db.dtb
 dtb-$(CONFIG_TARGET_ARMADA_LP) += armada-lp-db.dtb \
-				  armada-lp-palladium.dtb
+				  armada-lp-palladium.dtb \
+				  armada-lp-customer0.dtb
 dtb-$(CONFIG_TARGET_ARMADA_8K) += apn-806-db.dtb \
 		       apn-806-pd.dtb \
 		       apn-806-a0-pd.dtb \

@@ -1,0 +1,57 @@
+
+/dts-v1/;
+
+#include "armada-lp.dtsi"
+
+/ {
+	model = "DB-88F37XX-Customer0";
+	compatible = "marvell,armada-lp-db0", "marvell,armada-lp";
+
+	soc {
+		internal-regs {
+			serial: serial@12000 {
+				status = "okay";
+			};
+			spi0: spi@10600 {
+				status = "okay";
+			};
+			neta0: neta@30000 {
+				status = "okay";
+				phy_addr = <0x1>;
+				phy_mode = "sgmii";
+			};
+			neta1: neta@40000 {
+				status = "disabled";
+				phy_addr = <0x0>;
+				phy_mode = "rgmii";
+			};
+			i2c: i2c@11000 {
+				status = "okay";
+			};
+			comphy {
+				phy0 {
+					phy-type = <PHY_TYPE_SGMII0>;
+					phy-speed = <PHY_SPEED_1_25G>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-speed = <PHY_SPEED_1_25G>;
+				};
+			};
+			pcie-controller {
+				pcie@1,0 {
+					status = "disabled";
+				};
+			};
+			sata: sata@e0000 {
+				status = "okay";
+			};
+			mmc0: mmc@D8000 {
+				status = "disabled";
+			};
+			usb3: usb3@58000 {
+				status = "disabled";
+			};
+		};
+	};
+};

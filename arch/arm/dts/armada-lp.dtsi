@@ -114,6 +114,11 @@
 				reg = <0xD8000 0x300>;
 				status = "disabled";
 			};
+			mmc1: mmc@D0000 {
+				compatible = "marvell,xenon-sdhci";
+				reg = <0xD0000 0x300>;
+				status = "disabled";
+			};
 			usb3: usb3@58000 {
 				compatible = "marvell,mvebu-usb3";
 				reg = <0x58000 0x450>;

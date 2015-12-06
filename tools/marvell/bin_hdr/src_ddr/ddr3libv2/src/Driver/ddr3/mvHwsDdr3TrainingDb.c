@@ -394,6 +394,10 @@ GT_U32 speedBinTable
 		case speedBinTableElements_tMOD:
 			result = 15000;
 			break;
+		case speedBinTableElements_tXPDLL:
+                        result = 24000;
+                        break;
+
 		default:
 			break;
 	}

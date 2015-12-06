@@ -707,7 +707,7 @@ GT_STATUS    mvHwsDdr3TipInitController
 			/*move the block to ddr3TipSetTiming -start */
 			tPD = GET_MAX_VALUE(tCKCLK*3, speedBinTable(speedBinIndex,speedBinTableElements_tPD));
             tPD = TIME_2_CLOCK_CYCLES(tPD, tCKCLK);
-            uiTxpdll = GET_MAX_VALUE(tCKCLK*10, 24);
+            uiTxpdll = GET_MAX_VALUE(tCKCLK*10, speedBinTable(speedBinIndex,speedBinTableElements_tXPDLL));
             uiTxpdll = CEIL_DIVIDE((uiTxpdll-1), tCKCLK);
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DDR_TIMING_REG, uiTxpdll<<4,0x1f << 4));
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DDR_TIMING_REG, 0x28<<9,0x3f << 9));

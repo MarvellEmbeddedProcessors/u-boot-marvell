@@ -133,7 +133,8 @@ typedef enum
     speedBinTableElements_tWTR,
     speedBinTableElements_tRTP,
     speedBinTableElements_tWR,
-    speedBinTableElements_tMOD
+    speedBinTableElements_tMOD,
+    speedBinTableElements_tXPDLL
 }speedBinTableElements;
 
 #elif defined(CONFIG_DDR4)
@@ -186,7 +187,8 @@ typedef enum
     speedBinTableElements_tWTRL,
     speedBinTableElements_tRTP,
     speedBinTableElements_tWR,
-    speedBinTableElements_tMOD
+    speedBinTableElements_tMOD,
+	speedBinTableElements_tXPDLL
 }speedBinTableElements;
 
 #else

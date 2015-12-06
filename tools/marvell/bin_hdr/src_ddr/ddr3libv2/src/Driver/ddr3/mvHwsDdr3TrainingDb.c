@@ -11,7 +11,7 @@
 * mvHwsTrainingIpDdr3TrainingIf.c
 *
 * DESCRIPTION: DDR3 training IP configuration
-*
+* Based on JEDEC: JESD79-3F
 *
 * DEPENDENCIES:
 *

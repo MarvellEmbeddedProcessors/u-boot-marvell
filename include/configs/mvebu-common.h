@@ -218,6 +218,7 @@
 
 /* Flat Device Tree Definitions */
 #define CONFIG_OF_LIBFDT
+#define MVEBU_FDT_SIZE 0x2000
 
 /* SMP Spin Table Definitions */
 #define CPU_RELEASE_ADDR               (CONFIG_SYS_SDRAM_BASE + 0x2000000)

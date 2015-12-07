@@ -53,15 +53,11 @@
 #define COUNTER_FREQUENCY	(6000)
 #else
 /*
- * Current system counter clock source is derived from TBG-BS,
- * then it will be divided by COUNTER_CLK_PRSCL and CPU_CNT_CLK_DIV_SEL.
- * Current value, TBG-BS: 800MHZ, CPU_CNT_CLK_DIV_SEL: divide by 2,
- * COUNTER_CLK_PRSCL: divide by 5, result: 800/2/5 = 80MHZ
- * Please PAY ATTENTION this frequency should be changed accordingly
- * if counter clock source, TBG-BS, COUNTER_CLK_PRSCL or CPU_CNT_CLK_DIV_SEL
- * are changed.
+ * The counter on A3700 always fed from reference clock (XTAL)
+ * However minimal CPU counter prescaler is 2, so the counter
+ * frequency will be divided by 2
  */
-#define COUNTER_FREQUENCY	(80 * 1000000)
+#define COUNTER_FREQUENCY	(12500000)
 #endif
 
 /* DRAM detection stuff */

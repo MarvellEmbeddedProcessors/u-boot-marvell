@@ -544,7 +544,9 @@ u32 set_a3700_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 t
 	reg_val |= (clk_cfg->nb_clk_cfg.div2.eip97_clk_prscl2 & 0x7) << 19;
 	reg_val |= (clk_cfg->nb_clk_cfg.div2.eip97_clk_prscl1 & 0x7) << 22;
 	reg_val |= (clk_cfg->nb_clk_cfg.div2.atb_clk_div_sel & 0x3) << 25;
+	/* Always use "divide by 1 (0)" for counter clock and ignore table value
 	reg_val |= (clk_cfg->nb_clk_cfg.div2.cpu_cnt_clk_div_sel & 0x3) << 27;
+	*/
 	reg_val |= (clk_cfg->nb_clk_cfg.div2.plkdbg_clk_div_sel & 0x3) << 29;
 	writel(reg_val, MVEBU_NORTH_CLOCK_DIVIDER_SELECT2_REG);
 
@@ -622,8 +624,9 @@ u32 set_a3700_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 t
 	writel(reg_val, MVEBU_NORTH_BRG_TBG_CTRL3);
 #endif /* MVEBU_A3700_ENABLE_SSC */
 
-	/* Switch all North/South Bridge clock sources from XTAL to clock divider */
-	writel(0x0000BFFF, MVEBU_NORTH_CLOCK_SELECT_REG);
+	/* Switch all North/South Bridge clock sources from XTAL to clock divider
+	   excepting counter clock, which remains to be connected to XTAL */
+	writel(0x00009FFF, MVEBU_NORTH_CLOCK_SELECT_REG);
 	writel(0x000007AA, MVEBU_SOUTH_CLOCK_SELECT_REG);
 
 	rval = init_ddr_clock(ddr_clk_mhz);

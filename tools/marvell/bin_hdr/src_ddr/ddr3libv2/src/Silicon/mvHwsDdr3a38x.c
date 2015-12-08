@@ -1048,7 +1048,11 @@ MV_STATUS ddr3SiliconPostInit(void)
 GT_STATUS ddr3TipA38xGetDeviceInfo ( GT_U8      devNum,
 									MV_DDR3_DEVICE_INFO * infoPtr)
 {
+#ifdef CONFIG_ARMADA_39X
+	infoPtr->deviceId = 0x6900;
+#else
 	infoPtr->deviceId = 0x6800;
+#endif
 	infoPtr->ckDelay = ckDelay;
 
 	return GT_OK;

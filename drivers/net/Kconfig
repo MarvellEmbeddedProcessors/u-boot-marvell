@@ -1,5 +1,14 @@
 menu "Network drivers"
 
+config MVEBU_MDIO
+	bool "MVEBU mdio driver"
+	default n
+	help
+	  Choose this option to add support
+	  for Marvell MDIO driver which add
+	  SMI/XSMI read/write functions to read
+	  from Marvell PHYs
+
 config ENC28J60
 	bool "ENC28J60 driver"
 	default n

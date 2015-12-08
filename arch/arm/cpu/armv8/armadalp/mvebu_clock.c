@@ -24,6 +24,7 @@
 #include <asm/arch-armadalp/clock.h>
 #include <asm/io.h>
 
+DECLARE_GLOBAL_DATA_PTR;
 static struct a3700_clock_cfg a3700_clock_configs[] = MVEBU_A3700_CLOCK_CFGS;
 
 /* TODO: Move to dedicated DDR driver */
@@ -468,13 +469,14 @@ u32 set_a3700_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 t
 		    ((tbg_a_kvco_mhz == 0) || (a3700_clock_configs[cfg].tbg_a.kvco_mhz == tbg_a_kvco_mhz)) &&
 		    ((tbg_b_kvco_mhz == 0) || (a3700_clock_configs[cfg].tbg_b.kvco_mhz == tbg_b_kvco_mhz))) {
 			clk_cfg = &a3700_clock_configs[cfg];
-			debug("Found requested clock configuration in DB[%d])\n", cfg);
+			debug("Found valid FREQ preset(#%d): CPU=%dMHz, DDR=%dMHz\n", cfg,
+			      a3700_clock_configs[cfg].cpu_freq_mhz, a3700_clock_configs[cfg].ddr_freq_mhz);
 			break;
 		}
 	}
 
 	if (clk_cfg == 0) {
-		error("Unable to find clock configuration for CPU=%dMHz, DDR=%dMHz, TBG-A=%dMHz, TBG-B=%dMHz\n",
+		error("Unable to find valid FREQ preset for CPU=%dMHz, DDR=%dMHz, TBG-A=%dMHz, TBG-B=%dMHz\n",
 		      cpu_clk_mhz, ddr_clk_mhz, tbg_a_kvco_mhz, tbg_b_kvco_mhz);
 		return 1;
 	}
@@ -484,7 +486,6 @@ u32 set_a3700_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 t
 	writel(0x00000000, MVEBU_NORTH_CLOCK_SELECT_REG);
 	writel(0x00000000, MVEBU_SOUTH_CLOCK_SELECT_REG);
 
-	debug("Setting TBG-A\n");
 	rval = set_a3700_tbg_clock(clk_cfg->tbg_a.kvco_mhz,
 				   clk_cfg->tbg_a.se_vcodiv,
 				   clk_cfg->tbg_a.diff_vcodiv,
@@ -494,7 +495,6 @@ u32 set_a3700_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 t
 		return rval;
 	}
 
-	debug("Setting TBG-B\n");
 	rval = set_a3700_tbg_clock(clk_cfg->tbg_b.kvco_mhz,
 				   clk_cfg->tbg_b.se_vcodiv,
 				   clk_cfg->tbg_b.diff_vcodiv,
@@ -637,12 +637,31 @@ u32 set_a3700_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 t
 
 int init_a3700_clock(void)
 {
-	int ret = 0;
+	int node, count, idx, ret;
+	const void *blob = gd->fdt_blob;
+	int tbl_sz = sizeof(a3700_clock_configs)/sizeof(a3700_clock_configs[0]);
 
 	debug_enter();
 
-	/* TODO: Move clock selection to DT */
-	ret = set_a3700_clocks(400, 600, 2400, 1600);
+	count = fdtdec_find_aliases_for_id(blob, "freq", COMPAT_MVEBU_A3700_FREQ, &node, 1);
+	if (count == 0) {
+		error("The frequency preset is not defined in DT, using default\n");
+		idx = MVEBU_A3700_DEF_CLOCK_PRESET_IDX;
+	} else {
+		idx = fdtdec_get_int(blob, node, "preset", MVEBU_A3700_DEF_CLOCK_PRESET_IDX);
+		if ((idx >= tbl_sz) || (idx < 0)) {
+			error("Unsupported frequency preset in DT (%d), using default\n", idx);
+			idx = MVEBU_A3700_DEF_CLOCK_PRESET_IDX;
+		}
+	}
+
+	printf("Setting clocks to CPU=%dMHz and DDR=%dMHz\n",
+		a3700_clock_configs[idx].cpu_freq_mhz, a3700_clock_configs[idx].ddr_freq_mhz);
+
+	ret =  set_a3700_clocks(a3700_clock_configs[idx].cpu_freq_mhz,
+				a3700_clock_configs[idx].ddr_freq_mhz,
+				a3700_clock_configs[idx].tbg_a.kvco_mhz,
+				a3700_clock_configs[idx].tbg_b.kvco_mhz);
 	if (ret)
 		error("Failed to configure system clocks\n");
 

@@ -7,3 +7,28 @@ tclk: define the T-Clock address in the SoC
 	- compatible = "marvell,tclk";
 	- reg = <0x18600 0x4>;
 		base address of sample at reset register.
+
+In case of Armada 3700 platform, the DT allows to select one of
+CPU/DDR frequency presets under "soc" node.
+
+freq: define the clock preset for CPU/DDR
+	compatible = "marvell,a3700-freq";
+	preset = <freq_preset>;
+		Supported presets:
+		PRESET_CPU_600_DDR_600  - CPU 600MHz,  DDR 600MHz
+		PRESET_CPU_400_DDR_600  - CPU 400MHz,  DDR 600MHz
+		PRESET_CPU_1000_DDR_800 - CPU 1000MHz, DDR 800MHz
+
+Armada 3700 example:
+soc {
+	freq {
+		compatible = "marvell,a3700-freq";
+		preset = <PRESET_CPU_400_DDR_600>;
+	};
+	....
+	....
+	internal-regs {
+		....
+		....
+	};
+};

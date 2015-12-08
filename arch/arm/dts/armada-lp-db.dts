@@ -8,6 +8,10 @@
 	compatible = "marvell,armada-lp-db0", "marvell,armada-lp";
 
 	soc {
+		freq {
+			preset = <PRESET_CPU_400_DDR_600>;
+		};
+
 		internal-regs {
 			serial: serial@12000 {
 				status = "okay";

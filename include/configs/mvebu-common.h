@@ -349,6 +349,8 @@
 	#define CONFIG_NETMASK          255.255.255.0
 	#define CONFIG_GATEWAYIP	10.4.50.254
 	#define CONFIG_ETHADDR          00:00:00:00:51:81
+	#define CONFIG_HAS_ETH1
+	#define CONFIG_ETH1ADDR		00:00:00:00:51:82
 	#define ENV_ETH_PRIME           "e1000#0"
 #endif /* CONFIG_CMD_NET */
 

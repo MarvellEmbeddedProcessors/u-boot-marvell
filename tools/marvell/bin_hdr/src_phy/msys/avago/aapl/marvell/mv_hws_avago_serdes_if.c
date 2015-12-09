@@ -164,7 +164,7 @@ void mvHwsAvagoAaplAddrGet
 )
 {
     *devAddr = (unsigned int)(&(aaplSerdesDbDef[devNum]));
-    *devSize = sizeof(aaplSerdesDbDef[devNum]);
+    *devSize = (unsigned int)sizeof(aaplSerdesDbDef[devNum]);
 }
 
 int mvHwsAvagoInitializationCheck
@@ -580,14 +580,8 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
 *******************************************************************************/
 int mvHwsAvagoSerdesInit(unsigned char devNum)
 {
-    /* Validate AAPL */
-    if (aaplSerdesDb[devNum] != NULL)
-    {
-        /* structures were already initialized */
-        return GT_ALREADY_EXIST;
-    }
-
     /* Initialize AAPL structure in CM3 */
+    aaplSerdesDb[devNum] = &(aaplSerdesDbDef[devNum]);
 
     return GT_OK;
 }

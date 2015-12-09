@@ -68,7 +68,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <command.h>
 #include <rtc.h>
 #include "mv_rtc2.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
 
 #if defined(CONFIG_CMD_DATE)
 /* This define for WA in rtc read */
@@ -80,29 +79,43 @@ static int rtc_ready = -1;
 void rtc_init(void)
 {
 	/* Update RTC-MBUS bridge timing parameters */
-	if (mvCtrlRevGet() == MV_88F69XX_A0_ID) {
-		/*"RTC Mbus Bridge Timing Control" registers was modified in
-		   A39x-A0, and now each step represents 2 core clock cycles*/
-		MV_REG_WRITE(MV_RTC2_SOC_OFFSET, 0xFD4CA4FA);
-	} else {
 #ifdef ERRATA_FE_3124064
-		/* Functional Errata Ref #: FE-3124064 -  WA for failing time read attempts.
-		 * Description:
-		 * 	The device supports CPU write and read access to the RTC Time register.
-		 * 	However, due to this erratum, Write to RTC TIME register may fail.
-		 * 	Read from RTC TIME register may fail.
-		 * Workaround:
-		 * 	Before writing to RTC TIME register, issue a dummy write of 0x0 twice to RTC Status register.
-		 * 	RTC TIME register should be read twice, the second read will return a proper value.
-		 * 	Configure maximum value (0x3FF) in write clock period in RTC Mbus Bridge Timing Control register.
-		 * Functional Impact After Workaround is applied:
-		 * 	No functional impact after WA is applied
-		 */
-		MV_REG_WRITE(MV_RTC2_SOC_OFFSET, 0xFD4D4FFF);
+	unsigned long reg;
+
+	/* Functional Errata Ref #: FE-3124064 -  WA for failing time read attempts.
+	 * Description:
+	 * 	The device supports CPU write and read access to the RTC Time register.
+	 * 	However, due to this erratum, Write to RTC TIME register may fail.
+	 * 	Read from RTC TIME register may fail.
+	 * Workaround:
+	 * 1. Configure the RTC Mbus Bridge Timing Control register (offset 0x184A0) to value 0xFD4D4FFF
+	 *	- Write RTC WRCLK Period to its maximum value (0x3FF)
+	 *	- Write RTC WRCLK setup to 0x53 (default value )
+	 *	- Write RTC WRCLK High Time to 0x53 (default value )
+	 *	- Write RTC Read Output Delay to its maximum value (0x1F)
+	 *	- Mbus - Read All Byte Enable to 0x1 (default value )
+	 * 2. Configure the RTC Test Configuration Register (offset 0xA381C) bit3 to '1' (Reserved, Marvell internal)
+	 *
+	 * For any RTC Time register read operation:
+	 *	- Read the requested register 100 times.
+	 *	- Find the result that appears most frequently and use this result as the correct value.
+	 * RTC Time register write operation:
+	 *	- Issue two dummy writes of 0x0 to the RTC Status register (offset 0xA3800).
+	 *	- Write the time to the RTC Time register (offset 0xA380C).
+	*/
+	reg = MV_REG_READ(MV_RTC2_SOC_OFFSET + RTC_BRIDGE_TIMING_CTRL_REG_OFFS);
+	reg &= ~RTC_WRCLK_PERIOD_MASK;
+	reg |= 0x3FF << RTC_WRCLK_PERIOD_OFFS; /*Maximum value*/
+	reg &= ~RTC_READ_OUTPUT_DELAY_MASK;
+	reg |= 0x1F << RTC_READ_OUTPUT_DELAY_OFFS; /*Maximum value*/
+	MV_REG_WRITE(MV_RTC2_SOC_OFFSET + RTC_BRIDGE_TIMING_CTRL_REG_OFFS, reg);
+
+        reg = RTC_READ_REG(RTC_TEST_CONFIG_REG_OFFS);
+        reg |= BIT3;
+        RTC_WRITE_REG(reg, RTC_TEST_CONFIG_REG_OFFS);
 #else
-		MV_REG_WRITE(MV_RTC2_SOC_OFFSET, 0xFD4D4CFA);
+	MV_REG_WRITE(MV_RTC2_SOC_OFFSET, 0xFD4D4CFA);
 #endif
-	}
 	rtc_ready = 1;
 }
 
@@ -118,21 +131,6 @@ struct _strTime2Freq {
 int rtc_get(struct rtc_time *tm)
 {
 #ifdef ERRATA_FE_3124064
-	/* Functional Errata Ref #: FE-3124064 - WA for failing time read attempts.
-	 * Description:
-	 *      The device supports CPU write and read access to the RTC Time register.
-	 *	However, due to this erratum, Write to RTC TIME register may fail.
-	 *	Read from RTC TIME register may fail.
-	 * Workaround:
-	 *	Before writing to RTC TIME register, issue a dummy write of 0x0 twice to
-	 *	RTC Status register.
-	 *	Configure maximum value (0x3FF) in write clock period in RTC Mbus Bridge
-	 *	Timing Control register.
-	 *	Before writing to RTC TIME register, issue a dummy write of 0x0 twice to
-	 *	RTC Status register.
-	 *      RTC TIME register should be read 100 times, then find the result
-	 *	that appear most frequently, use this result as the correct value.
-	 */
 	unsigned long nTimeArray[SAMPLE_NR], i, j, nTime, nMax = 0, indexMax = SAMPLE_NR - 1;
 	struct _strTime2Freq sTimeToFreq[SAMPLE_NR];
 #endif
@@ -183,18 +181,6 @@ int rtc_set(struct rtc_time *tm)
 				  tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 
 #ifdef ERRATA_FE_3124064
-	/* Functional Errata Ref #: FE-3124064 -  WA for failing time read attempts.
-	 * Description:
-	 * 	The device supports CPU write and read access to the RTC Time register.
-	 * 	However, due to this erratum, Write to RTC TIME register may fail.
-	 * 	Read from RTC TIME register may fail.
-	 * Workaround:
-	 * 	Before writing to RTC TIME register, issue a dummy write of 0x0 twice to RTC Status register.
-	 * 	RTC TIME register should be read twice, the second read will return a proper value.
-	 * 	Configure maximum value (0x3FF) in write clock period in RTC Mbus Bridge Timing Control register.
-	 * Functional Impact After Workaround is applied:
-	 * 	No functional impact after WA is applied
-	 */
 	RTC_WRITE_REG(0, RTC_STATUS_REG_OFFS);
 	RTC_WRITE_REG(0, RTC_STATUS_REG_OFFS);
 #endif
@@ -207,10 +193,18 @@ int rtc_set(struct rtc_time *tm)
 void rtc_reset(void)
 {
 	/* Reset Test register */
+#ifdef ERRATA_FE_3124064
+	RTC_WRITE_REG(BIT3, RTC_TEST_CONFIG_REG_OFFS);
+#else
 	RTC_WRITE_REG(0, RTC_TEST_CONFIG_REG_OFFS);
+#endif
 	mdelay(500); /* Oscillator startup time */
 
 	/* Reset time register */
+#ifdef ERRATA_FE_3124064
+	RTC_WRITE_REG(0, RTC_STATUS_REG_OFFS);
+	RTC_WRITE_REG(0, RTC_STATUS_REG_OFFS);
+#endif
 	RTC_WRITE_REG(0, RTC_TIME_REG_OFFS);
 	udelay(62);
 
@@ -228,6 +222,10 @@ void rtc_reset(void)
 	RTC_WRITE_REG(RTC_NOMINAL_TIMING, RTC_CLOCK_CORR_REG_OFFS);
 
 	/* Reset time register */
+#ifdef ERRATA_FE_3124064
+	RTC_WRITE_REG(0, RTC_STATUS_REG_OFFS);
+	RTC_WRITE_REG(0, RTC_STATUS_REG_OFFS);
+#endif
 	RTC_WRITE_REG(0, RTC_TIME_REG_OFFS);
 	udelay(10);
 

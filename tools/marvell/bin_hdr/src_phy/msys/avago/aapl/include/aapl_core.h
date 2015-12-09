@@ -141,7 +141,6 @@ typedef struct
 {
     uint devNum;
     uint portGroup;
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     uint debug;                               /**< global debug level */
     uint verbose;                             /**< global verbosity level */
     uint suppress_errors;                     /**< Turn aapl_log_add ERR and WARNINGS into DEBUG1 messages */
@@ -152,22 +151,27 @@ typedef struct
     int enable_stream_err_logging;            /**< When enabled, warnings and errors are written to AAPL_STREAM_ERR (if defined) */
 
     int log_time_stamps;                      /**< When enabled, time stamps are added to AAPL logs and DEBUGn output */
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
     int serdes_int_timeout;                   /**< 28nm SerDes SPICO interrupt maximum number of tries */
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     int sbus_mdio_timeout;                    /**< sbus-over-mdio SBUS_RESULT polling maximum number of tries */
+#if 0
+    /* AAPL structure is used in multiple platforms: HOST, CM3, and BIN Header
+    ** Eaach platform use different compiler and compilation options
+    ** Therefore it is required that all structure parameters will be from known type
+    ** And will be interperted differently in each platform
+    */
     Aapl_comm_method_t communication_method;  /**< Method for communicating with Avago devices. */
+#else
+    uint communication_method;                /**< Method for communicating with Avago devices. */
+#endif
     uint enable_serdes_core_port_interrupt;   /**< When == 0: Sends SerDes interrupts via the SBus */
                                               /**< When == 1: calls the user_supplied_serdes_interrupt_function() for SerDes interrupts. */
                                               /**<            (must have AAPL_ENABLE_USER_SERDES_INT defined) */
                                               /**< When == 2: uses the Avago LE block (only available on some Avago test chips) to send SerDes */
                                               /**<            interrupts to the SerDes' core interrupt interface */
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3*/
 
     uint chips;                               /**< number of die this struct points to */
     uint sbus_rings;                          /**< number of SBus rings this struct points to */
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 
     int max_cmds_buffered;                    /**< Maximum bumber of commands to queue before sending them via TCP over AACS. */
                                               /**< Setting this to 0 disables command buffering */
@@ -177,58 +181,55 @@ typedef struct
     int cmds_buffered;                        /**< number of commands in buf_cmd (which are bufferred AACS commands) */
 
     uint capabilities;                        /**< Bitmask of the remote AACS Server's capabilities */
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3*/
 
 # ifndef SWIG
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     char *buf_cmd, *buf_cmd_end;              /**< Pointer to start/end of AACS command buffer */
     char *aacs_server_buffer;                 /**< Pointer to aacs_server's internal buffer */
-    char *aacs_server;          /**< Server name (or IP address) used to open the AACS socket */
-    int socket;                 /**< Socket used for AACS TCP communications */
-    int tcp_port;               /**< TCP port used to open the AACS socket */
+    char *aacs_server;                        /**< Server name (or IP address) used to open the AACS socket */
+    int socket;                               /**< Socket used for AACS TCP communications */
+    int tcp_port;                             /**< TCP port used to open the AACS socket */
 
-    uint last_mdio_addr[AAPL_MAX_CHIPS];    /**< Last MDIO address used */
-    uint mdio_base_port_addr;               /**< MDIO base port address. */
-    int  i2c_base_addr;                     /**< I2C base address. */
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+    uint last_mdio_addr[AAPL_MAX_CHIPS];      /**< Last MDIO address used */
+    uint mdio_base_port_addr;                 /**< MDIO base port address. */
+    int  i2c_base_addr;                       /**< I2C base address. */
 
-#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
-    const char *chip_name[AAPL_MAX_CHIPS];  /**< Array of chip name pointers */
-    const char *chip_rev[AAPL_MAX_CHIPS];   /**< Array of chip revision pointers */
-    uint jtag_idcode[AAPL_MAX_CHIPS];       /**< JTAG IDCODE for each chip */
-#endif /* !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER */
-
+    const char *chip_name[AAPL_MAX_CHIPS];    /**< Array of chip name pointers */
+    const char *chip_rev[AAPL_MAX_CHIPS];     /**< Array of chip revision pointers */
+    uint jtag_idcode[AAPL_MAX_CHIPS];         /**< JTAG IDCODE for each chip */
+#if 0
+    /* AAPL structure is used in multiple platforms: HOST, CM3, and BIN Header
+    ** Eaach platform use different compiler and compilation options
+    ** Therefore it is required that all structure parameters will be from known type
+    ** And will be interperted differently in each platform
+    */
     Avago_process_id_t process_id[AAPL_MAX_CHIPS]; /**< Process Identifier for each chip */
-    unsigned short   ip_rev[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256]; /**< IP revision for each SBus Rx */
-    unsigned short firm_rev[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256]; /**< Revision of firmware load, populated if ip_type is SERDES or SPICO */
-    unsigned short firm_build[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256]; /**< Build of firmware load, populated if ip_type is SERDES or SPICO */
-    char      spico_running[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256]; /**< Indicator of SPICO processor is running. */
-    unsigned char   ip_type[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256]; /**< Avago_ip_type_t identifier for each SBus Rx */
-    unsigned char   lsb_rev[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256]; /**< Revision of LSB block, populated if ip_type is SERDES */
-    unsigned char max_sbus_addr[AAPL_MAX_CHIPS][AAPL_MAX_RINGS];  /**< max SBus address for each die and SBus ring */
+#else
+    uint process_id[AAPL_MAX_CHIPS];          /**< Process Identifier for each chip */
+#endif
+    unsigned short ip_rev[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256];        /**< IP revision for each SBus Rx */
+    unsigned short firm_rev[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256];      /**< Revision of firmware load, populated if ip_type is SERDES or SPICO */
+    unsigned short firm_build[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256];    /**< Build of firmware load, populated if ip_type is SERDES or SPICO */
+    char           spico_running[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256]; /**< Indicator of SPICO processor is running. */
+    unsigned char  ip_type[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256];       /**< Avago_ip_type_t identifier for each SBus Rx */
+    unsigned char  lsb_rev[AAPL_MAX_CHIPS][AAPL_MAX_RINGS][256];       /**< Revision of LSB block, populated if ip_type is SERDES */
+    unsigned char  max_sbus_addr[AAPL_MAX_CHIPS][AAPL_MAX_RINGS];      /**< max SBus address for each die and SBus ring */
 
     int return_code;        /**< set by most functions to indicate success/fail status */
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     int   log_size;         /**< memory log managment */
     int   data;             /**< used for functions that return int data */
     int   data_char_size;   /**< data_char memory management */
     char *data_char_end;    /**< to truncate data_char, set data_char_end = data_char; */
     char *log;              /**< memory log, logs commands, info,errors, warnings, and debug statements */
     char *log_end;          /**< to truncate log, set log_end = log; */
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
-#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
     char *data_char;        /**< used for functions that return strings */
-#endif /* !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER */
 
 #endif /* SWIG */
 
-#ifndef MV_HWS_REDUCED_BUILD
     void *client_data;
     volatile int async_cancel;
-#endif /* MV_HWS_REDUCED_BUILD */
 } Aapl_t;
 
 /* Create a pointer to a new AAPL struct */

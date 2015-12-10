@@ -211,7 +211,7 @@ struct a3700_sb_clock_sel {
 	enum a3700_clock_line sdio_pclk_sel;		/* [15:14] */
 	enum a3700_clock_line usb32_usb2_sys_pclk_sel;	/* [17:16] */
 	enum a3700_clock_line usb32_ss_sys_pclk_sel;	/* [19:18] */
-	enum a3700_clock_line sb_axci_pclk_sel;		/* [21:20] */
+	enum a3700_clock_line sb_axi_pclk_sel;		/* [21:20] */
 };
 
 /* South Bridge clock divider 0 (0x18004) */
@@ -312,7 +312,7 @@ TBG-B_S	1000	2	1	eip97_pclk_sel		500	NB	DIV2[24:22]	DIV2[21:19]
 		1	NA	gbe1_core_clk_div2_sel	250	SB					DIV1[13]	NA
 		1	NA	gbe0_core_clk_div2_sel	250	SB					DIV1[14]	NA
 		4	2	gbe_125_pclk_sel	125	SB					DIV1[11:9]	DIV1[8:6]
-		5	1	sb_axci_pclk_sel	200	SB					DIV0[20:18]	DIV0[23:21]
+		5	1	sb_axi_pclk_sel		200	SB					DIV0[20:18]	DIV0[23:21]
 		4	2	usb32_ss_sys_pclk_sel	125	SB					DIV0[17:15]	DIV0[20:18]
 		5	2	usb32_usb2_sys_pclk_sel	100	SB					DIV0[14:12]	DIV0[11:9]
 -------------------------------------------------------------------------------------------------------------------------------------
@@ -362,7 +362,7 @@ TBG-B_S	800	4	1	mmc_pclk_sel		200	NB	DIV2[15:13]	DIV2[18:16]
 	2^n →	0	NA	atb_clk_div_sel		400	NB	DIV2[26:5]	NA
 	2^n →	1	NA	plkdbg_clk_div_sel	200	NB	DIV2[30:29]	NA
 		3	2	gbe_125_pclk_sel	133	SB					DIV1[11:9]	DIV1[8:6]
-		2	2	sb_axci_pclk_sel	200	SB					DIV0[20:18]	DIV0[23:21]
+		2	2	sb_axi_pclk_sel		200	SB					DIV0[20:18]	DIV0[23:21]
 -------------------------------------------------------------------------------------------------------------------------------------
 		PRE-1	PRE-2	TARGET			FREQ	BR	PRE-1		PRE-2		PRE-1		PRE-2
 -------------------------------------------------------------------------------------------------------------------------------------
@@ -396,7 +396,7 @@ TBG-B_S	1000	5	1	sec_at_pclk_sel		200	NB	DIV1[5:3]	DIV1[2:0]
 		1	NA	setm_tmx_pclk_sel	1000	NB	DIV1[20:18]	NA
 		1	NA	trace_pclk_sel		1000	NB	DIV0[22:20]	NA
 		1	NA	a53_cpu_pclk_sel	1000	NB	DIV0[30:28]	NA
-		2	NA	wc_ahb_div_sel		500	NB	DIV2[2:0]	NA
+		4	NA	wc_ahb_div_sel		250	NB	DIV2[2:0]	NA
 	2^n →	0	NA	atb_clk_div_sel		1000	NB	DIV2[26:5]	NA
 	2^n →	1	NA	plkdbg_clk_div_sel	500	NB	DIV2[30:29]	NA
 		4	2	ddr_fclk_pclk_sel	125	NB	DIV0[17:15]	DIV0[14:12]
@@ -407,7 +407,7 @@ TBG-B_S	1000	5	1	sec_at_pclk_sel		200	NB	DIV1[5:3]	DIV1[2:0]
 		1	NA	gbe1_core_clk_div2_sel	250	SB					DIV1[13]	NA
 		1	NA	gbe0_core_clk_div2_sel	250	SB					DIV1[14]	NA
 		4	2	gbe_125_pclk_sel	125	SB					DIV1[11:9]	DIV1[8:6]
-		2	1	sb_axci_pclk_sel	500	SB					DIV0[20:18]	DIV0[23:21]
+		2	2	sb_axi_pclk_sel		250	SB					DIV0[20:18]	DIV0[23:21]
 		4	2	usb32_ss_sys_pclk_sel	125	SB					DIV0[17:15]	DIV0[20:18]
 		5	2	usb32_usb2_sys_pclk_sel	100	SB					DIV0[14:12]	DIV0[11:9]
 -------------------------------------------------------------------------------------------------------------------------------------
@@ -457,12 +457,12 @@ TBG-B-P	500	2	5	gbe_50_pclk_sel		50	SB					DIV2[11:9]	DIV2[8:6]
 		/* NorthBridge */\
 		{{TBG_A_S, TBG_A_P, TBG_B_S, TBG_B_S, TBG_A_P, TBG_B_S, TBG_A_P,\
 		  TBG_B_S, TBG_B_S, TBG_B_S, TBG_A_P, TBG_B_S, TBG_B_S},\
-		{2, 5, 2, 4, 1, 1, 5, 1},		/* DIV0 */\
+		{4, 5, 2, 4, 1, 1, 5, 1},		/* DIV0 */\
 		{1, 5, 2, 5, 1, 4, 1, 1, 4},		/* DIV1 */\
 		{2, 1, 4, 1, 4, 2, 1, 0, 1, 1} },	/* DIV2 */\
 		/* SouthBridge */\
 		{{TBG_B_P, TBG_B_S, TBG_B_S, TBG_A_S, TBG_B_S, TBG_B_S, TBG_B_S},\
-		{1, 4, 2, 5, 2, 4, 1, 2},	/* DIV0 */\
+		{1, 4, 2, 5, 2, 4, 2, 2},	/* DIV0 */\
 		{2, 4, 1, 1, 1, 4, 1},		/* DIV1 */\
 		{5, 2} }			/* DIV2 */\
 	},\

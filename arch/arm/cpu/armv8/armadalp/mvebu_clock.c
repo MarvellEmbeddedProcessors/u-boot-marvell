@@ -611,7 +611,7 @@ u32 set_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 tbg_b_k
 	reg_val |= (clk_cfg->sb_clk_cfg.clock_sel.sdio_pclk_sel & 0x3) << 14;
 	reg_val |= (clk_cfg->sb_clk_cfg.clock_sel.usb32_usb2_sys_pclk_sel & 0x3) << 16;
 	reg_val |= (clk_cfg->sb_clk_cfg.clock_sel.usb32_ss_sys_pclk_sel & 0x3) << 18;
-	reg_val |= (clk_cfg->sb_clk_cfg.clock_sel.sb_axci_pclk_sel & 0x3) << 20;
+	reg_val |= (clk_cfg->sb_clk_cfg.clock_sel.sb_axi_pclk_sel & 0x3) << 20;
 	writel(reg_val, MVEBU_SOUTH_CLOCK_TBG_SELECT_REG);
 
 

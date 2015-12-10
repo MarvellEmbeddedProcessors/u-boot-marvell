@@ -365,6 +365,9 @@ static int comphy_usb3_power_up(enum phy_speed speed)
 	if (ret == 0)
 		error("Failed to lock USB3 PLL\n");
 
+	/* Switch from device to host mode */
+	reg_set((void __iomem *)USB32_CTRL_BASE, 0x1, 0x3);
+
 	debug_exit();
 
 	return ret;
@@ -384,6 +387,14 @@ static int comphy_usb2_power_up(u8 usb32)
 	/* TODO - add support for second USB2 UTMI - JIRA SYSTEMSW-2055 */
 	if (usb32 == 0)
 		return 1;
+
+	/*
+	 * 0. Setup PLL. 40MHz clock uses defaults.
+	 *    See "PLL Settings for Typical REFCLK" table
+	 */
+	if (get_ref_clk() == 25)
+		reg_set((void __iomem *)USB2PHY_BASE,
+			5 | (96 << 16), 0x3F | (0xFF << 16) | (0x3 << 28));
 
 	/*
 	 * 1. PHY pull up and disable USB2 suspend

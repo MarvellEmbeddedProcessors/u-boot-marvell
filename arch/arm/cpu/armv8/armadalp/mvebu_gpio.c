@@ -23,7 +23,7 @@
 /*
  * reset PCIe device
  */
-void mvebu_a3700_reset_pcie_dev(void)
+void mvebu_reset_pcie_dev(void)
 {
 	u32 reg_val;
 
@@ -52,7 +52,7 @@ void mvebu_a3700_reset_pcie_dev(void)
 }
 
 /*
- * mvebu_a3700_gpio
+ * mvebu_init_gpio
  *
  * This function sets GPIO configuration for Armada3700
  * by hardcoded value.
@@ -60,7 +60,7 @@ void mvebu_a3700_reset_pcie_dev(void)
  * and implemented by MPP/PIN-CTRL driver later.
  *
  */
-void mvebu_a3700_gpio(void)
+void mvebu_init_gpio(void)
 {
 	u32 reg_val;
 
@@ -102,4 +102,3 @@ void mvebu_a3700_gpio(void)
 
 	return;
 }
-

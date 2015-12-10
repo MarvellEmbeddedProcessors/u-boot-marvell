@@ -35,7 +35,7 @@
 #define MVEBU_GPIO_PCIE_EN_OFF			(4)
 
 
-void mvebu_a3700_reset_pcie_dev(void);
-void mvebu_a3700_gpio(void);
+void mvebu_reset_pcie_dev(void);
+void mvebu_init_gpio(void);
 
 #endif /* _MVEBU_GPIO_H_ */

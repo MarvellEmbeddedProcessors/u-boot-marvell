@@ -102,7 +102,7 @@ int set_io_addr_dec(struct mbus_win_map *win_map, struct dec_win_config *dec_win
 	return 0;
 }
 
-int init_a3700_io_addr_dec(void)
+int init_io_addr_dec(void)
 {
 	int ret = 0;
 	u32 node;

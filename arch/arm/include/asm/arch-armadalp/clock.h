@@ -469,14 +469,14 @@ TBG-B-P	500	2	5	gbe_50_pclk_sel		50	SB					DIV2[11:9]	DIV2[8:6]
 }
 
 /*****************************************************************************
-* get_a3700_ref_clk
+* get_ref_clk
 *
 * return: reference clock in MHz (25 or 40)
 ******************************************************************************/
-u32 get_a3700_ref_clk(void);
+u32 get_ref_clk(void);
 
 /******************************************************************************
-* Name: set_a3700_clocks
+* Name: set_clocks
 *
 * Description: Configure entire clock tree according to CPU and DDR frequency
 *
@@ -487,8 +487,8 @@ u32 get_a3700_ref_clk(void);
 * Output:	None
 * Return:	Non-zero if the requested settings are not supported
 ******************************************************************************/
-u32 set_a3700_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 tbg_b_kvco_mhz);
+u32 set_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 tbg_b_kvco_mhz);
 
-int init_a3700_clock(void);
+int init_clock(void);
 
 #endif /* _MVEBU_CLOCK_H_ */

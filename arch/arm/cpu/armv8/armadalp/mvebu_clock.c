@@ -192,11 +192,11 @@ static u32 init_ddr_clock(u32 ddr_clock_mhz)
 }
 
 /***************************************************************************************************
-  * get_a3700_ref_clk
+  * get_ref_clk
   *
   * return: reference clock in MHz (25 or 40)
  ***************************************************************************************************/
-u32 get_a3700_ref_clk(void)
+u32 get_ref_clk(void)
 {
 	u32 regval;
 
@@ -209,7 +209,7 @@ u32 get_a3700_ref_clk(void)
 }
 
 /******************************************************************************
-* Name: get_a3700_tbg_vco_sel
+* Name: get_tbg_vco_sel
 *
 * Description:	calculate the vco parameters for TBG based on the target clock.
 *
@@ -220,9 +220,9 @@ u32 get_a3700_ref_clk(void)
 *
 * Return: 0 - OK
 ******************************************************************************/
-static int get_a3700_tbg_vco_sel(u32 kvco_mhz,
-				 u32 *vco_intpi,
-				 u32 *vco_range)
+static int get_tbg_vco_sel(u32 kvco_mhz,
+			   u32 *vco_intpi,
+			   u32 *vco_range)
 {
 	u8  index;
 	u16 vco_top_ranges_mhz[8] = {1350, 1500, 1750, 2000, 2200, 2400, 2600, 3000};
@@ -262,7 +262,7 @@ static int get_a3700_tbg_vco_sel(u32 kvco_mhz,
 }
 
 /******************************************************************************
-* Name: set_a3700_tbg_clock
+* Name: set_tbg_clock
 *
 * Description:	Change the TBG(A/B) clock
 *		All affected North/South bridge clock sources should be
@@ -275,7 +275,7 @@ static int get_a3700_tbg_vco_sel(u32 kvco_mhz,
 * Output:	None
 * Return:	0 if OK
 ******************************************************************************/
-static u32 set_a3700_tbg_clock(u32 kvco_mhz,
+static u32 set_tbg_clock(u32 kvco_mhz,
 			       u32 se_vco_div,
 			       u32 diff_vco_div,
 			       enum a3700_clock_src tbg_typ)
@@ -289,7 +289,7 @@ static u32 set_a3700_tbg_clock(u32 kvco_mhz,
 	debug_enter();
 
 	/* Try to keep Fref/M as close as possible to 10 MHz */
-	if (get_a3700_ref_clk() == 40) {
+	if (get_ref_clk() == 40) {
 		/* 40MHz */
 		debug("REF clock is 40MHz\n");
 		tbg_M = 4;	/* 10MHz */
@@ -301,7 +301,7 @@ static u32 set_a3700_tbg_clock(u32 kvco_mhz,
 		icp = 6;	/* 9 */
 	}
 
-	ret = get_a3700_tbg_vco_sel(kvco_mhz, &vco_intpi, &vco_range);
+	ret = get_tbg_vco_sel(kvco_mhz, &vco_intpi, &vco_range);
 	if (ret != 0) {
 		error("Failed to obtain VCO divider selection\n");
 		return ret;
@@ -317,7 +317,7 @@ static u32 set_a3700_tbg_clock(u32 kvco_mhz,
 	   se_vco_div - TBG_A_VCODIV_SEL_SE or TBG_B_VCODIV_SEL_SE
 	   Fref - reference clock 25MHz or 40 MHz
 	  */
-	tbg_N = (kvco_mhz * tbg_M / get_a3700_ref_clk()) >> 2;
+	tbg_N = (kvco_mhz * tbg_M / get_ref_clk()) >> 2;
 	debug("TBG-%s: SE vco_div %#x, DIFF vco_div %#x,vco_range %#x tbg_N %#x KVCO = %d MHz\n",
 	      tbg_typ == TBG_A ? "A" : "B", se_vco_div, diff_vco_div, vco_range, tbg_N, kvco_mhz);
 
@@ -425,7 +425,7 @@ static u32 set_a3700_tbg_clock(u32 kvco_mhz,
 
 #ifdef MVEBU_A3700_ENABLE_SSC
 /******************************************************************************
-* Name: set_a3700_ssc
+* Name: set_ssc_mode
 *
 * Description: Setup Spread Spectrum Clcok for TBG-A/B
 *
@@ -433,7 +433,7 @@ static u32 set_a3700_tbg_clock(u32 kvco_mhz,
 * Output:	None
 * Return:	Non-zero on error
 ******************************************************************************/
-static u32 set_a3700_ssc(void)
+static u32 set_ssc_mode(void)
 {
 	debug_enter();
 	return 0;
@@ -442,7 +442,7 @@ static u32 set_a3700_ssc(void)
 #endif /* MVEBU_A3700_ENABLE_SSC */
 
 /******************************************************************************
-* Name: set_a3700_clocks
+* Name: set_clocks
 *
 * Description: Configure entire clock tree according to CPU and DDR frequency
 *
@@ -453,7 +453,7 @@ static u32 set_a3700_ssc(void)
 * Output:	None
 * Return:	Non-zero if the requested settings are not supported
 ******************************************************************************/
-u32 set_a3700_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 tbg_b_kvco_mhz)
+u32 set_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 tbg_b_kvco_mhz)
 {
 	u32 clock_cfgs_cnt = sizeof(a3700_clock_configs)/sizeof(a3700_clock_configs[0]);
 	u32 cfg;
@@ -486,19 +486,19 @@ u32 set_a3700_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 t
 	writel(0x00000000, MVEBU_NORTH_CLOCK_SELECT_REG);
 	writel(0x00000000, MVEBU_SOUTH_CLOCK_SELECT_REG);
 
-	rval = set_a3700_tbg_clock(clk_cfg->tbg_a.kvco_mhz,
-				   clk_cfg->tbg_a.se_vcodiv,
-				   clk_cfg->tbg_a.diff_vcodiv,
-				   TBG_A);
+	rval = set_tbg_clock(clk_cfg->tbg_a.kvco_mhz,
+			     clk_cfg->tbg_a.se_vcodiv,
+			     clk_cfg->tbg_a.diff_vcodiv,
+			     TBG_A);
 	if (rval) {
 		error("Failed to set TBG-A clock to %dMHz\n", clk_cfg->tbg_a.kvco_mhz);
 		return rval;
 	}
 
-	rval = set_a3700_tbg_clock(clk_cfg->tbg_b.kvco_mhz,
-				   clk_cfg->tbg_b.se_vcodiv,
-				   clk_cfg->tbg_b.diff_vcodiv,
-				   TBG_B);
+	rval = set_tbg_clock(clk_cfg->tbg_b.kvco_mhz,
+			     clk_cfg->tbg_b.se_vcodiv,
+			     clk_cfg->tbg_b.diff_vcodiv,
+			     TBG_B);
 	if (rval) {
 		error("Failed to set TBG-B clock to %dMHz\n", clk_cfg->tbg_b.kvco_mhz);
 		return rval;
@@ -616,7 +616,7 @@ u32 set_a3700_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 t
 
 
 #ifdef MVEBU_A3700_ENABLE_SSC
-	set_a3700_ssc();
+	set_ssc_mode();
 #else
 	/* Disable SSC for TBG-A (bit[10]) and TBG-B (bit[26]) */
 	reg_val = readl(MVEBU_NORTH_BRG_TBG_CTRL3);
@@ -635,7 +635,7 @@ u32 set_a3700_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 t
 	return rval;
 }
 
-int init_a3700_clock(void)
+int init_clock(void)
 {
 	int node, count, idx, ret;
 	const void *blob = gd->fdt_blob;
@@ -658,10 +658,10 @@ int init_a3700_clock(void)
 	printf("Setting clocks to CPU=%dMHz and DDR=%dMHz\n",
 		a3700_clock_configs[idx].cpu_freq_mhz, a3700_clock_configs[idx].ddr_freq_mhz);
 
-	ret =  set_a3700_clocks(a3700_clock_configs[idx].cpu_freq_mhz,
-				a3700_clock_configs[idx].ddr_freq_mhz,
-				a3700_clock_configs[idx].tbg_a.kvco_mhz,
-				a3700_clock_configs[idx].tbg_b.kvco_mhz);
+	ret =  set_clocks(a3700_clock_configs[idx].cpu_freq_mhz,
+			  a3700_clock_configs[idx].ddr_freq_mhz,
+			  a3700_clock_configs[idx].tbg_a.kvco_mhz,
+			  a3700_clock_configs[idx].tbg_b.kvco_mhz);
 	if (ret)
 		error("Failed to configure system clocks\n");
 

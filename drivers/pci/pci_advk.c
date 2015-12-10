@@ -405,7 +405,7 @@ static int advk_pcie_init(int host_id, void __iomem *reg_base, struct pcie_win *
 	memset(hose, 0, sizeof(hose));
 
 	/* reset PCIe device in RC mode */
-	mvebu_a3700_reset_pcie_dev();
+	mvebu_reset_pcie_dev();
 
 	/* start link training */
 	ret = advk_pcie_link_init(reg_base);

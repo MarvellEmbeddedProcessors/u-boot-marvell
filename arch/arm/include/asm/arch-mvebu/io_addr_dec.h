@@ -19,7 +19,6 @@
 #ifndef _IO_ADDR_DEC_H_
 #define _IO_ADDR_DEC_H_
 
-int init_a3700_io_addr_dec(void);
+int init_io_addr_dec(void);
 
 #endif /* _IO_ADDR_DEC_H_ */
-

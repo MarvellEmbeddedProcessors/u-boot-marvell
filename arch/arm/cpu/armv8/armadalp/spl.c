@@ -20,7 +20,7 @@
 #include <asm/arch-mvebu/spl.h>
 #include <asm/arch-mvebu/comphy.h>
 #include <asm/arch-mvebu/io_addr_dec.h>
-#include <asm/arch-mvebu/clock.h>
+#include <asm/arch-armadalp/clock.h>
 #include <asm/arch-mvebu/mbus.h>
 #include <asm/arch-armadalp/gpio.h>
 #include <asm/arch-mvebu/mvebu_misc.h>
@@ -30,12 +30,12 @@ void (*ptr_uboot_start)(void);
 void early_spl_init(void)
 {
 #ifdef CONFIG_MVEBU_SPL_A3700_GPIO
-	mvebu_a3700_gpio();
+	mvebu_init_gpio();
 #endif
 
 	/* Clock should be enabeld before initialize the I/O units */
 #ifdef CONFIG_MVEBU_A3700_CLOCK
-	init_a3700_clock();
+	init_clock();
 #endif
 
 #ifdef CONFIG_MVEBU_A3700_MISC_INIT
@@ -58,7 +58,7 @@ void late_spl_init(void)
 #endif
 
 #ifdef CONFIG_MVEBU_A3700_IO_ADDR_DEC
-	init_a3700_io_addr_dec();
+	init_io_addr_dec();
 #endif
 }
 

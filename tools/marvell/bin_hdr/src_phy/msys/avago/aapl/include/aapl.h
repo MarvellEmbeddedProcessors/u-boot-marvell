@@ -238,10 +238,12 @@ typedef enum
 #define AAPL_SERDES_INIT_RDY_TIMEOUT   20  /**< Maximum milliseconds for pll calibration */
 #define AAPL_SPICO_UPLOAD_WAIT_TIMEOUT 500  /**< Maximum milliseconds to wait for AAPL to wait for external SPICO upload to complete */
 
-#ifdef MV_MSYS_BOBK
+#if defined  MV_MSYS_BOBK
 #define AVAGO_MG_ACCESS_THRESHOLD      5000  /**< Maximum "mop" to wait fbefore any MG access */
+#elif defined MV_CM3_BOBK
+#define AVAGO_MG_ACCESS_THRESHOLD      0     /**< Maximum "mop" to wait fbefore any MG access */
 #else
-#define AVAGO_MG_ACCESS_THRESHOLD      12000  /**< Maximum "mop" to wait fbefore any MG access */
+#define AVAGO_MG_ACCESS_THRESHOLD      12000 /**< Maximum "mop" to wait fbefore any MG access */
 #endif
 
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3

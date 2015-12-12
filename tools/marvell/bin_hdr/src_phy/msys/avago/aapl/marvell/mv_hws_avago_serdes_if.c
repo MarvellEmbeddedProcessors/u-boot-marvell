@@ -145,7 +145,6 @@ GT_U8 avagoToSerdesMap[MAX_AVAGO_SPICO_NUMBER] =
     /* Temp Sensor = Physical SPICO 09 on SERDES chain */
 };
 
-
 /************************* * Pre-Declarations *******************************************************/
 #ifndef ASIC_SIMULATION
 extern GT_STATUS mvHwsAvagoInitI2cDriver(GT_VOID);
@@ -1044,12 +1043,24 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     }
 
 #ifndef ASIC_SIMULATION
-    /* Compensate the VCO calibration value according to Temperature */
-    res = mvHwsAvagoSerdesVcoConfig(devNum, portGroup, serdesNum);
-    if(res != GT_OK)
+    /* AVAGO_SERDES_INIT_BYPASS_VCO
+    ** ============================ 
+    ** BOBK Avago SERDES Init includes VCO calibration,
+    ** this calibration adds 20msec delay for each SERDES
+    ** The portGroup parameter is used to pass bypass VCO
+    ** calibration indication to SERDES Init API in case
+    ** called during AP process
+    ** Only valid for BOBK
+    */
+    if (portGroup != AVAGO_SERDES_INIT_BYPASS_VCO)
     {
-        osPrintf("mvHwsAvagoSerdesVcoConfig failed (%d)\n", res);
-        return GT_FAIL;
+        /* Compensate the VCO calibration value according to Temperature */
+        res = mvHwsAvagoSerdesVcoConfig(devNum, portGroup, serdesNum);
+        if(res != GT_OK)
+        {
+            osPrintf("mvHwsAvagoSerdesVcoConfig failed (%d)\n", res);
+            return GT_FAIL;
+        }
     }
 #endif /* ASIC_SIMULATION */
 

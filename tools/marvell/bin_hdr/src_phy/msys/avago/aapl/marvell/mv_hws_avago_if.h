@@ -58,6 +58,7 @@ extern "C" {
 #define  MAX_AVAGO_SERDES_ADDRESS     255
 #define  NA_VALUE                     0
 #define  AVAGO_INVALID_SBUS_ADDR      (-1)
+#define  AVAGO_SERDES_INIT_BYPASS_VCO (0xFFFF)
 
 #define AVAGO_AAPL_LGPL
 /*#define MARVELL_AVAGO_DEBUG_FLAG*/

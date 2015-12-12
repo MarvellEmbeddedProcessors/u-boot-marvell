@@ -374,7 +374,7 @@ static int xenon_mmc_transfer_data(struct xenon_mmc_cfg *mmc_cfg, struct mmc_dat
 	do {
 		stat = xenon_mmc_readl(mmc_cfg, SDHCI_INT_STATUS);
 		if (stat & SDHCI_INT_ERROR) {
-			error("Error detected in status(0x%X)\n", stat);
+			debug("Error detected in status(0x%X)\n", stat);
 			return -1;
 		}
 		if (stat & rdy) {
@@ -517,7 +517,7 @@ static int xenon_mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 	do {
 		stat = xenon_mmc_readl(mmc_cfg, SDHCI_INT_STATUS);
 		if (stat & SDHCI_INT_ERROR) {
-			error("SDHCI_INT_ERROR stat(%x)\n", stat);
+			debug("SDHCI_INT_ERROR stat(%x)\n", stat);
 			break;
 		}
 		udelay(100);
@@ -711,7 +711,6 @@ static int xenon_mmc_init(struct mmc *mmc)
 	u32 status;
 	u8  var;
 	u32 timeout = 1000; /* Wait max 100ms */
-
 	struct xenon_mmc_cfg *mmc_cfg = mmc->priv;
 
 	debug_enter();
@@ -728,12 +727,6 @@ static int xenon_mmc_init(struct mmc *mmc)
 			return -1;
 		}
 	}
-
-	/* Disable auto clock gating during init */
-	xenon_mmc_set_acg(mmc_cfg, false);
-
-	/* Enable slot */
-	xenon_mmc_set_slot(mmc_cfg, XENON_MMC_SLOT_ID_HYPERION, true);
 
 	/* Detect card */
 	if (mmc_cfg->quirks & SDHCI_QUIRK_NO_CD) {
@@ -754,9 +747,15 @@ static int xenon_mmc_init(struct mmc *mmc)
 	}
 
 	if (timeout)
-		debug("SD/eMMC card is detected\n");
+		printf("SD/eMMC card is detected\n");
 	else
-		debug("NO SD/eMMC card detected\n");
+		printf("NO SD/eMMC card detected\n");
+
+	/* Disable auto clock gating during init */
+	xenon_mmc_set_acg(mmc_cfg, false);
+
+	/* Enable slot */
+	xenon_mmc_set_slot(mmc_cfg, XENON_MMC_SLOT_ID_HYPERION, true);
 
 	/*
 	 * Set default power

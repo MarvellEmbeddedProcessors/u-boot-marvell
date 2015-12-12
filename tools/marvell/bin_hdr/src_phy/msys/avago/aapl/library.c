@@ -210,7 +210,9 @@ void ms_sleep(
 
 #elif defined MV_HWS_FREE_RTOS
 
-    udelay( ms_delay * 1000 );
+    extern unsigned int mvPortCtrlProcessDelay(unsigned long duration);
+
+    mvPortCtrlProcessDelay(ms_delay);
 
 #elif defined unix
 

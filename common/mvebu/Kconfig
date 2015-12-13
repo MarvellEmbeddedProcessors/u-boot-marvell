@@ -53,4 +53,14 @@ config CMD_MVEBU_TSEN
 	  tsen - Display the SoC temperature
 	  as read from the on chip thermal sensor
 
+config CMD_MVEBU_PHY_FW_DOWNLOAD
+	bool "phy_fw_down"
+	depends on MVEBU_MDIO
+	default n
+	help
+	  phy_fw_down - this command download
+	  PHY firmware header to the PHY flash
+	  this command used for Marvell PHYs
+	  88X3220/88X3310
+
 endmenu

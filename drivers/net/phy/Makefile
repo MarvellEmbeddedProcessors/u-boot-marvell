@@ -24,3 +24,4 @@ obj-$(CONFIG_PHY_REALTEK) += realtek.o
 obj-$(CONFIG_PHY_SMSC) += smsc.o
 obj-$(CONFIG_PHY_TERANETICS) += teranetics.o
 obj-$(CONFIG_PHY_VITESSE) += vitesse.o
+obj-$(CONFIG_CMD_MVEBU_PHY_FW_DOWNLOAD) += mvebu_fw_download.o

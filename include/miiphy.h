@@ -121,4 +121,5 @@ int bb_miiphy_write(const char *devname, unsigned char addr,
 #define ESTATUS_1000XF		0x8000
 #define ESTATUS_1000XH		0x4000
 
+u32 mvebu_phy_firmware_download(u16 port, u8 app_data[], u32 app_size, u8 salve_data[], u32 slave_size);
 #endif

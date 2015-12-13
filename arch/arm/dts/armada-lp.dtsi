@@ -17,7 +17,7 @@
 
 		freq {
 			compatible = "marvell,a3700-freq";
-			preset = <PRESET_CPU_400_DDR_600>;
+			preset = <PRESET_CPU_600_DDR_600>;
 		};
 
 		internal-regs {

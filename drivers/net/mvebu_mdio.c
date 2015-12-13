@@ -17,13 +17,14 @@
  */
 
 #include <common.h>
+#include <fdtdec.h>
 #include <miiphy.h>
 #include <asm/io.h>
 #include <asm/errno.h>
+#include <asm/arch-mvebu/fdt.h>
 
 #define MVEBU_SMI_TIMEOUT			10000
 
-#define MVEBU_SMI_OFFSET			0x2004
 /* SMI register fields */
 #define	MVEBU_SMI_DATA_OFFS			0	/* Data */
 #define	MVEBU_SMI_DATA_MASK			(0xffff << MVEBU_SMI_DATA_OFFS)
@@ -37,7 +38,6 @@
 #define	MVEBU_PHY_REG_MASK			0x1f
 #define	MVEBU_PHY_ADDR_MASK			0x1f
 
-#define MVEBU_XSMI_OFFSET			0x30000
 /* XSMI management register fields */
 #define MVEBU_XSMI_DATA_OFFS			0       /* Data */
 #define MVEBU_XSMI_DATA_MASK			(0xffff << MVEBU_XSMI_DATA_OFFS)
@@ -70,6 +70,13 @@
 #define MVEBU_XSMI_CFG_DIV_OFFS			0
 #define MVEBU_XSMI_CFG_DIV_MASK			(0x3 << MVEBU_XSMI_CFG_DIV_OFFS)
 
+struct mvebu_mdio_base {
+	void __iomem *xsmi_base;
+	void __iomem *smi_base;
+};
+
+struct mvebu_mdio_base mdio_base_addr;
+
 /* SMI functions */
 static int mvebu_smi_check_param(int phy_adr, int reg_ofs)
 {
@@ -93,7 +100,7 @@ static int mvebu_smi_wait_ready(void *base)
 	/* wait till the SMI is not busy */
 	do {
 		/* read smi register */
-		smi_reg = readl(base + MVEBU_SMI_OFFSET);
+		smi_reg = readl(base);
 		if (timeout-- == 0) {
 			error("SMI busy timeout\n");
 			return -EFAULT;
@@ -105,9 +112,15 @@ static int mvebu_smi_wait_ready(void *base)
 
 static int mvebu_smi_read(struct mii_dev *bus, int phy_adr, int reg_ofs)
 {
-	void __iomem *base = bus->priv;
+	struct mvebu_mdio_base *mdio_base = bus->priv;
+	void __iomem *base = mdio_base->smi_base;
 	u32 smi_reg;
 	u32 timeout;
+
+	if (mdio_base->smi_base == NULL) {
+		error("SMI base address is NULL\n");
+		return -EFAULT;
+	}
 
 	/* wait till the SMI is not busy */
 	if (mvebu_smi_wait_ready(base) < 0)
@@ -119,26 +132,32 @@ static int mvebu_smi_read(struct mii_dev *bus, int phy_adr, int reg_ofs)
 		| MVEBU_SMI_OPCODE_READ;
 
 	/* write the smi register */
-	writel(smi_reg, base + MVEBU_SMI_OFFSET);
+	writel(smi_reg, base);
 
 	/* wait till read value is ready */
 	timeout = MVEBU_SMI_TIMEOUT;
 	do {
 		/* read smi register */
-		smi_reg = readl(base + MVEBU_SMI_OFFSET);
+		smi_reg = readl(base);
 		if (timeout-- == 0) {
 			error("SMI read ready time-out\n");
 			return -EFAULT;
 		}
 	} while (!(smi_reg & MVEBU_SMI_READ_VALID));
 
-	return readl(base + MVEBU_SMI_OFFSET) & MVEBU_SMI_DATA_MASK;
+	return readl(base) & MVEBU_SMI_DATA_MASK;
 }
 
 static int mvebu_smi_write(struct mii_dev *bus, int phy_adr, int reg_ofs, u16 data)
 {
-	void __iomem *base = bus->priv;
+	struct mvebu_mdio_base *mdio_base = bus->priv;
+	void __iomem *base = mdio_base->smi_base;
 	u32 smi_reg;
+
+	if (mdio_base->smi_base == NULL) {
+		error("SMI base address is NULL\n");
+		return -EFAULT;
+	}
 
 	/* wait till the SMI is not busy */
 	if (mvebu_smi_wait_ready(base) < 0)
@@ -151,7 +170,7 @@ static int mvebu_smi_write(struct mii_dev *bus, int phy_adr, int reg_ofs, u16 da
 	smi_reg &= ~MVEBU_SMI_OPCODE_READ;
 
 	/* write the smi register */
-	writel(smi_reg, base + MVEBU_SMI_OFFSET);
+	writel(smi_reg, base);
 
 	/* make sure that the write transaction  is over */
 	if (mvebu_smi_wait_ready(base) < 0)
@@ -169,7 +188,7 @@ static int mvebu_xsmi_wait_ready(void *base)
 	/* wait till the xSMI is not busy */
 	do {
 		/* read smi register */
-		xsmi_reg = readl(base + MVEBU_XSMI_OFFSET);
+		xsmi_reg = readl(base);
 		if (timeout-- == 0) {
 			error("SMI busy time-out\n");
 			return -EFAULT;
@@ -198,9 +217,15 @@ static int mvebu_xsmi_check_param(int phy_adr, int dev_adr, int reg_ofs)
 
 static int mvebu_xsmi_read(struct mii_dev *bus, int phy_adr, int dev_adr, int reg_adr)
 {
-	void __iomem *base = bus->priv;
+	struct mvebu_mdio_base *mdio_base = bus->priv;
+	void __iomem *base = mdio_base->xsmi_base;
 	u32 xsmi_reg;
 	u32 timeout;
+
+	if (mdio_base->xsmi_base == NULL) {
+		error("XSMI base address is NULL\n");
+		return -EFAULT;
+	}
 
 	/* wait till the SMI is not busy */
 	if (mvebu_xsmi_wait_ready(base) < 0)
@@ -216,27 +241,33 @@ static int mvebu_xsmi_read(struct mii_dev *bus, int phy_adr, int dev_adr, int re
 		| MVEBU_XSMI_OPCODE_ADDR_READ;
 
 	/* write the smi register */
-	writel(xsmi_reg, base + MVEBU_XSMI_OFFSET);
+	writel(xsmi_reg, base);
 
 	/*wait till read value is ready */
 	timeout = MVEBU_SMI_TIMEOUT;
 	do {
 		/* read smi register */
-		xsmi_reg = readl(base + MVEBU_XSMI_OFFSET);
+		xsmi_reg = readl(base);
 		if (timeout-- == 0) {
 			error("SMI read ready time-out\n");
 			return -EFAULT;
 		}
 	} while (!(xsmi_reg & MVEBU_XSMI_READ_VALID));
 
-	return readl(base + MVEBU_XSMI_OFFSET) & MVEBU_XSMI_DATA_MASK;
+	return readl(base) & MVEBU_XSMI_DATA_MASK;
 
 }
 
 static int mvebu_xsmi_write(struct mii_dev *bus, int phy_adr, int dev_adr, int reg_adr, u16 data)
 {
-	void __iomem *base = bus->priv;
+	struct mvebu_mdio_base *mdio_base = bus->priv;
+	void __iomem *base = mdio_base->xsmi_base;
 	u32 xsmi_reg;
+
+	if (mdio_base->xsmi_base == NULL) {
+		error("XSMI base address is NULL\n");
+		return -EFAULT;
+	}
 
 	/* wait till the xSMI is not busy */
 	if (mvebu_xsmi_wait_ready(base) < 0)
@@ -252,7 +283,7 @@ static int mvebu_xsmi_write(struct mii_dev *bus, int phy_adr, int dev_adr, int r
 	xsmi_reg &= ~MVEBU_XSMI_OPCODE_ADDR_WRITE;
 
 	/* write the xsmi register */
-	writel(xsmi_reg, base + MVEBU_XSMI_OFFSET);
+	writel(xsmi_reg, base);
 
 	/* wait till the SMI is not busy */
 	if (mvebu_xsmi_wait_ready(base) < 0)
@@ -291,10 +322,28 @@ int mvebu_mdio_write(struct mii_dev *bus, int phy_adr, int dev_adr, int reg_ofs,
 	}
 }
 
-int mvebu_mdio_initialize(bd_t *bis, void *base)
+int mvebu_mdio_initialize(const void *blob)
 {
-	struct mii_dev *bus = mdio_alloc();
+	struct mii_dev *bus;
+	u32 node;
+	struct mvebu_mdio_base *mdio_base = &mdio_base_addr;
 
+	/* Get the MDIO node from the FDT blob */
+	node = fdt_node_offset_by_compatible(blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_MDIO));
+	if (node < 0) {
+		error("No MDIO node found in FDT blob\n");
+		return -1;
+	}
+	/* Get the base address of the address MDIO */
+	mdio_base->xsmi_base = (void *)fdt_get_regs_offs(blob, node, "reg_xsmi");
+	if (mdio_base->xsmi_base == NULL)
+		debug("No XSMI base address found\n");
+
+	mdio_base->smi_base = (void *)fdt_get_regs_offs(blob, node, "reg_smi");
+	if (mdio_base->smi_base == NULL)
+		debug("No SMI base address found\n");
+
+	bus = mdio_alloc();
 	if (!bus) {
 		error("Failed to allocate MVEBU MDIO bus");
 		return -1;
@@ -303,10 +352,13 @@ int mvebu_mdio_initialize(bd_t *bis, void *base)
 	bus->read = mvebu_mdio_read;
 	bus->write = mvebu_mdio_write;
 	bus->reset = NULL;
-
 	/* use given name or generate its own unique name */
-	snprintf(bus->name, MDIO_NAME_LEN, "mvebu_mdio", base);
-	bus->priv = base;
+	snprintf(bus->name, MDIO_NAME_LEN, "mvebu_mdio");
+	bus->priv = mdio_base;
+	if (mdio_register(bus) < 0) {
+		error("failed to register MDIO bus\n");
+		return -1;
+	}
 
-	return mdio_register(bus);
+	return 0;
 }

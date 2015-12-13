@@ -159,11 +159,11 @@ GT_STATUS mvHwsAvagoCheckSerdesAccess(unsigned int devNum, unsigned char portGro
 void mvHwsAvagoAaplAddrGet
 (
     unsigned char devNum,
-    unsigned int *devAddr,
+    unsigned int **devAddr,
     unsigned int *devSize
 )
 {
-    *devAddr = (unsigned int)(&(aaplSerdesDbDef[devNum]));
+    *devAddr = (unsigned int *)(&(aaplSerdesDbDef[devNum]));
     *devSize = (unsigned int)sizeof(aaplSerdesDbDef[devNum]);
 }
 

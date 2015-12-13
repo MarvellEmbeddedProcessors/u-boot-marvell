@@ -118,4 +118,8 @@ int bb_miiphy_write(struct mii_dev *miidev, int addr, int devad, int reg,
 #define ESTATUS_1000XF		0x8000
 #define ESTATUS_1000XH		0x4000
 
+#ifdef CONFIG_CMD_MVEBU_PHY_FW_DOWNLOAD
+u32 mvebu_phy_firmware_download(u16 port, u8 app_data[], u32 app_size,
+				u8 salve_data[], u32 slave_size);
+#endif
 #endif

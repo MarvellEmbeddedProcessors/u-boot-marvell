@@ -32,3 +32,4 @@ obj-$(CONFIG_PHY_XILINX) += xilinx_phy.o
 obj-$(CONFIG_PHY_VITESSE) += vitesse.o
 obj-$(CONFIG_PHY_MSCC) += mscc.o
 obj-$(CONFIG_PHY_FIXED) += fixed.o
+obj-$(CONFIG_CMD_MVEBU_PHY_FW_DOWNLOAD) += mvebu_fw_download.o

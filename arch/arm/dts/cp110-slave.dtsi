@@ -33,4 +33,21 @@
 			#include "cp110.dtsi"
 		};
 	};
+
+	/* Override the above configurations taken from cp110.dtsi */
+	cp110-slave {
+		internal-regs {
+			pcie-controller {
+				pcie@0,0 {
+					mem = <0xf9000000 0x1000000>;
+				};
+				pcie@1,0 {
+					mem = <0xfa000000 0x1000000>;
+				};
+				pcie@2,0 {
+					mem = <0xfb000000 0x1000000>;
+				};
+			};
+		};
+	};
 };

@@ -622,8 +622,7 @@ int parse_sec_config_file(char *filename)
 	config_t		sec_cfg;
 	int			array_sz, element, rval = -1;
 	const char		*cfg_string;
-	int			cfg_int;
-	long			cfg_long;
+	int32_t			cfg_int32;
 	const config_setting_t	*csk_array, *control_aray;
 	sec_options		*sec_opt = 0;
 
@@ -683,45 +682,45 @@ int parse_sec_config_file(char *filename)
 	}
 
 	/* JTAG options */
-	if (config_lookup_bool(&sec_cfg, "jtag.enable", &cfg_int) != CONFIG_TRUE) {
+	if (config_lookup_bool(&sec_cfg, "jtag.enable", &cfg_int32) != CONFIG_TRUE) {
 		fprintf(stderr, "Error obtaining \"jtag.enable\" element. Using default - FALSE\n");
-		cfg_int = 0;
+		cfg_int32 = 0;
 	}
-	sec_opt->jtag_enable = cfg_int;
+	sec_opt->jtag_enable = cfg_int32;
 
-	if (config_lookup_int(&sec_cfg, "jtag.delay", &cfg_long) != CONFIG_TRUE) {
+	if (config_lookup_int(&sec_cfg, "jtag.delay", &cfg_int32) != CONFIG_TRUE) {
 		fprintf(stderr, "Error obtaining \"jtag.delay\" element. Using default - 0us\n");
-		cfg_long = 0;
+		cfg_int32 = 0;
 	}
-	sec_opt->jtag_delay = cfg_long;
+	sec_opt->jtag_delay = cfg_int32;
 
 	/* eFUSE option */
-	if (config_lookup_bool(&sec_cfg, "efuse_disable", &cfg_int) != CONFIG_TRUE) {
+	if (config_lookup_bool(&sec_cfg, "efuse_disable", &cfg_int32) != CONFIG_TRUE) {
 		fprintf(stderr, "Error obtaining \"efuse_disable\" element. Using default - FALSE\n");
-		cfg_int = 0;
+		cfg_int32 = 0;
 	}
-	sec_opt->efuse_disable = cfg_int;
+	sec_opt->efuse_disable = cfg_int32;
 
 	/* Box ID option */
-	if (config_lookup_int(&sec_cfg, "box_id", &cfg_long) != CONFIG_TRUE) {
+	if (config_lookup_int(&sec_cfg, "box_id", &cfg_int32) != CONFIG_TRUE) {
 		fprintf(stderr, "Error obtaining \"box_id\" element. Using default - 0x0\n");
-		cfg_long = 0;
+		cfg_int32 = 0;
 	}
-	sec_opt->box_id = cfg_long;
+	sec_opt->box_id = cfg_int32;
 
 	/* Flash ID option */
-	if (config_lookup_int(&sec_cfg, "flash_id", &cfg_long) != CONFIG_TRUE) {
+	if (config_lookup_int(&sec_cfg, "flash_id", &cfg_int32) != CONFIG_TRUE) {
 		fprintf(stderr, "Error obtaining \"flash_id\" element. Using default - 0x0\n");
-		cfg_long = 0;
+		cfg_int32 = 0;
 	}
-	sec_opt->flash_id = cfg_long;
+	sec_opt->flash_id = cfg_int32;
 
 	/* CSK index option */
-	if (config_lookup_int(&sec_cfg, "csk_key_index", &cfg_long) != CONFIG_TRUE) {
+	if (config_lookup_int(&sec_cfg, "csk_key_index", &cfg_int32) != CONFIG_TRUE) {
 		fprintf(stderr, "Error obtaining \"flash_id\" element. Using default - 0x0\n");
-		cfg_long = 0;
+		cfg_int32 = 0;
 	}
-	sec_opt->csk_index = cfg_long;
+	sec_opt->csk_index = cfg_int32;
 
 	/* Secure boot control array */
 	control_aray = config_lookup(&sec_cfg, "control");

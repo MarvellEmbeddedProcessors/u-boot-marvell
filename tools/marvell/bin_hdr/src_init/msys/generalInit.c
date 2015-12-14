@@ -314,15 +314,16 @@ static inline MV_VOID mvMppConfig()
 /*****************************************************************************/
 MV_STATUS mvGeneralInit(void)
 {
+	mvMbusWinConfig();
+	mvHwsTwsiInitWrapper();
 	if (mvBoardIdGet() == BOBK_CETUS_DB_ID)
 		mvMppConfig(); /* MPP must be configured prior to UART access */
 
-	mvMbusWinConfig();
 #if !defined(MV_NO_PRINT)
 	mvUartInit();
 	mvPrintf("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
 #endif
-	mvHwsTwsiInitWrapper();
+
 #ifdef CONFIG_BOBK
 	mvBypassCoreClockWA();
 #endif

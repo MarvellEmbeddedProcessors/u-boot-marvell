@@ -958,7 +958,7 @@ SILICON_TYPE get_attached_silicon_type(void)
 			return silt;
 		}
 
-		for (BusNum = 0; BusNum < 10; BusNum ++)
+		for (BusNum = 1; BusNum < 10; BusNum++)
 				for (Device = 0; Device < PCI_MAX_PCI_DEVICES; Device++) {
 						HeaderType = 0;
 						VendorID = 0;

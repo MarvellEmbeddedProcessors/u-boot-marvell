@@ -29,6 +29,8 @@
 #define MVEBU_IO_AFFINITY	0xF00
 #define MVEBU_RFU_GLOBL_SW_RST	0x84
 
+#define MVEBU_CCU_RVBAR(i)	(0x640 + (i * 4))
+
 .pushsection ._secure.text, "ax"
 
 enable_affinity:
@@ -103,7 +105,10 @@ psci_0_2_cpu_on_64:
 
 	dsb     sy
 
-	/* get cpu number - use affinity level 2 */
+	/* get cpu number - use CPU ID */
+	and 	x5, x1, #0x3
+
+	/* get cluster number - use affinity level 1 */
 	asr 	x1, x1, #8
 	and 	x1, x1, #0xff
 
@@ -114,7 +119,9 @@ psci_0_2_cpu_on_64:
 	str 	w2, [x3]
 
 	/* set the cpu start address */
-	add	x3, x0, #0x640
+	mov	x2, #(MVEBU_CCU_RVBAR(0))
+	add	x2, x2, x5, lsl #2
+	add	x3, x0, x2
 
 	/* CPU reset vector address - must be aligned to 0x10000
 	use __secure_start - _start as PSCI first address
@@ -127,14 +134,20 @@ psci_0_2_cpu_on_64:
 	lsr	x2, x2, #16	/* align to 0x10000 */
 	str 	w2, [x3]
 
-	/* save the Linux out of reset address to unused register */
+	/* Save the Linux out of reset address to unused register.
+	** We used the RVBAR for CPU's 2-3 to store the Linux return address
+	** for CPUs 0 & 1. */
 	adr	x1, _target_pc
 	ldr	x1, [x1]
-	add	x3, x0, #0x644 /* WA reset adderrs - use reserved register */
+	mov	x2, #(MVEBU_CCU_RVBAR(2))
+	add	x2, x2, x5, lsl #2
+	add	x3, x0, x2
 	str     w1, [x3]
 
 	/* get the cpu out of reset */
-	add	x3, x0, #0x650
+	mov	x2, #0x650
+	add	x2, x2, x5, lsl #2
+	add	x3, x0, x2
 	movz 	x2, #0x1, LSL #16
 	add	x2, x2, #0x1
 	str 	w2, [x3]
@@ -200,9 +213,13 @@ _armada8k_cpu_entry:
 	bl	armv8_switch_to_el1
 #endif
 
-	/* set linux start address - WA reset adderrs - use reserved register */
+	/* Get linux start address - we use RVBARR for CPU's 2-3 as a WA. */
+	mrs 	x2, MPIDR_EL1   	/* get current CPU - Use affinity level 1 */
+	and	x5, x2, #0x3
+
 	mov	x0, #(MVEBU_REGS_BASE)
-	mov     x2, #0x644
+	mov	x2, #(MVEBU_CCU_RVBAR(2))
+	add	x2, x2, x5, lsl #2
 	orr     x2, x2, x0
 	ldr     w0, [x2]
 

@@ -37,6 +37,12 @@
 	/* Override the above configurations taken from cp110.dtsi */
 	cp110-slave {
 		internal-regs {
+			map-iob {
+				windows = <0x0 0xfa000000 0x0 0x1000000 0x2 /* PEX1_X1 window */
+					0x0 0xfb000000 0x0 0x1000000 0x3 /* PEX2_X1 window */
+					0x0 0xf9000000 0x0 0x1000000 0x4 /* PEX0_X4 window */>;
+			};
+
 			pcie-controller {
 				pcie@0,0 {
 					mem = <0xf9000000 0x1000000>;

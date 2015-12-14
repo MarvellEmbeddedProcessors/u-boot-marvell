@@ -12,7 +12,7 @@ The IOB node requires the following properties:
 	- compatible
 		should be "marvell,mvebu-iob"
 	- reg: the base address of the IOB unit
-	- max-win: number of the max mbus windows
+	- max-win: number of the max iob windows
 	- windows: entry that include the configuration of the windows
 	  every window should have 5 parameters:
 	  - high base address of the window

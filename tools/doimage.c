@@ -569,8 +569,8 @@ int verify_secure_header_signatures(header_t *main_hdr, sec_entry_t *sec_ext)
 			goto ver_error;
 		}
 		fprintf(stdout, "OK\n");
-	}
-	fprintf(stdout, "SKIP Image and Header Signatures check (undefined key index)\n");
+	} else
+		fprintf(stdout, "SKIP Image and Header Signatures check (undefined key index)\n");
 
 	rval = 0;
 
@@ -1229,6 +1229,8 @@ int parse_image(uint8_t *buf, int size)
 	if (main_hdr->ext_count) {
 		uint8_t		ext_num = main_hdr->ext_count;
 		ext_header_t	*ext_hdr = (ext_header_t *)(main_hdr + 1);
+		unsigned char	hash[32];
+		int		i;
 
 		while (ext_num--) {
 			if (ext_hdr->type == EXT_TYPE_SECURITY) {
@@ -1239,6 +1241,15 @@ int parse_image(uint8_t *buf, int size)
 					fprintf(stderr, "\n****** FAILED TO VERIFY RSA SIGNATURES ********\n");
 					goto error;
 				}
+
+				sha256(sec_entry->kak_key, MAX_RSA_DER_BYTE_LEN, hash, 0);
+				fprintf(stdout, ">>>>>>>>>>> KAK KEY HASH >>>>>>>>>>>\n");
+				fprintf(stdout, "SHA256: ");
+				for (i = 0; i < 32; i++)
+					fprintf(stdout, "%02X", hash[i]);
+
+				fprintf(stdout, "\n<<<<<<<<<<< KAK KEY HASH <<<<<<<<<<<\n");
+
 				break;
 			}
 			ext_hdr = (ext_header_t *)((uint8_t *)(ext_hdr + 1) + ext_hdr->size);
@@ -1699,4 +1710,3 @@ main_exit:
 #endif
 	exit(ret);
 }
-

@@ -22,8 +22,16 @@
 #include <spi.h>
 #include <asm/arch-mvebu/driver_interface.h>
 
+DECLARE_GLOBAL_DATA_PTR;
+
 int board_eth_init(bd_t *bis)
 {
+
+#ifdef CONFIG_MVEBU_MDIO
+	mvebu_mdio_initialize(gd->fdt_blob);
+	miiphy_set_current_dev("mvebu_mdio");
+#endif
+
 #if defined(CONFIG_SK98)
 	skge_initialize(bis);
 #endif

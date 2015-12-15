@@ -116,12 +116,17 @@ void reset_cpu(ulong ignored)
 
 void print_soc_specific_info(void)
 {
+	printf("\n");
 #ifdef CONFIG_MVEBU_SYS_INFO
 	printf("\tDDR %d Bit width\n", get_info(DRAM_BUS_WIDTH));
 #endif
 #ifdef CONFIG_MVEBU_LLC_ENABLE
-	printf("\tLLC cache is enabled\n");
-#else
-	printf("\tLLC cache is disabled\n");
+	printf("\tLLC Enabled");
+#ifdef CONFIG_MVEBU_LLC_EXCLUSIVE_EN
+	printf(" (Exclusive Mode)");
+#endif
+	printf("\n");
+#else /* CONFIG_MVEBU_LLC_ENABLE */
+	printf("\tLLC Disabled\n");
 #endif
 }

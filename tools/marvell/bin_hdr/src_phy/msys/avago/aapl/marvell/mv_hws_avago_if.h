@@ -356,6 +356,48 @@ int mvHwsAvagoSerdesSbmVoltageGet
     unsigned int    *voltage
 );
 
+/*******************************************************************************
+* mvHwsAvagoAccessLock
+*
+* DESCRIPTION:
+*       Avago device access lock
+*
+* INPUTS:
+*       None
+*
+* OUTPUTS:
+*       None
+*
+* RETURNS:
+*       None
+*
+*******************************************************************************/
+void mvHwsAvagoAccessLock
+(
+    void
+);
+
+/*******************************************************************************
+* mvHwsAvagoAccessUnlock
+*
+* DESCRIPTION:
+*       Avago device access unlock
+*
+* INPUTS:
+*       None
+*
+* OUTPUTS:
+*       None
+*
+* RETURNS:
+*       None
+*
+*******************************************************************************/
+void mvHwsAvagoAccessUnlock
+(
+    void
+);
+
 #ifdef __cplusplus
 }
 #endif

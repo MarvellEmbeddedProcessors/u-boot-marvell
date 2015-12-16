@@ -56,4 +56,11 @@ config CMD_MVEBU_PHY_FW_DOWNLOAD
 	  this command used for Marvell PHYs
 	  88X3220/88X3310
 
+config CMD_MVEBU_PHY_INDIRECT
+	bool "phy_indirect"
+	depends on MVEBU_PHY_INDIRECT
+	default y
+	help
+	  phy_indirect - Access to PHY indirect registers
+
 endmenu

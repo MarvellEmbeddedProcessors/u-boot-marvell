@@ -669,18 +669,37 @@ int mvHwsAvagoSerdesTemperatureGet
     int             *temperature
 )
 {
-    unsigned int  sbus_addr;
+#ifndef ASIC_SIMULATION
+    unsigned int sensor_addr = 9;
+    unsigned int data, i;
+    unsigned int retry = 10;
 
     if ((serdesNum != 20) && ((serdesNum < 24) || (serdesNum > 27)))
     {
         return GT_BAD_PARAM;
     }
 
-    CHECK_STATUS(mvHwsAvagoConvertSerdesToSbusAddr(devNum, serdesNum, &sbus_addr));
-
     /* get the Serdes Temperature in degrees */
-    *temperature = (avago_sbm_get_temperature(aaplSerdesDb[devNum], 9, sbus_addr));
-    CHECK_AVAGO_RET_CODE();
+    /* trying to get the Temperature value maximum 10 times and set 1ms delay between each time */
+    for(i=0; i < retry; i++)
+    {
+        data = avago_spico_int(aaplSerdesDb[devNum], AVAGO_SBUS_MASTER_ADDRESS, 0x17, (0 << 12) | (sensor_addr & 0xff));
+        if (data & 0x8000)
+        {
+            data &= 0x0FFF;     /* Mask down to 12b temp value */
+            if (data & 0x0800)  /* Negative 12b temp value, do sign extension */
+                data = -1 * (((~data) & 0x0FFF) + 1);
+
+            *temperature = (data / 8);  /* Scale to degrees */
+            return GT_OK;
+        }
+
+        /* Delay in 1ms */
+        ms_sleep(1);
+    }
+
+    return GT_BAD_VALUE;  /* Temperature not valid */
+#endif /* ASIC_SIMULATION */
 
     return GT_OK;
 }
@@ -1355,7 +1374,4 @@ GT_STATUS mvHwsAvagoCheckSerdesAccess
 
   return GT_OK;
 }
-
-
-
 

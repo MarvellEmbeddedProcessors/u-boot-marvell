@@ -25,6 +25,7 @@
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/tables.h>
 #include <asm/arch-mvebu/thermal.h>
+#include <asm/arch-mvebu/mvebu_phy_indirect.h>
 #include <ahci.h>
 #include <scsi.h>
 
@@ -95,6 +96,9 @@ int mvebu_soc_init()
 #endif
 #ifdef CONFIG_MVEBU_IOB
 	init_iob();
+#endif
+#ifdef CONFIG_MVEBU_PHY_INDIRECT
+	mvebu_phy_indirect_init();
 #endif
 
 	mvebu_thermal_sensor_probe();

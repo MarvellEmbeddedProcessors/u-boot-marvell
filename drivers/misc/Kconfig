@@ -31,4 +31,13 @@ config MVEBU_MBUS_SKIP_DRAM_WIN
 	  be at the beginning, and could not be
 	  configured by anyway (keep the default value).
 
+config MVEBU_PHY_INDIRECT
+	bool "Access to PHY indirect registers"
+	depends on TARGET_ARMADA_8K
+	default y
+	help
+	  Choose this option to add support
+	  for PHY indirect access.
+	  This driver initialize the IHB window.
+
 endmenu

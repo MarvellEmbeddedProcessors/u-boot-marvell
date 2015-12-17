@@ -66,7 +66,7 @@ targets += $(dtb-y)
 
 # alignment fdt file to 8k. this is helpful to support multi fdt.
 # This alignment allows selecting DT files easily by skipping over a predefined DT size.
-DTC_FLAGS += -R 4 -S 0x2000
+DTC_FLAGS += -R 4 -S 0x1C00
 
 PHONY += dtbs
 dtbs: $(addprefix $(obj)/, $(dtb-y))

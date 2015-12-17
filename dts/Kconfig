@@ -55,7 +55,7 @@ config MULTI_DT_FILE
 	depends on OF_CONTROL
 	help
 	  If this option is enabled, U-Boot will support different DT files.
-	  Each FDT has a fixed size of 8KB, so to choose between them in u-boot,
-	  it will be executerd by a jump of 8KB.
+	  Each FDT has a fixed size of 7KB, so to choose between them in u-boot,
+	  it will be executerd by a jump of 7KB.
 	  The u-boot separates between the DTB by the flavor/board id
 endmenu

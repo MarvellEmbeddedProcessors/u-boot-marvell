@@ -1415,7 +1415,15 @@ void mvHwsAvagoAccessLock
     void
 )
 {
+#ifdef MV_HWS_FREE_RTOS
 
+    extern GT_STATUS mvPortCtrlAvagoLock(void);
+    mvPortCtrlAvagoLock();
+
+#else
+
+
+#endif /* MV_HWS_FREE_RTOS */
 }
 
 /*******************************************************************************
@@ -1439,7 +1447,15 @@ void mvHwsAvagoAccessUnlock
     void
 )
 {
+#ifdef MV_HWS_FREE_RTOS
 
+    extern GT_STATUS mvPortCtrlAvagoUnlock(void);
+    mvPortCtrlAvagoUnlock();
+
+#else
+
+
+#endif /* MV_HWS_FREE_RTOS */
 }
 
 

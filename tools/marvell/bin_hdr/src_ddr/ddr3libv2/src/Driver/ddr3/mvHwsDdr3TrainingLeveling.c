@@ -92,22 +92,6 @@ static GT_STATUS    ddr3TipXsbCompareTest
     GT_8 offset
 );
 
-#if 0 /* remove this if it's not in use */
-static GT_STATUS    ddr3TipWlSuppAlignErrShift
-(
-	GT_U32 devNum,
-	GT_U32 interfaceId,
-	GT_U32 busId
-);
-
-static GT_STATUS    ddr3TipWlSuppOneClkErrShift
-(
-	GT_U32 devNum,
-	GT_U32 interfaceId,
-	GT_U32 busId
-);
-#endif
-
 /*****************************************************************************
 mvHwsDdr3TipMaxCSGet
 ******************************************************************************/
@@ -1231,104 +1215,6 @@ static GT_STATUS    ddr3TipXsbCompareTest
         return GT_FAIL;
     }
 }
-
-#if 0 /* remove this if it's not in use */
-/*****************************************************************************
-Clock error shift - function moves the write levelling delay 1cc forward
-******************************************************************************/
-static GT_STATUS    ddr3TipWlSuppOneClkErrShift
-(
-    GT_U32 devNum,
-    GT_U32 interfaceId,
-    GT_U32 busId
-)
-{
-    GT_32 phase,  adll;
-    GT_U32 data;
-
-    DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("OneClkErrShift\n"));
-
-    CHECK_STATUS(mvHwsDdr3TipBUSRead(   devNum, interfaceId,  ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG, &data));
-    phase = ((data>>6) & 0x7);
-    adll = data & 0x1f;
-    DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("OneClkErrShift: IF %d busId %d phase %d adll %d\n",interfaceId, busId, phase, adll));
-    if ((phase == 0)||(phase == 1))
-    {
-        CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum,  ACCESS_TYPE_UNICAST, interfaceId,  busId, DDR_PHY_DATA,  0,  (phase + 2) ,  0x1f));
-    }
-    else if (phase == 2)
-    {
-        if (adll < 6)
-        {
-            data = (3 << 6) + (0x1f);
-            CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum,  ACCESS_TYPE_UNICAST, interfaceId,  busId, DDR_PHY_DATA,  0,  data , (0x7<< 6 | 0x1f)));
-            data = 0x2f;
-            CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum,  ACCESS_TYPE_UNICAST, interfaceId,  busId, DDR_PHY_DATA,  1,  data , 0x3f));
-        }
-    }
-    else
-    {
-        /*phase 3*/
-        return GT_FAIL;
-    }
-    return GT_OK;
-}
-
-/*****************************************************************************
-Align error shift
-******************************************************************************/
-static GT_STATUS    ddr3TipWlSuppAlignErrShift
-(
-    GT_U32 devNum,
-    GT_U32 interfaceId,
-    GT_U32 busId
-)
-{
-    GT_32 phase, adll;
-    GT_U32 data;
-    /* Shift WL result 1 phase back*/
-    CHECK_STATUS(mvHwsDdr3TipBUSRead(   devNum, interfaceId,  ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG, &data));
-    phase = ((data>>6) & 0x7);
-    adll = data & 0x1f;
-    DEBUG_LEVELING(DEBUG_LEVEL_TRACE, ("WlSuppAlignErrShift: IF %d busId %d phase %d adll %d\n",interfaceId, busId, phase, adll));
-    if (phase < 2)
-    {
-        if (adll > 0x1a)
-        {
-            if (phase == 0)
-            {
-                return GT_FAIL;
-            }
-            if (phase == 1)
-            {
-                data = 0;
-                CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum,  ACCESS_TYPE_UNICAST, interfaceId,  busId, DDR_PHY_DATA,  0,  data , (0x7<< 6 | 0x1f)));
-                data = 0xf;
-                CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum,  ACCESS_TYPE_UNICAST, interfaceId,  busId, DDR_PHY_DATA,  1,  data , 0x1f));
-                return GT_OK;
-            }
-        }
-        else
-        {
-            return GT_FAIL;
-        }
-    }
-    else if ((phase == 2)||(phase == 3))
-    {
-        phase = phase - 2;
-        data = (phase << 6) + (adll & 0x1f);
-        CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum,  ACCESS_TYPE_UNICAST, interfaceId,  busId, DDR_PHY_DATA,  0,  data , (0x7<< 6 | 0x1f)));
-        return GT_OK;
-    }
-    else
-    {
-        DEBUG_LEVELING(DEBUG_LEVEL_ERROR,  ("WlSuppAlignErrShift: unexpected phase\n"));
-
-        return GT_FAIL;
-    }
-    return GT_OK;
-}
-#endif
 
 /*****************************************************************************
 Dynamic write leveling sequence

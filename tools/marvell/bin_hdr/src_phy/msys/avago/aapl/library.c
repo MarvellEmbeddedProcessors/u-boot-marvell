@@ -24,6 +24,7 @@
 /** @brief Internal library functions. */
 
 #define AAPL_ENABLE_INTERNAL_FUNCTIONS
+#include <common/siliconIf/mvSiliconIf.h>
 #include "aapl.h"
 #ifdef MV_HWS_FREE_RTOS
 #include <hw.h>
@@ -210,9 +211,7 @@ void ms_sleep(
 
 #elif defined MV_HWS_FREE_RTOS
 
-    extern unsigned int mvPortCtrlProcessDelay(unsigned long duration);
-
-    mvPortCtrlProcessDelay(ms_delay);
+    hwsOsExactDelayPtr(0, 0, ms_delay);
 
 #elif defined unix
 

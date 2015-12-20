@@ -423,6 +423,11 @@ static int advk_pcie_init(int host_id, void __iomem *reg_base, struct pcie_win *
 	state |= 0x7;
 	writel(state, PCIE_CORE_CONFIG_REG_ADDR(reg_base, 4));
 
+	/* enable direct mode */
+	state = readl(PCIE_CTRL_CORE_REG_ADDR(reg_base, PCIE_CTRL_CONFIG_REG));
+	state &= ~(PCIE_CTRL_MODE_MASK << PCIE_CTRL_MODE_SHIFT);
+	writel(state, PCIE_CTRL_CORE_REG_ADDR(reg_base, PCIE_CTRL_CONFIG_REG));
+
 	/* Set config address */
 	hose->cfg_addr = (unsigned int *)reg_base;
 
@@ -482,12 +487,6 @@ static void advk_pcie_set_core_mode(int host_id, void __iomem *reg_base, int mod
 	config &= ~(PCIE_CTRL_MODE_MASK << IS_RC_SHIFT);
 	config |= ((mode & PCIE_CTRL_MODE_MASK) << IS_RC_SHIFT);
 	writel(config, PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_CTRL0_REG));
-
-	/* Set PCI core control register to RC or EP mode */
-	config = readl(PCIE_CTRL_CORE_REG_ADDR(reg_base, PCIE_CTRL_CONFIG_REG));
-	config &= ~(PCIE_CTRL_MODE_MASK << PCIE_CTRL_MODE_SHIFT);
-	config |= ((mode & PCIE_CTRL_MODE_MASK) << PCIE_CTRL_MODE_SHIFT);
-	writel(config, PCIE_CTRL_CORE_REG_ADDR(reg_base, PCIE_CTRL_CONFIG_REG));
 
 	debug("PCIE-%d: core mode %s\n", host_id, mode_str[mode]);
 }

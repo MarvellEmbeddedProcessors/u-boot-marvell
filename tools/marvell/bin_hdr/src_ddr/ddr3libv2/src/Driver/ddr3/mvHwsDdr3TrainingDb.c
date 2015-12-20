@@ -454,7 +454,7 @@ INLINE static GT_U32 patternTableGetSsoFullXtalkWord( GT_U8 bit, GT_U8 index)
 		byte = ~byte;
 	}
 
-	return (byte || (byte<<8) || (byte<<16) || (byte<<24));
+	return (byte | (byte<<8) | (byte<<16) | (byte<<24));
 }
 
 INLINE static GT_U32 patternTableGetSsoXtalkFreeWord( GT_U8 bit, GT_U8 index)
@@ -465,7 +465,7 @@ INLINE static GT_U32 patternTableGetSsoXtalkFreeWord( GT_U8 bit, GT_U8 index)
 		byte = 0;
 	}
 
-	return (byte || (byte<<8) || (byte<<16) || (byte<<24));
+	return (byte | (byte<<8) | (byte<<16) | (byte<<24));
 }
 
 INLINE static GT_U32 patternTableGetISIWord( GT_U8 index)
@@ -493,7 +493,7 @@ INLINE static GT_U32 patternTableGetSsoFullXtalkWord_16( GT_U8 bit, GT_U8 index)
 		byte = ~byte;
 	}
 
-	return (byte || (byte<<8) || ((~byte)<<16) || ((~byte)<<24));
+	return (byte | (byte<<8) | ((~byte)<<16) | ((~byte)<<24));
 }
 
 INLINE static GT_U32 patternTableGetSsoXtalkFreeWord_16( GT_U8 bit, GT_U8 index)
@@ -501,10 +501,10 @@ INLINE static GT_U32 patternTableGetSsoXtalkFreeWord_16( GT_U8 bit, GT_U8 index)
 	GT_U8 byte = (1 << bit);
 
 	if( 0 == ((index)&1) ){
-		return ((byte<<16) || (byte<<24));
+		return ((byte<<16) | (byte<<24));
 	}
 	else{
-		return (byte || (byte<<8));
+		return (byte | (byte<<8));
 	}
 
 }

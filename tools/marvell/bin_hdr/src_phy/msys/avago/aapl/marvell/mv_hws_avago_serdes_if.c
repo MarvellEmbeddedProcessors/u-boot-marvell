@@ -1398,7 +1398,31 @@ GT_STATUS mvHwsAvagoCheckSerdesAccess
 * mvHwsAvagoAccessLock
 *
 * DESCRIPTION:
-*       Avago device access lock
+*
+*        Protection Definition
+*        =====================
+*        Avago Firmware cannot be accessed by more than one client concurrently
+*        Concurrent access might result in invalid data read from the firmware
+*        There are three  scenarios that require protection.
+*
+*        1. Multi-Process Application
+*            This case is protected by SW Semaphore
+*            SW Semaphore should be defined for each supported OS: FreeRTOS, Linux,
+*            and any customer OS
+*
+*        2. Multi-Processor Environment
+*            This case is protected by HW Semaphore
+*            HW Semaphore is defined based in MSYS / CM3 resources
+*            In case customer does not use MSYS / CM3 resources,
+*            the customer will need to implement its own HW Semaphore
+*
+*        3. Debug Capability
+*            Avago GUI provides for extensive debug capabilities,
+*            But it interface Avago Firmware directly via SBUS commands
+*            Therefore No Semaphore protection can be used
+*            Debug flag configured by the Host will enable / disable the
+*            periodic behavior of AP State machine
+*            Debug flag is out of the scope of this API
 *
 * INPUTS:
 *       None
@@ -1415,22 +1439,34 @@ void mvHwsAvagoAccessLock
     void
 )
 {
+/*
+** SW Semaphore Protection Section
+** ===============================
+*/
 #ifdef MV_HWS_FREE_RTOS
 
     extern GT_STATUS mvPortCtrlAvagoLock(void);
     mvPortCtrlAvagoLock();
 
-#else
+#else /* Linux */
 
+    /** TODO - Add Linux SW Semaphore allocate */
 
 #endif /* MV_HWS_FREE_RTOS */
+
+/*
+** HW Semaphore Protection Section
+** ===============================
+*/
+
+    /** TODO - Add HW Semaphore allocate */
 }
 
 /*******************************************************************************
 * mvHwsAvagoAccessUnlock
 *
 * DESCRIPTION:
-*       Avago device access unlock
+*       See description in mvHwsAvagoAccessLock API
 *
 * INPUTS:
 *       None
@@ -1447,15 +1483,27 @@ void mvHwsAvagoAccessUnlock
     void
 )
 {
+/*
+** SW Semaphore Protection Section
+** ===============================
+*/
 #ifdef MV_HWS_FREE_RTOS
 
     extern GT_STATUS mvPortCtrlAvagoUnlock(void);
     mvPortCtrlAvagoUnlock();
 
-#else
+#else /* Linux */
 
+    /** TODO - Add Linux SW Semaphore release */
 
 #endif /* MV_HWS_FREE_RTOS */
+
+/*
+** HW Semaphore Protection Section
+** ===============================
+*/
+
+    /** TODO - Add HW Semaphore release */
 }
 
 

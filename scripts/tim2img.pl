@@ -1,17 +1,27 @@
 #!/usr/bin/perl
 
-sub tim2hex
+sub tim2img
 {
-	my ($in_file, $out_file) = @_;
+	my ($in_file, $out_file, $in2_file) = @_;
 	my $row;
 	my $index;
+	my $configs;
 	my $img_num = 0;
 	my @img_names = ();
 	my @img_offset = ();
+	my @cfg = ();
+	my $cfg_idx;
 
-	unless(open ($cfg, "<$in_file")) {
+	unless(open ($cfg[0], "<$in_file")) {
 		print ("Failed to open input file $in_file\n");
 		goto ERROR;
+	}
+	$configs = 1;
+
+	unless(open ($cfg[1], "<$in2_file")) {
+		print ("No input file for TIMN is supplied\n");
+	} else {
+		$configs++;
 	}
 
 	unless(open $dst, ">$out_file") {
@@ -24,41 +34,42 @@ sub tim2hex
 		goto ERROR;
 	}
 
-	# Parse configuration file
+	# Parse configuration file(s)
 	# Find a number of boot images and their names
-	while ($row = <$cfg>) {
-		chomp $row;
-		($name, $value) = split(":", $row);
-		# trim spaces from both ends
-		$name =~ s/^\s+|\s+$//g;
-		$value =~ s/^\s+|\s+$//g;
+	$index = 0;
+	for ($cfg_idx = 0; $cfg_idx < $configs; $cfg_idx++) {
 
-		if ($img_num == 0) {
+		while (defined($row = readline($cfg[$cfg_idx]))) {
+			chomp $row;
+			($name, $value) = split(":", $row);
+			# trim spaces from both ends
+			$name =~ s/^\s+|\s+$//g;
+			$value =~ s/^\s+|\s+$//g;
+
 			if ($name eq "Number of Images") {
-				$img_num = $value;
-				$index = 0;
-				print ("Total number of images to process - $img_num\n");
-			}
-		} else {
-			if ($name eq "Image Filename") {
-				$img_names[$index] = $value;
-				print ("is $img_names[$index]\n");
-				$index++;
+					$img_num = $value;
+					print ("Total number of images to process in file[$cfg_idx] - $img_num\n");
+			} elsif ($name eq "Image Filename") {
+					$img_names[$index] = $value;
+					print ("is $img_names[$index]\n");
+					$index++;
 			} elsif ($name eq "Flash Entry Address") {
-				$img_offset[$index] = hex($value);
-				$offs_str = sprintf("%08x", $img_offset[$index]);
-				print ("$index Image at offset $offs_str ");
+					$img_offset[$index] = hex($value);
+					$offs_str = sprintf("%08x", $img_offset[$index]);
+					print ("$index Image at offset $offs_str ");
 			}
 		}
+
+		close($cfg[$cfg_idx]);
 	}
 
-	close($cfg);
-
 	if ($img_num < 1) {
-		print ("The \"Number of Images\" field was not found in $in_file\n");
+		print ("The \"Number of Images\" field was not found in input files\n");
 		goto ERROR;
 	}
 
+	#--------------------------------------------------------------------------
+	# Create output from collected images data
 	#--------------------------------------------------------------------------
 
 	for ($index = 0; $index < $img_num; $index++) {
@@ -106,12 +117,13 @@ ERROR:
 
 sub usage
 {
-	print "\nConvert TIM/NTIM binary files to flash IMG format\n";
+	print "\nConvert TIM/NTIM and TIMN binary files to flash IMG format\n";
 	print "\nAccording to TIM/NTIM configuration file\n";
-	print "\nExample  : tim2img.pl -i tim.txt -o Image.img\n";
+	print "\nExample  : tim2img.pl -i tim.txt -n timn.txt -o Image.img\n";
 	print "\n";
 	print "Options:\n";
 	print "\t-i\tInput TIM/NTIM configuration file in text format\n";
+	print "\t-n\tInput TIMN configuration file in text format\n";
 	print "\t-o\tOutput file in flash IMG format\n";
 	print "\n";
 }
@@ -121,9 +133,9 @@ use strict;
 use warnings;
 use Getopt::Std;
 
-use vars qw($opt_o $opt_h $opt_i $opt_s);
+use vars qw($opt_o $opt_h $opt_i $opt_s $opt_n);
 
-getopt('o:i:s:h');
+getopt('o:i:s:h:n');
 
 if ($opt_h)
 {
@@ -148,10 +160,9 @@ unless ($opt_o) {
 }
 
 
-if(tim2hex($opt_i, $opt_o)) {
+if(tim2img($opt_i, $opt_o, $opt_n)) {
 	printf "\nError: Failed converting image\n\n";
 	exit 1;
 }
 
 exit 0;
-

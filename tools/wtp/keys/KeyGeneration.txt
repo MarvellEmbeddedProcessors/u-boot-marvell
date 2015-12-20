@@ -1,0 +1,7 @@
+Seed: ArmadLP Trusted platform
+Key ID: DSIG
+Encrypt Algorithm ID: 7
+Hash Algorithm ID: 32
+Key Size: 2048
+Output Binary Filename: ./KAK.bin
+Output Text Filename: ./KAK.txt

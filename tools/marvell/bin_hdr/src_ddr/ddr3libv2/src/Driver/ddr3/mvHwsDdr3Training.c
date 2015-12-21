@@ -208,6 +208,13 @@ static GT_STATUS ddr3TipSetTiming
     MV_HWS_DDR_FREQ			frequency
 );
 
+GT_STATUS ddr3TipAdllRegsBypass
+(
+    GT_U32  devNum,
+    GT_U32  RegVal1,
+    GT_U32  RegVal2
+);
+
 #if defined(MV_HWS_RX_IO_BIST) || defined(MV_HWS_RX_IO_BIST_ETP)
 GT_STATUS mvHwsIoBistTest(GT_U8 devNum);
 #endif
@@ -2205,8 +2212,8 @@ GT_STATUS    ddr3TipDDR3ResetPhyRegs
 			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, WL_PHY_REG + CS_BYTE_GAP(effective_cs), PhyReg0Val));
             CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, RL_PHY_REG + CS_BYTE_GAP(effective_cs), PhyReg2Val));
             CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, READ_CENTRALIZATION_PHY_REG + CS_BYTE_GAP(effective_cs), PhyReg3Val));
-            CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, WRITE_CENTRALIZATION_PHY_REG + CS_BYTE_GAP(effective_cs), 0x0));
-			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x1F + CS_PBS_GAP(effective_cs), 0x1f));
+            CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, WRITE_CENTRALIZATION_PHY_REG + CS_BYTE_GAP(effective_cs), PhyReg1Val));
+			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x1F + CS_PBS_GAP(effective_cs), 0x0));
 			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x5F + CS_PBS_GAP(effective_cs), 0));
 			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x14 + CS_PBS_GAP(effective_cs), 0));
 			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x54 + CS_PBS_GAP(effective_cs), 0));
@@ -2250,6 +2257,31 @@ GT_STATUS ddr3TipRestoreDunitRegs
     return GT_OK;
 }
 
+/*****************************************************************************
+GT_STATUS ddr3TipAdllRegsBypass
+******************************************************************************/
+GT_STATUS ddr3TipAdllRegsBypass
+(
+    GT_U32  devNum,
+    GT_U32  RegVal1,
+    GT_U32  RegVal2
+)
+{
+	GT_U32 interfaceId, phyId;
+    GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+    
+    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
+    {
+        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
+        for (phyId=0; phyId<octetsPerInterfaceNum; phyId++)
+        {
+            VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, phyId)
+            CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, WRITE_CENTRALIZATION_PHY_REG + CS_BYTE_GAP(effective_cs), RegVal1));
+	        CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x1F + CS_PBS_GAP(effective_cs), RegVal2));
+        }
+    }
+    return GT_OK;
+}
 
 /*****************************************************************************
 Auto tune main flow
@@ -2263,6 +2295,7 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
     InitCntrParam   initCntrPrm;
     GT_STATUS retVal = GT_OK;
 	GT_U32 interfaceId;
+    GT_BOOL adllBypassFlag = GT_FALSE;
 	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet(devNum);
 
 #ifdef DDR_VIEWER_TOOL
@@ -2355,6 +2388,13 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
     if (maskTuneFunc & SET_LOW_FREQ_MASK_BIT)
     {
        trainingStage = SET_LOW_FREQ;
+
+       for(effective_cs = 0; effective_cs < max_cs; effective_cs++)
+       {
+           ddr3TipAdllRegsBypass (devNum,0,0x1f);
+           adllBypassFlag = GT_TRUE;
+       }
+       effective_cs = 0;
        DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("SET_LOW_FREQ_MASK_BIT %d\n", freqVal[lowFreq]));
        retVal = ddr3TipFreqSet(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, lowFreq);
        if (isRegDump != 0)
@@ -2392,10 +2432,11 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 		}
 	}
 
-	for(effective_cs = 0; effective_cs < max_cs;effective_cs++){
-		CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, 0, ACCESS_TYPE_MULTICAST, 0, DDR_PHY_DATA, WRITE_CENTRALIZATION_PHY_REG + CS_BYTE_GAP(effective_cs), PhyReg1Val));
-		CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, 0, ACCESS_TYPE_MULTICAST, 0, DDR_PHY_DATA, 0x1f + (0x10 * effective_cs), 0x0));
-	}
+    if (adllBypassFlag == GT_TRUE)
+    {
+         ddr3TipAdllRegsBypass (devNum,PhyReg1Val,0);
+         adllBypassFlag = GT_FALSE;
+    }
 
 	effective_cs = 0;/*Set to 0 after each loop to avoid illegal value may be used*/
 

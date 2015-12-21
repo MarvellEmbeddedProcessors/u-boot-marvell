@@ -630,15 +630,15 @@ int mvHwsAvagoSerdesSpicoInterrupt
 
     if (result == NULL)
     {
-        mvHwsAvagoAccessLock();
+        mvHwsAvagoAccessLock(devNum);
         avago_spico_int(aaplSerdesDb[devNum], sbus_addr, interruptCode, interruptData);
-        mvHwsAvagoAccessUnlock();
+        mvHwsAvagoAccessUnlock(devNum);
     }
     else
     {
-        mvHwsAvagoAccessLock();
+        mvHwsAvagoAccessLock(devNum);
         *result = avago_spico_int(aaplSerdesDb[devNum], sbus_addr, interruptCode, interruptData);
-        mvHwsAvagoAccessUnlock();
+        mvHwsAvagoAccessUnlock(devNum);
     }
 
     CHECK_AVAGO_RET_CODE();
@@ -687,9 +687,9 @@ int mvHwsAvagoSerdesTemperatureGet
     /* trying to get the Temperature value maximum 10 times and set 1ms delay between each time */
     for(i=0; i < retry; i++)
     {
-        mvHwsAvagoAccessLock();
+        mvHwsAvagoAccessLock(devNum);
         data = avago_spico_int(aaplSerdesDb[devNum], AVAGO_SBUS_MASTER_ADDRESS, 0x17, (0 << 12) | (sensor_addr & 0xff));
-        mvHwsAvagoAccessUnlock();
+        mvHwsAvagoAccessUnlock(devNum);
         if (data & 0x8000)
         {
             data &= 0x0FFF;     /* Mask down to 12b temp value */
@@ -1052,9 +1052,9 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     data = ((refClockSource == PRIMARY) ? 0 : 1) << 8;
     CHECK_STATUS(hwsSerdesRegSetFuncPtr(devNum, portGroup, EXTERNAL_REG, serdesNum, SERDES_EXTERNAL_CONFIGURATION_0, data, (1 << 8)));
 
-    mvHwsAvagoAccessLock();
+    mvHwsAvagoAccessLock(devNum);
     errors = avago_serdes_init(aaplSerdesDb[devNum], sbus_addr, config);
-    mvHwsAvagoAccessUnlock();
+    mvHwsAvagoAccessUnlock(devNum);
 
     CHECK_AVAGO_RET_CODE();
     if (errors > 0)
@@ -1197,16 +1197,16 @@ int mvHwsAvagoSerdesPolarityConfigImpl
 
     CHECK_STATUS(mvHwsAvagoConvertSerdesToSbusAddr(devNum, serdesNum, &sbus_addr));
 
-    mvHwsAvagoAccessLock();
+    mvHwsAvagoAccessLock(devNum);
     /* Tx polarity En */
     avago_serdes_set_tx_invert(aaplSerdesDb[devNum], sbus_addr, invertTx);
-    mvHwsAvagoAccessUnlock();
+    mvHwsAvagoAccessUnlock(devNum);
     CHECK_AVAGO_RET_CODE();
 
-    mvHwsAvagoAccessLock();
+    mvHwsAvagoAccessLock(devNum);
     /* Rx Polarity En */
     avago_serdes_set_rx_invert(aaplSerdesDb[devNum], sbus_addr, invertRx);
-    mvHwsAvagoAccessUnlock();
+    mvHwsAvagoAccessUnlock(devNum);
     CHECK_AVAGO_RET_CODE();
 
 #endif /* ASIC_SIMULATION */
@@ -1248,16 +1248,16 @@ int mvHwsAvagoSerdesPolarityConfigGetImpl
 
     CHECK_STATUS(mvHwsAvagoConvertSerdesToSbusAddr(devNum, serdesNum, &sbus_addr));
 
-    mvHwsAvagoAccessLock();
+    mvHwsAvagoAccessLock(devNum);
     /* Get the TX inverter polarity mode: TRUE - inverter is enabled, FALSE - data is not being inverted */
     *invertTx = avago_serdes_get_tx_invert(aaplSerdesDb[devNum], sbus_addr);
-    mvHwsAvagoAccessUnlock();
+    mvHwsAvagoAccessUnlock(devNum);
     CHECK_AVAGO_RET_CODE();
 
-    mvHwsAvagoAccessLock();
+    mvHwsAvagoAccessLock(devNum);
     /* Get the RX inverter polarity mode: TRUE - inverter is enabled, FALSE - data is not being inverted */
     *invertRx = avago_serdes_get_rx_invert(aaplSerdesDb[devNum], sbus_addr);
-    mvHwsAvagoAccessUnlock();
+    mvHwsAvagoAccessUnlock(devNum);
     CHECK_AVAGO_RET_CODE();
 
 #endif /* ASIC_SIMULATION */
@@ -1302,9 +1302,9 @@ int mvHwsAvagoSerdesSbmVoltageGet
     /* trying to get the Voltage value maximum 10 times and set 1ms delay between each time */
     for(i=0; i < retry; i++)
     {
-        mvHwsAvagoAccessLock();
+        mvHwsAvagoAccessLock(devNum);
         data = avago_spico_int(aaplSerdesDb[devNum], AVAGO_SBUS_MASTER_ADDRESS, 0x18, (0 << 12) | (9 & 0xff));
-        mvHwsAvagoAccessUnlock();
+        mvHwsAvagoAccessUnlock(devNum);
         if (data & 0x8000)
         {
             data &= 0x0FFF;         /* Mask down to 12b voltage value */
@@ -1425,7 +1425,7 @@ GT_STATUS mvHwsAvagoCheckSerdesAccess
 *            Debug flag is out of the scope of this API
 *
 * INPUTS:
-*       None
+*       unsigned int  devNum
 *
 * OUTPUTS:
 *       None
@@ -1436,9 +1436,10 @@ GT_STATUS mvHwsAvagoCheckSerdesAccess
 *******************************************************************************/
 void mvHwsAvagoAccessLock
 (
-    void
+    unsigned char devNum
 )
 {
+    devNum = devNum;
 /*
 ** SW Semaphore Protection Section
 ** ===============================
@@ -1469,7 +1470,7 @@ void mvHwsAvagoAccessLock
 *       See description in mvHwsAvagoAccessLock API
 *
 * INPUTS:
-*       None
+*       unsigned int  devNum
 *
 * OUTPUTS:
 *       None
@@ -1480,9 +1481,10 @@ void mvHwsAvagoAccessLock
 *******************************************************************************/
 void mvHwsAvagoAccessUnlock
 (
-    void
+    unsigned char devNum
 )
 {
+    devNum = devNum;
 /*
 ** SW Semaphore Protection Section
 ** ===============================

@@ -363,7 +363,7 @@ int mvHwsAvagoSerdesSbmVoltageGet
 *       Avago device access lock
 *
 * INPUTS:
-*       None
+*       devNum - system device number
 *
 * OUTPUTS:
 *       None
@@ -374,7 +374,7 @@ int mvHwsAvagoSerdesSbmVoltageGet
 *******************************************************************************/
 void mvHwsAvagoAccessLock
 (
-    void
+    unsigned char devNum
 );
 
 /*******************************************************************************
@@ -384,7 +384,7 @@ void mvHwsAvagoAccessLock
 *       Avago device access unlock
 *
 * INPUTS:
-*       None
+*       devNum - system device number
 *
 * OUTPUTS:
 *       None
@@ -395,7 +395,7 @@ void mvHwsAvagoAccessLock
 *******************************************************************************/
 void mvHwsAvagoAccessUnlock
 (
-    void
+    unsigned char devNum
 );
 
 #ifdef __cplusplus

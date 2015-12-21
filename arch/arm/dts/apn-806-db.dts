@@ -30,4 +30,23 @@
 		device_type = "memory";
 		reg = <0x00000000 0x10000000 0 0>; /* 256 MB */
 	};
+
+	ap-806 {
+		internal-regs {
+
+			i2c0: i2c@511000 {
+				status = "okay";
+			};
+
+			spi0: spi@510600 {
+				status = "okay";
+			};
+		};
+
+		pcie-controller {
+			pcie@1,0 {
+				status = "okay";
+			};
+		};
+	};
 };

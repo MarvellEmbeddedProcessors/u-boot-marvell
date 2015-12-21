@@ -34,8 +34,19 @@
 				clock-frequency = <125000>;
 			};
 
+			i2c0: i2c@511000 {
+				status = "okay";
+			};
+
 			spi0: spi@510600 {
 				spi-max-frequency = <51200>;
+				status = "okay";
+			};
+		};
+
+		pcie-controller {
+			pcie@1,0 {
+				status = "disable";
 			};
 		};
 	};

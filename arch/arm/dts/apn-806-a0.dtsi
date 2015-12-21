@@ -53,7 +53,7 @@
 				reg = <0x511000 0x4>;
 				clock = <&tclk>;
 				support-256-offset;
-				status = "okay";
+				status = "disable";
 			};
 
 			spi0: spi@510600 {
@@ -63,7 +63,7 @@
 				clock = <&tclk>;
 				cpol-cs-bitmap = <1>; /* bit i is set if the CPOL of
 							 CS-i is enabled or not */
-				status = "okay";
+				status = "disable";
 			};
 
 			pinctl: pinctl@6F4000 {

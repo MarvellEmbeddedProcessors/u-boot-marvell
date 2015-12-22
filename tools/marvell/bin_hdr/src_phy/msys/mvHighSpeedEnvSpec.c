@@ -93,6 +93,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_SERDES_OFFSET				0x1000
 #define MV_INTERNAL_OFFSET				0x1000
 
+/* enable CPLL WA */
+#define CONFIG_INTERNAL_CPLL_FOR_SERDES_REFCLK
+
 /************************************ globals ***********************************/
 /* serdesSeqDb - holds all SERDES sequences, their size and the relevant index in the data array
    initialized in mvSerdesSeqInit */

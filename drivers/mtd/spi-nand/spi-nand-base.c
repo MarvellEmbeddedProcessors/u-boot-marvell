@@ -473,13 +473,15 @@ static int spi_nand_wait(struct spi_nand_chip *chip, u8 *s)
 	/* set timeout to 1 second */
 	int timeout = start + CONFIG_SYS_HZ;
 	unsigned long ret = -ETIMEDOUT;
+	int count = 0;
 
-	while (get_timer(start) < timeout) {
+	while (get_timer(start) < timeout || count < MIN_TRY_COUNT) {
 		spi_nand_read_status(chip, &status);
 		if ((status & STATUS_OIP_MASK) == STATUS_READY) {
 			ret = 0;
 			goto out;
 		}
+		count++;
 	}
 out:
 	if (s)
@@ -502,13 +504,15 @@ static int spi_nand_wait_crbusy(struct spi_nand_chip *chip)
 	/* set timeout to 1 second */
 	int timeout = start + CONFIG_SYS_HZ;
 	unsigned long ret = -ETIMEDOUT;
+	int count = 0;
 
-	while (get_timer(start) < timeout) {
+	while (get_timer(start) < timeout || count < MIN_TRY_COUNT) {
 		spi_nand_read_status(chip, &status);
 		if ((status & STATUS_CRBSY_MASK) == STATUS_READY) {
 			ret = 0;
 			goto out;
 		}
+		count++;
 	}
 out:
 	return ret;

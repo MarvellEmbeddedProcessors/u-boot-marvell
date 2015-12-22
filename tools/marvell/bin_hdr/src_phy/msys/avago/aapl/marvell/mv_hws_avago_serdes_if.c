@@ -45,7 +45,13 @@
 #else
 #include <common/siliconIf/mvSiliconIf.h>
 #include <common/siliconIf/siliconAddress.h>
+#include <common/os/mvSemaphore.h>
+#include <mvHwsServiceCpuFwIf.h>
 #include <serdes/avago/mvAvagoIf.h>
+
+#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+#include <gtOs/gtOsSem.h>
+#endif /* defined(CHX_FAMILY) || defined(EXMXPM_FAMILY) */
 #endif
 
 #if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
@@ -147,7 +153,16 @@ GT_U8 avagoToSerdesMap[MAX_AVAGO_SPICO_NUMBER] =
     /* Temp Sensor = Physical SPICO 09 on SERDES chain */
 };
 
+#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+GT_MUTEX avagoAccessMutex;
+#endif /* defined(CHX_FAMILY) || defined(EXMXPM_FAMILY) */
+
 /************************* * Pre-Declarations *******************************************************/
+#ifdef MV_HWS_FREE_RTOS
+extern GT_STATUS mvPortCtrlAvagoLock(void);
+extern GT_STATUS mvPortCtrlAvagoUnlock(void);
+#endif /* MV_HWS_FREE_RTOS */
+
 #ifndef ASIC_SIMULATION
 extern GT_STATUS mvHwsAvagoInitI2cDriver(GT_VOID);
 #endif /* ASIC_SIMULATION */
@@ -546,6 +561,13 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
     }
 
     AVAGO_DBG(("Done\n"));
+
+#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+    /* Init Avago Access Protection in multi-process environment */
+    /* This protection is implemented at the scope of the Host!! */
+    /* ========================================================= */
+    osMutexCreate("avagoAccess", &avagoAccessMutex);
+#endif /* defined(CHX_FAMILY) || defined(EXMXPM_FAMILY) */
 
 #if AAPL_ENABLE_AACS_SERVER
 #ifndef MV_HWS_BIN_HEADER
@@ -1403,18 +1425,25 @@ GT_STATUS mvHwsAvagoCheckSerdesAccess
 *        =====================
 *        Avago Firmware cannot be accessed by more than one client concurrently
 *        Concurrent access might result in invalid data read from the firmware
-*        There are three  scenarios that require protection.
+*        There are three scenarios that require protection.
 *
 *        1. Multi-Process Application
 *            This case is protected by SW Semaphore
 *            SW Semaphore should be defined for each supported OS: FreeRTOS, Linux,
 *            and any customer OS
 *
+*            This protection is relevant for Service CPU and Host
+*            - Service CPU includes multi-process application, therefore protection is required
+*            - Host customer application might / might not include multi-process, but from CPSS
+*              point of view protection is required
+*
 *        2. Multi-Processor Environment
 *            This case is protected by HW Semaphore
 *            HW Semaphore is defined based in MSYS / CM3 resources
 *            In case customer does not use MSYS / CM3 resources,
 *            the customer will need to implement its own HW Semaphore
+*
+*            This protection is relevant ONLY in case Service SPU Firmware is loaded to CM3
 *
 *        3. Debug Capability
 *            Avago GUI provides for extensive debug capabilities,
@@ -1439,28 +1468,39 @@ void mvHwsAvagoAccessLock
     unsigned char devNum
 )
 {
-    devNum = devNum;
-/*
-** SW Semaphore Protection Section
-** ===============================
-*/
-#ifdef MV_HWS_FREE_RTOS
+#ifdef MV_HWS_BIN_HEADER
 
-    extern GT_STATUS mvPortCtrlAvagoLock(void);
+    /* clear warning */
+    devNum = devNum;
+
+#else
+
+    /*
+    ** SW Semaphore Protection Section
+    ** ===============================
+    */
+#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+
+    /* Host SW Protection */
+    osMutexLock(avagoAccessMutex);
+
+#elif defined(MV_HWS_FREE_RTOS)
+
+    /* Service CPU SW Protection */
     mvPortCtrlAvagoLock();
 
-#else /* Linux */
+#endif /* defined(CHX_FAMILY) || defined(EXMXPM_FAMILY) */
 
-    /** TODO - Add Linux SW Semaphore allocate */
+    /*
+    ** HW Semaphore Protection Section
+    ** ===============================
+    */
+    if (mvHwsServiceCpuEnableGet(devNum))
+    {
+        mvSemaLock(devNum, MV_SEMA_AVAGO);
+    }
 
-#endif /* MV_HWS_FREE_RTOS */
-
-/*
-** HW Semaphore Protection Section
-** ===============================
-*/
-
-    /** TODO - Add HW Semaphore allocate */
+#endif /* MV_HWS_BIN_HEADER */
 }
 
 /*******************************************************************************
@@ -1484,28 +1524,38 @@ void mvHwsAvagoAccessUnlock
     unsigned char devNum
 )
 {
-    devNum = devNum;
-/*
-** SW Semaphore Protection Section
-** ===============================
-*/
-#ifdef MV_HWS_FREE_RTOS
+#ifdef MV_HWS_BIN_HEADER
 
-    extern GT_STATUS mvPortCtrlAvagoUnlock(void);
+    /* clear warning */
+    devNum = devNum;
+
+#else
+
+    /*
+    ** SW Semaphore Protection Section
+    ** ===============================
+    */
+#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+
+    /* Host SW Protection */
+    osMutexUnlock(avagoAccessMutex);
+
+#elif defined(MV_HWS_FREE_RTOS)
+
+    /* Service CPU SW Protection */
     mvPortCtrlAvagoUnlock();
 
-#else /* Linux */
+#endif /* defined(CHX_FAMILY) || defined(EXMXPM_FAMILY) */
 
-    /** TODO - Add Linux SW Semaphore release */
+    /*
+    ** HW Semaphore Protection Section
+    ** ===============================
+    */
+    if (mvHwsServiceCpuEnableGet(devNum))
+    {
+        mvSemaUnlock(devNum, MV_SEMA_AVAGO);
+    }
 
-#endif /* MV_HWS_FREE_RTOS */
-
-/*
-** HW Semaphore Protection Section
-** ===============================
-*/
-
-    /** TODO - Add HW Semaphore release */
+#endif /* MV_HWS_BIN_HEADER */
 }
-
 

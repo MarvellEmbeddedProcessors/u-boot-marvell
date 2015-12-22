@@ -17,13 +17,6 @@ config CMD_MVEBU_SAR
 	help
 	  SatR - Modify SOC's sample at reset (SAR) values
 
-config CMD_MVEBU_CONFIG
-	bool "config"
-	depends on DEVEL_BOARD
-	default n
-	help
-	  config - Modify SOC and board configuration
-
 config CMD_MVEBU_MPP
 	depends on (DEVEL_BOARD && MVEBU_MPP_BUS)
 	bool "mpp, mppbus"

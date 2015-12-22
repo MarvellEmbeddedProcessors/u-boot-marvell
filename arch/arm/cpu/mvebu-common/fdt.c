@@ -42,17 +42,19 @@ void *fdt_get_regs_base(const void *blob, int node, uintptr_t reg)
 		return (void *)reg;
 
 	ranges = &bus_info;
+
 #if defined(CONFIG_MVEBU_SPL_DIFFRENT_BASE_ADDR) && defined(CONFIG_SPL_BUILD)
-	if (strncmp(fdt_get_name(blob, parent, NULL), "internal-regs", 13) == 0)
-		if (fdtdec_get_int_array_count(blob, parent, "ranges-spl", (u32 *)ranges, 3) == -FDT_ERR_NOTFOUND)
+	/* Part of Marvell SoC use different internal address in SPL/U-Boot */
+	if ((strncmp(fdt_get_name(blob, parent, NULL), "internal-regs", 13) == 0) &&
+		(fdtdec_get_int_array_count(blob, parent, "ranges-spl", (u32 *)ranges, 3) == -FDT_ERR_NOTFOUND))
 			return NULL;
-#else
+#endif
 	/* if there is no "ranges" property in current node then skip it */
 	if (fdtdec_get_int_array_count(blob, parent, "ranges", (u32 *)ranges, 3) == -FDT_ERR_NOTFOUND)
 		return fdt_get_regs_base(blob, parent, reg);
-#endif
 	if (reg < ranges->child_bus_address || reg > (ranges->child_bus_address + ranges->size))
 		printf("%s register base address not in the ranges\n", fdt_get_name(blob, node, NULL));
+
 	reg = reg + ranges->parent_bus_address - ranges->child_bus_address;
 	return fdt_get_regs_base(blob, parent, reg);
 }

@@ -28,6 +28,9 @@ _start:
 	stp	x27, x28,[sp, #-16]!
 	stp	x29, x30,[sp, #-16]!
 
+	ldr	x0, =COUNTER_FREQUENCY
+	msr	cntfrq_el0, x0	/* Initialize CNTFRQ */
+
 	bl	board_init_f
 	ldp	x29, x30,[sp], #16	/* @ restore regs and return */
 	ldp	x27, x28,[sp], #16

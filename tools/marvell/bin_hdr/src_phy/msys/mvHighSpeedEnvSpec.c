@@ -764,12 +764,13 @@ MV_STATUS mvHwsAvagoSerdesTxIfSelect(MV_U32 serdesNum)
 /*BOBK: Set Ref Clock**********************************************/
 MV_STATUS mvHwsRefClockGet (MV_U32 serdesNum ,MV_U8 *refClockSource)
 {
+	*refClockSource = PRIMARY;
+
 #ifdef CONFIG_INTERNAL_CPLL_FOR_SERDES_REFCLK
 	/* This is the source clock for OOB serdes. When using internal CPLL,
 	    the secondary clock should be selected. */
-	*refClockSource = SECONDARY;
-#else
-	*refClockSource = PRIMARY;
+	if ((mvBoardIdGet() == BOBK_CAELUM_DB_ID) || (mvBoardIdGet() == BOBK_CETUS_DB_ID))
+		*refClockSource = SECONDARY;
 #endif
 
 	return MV_OK;

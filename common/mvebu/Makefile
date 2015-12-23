@@ -18,6 +18,7 @@
 
 obj-$(CONFIG_CMD_MVEBU_MISC) += cmd_misc.o
 obj-$(CONFIG_CMD_MVEBU_SAR) += cmd_sar.o
+obj-$(CONFIG_CMD_MVEBU_FDT_CONFIG) += cmd_fdt_config.o
 obj-$(CONFIG_CMD_MVEBU_MPP) += cmd_mpp.o
 obj-$(CONFIG_CMD_MVEBU_BUBT) += cmd_bubt.o
 obj-$(CONFIG_CMD_MVEBU_MSS_BOOT) += cmd_mss.o

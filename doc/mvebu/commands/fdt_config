@@ -1,0 +1,44 @@
+fdt_config command:
+====================
+Dynamic board configurations handled by using a set of pre-defined SoC/Board configurations.
+This command allows the user to decide which configurations to boot with.
+In addition, this command gives us the ability to edit the FDT using FDT generic command of U-Boot,
+and save it to EEPROM.
+
+notes:
+------
+1. To enable/disable the option to read FDT from EEPROM use on/off.
+2. To use "fdt_config read" or "fdt_config select" needed to run "fdt_config list" command before,
+   because the option_id received from this list.
+3. All changes will be relevant only after running the save command ("fdt_config save") and reset the board.
+4. The list of all the configuration located under "doc/mvebu/a8k/board_options"
+
+
+"fdt_config on" -   enable the option to read Device Tree from eeprom at boot time.
+
+"fdt_config off" -  disable the option to read Device Tree from eeprom at boot time.
+
+"fdt_config list" - show all Device Tree that suitable to the board.
+                    print the list of fdt_config_id and fdt name for all the suitable FDT.
+
+"fdt_config read flash <option_id>"
+		  - read Device Tree from flash and save it to DRAM using address 'fdt_addr' enviorment variable
+		    as default.
+		  example:
+			$ fdt_config read flash 3
+			**read the FDT with from flash (u-boot image) with id=3 and save it to DRAM.
+			**note: to read fdt from flash needed to run "fdt_config list" command before.
+			        because the option_id received from this list.
+"fdt_config read eeprom"
+		  - read Device Tree from EEPROM and save it to DRAM using address 'fdt_addr' enviorment variable
+		    as default.
+		  example:
+			$ fdt_config read eeprom
+
+"fdt_config select <option_id>"
+		  - select Device Tree from flash to loading in bootloader at the next time.
+		    If the user want to use this option its necessary to disable read FDT from EEPROM (by runnig "fdt_config off").
+		    **note: to select fdt from flash needed to run "fdt_config list" command before.
+			    because the option_id received from this list.
+
+"fdt_config save" - write Device Tree changes from RAM to EEPROM.

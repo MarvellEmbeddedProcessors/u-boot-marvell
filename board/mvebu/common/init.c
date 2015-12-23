@@ -32,8 +32,20 @@
 #ifdef CONFIG_DEVEL_BOARD
 #include "devel-board.h"
 #endif
+#ifdef CONFIG_MULTI_DT_FILE
+#include "fdt_eeprom.h"
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#ifdef CONFIG_MULTI_DT_FILE
+static int mvebu_setup_fdt(void)
+{
+	/* Get a pointer to the FDT */
+	gd->fdt_blob = mvebu_fdt_config_init();
+	return 0;
+}
+#endif
 
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
@@ -53,6 +65,9 @@ int soc_early_init_f(void)
 /* Do very basic stuff like board and soc detection */
 int board_early_init_f(void)
 {
+#ifdef CONFIG_MULTI_DT_FILE
+	mvebu_setup_fdt();
+#endif
 	soc_early_init_f();
 #ifdef CONFIG_MVEBU_SYS_INFO
 /* Call this function to transfer data from address 0x4000000

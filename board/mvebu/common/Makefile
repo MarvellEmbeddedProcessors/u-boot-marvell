@@ -22,3 +22,4 @@ obj-$(CONFIG_MVEBU_NAND)	+= nand_init.o
 obj-$(CONFIG_CMD_NET)		+= eth_init.o
 obj-$(CONFIG_MVEBU_SAR)		+= sar.o
 obj-$(CONFIG_DEVEL_BOARD)	+= devel-board.o
+obj-$(CONFIG_MULTI_DT_FILE)	+= fdt_eeprom.o

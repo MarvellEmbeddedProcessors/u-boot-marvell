@@ -56,7 +56,6 @@
 #endif
 #include <dm/root.h>
 #include <linux/compiler.h>
-
 /*
  * Pointer to initial global data area
  *
@@ -340,14 +339,7 @@ static int setup_fdt(void)
 #ifdef CONFIG_OF_CONTROL
 # ifdef CONFIG_OF_EMBED
 	/* Get a pointer to the FDT */
-#ifdef CONFIG_MULTI_DT_FILE
-	/* This change is temporary. We are using hardcoded value because
-	   for now the desired FDT is "apn-806-db" and it's in the second index of the dtb list.
-	   After adding "FDT from EEPROM" patch. this change will be removed */
-	gd->fdt_blob = __dtb_dt_begin + (2*MVEBU_FDT_SIZE);
-#else
 	gd->fdt_blob = __dtb_dt_begin;
-#endif
 # elif defined CONFIG_OF_SEPARATE
 	/* FDT is at end of image */
 	gd->fdt_blob = (ulong *)&_end;

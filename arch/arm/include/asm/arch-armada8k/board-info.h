@@ -16,31 +16,18 @@
  * ***************************************************************************
  */
 
-/dts-v1/;
+/* APN-806 Marvell boards */
+#define APN_806_MARVELL_BOARD_ID_BASE	 0x10
+#define APN_806_DB			(APN_806_MARVELL_BOARD_ID_BASE + 0)
+#define APN_806_MARVELL_MAX_BOARD_ID	(APN_806_MARVELL_BOARD_ID_BASE + 1)
+#define APN_806_MARVELL_BOARD_NUM	(APN_806_MARVELL_MAX_BOARD_ID - APN_806_MARVELL_BOARD_ID_BASE)
 
-#include "apn-806-a0.dtsi"
+#define MARVELL_BOARD_ID_BASE		APN_806_MARVELL_BOARD_ID_BASE
+#define MV_MAX_MARVELL_BOARD_ID		APN_806_MARVELL_MAX_BOARD_ID
+#define MV_MARVELL_BOARD_NUM		APN_806_MARVELL_BOARD_NUM
+#define MV_DEFAULT_BOARD_ID		APN_806_DB
 
-/ {
-	model = "Marvell APN-806A0 Palladuim";
-	compatible = "marvell,apn-806-pd", "marvell,apn-806";
-
-	ap-806 {
-
-		internal-regs {
-
-			tclk: tclk {
-				clock-frequency = <125000>;
-			};
-
-			spi0: spi@510600 {
-				spi-max-frequency = <51200>;
-			};
-		};
-	};
-};
-
-&pinctl {
-		  /* 0 1 2 3 4 5 6 7 8 9 */
-	pin-func = < 3 3 3 3 3 3 0 0 0 0
-		     0 3 0 0 0 0 0 0 0 3 >;
-};
+#define BOARD_DEV_TWSI_INIT_EEPROM 0x57
+#define DEFAULT_FDT_PER_BOARD { \
+				0x04,	/* default fdt configuration for apn-806-db board */		  \
+}

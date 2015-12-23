@@ -19,8 +19,12 @@
 #include <common.h>
 #include <spl.h>
 #include <fdtdec.h>
+#include <i2c.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/spl.h>
+#ifdef CONFIG_MULTI_DT_FILE
+#include "../../../../board/mvebu/common/fdt_eeprom.h"
+#endif
 
 #ifdef CONFIG_MVEBU_SPL_SAR_DUMP
 extern void mvebu_sar_dump_reg(void);
@@ -31,20 +35,22 @@ static int setup_fdt(void)
 #ifdef CONFIG_OF_CONTROL
 #ifdef CONFIG_OF_EMBED
 	/* Get a pointer to the FDT */
-#ifdef CONFIG_MULTI_DT_FILE
-	/* This change is temporary. We are using hardcoded value because
-	   for now the desired FDT is "apn-806-db" and it's in the second index of the dtb list.
-	   After adding "FDT from EEPROM" patch. this change will be removed */
-	gd->fdt_blob = __dtb_dt_begin + (2*MVEBU_FDT_SIZE);
-#else
 	gd->fdt_blob = __dtb_dt_begin;
-#endif
 #else
 	#error "Support only embedded FDT mode in SPL"
 #endif
 #endif
 	return 0;
 }
+
+#ifdef CONFIG_MULTI_DT_FILE
+static int mvebu_setup_fdt(void)
+{
+	gd->fdt_blob = mvebu_fdt_config_init();
+	return 0;
+}
+#endif
+
 
 void board_init_f(ulong silent)
 {
@@ -55,8 +61,12 @@ void board_init_f(ulong silent)
 		gd->flags |= GD_FLG_SILENT;
 #endif
 
-	/* Update the pointer to the FDT */
+	/* Update the pointer to the default FDT, this is necessary only to config i2c*/
 	setup_fdt();
+#ifdef CONFIG_MULTI_DT_FILE
+	/* Update the pointer to the FDT */
+	mvebu_setup_fdt();
+#endif
 
 	/* UART1 and UART2 clocks are sourced from XTAL by default
 	* (see RD0012010 register for the details). Additionally the GPIO

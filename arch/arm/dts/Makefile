@@ -57,7 +57,7 @@ dtb-$(CONFIG_TARGET_ARMADA_LP) += armada-lp-db.dtb \
 				  armada-lp-customer0.dtb
 dtb-$(CONFIG_TARGET_ARMADA_8K) += apn-806-db.dtb \
 		       apn-806-pd.dtb \
-		       apn-806-a0-pd.dtb \
+		       apn-806-pd-a0.dtb \
 		       apn-806-db-dop.dtb \
 		       armada-80x0-db.dtb \
 		       armada-70x0-db.dtb

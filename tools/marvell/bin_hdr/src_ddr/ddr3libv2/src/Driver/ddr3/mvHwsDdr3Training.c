@@ -2433,11 +2433,13 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 	}
 
     if (adllBypassFlag == GT_TRUE)
-    {
-         ddr3TipAdllRegsBypass (devNum,PhyReg1Val,0);
-         adllBypassFlag = GT_FALSE;
-    }
-
+        {
+           	for(effective_cs = 0; effective_cs < max_cs;effective_cs++)
+            {
+                ddr3TipAdllRegsBypass (devNum,PhyReg1Val,0);
+                adllBypassFlag = GT_FALSE;
+            }
+        }
 	effective_cs = 0;/*Set to 0 after each loop to avoid illegal value may be used*/
 
     if (maskTuneFunc & SET_MEDIUM_FREQ_MASK_BIT)

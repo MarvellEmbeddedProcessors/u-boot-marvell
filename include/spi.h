@@ -112,6 +112,9 @@ struct spi_slave {
 #define SPI_XFER_ONCE		(SPI_XFER_BEGIN | SPI_XFER_END)
 #define SPI_XFER_MMAP		BIT(2)	/* Memory Mapped start */
 #define SPI_XFER_MMAP_END	BIT(3)	/* Memory Mapped End */
+#define SPI_XFER_DUAL		BIT(30)
+#define SPI_XFER_QUAD		BIT(31)
+
 };
 
 /**

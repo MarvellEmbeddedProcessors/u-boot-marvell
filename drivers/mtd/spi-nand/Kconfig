@@ -1,0 +1,17 @@
+menu "SPI NAND Support"
+
+config SPI_NAND
+	bool "SPI NAND support"
+	default n
+	help
+	  Choose this option to add support
+	  for SPI NAND driver
+
+config SPI_NAND_USE_SPI_NOR_RD_PROT
+	bool "Use SPI NOR flash 03h/0bh read protocol"
+	default n
+	help
+	  Micron M79A SPI NAND support implement 03h/0Bh command, as is done
+	  with SPI NOR for compatibility.
+
+endmenu # menu "SPI NAND Support"

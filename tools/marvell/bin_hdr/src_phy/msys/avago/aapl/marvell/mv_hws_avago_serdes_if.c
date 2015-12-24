@@ -48,10 +48,6 @@
 #include <common/os/mvSemaphore.h>
 #include <mvHwsServiceCpuFwIf.h>
 #include <serdes/avago/mvAvagoIf.h>
-
-#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
-#include <gtOs/gtOsSem.h>
-#endif /* defined(CHX_FAMILY) || defined(EXMXPM_FAMILY) */
 #endif
 
 #if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
@@ -154,7 +150,7 @@ GT_U8 avagoToSerdesMap[MAX_AVAGO_SPICO_NUMBER] =
 };
 
 #if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
-GT_MUTEX avagoAccessMutex;
+HWS_MUTEX avagoAccessMutex;
 #endif /* defined(CHX_FAMILY) || defined(EXMXPM_FAMILY) */
 
 /************************* * Pre-Declarations *******************************************************/
@@ -566,7 +562,7 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
     /* Init Avago Access Protection in multi-process environment */
     /* This protection is implemented at the scope of the Host!! */
     /* ========================================================= */
-    osMutexCreate("avagoAccess", &avagoAccessMutex);
+    hwsOsMutexCreate("avagoAccess", &avagoAccessMutex);
 #endif /* defined(CHX_FAMILY) || defined(EXMXPM_FAMILY) */
 
 #if AAPL_ENABLE_AACS_SERVER
@@ -1482,7 +1478,7 @@ void mvHwsAvagoAccessLock
 #if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
 
     /* Host SW Protection */
-    osMutexLock(avagoAccessMutex);
+    hwsOsMutexLock(avagoAccessMutex);
 
 #elif defined(MV_HWS_FREE_RTOS)
 
@@ -1538,7 +1534,7 @@ void mvHwsAvagoAccessUnlock
 #if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
 
     /* Host SW Protection */
-    osMutexUnlock(avagoAccessMutex);
+    hwsOsMutexUnlock(avagoAccessMutex);
 
 #elif defined(MV_HWS_FREE_RTOS)
 

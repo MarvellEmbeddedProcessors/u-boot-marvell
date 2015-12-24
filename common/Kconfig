@@ -186,6 +186,11 @@ config CMD_SF
 	help
 	  SF utility command.
 
+config CMD_SPI_NAND
+	bool "spi nand"
+	help
+	  SPI nand utility command.
+
 config CMD_PCI
 	bool "pci"
 	help

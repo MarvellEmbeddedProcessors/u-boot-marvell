@@ -31,6 +31,8 @@
 #define SPI_XFER_MMAP_END	0x10	/* Memory Mapped End */
 #define SPI_XFER_ONCE		(SPI_XFER_BEGIN | SPI_XFER_END)
 #define SPI_XFER_U_PAGE	(1 << 5)
+#define SPI_XFER_DUAL		(1 << 30)
+#define SPI_XFER_QUAD		(1 << 31)
 
 /* SPI TX operation modes */
 #define SPI_OPM_TX_QPP		(1 << 0)

@@ -51,6 +51,7 @@ obj-$(CONFIG_ENV_IS_IN_NAND) += env_nand.o
 obj-$(CONFIG_ENV_IS_IN_NVRAM) += env_nvram.o
 obj-$(CONFIG_ENV_IS_IN_ONENAND) += env_onenand.o
 obj-$(CONFIG_ENV_IS_IN_SPI_FLASH) += env_sf.o
+obj-$(CONFIG_ENV_IS_IN_SPI_NAND) += env_spi_nand.o
 obj-$(CONFIG_ENV_IS_IN_REMOTE) += env_remote.o
 obj-$(CONFIG_ENV_IS_IN_UBI) += env_ubi.o
 obj-$(CONFIG_ENV_IS_NOWHERE) += env_nowhere.o
@@ -152,6 +153,7 @@ obj-$(CONFIG_CMD_REISER) += cmd_reiser.o
 obj-$(CONFIG_SANDBOX) += cmd_sandbox.o
 obj-$(CONFIG_CMD_SATA) += cmd_sata.o
 obj-$(CONFIG_CMD_SF) += cmd_sf.o
+obj-$(CONFIG_CMD_SPI_NAND) += cmd_spi_nand.o
 obj-$(CONFIG_CMD_SCSI) += cmd_scsi.o
 obj-$(CONFIG_CMD_SHA1SUM) += cmd_sha1sum.o
 obj-$(CONFIG_CMD_SETEXPR) += cmd_setexpr.o
@@ -227,6 +229,7 @@ obj-$(CONFIG_ENV_IS_IN_MMC) += env_mmc.o
 obj-$(CONFIG_ENV_IS_IN_FAT) += env_fat.o
 obj-$(CONFIG_ENV_IS_IN_NAND) += env_nand.o
 obj-$(CONFIG_ENV_IS_IN_SPI_FLASH) += env_sf.o
+obj-$(CONFIG_ENV_IS_IN_SPI_NAND) += env_spi_nand.o
 obj-$(CONFIG_ENV_IS_IN_FLASH) += env_flash.o
 endif
 endif

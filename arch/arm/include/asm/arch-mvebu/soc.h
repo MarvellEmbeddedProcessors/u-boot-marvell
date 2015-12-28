@@ -36,4 +36,7 @@ void mvebu_print_soc_info(void);
 
 DECLARE_GLOBAL_DATA_PTR;
 
+/* temporary - to be removed on migration of ICU */
+void icu_init(uintptr_t cp_base, int spi_base, int spi_offset);
+
 #endif /* _SOC_H_ */

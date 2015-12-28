@@ -30,3 +30,4 @@ obj-$(CONFIG_TWL4030_LED) += twl4030_led.o
 obj-$(CONFIG_FSL_IFC) += fsl_ifc.o
 obj-$(CONFIG_MVEBU_MBUS) += mvebu_mbus.o
 obj-$(CONFIG_MVEBU_PHY_INDIRECT) += mvebu_phy_indirect.o
+obj-$(CONFIG_MVEBU_ICU) += mvebu_icu.o

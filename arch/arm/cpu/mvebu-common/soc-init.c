@@ -100,6 +100,10 @@ int mvebu_soc_init()
 #ifdef CONFIG_MVEBU_PHY_INDIRECT
 	mvebu_phy_indirect_init();
 #endif
+#ifdef CONFIG_MVEBU_ICU
+	/* Temporary initialization in u-boot */
+	icu_init(0xF2000000, 64, 0);
+#endif
 
 	mvebu_thermal_sensor_probe();
 

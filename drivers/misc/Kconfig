@@ -40,4 +40,13 @@ config MVEBU_PHY_INDIRECT
 	  for PHY indirect access.
 	  This driver initialize the IHB window.
 
+config MVEBU_ICU
+	bool "Interrupt Consolidation Unit (ICU) driver"
+	default n
+	help
+	  Choose this option to add support
+	  for Interrupt consolidation unit.
+	  This driver sets up the mapping between CP-110
+	  interrupts and AP GIC interrupts.
+
 endmenu

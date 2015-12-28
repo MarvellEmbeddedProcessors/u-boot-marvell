@@ -59,8 +59,9 @@
 #define AES_BLOCK_SZ		16
 #define RSA_SIGN_BYTE_LEN	256
 #define MAX_RSA_DER_BYTE_LEN	524
+#define CP_CTRL_EL_ARRAY_SZ	32	/* Number of address pairs in control array */
 
-#define VERSION_STRING		"Marvell(C) doimage utility version 3.0"
+#define VERSION_STRING		"Marvell(C) doimage utility version 3.1"
 
 /* A8K definitions */
 
@@ -132,6 +133,8 @@ typedef struct _sec_entry {
 	uint8_t		image_sign[RSA_SIGN_BYTE_LEN];
 	uint8_t		csk_keys[CSK_ARR_SZ][MAX_RSA_DER_BYTE_LEN];
 	uint8_t		csk_sign[RSA_SIGN_BYTE_LEN];
+	uint32_t	cp_ctrl_arr[CP_CTRL_EL_ARRAY_SZ];
+	uint32_t	cp_efuse_arr[CP_CTRL_EL_ARRAY_SZ];
 } sec_entry_t;
 
 /* A8K definitions end */
@@ -154,7 +157,8 @@ typedef struct _sec_options {
 	uint8_t		csk_index;
 	uint8_t		jtag_enable;
 	uint8_t		efuse_disable;
-	uint32_t	*control;
+	uint32_t	cp_ctrl_arr[CP_CTRL_EL_ARRAY_SZ];
+	uint32_t	cp_efuse_arr[CP_CTRL_EL_ARRAY_SZ];
 	pk_context	kak_pk;
 	pk_context	csk_pk[CSK_ARR_SZ];
 	uint8_t		aes_key[AES_KEY_BYTE_LEN];
@@ -733,16 +737,10 @@ int parse_sec_config_file(char *filename)
 		array_sz = 0;
 	}
 
-	sec_opt->control = (uint32_t *)malloc(sizeof(array_sz + 1)); /* 1 DWORD for the size */
-	if (sec_opt->control == 0) {
-		fprintf(stderr, "Cannot allocate memory for secure boot control block!\n");
-		goto exit_parse;
+	for (element = 0; element < CP_CTRL_EL_ARRAY_SZ; element++) {
+		sec_opt->cp_ctrl_arr[element] = config_setting_get_int_elem(control_aray, element * 2);
+		sec_opt->cp_efuse_arr[element] = config_setting_get_int_elem(control_aray, element * 2 + 1);
 	}
-	memset(sec_opt->control, 0, sizeof(uint32_t));
-
-	sec_opt->control[0] = array_sz;
-	for (element = 0; element < array_sz; element++)
-		sec_opt->control[element + 1] = config_setting_get_int_elem(control_aray, element);
 
 	opts.sec_opts = sec_opt;
 	rval = 0;
@@ -772,8 +770,7 @@ int format_sec_ext(char *filename, FILE *out_fd)
 	/* Everything except signatures can be created at this stage */
 	header.type = EXT_TYPE_SECURITY;
 	header.offset = 0;
-	/* Size of secure boot extention can vary only in control block content */
-	header.size = sizeof(sec_entry_t) + sizeof(uint32_t) * (opts.sec_opts->control[0] + 1);
+	header.size = sizeof(sec_entry_t);
 	header.reserved = 0;
 
 	/* Bring up RSA context and read private keys from their files */
@@ -875,6 +872,9 @@ int format_sec_ext(char *filename, FILE *out_fd)
 	sec_ext.jtag_delay	= opts.sec_opts->jtag_delay;
 	sec_ext.jtag_en		= opts.sec_opts->jtag_enable;
 
+	memcpy(sec_ext.cp_ctrl_arr, opts.sec_opts->cp_ctrl_arr, sizeof(uint32_t) * CP_CTRL_EL_ARRAY_SZ);
+	memcpy(sec_ext.cp_efuse_arr, opts.sec_opts->cp_efuse_arr, sizeof(uint32_t) * CP_CTRL_EL_ARRAY_SZ);
+
 	/* Write the resulting extention to file
 	   (image and header signature fields are still empty) */
 
@@ -888,12 +888,6 @@ int format_sec_ext(char *filename, FILE *out_fd)
 	written = fwrite(&sec_ext, sizeof(sec_entry_t), 1, out_fd);
 	if (written != 1) {
 		fprintf(stderr, "Failed to write SEC extension body to the file\n");
-		return 1;
-	}
-	/* Write secure control field */
-	written = fwrite(opts.sec_opts->control, sizeof(uint32_t) * (opts.sec_opts->control[0] + 1), 1, out_fd);
-	if (written != 1) {
-		fprintf(stderr, "Failed to write SEC extension control field to the file\n");
 		return 1;
 	}
 
@@ -1076,7 +1070,6 @@ int print_ext_hdr(ext_header_t *ext_hdr, int base)
 
 void print_sec_ext(ext_header_t *ext_hdr, int base)
 {
-	uint32_t	*control;
 	sec_entry_t	*sec_entry;
 	uint32_t	new_base;
 
@@ -1085,7 +1078,6 @@ void print_sec_ext(ext_header_t *ext_hdr, int base)
 	new_base = print_ext_hdr(ext_hdr, base);
 
 	sec_entry = (sec_entry_t *)(ext_hdr + 1);
-	control = (uint32_t *)(sec_entry + 1);
 
 	do_print_field(0, "KAK key", new_base, MAX_RSA_DER_BYTE_LEN, FMT_NONE);
 	new_base += MAX_RSA_DER_BYTE_LEN;
@@ -1103,7 +1095,7 @@ void print_sec_ext(ext_header_t *ext_hdr, int base)
 	new_base += CSK_ARR_SZ * MAX_RSA_DER_BYTE_LEN;
 	do_print_field(0, "CSK block signature", new_base, RSA_SIGN_BYTE_LEN, FMT_NONE);
 	new_base += RSA_SIGN_BYTE_LEN;
-	do_print_field(control[0], "control", new_base, sizeof(uint32_t) * (control[0] + 1), FMT_HEX);
+	do_print_field(0, "control", new_base, CP_CTRL_EL_ARRAY_SZ * 2, FMT_NONE);
 
 }
 

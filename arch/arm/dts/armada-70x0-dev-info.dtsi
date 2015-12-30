@@ -18,7 +18,74 @@
 
 / {
 	compatible = "marvell,cp110";
+	/* This should go only into devel boards */
+	sar {
+		compatible = "marvell,sample-at-reset";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x4c 0x4d 0x4e>;
+		chip_count = <3>;
+		bit_width = <5>;
 
+		freq {
+			key = "freq";
+			description = "CPU/DDR frequencies";
+			start-bit = <0>;
+			bit-length = <5>;
+			option-cnt = <4>;
+			options = "0xf", "2000/650 Mhz",
+				"0x11", "2000/650 Mhz",
+				"0x16", "1600/650 Mhz",
+				"0x17", "1200/650 Mhz";
+			default = <0x16>;
+			swap-bit;
+			status = "okay";
+		};
+		bootsrc {
+			key = "bootsrc";
+			description = "Boot source options";
+			start-bit = <5>;
+			bit-length = <2>;
+			option-cnt = <3>;
+			options = "0x0", "BootRom + SPI",
+				"0x1", "Companion Device",
+				"0x2", "SPI";
+			default = <0x1>;
+			status = "okay";
+		};
+		c2c_ihb {
+			key = "c2c_ihb";
+			description = "C2C IHB select";
+			start-bit = <7>;
+			bit-length = <1>;
+			option-cnt = <2>;
+			options = "0x0", "IHB",
+				"0x1", "C2C";
+			default = <0x1>;
+			status = "okay";
+		};
+		mpp_8 {
+			key = "MPP8";
+			description = "MPP8 - must be 1";
+			start-bit = <8>;
+			bit-length = <1>;
+			option-cnt = <1>;
+			options = "0x1", "MPP8";
+			default = <0x1>;
+			status = "disable";
+		};
+		boot_mode {
+			key = "boot_mode";
+			description = "Boot mode options";
+			start-bit = <9>;
+			bit-length = <6>;
+			option-cnt = <2>;
+			options = "0x32", "CP_SPI_1 IHB 24bits",
+				"0xf", "NAND IHB 8bits";
+			default = <0x32>;
+			status = "okay";
+		};
+	};
 	mpp-buses {
 		mpp-bus0 {
 			compatible = "marvell,mvebu-mpp-bus";

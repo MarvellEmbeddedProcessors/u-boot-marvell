@@ -35,6 +35,36 @@ spi@700600 {
 				CS-i is enabled or not */
 	status = "disable";
 };
+i2c@701000 {
+	compatible = "marvell,mvebu-i2c";
+	reg = <0x701000 0x100>;
+	status = "disabled";
+};
+sata@540000 { /* SATA0 */
+	compatible = "marvell,mvebu-sata";
+	reg = <540000 0x200>;
+	status = "disabled";
+};
+sata@550000 { /* SATA1 */
+	compatible = "marvell,mvebu-sata";
+	reg = <550000 0x200>;
+	status = "disabled";
+};
+mmc@780000 {
+	compatible = "marvell,xenon-sdhci";
+	reg = <0x780000 0x300>;
+	status = "disabled";
+};
+usb3@500000 { /* USB3_H0 */
+	compatible = "marvell,mvebu-usb3";
+	reg = <0x500000 0x450>;
+	status = "disabled";
+};
+usb3@510000 { /* USB3_H1 */
+	compatible = "marvell,mvebu-usb3";
+	reg = <0x510000 0x450>;
+	status = "disabled";
+};
 
 pinctl@440000 {
 	compatible = "marvell,mvebu-pinctl";

@@ -46,12 +46,9 @@
 			description = "CPU/DDR frequencies";
 			start-bit = <0>;
 			bit-length = <5>;
-			option-cnt = <4>;
-			options = "0x4", "2500/525 Mhz",
-				"0x6", "2500/800 Mhz",
-				"0x9", "2200/800 Mhz",
-				"0x13", "1600/800 Mhz";
-			default = <0x9>;
+			option-cnt = <1>;
+			options = "0x17", "1200/650 Mhz";
+			default = <0x17>;
 			swap-bit;
 			status = "okay";
 		};
@@ -61,10 +58,10 @@
 			start-bit = <5>;
 			bit-length = <2>;
 			option-cnt = <3>;
-			options = "0x0", "BootRoom",
+			options = "0x0", "BootRom + SPI",
 				"0x1", "Companion Device",
 				"0x2", "SPI";
-			default = <0x2>;
+			default = <0x0>;
 			status = "okay";
 		};
 		c2c_ihb {

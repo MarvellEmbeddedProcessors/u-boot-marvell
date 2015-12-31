@@ -60,8 +60,14 @@ dtb-$(CONFIG_TARGET_ARMADA_8K) += apn-806-db.dtb \
 		       apn-806-pd-a0.dtb \
 		       apn-806-db-dop.dtb \
 		       armada-80x0-db.dtb \
-		       armada-8040-rz1-db.dtb \
-		       armada-70x0-pd.dtb
+		       armada-70x0-pd.dtb \
+		       armada-7040-rz-db_nand.dtb \
+		       armada-7040-rz-db_router.dtb \
+		       armada-7040-rz-db_all_pci.dtb \
+		       armada-7040-rz-db_rgmii_only.dtb \
+		       armada-7040-rz-db_kr.dtb \
+		       armada-7040-rz-db_rxaui_pci.dtb \
+		       armada-7040-rz-db_rxaui.dtb
 
 targets += $(dtb-y)
 

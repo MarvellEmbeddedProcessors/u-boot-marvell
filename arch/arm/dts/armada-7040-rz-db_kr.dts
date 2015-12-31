@@ -22,9 +22,9 @@
 #include "armada-70x0-dev-info.dtsi" /* include Marvell specific info (S@R, MPP cmd) */
 
 / {
-	model = "DB-ARMADA-8040R-Z1 (PEX_SGMIIx2_SATA_USB3x2)";
+	model = "DB-ARMADA-7040R-Z1 (KR)";
 	compatible = "marvell,armada-70x0-db", "marvell,armada-70x0";
-	fdt_config_id = <1>;
+	fdt_config_id = <3>;
 	board_id = <0x11>;
 
 	memory {
@@ -55,10 +55,7 @@
 			i2c@701000 {
 				status = "okay";
 			};
-			usb3@500000 {
-				status = "okay";
-			};
-			usb3@510000 {
+			sata@540000 {
 				status = "okay";
 			};
 			sata@550000 {
@@ -70,24 +67,25 @@
 
 			pinctl@440000 {
 					/* MPP Bus:
-					   TDM	 [0-12]
-					   SPI   [13-16]
-					   SATA1 [28]
-					   UART0 [29-30]
-					   SMI	 [32,34]
-					   SATA0 [36]
-					   I2C	 [37-38]
-					   UART1 [40-41]
-					   XSMI	 [42-43]
-					   SD	 [56-62]
+					   RGMII0 [0-12]
+					   SPI    [13-16]
+					   SATA1  [28]
+					   UART0  [29-30]
+					   SMI	  [32,34]
+					   SATA0  [36]
+					   I2C	  [37-38]
+					   UART1  [40-41]
+					   XSMI	  [42-43]
+					   RGMII1 [44-55]
+					   SD	  [56-62]
 					*/
 					/*   0   1   2   3   4   5   6   7   8   9 */
-				pin-func = < 4   4   4   4   4   4   4   4   4   4
-					     4   4   0   3   3   3   3   0   0   0
+				pin-func = < 3   3   3   3   3   3   3   3   3   3
+					     3   3   0   3   3   3   3   0   0   0
 					     0   0   0   0   0   0   0   0   9   0xA
 					     0xA 0   7   0   7   0   6   2   2   0
-					     7   7   8   8   0   0   0   0   0   0
-					     0 	 0   0   0   0   0   0xE 0xE 0xE 0xE
+					     7   7   8   8   1   1   1   1   1   1
+					     1 	 1   1   1   1   1   0xE 0xE 0xE 0xE
 					     0xE 0xE 0xE 0>;
 			};
 
@@ -98,31 +96,31 @@
 				reg-comphy = <0x441000 0x8>;
 				reg-hpipe3 = <0x120800 0x8>;
 				/* Serdes Configuration:
-					Lane 0: SGMII2
-					Lane 1: USB3-HOST0
-					Lane 2: SGMII0
+					Lane 0: PEX0x1
+					Lane 1: SATA0
+					Lane 2: 10GKR
 					Lane 3: SATA1
-					Lane 4: USB3-HOST1
+					Lane 4: PEX1x1
 					Lane 5: PEX2x1
 				*/
 				phy0 {
-					phy-type = <PHY_TYPE_SGMII2>;
-					phy-speed = <PHY_SPEED_1_25G>;
+					phy-type = <PHY_TYPE_PEX0>;
+					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy1 {
-					phy-type = <PHY_TYPE_USB3_HOST0>;
+					phy-type = <PHY_TYPE_SATA0>;
 					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy2 {
-					phy-type = <PHY_TYPE_SGMII0>;
-					phy-speed = <PHY_SPEED_1_25G>;
+					phy-type = <PHY_TYPE_KR>;
+					phy-speed = <PHY_SPEED_10_3125G>;
 				};
 				phy3 {
 					phy-type = <PHY_TYPE_SATA1>;
 					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy4 {
-					phy-type = <PHY_TYPE_USB3_HOST1>;
+					phy-type = <PHY_TYPE_PEX1>;
 					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy5 {

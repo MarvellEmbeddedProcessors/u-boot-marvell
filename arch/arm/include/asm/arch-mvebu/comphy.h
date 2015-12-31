@@ -32,6 +32,7 @@ enum phy_speed {
 	__5gbps,
 	__6gbps,
 	__6_25gbps,
+	__10_3125gbps,
 	MAX_SERDES_SPEED,
 	INVALID_SPEED = 0xff
 };
@@ -55,6 +56,7 @@ enum phy_type {
 	USB3_DEVICE,
 	XAUI,
 	RXAUI,
+	KR,
 	MAX_PHY_TYPE,
 	INVALID_TYPE = 0xff
 };

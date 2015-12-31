@@ -23,10 +23,11 @@
 #define PHY_SPEED_1_5G		1
 #define PHY_SPEED_2_5G		2
 #define PHY_SPEED_3G		3
-#define PHY_SPEED_3_125G		4
+#define PHY_SPEED_3_125G	4
 #define PHY_SPEED_5G		5
 #define PHY_SPEED_6G		6
 #define PHY_SPEED_6_25G		7
+#define PHY_SPEED_10_3125G	8
 
 #define PHY_TYPE_UNCONNECTED		0
 #define PHY_TYPE_PEX0		1
@@ -46,6 +47,7 @@
 #define PHY_TYPE_USB3_DEVICE		15
 #define PHY_TYPE_XAUI		16
 #define PHY_TYPE_RXAUI		17
+#define PHY_TYPE_KR			18
 
 #endif /* _COMPHY_DATA_H_ */
 

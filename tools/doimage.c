@@ -842,7 +842,6 @@ int format_sec_ext(char *filename, FILE *out_fd)
 	/* AES encryption stuff */
 	if (strlen(opts.sec_opts->aes_key_file) != 0) {
 		FILE		*in_fd;
-		uint8_t		key_buf[AES_KEY_BYTE_LEN];
 
 		in_fd = fopen(opts.sec_opts->aes_key_file, "rb");
 		if (in_fd == NULL) {
@@ -852,7 +851,7 @@ int format_sec_ext(char *filename, FILE *out_fd)
 
 		/* Read the AES key in ASCII format byte by byte */
 		for (index = 0; index < AES_KEY_BYTE_LEN; index++) {
-			if (fscanf(in_fd, "%02hhx", key_buf + index) != 1) {
+			if (fscanf(in_fd, "%02hhx", opts.sec_opts->aes_key + index) != 1) {
 				fprintf(stderr, "Failed to read AES key byte %d from file %s\n",
 					index, opts.sec_opts->aes_key_file);
 				fclose(in_fd);

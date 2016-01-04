@@ -356,6 +356,8 @@
 	#define CONFIG_HAS_ETH1
 	#define CONFIG_ETH1ADDR		00:00:00:00:51:82
 	#define ENV_ETH_PRIME           "e1000#0"
+	#define CONFIG_PHY_GIGE			/* Include GbE speed/duplex detection */
+
 #endif /* CONFIG_CMD_NET */
 
 /* SATA AHCI via controller or over PCIe */

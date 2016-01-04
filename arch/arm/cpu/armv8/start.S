@@ -28,8 +28,7 @@ _start:
 	stp	x27, x28,[sp, #-16]!
 	stp	x29, x30,[sp, #-16]!
 
-	ldr	x0, =COUNTER_FREQUENCY
-	msr	cntfrq_el0, x0	/* Initialize CNTFRQ */
+	bl	lowlevel_init_spl	/* low level init before SPL run */
 
 	bl	board_init_f
 	ldp	x29, x30,[sp], #16	/* @ restore regs and return */
@@ -241,3 +240,13 @@ ENTRY(c_runtime_cpu_setup)
 ENDPROC(c_runtime_cpu_setup)
 
 #endif /* defined(CONFIG_MVEBU) && defined(CONFIG_SPL_BUILD) */
+
+WEAK(lowlevel_init_spl)
+	mov	x29, lr
+
+	ldr	x8, =COUNTER_FREQUENCY
+	msr	cntfrq_el0, x8	/* Initialize CNTFRQ */
+
+	mov	lr, x29
+	ret
+ENDPROC(lowlevel_init_spl)

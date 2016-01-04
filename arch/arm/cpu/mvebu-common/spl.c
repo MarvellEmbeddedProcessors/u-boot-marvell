@@ -56,10 +56,9 @@ void board_init_f(ulong silent)
 {
 	gd = &gdata;
 	gd->baudrate = CONFIG_BAUDRATE;
-#if 0
+
 	if (silent)
 		gd->flags |= GD_FLG_SILENT;
-#endif
 
 	/* Update the pointer to the default FDT, this is necessary only to config i2c*/
 	setup_fdt();

@@ -50,7 +50,7 @@
 #define	I2C_STATUS_DATA_R_NAK			0x58
 #define I2C_STATUS_LOST_ARB_GENERAL_CALL	0x78
 #define	I2C_STATUS_IDLE				0xF8
-
+#define MAX_CHIPS_PER_BUS			10
 DECLARE_GLOBAL_DATA_PTR;
 
 struct  mvebu_i2c_regs {
@@ -69,13 +69,15 @@ struct  mvebu_i2c_regs {
 struct mvebu_i2c_bus {
 	struct  mvebu_i2c_regs *i2c_reg;
 	u32 clock;
-	bool offset256;
+	int two_bytes_addr[MAX_CHIPS_PER_BUS];
 	bool status;
 };
 
 /* initialize i2c_bus to -1, because we use this struct before relocation */
-static struct mvebu_i2c_bus i2c_bus[CONFIG_MAX_I2C_NUM] = { { .i2c_reg = NULL, .clock = -1, .status = false},
-							{ .i2c_reg = NULL, .clock = -1, .status = false} };
+static struct mvebu_i2c_bus i2c_bus[CONFIG_MAX_I2C_NUM] = { { .i2c_reg = NULL, .clock = -1,
+					 .two_bytes_addr = {[0 ... MAX_CHIPS_PER_BUS - 1] = -1}, .status = false},
+							    { .i2c_reg = NULL, .clock = -1,
+					 .two_bytes_addr = {[0 ... MAX_CHIPS_PER_BUS - 1] = -1}, .status = false} };
 
 #define i2c_reg(x) (&i2c_bus[gd->cur_i2c_bus].i2c_reg->x)
 
@@ -315,12 +317,18 @@ static int mvebu_i2c_data_transmit(u8 *p_block, u32 block_size)
 	return 0;
 }
 
-static int mvebu_i2c_target_offset_set(int alen, uint addr)
+static int mvebu_i2c_target_offset_set(int chip, uint addr)
 {
-	u8 off_block[2];
-	u32 off_size;
+	u8 off_block[2], support_two_bytes = 0;
+	u32 off_size, i;
 
-	if (i2c_bus[gd->cur_i2c_bus].offset256) {
+	for (i = 0; (i < MAX_CHIPS_PER_BUS) && (i2c_bus[gd->cur_i2c_bus].two_bytes_addr[i] != -1) ; i++) {
+		if (i2c_bus[gd->cur_i2c_bus].two_bytes_addr[i] == chip) {
+			support_two_bytes = 1;
+			break;
+		}
+	}
+	if (support_two_bytes) {
 		off_block[0] = (addr >> 8) & 0xff;
 		off_block[1] = addr & 0xff;
 		off_size = 2;
@@ -361,7 +369,7 @@ static unsigned int mvebu_i2c_bus_speed_set(struct i2c_adapter *adap, unsigned i
 
 static void mvebu_i2c_init(struct i2c_adapter *adap, int speed, int slaveaddr)
 {
-	int node_list[CONFIG_MAX_I2C_NUM], node;
+	int node_list[CONFIG_MAX_I2C_NUM], node, var, j = 0;
 	u32 i;
 
 	if (i2c_bus[gd->cur_i2c_bus].status)
@@ -380,9 +388,18 @@ static void mvebu_i2c_init(struct i2c_adapter *adap, int speed, int slaveaddr)
 			i2c_bus[gd->cur_i2c_bus].i2c_reg =
 				(struct  mvebu_i2c_regs *)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
 			i2c_bus[gd->cur_i2c_bus].clock = soc_clock_get(gd->fdt_blob, node);
-			i2c_bus[gd->cur_i2c_bus].offset256 = false;
-			if (fdtdec_get_bool(gd->fdt_blob, node, "support-256-offset"))
-				i2c_bus[gd->cur_i2c_bus].offset256 = true;
+			/* Get the fisrt variable in i2c (if exist) */
+			var = fdt_first_subnode(gd->fdt_blob, node);
+			/* Find the variables under i2c node */
+			while (var > 0) {
+				if (fdtdec_get_bool(gd->fdt_blob, var, "two_bytes_addr")) {
+					i2c_bus[gd->cur_i2c_bus].two_bytes_addr[j] =
+						fdtdec_get_int(gd->fdt_blob, var, "address", 0);
+					j++;
+				}
+				/* Get the offset of the next subnode */
+				var = fdt_next_subnode(gd->fdt_blob, var);
+			};
 			i2c_bus[gd->cur_i2c_bus].status = true;
 		}
 	}
@@ -462,7 +479,7 @@ static int mvebu_i2c_read(struct i2c_adapter *adap, uchar chip, uint addr,
 			if (ret)
 				continue;
 
-			ret = mvebu_i2c_target_offset_set(alen, addr);
+			ret = mvebu_i2c_target_offset_set(chip, addr);
 			if (ret)
 				continue;
 			ret = mvebu_i2c_start_bit_set();
@@ -518,7 +535,7 @@ static int mvebu_i2c_write(struct i2c_adapter *adap, uchar chip, uint addr,
 
 		/* if EEPROM device */
 		if (alen != 0) {
-			ret = mvebu_i2c_target_offset_set(alen, addr);
+			ret = mvebu_i2c_target_offset_set(chip, addr);
 			if (ret)
 				continue;
 		}

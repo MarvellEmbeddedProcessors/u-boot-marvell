@@ -357,13 +357,13 @@ int i2c_probe(uchar chip)
 	msg.condition = I2C_COND_START;
 	msg.acknack   = I2C_ACKNAK_WAITACK;
 	msg.direction = I2C_WRITE;
-	msg.data      = (chip << 1) + 1;
+	msg.data      = (chip << 1);
 	if (i2c_transfer(&msg))
 		return -1;
 
 	msg.condition = I2C_COND_STOP;
-	msg.acknack   = I2C_ACKNAK_SENDNAK;
-	msg.direction = I2C_READ;
+	msg.acknack   = I2C_ACKNAK_WAITACK;
+	msg.direction = I2C_WRITE;
 	msg.data      = 0x00;
 	if (i2c_transfer(&msg))
 		return -1;

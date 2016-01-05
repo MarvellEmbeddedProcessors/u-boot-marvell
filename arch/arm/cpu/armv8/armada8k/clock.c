@@ -60,6 +60,14 @@ u32 soc_tclk_get(void)
 #endif
 }
 
+
+#ifdef CONFIG_NAND_PXA3XX
+unsigned long mvebu_get_nand_clock(void)
+{
+	return 0;
+}
+#endif
+
 u32 soc_get_cpu_clk(void)
 {
 	u32 pll_idx = (readl(SAMPLE_AT_RESET_REG_1) & SAR1_PLL2_MASK) >> SAR1_PLL2_OFFSET;

@@ -47,6 +47,14 @@ u32 soc_timer_clk_get(void)
 	return 800000000;
 }
 
+
+#ifdef CONFIG_NAND_PXA3XX
+unsigned long mvebu_get_nand_clock(void)
+{
+	return 0;
+}
+#endif
+
 u32 get_fdt_tclk(const void *blob, int node)
 {
 	u32 tclk;

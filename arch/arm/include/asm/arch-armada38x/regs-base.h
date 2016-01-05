@@ -36,4 +36,6 @@
 
 #define MVEBU_IO_ERR_CTL_REG	(MVEBU_REGS_BASE + 0x20200)
 
+#define MVEBU_NAND_BASE		(MVEBU_REGS_BASE + 0xD0000)
+
 #endif	/* _REGS_BASE_H_ */

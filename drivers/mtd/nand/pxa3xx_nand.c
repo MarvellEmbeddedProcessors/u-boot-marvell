@@ -12,10 +12,10 @@
 #include <nand.h>
 #include <asm/errno.h>
 #include <asm/io.h>
-#include <asm/arch/cpu.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 #include <linux/types.h>
+#include <asm/arch-mvebu/clock.h>
 
 #include "pxa3xx_nand.h"
 

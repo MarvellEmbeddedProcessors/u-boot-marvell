@@ -24,8 +24,4 @@
 
 void board_nand_init(void)
 {
-#ifdef CONFIG_NAND_PXA3XX
-	debug("Activating NAND\n");
-	pxa3xx_nand_init();
-#endif
 }

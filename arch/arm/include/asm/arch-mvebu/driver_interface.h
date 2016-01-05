@@ -17,4 +17,3 @@
  */
 
 void mvebu_pcie_init_board(int max_hosts, u16 active_mask, u16 ep_mask);
-void pxa3xx_nand_init(void);

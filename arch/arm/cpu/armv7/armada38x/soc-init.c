@@ -22,6 +22,7 @@
 #include <asm/io.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/mpp.h>
+#include <asm/arch-mvebu/pinctl.h>
 #include <asm/arch-armada38x/armada38x.h>
 
 #define MBUS_SDRAM_WIN_ENABLE			0x1
@@ -47,6 +48,8 @@ int a38x_configure_mpp(void)
 int soc_early_init_f(void)
 {
 	a38x_configure_mpp();
+
+	mvebu_pinctl_probe();
 	return 0;
 }
 

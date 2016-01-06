@@ -25,6 +25,10 @@
 #include <asm/arch/mbus_reg.h>
 #include <asm/arch-mvebu/mbus.h>
 
+/* NB warm reset */
+#define MVEBU_NB_WARM_RST_REG	(MVEBU_GPIO_NB_REG_BASE + 0x40)
+/* NB warm reset magic number, write it to MVEBU_GPIO_NB_RST_REG triggers warm reset */
+#define MVEBU_NB_WARM_RST_MAGIC_NUM	(0x1d1e)
 
 int soc_early_init_f(void)
 {
@@ -142,4 +146,11 @@ int dram_init(void)
 #endif
 
 	return 0;
+}
+
+void reset_cpu(ulong ignored)
+{
+	/* write magic number of 0x1d1e to North Bridge Warm Reset register
+	   to trigger warm reset */
+	writel(MVEBU_NB_WARM_RST_MAGIC_NUM, MVEBU_NB_WARM_RST_REG);
 }

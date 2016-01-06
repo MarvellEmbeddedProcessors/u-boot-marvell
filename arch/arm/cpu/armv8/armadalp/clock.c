@@ -18,6 +18,7 @@
 
 #include <common.h>
 #include <asm/arch-mvebu/clock.h>
+#include <asm/arch-armadalp/clock.h>
 
 u32 soc_tclk_get(void)
 {
@@ -26,12 +27,12 @@ u32 soc_tclk_get(void)
 
 u32 soc_cpu_clk_get(void)
 {
-	return 200000000;
+	return get_cpu_clk() * 1000000;
 }
 
 u32 soc_ddr_clk_get(void)
 {
-	return 200000000;
+	return get_ddr_clk() * 1000000;
 }
 
 u32 soc_l2_clk_get(void)

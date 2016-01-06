@@ -16,8 +16,8 @@
  * ***************************************************************************
  */
 
-#ifndef _MVEBU_CLOCK_H_
-#define _MVEBU_CLOCK_H_
+#ifndef _ARMADALP_CLOCK_H_
+#define _ARMADALP_CLOCK_H_
 
 /* Spread Spectrum Clock */
 #undef MVEBU_A3700_ENABLE_SSC
@@ -475,6 +475,21 @@ TBG-B-P	500	2	5	gbe_50_pclk_sel		50	SB					DIV2[11:9]	DIV2[8:6]
 ******************************************************************************/
 u32 get_ref_clk(void);
 
+/*****************************************************************************
+* get_cpu_clk
+*
+* return: current CPU clock in Mhz
+******************************************************************************/
+u32 get_cpu_clk(void);
+
+/*****************************************************************************
+* get_ddr_clk
+*
+* return: current DDR clock in Mhz
+******************************************************************************/
+u32 get_ddr_clk(void);
+
+
 /******************************************************************************
 * Name: set_clocks
 *
@@ -491,4 +506,4 @@ u32 set_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 tbg_b_k
 
 int init_clock(void);
 
-#endif /* _MVEBU_CLOCK_H_ */
+#endif /* _ARMADALP_CLOCK_H_ */

@@ -41,6 +41,24 @@ static uint	mm_last_addr, mm_last_size;
 
 static	ulong	base_address = 0;
 
+/* align_address -  align address to word/long
+* INPUT:
+*     addr - address to align
+*     size - align address to this size
+*/
+static ulong align_address(ulong addr, int size)
+{
+	/* Unaligned memory access Workaround:
+	 * if size = long/word, & address not aligned to long/word (respectively)
+	 * align address to meet requested size */
+	if ((size > 1) && (addr % size > 0)) {
+		error("Requested unaligned memory address (0x%x)\n", (unsigned int)addr);
+		addr &= ~(size - 1);
+		printf("Using aligned address (0x%x)\n", (unsigned int)addr);
+	}
+	return addr;
+}
+
 /* Memory Display
  *
  * Syntax:
@@ -85,6 +103,7 @@ static int do_mem_md(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			length = simple_strtoul(argv[2], NULL, 16);
 	}
 
+	addr = align_address(addr, size);
 #if defined(CONFIG_HAS_DATAFLASH)
 	/* Print the lines.
 	 *
@@ -180,6 +199,8 @@ static int do_mem_mw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	*/
 	addr = simple_strtoul(argv[1], NULL, 16);
 	addr += base_address;
+
+	addr = align_address(addr, size);
 
 	/* Get the value to write.
 	*/
@@ -301,6 +322,8 @@ static int do_mem_cmp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	addr2 = simple_strtoul(argv[2], NULL, 16);
 	addr2 += base_address;
 
+	addr1 = align_address(addr1, size);
+	addr2 = align_address(addr2, size);
 	count = simple_strtoul(argv[3], NULL, 16);
 
 #ifdef CONFIG_HAS_DATAFLASH
@@ -386,6 +409,9 @@ static int do_mem_cp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	dest = simple_strtoul(argv[2], NULL, 16);
 	dest += base_address;
+
+	addr = align_address(addr, size);
+	dest = align_address(dest, size);
 
 	count = simple_strtoul(argv[3], NULL, 16);
 
@@ -533,6 +559,8 @@ static int do_mem_loop(cmd_tbl_t *cmdtp, int flag, int argc,
 	*/
 	length = simple_strtoul(argv[2], NULL, 16);
 
+	addr = align_address(addr, size);
+
 	bytes = size * length;
 	buf = map_sysmem(addr, bytes);
 
@@ -633,6 +661,8 @@ static int do_mem_loopw(cmd_tbl_t *cmdtp, int flag, int argc,
 	/* Length is the number of objects, not number of bytes.
 	*/
 	length = simple_strtoul(argv[2], NULL, 16);
+
+	addr = align_address(addr, size);
 
 	/* data to write */
 #ifdef CONFIG_SYS_SUPPORT_64BIT_DATA
@@ -1020,6 +1050,9 @@ static int do_mem_mtest(cmd_tbl_t *cmdtp, int flag, int argc,
 	else
 		end = CONFIG_SYS_MEMTEST_END;
 
+	start = align_address((ulong)start, 4);
+	end = align_address((ulong)end, 4);
+
 	if (argc > 3)
 		pattern = (ulong)simple_strtoul(argv[3], NULL, 16);
 	else
@@ -1123,6 +1156,8 @@ mod_mem(cmd_tbl_t *cmdtp, int incrflag, int flag, int argc, char * const argv[])
 		addr = simple_strtoul(argv[1], NULL, 16);
 		addr += base_address;
 	}
+
+	addr = align_address(addr, size);
 
 #ifdef CONFIG_HAS_DATAFLASH
 	if (addr_dataflash(addr)){
@@ -1421,6 +1456,8 @@ int ir_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		printf("Usage:\n%s\n", cmdtp->usage);
 		return 0;
 	}
+
+	offset = align_address(offset, 4);
 
 	reg = readl(regs_base + offset);
 	tmp_val = reg;

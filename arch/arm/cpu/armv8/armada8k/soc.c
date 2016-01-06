@@ -116,7 +116,6 @@ void reset_cpu(ulong ignored)
 
 void print_soc_specific_info(void)
 {
-	printf("\n");
 #ifdef CONFIG_MVEBU_SYS_INFO
 	printf("\tDDR %d Bit width\n", get_info(DRAM_BUS_WIDTH));
 #endif

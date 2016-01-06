@@ -29,6 +29,7 @@
 #define MV_DEFAULT_BOARD_ID					 A8K_APN_806_DB
 
 #define BOARD_DEV_TWSI_INIT_EEPROM 0x57
+#define MULTI_FDT_EEPROM_ADDR_LEN 2
 #define DEFAULT_FDT_PER_BOARD { \
 				0x04,	/* default fdt configuration for apn-806-db board */		  \
 				0x01,	/* default fdt configuration for armada-8040-rz1-db board */      \

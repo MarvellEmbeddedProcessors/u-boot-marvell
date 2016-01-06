@@ -98,7 +98,8 @@ bool upload_fdt_from_eeprom(void)
 	if (!config_type_get(MV_CONFIG_FDT_FILE, &config_info))
 		debug("ERROR: Could not find MV_CONFIG_FDT_FILE\n");
 
-	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, 1,
+	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num,
+		 MULTI_FDT_EEPROM_ADDR_LEN,
 		 (uint8_t *)&fdt_config_val.fdt_blob, config_info.byte_cnt);
 	return true;
 }
@@ -112,11 +113,11 @@ void write_fdt_struct_to_eeprom(void)
 	reserve_length = fdt_config_val.length % I2C_PAGE_WRITE_SIZE;
 
 	/* i2c support on page write with size 32-byets */
-	for (i = 0; i < size_of_loop; i++)
-		i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, i*I2C_PAGE_WRITE_SIZE, 1,
+	for (i = 0; i < size_of_loop; i++) {
+		i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, i*I2C_PAGE_WRITE_SIZE, MULTI_FDT_EEPROM_ADDR_LEN,
 			  (uint8_t *)&(fdt_config_val) + i*I2C_PAGE_WRITE_SIZE, I2C_PAGE_WRITE_SIZE);
-
-	i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, i*I2C_PAGE_WRITE_SIZE, 1,
+	}
+	i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, i*I2C_PAGE_WRITE_SIZE, MULTI_FDT_EEPROM_ADDR_LEN,
 		  (uint8_t *)&(fdt_config_val) + i*I2C_PAGE_WRITE_SIZE, reserve_length);
 }
 
@@ -128,12 +129,17 @@ u8 *mvebu_fdt_config_init(void)
 	struct fdt_config_types_info config_info;
 	uint32_t calculate_checksum;
 
+	/* update default active_fdt_selection, just in case there is no valid data in eeprom,
+	 * and need to write default active_fdt_selection per SoC.
+	 */
+	board_cfg->active_fdt_selection = get_default_fdt_config_id(MV_DEFAULT_BOARD_ID);
+
 	init_func_i2c();
 	/* read pattern from EEPROM */
 	if (!config_type_get(MV_CONFIG_VERIFICATION_PATTERN, &config_info))
 		error("Could not find MV_CONFIG_VERIFICATION_PATTERN\n");
 
-	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, 1,
+	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
 		 (uint8_t *)&eeprom_buffer.pattern, config_info.byte_cnt);
 
 	/* check if pattern in EEPROM is valid */
@@ -147,11 +153,12 @@ u8 *mvebu_fdt_config_init(void)
 	if (!config_type_get(MV_CONFIG_LENGTH, &config_info))
 		error("Could not find MV_CONFIG_LENGTH\n");
 
-	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, 1,
+	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
 		 (uint8_t *)&eeprom_buffer.length, config_info.byte_cnt);
 
 	/* read all the struct from EEPROM according to length field */
-	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, 0, 1, (uint8_t *)&eeprom_buffer, eeprom_buffer.length);
+	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, 0, MULTI_FDT_EEPROM_ADDR_LEN,
+		 (uint8_t *)&eeprom_buffer, eeprom_buffer.length);
 	/* calculate checksum and compare with the checksum that we read */
 	calculate_checksum = mvebu_checksum8((uint8_t *)&eeprom_buffer.pattern, (uint32_t) eeprom_buffer.length - 4);
 

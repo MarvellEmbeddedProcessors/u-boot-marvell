@@ -738,6 +738,7 @@ we can't select the settings with "ifdef", so update it in runtime*/
 			break;
 		case BOBK_CAELUM_DB_ID:
 		case BOBK_CAELUM_CUSTOMER_BOARD_ID1:
+		case BOBK_CYGNUS_RD_ID:		/*the setting of Cygnus is the same with Caelum*/
 			coreClockTbl = coreClockTblBobkCaelum;
 			coreClockTblSize = ARRAY_SIZE(coreClockTblBobkCaelum);
 			cpuDdrClkTbl = cpuDdrClkTblBobkCaelum;

@@ -116,7 +116,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BOBK_CETUS_DB_ID			(BOBK_MARVELL_BOARD_ID_BASE + 0)
 #define BOBK_CAELUM_DB_ID			(BOBK_MARVELL_BOARD_ID_BASE + 1)
 #define BOBK_LEWIS_RD_ID			(BOBK_MARVELL_BOARD_ID_BASE + 2)
-#define BOBK_MARVELL_MAX_BOARD_ID		(BOBK_MARVELL_BOARD_ID_BASE + 3)
+#define BOBK_CYGNUS_RD_ID			(BOBK_MARVELL_BOARD_ID_BASE + 3)
+#define BOBK_MARVELL_MAX_BOARD_ID		(BOBK_MARVELL_BOARD_ID_BASE + 4)
 #define BOBK_MARVELL_BOARD_NUM		(BOBK_MARVELL_MAX_BOARD_ID - BOBK_MARVELL_BOARD_ID_BASE)
 
 /* AXP-AMC board: for Linux 2.6/3.4 usage only (AXP family is shared with MSYS in LSP) */
@@ -539,6 +540,66 @@ MPP#	NAME			IN/OUT
 
 #define RD_DX_BOBK_LEWIS_GPP_POL_LOW		0x0
 #define RD_DX_BOBK_LEWIS_GPP_POL_MID		0x0
+
+/*************************************/
+/*   BOBK-CYGNUS-RD-CYG-48G4XG2XLG-A    */
+/*************************************/
+#define RD_DX_BOBK_CYGNUS_MPP0_7	0x00042222	/* 0-3:SPI, 4:NF_CEn, 5-7:GPIO */
+#define RD_DX_BOBK_CYGNUS_MPP8_15	0x11200000	/* 8-12:GPIO, 13-14:I2C_SCK[1:0 ], 15-7:I2C_SDA[0] */
+#define RD_DX_BOBK_CYGNUS_MPP16_23	0x44444204	/* 16:NF_CEn, 17:GPIO, 18:I2C_SDA[1], 19:NF_RBn, 20:NF_WEn,
+										21-23:NF_IO[0:2] */
+#define RD_DX_BOBK_CYGNUS_MPP24_31	0x04444444	/* 24-28:NF_IO[3:7], 29-30:NF_C/ALE, 31:GPIO */
+#define RD_DX_BOBK_CYGNUS_MPP32_39	0x00000000	/* 31:GPIO */
+
+/* GPPs
+MPP#	NAME			IN/OUT
+----------------------------------------------
+0	SPI_MOSI		(out)
+1	SPI_MISO		(in)
+2	SPI_SCK			(out)
+3	SPI_CS0n		(out)
+4	NF_CEn		(out) NF CS (Boot)
+5	GPIO[5]			(in)
+6	GPIO[6]			(out)
+7	GPIO[7]			(out)
+8	GPIO[8]			(out)
+9	GPIO[9]			(out)
+10	GPIO[10]			(in)
+11	GPIO[11]			(in)
+12	GPIO[12]			(out)
+13	I2C_SCK[1]		(out)
+14	I2C_SCL[0]		(in/out)
+15	I2C_SDA[0]		(out)
+
+16	NF_REn			(out)
+17	GPIO[17]			(in/out)
+18	I2C_SDA[1]		(out)
+19	NF_RBn			(in)
+20	DEV_WEn		(out)
+21	NF_IO[0]			(in/out)
+22	NF_IO[1]			(in/out)
+23	NF_IO[2]			(in/out)
+24	NF_IO[3]			(in/out)
+25	NF_IO[4]			(in/out)
+26	NF_IO[5]			(in/out)
+27	NF_IO[6]			(in/out)
+28	NF_IO[7]			(in/out)
+29	NF_CLE			(out)
+30	NF_ALE			(out)
+31	GPIO[31]			(in)
+32	GPIO[32]			(in)
+
+*/
+#define RD_DX_BOBK_CYGNUS_GPP_OUT_ENA_LOW	(~(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT7 \
+						| BIT8 | BIT9 | BIT12 | BIT17))
+#define RD_DX_BOBK_CYGNUS_GPP_OUT_ENA_MID	(~(0))
+
+#define RD_DX_BOBK_CYGNUS_GPP_OUT_VAL_LOW	(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT7 \
+						| BIT8 | BIT9 | BIT12 | BIT17)
+#define RD_DX_BOBK_CYGNUS_GPP_OUT_VAL_MID	0x0
+
+#define RD_DX_BOBK_CYGNUS_GPP_POL_LOW		0x0
+#define RD_DX_BOBK_CYGNUS_GPP_POL_MID		0x0
 
 /********************************************
 *		AlleyCat3 Boards

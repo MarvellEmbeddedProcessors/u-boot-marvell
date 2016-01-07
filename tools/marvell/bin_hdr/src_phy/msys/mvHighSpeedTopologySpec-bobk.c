@@ -111,6 +111,7 @@ SERDES_MAP* marvellBoardBobkSerdesTopology[] =
 {
 	bobkSerdesDbTopology,
 	bobkSerdesDbTopology,
+	bobkSerdesDbTopology,
 	bobkSerdesDbTopology
 };
 

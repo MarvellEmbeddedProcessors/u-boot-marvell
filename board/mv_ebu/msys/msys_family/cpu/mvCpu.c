@@ -125,6 +125,8 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 			freqMhz = bobkCetusClockRatioTbl[idx].cpuFreq * 1000000;
 			break;
 		case MV_BOBK_CAELUM_98DX4203_DEV_ID:
+		case MV_BOBK_CYGNUS_98DX4211_DEV_ID:
+			/* CYGNUS RD board's CPU freq setting is the same as CAELUM board */
 			freqMhz = bobkCaelumClockRatioTbl[idx].cpuFreq * 1000000;
 			break;
 		default:
@@ -177,6 +179,8 @@ MV_U32 mvCpuDdrClkGet(MV_VOID)
 			freqMhz = bobkCetusClockRatioTbl[idx].ddrFreq * 1000000;
 			break;
 		case MV_BOBK_CAELUM_98DX4203_DEV_ID:
+		case MV_BOBK_CYGNUS_98DX4211_DEV_ID:
+			/* CYGNUS RD board's DDR freq setting is the same as CAELUM board */
 			freqMhz = bobkCaelumClockRatioTbl[idx].ddrFreq * 1000000;
 			break;
 		default:
@@ -234,6 +238,8 @@ MV_U32 mvCpuPllClkGet(MV_VOID)
 			freqMhz = bobkCetusClockRatioTbl[idx].pllClk * 1000000;
 			break;
 		case MV_BOBK_CAELUM_98DX4203_DEV_ID:
+		case MV_BOBK_CYGNUS_98DX4211_DEV_ID:
+			/* CYGNUS RD board's PLL freq setting is the same as CAELUM board */
 			freqMhz = bobkCaelumClockRatioTbl[idx].pllClk * 1000000;
 			break;
 		default:

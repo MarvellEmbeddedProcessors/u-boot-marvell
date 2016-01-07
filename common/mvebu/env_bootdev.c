@@ -33,7 +33,13 @@ int saveenv(void)
  */
 int env_init(void)
 {
+	/* Use ifdef as a temporary solution till we add sample-at-reset
+	** logic. */
+#ifdef CONFIG_MVEBU_NAND_BOOT
+	nand_env_init();
+#else
 	sf_env_init();
+#endif
 	return gd->arch.env_func.init_env();
 }
 
@@ -42,6 +48,12 @@ void env_relocate_spec(void)
 	/* sf_env_init is called again here because of the
 	 * address relocation, the addreses need to be corrected
 	 */
+	/* Use ifdef as a temporary solution till we add sample-at-reset
+	** logic. */
+#ifdef CONFIG_MVEBU_NAND_BOOT
+	nand_env_init();
+#else
 	sf_env_init();
+#endif
 	gd->arch.env_func.reloc_env();
 }

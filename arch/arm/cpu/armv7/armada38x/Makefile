@@ -19,3 +19,4 @@
 obj-y += soc-init.o
 obj-y += spl.o
 obj-y += clock.o
+obj-y += nand.o

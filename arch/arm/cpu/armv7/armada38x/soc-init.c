@@ -23,6 +23,7 @@
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/mpp.h>
 #include <asm/arch-mvebu/pinctl.h>
+#include <asm/arch-mvebu/nand.h>
 
 #define MBUS_SDRAM_WIN_ENABLE			0x1
 #define MBUS_SDRAM_BASE_REG(win)		(MVEBU_ADEC_BASE + 0x180 + (win * 0x8))
@@ -32,6 +33,7 @@
 
 int a38x_configure_mpp(void)
 {
+	mvebu_pinctl_probe();
 #ifdef CONFIG_MVEBU_MPP_BUS
 #ifdef CONFIG_MVEBU_NAND_BOOT
 	mpp_enable_bus("nand");
@@ -48,7 +50,10 @@ int soc_early_init_f(void)
 {
 	a38x_configure_mpp();
 
-	mvebu_pinctl_probe();
+#ifdef CONFIG_CMD_NAND
+	nand_clock_init();
+#endif /* CONFIG_CMD_NAND */
+
 	return 0;
 }
 

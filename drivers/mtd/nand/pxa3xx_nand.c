@@ -18,6 +18,8 @@
 #include <linux/types.h>
 #include <asm/arch-mvebu/clock.h>
 #include <asm/arch-mvebu/fdt.h>
+#include <asm/arch-mvebu/nand.h>
+
 #include "pxa3xx_nand.h"
 
 DECLARE_GLOBAL_DATA_PTR;

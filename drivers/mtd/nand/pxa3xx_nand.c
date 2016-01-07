@@ -9,6 +9,7 @@
 
 #include <common.h>
 #include <malloc.h>
+#include <fdtdec.h>
 #include <nand.h>
 #include <asm/errno.h>
 #include <asm/io.h>
@@ -16,9 +17,10 @@
 #include <linux/mtd/nand.h>
 #include <linux/types.h>
 #include <asm/arch-mvebu/clock.h>
-
+#include <asm/arch-mvebu/fdt.h>
 #include "pxa3xx_nand.h"
 
+DECLARE_GLOBAL_DATA_PTR;
 /* Some U-Boot compatibility macros */
 #define writesl(a, d, s)	__raw_writesl((unsigned long)a, d, s)
 #define readsl(a, d, s)		__raw_readsl((unsigned long)a, d, s)
@@ -1510,8 +1512,6 @@ static int alloc_nand_resource(struct pxa3xx_nand_info *info)
 		chip->cmdfunc		= nand_cmdfunc;
 	}
 
-	info->mmio_base = (void __iomem *)MVEBU_NAND_BASE;
-
 	/* Allocate a buffer to allow flash detection */
 	info->buf_size = INIT_BUFFER_SIZE;
 	info->data_buff = kmalloc(info->buf_size, GFP_KERNEL);
@@ -1533,13 +1533,43 @@ fail_disable_clk:
 static int pxa3xx_nand_probe_dt(struct pxa3xx_nand_info *info)
 {
 	struct pxa3xx_nand_platform_data *pdata;
+	const void *blob = gd->fdt_blob;
+	int node;
 
 	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
 	if (!pdata)
 		return -ENOMEM;
 
-	pdata->enable_arbiter = 1;
-	pdata->num_cs = 1;
+
+	/* Get address decoding node from the FDT blob */
+	node = fdt_node_offset_by_compatible(blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_PXA3XX_NAND));
+	if (node < 0) {
+		error("No Nand node found in FDT blob\n");
+		return -1;
+	}
+
+	/* Get the NAND controler base address */
+	info->mmio_base = (void *)fdt_get_regs_offs(blob, node, "reg");
+
+	pdata->num_cs = fdtdec_get_int(blob, node, "num-cs", 1);
+	if (pdata->num_cs != 1) {
+		error("Current pxa3xx driver supports only a single CS.\n");
+		return -EINVAL;
+	}
+
+	if (fdtdec_get_bool(blob, node, "nand-enable-arbiter"))
+		pdata->enable_arbiter = 1;
+
+	if (fdtdec_get_bool(blob, node, "nand-keep-config"))
+		pdata->keep_config = 1;
+
+	/* ECC parameters, If these are not set, they will be selected according
+	** to the detected flash type. */
+	/* ECC strength */
+	pdata->ecc_strength = fdtdec_get_int(blob, node, "nand-ecc-strength", 0);
+
+	/* ECC step size */
+	pdata->ecc_strength = fdtdec_get_int(blob, node, "nand-ecc-step-size", 0);
 
 	info->pdata = pdata;
 

@@ -117,6 +117,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_XENON_MMC, "marvell,xenon-sdhci"),
 	COMPAT(COMPAT_MVEBU_A3700_FREQ, "marvell,a3700-freq"),
 	COMPAT(MVEBU_MDIO, "marvell,mvebu-mdio"),
+	COMPAT(MVEBU_PXA3XX_NAND, "marvell,mvebu-pxa3xx-nand")
 
 };
 

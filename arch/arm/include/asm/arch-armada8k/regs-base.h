@@ -43,6 +43,4 @@
 
 #define MVEBU_LLC_BASE		(MVEBU_REGS_BASE + 0x8000)
 
-#define MVEBU_NAND_BASE		(MVEBU_REGS_BASE + 0x720000)
-
 #endif	/* _REGS_BASE_H_ */

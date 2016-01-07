@@ -21,7 +21,6 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch-mvebu/soc.h>
-#include <asm/arch-armadalp/armadalp.h>
 #include <netdev.h>
 #include <asm/arch/mbus_reg.h>
 #include <asm/arch-mvebu/mbus.h>

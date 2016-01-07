@@ -20,7 +20,6 @@
 #include <errno.h>
 #include <netdev.h>
 #include <spi.h>
-#include <asm/arch-mvebu/driver_interface.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

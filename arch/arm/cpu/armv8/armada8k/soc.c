@@ -22,7 +22,6 @@
 #include <asm/io.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/system_info.h>
-#include <asm/arch-armada8k/armada8k.h>
 #include <asm/arch/regs-base.h>
 #include <asm/arch-mvebu/pinctl.h>
 #include <linux/sizes.h>

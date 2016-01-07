@@ -23,7 +23,6 @@
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/mpp.h>
 #include <asm/arch-mvebu/pinctl.h>
-#include <asm/arch-armada38x/armada38x.h>
 
 #define MBUS_SDRAM_WIN_ENABLE			0x1
 #define MBUS_SDRAM_BASE_REG(win)		(MVEBU_ADEC_BASE + 0x180 + (win * 0x8))

@@ -1383,25 +1383,28 @@ MV_BOOL mvSysEnvTimerIsRefClk25Mhz(void)
 ********************************************************************************/
 MV_STATUS mvSysEnvReadPcieGenSetting(MV_BOOL *isForceGen1)
 {
+#ifdef MV88F68XX
 	MV_TWSI_SLAVE twsiSlave;
-    MV_U8 data = 0;
+	MV_U8 data = 0;
 	/* Read SatR  */
 	twsiSlave.slaveAddr.address = mvSysEnvi2cAddrGet();
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.offset = 0x3;
 	twsiSlave.moreThen256 = MV_TRUE;
-	if (mvTwsiRead(0, &twsiSlave, &data, 1) == MV_OK)
-    {
-        data = data & 0x4;
-        if (!data)
-          *isForceGen1 = MV_TRUE;
-        else
-          *isForceGen1 = MV_FALSE;
-
-        return MV_OK;
-    }
-    mvPrintf("%s: TWSI Read of SatR field 'isForceGen1 failed\n", __func__);
-    return MV_ERROR;
+	if (mvTwsiRead(0, &twsiSlave, &data, 1) == MV_OK) {
+		data = data & 0x4;
+		if (!data)
+			*isForceGen1 = MV_TRUE;
+		else
+			*isForceGen1 = MV_FALSE;
+		return MV_OK;
+	}
+	mvPrintf("%s: TWSI Read of SatR field 'isForceGen1 failed\n", __func__);
+	return MV_ERROR;
+#else
+	*isForceGen1 = MV_FALSE;
+	return MV_OK;
+#endif
 }
 

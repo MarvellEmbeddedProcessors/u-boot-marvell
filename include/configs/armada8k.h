@@ -57,7 +57,7 @@
 /* SPL */
 /* Defines for SPL */
 #define CONFIG_SPL_TEXT_BASE		0xFFE1C048
-#define CONFIG_SPL_MAX_SIZE		(0x1ffc0)
+#define CONFIG_SPL_MAX_SIZE		(0x27000)
 
 #ifndef __ASSEMBLY__
 extern char __end_of_spl[];

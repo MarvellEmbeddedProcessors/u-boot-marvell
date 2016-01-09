@@ -2,6 +2,7 @@
 /dts-v1/;
 #include <dt-bindings/ddr/ddr_data.h>
 #include "armada-lp.dtsi"
+#include <dt-bindings/multi-fdt/multi-fdt.h>
 
 /* detail board setup:
  * Pcie Jumper slot	:	DB-88F3720-PCIe-mPCIe-Jumper
@@ -24,6 +25,8 @@
 / {
 	model = "DB-88F3720-DDR3-Modular";
 	compatible = "marvell,armada-lp-db0", "marvell,armada-lp";
+	fdt_config_id = <A3700_DB_CONFIG_ID_DEFAULT>;
+	board_id = <A3700_DB_ID>;
 
 	soc {
 		freq {

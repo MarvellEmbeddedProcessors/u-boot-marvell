@@ -22,6 +22,8 @@
 / {
 	model = "DB-88F3720-DDR3-Modular-SGMII1";
 	compatible = "marvell,armada-lp-db0", "marvell,armada-lp";
+	fdt_config_id = <A3700_DB_CONFIG_ID_SGMII1>;
+	board_id = <A3700_DB_ID>;
 
 	soc {
 		internal-regs {

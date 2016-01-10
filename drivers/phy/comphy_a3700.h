@@ -83,6 +83,12 @@
 #define PHY_BASE(unit)			((unit == PCIE) ? PCIEPHY_BASE : USB3PHY_BASE)
 #define PHY_SHFT(unit)			((unit == PCIE) ? PCIEPHY_SHFT : USB3PHY_SHFT)
 
+/* bit definition for USB32_CTRL_BASE (USB32 Control Mode) */
+#define usb32_ctrl_id_mode		BIT0
+#define usb32_ctrl_soft_id		BIT1
+#define usb32_ctrl_int_mode		BIT4
+
+
 #define PHY_PWR_PLL_CTRL_ADDR		0x01	/* for phy_read16 and phy_write16 */
 #define PWR_PLL_CTRL_ADDR(unit)		(PHY_PWR_PLL_CTRL_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define rf_phy_mode_shift		5

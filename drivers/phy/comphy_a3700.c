@@ -365,8 +365,13 @@ static int comphy_usb3_power_up(enum phy_speed speed)
 	if (ret == 0)
 		error("Failed to lock USB3 PLL\n");
 
-	/* Switch from device to host mode */
-	reg_set((void __iomem *)USB32_CTRL_BASE, 0x1, 0x3);
+	/* set   BIT0: set ID_MODE of Host/Device = "Soft ID" (BIT1)
+	 * clear BIT1: set SOFT_ID = Host
+	 * set   BIT4: set INT_MODE = ID. Interrupt Mode: enable interrupt by ID
+	 *             instead of using both interrupts of HOST and Device ORed simultaneously
+	 *             INT_MODE=ID in order to avoid unexpected behaviour or both interrupts together */
+	reg_set((void __iomem *)USB32_CTRL_BASE, usb32_ctrl_id_mode | usb32_ctrl_int_mode,
+			usb32_ctrl_id_mode | usb32_ctrl_soft_id | usb32_ctrl_int_mode);
 
 	debug_exit();
 

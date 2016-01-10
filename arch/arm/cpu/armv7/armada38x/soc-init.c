@@ -33,7 +33,6 @@
 
 int a38x_configure_mpp(void)
 {
-	mvebu_pinctl_probe();
 #ifdef CONFIG_MVEBU_MPP_BUS
 #ifdef CONFIG_MVEBU_NAND_BOOT
 	mpp_enable_bus("nand");
@@ -48,7 +47,7 @@ int a38x_configure_mpp(void)
 
 int soc_early_init_f(void)
 {
-	a38x_configure_mpp();
+	mvebu_pinctl_probe();
 
 #ifdef CONFIG_CMD_NAND
 	nand_clock_init();
@@ -66,6 +65,7 @@ void soc_init(void)
 	 * no device attached */
 	writel(0, MVEBU_IO_ERR_CTL_REG);
 
+	a38x_configure_mpp();
 	return;
 }
 

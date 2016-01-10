@@ -121,6 +121,13 @@
 #define CONFIG_SYS_CONSOLE_INFO_QUIET		/* Don't print In/Out/Err console assignment. */
 
 
+/* Pre console buffer */
+#ifndef CONFIG_SPL_BUILD
+#define CONFIG_PRE_CONSOLE_BUFFER
+#define CONFIG_PRE_CON_BUF_ADDR		(0x2000000)
+#define CONFIG_PRE_CON_BUF_SZ		(1 << 20)	/* 1MB */
+#endif
+
 /* Default Env vars */
 #define CONFIG_SYS_BARGSIZE             CONFIG_SYS_CBSIZE       /* Boot Argument Buffer Size */
 #define CONFIG_BOOTDELAY                3

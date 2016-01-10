@@ -111,6 +111,14 @@
 #define UNIT_CTRL_ADDR(unit)		(PHY_REG_UNIT_CTRL_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define rb_idle_sync_en			BIT12
 
+#define PHY_REG_GEN2_SETTINGS_2		0x3e	/* for phy_read16 and phy_write16 */
+#define GEN2_SETTING_2_ADDR(unit)	(PHY_REG_GEN2_SETTINGS_2 * PHY_SHFT(unit) + PHY_BASE(unit))
+#define g2_tx_ssc_amp			BIT14
+
+#define PHY_REG_GEN2_SETTINGS_3		0x3f	/* for phy_read16 and phy_write16 */
+#define GEN2_SETTING_3_ADDR(unit)	(PHY_REG_GEN2_SETTINGS_3 * PHY_SHFT(unit) + PHY_BASE(unit))
+
+
 #define PHY_MISC_REG0_ADDR		0x4F	/* for phy_read16 and phy_write16 */
 #define MISC_REG0_ADDR(unit)		(PHY_MISC_REG0_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define rb_clk100m_125m_en		BIT4
@@ -131,17 +139,25 @@
 #define bf_sel_bits_pcie_force		BIT15
 
 #define LANE_CFG0_ADDR(unit)		(0x180 * PHY_SHFT(unit) + PHY_BASE(unit))
+#define bf_use_max_pll_rate		BIT9
 #define LANE_CFG1_ADDR(unit)		(0x181 * PHY_SHFT(unit) + PHY_BASE(unit))
 #define bf_use_max_pll_rate		BIT9
+#define LANE_CFG4_ADDR(unit)		(0x188 * PHY_SHFT(unit) + PHY_BASE(unit)) /* 0x5c310 = 0x93 (set BIT7) */
+#define bf_spread_spectrum_clock_en	BIT7
+
 
 #define LANE_STAT1_ADDR(unit)		(0x183 * PHY_SHFT(unit) + PHY_BASE(unit))
 #define rb_txdclk_pclk_en		BIT0
+
 
 #define GLOB_PHY_CTRL0_ADDR(unit)	(0x1C1 * PHY_SHFT(unit) + PHY_BASE(unit))
 #define bf_soft_rst			BIT0
 #define bf_mode_refdiv			0x30
 #define rb_mode_core_clk_freq_sel	BIT9
 #define rb_mode_pipe_width_32		BIT3
+
+#define TEST_MODE_CTRL_ADDR(unit)	(0x1C2 * PHY_SHFT(unit) + PHY_BASE(unit))
+#define rb_mode_margin_override		BIT2
 
 #define GLOB_CLK_SRC_LO_ADDR(unit)	(0x1C3 * PHY_SHFT(unit) + PHY_BASE(unit))
 #define bf_cfg_sel_20b			BIT15

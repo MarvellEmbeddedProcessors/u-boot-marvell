@@ -310,9 +310,36 @@ static int comphy_usb3_power_up(enum phy_speed speed)
 
 	/*
 	 * 2. Set counter for 100us pulse in USB3 Host and Device
-	 */
+	 * restore default burst size limit (Reference Clock 31:24) */
 	reg_set((void __iomem *)USB3_CTRPUL_VAL_REG, 0x8 << 24, rb_usb3_ctr_100ns);
-	reg_set((void __iomem *)USB3H_CTRPUL_VAL_REG, 0x8 << 24, rb_usb3_ctr_100ns);
+
+
+	/* 0xd005c300 = 0x1001 */
+	/* set PRD_TXDEEMPH (3.5db de-emph) */
+	reg_set16((void __iomem *)LANE_CFG0_ADDR(USB3), 0x1, 0xFF);
+
+	/* unset BIT0: set Tx Electrical Idle Mode: Transmitter is in low impedance mode during electrical idle */
+	/* unset BIT4: set G2 Tx Datapath with no Delayed Latency */
+	/* unset BIT6: set Tx Detect Rx Mode at LoZ mode */
+	reg_set16((void __iomem *)LANE_CFG1_ADDR(USB3), 0x0, 0xFFFF);
+
+
+	/* 0xd005c310 = 0x93: set Spread Spectrum Clock Enabled  */
+	reg_set16((void __iomem *)LANE_CFG4_ADDR(USB3), bf_spread_spectrum_clock_en, 0x80);
+
+	/* set Override Margining Controls From the MAC: Use margining signals from lane configuration */
+	reg_set16((void __iomem *)TEST_MODE_CTRL_ADDR(USB3), rb_mode_margin_override, 0xFFFF);
+
+	/* set Lane-to-Lane Bundle Clock Sampling Period = per PCLK cycles */
+	/* set Mode Clock Source = PCLK is generated from REFCLK */
+	reg_set16((void __iomem *)GLOB_CLK_SRC_LO_ADDR(USB3), 0x0, 0xFF);
+
+	/* set G2 Spread Spectrum Clock Amplitude at 4K */
+	reg_set16((void __iomem *)GEN2_SETTING_2_ADDR(USB3), g2_tx_ssc_amp, 0xF000);
+
+	/* unset G3 Spread Spectrum Clock Amplitude & set G3 TX and RX Register Master Current Select */
+	reg_set16((void __iomem *)GEN2_SETTING_3_ADDR(USB3), 0x0, 0xFFFF);
+
 
 	/*
 	 * 3. Check crystal jumper setting and program the Power and PLL Control accordingly

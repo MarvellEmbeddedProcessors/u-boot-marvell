@@ -316,7 +316,7 @@ MV_STATUS mvGeneralInit(void)
 {
 	mvMbusWinConfig();
 	mvHwsTwsiInitWrapper();
-	if (mvBoardIdGet() == BOBK_CETUS_DB_ID)
+	if (mvBoardIdGet() == BOBK_CETUS_DB_ID || mvBoardIdGet() == BOBK_CAELUM_DB_ID)
 		mvMppConfig(); /* MPP must be configured prior to UART access */
 
 #if !defined(MV_NO_PRINT)

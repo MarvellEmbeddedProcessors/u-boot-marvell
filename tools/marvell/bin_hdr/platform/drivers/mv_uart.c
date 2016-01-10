@@ -133,7 +133,7 @@ MV_VOID mvUartInit(void)
 	if (board_id == DB_AP_68XX_ID)
 		uartOffset = UART1_REG_OFFSET;
 #elif defined(MV_MSYS_BOBK)
-	if (board_id == BOBK_CETUS_DB_ID)
+	if (board_id == BOBK_CETUS_DB_ID || board_id == BOBK_CAELUM_DB_ID)
 		uartOffset = UART1_REG_OFFSET;
 #endif /* defined(MV88F68XX) || defined(MV_MSYS_BOBK) */
 	volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + uartOffset);

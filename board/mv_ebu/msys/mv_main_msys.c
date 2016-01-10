@@ -731,7 +731,7 @@ int misc_init_r (void)
 
 MV_U32 mvUartPortGet(void)
 {
-	if (mvBoardIdGet() == BOBK_CETUS_DB_ID)
+	if (mvBoardIdGet() == BOBK_CETUS_DB_ID || mvBoardIdGet() == BOBK_CAELUM_DB_ID)
 		return 1;
 
 	return CONFIG_SYS_DUART_CHAN;

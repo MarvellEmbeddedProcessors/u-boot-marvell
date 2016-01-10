@@ -415,9 +415,8 @@ static u32 set_tbg_clock(u32 kvco_mhz,
 	/* 15. Switch all North/South Bridge clock sources to clock divider
 	       Will be done by function caller when required */
 
-	/* Wait for stable clock output. The suggested 40us delay has increased
-	   due to wrong couter clock configration in SPL */
-	udelay(5000);
+	/* Wait for stable clock output, suggested 40us */
+	udelay(40);
 
 	debug_exit();
 	return 0;

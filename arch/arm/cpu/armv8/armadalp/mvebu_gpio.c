@@ -52,6 +52,45 @@ void mvebu_reset_pcie_dev(void)
 }
 
 /*
+ * initialize SB SDIO device
+ */
+void mvebu_init_sdio(void)
+{
+	u32 reg_val;
+
+	/* Set SDIO to 0 which is 3.3v */
+	reg_val = readl(MVEBU_GPIO_SB_OUTPUT_VAL_REG);
+	reg_val &= ~(1 << MVEBU_GPIO_SDIO_VOLTAGE_OFF);
+	writel(reg_val, MVEBU_GPIO_SB_OUTPUT_VAL_REG);
+
+	/* Set to GPIO output mode */
+	reg_val = readl(MVEBU_GPIO_SB_OUTPUT_EN_REG);
+	reg_val |= (1 << MVEBU_GPIO_SDIO_VOLTAGE_OFF);
+	writel(reg_val, MVEBU_GPIO_SB_OUTPUT_EN_REG);
+
+	/* Set SDIO to GPIO mode */
+	reg_val = readl(MVEBU_GPIO_SB_SEL_REG);
+	reg_val |= (1 << MVEBU_GPIO_SB_SDIO_EN_OFF);
+	writel(reg_val, MVEBU_GPIO_SB_SEL_REG);
+}
+
+/*
+ * set SB SDIO device
+ */
+void mvebu_set_sdio(int voltage)
+{
+	u32 reg_val;
+
+	/* Set SDIO to 0 which is 3.3v */
+	reg_val = readl(MVEBU_GPIO_SB_OUTPUT_VAL_REG);
+	if (MVEBU_GPIO_SDIO_VOLTAGE_1_8V == voltage)
+		reg_val |= (1 << MVEBU_GPIO_SDIO_VOLTAGE_OFF);
+	else
+		reg_val &= ~(1 << MVEBU_GPIO_SDIO_VOLTAGE_OFF);
+	writel(reg_val, MVEBU_GPIO_SB_OUTPUT_VAL_REG);
+}
+
+/*
  * mvebu_init_gpio
  *
  * This function sets GPIO configuration for Armada3700
@@ -99,6 +138,9 @@ void mvebu_init_gpio(void)
 	reg_val = readl(MVEBU_GPIO_NB_OUTPUT_EN_HIGH_REG);
 	reg_val = reg_val | (1 << MVEBU_GPIO_NB_OUTPUT_SPI_EN_OFF);
 	writel(reg_val, MVEBU_GPIO_NB_OUTPUT_EN_HIGH_REG);
+
+	/* set SB SDIO to 3.3v by default */
+	mvebu_init_sdio();
 
 	return;
 }

@@ -37,6 +37,7 @@
 #include <xenon_mmc.h>
 #include <linux/sizes.h>
 #include <asm/arch-mvebu/mvebu.h>
+#include <asm/arch-armadalp/gpio.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -293,14 +294,17 @@ static void xenon_mmc_set_power(struct xenon_mmc_cfg *mmc_cfg, u32 vcc, u32 vccq
 	switch (vcc) {
 	case MMC_VDD_165_195:
 		pwr = SDHCI_POWER_180;
+		mvebu_set_sdio(MVEBU_GPIO_SDIO_VOLTAGE_1_8V);
 		break;
 	case MMC_VDD_29_30:
 	case MMC_VDD_30_31:
 		pwr = SDHCI_POWER_300;
+		mvebu_set_sdio(MVEBU_GPIO_SDIO_VOLTAGE_3_3V);
 		break;
 	case MMC_VDD_32_33:
 	case MMC_VDD_33_34:
 		pwr = SDHCI_POWER_330;
+		mvebu_set_sdio(MVEBU_GPIO_SDIO_VOLTAGE_3_3V);
 		break;
 	default:
 		error("Does not support power mode(0x%X)\n", vcc);

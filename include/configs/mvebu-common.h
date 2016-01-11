@@ -282,6 +282,12 @@
 	#define CONFIG_SYS_NVRAM_BASE_ADDR DEVICE_CS1_BASE      /* dummy */
 #endif
 
+/* Shared USB3.0 and USB2.0 definitions*/
+#if defined(CONFIG_USB_XHCI) || defined(CONFIG_USB_EHCI)
+#define CONFIG_USB_HOST_ETHER
+#define CONFIG_USB_ETHER_ASIX
+#endif
+
 /* USB 3.0 */
 #ifdef CONFIG_USB_XHCI_HCD
 #define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS 2

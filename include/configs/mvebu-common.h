@@ -283,29 +283,19 @@
 #endif
 
 /* Shared USB3.0 and USB2.0 definitions*/
-#if defined(CONFIG_USB_XHCI) || defined(CONFIG_USB_EHCI)
+#if defined(CONFIG_USB)
 #define CONFIG_USB_HOST_ETHER
 #define CONFIG_USB_ETHER_ASIX
+#define CONFIG_USB_STORAGE
+#define CONFIG_CMD_USB
+#define CONFIG_EHCI_IS_TDI
+#define CONFIG_DOS_PARTITION
+#define CONFIG_ISO_PARTITION
 #endif
 
 /* USB 3.0 */
 #ifdef CONFIG_USB_XHCI_HCD
 #define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS 2
-#endif
-
-/* USB */
-#ifdef MV_INCLUDE_USB
-	#define CONFIG_CMD_USB
-	#define CONFIG_USB_STORAGE
-	#define CONFIG_USB_EHCI
-	#define CONFIG_USB_EHCI_MARVELL
-	#define CONFIG_EHCI_IS_TDI
-	#define CONFIG_DOS_PARTITION
-	#define CONFIG_ISO_PARTITION
-	#define ENV_USB0_MODE   "host"
-	#define ENV_USB1_MODE   "host"
-	#define ENV_USB2_MODE   "device"
-	#define ENV_USB_ACTIVE  "0"
 #endif
 
 /* MMC-SD */

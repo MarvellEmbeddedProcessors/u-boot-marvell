@@ -1504,20 +1504,63 @@ static int smi_reg_write(const char *devname, u8 phy_adr, u8 reg_ofs, u16 data)
 	return 0;
 }
 
+/*
+ * mvneta_init_phy - Initialize the ETH PHY
+ * This routine is called during neta init to initialize the ETH PHY
+ * Returns 0 if PHY initialization succeed, -1 if failed to initialize ETH PHY
+ */
+static int mvneta_init_phy(struct eth_device *dev)
+{
+	struct mvneta_port *pp = dev->priv;
+
+	struct phy_device *phydev;
+
+	if (!pp->init || pp->link == 0) {
+		/* Set phy address of the port */
+		mvreg_write(pp, MVNETA_PHY_ADDR, pp->phyaddr);
+
+		/* Only initialize the ETH PHY once by checking pp->phydev */
+		if (!pp->phydev) {
+			phydev = phy_connect(pp->bus, pp->phyaddr, dev,
+					     pp->phy_interface);
+
+			pp->phydev = phydev;
+			phy_config(phydev);
+			phy_startup(phydev);
+
+			if (!phydev->link) {
+				debug("%s: No link.\n", phydev->dev->name);
+				return -1;
+			}
+		}
+	}
+
+	return 0;
+}
+
+/*
+ * mvneta_init_u_boot - Initialize the Marvell neta
+ * This routine is registered to neta device "init" callback
+ * Returns 0 if initialization succeed, -1 if failed to initialize neta
+ */
 static int mvneta_init_u_boot(struct eth_device *dev, bd_t *bis)
 {
 	struct mvneta_port *pp = dev->priv;
 #ifdef CONFIG_PALLADIUM
 	unsigned long auto_neg_value;
-#else
-	struct phy_device *phydev;
 #endif /* CONFIG_PALLADIUM */
 
 	mvneta_port_power_up(pp, pp->phy_interface);
 
+	/* If CONFIG_MVEBU_NETA_ALWAYS_INIT_PHY is not set, the PHY initialization will not happen during
+	 * neta initialization, thus it should be called here to initialize the ETH PHY
+	 */
+#ifndef CONFIG_MVEBU_NETA_ALWAYS_INIT_PHY
+	if (!mvneta_init_phy(dev))
+		return -1;
+#endif /* CONFIG_MVEBU_NETA_ALWAYS_INIT_PHY */
+
 	if (!pp->init || pp->link == 0) {
-		/* Set phy address of the port */
-		mvreg_write(pp, MVNETA_PHY_ADDR, pp->phyaddr);
 #ifdef CONFIG_PALLADIUM
 		/* on Palladium, there is no PHY, need to hardcode Link configuration */
 		pp->init = 1;
@@ -1526,16 +1569,6 @@ static int mvneta_init_u_boot(struct eth_device *dev, bd_t *bis)
 		mvneta_port_up(pp);
 		mvneta_port_enable(pp);
 #else
-		phydev = phy_connect(pp->bus, pp->phyaddr, dev,
-				     pp->phy_interface);
-
-		pp->phydev = phydev;
-		phy_config(phydev);
-		phy_startup(phydev);
-		if (!phydev->link) {
-			printf("%s: No link.\n", phydev->dev->name);
-			return -1;
-		}
 		/* Full init on first call */
 		mvneta_probe(dev);
 		/* mark this port being fully inited,
@@ -1722,6 +1755,15 @@ int mvneta_initialize_dev(bd_t *bis, unsigned long base_addr, int devnum, int ph
 	pp->phyaddr = phy_addr;
 	miiphy_register(dev->name, smi_reg_read, smi_reg_write);
 	pp->bus = miiphy_get_dev_by_name(dev->name);
+
+	/* Currently Some ETH PHY are not supported by Linux neta driver,
+	 * need to always initialize external ETH PHY in u-boot.
+	 * After these Marvell PHY are supported by Linux, this WA could be reverted
+	 */
+#ifdef CONFIG_MVEBU_NETA_ALWAYS_INIT_PHY
+	if (!mvneta_init_phy(dev))
+		debug("No link.\n");
+#endif /* CONFIG_MVEBU_NETA_ALWAYS_INIT_PHY */
 
 	return 1;
 }

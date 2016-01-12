@@ -1,36 +1,36 @@
 fdt_config command:
 ====================
 Dynamic board configurations handled by using a set of pre-defined SoC/Board configurations.
-This command allows the user to decide which configurations to boot with.
+This command allows the user to select which configurations to boot with.
 In addition, this command gives us the ability to edit the FDT using FDT generic command of U-Boot,
 and save it to EEPROM.
 
 notes:
 ------
-1. To enable/disable the option to read FDT from EEPROM use on/off.
-2. To use "fdt_config read" or "fdt_config select" needed to run "fdt_config list" command before,
-   because the option_id received from this list.
+1. To enable/disable the option to read FDT from EEPROM set fdt_config to on/off accordingly.
+2. In order to use "fdt_config read" or "fdt_config select" run the "fdt_config list" command before,
+   the <option_id> available are received from this list.
 3. All changes will be relevant only after running the save command ("fdt_config save") and reset the board.
-4. The list of all the configuration located under "doc/mvebu/a8k/board_options"
+4. The list of all the available configurations is located under "doc/mvebu/a8k/board_options"
 
 
 "fdt_config on" -   enable the option to read Device Tree from eeprom at boot time.
 
 "fdt_config off" -  disable the option to read Device Tree from eeprom at boot time.
 
-"fdt_config list" - show all Device Tree that suitable to the board.
-                    print the list of fdt_config_id and fdt name for all the suitable FDT.
+"fdt_config list" - show all Device Tree that are suitable to the board.
+                    print the list of <option_id> and fdt name for all the suitable FDT.
 
 "fdt_config read flash <option_id>"
-		  - read Device Tree from flash and save it to DRAM using address 'fdt_addr' enviorment variable
+		  - read the <option_id> from user, and save the relevant Device Tree to DRAM using address 'fdt_addr' environment variable
 		    as default.
 		  example:
 			$ fdt_config read flash 3
 			**read the FDT with from flash (u-boot image) with id=3 and save it to DRAM.
-			**note: to read fdt from flash needed to run "fdt_config list" command before.
-			        because the option_id received from this list.
+			**note: in order to read fdt from flash, run the "fdt_config list" command before.
+			        the <option_id> available are received from this list.
 "fdt_config read eeprom"
-		  - read Device Tree from EEPROM and save it to DRAM using address 'fdt_addr' enviorment variable
+		  - read Device Tree from EEPROM and save it to DRAM using address 'fdt_addr' environment variable
 		    as default.
 		  example:
 			$ fdt_config read eeprom

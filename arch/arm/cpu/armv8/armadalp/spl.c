@@ -24,6 +24,7 @@
 #include <asm/arch-mvebu/mbus.h>
 #include <asm/arch-armadalp/gpio.h>
 #include <asm/arch-mvebu/mvebu_misc.h>
+#include <asm/arch-mvebu/ddr.h>
 
 void (*ptr_uboot_start)(void);
 

@@ -139,9 +139,15 @@ void dump_iob(void)
 		if (win_cr & WIN_ENABLE_BIT) {
 			target_id = (win_cr >> IOB_TARGET_ID_OFFSET) & IOB_TARGET_ID_MASK;
 			alr = readl(IOB_WIN_ALR_OFFSET(win_id));
-			ahr = readl(IOB_WIN_AHR_OFFSET(win_id));
 			start = ((u64)alr << ADDRESS_SHIFT);
-			end = (((u64)ahr + 0x10) << ADDRESS_SHIFT);
+			if (win_id != 0) {
+				ahr = readl(IOB_WIN_AHR_OFFSET(win_id));
+				end = (((u64)ahr + 0x10) << ADDRESS_SHIFT);
+			} else {
+				/* Window #0 size is hardcoded to 16MB, as it's
+				** reserved for CP configuration space. */
+				end = start + (16 << 20);
+			}
 			printf("iob   %02d %s   0x%016llx 0x%016llx\n"
 					, win_id, iob_target_name[target_id], start, end);
 		}

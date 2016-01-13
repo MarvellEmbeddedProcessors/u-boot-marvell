@@ -57,9 +57,13 @@ void board_init_f(ulong silent)
 	gd = &gdata;
 	gd->baudrate = CONFIG_BAUDRATE;
 
+#ifdef CONFIG_MVEBU_ROM_SILENCE_FLAG_SUPPORT
 	if (silent)
 		gd->flags |= GD_FLG_SILENT;
-
+#else
+	/* Silence flag is not supported by CM3 WTP BootROM */
+	gd->flags &= ~GD_FLG_SILENT;
+#endif
 	/* Update the pointer to the default FDT, this is necessary only to config i2c*/
 	setup_fdt();
 #ifdef CONFIG_MULTI_DT_FILE

@@ -253,6 +253,11 @@ int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			if (strncmp(argv[1],"res",3) == 0) {
 				printf("\nReset SCSI\n");
 				scsi_bus_reset();
+				/* always call scsi_init here to support the following case:
+				 * scsi scan is finished successfully, then replace the HDD/SDD,
+				 * the "scsi reset" will be used for detect again.
+				 */
+				scsi_init();
 				scsi_scan(1);
 				return 0;
 			}
@@ -276,6 +281,11 @@ int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				return 0;
 			}
 			if (strncmp(argv[1],"scan",4) == 0) {
+				/* always call scsi_init here to support the following case:
+				 * scsi scan is finished successfully, then replace the HDD/SDD,
+				 * the "scsi scan" will be used for detect again.
+				 */
+				scsi_init();
 				scsi_scan(1);
 				return 0;
 			}

@@ -221,7 +221,6 @@ void scsi_init(void)
 	}
 #endif
 	scsi_low_level_init(busdevfunc);
-	scsi_scan(1);
 }
 #endif
 

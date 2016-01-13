@@ -49,7 +49,6 @@ void board_ahci_init(void)
 	/* use mode 1 for scsi_scan, so scsi device info will
 	  * be reported (print out) after scan the scsi bus.
 	 */
-	scsi_scan(1);
 }
 #endif
 

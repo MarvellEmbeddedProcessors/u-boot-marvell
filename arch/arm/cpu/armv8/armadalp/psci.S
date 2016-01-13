@@ -29,6 +29,9 @@
 #define MVEBU_CPU_1_RESET_VECTOR 0x14044
 #define MVEBU_CPU_1_RESET_REG 0xD00C
 #define MVEBU_CPU_1_RESET_BIT 31
+#define MVEBU_NB_REGS_BASE 0x13000
+#define MVEBU_WARM_RESET_REG 0x840
+#define MVEBU_WARM_RESET_MAGIC 0x1D1E
 
 /*
   * Now there is only very limited support for PSCI feature.
@@ -78,6 +81,15 @@ psci_build_stack:
 	lsl	x5, x5, #12
 	sub	sp, x5, x4		/* here's our stack! */
 
+	ret
+
+.globl	psci_0_2_system_reset
+psci_0_2_system_reset:
+	mov	x0, #(MVEBU_REGS_BASE)
+	add	x3, x0, #(MVEBU_NB_REGS_BASE)
+	add	x3, x3, #(MVEBU_WARM_RESET_REG)
+	mov	w0, #(MVEBU_WARM_RESET_MAGIC)
+	str	w0, [x3]
 	ret
 
 	/* x1 = target CPU */

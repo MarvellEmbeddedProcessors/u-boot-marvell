@@ -743,7 +743,6 @@ static GT_STATUS ddr3TipInitBc2Silicon
 {
     MV_HWS_TIP_CONFIG_FUNC_DB   configFunc;
 	MV_HWS_TOPOLOGY_MAP*        topologyMap = ddr3TipGetTopologyMap(devNum);
-    GT_TUNE_TRAINING_PARAMS     tuneParams;
 
 	if(topologyMap == NULL)
 	{
@@ -816,28 +815,8 @@ static GT_STATUS ddr3TipInitBc2Silicon
 		                CENTRALIZATION_TX_MASK_BIT);
 	}
 
-    if( ckDelay == MV_PARAMS_UNDEFINED )
-        ckDelay = 150;
     delayEnable = 1;
     caDelay = 0;
-
-    /* update DGL parameters */
-    tuneParams.ckDelay = ckDelay;
-    tuneParams.PhyReg3Val = 0xA;
-    tuneParams.gRttNom = 0x44;
-    tuneParams.gDic = 0x2;
-    tuneParams.uiODTConfig = 0x120012;
-    tuneParams.gZpriData = 123;
-    tuneParams.gZnriData = 123;
-    tuneParams.gZpriCtrl = 74;
-    tuneParams.gZnriCtrl = 74;
-    tuneParams.gZpodtData = 45;
-    tuneParams.gZnodtData = 45;
-    tuneParams.gZpodtCtrl = 45;
-    tuneParams.gZnodtCtrl = 45;
-    tuneParams.gRttWR = 0x200;
-
-    CHECK_STATUS(ddr3TipTuneTrainingParams(devNum, &tuneParams));
 
     /* frequency and general parameters */
     ddr3TipBc2GetMediumFreq(devNum, firstActiveIf, &mediumFreq);

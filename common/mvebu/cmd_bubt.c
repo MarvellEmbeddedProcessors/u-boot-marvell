@@ -381,11 +381,6 @@ static int check_image_header(void)
 
 static int bubt_verify(int image_size)
 {
-	/* Check that image doesn't overflow allocated space */
-	if (image_size > CONFIG_UBOOT_SIZE) {
-		printf("Error: Image size %d larget than limit %d\n", image_size, CONFIG_UBOOT_SIZE);
-		return -EFBIG;
-	}
 
 	/* Check a correct image header exists */
 	if (check_image_header()) {

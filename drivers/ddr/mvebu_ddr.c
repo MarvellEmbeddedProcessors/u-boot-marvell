@@ -30,9 +30,12 @@
 #ifdef CONFIG_MVEBU_STATIC_SUPPORT
 static void static_dram_init(struct mvebu_dram_config *config)
 {
+#ifndef CONFIG_TARGET_ARMADA_LP
 	mvebu_dram_mac_init(config);
 	mvebu_dram_phy_init(config);
-
+#else
+	mvebu_dram_dll_tune(config);
+#endif
 	printf("Static DRAM initialization is DONE..\n");
 }
 #endif

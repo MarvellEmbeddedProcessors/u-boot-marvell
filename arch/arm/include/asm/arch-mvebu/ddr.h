@@ -35,9 +35,8 @@ struct mvebu_dram_config {
 	u32 bus_width;
 	u32 size_mb;
 };
-
 void mvebu_dram_init(const void *blob);
 void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config);
 void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config);
-
+void mvebu_dram_dll_tune(struct mvebu_dram_config *dram_config);
 #endif /* _MVEBU_DDR_H_ */

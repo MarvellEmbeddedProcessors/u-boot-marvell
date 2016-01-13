@@ -43,8 +43,17 @@
 #endif
 
 #ifdef CONFIG_SCSI_AHCI_PLAT
+void __board_ahci_power_on(void)
+{
+	return;
+}
+void board_ahci_power_on(void) __attribute__((weak, alias("__board_ahci_power_on")));
+
 void board_ahci_init(void)
 {
+	/* enable the AHCI power */
+	board_ahci_power_on();
+
 	ahci_init();
 	/* use mode 1 for scsi_scan, so scsi device info will
 	  * be reported (print out) after scan the scsi bus.

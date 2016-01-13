@@ -24,6 +24,12 @@
 #include <netdev.h>
 #include <asm/arch/mbus_reg.h>
 #include <asm/arch-mvebu/mbus.h>
+#include <i2c.h>
+
+/* IO expander I2C device */
+#define I2C_DEV_IO_EXPANDER	0x22
+#define  CONFIG_PORT_0_REG	0x6
+#define  CONFIG_PORT_0_SATA_OFF	2
 
 /* NB warm reset */
 #define MVEBU_NB_WARM_RST_REG	(MVEBU_GPIO_NB_REG_BASE + 0x40)
@@ -154,3 +160,28 @@ void reset_cpu(ulong ignored)
 	   to trigger warm reset */
 	writel(MVEBU_NB_WARM_RST_MAGIC_NUM, MVEBU_NB_WARM_RST_REG);
 }
+
+#ifdef CONFIG_SCSI_AHCI_PLAT
+void board_ahci_power_on(void)
+{
+/* This I2C IO expander configuration is board specific,
+ * and adequete only to Marvell A3700 DB board
+ */
+#ifdef CONFIG_DEVEL_BOARD
+	int ret;
+	unsigned char buffer[1];
+
+	/* Enable power of SATA by set IO expander via I2C,
+	 * to set corresponding bit to output mode to enable the power for SATA.
+	 */
+	ret = i2c_read(I2C_DEV_IO_EXPANDER, CONFIG_PORT_0_REG, sizeof(unsigned char), buffer, sizeof(buffer));
+	if (ret)
+		error("failed to read IO expander value via I2C\n");
+
+	buffer[0] &= ~(1 << CONFIG_PORT_0_SATA_OFF);
+	ret = i2c_write(I2C_DEV_IO_EXPANDER, CONFIG_PORT_0_REG, sizeof(unsigned char), buffer, sizeof(buffer));
+	if (ret)
+		error("failed to set IO expander via I2C\n");
+#endif /* CONFIG_DEVEL_BOARD */
+}
+#endif

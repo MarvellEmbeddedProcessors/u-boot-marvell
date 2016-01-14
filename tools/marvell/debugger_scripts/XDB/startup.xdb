@@ -37,7 +37,7 @@ ELSE
 		PRINT "%s" "Running on APN 806\n"
 		define macro /button static_ddr_init "batch \"./tools/marvell/debugger_scripts/XDB/ap806_static.xdb\"\n"
 		SET VAL @first_breakp = 0xFFE1C048
-		SET VAL @second_breakp = 0xFFE1C07C
+		SET VAL @second_breakp = 0xFFE1C080
 	ELSE
 		PRINT "Unknown device ID %x\n" @dev_id
 	END

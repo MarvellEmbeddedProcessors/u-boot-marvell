@@ -10,15 +10,5 @@ config DEVEL_BOARD
 	  You need this only if you work on a Marvell board.
 	  If not, keep this off to reduce code size
 
-config CUSTOMER_BOARD
-	bool "Support MVEBU customer boards"
-	depends on MVEBU
-	default n
-	help
-	  Say Y here to add support for customer boards.
-	  You need this only if you work on a spcific
-	  customer board.
-	  If not, keep this off to reduce code size
-
 source "board/mvebu/common/Kconfig"
 endmenu

@@ -10,4 +10,14 @@ config MVEBU_SAR
 	  you work on a Marvell development board.
 	  If not, keep this off to reduce code size
 
+config MULTI_DT_FILE
+	bool "Support multi DT files in U-boot image"
+	depends on OF_CONTROL
+	default y
+	help
+	  If this option is enabled, U-Boot will support different DT files.
+	  Each FDT has a fixed size of 7KB, so to choose between them in u-boot,
+	  it will be executerd by a jump of 7KB.
+	  The u-boot separates between the DTB by the flavor/board id
+
 endmenu

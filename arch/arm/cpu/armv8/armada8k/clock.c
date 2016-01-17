@@ -40,21 +40,21 @@ const u32 pll_freq_tbl[7][5] = {
 	{650  * MHz, 1.2 * GHz, 1.2 * GHz,    0,	   0}
 };
 
-u32 soc_get_ring_clk(void)
+u32 soc_ring_clk_get(void)
 {
 	u32 pll_idx = (readl(SAMPLE_AT_RESET_REG_1) & SAR1_PLL1_MASK) >> SAR1_PLL1_OFFSET;
 	return pll_freq_tbl[pll_idx][RING_PLL_ID];
 }
 
-u32 soc_get_mss_clk(void)
+u32 soc_mss_clk_get(void)
 {
-	return soc_get_ring_clk() / MSS_CLOCK_DIV;
+	return soc_ring_clk_get() / MSS_CLOCK_DIV;
 }
 
 u32 soc_tclk_get(void)
 {
 #ifndef CONFIG_PALLADIUM
-	return soc_get_mss_clk();
+	return soc_mss_clk_get();
 #else
 	return CONFIG_MSS_FREQUENCY;
 #endif
@@ -68,13 +68,13 @@ unsigned long mvebu_get_nand_clock(void)
 }
 #endif
 
-u32 soc_get_cpu_clk(void)
+u32 soc_cpu_clk_get(void)
 {
 	u32 pll_idx = (readl(SAMPLE_AT_RESET_REG_1) & SAR1_PLL2_MASK) >> SAR1_PLL2_OFFSET;
 	return pll_freq_tbl[pll_idx][CPU_PLL_ID];
 }
 
-u32 soc_get_ddr_clk(void)
+u32 soc_ddr_clk_get(void)
 {
 	u32 pll_idx = (readl(SAMPLE_AT_RESET_REG_1) & SAR1_PLL0_MASK) >> SAR1_PLL0_OFFSET;
 	return pll_freq_tbl[pll_idx][DDR_PLL_ID];
@@ -82,8 +82,8 @@ u32 soc_get_ddr_clk(void)
 
 void soc_print_clock_info(void)
 {
-	printf("Clock:  CPU     %-4d [MHz]\n", soc_get_cpu_clk() / MHz);
-	printf("\tDDR     %-4d [MHz]\n", soc_get_ddr_clk() / MHz);
-	printf("\tFABRIC  %-4d [MHz]\n", soc_get_ring_clk() / MHz);
-	printf("\tMSS     %-4d [MHz]\n", soc_get_mss_clk() / MHz);
+	printf("Clock:  CPU     %-4d [MHz]\n", soc_cpu_clk_get() / MHz);
+	printf("\tDDR     %-4d [MHz]\n", soc_ddr_clk_get() / MHz);
+	printf("\tFABRIC  %-4d [MHz]\n", soc_ring_clk_get() / MHz);
+	printf("\tMSS     %-4d [MHz]\n", soc_mss_clk_get() / MHz);
 }

@@ -12,7 +12,7 @@ config HARD_I2C
 config MVEBU_I2C
 	bool "MVEBU I2C support"
 	default n
-	select CMD_I2C
+	select CMD_I2C if !SPL_BUILD
 	help
 	  Choose this option to add
 	  support for Marvell's MVEBU
@@ -22,7 +22,7 @@ config MVEBU_I2C
 config I2C_MV
 	bool "I2C support for armada100/armadaLP"
 	default n
-	select CMD_I2C
+	select CMD_I2C if !SPL_BUILD
 	select HARD_I2C
 	help
 	  Choose this option to

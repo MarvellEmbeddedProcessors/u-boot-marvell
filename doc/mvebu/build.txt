@@ -1,0 +1,52 @@
+Build instructions:
+-------------------
+
+This document describe how to compile the U-Boot and how to change U-Boot and
+SPL (secondary program loader) configuration
+
+Build Instruction:
+------------------
+
+1. Download the U-Boot release <DVUBR> from ftp://ftp.denx.de/pub/u-boot/u-boot-2015.01.tar.bz2
+2. Extract U-Boot vanilla tree with Marvell source:
+	2.1. Extract U-Boot source code:
+		# tar -xjf u-boot-<DVUBR>.tar.bz2
+		# mv u-boot-<DVUBR> u-boot-<DVUBR>-<MVUBR>
+	2.2. add Marvell code:
+	- Option 1: Extracting the release zip file over the vanilla tree:
+		 Extract the u-boot-<DVUBR>-<MVUBR>.zip release file.
+		# unzip u-boot-<DVUBR>-<MVUBR>.zip
+		For example: unzip u-boot-2015.01-2015_T3.0.eng_drop_v6.zip.
+		This overrides part of the U-Boot source files and adds the relevant Marvell files.
+		 When asked whether to replace a certain file, choose 'A' for all files that have such a conflict.
+	- Option 2: Patch update:
+		 Extract the git-<DVUBR>-<MVUBR>.zip to the destination folder u-boot-<DVUBR>-<MVUBR>.
+		 Run the following git command in the u-boot-<DVUBR>-<MVUBR> folder:
+		  git apply git-<version>-<release>/*.patch
+3. Change directory 'cd' to the U-Boot directory.
+4. Set the cross compiler:
+	# export CROSS_COMPILE=/path/to/toolchain/aarch64-marvell-linux-gnu-
+5. Clean-up old residuals:
+	# make mrproper
+6. Configure the U-Boot:
+	# make <defconfig_file>
+	For AP806 stand alone board use "make mvebu_apn806_defconfig"
+	For Armada 8040Rz board use "make mvebu_armada70x0_defconfig"
+	For ArmadaLP board use "make mvebu_armadalp_defconfig"
+7. Build the U-Boot:
+	# make
+	The -Boot compilation generates 2 files:
+	u-boot.bin - U-Boot image
+	spl/u-boot-spl.bin - SPL image.
+
+Please Note:
+------------
+	The u-boot.bin and spl/u-boot-spl.bin should not be used as a stand alone images.
+	The ARM Trusted Firmware (ATF) build process use this images to generates the
+	flash image.
+
+Configuration update:
+---------------------
+	To update the U-Boot configuration and the SPL configuration, please refer to
+	doc/README.kconfig
+

@@ -137,8 +137,9 @@ static int dw_pcie_addr_valid(pci_dev_t d, int first_busno)
 	 * on the local bus. Beyound the local bus, there might be
 	 * a Switch and everyting is possible.
 	 */
-	if ((PCI_BUS(d) == first_busno) && (PCI_DEV(d) > 0))
+	if ((PCI_BUS(d) <= first_busno+1) && (PCI_DEV(d) > 0))
 		return 0;
+
 	return 1;
 }
 

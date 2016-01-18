@@ -25,6 +25,35 @@
 
 #define HPIPE_ADDR(base, lane)		(base + 0x800 * lane)
 
+#define COMMON_SELECTOR_PHY_OFFSET	0x140
+#define COMMON_SELECTOR_PIPE_OFFSET	0x144
+
+/* For CP-110 we have 2 Selector registers "PHY Selectors", and " PIPE
+   Selectors".
+   PIPE selector include USB and PCIe options.
+   PHY selector include the Ethernet and SATA options, every Ethernet option has different options,
+   for example: serdes lane2 had option Eth_port_0 that include (SGMII0, XAUI0, RXAUI0, KR) */
+struct comphy_mux_data cp110_comphy_phy_mux_data[] = {
+/* Lane 0 */ {4, {{UNCONNECTED, 0x0}, {SGMII2, 0x1}, {XAUI2, 0x1}, {SATA1, 0x4} } },
+/* Lane 1 */ {4, {{UNCONNECTED, 0x0}, {SGMII3, 0x1}, {XAUI3, 0x1}, {SATA1, 0x4} } },
+/* Lane 2 */ {6, {{UNCONNECTED, 0x0}, {SGMII0, 0x1}, {XAUI0, 0x1}, {RXAUI0, 0x1}, {KR, 0x1}, {SATA0, 0x4} } },
+/* Lane 3 */ {8, {{UNCONNECTED, 0x0}, {SGMII0, 0x1}, {XAUI0, 0x1}, {RXAUI0, 0x1}, {KR, 0x1},
+					 {XAUI1, 0x1}, {RXAUI1, 0x1}, {SATA1, 0x4} } },
+/* Lane 4 */ {7, {{UNCONNECTED, 0x0}, {SGMII0, 0x1}, {XAUI0, 0x1}, {RXAUI0, 0x1}, {KR, 0x1},
+					{SGMII2, 0x1}, {XAUI2, 0x1} } },
+/* Lane 5 */ {6, {{UNCONNECTED, 0x0}, {XAUI1, 0x1}, {RXAUI1, 0x1}, {SGMII3, 0x1},
+					{XAUI3, 0x1}, {SATA1, 0x4} } },
+};
+
+struct comphy_mux_data cp110_comphy_pipe_mux_data[] = {
+/* Lane 0 */ {2, {{UNCONNECTED, 0x0}, {PEX0, 0x4} } },
+/* Lane 1 */ {4, {{UNCONNECTED, 0x0}, {USB3_HOST0, 0x1}, {USB3_DEVICE, 0x2}, {PEX0, 0x4} } },
+/* Lane 2 */ {3, {{UNCONNECTED, 0x0}, {USB3_HOST0, 0x1}, {PEX0, 0x4} } },
+/* Lane 3 */ {3, {{UNCONNECTED, 0x0}, {USB3_HOST1, 0x1}, {PEX0, 0x4} } },
+/* Lane 4 */ {4, {{UNCONNECTED, 0x0}, {USB3_HOST1, 0x1}, {USB3_DEVICE, 0x2}, {PEX0, 0x4} } },
+/* Lane 5 */ {2, {{UNCONNECTED, 0x0}, {PEX1, 0x4} } },
+};
+
 static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_addr)
 {
 	debug_enter();
@@ -49,6 +78,36 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_addr)
 	return 0;
 }
 
+static void comphy_mux_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map)
+{
+	void __iomem *comphy_base_addr;
+	struct comphy_map comphy_map_pipe_data[MAX_LANE_OPTIONS];
+	struct comphy_map comphy_map_phy_data[MAX_LANE_OPTIONS];
+	u32 lane, comphy_max_count;
+
+	comphy_max_count = ptr_chip_cfg->comphy_lanes_count;
+	comphy_base_addr = ptr_chip_cfg->comphy_base_addr;
+
+	/* Copy the SerDes map configuration for PIPE map and PHY map
+	   the comphy_mux_init modify the type of the lane if the type is not valid
+	   because we have 2 selectores run the comphy_mux_init twice and after
+	   that update the original serdes_map */
+	for (lane = 0; lane < comphy_max_count; lane++) {
+		comphy_map_pipe_data[lane].type = serdes_map[lane].type;
+		comphy_map_pipe_data[lane].speed = serdes_map[lane].speed;
+		comphy_map_phy_data[lane].type = serdes_map[lane].type;
+		comphy_map_phy_data[lane].speed = serdes_map[lane].speed;
+	}
+	ptr_chip_cfg->mux_data = cp110_comphy_phy_mux_data;
+	comphy_mux_init(ptr_chip_cfg, comphy_map_phy_data, comphy_base_addr + COMMON_SELECTOR_PHY_OFFSET);
+
+	ptr_chip_cfg->mux_data = cp110_comphy_pipe_mux_data;
+	comphy_mux_init(ptr_chip_cfg, comphy_map_pipe_data, comphy_base_addr + COMMON_SELECTOR_PIPE_OFFSET);
+	/* Fix the type after check the PHY and PIPE configuration */
+	for (lane = 0; lane < comphy_max_count; lane++)
+		if (comphy_map_pipe_data[lane].type == UNCONNECTED && comphy_map_phy_data[lane].type == UNCONNECTED)
+			serdes_map[lane].type = UNCONNECTED;
+}
 int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map)
 {
 	struct comphy_map *ptr_comphy_map;
@@ -60,6 +119,8 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 
 	comphy_max_count = ptr_chip_cfg->comphy_lanes_count;
 	hpipe_base_addr = ptr_chip_cfg->hpipe3_base_addr;
+
+	comphy_mux_cp110_init(ptr_chip_cfg, serdes_map);
 
 	/* Check if the first 4 lanes configured as By-4 */
 	for (lane = 0, ptr_comphy_map = serdes_map; lane < 4; lane++, ptr_comphy_map++) {

@@ -96,6 +96,7 @@ u32 comphy_init(const void *blob);
 int comphy_a38x_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *comphy_map_data);
 #elif defined(CONFIG_TARGET_ARMADA_8K)
 int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map);
+int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map);
 #elif defined(CONFIG_TARGET_ARMADA_LP)
 int comphy_a3700_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map);
 #endif

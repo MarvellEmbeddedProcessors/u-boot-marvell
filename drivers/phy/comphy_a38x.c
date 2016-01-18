@@ -27,6 +27,8 @@
 #define COMMON_PHY_CONFIGURATION2_REG           0x4
 #define COMMON_PHY_CONFIGURATION4_REG           0xC
 
+#define COMMON_PHY_SELECTOR_OFFSET		0xFC
+
 struct comphy_mux_data a38x_comphy_mux_data[] = {
 	{4, {{UNCONNECTED, 0x0}, {PEX0, 0x1}, {SATA0, 0x2}, {SGMII0, 0x3} } },
 	{8, {{UNCONNECTED, 0x0}, {PEX0, 0x1}, {PEX0, 0x2}, {SATA0, 0x3},
@@ -82,25 +84,24 @@ static u32 comphy_mux_get_mux_value(struct comphy_mux_data *mux_data, enum phy_t
 }
 
 static void comphy_mux_reg_write(struct comphy_mux_data *mux_data,
-		struct comphy_map *comphy_map_data, int comphy_max_lanes, void __iomem *base_addr, u32 bitcount)
+		struct comphy_map *comphy_map_data, int comphy_max_lanes, void __iomem *selector_base, u32 bitcount)
 {
 	u32 lane, value, offset, mask;
-	void __iomem *comphy_selector_base = base_addr + 0xfc;
 
 	debug_enter();
 	for (lane = 0; lane < comphy_max_lanes; lane++, comphy_map_data++, mux_data++) {
 		offset = lane * bitcount;
 		mask = (((1 << bitcount) - 1) << offset);
 		value = (comphy_mux_get_mux_value(mux_data, comphy_map_data->type, lane) << offset);
-		reg_set(comphy_selector_base, value, mask);
+		reg_set(selector_base, value, mask);
 	}
 	debug_exit();
 }
 
-static void comphy_mux_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *comphy_map_data)
+static void comphy_mux_init(struct chip_serdes_phy_config *ptr_chip_cfg,
+		struct comphy_map *comphy_map_data, void __iomem *selector_base)
 {
 	struct comphy_mux_data *mux_data;
-	void __iomem *comphy_base;
 	u32 mux_bitcount;
 	u32 comphy_max_lanes;
 
@@ -108,13 +109,12 @@ static void comphy_mux_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct 
 
 	comphy_max_lanes = ptr_chip_cfg->comphy_lanes_count;
 	mux_data = ptr_chip_cfg->mux_data;
-	comphy_base = ptr_chip_cfg->comphy_base_addr;
 	mux_bitcount = ptr_chip_cfg->comphy_mux_bitcount;
 
 	/* check if the configuration is valid */
 	comphy_mux_check_config(mux_data, comphy_map_data, comphy_max_lanes);
 	/* Init COMPHY selectors */
-	comphy_mux_reg_write(mux_data, comphy_map_data, comphy_max_lanes, comphy_base, mux_bitcount);
+	comphy_mux_reg_write(mux_data, comphy_map_data, comphy_max_lanes, selector_base, mux_bitcount);
 
 	debug_exit();
 }
@@ -194,7 +194,7 @@ int comphy_a38x_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_
 	/* PHY mux initialize */
 	ptr_chip_cfg->mux_data = a38x_comphy_mux_data;
 	if (ptr_chip_cfg->comphy_base_addr != 0)
-		comphy_mux_init(ptr_chip_cfg, serdes_map);
+		comphy_mux_init(ptr_chip_cfg, serdes_map, ptr_chip_cfg->comphy_base_addr + COMMON_PHY_SELECTOR_OFFSET);
 
 	comphy_max_count = ptr_chip_cfg->comphy_lanes_count;
 	comphy_base_addr = ptr_chip_cfg->comphy_base_addr;

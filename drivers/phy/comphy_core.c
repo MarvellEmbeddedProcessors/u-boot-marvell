@@ -58,8 +58,9 @@ struct chip_serdes_phy_config *get_chip_config(enum fdt_compat_id compat)
 static char *get_speed_string(enum phy_speed speed)
 {
 	char *speed_strings[] = {"1.25Gbps", "1.5Gbps", "2.5Gbps", "3.0Gbps",
-				"3.25Gbps", "5Gbps", "6Gbps", "6.25Gbps"};
-	if (speed < __1_25gbps || speed > __6_25gbps)
+				"3.25Gbps", "5Gbps", "6Gbps", "6.25Gbps",
+				"10.315Gbps" };
+	if (speed < __1_25gbps || speed > __10_3125gbps)
 		return "invalid";
 	return speed_strings[speed];
 }
@@ -68,9 +69,10 @@ static char *get_type_string(enum phy_type type)
 {
 	char *type_strings[] = {"unconnected", "PEX0", "PEX1", "PEX2", "PEX3",
 				"SATA0", "SATA1", "SATA2", "SATA3", "SGMII0",
-				"SGMII1", "SGMII2", "QSGMII", "USB3_HOST0",
-				"USB3_HOST1", "USB3_DEVICE", "XAUI", "RXAUI"};
-	if (type < UNCONNECTED || type > RXAUI)
+				"SGMII1", "SGMII2", "SGMII3", "QSGMII", "USB3_HOST0",
+				"USB3_HOST1", "USB3_DEVICE", "XAUI0", "XAUI1",
+				"XAUI2", "XAUI3", "RXAUI0", "RXAUI1", "KR"};
+	if (type < UNCONNECTED || type > KR)
 		return "invalid";
 	return type_strings[type];
 }

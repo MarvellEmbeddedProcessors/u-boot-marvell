@@ -95,8 +95,8 @@
 					Lane 1: SATA0
 					Lane 2: SGMII0
 					Lane 3: SGMII2
-					Lane 4: RXAUI
-					Lane 5: RXAUI
+					Lane 4: RXAUI0
+					Lane 5: RXAUI1
 				*/
 				phy0 {
 					phy-type = <PHY_TYPE_PEX0>;
@@ -115,11 +115,11 @@
 					phy-speed = <PHY_SPEED_1_25G>;
 				};
 				phy4 {
-					phy-type = <PHY_TYPE_RXAUI>;
+					phy-type = <PHY_TYPE_RXAUI0>;
 					phy-speed = <PHY_SPEED_6_25G>;
 				};
 				phy5 {
-					phy-type = <PHY_TYPE_RXAUI>;
+					phy-type = <PHY_TYPE_RXAUI1>;
 					phy-speed = <PHY_SPEED_6_25G>;
 				};
 			};

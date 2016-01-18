@@ -25,13 +25,6 @@
 
 #define HPIPE_ADDR(base, lane)		(base + 0x800 * lane)
 
-static void comphy_mux_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *comphy_map_data)
-{
-	debug_enter();
-	printf("COMPHY mux init\n");
-	debug_exit();
-}
-
 static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_addr)
 {
 	debug_enter();
@@ -67,8 +60,6 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 
 	comphy_max_count = ptr_chip_cfg->comphy_lanes_count;
 	hpipe_base_addr = ptr_chip_cfg->hpipe3_base_addr;
-
-	comphy_mux_init(ptr_chip_cfg, serdes_map);
 
 	/* Check if the first 4 lanes configured as By-4 */
 	for (lane = 0, ptr_comphy_map = serdes_map; lane < 4; lane++, ptr_comphy_map++) {

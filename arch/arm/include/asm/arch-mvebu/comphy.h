@@ -101,7 +101,9 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 int comphy_a3700_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map);
 #endif
 
-
+/* MUX function */
+void comphy_mux_init(struct chip_serdes_phy_config *ptr_chip_cfg,
+		struct comphy_map *comphy_map_data, void __iomem *selector_base);
 
 void comphy_pcie_config_set(u32 comphy_max_count, struct comphy_map *serdes_map);
 void comphy_pcie_config_detect(u32 comphy_max_count, struct comphy_map *serdes_map);

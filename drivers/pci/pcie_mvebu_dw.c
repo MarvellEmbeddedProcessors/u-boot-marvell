@@ -40,7 +40,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define PCIE_DEVICE_TYPE_MASK		(0xF)
 #define PCIE_DEVICE_TYPE_EP		(0x0) /* Endpoint */
 #define PCIE_DEVICE_TYPE_LEP		(0x1) /* Legacy endpoint */
-#define PCIE_DEVICE_TYPE_RC		(0x2) /* Root complex */
+#define PCIE_DEVICE_TYPE_RC		(0x4) /* Root complex */
 
 #define PCIE_GLOBAL_STATUS		0x8008
 #define PCIE_GLB_STS_RDLH_LINK_UP	(1 << 1)

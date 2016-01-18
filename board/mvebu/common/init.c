@@ -28,24 +28,13 @@
 #include <asm/arch-mvebu/mpp.h>
 #include <asm/arch-mvebu/system_info.h>
 #include <asm/arch-mvebu/mbus.h>
+#include <asm/arch-mvebu/fdt.h>
 #include "board.h"
 #ifdef CONFIG_DEVEL_BOARD
 #include "devel-board.h"
 #endif
-#ifdef CONFIG_MULTI_DT_FILE
-#include "fdt_eeprom.h"
-#endif
 
 DECLARE_GLOBAL_DATA_PTR;
-
-#ifdef CONFIG_MULTI_DT_FILE
-static int mvebu_setup_fdt(void)
-{
-	/* Get a pointer to the FDT */
-	gd->fdt_blob = mvebu_fdt_config_init();
-	return 0;
-}
-#endif
 
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)

@@ -115,6 +115,5 @@ struct  fdt_config_types_info {
 	bool upload_fdt_from_flash(u8 fdt_config_id);
 	bool upload_fdt_from_eeprom(void);
 	void write_fdt_struct_to_eeprom(void);
-	u8 *mvebu_fdt_config_init(void);
 
 #endif

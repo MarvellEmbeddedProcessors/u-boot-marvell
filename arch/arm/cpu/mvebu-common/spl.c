@@ -22,35 +22,10 @@
 #include <i2c.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/spl.h>
-#ifdef CONFIG_MULTI_DT_FILE
-#include "../../../../board/mvebu/common/fdt_eeprom.h"
-#endif
 
 #ifdef CONFIG_MVEBU_SPL_SAR_DUMP
 extern void mvebu_sar_dump_reg(void);
 #endif
-
-static int setup_fdt(void)
-{
-#ifdef CONFIG_OF_CONTROL
-#ifdef CONFIG_OF_EMBED
-	/* Get a pointer to the FDT */
-	gd->fdt_blob = __dtb_dt_begin;
-#else
-	#error "Support only embedded FDT mode in SPL"
-#endif
-#endif
-	return 0;
-}
-
-#ifdef CONFIG_MULTI_DT_FILE
-static int mvebu_setup_fdt(void)
-{
-	gd->fdt_blob = mvebu_fdt_config_init();
-	return 0;
-}
-#endif
-
 
 void board_init_f(ulong silent)
 {

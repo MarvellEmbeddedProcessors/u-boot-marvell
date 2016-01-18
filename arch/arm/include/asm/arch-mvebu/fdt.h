@@ -26,6 +26,13 @@ struct fdt_range {
 	u32 size;
 };
 
+int setup_fdt(void);
+
+#ifdef CONFIG_MULTI_DT_FILE
+int mvebu_setup_fdt(void);
+u8 *mvebu_fdt_config_init(void);
+#endif
+
 void *fdt_get_regs_offs(const void *blob, int node, const char *prop_name);
 void *fdt_get_regs_base(const void *blob, int node, uintptr_t reg);
 void *fdt_get_reg_offs_by_compat(enum fdt_compat_id compat_id);

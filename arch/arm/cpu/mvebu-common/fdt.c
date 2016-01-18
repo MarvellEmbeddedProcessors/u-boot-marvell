@@ -21,6 +21,28 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+int setup_fdt(void)
+{
+#ifdef CONFIG_OF_CONTROL
+#ifdef CONFIG_OF_EMBED
+	/* Get a pointer to the FDT */
+	gd->fdt_blob = __dtb_dt_begin;
+#else
+	#error "Support only embedded FDT mode in SPL"
+#endif
+#endif
+	return 0;
+}
+
+#ifdef CONFIG_MULTI_DT_FILE
+int mvebu_setup_fdt(void)
+{
+	gd->fdt_blob = mvebu_fdt_config_init();
+	return 0;
+}
+#endif
+
+
 void *fdt_get_regs_offs(const void *blob, int node, const char *prop_name)
 {
 	uintptr_t reg;

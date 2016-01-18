@@ -158,7 +158,6 @@ static int dw_pcie_read_config(struct pci_controller *hose, pci_dev_t bdf,
 
 	va_address = set_cfg_address(hose, (uintptr_t)hose->priv_data, bdf, where);
 
-	writel(0xffffffff, val);
 	*val = readl(va_address);
 
 	debug("(addr,val)=(0x%04x, 0x%08x)\n", where, (*val));

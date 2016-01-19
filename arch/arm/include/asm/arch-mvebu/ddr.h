@@ -34,6 +34,7 @@ struct mvebu_dram_config {
 	u32 cs_count;
 	u32 bus_width;
 	u32 size_mb;
+	u32 freq_mhz;
 };
 void mvebu_dram_init(const void *blob);
 void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config);

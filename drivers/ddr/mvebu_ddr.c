@@ -22,6 +22,7 @@
 #include <asm/arch-mvebu/ddr.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/fdt.h>
+#include <asm/arch-mvebu/clock.h>
 
 #ifdef CONFIG_MVEBU_DYNAMIC_SUPPORT
 #include <mvHwsDdrMckTraining.h>
@@ -95,6 +96,8 @@ void mvebu_dram_init(const void *blob)
 		error("missing DDR PHY base address in DDR PHY node\n");
 		return;
 	}
+
+	config->freq_mhz = soc_ddr_clk_get() / MHz;
 
 #ifdef CONFIG_MVEBU_STATIC_SUPPORT
 	static_dram_init(config);

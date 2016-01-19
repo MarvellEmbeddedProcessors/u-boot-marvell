@@ -21,4 +21,8 @@
 
 int run_memory_test(void);
 
+#ifdef CONFIG_MVEBU_SPL_SAR_DUMP
+void mvebu_sar_dump_reg(void);
+#endif
+
 #endif /* _MVEBU_TOOLS_H_ */

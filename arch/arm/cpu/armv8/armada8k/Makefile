@@ -17,7 +17,7 @@
 #
 
 obj-y += soc.o
-obj-y += spl.o
+obj-$(CONFIG_SPL_BUILD) += spl.o
 obj-y += clock.o
 obj-$(CONFIG_ARMV8_PSCI)	+= psci.o
 obj-$(CONFIG_MVEBU_LLC_ENABLE)	+= cache_llc.o

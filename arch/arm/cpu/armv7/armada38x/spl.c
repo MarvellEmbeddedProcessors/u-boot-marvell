@@ -22,13 +22,20 @@
 #include <asm/arch-mvebu/tools.h>
 #include <asm/arch-mvebu/ddr.h>
 #include <asm/arch-mvebu/mbus.h>
+#include <asm/arch-mvebu/fdt.h>
+#include <spl.h>
 
-void early_spl_init(void)
+void board_init_f(ulong silent)
 {
-}
+	gd = &gdata;
+	gd->baudrate = CONFIG_BAUDRATE;
 
-void late_spl_init(void)
-{
+	/* Update the pointer to the default FDT, this is necessary only to config i2c*/
+	setup_fdt();
+
+	preloader_console_init();
+
+	/* Init all relevant drivers (e.g. DDR, comphy...) */
 #ifdef CONFIG_MVEBU_COMPHY_SUPPORT
 	if (comphy_init(gd->fdt_blob))
 		error("COMPHY initialization failed\n");
@@ -36,14 +43,4 @@ void late_spl_init(void)
 #ifndef CONFIG_PALLADIUM
 	mvebu_dram_init(gd->fdt_blob);
 #endif
-
-#ifdef CONFIG_MVEBU_MBUS
-	init_mbus();
-#endif
-}
-
-void soc_spl_jump_uboot(void)
-{
-	/* Armada-8k return to bootrom */
-	return;
 }

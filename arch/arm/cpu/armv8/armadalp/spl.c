@@ -25,11 +25,39 @@
 #include <asm/arch-armadalp/gpio.h>
 #include <asm/arch-mvebu/mvebu_misc.h>
 #include <asm/arch-mvebu/ddr.h>
+#include <asm/arch-mvebu/fdt.h>
+#include <spl.h>
 
 void (*ptr_uboot_start)(void);
 
-void early_spl_init(void)
+void board_init_f(ulong silent)
 {
+	gd = &gdata;
+	gd->baudrate = CONFIG_BAUDRATE;
+
+	/* Silence flag is not supported by CM3 WTP BootROM */
+	gd->flags &= ~GD_FLG_SILENT;
+
+	/* isetup_fdt set default FDT to work with:
+	   - customer/regular mode: point to the defined
+	     FDT by CONFIG_DEFAULT_DEVICE_TREE.
+	   - Marvell multi FDT mode: set the first compiled relevant device
+	     tree for the SoC, required for i2c initialization to read EEPROM data */
+	setup_fdt();
+
+#ifdef CONFIG_MULTI_DT_FILE
+	/* Update gd->fdt_blob according to multi-fdt data in eeprom */
+	mvebu_setup_fdt();
+#endif
+
+	/* UART1 and UART2 clocks are sourced from XTAL by default
+	* (see RD0012010 register for the details). Additionally the GPIO
+	* control (RD0013830) sets the GPIO1[26:25] as the UART1 pins by default.
+	* Therefore it is safe to start using UART before call to early_spl_init()
+	*/
+	preloader_console_init();
+
+	/* Init all drivers requred at early stage (clocks, GPIO...) */
 #ifdef CONFIG_MVEBU_SPL_A3700_GPIO
 	mvebu_init_gpio();
 #endif
@@ -42,10 +70,8 @@ void early_spl_init(void)
 #ifdef CONFIG_MVEBU_A3700_MISC_INIT
 	misc_init_cci400();
 #endif
-}
 
-void late_spl_init(void)
-{
+	/* Init all relevant drivers (e.g. DDR, comphy...) */
 #ifdef CONFIG_MVEBU_COMPHY_SUPPORT
 	if (comphy_init(gd->fdt_blob))
 		error("COMPHY initialization failed\n");
@@ -61,12 +87,10 @@ void late_spl_init(void)
 #ifdef CONFIG_MVEBU_A3700_IO_ADDR_DEC
 	init_io_addr_dec();
 #endif
-}
 
-void soc_spl_jump_uboot(void)
-{
 	debug("SPL processing done. Jumping to u-boot\n\n");
 	ptr_uboot_start = 0;
 	/* Jump from SPL to u-boot start address */
 	ptr_uboot_start();
 }
+

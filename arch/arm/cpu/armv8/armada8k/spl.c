@@ -25,17 +25,41 @@
 #include <asm/arch-mvebu/ccu.h>
 #include <asm/arch-mvebu/rfu.h>
 #include <asm/arch-mvebu/flc.h>
+#include <asm/arch-mvebu/fdt.h>
+#include <spl.h>
 
-void early_spl_init(void)
+void board_init_f(ulong silent)
 {
-}
+	gd = &gdata;
+	gd->baudrate = CONFIG_BAUDRATE;
 
-void late_spl_init(void)
-{
+	if (silent)
+		gd->flags |= GD_FLG_SILENT;
+
+	/* isetup_fdt set default FDT to work with:
+	   - customer/regular mode: point to the defined
+	     FDT by CONFIG_DEFAULT_DEVICE_TREE.
+	   - Marvell multi FDT mode: set the first compiled relevant device
+	     tree for the SoC, required for i2c initialization to read EEPROM data */
+	setup_fdt();
+
+#ifdef CONFIG_MULTI_DT_FILE
+	/* Update gd->fdt_blob according to multi-fdt data in eeprom */
+	mvebu_setup_fdt();
+#endif
+
+	preloader_console_init();
+
+#ifdef CONFIG_MVEBU_SPL_SAR_DUMP
+	/* Sample at reset dump register */
+	mvebu_sar_dump_reg();
+#endif
+
+	/* Init all relevant drivers (e.g. DDR, comphy...) */
 #ifndef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
-/* when DDR over PCIE is enabled, add delay before and after the comphy_init
-   to verify that the PCIE card init done, before setting the comphy to avoid
-   collisions. and no ddr init require */
+	/* when DDR over PCIE is enabled, add delay before and after the comphy_init
+	   to verify that the PCIE card init done, before setting the comphy to avoid
+	   collisions. and no ddr init require */
 #ifdef CONFIG_MVEBU_COMPHY_SUPPORT
 	if (comphy_init(gd->fdt_blob))
 		error("COMPHY initialization failed\n");
@@ -57,10 +81,12 @@ void late_spl_init(void)
 #endif
 	init_flc();
 #endif
+
+#ifdef CONFIG_MVEBU_SPL_MEMORY_TEST
+	/* Momory test */
+	if (run_memory_test())
+		printf("**** DRAM test failed ****\n");
+#endif
 }
 
-void soc_spl_jump_uboot(void)
-{
-	/* Armada-8k return to bootrom */
-	return;
-}
+

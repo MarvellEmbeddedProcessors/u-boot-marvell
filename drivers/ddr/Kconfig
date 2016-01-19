@@ -54,5 +54,13 @@ config MVEBU_MK6_SUPPORT
 	  to add this option to SPL code,
 	  need to add +S:CONFIG_MVEBU_MK6_SUPPORT to defconfig file
 
+config MVEBU_DLL_TUNE_SUPPORT
+	  bool "Support for DDR DLL tune"
+	  depends on MVEBU_MK6_SUPPORT
+	  help
+	  Choose this option to add support
+	  for DDR DLL tune procedure support
+
+
 endchoice
 endmenu

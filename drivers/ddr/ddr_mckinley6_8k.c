@@ -1173,3 +1173,9 @@ void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config)
 #endif
 	debug_exit();
 }
+
+
+void mvebu_dram_dll_tune(struct mvebu_dram_config *dram_config)
+{
+	return;
+}

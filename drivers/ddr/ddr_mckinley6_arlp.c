@@ -79,6 +79,9 @@ void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config)
 	struct mvebu_mckinley_config *mac_config = &mckinley_mac_config[0];
 	u32 freq_indx, reg, idx, size;
 
+	/* This function has to be re-implemented for ArLP. Currently it is invalid */
+	return;
+
 	debug_enter();
 	debug("Set bypass to clock gate: 0xF06f0098 - 0x0040004e\n");
 	writel(0x0040004e, 0xF06f0098);
@@ -168,6 +171,9 @@ void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config)
 	void __iomem *base_addr = dram_config->phy_base;
 	struct mvebu_mckinley_config *phy_config = &mckinley_phy_config[0];
 	u32 freq_indx, reg, cs_mask;
+
+	/* This function has to be re-implemented for ArLP. Currently it is invalid */
+	return;
 
 	debug_enter();
 	/* for now set the frequency to 650 (index 0) */

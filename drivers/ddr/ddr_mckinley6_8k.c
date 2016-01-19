@@ -22,29 +22,7 @@
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/ddr.h>
 #include <asm/arch-mvebu/system_info.h>
-
-#define MCK6_USER_COMMAND_0_REG	(0x20)
-#define SDRAM_INIT_REQ_MASK	(0x1)
-#define CMD_CH_ENABLE(c)	(1 << (28 + c))
-#define CMD_CS_MASK(m)		((m) << 24)
-
-#define MCK6_CTRL_0_REG		(0x44)
-#define CTRL_DATA_WIDTH_OFFSET	8
-#define CTRL_DATA_WIDTH_MASK	(0xF << 8)
-#define BUS_WIDTH_2_IDX(w)	(((w) <= 16) ? ((w) / 8) : (((w) / 32) + 2))
-#define CTRL_DATA_WIDTH(w)	(BUS_WIDTH_2_IDX(w) << 8)
-#define CTRL_DATA_WIDTH_CALC(v)	(1 << ((v) + 2))
-
-#define MCK6_MMAP0_LOW_CH(i)	(0x200 + 8*(i))
-#define MMAP_AREA_LEN_OFFSET	16
-#define MMAP_AREA_LEN_MASK	(0x1F << 16)
-#define MMAP_AREA_LEN(x)	((x) << 16)
-
-#define mck6_writel(v, c)					\
-	do {							\
-		debug("0x%p - 0x08%x\n", c, v);			\
-		writel(v, c);					\
-	} while (0)
+#include "ddr_mckinley6.h"
 
 enum mvebu_mck_freq_support {
 	FREQ_650_HZ = 0,

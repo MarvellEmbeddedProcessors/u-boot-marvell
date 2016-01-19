@@ -22,38 +22,8 @@
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/ddr.h>
 #include <asm/arch-mvebu/system_info.h>
+#include "ddr_mckinley6.h"
 
-#define MCK6_USER_COMMAND_0_REG	(0x20)
-#define SDRAM_INIT_REQ_MASK	(0x1)
-#define CMD_CH_ENABLE(c)	(1 << (28 + c))
-#define CMD_CS_MASK(m)		((m) << 24)
-
-#define MCK6_CTRL_0_REG		(0x44)
-#define CTRL_DATA_WIDTH_OFFSET	8
-#define CTRL_DATA_WIDTH_MASK	(0xF << 8)
-#define BUS_WIDTH_2_IDX(w)	(((w) <= 16) ? ((w) / 8) : (((w) / 32) + 2))
-#define CTRL_DATA_WIDTH(w)	(BUS_WIDTH_2_IDX(w) << 8)
-#define CTRL_DATA_WIDTH_CALC(v)	(1 << ((v) + 2))
-
-#define MCK6_MMAP0_LOW_CH(i)	(0x200 + 8*(i))
-#define MMAP_AREA_LEN_OFFSET	16
-#define MMAP_AREA_LEN_MASK	(0x1F << 16)
-#define MMAP_AREA_LEN(x)	((x) << 16)
-
-/* DLL Tune definitions */
-#define DLL_PHSEL_START			0x00
-#define DLL_PHSEL_END			0x3F
-#define DLL_PHSEL_STEP			0x1
-#define MC6_CH0_PHY_CONTROL_8		(0x1C)
-#define MC6_CH0_PHY_CONTROL_9		(0x20)
-#define MC6_CH0_PHY_DLL_CONTROL_B0	(0x50)
-#define SDRAM_DIRECT_START		(0x6000000)
-
-#define mck6_writel(v, c)		\
-do {							\
-	debug("0x%p - 0x08%x\n", c, v);	\
-	writel(v, c);					\
-} while (0)
 
 enum mvebu_mck_freq_support {
 	FREQ_650_HZ = 0,
@@ -202,30 +172,34 @@ static void mvebu_dram_dll_set(unsigned short dll_phsel, unsigned short dll_phse
 
 	debug("set dll_phsel=%#x, dll_phsel1=%#x\n", dll_phsel, dll_phsel1);
 
-	mck6_writel((dll_phsel << 16) | (dll_phsel1 << 24), base_addr + MC6_CH0_PHY_DLL_CONTROL_B0 + 0);
-	mck6_writel((dll_phsel << 16) | (dll_phsel1 << 24), base_addr + MC6_CH0_PHY_DLL_CONTROL_B0 + 4);
-	mck6_writel((dll_phsel << 16) | (dll_phsel1 << 24), base_addr + MC6_CH0_PHY_DLL_CONTROL_B0 + 8);
-	mck6_writel((dll_phsel << 16) | (dll_phsel1 << 24), base_addr + MC6_CH0_PHY_DLL_CONTROL_B0 + 12);
+	mck6_writel((dll_phsel << DLL_PHASE_POS_SHIFT) |
+		    (dll_phsel1 << DLL_PHASE_NEG_SHIFT), base_addr + MC6_CH0_PHY_DLL_CONTROL_B0 + 0);
+	mck6_writel((dll_phsel << DLL_PHASE_POS_SHIFT) |
+		    (dll_phsel1 << DLL_PHASE_NEG_SHIFT), base_addr + MC6_CH0_PHY_DLL_CONTROL_B0 + 4);
+	mck6_writel((dll_phsel << DLL_PHASE_POS_SHIFT) |
+		    (dll_phsel1 << DLL_PHASE_NEG_SHIFT), base_addr + MC6_CH0_PHY_DLL_CONTROL_B0 + 8);
+	mck6_writel((dll_phsel << DLL_PHASE_POS_SHIFT) |
+		    (dll_phsel1 << DLL_PHASE_NEG_SHIFT), base_addr + MC6_CH0_PHY_DLL_CONTROL_B0 + 12);
 
 	/* Updates DLL master. Block read/MMR for 4096 MCLK cycles to guarantee DLL lock.
 	   Either wait 4096 MCLK (memPll/4) cycles, or check DLL lock status
 	 */
-	mck6_writel(0x20000000, base_addr + MC6_CH0_PHY_CONTROL_9);
+	mck6_writel(PHY_DLL_RESET, base_addr + MC6_CH0_PHY_CONTROL_9);
 
 	/* Reset PHY DLL. Dll_reset_timer ([31:24] of PHY Control Register 8,
 	   Offset 0x41C/0xC1C) is set to 0x10, reset DLL for 128*32=4096 MCLK cycles.
 	 */
-	udelay(100);
+	udelay(DLL_RESET_WAIT_US);
 
 	/* Copy DLL master to DLL slave. Slave controls the actual delay_l.
 	   Both DLL bypass and DLL needs 'update'.
 	 */
-	mck6_writel(0x40000000, base_addr + MC6_CH0_PHY_CONTROL_9);
+	mck6_writel(DLL_UPDATE_EN_PULSE, base_addr + MC6_CH0_PHY_CONTROL_9);
 
 	/* Update Dll delay_l. When Dll_update_timer ([20:16] of PHY Control Register 8,
 	   Offset 0x41C/0xC1C) is 0x11, assert DLL_UPDATE_EN pin for 0x11*16 = 272 MCLK cycles.
 	 */
-	udelay(50);
+	udelay(DLL_UPDATE_WAIT_US);
 
 	/* KW Finish DLL update*/
 	mck6_writel(0x0, base_addr + MC6_CH0_PHY_CONTROL_9);
@@ -256,7 +230,7 @@ static unsigned short mvebu_dram_dll_search(unsigned short dll, unsigned short r
 {
 	unsigned short dll_var, dll_phsel, dll_phsel1;
 	unsigned int   optimal_rd_dll;
-	unsigned int   MIN_RD_DLL = 0xffff, MAX_RD_DLL = 0xffff;
+	unsigned int   MIN_RD_DLL = 0xFFFF, MAX_RD_DLL = 0xFFFF;
 
 	debug_enter();
 
@@ -274,24 +248,24 @@ static unsigned short mvebu_dram_dll_search(unsigned short dll, unsigned short r
 		/* Set dll */
 		mvebu_dram_dll_set(dll_phsel, dll_phsel1, base_addr);
 
-		if (!mvebu_dram_dll_wr_test(SDRAM_DIRECT_START, 1024 * 2)) {/*pass test*/
-			if (MIN_RD_DLL == 0xffff)
+		if (!mvebu_dram_dll_wr_test(DRAM_DIRECT_START, DRAM_DIRECT_SIZE)) {/*pass test*/
+			if (MIN_RD_DLL == 0xFFFF)
 				MIN_RD_DLL = dll_var;
 			MAX_RD_DLL = dll_var;
 			debug("Search RD_DLL Pass: DDR CTL = %#x.\n", dll_var);
 		} else {
 			debug("Search RD_DLL fail: DDR CTL = %#x.\n", dll_var);
-			if (MIN_RD_DLL != 0xffff)
+			if (MIN_RD_DLL != 0xFFFF)
 				break;
 		}
 		debug(" RD_DLL = 0x%x.\n", dll_var);
-		if (dll_var == 0x3f)
+		if (dll_var == DLL_PHASE_SZ_MASK)
 			break;
 	} /* end of phase loop */
 
 	if (MIN_RD_DLL == 0xFFFF) {
 		debug("DDR: No DLL found.\n");
-		optimal_rd_dll = 0xffff;
+		optimal_rd_dll = 0xFFFF;
 	} else {
 		optimal_rd_dll =  (MAX_RD_DLL - MIN_RD_DLL)/2 + MIN_RD_DLL;
 		debug("DDR: end DLL tuning - MIN = %#x, MAX = %#x, optimal = %#x\n",
@@ -325,9 +299,10 @@ void mvebu_dram_dll_tune(struct mvebu_dram_config *dram_config)
 
 	dll = readl(base_addr + MC6_CH0_PHY_DLL_CONTROL_B0);
 	printf("DDR: start DLL tuning with initial phase delays (P) %#x, (N) %#x\n",
-		(dll >> 16) & 0x3F, (dll >> 24) & 0x3F);
+	(dll >> DLL_PHASE_POS_SHIFT) & DLL_PHASE_SZ_MASK,
+	(dll >> DLL_PHASE_NEG_SHIFT) & DLL_PHASE_SZ_MASK);
 
-	dll = (dll >> 16) & 0x3F;
+	dll = (dll >> DLL_PHASE_POS_SHIFT) & DLL_PHASE_SZ_MASK;
 	mck6_writel(0x0, base_addr + MC6_CH0_PHY_CONTROL_9);
 
 	/* Automatically update PHY DLL with interval time set in Dll_auto_update_interval
@@ -337,23 +312,23 @@ void mvebu_dram_dll_tune(struct mvebu_dram_config *dram_config)
 	/* Turn off Dll_auto_manual_update & Dll_auto_update_en
 	   DLL_auto_update_en has a known bug. Don't use.
 	 */
-	regval &= ~0xC;
+	regval &= ~(DLL_AUTO_UPDATE_EN | DLL_AUTO_MANUAL_UPDATE);
 	/* change Dll_reset_timer to 128*32 cycles*/
-	regval |= 0x80000000;
+	regval |= DLL_RESET_TIMER(DLL_RST_TIMER_VAL);
 	mck6_writel(regval, base_addr + MC6_CH0_PHY_CONTROL_8);
 	dll_median = mvebu_dram_dll_search(0, 0, base_addr);
 
-	if (dll_median == 0xffff) {
+	if (dll_median == 0xFFFF) {
 		status = 1;
 	} else {/* Find Neg dll */
 		dll_phsel1 = mvebu_dram_dll_search(dll_median, 1, base_addr);
 
-		if (dll_phsel1 == 0xffff) {
+		if (dll_phsel1 == 0xFFFF) {
 			status = 1;
 		} else {/* Find Pos dll */
 			dll_phsel = mvebu_dram_dll_search(dll_phsel1, 2, base_addr);
 
-			if (dll_phsel == 0xffff)
+			if (dll_phsel == 0xFFFF)
 				status = 1;
 		}
 	}

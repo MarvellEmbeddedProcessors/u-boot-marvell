@@ -39,6 +39,8 @@
 #define MMAP_AREA_LEN_MASK		(0x1F << 16)
 #define MMAP_AREA_LEN(x)		((x) << 16)
 
+#define DRAM_INIT_TIMEOUT		1000
+
 /* DLL Tune definitions */
 #define DLL_PHSEL_START			0x00
 #define DLL_PHSEL_END			0x3F

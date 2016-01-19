@@ -22,25 +22,111 @@
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/ddr.h>
 #include <asm/arch-mvebu/system_info.h>
+#include <asm/arch-armadalp/misc-regs.h>
 #include "ddr_mckinley6.h"
 
-
 enum mvebu_mck_freq_support {
-	FREQ_650_HZ = 0,
-	MAX_HZ_SUPPORTED,
+	FREQ_600_MHZ = 0,
+	FREQ_800_MHZ = 1,
+	MAX_MHZ_SUPPORTED,
 };
 
 struct mvebu_mckinley_config {
 	u32 reg_offset;
-	u32 values[MAX_HZ_SUPPORTED];
+	u32 values[MAX_MHZ_SUPPORTED];
 };
 
 struct mvebu_mckinley_config mckinley_mac_config[] = {
-	{ -1, { -1} }
+	{ 0x340, {0x0f0f0fef, 0x0f0f0fef} },
+	{ 0x344, {0x100000aa, 0x100000aa} },
+	{ 0x310, {0x00200000, 0x00200000} },
+	{ 0x304, {0x00000000, 0x00000000} },
+	{ 0x308, {0x00000000, 0x00000000} },
+	{ 0x200, {0x000E0001, 0x000E0001} },
+	{ 0x204, {0x00000000, 0x00000000} },
+	{ 0x220, {0x13020532, 0x13020532} },
+	{ 0x044, {0x00030200, 0x00030200} },
+	{ 0x2C0, {0x00006000, 0x00006000} },
+	{ 0x2C4, {0x00100020, 0x00100020} },
+	{ 0x058, {0x0000143f, 0x0000143f} },
+	{ 0x048, {0x00000001, 0x00000001} },
+	{ 0x180, {0x00010200, 0x00010200} },
+	{ 0x050, {0x000001ff, 0x000001ff} },
+	{ 0x04C, {0x00000000, 0x00000000} },
+	{ 0x054, {0x00000480, 0x00000480} },
+	{ 0x300, {0x00000708, 0x0000080B} },
+	{ 0x380, {0x000001F5, 0x0007A120} },
+	{ 0x384, {0x000003E9, 0x00030D40} },
+	{ 0x388, {0x09600043, 0x0960006B} },
+	{ 0x38C, {0x00000200, 0x00000200} },
+	{ 0x390, {0x00400100, 0x00400100} },
+	{ 0x394, {0x006B03CF, 0x00F003CF} },
+	{ 0x398, {0x00720200, 0x00F80200} },
+	{ 0x39C, {0x00120707, 0x00000808} },
+	{ 0x3A0, {0x00040511, 0x00040614} },
+	{ 0x3A4, {0x00000001, 0x00000001} },
+	{ 0x3A8, {0x00000C04, 0x00000C04} },
+	{ 0x3AC, {0x15210919, 0x202A0C1F} },
+	{ 0x3B0, {0x090b0609, 0x0C0C060C} },
+	{ 0x3B4, {0x04000600, 0x04000600} },
+	{ 0x3B8, {0x00000600, 0x00000800} },
+	{ 0x3BC, {0x02020404, 0x02020404} },
+	{ 0x3C0, {0x00000000, 0x00000000} },
+	{ 0x3C4, {0x00000000, 0x00000000} },
+	{ 0x3DC, {0x00081239, 0x00081239} },
+	{ 0x2C8, {0x00000000, 0x00000000} },
+	{ 0x064, {0x00000006, 0x00000006} },
+	{ -1, {-1, -1} }
 };
 
 struct mvebu_mckinley_config mckinley_phy_config[] = {
-	{-1, {-1} },
+	{ 0x004, {0x10077779, 0x10077779} },
+	{ 0x008, {0x1ff00770, 0x1ff00770} },
+	{ 0x00C, {0x3f03fc77, 0x3f03fc77} },
+	{ 0x010, {0x00100118, 0x00100118} },
+	{ 0x028, {0x00000000, 0x00000000} },
+	{ 0x030, {0x03800000, 0x03800000} },
+	{ 0x034, {0x00000000, 0x00000000} },
+	{ 0x040, {0x00000400, 0x00000400} },
+	{ 0x0C0, {0x80000001, 0x80000001} },
+	{ 0x0D0, {0x00000000, 0x00000000} },
+	{ 0x0E0, {0x00011ff0, 0x00011ff0} },
+	{ 0x090, {0x00000000, 0x00000000} },
+	{ 0x094, {0x00000000, 0x00000000} },
+	{ 0x098, {0x00000000, 0x00000000} },
+	{ 0x09C, {0x00000000, 0x00000000} },
+	{ 0x0A0, {0x00000000, 0x00000000} },
+	{ 0x0A4, {0x00000000, 0x00000000} },
+	{ 0x0A8, {0x00000000, 0x00000000} },
+	{ 0x0AC, {0x00000000, 0x00000000} },
+	{ 0x0B0, {0x00000000, 0x00000000} },
+	{ 0x000, {0x00044041, 0x00044041} },
+	{ 0x014, {0x00080200, 0x00080200} },
+	{ 0x038, {0x00000002, 0x00000002} },
+	{ 0x03C, {0x00000010, 0x00000010} },
+	{ 0x180, {0x0000020a, 0x0000020a} },
+	{ 0x184, {0x0000020a, 0x0000020a} },
+	{ 0x188, {0x0000020a, 0x0000020a} },
+	{ 0x18C, {0x0000020a, 0x0000020a} },
+	{ 0x190, {0x0000020a, 0x0000020a} },
+	{ 0x194, {0x0000020a, 0x0000020a} },
+	{ 0x198, {0x0000020a, 0x0000020a} },
+	{ 0x19C, {0x0000020a, 0x0000020a} },
+	{ 0x1A0, {0x0000020a, 0x0000020a} },
+	{ 0x050, {0x08080000, 0x20200000} },
+	{ 0x054, {0x08080000, 0x20200000} },
+	{ 0x074, {0x20200000, 0x20200000} },
+	{ 0x058, {0x08080000, 0x08080000} },
+	{ 0x05C, {0x08080000, 0x08080000} },
+	{ 0x060, {0x08080000, 0x08080000} },
+	{ 0x064, {0x08080000, 0x08080000} },
+	{ 0x068, {0x08080000, 0x08080000} },
+	{ 0x06C, {0x08080000, 0x08080000} },
+	{ 0x070, {0x08080000, 0x08080000} },
+	{ 0x020, {0x20000000, 0x20000000} },
+	{ 0x020, {0x40000000, 0x40000000} },
+	{ 0x020, {0x80000000, 0x80000000} },
+	{-1, {-1, -1} },
 };
 
 void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config)
@@ -49,21 +135,40 @@ void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config)
 	struct mvebu_mckinley_config *mac_config = &mckinley_mac_config[0];
 	u32 freq_indx, reg, idx, size;
 
-	/* This function has to be re-implemented for ArLP. Currently it is invalid */
-	return;
-
 	debug_enter();
-	debug("Set bypass to clock gate: 0xF06f0098 - 0x0040004e\n");
-	writel(0x0040004e, 0xF06f0098);
-	debug("Enable vreg power-up: 0xF06F0108 - 0xFFFF0001\n");
-	writel(0xFFFF0001, 0xF06F0108);
-	debug("Enable channel 0: 0xF0841100 - 0x80000000\n");
-	writel(0x80000000, 0xF0841100);
 
-	/* for now set the frequency to 650 (index 0) */
-	freq_indx = 0;
+	debug("Set Power-down options: %#lX <<- %#X\n", MVEBU_NB_PM_PWRDWN_OPT_REG,
+	      L2_SRAM_LKG_PD_EN | CPU_ROM_PD_EN | AVS_DISABLE_MODE  | DDRPHY_PAD_PWRDWN_EN);
+	writel(L2_SRAM_LKG_PD_EN | CPU_ROM_PD_EN |
+	       AVS_DISABLE_MODE  | DDRPHY_PAD_PWRDWN_EN, MVEBU_NB_PM_PWRDWN_OPT_REG);
+
+	debug("Set DDR PHY mode: %#lX <<- %#X\n", MVEBU_AXI_DCTRL_CTRL_RST_REG, DDRPHY_MODE_SELECT);
+	writel(DDRPHY_MODE_SELECT, MVEBU_AXI_DCTRL_CTRL_RST_REG);
+
+	debug("Reset monitor signal select: %#lX - 0x0000000\n", MVEBU_AXI_DCTRL_MCM_SEL_REG);
+	writel(0x00000000, MVEBU_AXI_DCTRL_MCM_SEL_REG);
+
+	switch (dram_config->freq_mhz) {
+	case 600:
+		freq_indx = FREQ_600_MHZ;
+		break;
+	case 800:
+		freq_indx = FREQ_800_MHZ;
+		break;
+	default:
+		error("DDR MAC: Invalid DDR frequency %d. Falling into default value\n",
+		      dram_config->freq_mhz);
+		dram_config->freq_mhz = 600;
+		freq_indx = FREQ_600_MHZ;
+	}
+
+	debug("DDR MAC @ %d MHz\n", dram_config->freq_mhz);
+
+	/* Walk trough MAC static configurations array */
 	for (; mac_config->reg_offset != -1 ; mac_config++)
 		mck6_writel(mac_config->values[freq_indx], base_addr + mac_config->reg_offset);
+
+	debug("DDR MAC initialization done\n");
 
 	/* Override the above configurations, with user parameters. */
 	if (dram_config->bus_width != 0) {
@@ -141,16 +246,30 @@ void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config)
 	void __iomem *base_addr = dram_config->phy_base;
 	struct mvebu_mckinley_config *phy_config = &mckinley_phy_config[0];
 	u32 freq_indx, reg, cs_mask;
-
-	/* This function has to be re-implemented for ArLP. Currently it is invalid */
-	return;
+	s32 timeout;
 
 	debug_enter();
-	/* for now set the frequency to 650 (index 0) */
-	freq_indx = 0;
+
+	switch (dram_config->freq_mhz) {
+	case 600:
+		freq_indx = FREQ_600_MHZ;
+		break;
+	case 800:
+		freq_indx = FREQ_800_MHZ;
+		break;
+	default:
+		error("DDR PHY: Invalid DDR frequency %d. Falling into default 600MHz\n",
+		      dram_config->freq_mhz);
+		freq_indx = FREQ_600_MHZ;
+	}
+
+	debug("DDR PHY @ %d MHz\n", dram_config->freq_mhz);
+
+	/* Walk trough PHY static configurations array */
 	for (; phy_config->reg_offset != -1 ; phy_config++)
 		mck6_writel(phy_config->values[freq_indx], base_addr + phy_config->reg_offset);
 
+	debug("DDR PHY setup is done. Triggering DDR init.\n");
 	/* Trigger DDR init for Channel 0, all Chip-Selects */
 	reg = SDRAM_INIT_REQ_MASK;
 	reg |= CMD_CH_ENABLE(0);
@@ -158,9 +277,21 @@ void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config)
 	if (dram_config->cs_count)
 		cs_mask = (1 << dram_config->cs_count) - 1;
 	reg |= CMD_CS_MASK(cs_mask);
-	mck6_writel(reg, base_addr + MCK6_USER_COMMAND_0_REG);
+	mck6_writel(reg, dram_config->mac_base + MCK6_USER_COMMAND_0_REG);
+
+	/* wait for ddr init done */
+	for (timeout = DRAM_INIT_TIMEOUT, reg = 0; (timeout >= 0) && (reg != INIT_DONE0_CH0); timeout--) {
+		reg = readl(dram_config->mac_base + MCK6_DRAM_STATUS_REG) & INIT_DONE0_CH0;
+		udelay(10);
+	}
+
+	if (timeout < 0)
+		error("DDR init timeout!\n");
+
+	debug("DDR init is done.\n");
+
 #ifdef CONFIG_MVEBU_SYS_INFO
-	set_dram_info(base_addr);
+	set_dram_info(dram_config->mac_base);
 #endif
 	debug_exit();
 }

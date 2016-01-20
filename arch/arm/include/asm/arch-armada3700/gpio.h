@@ -18,6 +18,7 @@
 
 #ifndef _MVEBU_GPIO_H_
 #define _MVEBU_GPIO_H_
+#include <asm/arch-mvebu/gpio.h>
 
 #define MVEBU_GPIO_NB_OUTPUT_EN_REG		(MVEBU_GPIO_NB_REG_BASE)
 #define MVEBU_GPIO_NB_OUTPUT_EN_HIGH_REG	(MVEBU_GPIO_NB_REG_BASE + 0x4)
@@ -37,6 +38,10 @@
 #define MVEBU_GPIO_SB_SDIO_EN_OFF		(2)
 #define MVEBU_GPIO_RGMII_GPIO_EN_OFF		(3)
 #define MVEBU_GPIO_PCIE_EN_OFF			(4)
+
+#define MVEBU_GPIO_MAX_PORTS	2	/* max number of ports per bank */
+#define MVEBU_GPIO_BANKS	2	/* number of banks */
+#define MVEBU_GPIOS_PER_PORT	32	/* number of gpios per port */
 
 void mvebu_set_sdio(int voltage);
 void mvebu_reset_pcie_dev(void);

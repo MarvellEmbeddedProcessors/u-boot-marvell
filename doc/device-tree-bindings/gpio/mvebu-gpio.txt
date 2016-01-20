@@ -1,0 +1,39 @@
+MVEBU GPIO DT bindings
+-----------------------
+Required properties:
+- compatible:           Should be "marvell,mvebu-gpio"
+- reg:                  The register base for the GPIO bank controller
+- bank-name:            The gpio bank name
+- ngpios:               gpio count in bank
+
+Optional properties:
+None
+
+
+Examples:
+Let's take Armada3700 as an example.
+Armada3700 has two GPIO banks, one is north bridge GPIO bank and aother is south bridge GPIO bank.
+
+	gpio0: gpio@13800 {
+		compatible = "marvell,mvebu-gpio";
+		reg = <0x13800 0x800>;
+		bank-name = "armada-3700-north-bridge";
+		status = "disabled";
+		ngpios = <64>;
+	};
+	gpio1: gpio@18800 {
+		compatible = "marvell,mvebu-gpio";
+		reg = <0x18800 0x800>;
+		bank-name = "armada-3700-south-bridge";
+		status = "disabled";
+		ngpios = <32>;
+	};
+
+When other nodes want to use a GPIO pin, they can call the marco ARMADA_3700_GPIO
+which is defined in <dt-bindings/gpio/armada-3700-gpio.h>
+For example, mmc1 can use the gpio1's 22nd pin for SDIO VCC setting as below.
+
+mmc1: mmc@D0000 {
+	sdio-vcc-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 22) GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};

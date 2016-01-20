@@ -126,6 +126,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_SAR_REG_AP806, "marvell,sample-at-reset-ap806"),
 	COMPAT(MVEBU_SAR_REG_CP110, "marvell,sample-at-reset-cp110"),
 	COMPAT(MVEBU_RTC_REG, "marvell,real-time-clock"),
+	COMPAT(MVEBU_GPIO, "marvell,mvebu-gpio"),
 
 };
 

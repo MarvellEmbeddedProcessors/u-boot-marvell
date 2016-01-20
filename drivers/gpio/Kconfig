@@ -16,6 +16,16 @@ config MVEBU_PINCTL
 	  the lowlevel control that allows changing
 	  the function of a multi purpose pin
 
+config MVEBU_GPIO
+	bool "MVEBU GPIO support"
+	select DM_GPIO
+	default n
+	help
+	  Choose this option to add
+	  support for mvebu GPIO.
+	  This drive implements the
+	  high level interfaces of GPIO.
+
 config MVEBU_MPP_BUS
 	bool "MPP bus support"
 	depends on (DEVEL_BOARD && MVEBU_PINCTL)

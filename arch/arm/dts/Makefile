@@ -52,10 +52,16 @@ dtb-$(CONFIG_AM33XX) += am335x-boneblack.dtb
 dtb-$(CONFIG_SOCFPGA) += socfpga_cyclone5_socrates.dtb
 
 dtb-$(CONFIG_TARGET_ARMADA_38X) += armada-385-db.dtb
-dtb-$(CONFIG_TARGET_ARMADA_LP) += armada-lp-db.dtb \
-				  armada-lp-palladium.dtb \
-				  armada-lp-db-sgmii1.dtb \
-				  armada-lp-customer0.dtb
+ifdef CONFIG_TARGET_ARMADA_LP
+ifndef CONFIG_DEVEL_BOARD
+dtb-y += armada-lp-customer0.dtb
+else
+dtb-y += armada-lp-db.dtb \
+	 armada-lp-db-sgmii1.dtb \
+	 armada-lp-palladium.dtb
+endif #CONFIG_DEVEL_BOARD
+endif #CONFIG_TARGET_ARMADA_LP
+
 dtb-$(CONFIG_TARGET_ARMADA_8K) += apn-806-db.dtb \
 		       apn-806-pd.dtb \
 		       apn-806-pd-a0.dtb \

@@ -36,4 +36,11 @@
 #define MPPS_PER_REG		(32 / MPP_BIT_CNT)
 #define MAX_MPP_REGS		((MAX_MPP_ID + MPPS_PER_REG) / MPPS_PER_REG)
 
+/* Pin Ctrl driver definitions */
+#define BITS_PER_PIN		4
+#define PIN_FUNC_MASK		((1 << BITS_PER_PIN) - 1)
+#define PIN_REG_SHIFT		3
+#define PIN_FIELD_MASK		((1 << PIN_REG_SHIFT) - 1)
+
+
 #endif	/* _SOC_INFO_H_ */

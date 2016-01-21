@@ -23,15 +23,11 @@
 #include <fdtdec.h>
 #include <errno.h>
 #include <asm/arch-mvebu/fdt.h>
+#include <asm/arch/soc-info.h>
 
 #define CONFIG_MAX_PINCTL_BANKS		4
 #define CONFIG_MAX_PINS_PER_BANK	100
 #define CONFIG_MAX_FUNC			0xF
-
-#define BITS_PER_PIN		4
-#define PIN_FUNC_MASK		((1 << BITS_PER_PIN) - 1)
-#define PIN_REG_SHIFT		3
-#define PIN_FIELD_MASK		((1 << PIN_REG_SHIFT) - 1)
 
 DECLARE_GLOBAL_DATA_PTR;
 

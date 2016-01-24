@@ -643,7 +643,9 @@ static int ahci_device_data_io(u8 port, u8 *fis, int fis_len, u8 *buf,
 	ahci_fill_cmd_slot(pp, opts);
 
 	/* clearing IRQ status register on Read/Write operations */
+	writel_with_flush(0x7FFFFFF, port_mmio + PORT_SCR_ERR);
 	writel_with_flush(0xffffffff, port_mmio + PORT_IRQ_STAT);
+	writel_with_flush(0, port_mmio + PORT_FIS_ADDR);
 
 	ahci_dcache_flush_sata_cmd(pp);
 	ahci_dcache_flush_range((unsigned long)buf, (unsigned long)buf_len);

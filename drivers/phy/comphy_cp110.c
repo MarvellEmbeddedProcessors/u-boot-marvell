@@ -62,12 +62,159 @@ struct comphy_mux_data cp110_comphy_pipe_mux_data[] = {
 /* Lane 5 */ {2, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX1, 0x4} } },
 };
 
-static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_addr)
+static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base, void __iomem *comphy_base)
 {
+	u32 mask, data, ret = 1;
+	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
+	void __iomem *comphy_addr = COMPHY_ADDR(comphy_base, lane);
+	u32 pcie_clk = 0; /* input */
+
 	debug_enter();
-	debug("PCIe power UP sequence\n");
+	debug("stage: RFU configurations- hard reset comphy\n");
+	/* RFU configurations - hard reset comphy */
+	mask = COMMON_PHY_CFG1_PWR_UP_MASK;
+	data = 0x1 << COMMON_PHY_CFG1_PWR_UP_OFFSET;
+	mask |= COMMON_PHY_CFG1_PIPE_SELECT_MASK;
+	data |= 0x1 << COMMON_PHY_CFG1_PIPE_SELECT_OFFSET;
+	mask |= COMMON_PHY_CFG1_PWR_ON_RESET_MASK;
+	data |= 0x0 << COMMON_PHY_CFG1_PWR_ON_RESET_OFFSET;
+	mask |= COMMON_PHY_CFG1_CORE_RSTN_MASK;
+	data |= 0x0 << COMMON_PHY_CFG1_CORE_RSTN_OFFSET;
+	mask |= COMMON_PHY_PHY_MODE_MASK;
+	data |= 0x0 << COMMON_PHY_PHY_MODE_OFFSET;
+	reg_set(comphy_addr + COMMON_PHY_CFG1_REG, data, mask);
+
+	/* release from hard reset */
+	mask = COMMON_PHY_CFG1_PWR_ON_RESET_MASK;
+	data = 0x1 << COMMON_PHY_CFG1_PWR_ON_RESET_OFFSET;
+	mask |= COMMON_PHY_CFG1_CORE_RSTN_MASK;
+	data |= 0x1 << COMMON_PHY_CFG1_CORE_RSTN_OFFSET;
+	reg_set(comphy_addr + COMMON_PHY_CFG1_REG, data, mask);
+
+	/* Wait 1ms - until band gap and ref clock ready */
+	mdelay(1);
+	/* Start comphy Configuration */
+	debug("stage: Comphy configuration\n");
+	/* Set PIPE soft reset */
+	mask = HPIPE_RST_CLK_CTRL_PIPE_RST_MASK;
+	data = 0x1 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET;
+	/* Set PHY datapath width mode for V0 */
+	mask |= HPIPE_RST_CLK_CTRL_FIXED_PCLK_MASK;
+	data |= 0x0 << HPIPE_RST_CLK_CTRL_FIXED_PCLK_OFFSET;
+	/* Set Data bus width USB mode for V0 */
+	mask |= HPIPE_RST_CLK_CTRL_PIPE_WIDTH_MASK;
+	data |= 0x0 << HPIPE_RST_CLK_CTRL_PIPE_WIDTH_OFFSET;
+	/* Set CORE_CLK output frequency for 250Mhz */
+	mask |= HPIPE_RST_CLK_CTRL_CORE_FREQ_SEL_MASK;
+	data |= 0x0 << HPIPE_RST_CLK_CTRL_CORE_FREQ_SEL_OFFSET;
+	reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG, data, mask);
+	/* Set PLL ready delay for 0x2 */
+	reg_set(hpipe_addr + HPIPE_CLK_SRC_LO_REG,
+		0x2 << HPIPE_CLK_SRC_LO_PLL_RDY_DL_OFFSET, HPIPE_CLK_SRC_LO_PLL_RDY_DL_MASK);
+	/* Set PIPE mode interface to PCIe3 - 0x1 */
+	reg_set(hpipe_addr + HPIPE_CLK_SRC_HI_REG,
+		0x1 << HPIPE_CLK_SRC_HI_MODE_PIPE_OFFSET, HPIPE_CLK_SRC_HI_MODE_PIPE_MASK);
+	/* Config update polarity equalization */
+	reg_set(hpipe_addr + HPIPE_LANE_EQ_CFG1_REG,
+		0x1 << HPIPE_CFG_UPDATE_POLARITY_OFFSET, HPIPE_CFG_UPDATE_POLARITY_MASK);
+	/* Set PIPE version 4 to mode enable */
+	reg_set(hpipe_addr + HPIPE_DFE_CTRL_28_REG,
+		0x1 << HPIPE_DFE_CTRL_28_PIPE4_OFFSET, HPIPE_DFE_CTRL_28_PIPE4_MASK);
+	/* TODO: check if pcie clock is output/input - for bringup use input*/
+	/* Enable PIN clock 100M_125M */
+	mask = HPIPE_MISC_CLK100M_125M_MASK;
+	data = 0x1 << HPIPE_MISC_CLK100M_125M_OFFSET;
+	/* Set PIN_TXDCLK_2X Clock Frequency Selection for outputs 500MHz clock */
+	mask |= HPIPE_MISC_TXDCLK_2X_MASK;
+	data |= 0x1 << HPIPE_MISC_TXDCLK_2X_OFFSET;
+	/* Enable 500MHz Clock */
+	mask |= HPIPE_MISC_CLK500_EN_MASK;
+	data |= 0x1 << HPIPE_MISC_CLK500_EN_OFFSET;
+	if (pcie_clk) { /* output */
+		/* Set reference clock comes from group 1 */
+		mask |= HPIPE_MISC_REFCLK_SEL_MASK;
+		data |= 0x0 << HPIPE_MISC_REFCLK_SEL_OFFSET;
+	} else {
+		/* Set reference clock comes from group 2 */
+		mask |= HPIPE_MISC_REFCLK_SEL_MASK;
+		data |= 0x1 << HPIPE_MISC_REFCLK_SEL_OFFSET;
+	}
+	reg_set(hpipe_addr + HPIPE_MISC_REG, data, mask);
+	if (pcie_clk) { /* output */
+		/* Set reference frequcency select - 0x2 for 25MHz*/
+		mask = HPIPE_PWR_PLL_REF_FREQ_MASK;
+		data = 0x2 << HPIPE_PWR_PLL_REF_FREQ_OFFSET;
+	} else {
+		/* Set reference frequcency select - 0x0 for 100MHz*/
+		mask = HPIPE_PWR_PLL_REF_FREQ_MASK;
+		data = 0x0 << HPIPE_PWR_PLL_REF_FREQ_OFFSET;
+	}
+	/* Set PHY mode to PCIe */
+	mask |= HPIPE_PWR_PLL_PHY_MODE_MASK;
+	data |= 0x3 << HPIPE_PWR_PLL_PHY_MODE_OFFSET;
+	reg_set(hpipe_addr + HPIPE_PWR_PLL_REG, data, mask);
+	/* Set the amount of time spent in the LoZ state - set for 0x7 only if
+	   the PCIe clock is output */
+	if (pcie_clk)
+		reg_set(hpipe_addr + HPIPE_GLOBAL_PM_CTRL,
+			0x7 << HPIPE_GLOBAL_PM_RXDLOZ_WAIT_OFFSET, HPIPE_GLOBAL_PM_RXDLOZ_WAIT_MASK);
+
+	/* Set Maximal PHY Generation Setting(8Gbps) */
+	mask = HPIPE_INTERFACE_GEN_MAX_MASK;
+	data = 0x1 << HPIPE_INTERFACE_GEN_MAX_OFFSET;
+	/* Set Link Train Mode (Tx training control pins are used) */
+	mask |= HPIPE_INTERFACE_LINK_TRAIN_MASK;
+	data |= 0x1 << HPIPE_INTERFACE_LINK_TRAIN_OFFSET;
+	reg_set(hpipe_addr + HPIPE_INTERFACE_REG, data, mask);
+
+	/* Set Idle_sync enable */
+	mask = HPIPE_PCIE_IDLE_SYNC_MASK;
+	data = 0x1 << HPIPE_PCIE_IDLE_SYNC_OFFSET;
+	/* Select bits for PCIE Gen3(32bit) */
+	mask |= HPIPE_PCIE_SEL_BITS_MASK;
+	data |= 0x2 << HPIPE_PCIE_SEL_BITS_OFFSET;
+	reg_set(hpipe_addr + HPIPE_PCIE_REG0, data, mask);
+
+	/* Enable Tx_adapt_g1 */
+	mask = HPIPE_TX_TRAIN_CTRL_G1_MASK;
+	data = 0x1 << HPIPE_TX_TRAIN_CTRL_G1_OFFSET;
+	/* Enable Tx_adapt_gn1 */
+	mask |= HPIPE_TX_TRAIN_CTRL_GN1_MASK;
+	data |= 0x1 << HPIPE_TX_TRAIN_CTRL_GN1_OFFSET;
+	/* Disable Tx_adapt_g0 */
+	mask |= HPIPE_TX_TRAIN_CTRL_G0_MASK;
+	data |= 0x0 << HPIPE_TX_TRAIN_CTRL_G0_OFFSET;
+	reg_set(hpipe_addr + HPIPE_TX_TRAIN_CTRL_REG, data, mask);
+
+	/* Set reg_tx_train_chk_init */
+	mask = HPIPE_TX_TRAIN_CHK_INIT_MASK;
+	data = 0x0 << HPIPE_TX_TRAIN_CHK_INIT_OFFSET;
+	/* Enable TX_COE_FM_PIN_PCIE3_EN */
+	mask |= HPIPE_TX_TRAIN_COE_FM_PIN_PCIE3_MASK;
+	data |= 0x1 << HPIPE_TX_TRAIN_COE_FM_PIN_PCIE3_OFFSET;
+	reg_set(hpipe_addr + HPIPE_TX_TRAIN_REG, data, mask);
+
+	/* TODO: Set analog paramters from ETP(HW) - for now use the default datas */
+	debug("stage: Analog paramters from ETP(HW)\n");
+
+	debug("stage: Comphy power up\n");
+	/* Release from PIPE soft reset */
+	reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG,
+		0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
+
+	/* wait 5ms - for comphy calibration done */
+	mdelay(5);
+
+	debug("stage: Check PLL\n");
+	/* Read lane status */
+	data = readl(hpipe_addr + HPIPE_LANE_STATUS0_REG);
+	if ((data & HPIPE_LANE_STATUS0_PCLK_EN_MASK) == 0) {
+		error("HPIPE_LANE_STATUS0_PCLK_EN_MASK is 0\n");
+		ret = 0;
+	}
+
 	debug_exit();
-	return 0;
+	return ret;
 }
 
 static int comphy_usb3_power_up(u32 lane, void __iomem *hpipe_base, void __iomem *comphy_base)
@@ -380,7 +527,7 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		case PHY_TYPE_PEX1:
 		case PHY_TYPE_PEX2:
 		case PHY_TYPE_PEX3:
-			ret = comphy_pcie_power_up(lane, pcie_by4, HPIPE_ADDR(hpipe_base_addr, lane));
+			ret = comphy_pcie_power_up(lane, pcie_by4, hpipe_base_addr, comphy_base_addr);
 			break;
 		case PHY_TYPE_SATA0:
 		case PHY_TYPE_SATA1:

@@ -22,5 +22,6 @@
 #define PRESET_CPU_600_DDR_600		0
 #define PRESET_CPU_400_DDR_600		1
 #define PRESET_CPU_1000_DDR_800		2
+#define PRESET_CPU_800_DDR_800		3
 
 #endif /* _FREQ_DATA_H_ */

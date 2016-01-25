@@ -489,6 +489,21 @@ static void ahci_fill_cmd_slot(struct ahci_ioports *pp, u32 opts)
 #endif
 }
 
+static int wait_spinup(void __iomem *port_mmio)
+{
+	ulong start;
+	u32 tf_data;
+
+	start = get_timer(0);
+	do {
+		tf_data = readl(port_mmio + PORT_TFDATA);
+		if (!(tf_data & ATA_BUSY))
+			return 0;
+	} while (get_timer(start) < WAIT_MS_SPINUP);
+
+	return -ETIMEDOUT;
+}
+
 
 #ifdef CONFIG_AHCI_SETFEATURES_XFER
 static void ahci_set_feature(u8 port)
@@ -590,7 +605,11 @@ static int ahci_port_start(u8 port)
 
 	debug("Exit start port %d\n", port);
 
-	return 0;
+	/*
+	 * Make sure interface is not busy based on error and status
+	 * information from task file data register before proceeding
+	 */
+	return wait_spinup(port_mmio);
 }
 
 

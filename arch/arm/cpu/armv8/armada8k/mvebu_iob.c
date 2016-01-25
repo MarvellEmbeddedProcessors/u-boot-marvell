@@ -204,9 +204,9 @@ int init_iob(void)
 		writel(win_reg, IOB_WIN_CR_OFFSET(win_id));
 
 		win_reg = ~IOB_WIN_ENA_CTRL_WRITE_SECURE;
-		win_reg |= ~IOB_WIN_ENA_CTRL_READ_SECURE;
-		win_reg |= ~IOB_WIN_ENA_WRITE_SECURE;
-		win_reg |= ~IOB_WIN_ENA_READ_SECURE;
+		win_reg &= ~IOB_WIN_ENA_CTRL_READ_SECURE;
+		win_reg &= ~IOB_WIN_ENA_WRITE_SECURE;
+		win_reg &= ~IOB_WIN_ENA_READ_SECURE;
 		writel(win_reg, IOB_WIN_SCR_OFFSET(win_id));
 	}
 

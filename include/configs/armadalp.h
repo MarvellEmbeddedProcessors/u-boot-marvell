@@ -98,10 +98,8 @@ extern char __end_of_spl[];
 #endif /* CONFIG_MVEBU_SPI */
 
 /* The EEPROM ST M24C64 has 32 byte page write mode and takes up to 10 msec.
-   In u-boot I2C mm command, after each page write, need to deley 10 msec to
-   perform the next read.
  */
-#define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS	10
+#define CONFIG_MVEBU_EEPROM_PAGE_WRITE_DELAY_MS	10
 
 /*
  * Include the generic MVEBU configuration file.

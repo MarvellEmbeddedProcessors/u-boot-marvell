@@ -527,6 +527,23 @@ int i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len)
 		if (i2c_transfer(&msg))
 			return -1;
 	}
+/*
+ * For some eeprom, after each page write, need to delay some time before
+ * next read/write. For example, the EEPROM A3700 DB is using, ST M24C64
+ * has 32 byte page write mode and takes up to 10 msec.
+ *
+ * in mainline code common/cmd_i2c.c, routine mod_i2c_mem, there is a delay
+ * for CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS, and in armadalp.h, this macro
+ * is defined as 10ms. So it was OK without delay in I2C driver.
+ *
+ * But many new features read/write eeprom, such as Multi-fdt, unique
+ * mac address. And it is not very convinient to add delay after all
+ * the eeprom write operations in all these modules/features.
+ * So add this delay into I2C driver write routine.
+*/
+#ifdef CONFIG_MVEBU_EEPROM_PAGE_WRITE_DELAY_MS
+	udelay(CONFIG_MVEBU_EEPROM_PAGE_WRITE_DELAY_MS * 1000);
+#endif
 
 	i2c_reset();
 

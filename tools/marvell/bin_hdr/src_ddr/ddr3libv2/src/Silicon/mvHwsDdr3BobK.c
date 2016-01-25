@@ -862,7 +862,11 @@ static GT_STATUS ddr3TipInitBobKSilicon
 {
     MV_HWS_TIP_CONFIG_FUNC_DB   configFunc;
 	MV_HWS_TOPOLOGY_MAP*        topologyMap = ddr3TipGetTopologyMap(devNum);
-    GT_TUNE_TRAINING_PARAMS     tuneParams;
+
+#if defined(CPSS_BUILD)
+	GT_TUNE_TRAINING_PARAMS tuneParams;
+#endif
+
 	GT_U8 numOfBusPerInterface;
 
 	if(topologyMap == NULL)
@@ -963,28 +967,31 @@ static GT_STATUS ddr3TipInitBobKSilicon
 		                CENTRALIZATION_TX_MASK_BIT);
 	}
 
-    if( ckDelay == MV_PARAMS_UNDEFINED )
-        ckDelay = 150;
-    delayEnable = 1;
-    caDelay = 0;
+	delayEnable = 1;
+	caDelay = 0;
 
-    /* update DGL parameters */
-    tuneParams.ckDelay = ckDelay;
-    tuneParams.PhyReg3Val = 0xA;
-    tuneParams.gRttNom = 0x44;
-    tuneParams.gDic = 0x2;
-    tuneParams.uiODTConfig = 0x120012;
-    tuneParams.gZpriData = 123;
-    tuneParams.gZnriData = 123;
-    tuneParams.gZpriCtrl = 74;
-    tuneParams.gZnriCtrl = 74;
-    tuneParams.gZpodtData = 45;
-    tuneParams.gZnodtData = 45;
-    tuneParams.gZpodtCtrl = 45;
-    tuneParams.gZnodtCtrl = 45;
-    tuneParams.gRttWR = 0; /*0x400;0x0;*/
+#if defined(CPSS_BUILD)
+	if (ckDelay == MV_PARAMS_UNDEFINED)
+		ckDelay = 150;
 
-    CHECK_STATUS(ddr3TipTuneTrainingParams(devNum, &tuneParams));
+	/* update DGL parameters */
+	tuneParams.ckDelay = ckDelay;
+	tuneParams.PhyReg3Val = 0xA;
+	tuneParams.gRttNom = 0x44;
+	tuneParams.gDic = 0x2;
+	tuneParams.uiODTConfig = 0x120012;
+	tuneParams.gZpriData = 123;
+	tuneParams.gZnriData = 123;
+	tuneParams.gZpriCtrl = 74;
+	tuneParams.gZnriCtrl = 74;
+	tuneParams.gZpodtData = 45;
+	tuneParams.gZnodtData = 45;
+	tuneParams.gZpodtCtrl = 45;
+	tuneParams.gZnodtCtrl = 45;
+	tuneParams.gRttWR = 0; /*0x400;0x0;*/
+
+	CHECK_STATUS(ddr3TipTuneTrainingParams(devNum, &tuneParams));
+#endif /* CPSS_BUILD */
 
     /* frequency and general parameters */
     CHECK_STATUS(ddr3TipBobKGetMediumFreq(devNum, firstActiveIf, &mediumFreq));

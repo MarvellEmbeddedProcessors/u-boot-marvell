@@ -45,14 +45,14 @@ i2c@701100 { /* i2c1 */
 	reg = <0x701100 0x100>;
 	status = "disabled";
 };
-sata@540000 { /* SATA0 */
+sata@550000 { /* SATA0 */
 	compatible = "marvell,mvebu-sata";
-	reg = <540000 0x200>;
+	reg = <550000 0x1000>;
 	status = "disabled";
 };
-sata@550000 { /* SATA1 */
+sata@560000 { /* SATA1 */
 	compatible = "marvell,mvebu-sata";
-	reg = <550000 0x200>;
+	reg = <560000 0x1000>;
 	status = "disabled";
 };
 mmc@780000 {

@@ -18,7 +18,6 @@
 
 #include <common.h>
 #include <asm/arch-mvebu/fdt.h>
-#include <fdtdec.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -57,4 +56,18 @@ void *fdt_get_regs_base(const void *blob, int node, uintptr_t reg)
 
 	reg = reg + ranges->parent_bus_address - ranges->child_bus_address;
 	return fdt_get_regs_base(blob, parent, reg);
+}
+
+void *fdt_get_reg_offs_by_compat(enum fdt_compat_id compat_id)
+{
+	int node;
+	const char *compat_str;
+
+	compat_str = fdtdec_get_compatible(compat_id);
+	node = fdt_node_offset_by_compatible(gd->fdt_blob, -1, compat_str);
+	if (node < 0) {
+		error("No %s node found in FDT blob\n", compat_str);
+		return 0;
+	}
+	return fdt_get_regs_offs(gd->fdt_blob, node, "reg");
 }

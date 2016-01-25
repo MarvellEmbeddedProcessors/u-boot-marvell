@@ -18,6 +18,7 @@
 
 #ifndef _MVEBU_FDT_H_
 #define _MVEBU_FDT_H_
+#include <fdtdec.h>
 
 struct fdt_range {
 	u32 child_bus_address;
@@ -25,9 +26,9 @@ struct fdt_range {
 	u32 size;
 };
 
-
 void *fdt_get_regs_offs(const void *blob, int node, const char *prop_name);
 void *fdt_get_regs_base(const void *blob, int node, uintptr_t reg);
+void *fdt_get_reg_offs_by_compat(enum fdt_compat_id compat_id);
 
 #endif /* _MVEBU_FDT_H_ */
 

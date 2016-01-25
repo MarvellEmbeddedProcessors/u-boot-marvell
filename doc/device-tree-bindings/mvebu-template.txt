@@ -1,0 +1,34 @@
+Marvell "template" bindings
+===========================
+
+Description of the driver (1-2 sentences)
+
+Mandatory properties:
+	- compatible = "marvell,mvebu-template";
+	- reg = <0x511000 0x4>;
+		base address of Template driver
+	- clock = <&tclk>;
+		This property points to the used clock for the ...
+	- status = "okay";
+		Set if the "template" interface is enabled/disabled.
+
+Device specific properties:
+	[Specify any SoC specific properties]
+	[In complex cases, duplicate the Mandatory & Optional propertien per SoC]
+	- Armada-3700:
+		- prop1
+		- prop2
+		- ...
+
+Optional properties:
+	- debug
+		Enable debug info printouts in the driver
+
+Example for ...:
+	template@11000 {
+		compatible = "marvell,mvebu-template";
+		reg = <0x11000 0x4>;
+		clock = <&tclk>;
+		status = "okay";
+	};
+

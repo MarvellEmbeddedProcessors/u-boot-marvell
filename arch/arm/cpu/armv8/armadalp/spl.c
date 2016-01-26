@@ -45,6 +45,25 @@ void board_init_f(ulong silent)
 	     tree for the SoC, required for i2c initialization to read EEPROM data */
 	setup_fdt();
 
+/* multi FDT feature reads eeprom, which requires I2C support
+ * but for Armada3700, I2C feature depends on GPIO configuration,
+ * so mvebu_setup_fdt need to be invoked after it.
+ *
+ * but GPIO driver also need to read FDT file, for reg base and
+ * other configurations. For reg base it is OK, since all the fdt
+ * files for all the boards should have the same value.
+ *
+ * as far as the I2C related GPIO settings, we will demand from HW that
+ * all Marvell boards will use the same set of I2C pins setup.
+ *
+ * GPIO need to be split into two stages: static shared (for I2C),
+ * and then dynamic-fdt-based. the first step will be done before
+ * mvebu_setup_fdt(), and the second one will be after it.
+ */
+#ifdef CONFIG_MVEBU_SPL_A3700_GPIO
+	mvebu_init_gpio();
+#endif
+
 #ifdef CONFIG_MULTI_DT_FILE
 	/* Update gd->fdt_blob according to multi-fdt data in eeprom */
 	mvebu_setup_fdt();
@@ -56,11 +75,6 @@ void board_init_f(ulong silent)
 	* Therefore it is safe to start using UART before call to early_spl_init()
 	*/
 	preloader_console_init();
-
-	/* Init all drivers requred at early stage (clocks, GPIO...) */
-#ifdef CONFIG_MVEBU_SPL_A3700_GPIO
-	mvebu_init_gpio();
-#endif
 
 	/* Clock should be enabeld before initialize the I/O units */
 #ifdef CONFIG_MVEBU_A3700_CLOCK

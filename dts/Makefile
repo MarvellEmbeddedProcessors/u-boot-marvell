@@ -11,7 +11,6 @@ DEVICE_TREE ?= $(CONFIG_DEFAULT_DEVICE_TREE:"%"=%)
 ifeq ($(DEVICE_TREE),)
 DEVICE_TREE := unset
 endif
-DTB_PRINT_LIST = ""
 ifneq ($(EXT_DTB),)
 DTB := $(EXT_DTB)
 else
@@ -20,7 +19,11 @@ endif
 
 $(obj)/dt.dtb: arch-dtbs
 ifdef CONFIG_MULTI_DT_FILE
-	$(eval DTB := $(shell echo arch/$(ARCH)/dts/*.dtb))
+#The Makefile must sort the order of the list,
+#since the selection of the DT in setup_fdt() is one fixed to the 1st DT element.
+	$(eval DTB_WITHOUT_DEFAULT := $(shell echo arch/$(ARCH)/dts/*.dtb))
+	$(eval DTB_WITHOUT_DEFAULT:= $(filter-out $(DTB), $(DTB_WITHOUT_DEFAULT)))
+	$(eval DTB += $(DTB_WITHOUT_DEFAULT))
 	@echo "List Of FDT files:"
 	$(foreach i, $(DTB), $(eval DTB_PRINT_LIST += $(i)\n ))
 	@echo "$(DTB_PRINT_LIST)"

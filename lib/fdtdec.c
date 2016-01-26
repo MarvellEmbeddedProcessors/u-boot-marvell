@@ -166,14 +166,17 @@ fdt_addr_t fdtdec_get_addr(const void *blob, int node,
 uint64_t fdtdec_get_uint64(const void *blob, int node, const char *prop_name,
 		uint64_t default_val)
 {
-	const uint64_t *cell64;
-	int length;
+	int ret;
+	u32 num32[2];
 
-	cell64 = fdt_getprop(blob, node, prop_name, &length);
-	if (!cell64 || length < sizeof(*cell64))
+	/* read the uint64_t number from fdt section in memory, sometimes it loactes at
+	the memory which is not on 8bytes boundary, it will cause exception
+	and crash the system, fix here by taking 64bit number as two 32bit array */
+	ret = fdtdec_get_int_array_count(blob, node, prop_name, &num32[0], 2);
+	if (ret < 2)
 		return default_val;
 
-	return fdt64_to_cpu(*cell64);
+	return (((uint64_t)num32[0]) << 32) + (uint64_t)num32[1];
 }
 
 int fdtdec_get_is_enabled(const void *blob, int node)

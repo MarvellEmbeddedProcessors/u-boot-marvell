@@ -133,25 +133,11 @@ int dram_init(void)
 	/* NO DRAM init sequence in Pallaidum, so set static DRAM size of 256MB */
 	gd->ram_size = 0x20000000;
 #else
-	struct mbus_win_map win_map;
-	struct mbus_win *win;
-	int cs;
-	u32 size;
-
 	gd->ram_size = 0;
 
-	/* get DRAM window configuration from MBUS */
-	mbus_win_map_build(&win_map);
-
-	for (cs = 0, win = &win_map.mbus_windows[cs]; cs < win_map.mbus_win_num; cs++, win++) {
-			gd->bd->bi_dram[cs].start = win->base_addr;
-			size = (win->win_size + 1) * MBUS_CR_WIN_SIZE_ALIGNMENT;
-			gd->bd->bi_dram[cs].size = size;
-
-			gd->ram_size += size;
-
-			debug("DRAM bank %d base 0x%08x size 0x%x ", cs, (u32)win->base_addr, size);
-	}
+	/* DDR size has been read from dts DDR node in SPL
+	 * ddr driver and pass to u-boot. */
+	gd->ram_size = (get_info(DRAM_CS0_SIZE) << 20);
 
 	if (gd->ram_size == 0) {
 		error("No DRAM banks detected");

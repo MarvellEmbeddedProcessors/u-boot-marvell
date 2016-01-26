@@ -1,0 +1,19 @@
+UART boot
+---------
+UART boot is used to load ATF image using XMODEM interface when the board boots for
+the first time or the board fails to boot.
+
+1. Set the board to receiving mode using either of the following methods:
+	- Start a terminal application (e.g. minicom), and send the Xmodem_boot_pattern.bin file
+	  (located under /tools/marvell/xmodem/xmodem_boot.pattern) in ASCII,
+	  (for minicom do: Ctrl+A, then S, then select ASCII), and reset the board at the same time.
+	- This option is only relevant for Marvell development boards:
+	  Set the boot source to UART, using boot source DIP-switch pins, and then reset the board.
+2. After booting from UART, or sending the pattern file, characters are displayed on the
+   screen every second. These are the Xmodem NACKs that indicate readiness to send the
+   new ATF with Xmodem protocol.
+3. Start the TTY ATF transfer using Xmodem protocol
+   (for minicom do: Ctrl/A, then S, and select the Xmodem protocol).
+4. Select the ATF image file, and start transfer.
+5. When transfer is done, U-Boot will start and you should hit <return> to get U-Boot prompt.
+6. When ATF & U-Boot loads refer to doc/mvebu/commands/bubt.txt to burn ATF image.

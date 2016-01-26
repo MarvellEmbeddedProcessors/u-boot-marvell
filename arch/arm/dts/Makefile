@@ -56,9 +56,22 @@ ifdef CONFIG_TARGET_ARMADA_LP
 ifndef CONFIG_DEVEL_BOARD
 dtb-y += armada-lp-customer0.dtb
 else
+# For multi-fdt feature, all the dtb files that are compiled will
+# be linked into spl/u-boot, but A3700 spl is running in SRAM, so
+# the size of spl could not be bigger than SRAM.
+# right now the size of spl is very close to SRAM, and there is
+# space for only two dtb files.
+# So when Multi-FDT feature is included, these two dtb files that
+# are compiled/linked into SPL and u-boot have to be the two for
+# A3700 DB, and armada-lp-palladium.dtb would not be compiled.
+# there is a JIRA bug about this issue: SYSTEMSW-2194, when it is
+# fixed, this patch could be removed.
 dtb-y += armada-lp-db.dtb \
-	 armada-lp-db-sgmii1.dtb \
-	 armada-lp-palladium.dtb
+	 armada-lp-db-sgmii1.dtb
+ifndef CONFIG_MULTI_DT_FILE
+dtb-y += armada-lp-palladium.dtb
+endif #CONFIG_MULTI_DT_FILE
+
 endif #CONFIG_DEVEL_BOARD
 endif #CONFIG_TARGET_ARMADA_LP
 

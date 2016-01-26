@@ -6,13 +6,13 @@ Transactions that are decoded by CCU windows as IO peripheral, have an additiona
 layer of decoding, this additional address decoding layer defines one of the
 following targets:
 	0x0 = BootRom
-	0x1 = STM (Serial Trace Macro-cell, a programmer’s port into trace stream)
+	0x1 = STM (Serial Trace Macro-cell, a programmer's port into trace stream)
 	0x2 = SPI direct access
 	0x3 = PCIe registers
 	0x4 = IHB Port
 	0x5 = PCIe port
 
-The RFU node requires the following properties:
+Mandatory properties:
 	- compatible
 		should be "marvell,mvebu-rfu"
 	- reg: the base address of the RFU window

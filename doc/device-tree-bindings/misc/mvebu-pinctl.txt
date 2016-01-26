@@ -6,7 +6,7 @@ of multi purpose pins and controlling GPIOs. each dt
 entry describes a single pinctl bank. an SOC may
 have several pinctl banks.
 
-The mvebu-pinctl requires the following proprties:
+Mandatory proprties:
 	- compatible
 	  	should be "marvell, mvebu-pinctl"
 	- bank-name

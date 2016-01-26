@@ -5,7 +5,7 @@ The thermal node v2 include description about the Thermal Sensor External Unit.
 The thernal sensor v2 is an on chip temprature sensor that read the temprature of
 every core and return the average or the maximum between them.
 
-The thermal node requires the following properties:
+Mandatory properties:
 	- compatible
 		should be "marvell,thermal-sensor-v2"
 	- reg: the base address of thermal unit

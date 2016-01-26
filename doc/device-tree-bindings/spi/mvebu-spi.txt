@@ -1,9 +1,9 @@
 Marvell SPI bindings
 ====================
 
-The node name is spi0 to show that it's SPI-0, for SPI-1 should be spi1.
+Driver for SPI bus in Marvell's Armada-8K SoCs
 
-The SPI node requires the following properties:
+Mandatory properties:
 	- compatible = "marvell,orion-spi";
 	- reg = <0x510600 0x50>;
 		base address of SPI-0

@@ -5,11 +5,11 @@ The DDR node includes description about the DDR controller and PHY configuration
 The driver runs in SPL mode, and is responsible to initial the DDR PHY and controller
 according to user define paramters.
 
-The DDR PHY node requires the following properties:
+DDR PHY mandatory properties:
 	- compatible: "marvell,mvebu-ddr-phy"
 	- reg: Base address of the DDR PHY registers.
 
-The DDR MAC node requires the following properties:
+DDR MAC mandatory properties:
 	- compatible: "marvell,mvebu-ddr-mac"
 	- reg: Base address of the DDR MAC registers.
 	- cs_count: Number of DDR Chip-Selects on board.

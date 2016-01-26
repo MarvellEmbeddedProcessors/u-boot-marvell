@@ -1,7 +1,9 @@
 PXA3xx NAND DT bindings
------------------------
+=======================
 
-Required properties:
+Implementation of NAND controller device driver for Marvell SoC's
+
+Mandatory properties:
 - compatible:          Should be set to: marvell,mvebu-pxa3xx-nand
 - reg:                 The register base for the controller
 - #address-cells:      Set to <1> if the node includes partitions

@@ -5,7 +5,7 @@ The COMPHY node include description about the COMPHY SerDes lane configuration.
 The comphy driver initialize the MUX of the SerDes lanes, and power up the serdes
 by dependencies on the FDT blob configurations
 
-The COMPHY node requires the following properties:
+Mandatory properties:
 	- compatible:
 		the compatible should include "marvell,mvebu-comphy"
 		and the COMPHY per chip compatible:

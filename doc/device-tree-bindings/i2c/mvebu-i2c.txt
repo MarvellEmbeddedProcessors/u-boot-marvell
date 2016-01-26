@@ -1,7 +1,10 @@
 Marvell I2C bindings
 ====================
 
-The I2C node requires the following properties:
+I2C driver provides read / write access to external peripherals
+using the I2C bus.
+
+Mandatory properties:
 	- compatible = "marvell,mvebu-i2c";
 	- reg = <0x511000 0x4>;
 		base address of I2C-0

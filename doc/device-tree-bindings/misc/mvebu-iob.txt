@@ -8,7 +8,7 @@ When a transaction passes through the IOB, its address is compared to each of
 the enabled windows. If there is a hit and it passes the security checks it is
 advances to the target port.
 
-The IOB node requires the following properties:
+Mandatory properties:
 	- compatible
 		should be "marvell,mvebu-iob"
 	- reg: the base address of the IOB unit

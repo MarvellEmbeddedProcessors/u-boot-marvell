@@ -80,7 +80,6 @@ Customer board porting procedure
 		o I2C - i2c/mvebu-i2c.txt
 		o SMI / XSMI - net/mvebu-mdio.txt
 		o SATA - sata/mvebu-sata.txt
-		o Serial - serial/mvebu-serial.txt
 		o USB - usb/mvebu-usb3.txt
 		o PCIe - pci/mvebu-pci.txt
 
@@ -96,6 +95,7 @@ Customer board porting procedure
 
 	3.2. Armada-3700 SoC family
 	-------------------------
+		o Serial - serial/mvebu-serial.txt
 		o Clock - clock/mvebu-clock.txt
 		o IO-Decode - misc/mvebu-io-decode.txt
 		o MBUS - misc/mvebu-mbus.txt

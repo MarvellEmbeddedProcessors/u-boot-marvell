@@ -1,9 +1,10 @@
 Marvell MDIO bindings
 ====================
 
-This MDIO driver supports Marvell SoC, which implements the SMI/XSMI transactions.
+The MDIO driver implements the required APIs to access
+ethernet PHYs/switches, using the SMI or XSMI protocols.
 
-The MDIO node requires the following properties:
+Mandatory properties:
 	- compatible
 		should be "marvell,mvebu-mdio".
 	- reg_xsmi: the base address XSMI bus.

@@ -4,7 +4,7 @@ Marvell MVEBU PCIe bindings
 The mvebu-pcie driver controls a set of PCIe ports
 that make up PCIe bus.
 
-The mvebu-pcie requires the following proprties:
+Mandatory proprties:
 	- compatible
 		should be "marvell,mvebu-pcie" for legacy Marvell EBU PCIe IP,
 		and "marvell,advk-pcie" for Marvell Ardvark PCIe IP.
@@ -21,7 +21,7 @@ The mvebu-pcie requires the following proprties:
 		- status
 			the pcie port's status. can be "okay" or "disabled".
 
-Example of a pinctl bank node:
+Example of a pcie node:
 	pcie-controller {
 		#address-cells = <1>;
 		#size-cells = <1>;

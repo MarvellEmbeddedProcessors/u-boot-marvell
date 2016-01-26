@@ -3,7 +3,7 @@ Marvell CCU address decoding bindings
 
 The CCU node include describtion about the address decoding configuration.
 
-The CCU node requires the following properties:
+Mandatory properties:
 	- compatible
 		should be "marvell,mvebu-ccu"
 	- reg: the base address of the CCU unit
@@ -16,7 +16,7 @@ The CCU node requires the following properties:
 	  - low size of the window
 	  - target-id of the window
 
-Note: if the base address is more than 32bit, it divided into high and low,
+Note: if the base address is more than 32bit, it should be divided into high and low,
 	same for size field, if it more that 32bit, it divided for high and low.
 	Base example:
 		base address: 0x10f0000000 should divided into:

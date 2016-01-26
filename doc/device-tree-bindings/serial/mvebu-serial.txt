@@ -1,12 +1,10 @@
 Marvell ArmadaLP UART bindings
-====================
+==============================
 
-This UART driver supports Marvell ArmadaLP SoC, which implements the uart core operations.
-The node name is serial0 to show that it's UART-0, for UART-1 should be serial1.
+UART driver for Marvell ArmadaLP SoC's.
 
-The armadaLP serial node requires the following properties:
-	- compatible
-		should be "marvell,armadalp-uart"
+Mandatory properties:
+	- compatible: should be "marvell,armadalp-uart"
 	- reg: the base address of the UART unit
 	- clock_frequency: input clock frequency of UART unit
 	- baudrate: the baudrate of the UART unit

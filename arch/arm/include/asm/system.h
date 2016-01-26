@@ -81,6 +81,7 @@ void smp_kick_all_cpus(void);
 void setup_psci(void);
 void fixup_vectors(void);
 void psci_arch_init(void);
+int is_psci_enabled(void);
 extern char __secure_start[];
 extern char __secure_end[];
 #endif

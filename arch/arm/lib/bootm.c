@@ -276,7 +276,8 @@ static void boot_jump_linux(bootm_headers_t *images, int flag)
 
 	if (!fake) {
 #ifdef CONFIG_ARMV8_PSCI
-		setup_psci();
+		if (is_psci_enabled())
+			setup_psci();
 #endif
 		do_nonsec_virt_switch();
 		kernel_entry(images->ft_addr, NULL, NULL, NULL);

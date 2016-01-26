@@ -164,7 +164,8 @@ static void cpu_update_dt_spin_table(void *blob)
 int cpu_update_dt(void *fdt)
 {
 #ifdef CONFIG_ARMV8_PSCI
-	cpu_update_dt_psci(fdt);
+	if (is_psci_enabled())
+		cpu_update_dt_psci(fdt);
 #else
 	cpu_update_dt_spin_table(fdt);
 #endif

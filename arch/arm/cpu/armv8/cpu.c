@@ -63,4 +63,11 @@ void setup_psci(void)
 	psci_arch_init();
 }
 
+int is_psci_enabled(void)
+{
+	/* PSCI setup should be exeuted only when u-boot is in EL3
+	  (i.e. no ATF). otherwise, ATF will configure it */
+	return current_el() == 3;
+}
+
 #endif

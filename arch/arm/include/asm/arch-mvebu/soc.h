@@ -31,6 +31,9 @@ int soc_get_id(void);
 void soc_init(void);
 
 /* Common SOC API */
+#ifdef CONFIG_USB_XHCI
+void board_usb_vbus_set(void);
+#endif
 int mvebu_soc_init(void);
 void mvebu_print_soc_info(void);
 

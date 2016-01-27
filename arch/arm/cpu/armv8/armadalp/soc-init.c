@@ -184,4 +184,11 @@ void board_ahci_power_on(void)
 		error("failed to set IO expander via I2C\n");
 #endif /* CONFIG_DEVEL_BOARD */
 }
+#endif /* CONFIG_SCSI_AHCI_PLAT */
+
+#ifdef CONFIG_USB_XHCI
+void board_usb_vbus_set(void)
+{
+	/* TBD - implement VBUS cycle for here*/
+}
 #endif

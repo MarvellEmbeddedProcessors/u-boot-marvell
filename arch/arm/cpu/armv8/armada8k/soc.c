@@ -128,3 +128,10 @@ void print_soc_specific_info(void)
 	printf("\tLLC Disabled\n");
 #endif
 }
+
+#ifdef CONFIG_USB_XHCI
+void board_usb_vbus_set(void)
+{
+	/* TBD - implement VBUS cycle for here*/
+}
+#endif

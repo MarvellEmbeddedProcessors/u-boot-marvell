@@ -43,6 +43,22 @@
 				status = "disabled";
 			};
 
+			pinctl0: pinctl@13830 { /* north bridge */
+				compatible = "marvell,mvebu-pinctl";
+				bank-name ="armadalp-nb";
+				reg = <0x13830 0x4>;
+				pin-count = <24>;
+				max-func = <1>;
+			};
+
+			pinctl1: pinctl@18830 { /* south bridge */
+				compatible = "marvell,mvebu-pinctl";
+				bank-name ="armadalp-sb";
+				reg = <0x18830 0x4>;
+				pin-count = <9>;
+				max-func = <1>;
+			};
+
 			mbus {
 				compatible = "marvell,mvebu-mbus";
 				reg = <0xcf00 0xf0>;

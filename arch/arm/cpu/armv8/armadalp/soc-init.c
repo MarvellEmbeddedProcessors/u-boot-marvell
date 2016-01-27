@@ -24,6 +24,7 @@
 #include <netdev.h>
 #include <asm/arch/mbus_reg.h>
 #include <asm/arch-mvebu/mbus.h>
+#include <asm/arch-mvebu/pinctl.h>
 #include <i2c.h>
 
 /* IO expander I2C device */
@@ -38,6 +39,10 @@
 
 int soc_early_init_f(void)
 {
+#ifdef CONFIG_MVEBU_PINCTL
+	mvebu_pinctl_probe();
+#endif
+
 	return 0;
 }
 

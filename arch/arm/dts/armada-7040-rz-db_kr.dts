@@ -90,11 +90,6 @@
 			};
 
 			comphy {
-				compatible = "marvell,mvebu-comphy", "marvell,comphy-cp110";
-				mux-bitcount = <4>;
-				max-lanes = <6>;
-				reg-comphy = <0x441000 0x8>;
-				reg-hpipe3 = <0x120800 0x8>;
 				/* Serdes Configuration:
 					Lane 0: PEX0x1
 					Lane 1: SATA0

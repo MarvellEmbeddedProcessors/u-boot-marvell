@@ -459,7 +459,7 @@ int do_bubt_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 	char dst_dev_name[8];
 
 	if (argc < 2)
-		copy_filename(BootFile, "u-boot.bin", sizeof(BootFile));
+		copy_filename(BootFile, CONFIG_MVEBU_UBOOT_DFLT_NAME, sizeof(BootFile));
 	else
 		copy_filename(BootFile, argv[1], sizeof(BootFile));
 

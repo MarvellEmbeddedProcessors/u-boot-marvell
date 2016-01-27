@@ -50,6 +50,7 @@
 #define CONFIG_SYS_MALLOC_LEN           (5 << 20)	/* Reserve 5MB for malloc*/
 #endif
 #define CONFIG_NR_DRAM_BANKS		(2)
+#define CONFIG_MVEBU_UBOOT_DFLT_NAME	"u-boot.bin"
 
 /* maybe need to set back to 0x7fff0 */
 #define CONFIG_SYS_INIT_SP_ADDR         (CONFIG_SYS_TEXT_BASE + 0xFF0000)   /* End of 16M scrubbed by training in bootrom */

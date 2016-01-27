@@ -73,6 +73,9 @@ extern char __end_of_spl[];
  */
 #include "mvebu-common.h"
 
+#undef CONFIG_MVEBU_UBOOT_DFLT_NAME
+#define CONFIG_MVEBU_UBOOT_DFLT_NAME	"flash-image.bin"
+
 #define CONFIG_SYS_PCI_64BIT	/* enable 64-bit PCI resources */
 
 /*

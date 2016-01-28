@@ -17,7 +17,6 @@
  */
 
 #include <common.h>
-#include <asm/arch-mvebu/spl.h>
 #include <asm/arch-mvebu/comphy.h>
 #include <asm/arch-mvebu/io_addr_dec.h>
 #include <asm/arch-armadalp/clock.h>
@@ -27,6 +26,8 @@
 #include <asm/arch-mvebu/ddr.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <spl.h>
+
+DECLARE_GLOBAL_DATA_PTR;
 
 void (*ptr_uboot_start)(void);
 

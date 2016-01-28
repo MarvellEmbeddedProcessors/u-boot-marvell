@@ -19,6 +19,7 @@
 #include <config.h>
 #include <common.h>
 #include <errno.h>
+#include <i2c.h>
 #include <asm/system.h>
 #include <asm/bitops.h>
 #include <asm/arch-mvebu/mvebu.h>
@@ -39,6 +40,19 @@
 #endif
 #ifdef CONFIG_MVEBU_MBUS
 #include <asm/arch-mvebu/mbus.h>
+#endif
+
+#if defined(CONFIG_HARD_I2C) || defined(CONFIG_SYS_I2C)
+/* General I2C initialization wrapper */
+int init_func_i2c(void)
+{
+#ifdef CONFIG_SYS_I2C
+	i2c_init_all();
+#else
+	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
+#endif
+	return 0;
+}
 #endif
 
 #ifdef CONFIG_SCSI_AHCI_PLAT

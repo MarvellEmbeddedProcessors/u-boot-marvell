@@ -16,6 +16,8 @@
  * ***************************************************************************
  */
 
+#include <common.h>
+#include <asm/arch-mvebu/soc.h>
 #include <fdtdec.h>
 #include <libfdt.h>
 #include "fdt_eeprom.h"
@@ -24,18 +26,6 @@ u8 mapping_default_fdt[] = DEFAULT_FDT_PER_BOARD;
 struct eeprom_struct fdt_config_val = FDT_DEFAULT_VALUE;
 struct board_config_struct_info *board_cfg = &(fdt_config_val.board_config);
 struct fdt_config_types_info fdt_config_types_info[] = MV_EEPROM_CONFIG_INFO;
-
-#if defined(CONFIG_HARD_I2C) || defined(CONFIG_SYS_I2C)
-static int init_func_i2c(void)
-{
-#ifdef CONFIG_SYS_I2C
-	i2c_init_all();
-#else
-	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
-#endif
-	return 0;
-}
-#endif
 
 uint32_t mvebu_checksum8(uint8_t *start, uint32_t len)
 {

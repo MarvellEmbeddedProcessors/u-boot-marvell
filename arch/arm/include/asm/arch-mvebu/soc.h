@@ -36,6 +36,7 @@ void board_usb_vbus_set(void);
 #endif
 int mvebu_soc_init(void);
 void mvebu_print_soc_info(void);
+int init_func_i2c(void);
 
 DECLARE_GLOBAL_DATA_PTR;
 

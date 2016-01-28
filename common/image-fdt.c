@@ -520,6 +520,11 @@ int image_setup_libfdt(bootm_headers_t *images, void *blob,
 		ft_board_setup_ex(blob, gd->bd);
 #endif
 
+#if defined(CONFIG_FDT_DEBUG_PRINT)
+	set_working_fdt_addr(blob);
+	fdt_print("/", NULL, 32 /* Max depth */);
+#endif
+
 	return 0;
 err:
 	printf(" - must RESET the board to recover.\n\n");

@@ -30,7 +30,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static int fdt_valid(struct fdt_header **blobp);
 static int fdt_parse_prop(char *const*newval, int count, char *data, int *len);
-static int fdt_print(const char *pathp, char *prop, int depth);
 static int is_printable_string(const void *data, int len);
 
 /*
@@ -903,7 +902,7 @@ static void print_data(const void *data, int len)
  * Recursively print (a portion of) the working_fdt.  The depth parameter
  * determines how deeply nested the fdt is printed.
  */
-static int fdt_print(const char *pathp, char *prop, int depth)
+int fdt_print(const char *pathp, char *prop, int depth)
 {
 	static char tabs[MAX_LEVEL+1] =
 		"\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t"

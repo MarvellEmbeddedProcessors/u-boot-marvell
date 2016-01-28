@@ -70,4 +70,14 @@ config CMD_MVEBU_PHY_INDIRECT
 	help
 	  phy_indirect - Access to PHY indirect registers
 
+config CMD_MVEBU_HW_INFO
+	bool "hw_info"
+	select BOARD_CONFIG_EEPROM
+	default n
+	help
+	  hw_info - load HW information such as board ID, PCB SLM number,
+	  MAC addresses from EEPROM and apply them to enviroment variables.
+	  And update the MAC address in FDT file for Linux.
+	  When save the box information, it will be saved to EEPROM.
+
 endmenu

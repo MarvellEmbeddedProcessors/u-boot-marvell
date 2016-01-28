@@ -123,6 +123,17 @@ void set_default_env(const char *s)
 		error("Environment import failed: errno = %d\n", errno);
 
 	gd->flags |= GD_FLG_ENV_READY;
+
+#ifdef CONFIG_CMD_MVEBU_HW_INFO
+	/* load the HW configuration from EEPROM to env variables and saveenv.
+	 * This is because when the env varibles are reset, need to recover the
+	 * HW configuration related env varibles from EEPROM.
+	 * The only generic U-Boot env variable that will be overridden here
+	 * will be the MAC address variables, while the rest are Marvell
+	 * specific variables
+	 */
+	cmd_hw_info_load(NULL, 1);
+#endif /* CONFIG_CMD_MVEBU_HW_INFO */
 }
 
 

@@ -26,6 +26,12 @@
 #endif
 
 #ifdef CONFIG_USB_XHCI
+void __board_usb_vbus_init(void)
+{
+	printf("%s is weak function, need to implement it if need to change VBUS\n", __func__);
+}
+void board_usb_vbus_init(void) __attribute__((weak, alias("__board_usb_vbus_init")));
+
 int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 {
 	int node_list[CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS], node;

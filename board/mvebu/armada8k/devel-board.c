@@ -85,6 +85,85 @@ void board_usb_current_limit_init(void)
 #endif /* !CONFIG_PALLADIUM */
 }
 
+void board_usb_vbus_early_init(void)
+{
+#ifdef CONFIG_PALLADIUM
+	debug("VBUS change using IO-Expander is not supported in Palladium\n");
+#else /* CONFIG_PALLADIUM */
+/* Set USB VBUS signals (via I2C IO expander/GPIO) as output and set output value as disabled */
+/* This I2C IO expander configuration is board specific, only to DB-7040 board.
+ * (USB3_Host0 Vbus: I2C device at address 0x21, Register 0, BIT 0)
+ * (USB3_Host0 Vbus: I2C device at address 0x21, Register 0, BIT 1) */
+	int ret_read, ret_write , both_vbus_pins;
+	unsigned char cfg_val[1], out_val[1];
+	const void *blob = gd->fdt_blob;
+
+	/* Make sure board is supported (currently only Armada-70x0-DB is supported) */
+	if (fdt_node_check_compatible(blob, 0, "marvell,armada-70x0-db") != 0) {
+		debug("Missing USB VBUS power configuration for current board.\n");
+		return;
+	}
+
+	/* initialize I2C */
+	init_func_i2c();
+
+	both_vbus_pins = (1 << I2C_IO_REG_0_USB_H0_OFF) | (1 << I2C_IO_REG_0_USB_H1_OFF);
+
+	/* Read configuration (direction) and set VBUS pin as output (reset pin = output) */
+	ret_read = i2c_read(I2C_IO_EXP_ADDR, I2C_IO_CFG_REG_0, sizeof(unsigned char), cfg_val, sizeof(cfg_val));
+	cfg_val[0] &= ~both_vbus_pins;
+	ret_write = i2c_write(I2C_IO_EXP_ADDR, I2C_IO_CFG_REG_0, sizeof(unsigned char),
+			cfg_val, sizeof(cfg_val));
+	if (ret_read || ret_write) {
+		error("failed to set USB VBUS configuration on I2C IO expander\n");
+		return;
+	}
+
+	/* Read VBUS output value, and disable it */
+	ret_read = i2c_read(I2C_IO_EXP_ADDR, I2C_IO_DATA_OUT_REG_0, sizeof(unsigned char), out_val, sizeof(out_val));
+	out_val[0] &= ~both_vbus_pins;
+
+	ret_write = i2c_write(I2C_IO_EXP_ADDR, I2C_IO_DATA_OUT_REG_0, sizeof(unsigned char), out_val, sizeof(out_val));
+	if (ret_read || ret_write) {
+		error("failed to lower USB VBUS power on I2C IO expander\n");
+		return;
+	}
+
+	mdelay(500); /* required delay to let output value settle */
+#endif /* !CONFIG_PALLADIUM */
+}
+
+#ifdef CONFIG_USB_XHCI
+void board_usb_vbus_init(void)
+{
+#ifdef CONFIG_PALLADIUM
+	debug("VBUS change using IO-Expander is not supported in Palladium\n");
+#else /* CONFIG_PALLADIUM */
+/* Set USB VBUS signals (via I2C IO expander/GPIO) as output and set output value as enabled */
+/* This I2C IO expander configuration is board specific, only to DB-7040 board.
+ * (USB3_Host0 Vbus: I2C device at address 0x21, Register 0, BIT 0)
+ * (USB3_Host0 Vbus: I2C device at address 0x21, Register 0, BIT 1) */
+	int ret_write , both_vbus_pins;
+	unsigned char out_val[1];
+
+	both_vbus_pins = (1 << I2C_IO_REG_0_USB_H0_OFF) | (1 << I2C_IO_REG_0_USB_H1_OFF);
+	/* Read VBUS output value, and disable it */
+	i2c_read(I2C_IO_EXP_ADDR, I2C_IO_DATA_OUT_REG_0, sizeof(unsigned char), out_val, sizeof(out_val));
+	out_val[0] &= ~both_vbus_pins;
+
+	/* Enable VBUS power: Set output value of VBUS pin as enabled */
+	out_val[0] |= both_vbus_pins;
+	ret_write = i2c_write(I2C_IO_EXP_ADDR, I2C_IO_DATA_OUT_REG_0, sizeof(unsigned char), out_val, sizeof(out_val));
+	if (ret_write) {
+		error("failed to raise USB VBUS power on I2C IO expander\n");
+		return;
+	}
+
+	mdelay(500);/* required delay to let output value settle */
+#endif /* !CONFIG_PALLADIUM */
+}
+#endif /* CONFIG_USB_XHCI */
+
 int mvebu_devel_board_init(void)
 {
 #ifdef CONFIG_MVEBU_MPP_BUS
@@ -110,6 +189,8 @@ int mvebu_devel_board_init(void)
 
 	/* Set USB Current Limit signals as output and set output value as enabled */
 	board_usb_current_limit_init();
+	/* Set USB VBUS signals as output and set output value as disabled */
+	board_usb_vbus_early_init();
 
 	return 0;
 }

@@ -170,14 +170,6 @@ void print_soc_specific_info(void)
 	       llc_excl_mode ? " (Exclusive Mode)" : "");
 }
 
-#ifdef CONFIG_USB_XHCI
-void board_usb_vbus_init(void)
-{
-	/* TBD - implement VBUS cycle for here*/
-}
-#endif
-
-
 #ifdef CONFIG_XENON_MMC
 void mmc_soc_init(void)
 {

@@ -37,7 +37,7 @@ int setup_fdt(void)
 #ifdef CONFIG_MULTI_DT_FILE
 int mvebu_setup_fdt(void)
 {
-	gd->fdt_blob = mvebu_fdt_config_init();
+	gd->fdt_blob = cfg_eeprom_get_fdt();
 	return 0;
 }
 #endif

@@ -30,7 +30,11 @@ int setup_fdt(void);
 
 #ifdef CONFIG_MULTI_DT_FILE
 int mvebu_setup_fdt(void);
-u8 *mvebu_fdt_config_init(void);
+#endif
+
+#ifdef CONFIG_BOARD_CONFIG_EEPROM
+int cfg_eeprom_init(void);
+uint8_t *cfg_eeprom_get_fdt(void);
 #endif
 
 void *fdt_get_regs_offs(const void *blob, int node, const char *prop_name);

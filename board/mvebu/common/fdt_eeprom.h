@@ -37,13 +37,13 @@ enum mv_config_type_id {
 };
 
 /* #pragma pack(1) */
-struct manufacturing_information_struct_info {
+struct manufacturing_information_struct {
 	u8 boardid;
 	u8 reserve_manufacturing_information[23];
 };
 
 /* #pragma pack(1) */
-struct board_config_struct_info {
+struct board_config_struct {
 	u8 fdt_cfg_en;
 	u8 active_fdt_selection;
 	u8 validation_counter;
@@ -55,12 +55,12 @@ struct eeprom_struct {
 	u32 checksum;
 	u32 pattern;
 	u16 length;
-	struct manufacturing_information_struct_info man_info;
-	struct board_config_struct_info board_config;
+	struct manufacturing_information_struct man_info;
+	struct board_config_struct board_config;
 	u8 fdt_blob[MVEBU_FDT_SIZE];
 };
 
-struct  fdt_config_types_info {
+struct  config_types_info {
 	enum mv_config_type_id config_id;
 	char name[30];
 	u8 byte_num;
@@ -78,11 +78,11 @@ struct  fdt_config_types_info {
 /* {{MV_CONFIG_TYPE_ID configId,	name,			byte_num,				byte_cnt}} */
 #define MV_EEPROM_CONFIG_INFO { \
 { MV_CONFIG_VERIFICATION_PATTERN,	"EEPROM Pattern",	offset_in_eeprom(pattern),			  \
-									sizeof(fdt_config_val.pattern)},	  \
+									sizeof(board_config_val.pattern)},	  \
 { MV_CONFIG_LENGTH,			"Data length",		offset_in_eeprom(length),			  \
-									sizeof(fdt_config_val.length)},		  \
+									sizeof(board_config_val.length)},	  \
 { MV_CONFIG_BOARDID,			"Board ID",		offset_in_eeprom(man_info.boardid),		  \
-									sizeof(fdt_config_val.man_info.boardid)}, \
+									sizeof(board_config_val.man_info.boardid)}, \
 { MV_CONFIG_FDTCFG_EN,			"EEPROM enable",	offset_in_eeprom(board_config.fdt_cfg_en),	  \
 									sizeof(board_cfg->fdt_cfg_en)},		  \
 { MV_CONFIG_ACTIVE_FDT_SELECTION,	"Active FDT selection", offset_in_eeprom(board_config.active_fdt_selection),\
@@ -90,14 +90,14 @@ struct  fdt_config_types_info {
 { MV_CONFIG_FDTCFG_VALID,		"Validation counter",	offset_in_eeprom(board_config.validation_counter),\
 								sizeof(board_cfg->validation_counter)},		  \
 { MV_CONFIG_FDT_FILE,			"FDT file",		offset_in_eeprom(fdt_blob),			  \
-								sizeof(fdt_config_val.fdt_blob)}		  \
+								sizeof(board_config_val.fdt_blob)}		  \
 }
 
-#define FDT_DEFAULT_VALUE  {											  \
+#define CFG_DEFAULT_VALUE  {											  \
 				0x00000000,				     /* checksum */			  \
 				0xfecadefa,				     /* EEPROM pattern */		  \
 				0x002c,					     /* length = 44 bytes */		  \
-				{MV_DEFAULT_BOARD_ID,		/* board ID */			  \
+				{MV_DEFAULT_BOARD_ID,			     /* board ID */			  \
 				{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,					  \
 				 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,				  \
 				 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} },/* reserve_man_information */  \
@@ -105,15 +105,15 @@ struct  fdt_config_types_info {
 				 0x03,					     /* active fdt selection = default */ \
 				 0x00,					     /* validation counter = 0 */	  \
 				{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} },/* reserve_board_cgf */		  \
-				{ [0 ... 7167] = 1 }			     /* fdt file */			  \
+				{[0 ... 7167] = 1}			     /* fdt file */			  \
 }
 
-	#define MV_MAX_FDT_CONFIGURATION	MV_MARVELL_BOARD_NUM * 8
-	extern struct eeprom_struct fdt_config_val;
-	uint32_t mvebu_checksum8(uint8_t *start, uint32_t len);
-	bool fdt_config_is_enable(void);
-	bool upload_fdt_from_flash(u8 fdt_config_id);
-	bool upload_fdt_from_eeprom(void);
-	void write_fdt_struct_to_eeprom(void);
+#define MV_MAX_FDT_CONFIGURATION	MV_MARVELL_BOARD_NUM * 8
 
-#endif
+bool cfg_eeprom_fdt_config_is_enable(void);
+bool cfg_eeprom_upload_fdt_from_flash(u8 fdt_config_id);
+bool cfg_eeprom_upload_fdt_from_eeprom(void);
+void cfg_eeprom_save(void);
+struct eeprom_struct *cfg_eeprom_get_board_config(void);
+
+#endif /* _FDT_EEPROM_H_ */

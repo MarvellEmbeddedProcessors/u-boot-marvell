@@ -33,6 +33,9 @@
 #ifdef CONFIG_DEVEL_BOARD
 #include "devel-board.h"
 #endif
+#ifdef CONFIG_BOARD_CONFIG_EEPROM
+#include "fdt_eeprom.h"
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -54,6 +57,10 @@ int soc_early_init_f(void)
 /* Do very basic stuff like board and soc detection */
 int board_early_init_f(void)
 {
+#ifdef CONFIG_BOARD_CONFIG_EEPROM
+	cfg_eeprom_init();
+#endif
+
 #ifdef CONFIG_MULTI_DT_FILE
 	mvebu_setup_fdt();
 #endif

@@ -45,6 +45,10 @@ void board_init_f(ulong silent)
 	     tree for the SoC, required for i2c initialization to read EEPROM data */
 	setup_fdt();
 
+#ifdef CONFIG_BOARD_CONFIG_EEPROM
+	cfg_eeprom_init();
+#endif
+
 #ifdef CONFIG_MULTI_DT_FILE
 	/* Update gd->fdt_blob according to multi-fdt data in eeprom */
 	mvebu_setup_fdt();

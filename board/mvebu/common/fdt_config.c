@@ -32,6 +32,7 @@ static int fdt_list_of_configs[MV_MAX_FDT_CONFIGURATION] = {-1};
 int fdt_select_set(const char *selected_index)
 {
 	int i, index_int;
+	struct eeprom_struct *p_board_config;
 
 	if (fdt_list_size == -1) {
 		printf("FDT configuration list is not available.\n");
@@ -40,9 +41,10 @@ int fdt_select_set(const char *selected_index)
 	}
 
 	index_int = (int)simple_strtoul(selected_index, NULL, 16);
+	p_board_config = cfg_eeprom_get_board_config();
 	for (i = 0; i < fdt_list_size ; i++) {
 		if (index_int == fdt_list_of_configs[i]) {
-			fdt_config_val.board_config.active_fdt_selection = fdt_list_of_configs[i];
+			p_board_config->board_config.active_fdt_selection = fdt_list_of_configs[i];
 			printf("To save the changes, please run the command fdt_config save.\n");
 			return 0;
 		}
@@ -52,17 +54,19 @@ int fdt_select_set(const char *selected_index)
 	return 1;
 }
 
-/* fdt_select_list - print list of all fdt_config_id that compatible to the boardID */
+/* fdt_select_list - print list of all fdt_config_id */
 int fdt_select_list(void)
 {
 	int i, fdt_config_id;
 	char *fdt_model;
 	void *fdt_blob_temp = __dtb_dt_begin;
+	struct eeprom_struct *p_board_config;
 
 	fdt_list_size = 0;
+	p_board_config = cfg_eeprom_get_board_config();
 	printf("FDT config list:\n");
 	for (i = 0; fdt_check_header(fdt_blob_temp) == 0; i++) {
-		if ((u8)fdtdec_get_int(fdt_blob_temp, 0, "board_id", -1) == fdt_config_val.man_info.boardid) {
+		if ((u8)fdtdec_get_int(fdt_blob_temp, 0, "board_id", -1) == p_board_config->man_info.boardid) {
 			fdt_list_size++;
 			fdt_model = (char *)fdt_getprop(fdt_blob_temp, 0, "model", NULL);
 			fdt_config_id = fdtdec_get_int(fdt_blob_temp, 0, "fdt_config_id", -1);
@@ -77,8 +81,11 @@ int fdt_select_list(void)
 /* fdt_cfg_read_eeprom - write FDT from EEPROM to local struct and set 'fdt addr' environment variable */
 void fdt_cfg_read_eeprom(void)
 {
-	if (upload_fdt_from_eeprom()) {
-		set_working_fdt_addr(fdt_config_val.fdt_blob);
+	struct eeprom_struct *p_board_config;
+
+	p_board_config = cfg_eeprom_get_board_config();
+	if (cfg_eeprom_upload_fdt_from_eeprom()) {
+		set_working_fdt_addr(p_board_config->fdt_blob);
 		printf("Loaded FDT from EEPROM successfully\n");
 		printf("To save the changes, please run the command fdt_config save.\n");
 	}
@@ -89,6 +96,7 @@ void fdt_cfg_read_eeprom(void)
 int fdt_cfg_read_flash(const char *selected_index)
 {
 	int i, index_int;
+	struct eeprom_struct *p_board_config;
 
 	if (fdt_list_size == -1) {
 		printf("FDT configuration list is not available.\n");
@@ -97,10 +105,11 @@ int fdt_cfg_read_flash(const char *selected_index)
 	}
 
 	index_int = (int)simple_strtoul(selected_index, NULL, 16);
+	p_board_config = cfg_eeprom_get_board_config();
 	for (i = 0; i < fdt_list_size ; i++) {
 		if (index_int == fdt_list_of_configs[i]) {
-			upload_fdt_from_flash(fdt_list_of_configs[i]);
-			set_working_fdt_addr(fdt_config_val.fdt_blob);
+			cfg_eeprom_upload_fdt_from_flash(fdt_list_of_configs[i]);
+			set_working_fdt_addr(p_board_config->fdt_blob);
 			printf("To save the changes, please run the command fdt_config save.\n");
 			return 0;
 		}
@@ -109,27 +118,19 @@ int fdt_cfg_read_flash(const char *selected_index)
 	return 1;
 }
 
-/* fdt_cfg_save - write the local struct to EEPROM */
-int fdt_cfg_save(void)
-{
-	/* calculate checksum and save it in struct */
-	fdt_config_val.checksum = mvebu_checksum8((uint8_t *)&fdt_config_val.pattern,
-						   (uint32_t) fdt_config_val.length - 4);
-	/* write fdt struct to EEPROM */
-	write_fdt_struct_to_eeprom();
-	return 0;
-}
-
 /* fdt_cfg_on - enable read FDT from EEPROM */
 int fdt_cfg_on(void)
 {
-	if (fdt_config_is_enable() == false) {
-		fdt_config_val.length += MVEBU_FDT_SIZE;
-		fdt_config_val.board_config.fdt_cfg_en = 1;
+	struct eeprom_struct *p_board_config;
+
+	p_board_config = cfg_eeprom_get_board_config();
+	if (cfg_eeprom_fdt_config_is_enable() == false) {
+		p_board_config->length += MVEBU_FDT_SIZE;
+		p_board_config->board_config.fdt_cfg_en = 1;
 	}
 	printf("Do you want to read FDT from EEPROM? <y/N> ");
 	if (confirm_yesno()) {
-		if (upload_fdt_from_eeprom())
+		if (cfg_eeprom_upload_fdt_from_eeprom())
 			printf("Load fdt from EEprom\n");
 	}
 	printf("To save the changes, please run the command fdt_config save.\n");
@@ -139,9 +140,12 @@ int fdt_cfg_on(void)
 /* fdt_cfg_on - disable read FDT from EEPROM */
 int fdt_cfg_off(void)
 {
-	if (fdt_config_is_enable()) {
-		fdt_config_val.length -= MVEBU_FDT_SIZE;
-		fdt_config_val.board_config.fdt_cfg_en = 0;
+	struct eeprom_struct *p_board_config;
+
+	p_board_config = cfg_eeprom_get_board_config();
+	if (cfg_eeprom_fdt_config_is_enable()) {
+		p_board_config->length -= MVEBU_FDT_SIZE;
+		p_board_config->board_config.fdt_cfg_en = 0;
 	}
 	printf("config fdt is now disable\n");
 	printf("To save the changes, please run the command fdt_config save.\n");

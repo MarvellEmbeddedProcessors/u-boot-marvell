@@ -21,7 +21,6 @@
 
 void fdt_cfg_read_eeprom(void);
 int fdt_cfg_read_flash(const char *selected_index);
-int fdt_cfg_save(void);
 int fdt_cfg_on(void);
 int fdt_cfg_off(void);
 int fdt_select_set(const char *selected_index);

@@ -21,7 +21,7 @@
 #include <command.h>
 #include <vsprintf.h>
 #include <errno.h>
-
+#include "../../board/mvebu/common/fdt_eeprom.h"
 #include "../../board/mvebu/common/fdt_config.h"
 
 int do_fdt_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
@@ -58,8 +58,7 @@ int do_fdt_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			return 1;
 		}
 	} else if (strcmp(cmd, "save") == 0) {
-		if (fdt_cfg_save())
-			return 1;
+		cfg_eeprom_save();
 	} else if (strcmp(cmd, "on") == 0) {
 		if (fdt_cfg_on())
 			return 1;

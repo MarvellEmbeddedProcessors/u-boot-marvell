@@ -14,10 +14,20 @@ config MULTI_DT_FILE
 	bool "Support multi DT files in U-boot image"
 	depends on OF_CONTROL
 	default y
+	select BOARD_CONFIG_EEPROM
 	help
 	  If this option is enabled, U-Boot will support different DT files.
 	  Each FDT has a fixed size of 7KB, so to choose between them in u-boot,
 	  it will be executerd by a jump of 7KB.
 	  The u-boot separates between the DTB by the flavor/board id
+
+config BOARD_CONFIG_EEPROM
+	bool "Support configuration EEPROM"
+	default n
+	help
+	  If this option is enabled, U-Boot will initialize
+	  configuration EEPROM on board.
+	  It will be enabled once the CMD_MVEBU_BOX_INFO or
+	  MULTI_DT_FILE is enabled
 
 endmenu

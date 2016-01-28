@@ -68,9 +68,9 @@ void mvebu_init_sdio(void)
 	reg_val |= (1 << MVEBU_GPIO_SDIO_VOLTAGE_OFF);
 	writel(reg_val, MVEBU_GPIO_SB_OUTPUT_EN_REG);
 
-	/* Set SDIO to GPIO mode */
+	/* Set test pin to SDIO mode */
 	reg_val = readl(MVEBU_GPIO_SB_SEL_REG);
-	reg_val |= (1 << MVEBU_GPIO_SB_SDIO_EN_OFF);
+	reg_val &= ~(1 << MVEBU_GPIO_SB_SDIO_EN_OFF);
 	writel(reg_val, MVEBU_GPIO_SB_SEL_REG);
 }
 

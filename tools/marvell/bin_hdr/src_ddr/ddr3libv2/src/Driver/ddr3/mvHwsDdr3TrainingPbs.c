@@ -556,8 +556,6 @@ GT_STATUS    ddr3TipPbs
 
    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
    {
-        regAddr = (pbsMode == PBS_RX_MODE) ? (0x5A + effective_cs * 0x10) : (0x1A + effective_cs * 0x10);
-        CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,  ACCESS_TYPE_UNICAST,   interfaceId, ACCESS_TYPE_UNICAST,  pup, DDR_PHY_DATA, regAddr, 0));
 
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)        /* restore cs enable value*/
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, CS_ENABLE_REG, csEnableRegVal[interfaceId], MASK_ALL_BITS));

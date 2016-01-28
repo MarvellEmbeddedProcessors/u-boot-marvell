@@ -712,9 +712,6 @@ static void xenon_mmc_set_ios(struct mmc *mmc)
 
 static int xenon_mmc_init(struct mmc *mmc)
 {
-	u32 status;
-	u8  var;
-	u32 timeout = 1000; /* Wait max 100ms */
 	struct xenon_mmc_cfg *mmc_cfg = mmc->priv;
 
 	debug_enter();
@@ -731,29 +728,6 @@ static int xenon_mmc_init(struct mmc *mmc)
 			return -1;
 		}
 	}
-
-	/* Detect card */
-	if (mmc_cfg->quirks & SDHCI_QUIRK_NO_CD) {
-		var = xenon_mmc_readb(mmc_cfg, SDHCI_HOST_CONTROL);
-		var |= SDHCI_CTRL_CD_TEST_INS | SDHCI_CTRL_CD_TEST;
-		xenon_mmc_writeb(mmc_cfg, SDHCI_HOST_CONTROL, var);
-
-		status = xenon_mmc_readl(mmc_cfg, SDHCI_PRESENT_STATE);
-		while (((!(status & SDHCI_CARD_PRESENT)) ||
-		    (!(status & SDHCI_CARD_STATE_STABLE))) && timeout) {
-			timeout--;
-			udelay(100);
-			status = xenon_mmc_readl(mmc_cfg, SDHCI_PRESENT_STATE);
-		}
-
-		var &= ~(SDHCI_CTRL_CD_TEST_INS | SDHCI_CTRL_CD_TEST);
-		xenon_mmc_writeb(mmc_cfg, SDHCI_HOST_CONTROL, var);
-	}
-
-	if (timeout)
-		printf("SD/eMMC card is detected\n");
-	else
-		printf("NO SD/eMMC card detected\n");
 
 	/* Disable auto clock gating during init */
 	xenon_mmc_set_acg(mmc_cfg, false);

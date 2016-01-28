@@ -51,43 +51,33 @@ dtb-$(CONFIG_AM33XX) += am335x-boneblack.dtb
 
 dtb-$(CONFIG_SOCFPGA) += socfpga_cyclone5_socrates.dtb
 
+# If Multi-FDT feature is enabled, all the DTB files that are compiled
+# will be linked into SPL, the dtb size increase the SPL size.
 dtb-$(CONFIG_TARGET_ARMADA_38X) += armada-385-db.dtb
 ifdef CONFIG_TARGET_ARMADA_LP
 ifndef CONFIG_DEVEL_BOARD
 dtb-y += armada-lp-customer0.dtb
-else
-# For multi-fdt feature, all the dtb files that are compiled will
-# be linked into spl/u-boot, but A3700 spl is running in SRAM, so
-# the size of spl could not be bigger than SRAM.
-# right now the size of spl is very close to SRAM, and there is
-# space for only two dtb files.
-# So when Multi-FDT feature is included, these two dtb files that
-# are compiled/linked into SPL and u-boot have to be the two for
-# A3700 DB, and armada-lp-palladium.dtb would not be compiled.
-# there is a JIRA bug about this issue: SYSTEMSW-2194, when it is
-# fixed, this patch could be removed.
-dtb-y += armada-lp-db.dtb \
-	 armada-lp-db-sgmii1.dtb
-ifndef CONFIG_MULTI_DT_FILE
-dtb-y += armada-lp-palladium.dtb
-endif #CONFIG_MULTI_DT_FILE
-
 endif #CONFIG_DEVEL_BOARD
+dtb-$(CONFIG_DEVEL_BOARD) += armada-lp-db.dtb \
+			     armada-lp-db-sgmii1.dtb
+dtb-$(CONFIG_PALLADIUM) += armada-lp-palladium.dtb
 endif #CONFIG_TARGET_ARMADA_LP
 
-dtb-$(CONFIG_TARGET_ARMADA_8K) += apn-806-db.dtb \
-		       apn-806-pd.dtb \
-		       apn-806-pd-a0.dtb \
-		       apn-806-db-dop.dtb \
-		       armada-80x0-db.dtb \
-		       armada-70x0-pd.dtb \
-		       armada-7040-rz-db_nand.dtb \
-		       armada-7040-rz-db_router.dtb \
-		       armada-7040-rz-db_all_pci.dtb \
-		       armada-7040-rz-db_rgmii_only.dtb \
-		       armada-7040-rz-db_kr.dtb \
-		       armada-7040-rz-db_rxaui_pci.dtb \
-		       armada-7040-rz-db_rxaui.dtb
+ifdef CONFIG_TARGET_ARMADA_8K
+dtb-$(CONFIG_PALLADIUM) += apn-806-pd.dtb \
+			   apn-806-pd-a0.dtb \
+			   armada-70x0-pd.dtb
+dtb-$(CONFIG_DEVEL_BOARD) += apn-806-db.dtb \
+			     apn-806-db-dop.dtb \
+			     armada-80x0-db.dtb \
+			     armada-7040-rz-db_nand.dtb \
+			     armada-7040-rz-db_router.dtb \
+			     armada-7040-rz-db_all_pci.dtb \
+			     armada-7040-rz-db_rgmii_only.dtb \
+			     armada-7040-rz-db_kr.dtb \
+			     armada-7040-rz-db_rxaui_pci.dtb \
+			     armada-7040-rz-db_rxaui.dtb
+endif #CONFIG_TARGET_ARMADA_8K
 
 targets += $(dtb-y)
 

@@ -401,7 +401,7 @@ static int xenon_mmc_transfer_data(struct xenon_mmc_cfg *mmc_cfg, struct mmc_dat
 		if (timeout-- > 0) {
 			udelay(10);
 		} else {
-			error("Transfer data timeout\n");
+			debug("Transfer data timeout\n");
 			return -1;
 		}
 	} while (!(stat & SDHCI_INT_DATA_END));
@@ -761,11 +761,14 @@ static int xenon_mmc_init(struct mmc *mmc)
 	/* Enable slot */
 	xenon_mmc_set_slot(mmc_cfg, XENON_MMC_SLOT_ID_HYPERION, true);
 
-	/*
-	 * Set default power
-	 * SDIO/eMMC 0 VDD: 3.3V, SDIO 1 VDD: 3.3V, SDIO/eMMC 0 VCCQ: 1.8V, SDIO 1 VCCQ: 1.8V
+	/* Set default power
+	 * eMMC mode, VDD: 1.8V, VCCQ: 1.8V
+	 * SD/SDIO mode, VDD: 3.3V, VCCQ: 3.3V
 	 */
-	xenon_mmc_set_power(mmc_cfg, MMC_VDD_165_195, eMMC_VCCQ_1_8V);
+	if (mmc_cfg->mmc_mode == XENON_MMC_MODE_EMMC)
+		xenon_mmc_set_power(mmc_cfg, MMC_VDD_165_195, eMMC_VCCQ_1_8V);
+	else
+		xenon_mmc_set_power(mmc_cfg, MMC_VDD_32_33, eMMC_VCCQ_3_3V);
 
 	/* Set default clock */
 	xenon_mmc_set_clk(mmc, mmc_cfg->clk);
@@ -805,7 +808,7 @@ static const struct mmc_ops xenon_mmc_ops = {
 	.init		= xenon_mmc_init,
 };
 
-int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk)
+int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk, u32 mmc_mode)
 {
 	u32 caps;
 	struct xenon_mmc_cfg *mmc_cfg = NULL;
@@ -820,8 +823,9 @@ int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk)
 	mmc_cfg->quirks = SDHCI_QUIRK_NO_CD | SDHCI_QUIRK_WAIT_SEND_CMD |
 			  SDHCI_QUIRK_32BIT_DMA_ADDR;
 
-	/* Set reg base and name */
+	/* Set reg base, mode and name */
 	mmc_cfg->reg_base = (u64)reg_base;
+	mmc_cfg->mmc_mode = mmc_mode;
 	mmc_cfg->cfg.name = driver_name;
 
 	/* Set version and ops */
@@ -915,6 +919,7 @@ int board_mmc_init(bd_t *bis)
 	int node_list[XENON_MMC_PORTS_MAX];
 	int count, err = 0;
 	int port_count;
+	u32 mmc_mode;
 	void __iomem *reg_base;
 	const void *blob = gd->fdt_blob;
 
@@ -936,7 +941,19 @@ int board_mmc_init(bd_t *bis)
 			error("Missing registers in XENON SDHCI node\n");
 			continue;
 		}
-		xenon_mmc_create(port_count, reg_base, XENON_MMC_MAX_CLK);
+
+		/* Xenon emmc: this is a emmc slot.
+		 * Actually, whether current slot is for emmc can be
+		 * extracted from SDHC_SYS_CFG_INFO register. However, some Xenon IP
+		 * versions might not implement the slot type information. In such a case,
+		 * it is necessary to explicitly indicate the emmc type.
+		 */
+		if (fdtdec_get_bool(blob, node_list[port_count], "xenon,emmc"))
+			mmc_mode = XENON_MMC_MODE_EMMC;
+		else
+			mmc_mode = XENON_MMC_MODE_SD_SDIO;
+
+		xenon_mmc_create(port_count, reg_base, XENON_MMC_MAX_CLK, mmc_mode);
 	}
 
 	return err;

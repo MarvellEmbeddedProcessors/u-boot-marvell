@@ -1,0 +1,23 @@
+* Marvell Xenon MMC controller
+This file documents the properties used by the sdhci-xenon drivers.
+
+Required properties:
+- compatible: Should be "marvell,xenon-sdhci".
+- reg: base register offiset for the SDHCI registers.
+- status: enable or disable this node
+
+Optional properties:
+- xenon,emmc: whether only used for eMMC mode(does not support SD)
+  For Xenon MMC SDHC, the SDHC_SYS_CFG_INFO register (Offset 0x0104)
+  shows current slot supports both of SD/SDIO and eMMC, this property is mandatory to
+  inform driver whether current slot is used for eMMC or SD/SDIO.
+  If this property is set, current slot will be used for eMMC.
+  If this property is not set, current slot will be used for SD/SDIO.
+
+Example:
+mmc0: mmc@D8000 {
+    compatible = "marvell,xenon-sdhci";
+    reg = <0xD8000 0x300>;
+    xenon,emmc;
+    status = "disabled";
+};

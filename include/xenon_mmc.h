@@ -178,12 +178,17 @@
 
 #define  SDHCI_RETUNE_EVT_INTSIG	0x00001000
 
+/* MMC modes */
+#define XENON_MMC_MODE_EMMC	0
+#define XENON_MMC_MODE_SD_SDIO	1
+
 struct xenon_mmc_cfg {
 	u64 reg_base;
 	u32 version;
 	u32 quirks;
 	u32 clk;
 	u32 bus_width;
+	u32 mmc_mode;
 	void *aligned_buffer;
 	struct mmc_config cfg;
 	struct mmc *mmc;

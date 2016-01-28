@@ -112,10 +112,14 @@ int usb_init(void)
 
 
 #if defined(MV88F68XX) || defined(MV88F69XX)
-	/* Temp WA for timing issue with Armada 38x and xHCI */
-	/* Check if currently using xHCI stack (usbType = 3) */
-	if (simple_strtoul(getenv("usbType"), NULL, 10) == 3)
-		mdelay(20);
+		/*
+		 * Temp WA for timing issue with Armada 38x and xHCI
+		 * Delay value increased to 50 mSec (use to be 20 mSec)
+		 * Due to longer enumeration phase in some devices
+		 * Check if currently using xHCI stack (usbType = 3)
+		 */
+		if (simple_strtoul(getenv("usbType"), NULL, 10) == 3)
+			mdelay(50);
 #endif
 		/*
 		 * lowlevel init is OK, now scan the bus for devices

@@ -58,5 +58,10 @@
 #define PHY_TYPE_MAX			24
 #define PHY_TYPE_INVALID		0xff
 
+#define UTMI_PHY_TO_USB_HOST0		0
+#define UTMI_PHY_TO_USB_HOST1		1
+#define UTMI_PHY_TO_USB_DEVICE0		2
+#define UTMI_PHY_INVALID		0xff
+
 #endif /* _COMPHY_DATA_H_ */
 

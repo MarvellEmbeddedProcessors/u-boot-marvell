@@ -42,7 +42,8 @@
 #define COMMON_SELECTOR_PHY_OFFSET		0x140
 #define COMMON_SELECTOR_PIPE_OFFSET		0x144
 
-#define MAX_LANE_OPTIONS 10
+#define MAX_LANE_OPTIONS			10
+#define MAX_UTMI_PHY_COUNT			2
 
 struct comphy_mux_options {
 	u32 type;

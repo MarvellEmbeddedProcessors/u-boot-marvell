@@ -1,0 +1,30 @@
+Marvell UTMI PHY bindings
+=====================================
+
+The UTMI PHY node include description about the UTMI phy unit.
+The driver initialize the UTMI PHY, according to the FDT blob configurations.
+
+Mandatory properties:
+	- compatible:
+		"marvell,mvebu-utmi-2.6.0" for UTMI unit version 2.6.0 (version in design team)
+	- reg-utmi-unit: base address of the UTMI unit
+	- reg-usb-cfg: address of USB Configuration register
+	- reg-utmi-cfg: address of external UTMI configuration
+	- utmi-port: the type of the connected USB port
+	posible options under: include/dt-bindings/comphy/comphy_data.h
+
+Note:
+For Armada-8k - there is 2 UTMI units in the SoC, the limitation of the UTMI PHY:
+	UTMI 0 can be connected to USB HOST 0 or USB DEVICE
+	UTMI 1 can be connected to USB HOST 1 or USB DEVICE
+
+Example:
+utmi0@580000 {
+	compatible = "marvell,mvebu-utmi-2.6.0";
+	reg-utmi-unit = <0x580000 0x1000>;
+	reg-usb-cfg = <0x440420 0x4>;
+	reg-utmi-cfg = <0x440440 0x4>;
+	utmi-port = <UTMI_PHY_TO_USB_HOST0>;
+	status = "okay";
+};
+

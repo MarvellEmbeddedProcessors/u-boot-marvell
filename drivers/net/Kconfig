@@ -51,18 +51,6 @@ config MVEBU_NETA_BYPASS_DEC_WIN
 	  bypass the first layer of GBE decode window by
 	  setting the first window to 4GB.
 
-config MVEBU_NETA_ALWAYS_INIT_PHY
-	bool "always initialize ETH PHY for neta driver"
-	depends on MVNETA
-	default n
-	help
-	  Choose this option to always initialize the ETH PHY
-	  during neta initialization.
-	  Otherwise the ETH PHY will be initialized when
-	  neta utilities such as "ping", "tftp" are issued in u-boot.
-	  The is a WA, after the ETH PHY is supported by Linux driver,
-	  it could be reverted.
-
 config PHY_MARVELL
 	bool "marvell PHY driver"
 	default n

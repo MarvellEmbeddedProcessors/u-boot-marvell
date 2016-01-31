@@ -30,16 +30,17 @@
 #define COMMON_PHY_SELECTOR_OFFSET		0xFC
 
 struct comphy_mux_data a38x_comphy_mux_data[] = {
-	{4, {{UNCONNECTED, 0x0}, {PEX0, 0x1}, {SATA0, 0x2}, {SGMII0, 0x3} } },
-	{8, {{UNCONNECTED, 0x0}, {PEX0, 0x1}, {PEX0, 0x2}, {SATA0, 0x3},
-		{SGMII0, 0x4}, {SGMII1, 0x5}, {USB3_HOST0, 0x6}, {QSGMII, 0x7} } },
-	{5, {{UNCONNECTED, 0x0}, {PEX1, 0x1}, {PEX0, 0x2}, {SATA1, 0x3}, {SGMII1, 0x4} } },
-	{7, {{UNCONNECTED, 0x0}, {PEX3, 0x1}, {PEX0, 0x2}, {SATA3, 0x3}, {SGMII2, 0x4},
-		{USB3_HOST0, 0x5}, {USB3_DEVICE, 0x6} } },
-	{7, {{UNCONNECTED, 0x0}, {PEX1, 0x1}, {SATA1, 0x2}, {SGMII1, 0x3}, {USB3_HOST0, 0x4},
-		{USB3_DEVICE, 0x5}, {SATA2, 0x6} } },
-	{6, {{UNCONNECTED, 0x0}, {PEX2, 0x1}, {SATA2, 0x2}, {SGMII2, 0x3}, {USB3_HOST1, 0x4},
-		{USB3_DEVICE, 0x5} } },
+	{4, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX0, 0x1}, {PHY_TYPE_SATA0, 0x2}, {PHY_TYPE_SGMII0, 0x3} } },
+	{8, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX0, 0x1}, {PHY_TYPE_PEX0, 0x2}, {PHY_TYPE_SATA0, 0x3},
+		{PHY_TYPE_SGMII0, 0x4}, {PHY_TYPE_SGMII1, 0x5}, {PHY_TYPE_USB3_HOST0, 0x6}, {PHY_TYPE_QSGMII, 0x7} } },
+	{5, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX1, 0x1}, {PHY_TYPE_PEX0, 0x2}, {PHY_TYPE_SATA1, 0x3},
+		{PHY_TYPE_SGMII1, 0x4} } },
+	{7, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX3, 0x1}, {PHY_TYPE_PEX0, 0x2}, {PHY_TYPE_SATA3, 0x3},
+		{PHY_TYPE_SGMII2, 0x4}, {PHY_TYPE_USB3_HOST0, 0x5}, {PHY_TYPE_USB3_DEVICE, 0x6} } },
+	{7, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX1, 0x1}, {PHY_TYPE_SATA1, 0x2}, {PHY_TYPE_SGMII1, 0x3},
+		{PHY_TYPE_USB3_HOST0, 0x4}, {PHY_TYPE_USB3_DEVICE, 0x5}, {PHY_TYPE_SATA2, 0x6} } },
+	{6, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX2, 0x1}, {PHY_TYPE_SATA2, 0x2}, {PHY_TYPE_SGMII2, 0x3},
+		{PHY_TYPE_USB3_HOST1, 0x4}, {PHY_TYPE_USB3_DEVICE, 0x5} } },
 };
 
 static int comphy_pcie_power_up(u32 pex_index, void __iomem *comphy_addr, void __iomem *hpipe_addr)
@@ -126,15 +127,15 @@ int comphy_a38x_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_
 		debug("Initialize serdes number %d\n", lane);
 		debug("Serdes type = 0x%x\n", ptr_comphy_map->type);
 		switch (ptr_comphy_map->type) {
-		case UNCONNECTED:
+		case PHY_TYPE_UNCONNECTED:
 			continue;
-		case PEX0:
-		case PEX1:
-		case PEX2:
-		case PEX3:
+		case PHY_TYPE_PEX0:
+		case PHY_TYPE_PEX1:
+		case PHY_TYPE_PEX2:
+		case PHY_TYPE_PEX3:
 			is_pex_enabled = true;
 			/* TODO: add support for PEX by4 initialization */
-			ret = comphy_pcie_power_up(ptr_comphy_map->type - PEX0,
+			ret = comphy_pcie_power_up(ptr_comphy_map->type - PHY_TYPE_PEX0,
 					comphy_base_addr + 0x28 * lane, hpipe3_base_addr + 0x800 * lane);
 			break;
 		default:

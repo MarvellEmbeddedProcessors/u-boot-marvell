@@ -144,7 +144,7 @@ static u32 comphy_poll_reg(void *addr, u32 val, u32 mask, u32 timeout, u8 op_typ
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_pcie_power_up(enum phy_speed speed)
+static int comphy_pcie_power_up(u32 speed)
 {
 	int	ret;
 
@@ -297,7 +297,7 @@ static int comphy_sata_power_up(void)
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_usb3_power_up(enum phy_speed speed)
+static int comphy_usb3_power_up(u32 speed)
 {
 	int	ret;
 
@@ -538,7 +538,7 @@ static int comphy_emmc_power_up(void)
   *
   * return:
  ***************************************************************************************************/
-static void comphy_sgmii_phy_init(u32 lane, enum phy_speed speed)
+static void comphy_sgmii_phy_init(u32 lane, u32 speed)
 {
 	int		addr, fix_idx;
 	const int	fix_arr_sz = sizeof(sgmii_phy_init_fix) / sizeof(struct sgmii_phy_init_data_fix);
@@ -550,7 +550,7 @@ static void comphy_sgmii_phy_init(u32 lane, enum phy_speed speed)
 		   The values required for 1.25 Gbps are almost the same and only
 		   few registers should be "fixed" in comparison to 3.125 Gbps values.
 		   These register values are stored in "sgmii_phy_init_fix" array */
-		if ((speed != __1_25gbps) && (sgmii_phy_init_fix[fix_idx].addr == addr)) {
+		if ((speed != PHY_SPEED_1_25G) && (sgmii_phy_init_fix[fix_idx].addr == addr)) {
 			/* Use new value */
 			val = sgmii_phy_init_fix[fix_idx].value;
 			if (fix_idx < fix_arr_sz)
@@ -568,7 +568,7 @@ static void comphy_sgmii_phy_init(u32 lane, enum phy_speed speed)
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_sgmii_power_up(u32 lane, enum phy_speed speed)
+static int comphy_sgmii_power_up(u32 lane, u32 speed)
 {
 	int	ret;
 
@@ -597,12 +597,12 @@ static int comphy_sgmii_power_up(u32 lane, enum phy_speed speed)
 	/*
 	  7. Set PIN_PHY_GEN_TX[3:0] and PIN_PHY_GEN_RX[3:0] to decide COMPHY bit rate
 	 */
-	if (speed == __3_125gbps) { /* 3.125 GHz */
+	if (speed == PHY_SPEED_3_125G) { /* 3.125 GHz */
 		reg_set((void __iomem *)COMPHY_PHY_CFG1_ADDR(lane),
 			(0x8 << rf_gen_rx_sel_shift) | (0x8 << rf_gen_tx_sel_shift), /* data - fields to set */
 			rf_gen_rx_select | rf_gen_tx_select); /* mask - fields to reset */
 
-	} else if (speed == __1_25gbps) { /* 1.25 GHz */
+	} else if (speed == PHY_SPEED_1_25G) { /* 1.25 GHz */
 		reg_set((void __iomem *)COMPHY_PHY_CFG1_ADDR(lane),
 			(0x6 << rf_gen_rx_sel_shift) | (0x6 << rf_gen_tx_sel_shift), /* data - fields to set */
 			rf_gen_rx_select | rf_gen_tx_select); /* mask - fields to reset */
@@ -650,7 +650,7 @@ static int comphy_sgmii_power_up(u32 lane, enum phy_speed speed)
 	   defined by "comphy_sgmii_phy_init" when the REF clock is 40 MHz.
 	   For REF clock 25 MHz the default values stored in PHY registers are OK.
 	*/
-	debug("Running C-DPI phy init %s mode\n", speed == __3_125gbps ? "2G5" : "1G");
+	debug("Running C-DPI phy init %s mode\n", speed == PHY_SPEED_3_125G ? "2G5" : "1G");
 	if (get_ref_clk() == 40)
 		comphy_sgmii_phy_init(lane, speed);
 
@@ -805,21 +805,21 @@ int comphy_a3700_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		debug("Serdes type = 0x%x\n", ptr_comphy_map->type);
 
 		switch (ptr_comphy_map->type) {
-		case UNCONNECTED:
+		case PHY_TYPE_UNCONNECTED:
 			continue;
 			break;
 
-		case PEX0:
+		case PHY_TYPE_PEX0:
 			ret = comphy_pcie_power_up(ptr_comphy_map->speed);
 			break;
 
-		case USB3_HOST0:
-		case USB3_DEVICE:
+		case PHY_TYPE_USB3_HOST0:
+		case PHY_TYPE_USB3_DEVICE:
 			ret = comphy_usb3_power_up(ptr_comphy_map->speed);
 			break;
 
-		case SGMII0:
-		case SGMII1:
+		case PHY_TYPE_SGMII0:
+		case PHY_TYPE_SGMII1:
 			ret = comphy_sgmii_power_up(lane, ptr_comphy_map->speed);
 			break;
 

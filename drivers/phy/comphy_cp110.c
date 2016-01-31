@@ -35,24 +35,31 @@
    PHY selector include the Ethernet and SATA options, every Ethernet option has different options,
    for example: serdes lane2 had option Eth_port_0 that include (SGMII0, XAUI0, RXAUI0, KR) */
 struct comphy_mux_data cp110_comphy_phy_mux_data[] = {
-/* Lane 0 */ {4, {{UNCONNECTED, 0x0}, {SGMII2, 0x1}, {XAUI2, 0x1}, {SATA1, 0x4} } },
-/* Lane 1 */ {4, {{UNCONNECTED, 0x0}, {SGMII3, 0x1}, {XAUI3, 0x1}, {SATA1, 0x4} } },
-/* Lane 2 */ {6, {{UNCONNECTED, 0x0}, {SGMII0, 0x1}, {XAUI0, 0x1}, {RXAUI0, 0x1}, {KR, 0x1}, {SATA0, 0x4} } },
-/* Lane 3 */ {8, {{UNCONNECTED, 0x0}, {SGMII0, 0x1}, {XAUI0, 0x1}, {RXAUI0, 0x1}, {KR, 0x1},
-					 {XAUI1, 0x1}, {RXAUI1, 0x1}, {SATA1, 0x4} } },
-/* Lane 4 */ {7, {{UNCONNECTED, 0x0}, {SGMII0, 0x1}, {XAUI0, 0x1}, {RXAUI0, 0x1}, {KR, 0x1},
-					{SGMII2, 0x1}, {XAUI2, 0x1} } },
-/* Lane 5 */ {6, {{UNCONNECTED, 0x0}, {XAUI1, 0x1}, {RXAUI1, 0x1}, {SGMII3, 0x1},
-					{XAUI3, 0x1}, {SATA1, 0x4} } },
+/* Lane 0 */ {4, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII2, 0x1},
+			{PHY_TYPE_XAUI2, 0x1}, {PHY_TYPE_SATA1, 0x4} } },
+/* Lane 1 */ {4, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII3, 0x1},
+			{PHY_TYPE_XAUI3, 0x1}, {PHY_TYPE_SATA1, 0x4} } },
+/* Lane 2 */ {6, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII0, 0x1},
+			{PHY_TYPE_XAUI0, 0x1}, {PHY_TYPE_RXAUI0, 0x1}, {PHY_TYPE_KR, 0x1}, {PHY_TYPE_SATA0, 0x4} } },
+/* Lane 3 */ {8, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII0, 0x1}, {PHY_TYPE_XAUI0, 0x1}, {PHY_TYPE_RXAUI0, 0x1},
+			{PHY_TYPE_KR, 0x1}, {PHY_TYPE_XAUI1, 0x1}, {PHY_TYPE_RXAUI1, 0x1}, {PHY_TYPE_SATA1, 0x4} } },
+/* Lane 4 */ {7, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII0, 0x1}, {PHY_TYPE_XAUI0, 0x1},
+			{PHY_TYPE_RXAUI0, 0x1}, {PHY_TYPE_KR, 0x1}, {PHY_TYPE_SGMII2, 0x1}, {PHY_TYPE_XAUI2, 0x1} } },
+/* Lane 5 */ {6, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_XAUI1, 0x1}, {PHY_TYPE_RXAUI1, 0x1}, {PHY_TYPE_SGMII3, 0x1},
+					{PHY_TYPE_XAUI3, 0x1}, {PHY_TYPE_SATA1, 0x4} } },
 };
 
 struct comphy_mux_data cp110_comphy_pipe_mux_data[] = {
-/* Lane 0 */ {2, {{UNCONNECTED, 0x0}, {PEX0, 0x4} } },
-/* Lane 1 */ {4, {{UNCONNECTED, 0x0}, {USB3_HOST0, 0x1}, {USB3_DEVICE, 0x2}, {PEX0, 0x4} } },
-/* Lane 2 */ {3, {{UNCONNECTED, 0x0}, {USB3_HOST0, 0x1}, {PEX0, 0x4} } },
-/* Lane 3 */ {3, {{UNCONNECTED, 0x0}, {USB3_HOST1, 0x1}, {PEX0, 0x4} } },
-/* Lane 4 */ {4, {{UNCONNECTED, 0x0}, {USB3_HOST1, 0x1}, {USB3_DEVICE, 0x2}, {PEX0, 0x4} } },
-/* Lane 5 */ {2, {{UNCONNECTED, 0x0}, {PEX1, 0x4} } },
+/* Lane 0 */ {2, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX0, 0x4} } },
+/* Lane 1 */ {4, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_USB3_HOST0, 0x1},
+			{PHY_TYPE_USB3_DEVICE, 0x2}, {PHY_TYPE_PEX0, 0x4} } },
+/* Lane 2 */ {3, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_USB3_HOST0, 0x1},
+			{PHY_TYPE_PEX0, 0x4} } },
+/* Lane 3 */ {3, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_USB3_HOST1, 0x1},
+			{PHY_TYPE_PEX0, 0x4} } },
+/* Lane 4 */ {4, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_USB3_HOST1, 0x1},
+			{PHY_TYPE_USB3_DEVICE, 0x2}, {PHY_TYPE_PEX0, 0x4} } },
+/* Lane 5 */ {2, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX1, 0x4} } },
 };
 
 static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_addr)
@@ -335,8 +342,9 @@ static void comphy_mux_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, s
 	comphy_mux_init(ptr_chip_cfg, comphy_map_pipe_data, comphy_base_addr + COMMON_SELECTOR_PIPE_OFFSET);
 	/* Fix the type after check the PHY and PIPE configuration */
 	for (lane = 0; lane < comphy_max_count; lane++)
-		if (comphy_map_pipe_data[lane].type == UNCONNECTED && comphy_map_phy_data[lane].type == UNCONNECTED)
-			serdes_map[lane].type = UNCONNECTED;
+		if ((comphy_map_pipe_data[lane].type == PHY_TYPE_UNCONNECTED) &&
+		    (comphy_map_phy_data[lane].type == PHY_TYPE_UNCONNECTED))
+			serdes_map[lane].type = PHY_TYPE_UNCONNECTED;
 }
 int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map)
 {
@@ -355,7 +363,7 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 
 	/* Check if the first 4 lanes configured as By-4 */
 	for (lane = 0, ptr_comphy_map = serdes_map; lane < 4; lane++, ptr_comphy_map++) {
-		if (ptr_comphy_map->type != PEX0) {
+		if (ptr_comphy_map->type != PHY_TYPE_PEX0) {
 			pcie_by4 = 0;
 			break;
 		}
@@ -365,23 +373,23 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		debug("Initialize serdes number %d\n", lane);
 		debug("Serdes type = 0x%x\n", ptr_comphy_map->type);
 		switch (ptr_comphy_map->type) {
-		case UNCONNECTED:
+		case PHY_TYPE_UNCONNECTED:
 			continue;
 			break;
-		case PEX0:
-		case PEX1:
-		case PEX2:
-		case PEX3:
+		case PHY_TYPE_PEX0:
+		case PHY_TYPE_PEX1:
+		case PHY_TYPE_PEX2:
+		case PHY_TYPE_PEX3:
 			ret = comphy_pcie_power_up(lane, pcie_by4, HPIPE_ADDR(hpipe_base_addr, lane));
 			break;
-		case SATA0:
-		case SATA1:
-		case SATA2:
-		case SATA3:
+		case PHY_TYPE_SATA0:
+		case PHY_TYPE_SATA1:
+		case PHY_TYPE_SATA2:
+		case PHY_TYPE_SATA3:
 			ret = comphy_sata_power_up(lane, hpipe_base_addr, comphy_base_addr);
 			break;
-		case USB3_HOST0:
-		case USB3_HOST1:
+		case PHY_TYPE_USB3_HOST0:
+		case PHY_TYPE_USB3_HOST1:
 			ret = comphy_usb3_power_up(lane, hpipe_base_addr, comphy_base_addr);
 			break;
 		default:

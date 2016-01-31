@@ -26,7 +26,7 @@
 /* comphy_mux_check_config
  * description: this function passes over the COMPHY lanes and check if the type
  *              is valid for specific lane. If the type is not valid, the function
- *              update the struct and set the type of the lane as UNCONNECTED */
+ *              update the struct and set the type of the lane as PHY_TYPE_UNCONNECTED */
 static void comphy_mux_check_config(struct comphy_mux_data *mux_data,
 		struct comphy_map *comphy_map_data, int comphy_max_lanes)
 {
@@ -44,8 +44,8 @@ static void comphy_mux_check_config(struct comphy_mux_data *mux_data,
 		}
 		if (valid == 0) {
 			debug("lane number %d, had invalid type %d\n", lane, comphy_map_data->type);
-			debug("set lane %d as type %d\n", lane, UNCONNECTED);
-			comphy_map_data->type = UNCONNECTED;
+			debug("set lane %d as type %d\n", lane, PHY_TYPE_UNCONNECTED);
+			comphy_map_data->type = PHY_TYPE_UNCONNECTED;
 		} else {
 			debug("lane number %d, has type %d\n", lane, comphy_map_data->type);
 		}
@@ -53,7 +53,7 @@ static void comphy_mux_check_config(struct comphy_mux_data *mux_data,
 	debug_exit();
 }
 
-static u32 comphy_mux_get_mux_value(struct comphy_mux_data *mux_data, enum phy_type type, int lane)
+static u32 comphy_mux_get_mux_value(struct comphy_mux_data *mux_data, u32 type, int lane)
 {
 	struct comphy_mux_options *ptr_mux_opt;
 	int opt;

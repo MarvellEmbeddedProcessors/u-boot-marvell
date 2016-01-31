@@ -139,22 +139,22 @@ void comphy_pcie_config_set(u32 comphy_max_count, struct comphy_map *serdes_map)
 
 	debug_enter();
 	for (lane = 0; lane < comphy_max_count; lane++, serdes_map++) {
-		if (serdes_map->type < PEX0 || serdes_map->type > PEX3)
+		if (serdes_map->type < PHY_TYPE_PEX0 || serdes_map->type > PHY_TYPE_PEX3)
 			continue;
-		pex_index = serdes_map->type - PEX0;
+		pex_index = serdes_map->type - PHY_TYPE_PEX0;
 		reg_set(PEX_CAPABILITIES_REG(pex_index), 0x4 << 20, 0xf << 20);
 
 		switch (serdes_map->type) {
-		case PEX0:
+		case PHY_TYPE_PEX0:
 			pex_enable_offs |= 0x1 << PCIE0_ENABLE_OFFS;
 			break;
-		case PEX1:
+		case PHY_TYPE_PEX1:
 			pex_enable_offs |= 0x1 << PCIE1_ENABLE_OFFS;
 			break;
-		case PEX2:
+		case PHY_TYPE_PEX2:
 			pex_enable_offs |= 0x1 << PCIE2_ENABLE_OFFS;
 			break;
-		case PEX3:
+		case PHY_TYPE_PEX3:
 			pex_enable_offs |= 0x1 << PCIE3_ENABLE_OFFS;
 			break;
 		default:
@@ -175,9 +175,9 @@ void comphy_pcie_config_detect(u32 comphy_max_count, struct comphy_map *serdes_m
 	debug_enter();
 	next_bus = 0;
 	for (lane = 0; lane < comphy_max_count; lane++, serdes_map++) {
-		if (serdes_map->type < PEX0 || serdes_map->type > PEX3)
+		if (serdes_map->type < PHY_TYPE_PEX0 || serdes_map->type > PHY_TYPE_PEX3)
 			continue;
-		pex_index = serdes_map->type - PEX0;
+		pex_index = serdes_map->type - PHY_TYPE_PEX0;
 		first_bus = next_bus;
 		reg_data = readl(PEX_DBG_STATUS_REG(pex_index));
 

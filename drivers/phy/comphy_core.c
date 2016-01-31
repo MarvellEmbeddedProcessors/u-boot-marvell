@@ -55,24 +55,24 @@ struct chip_serdes_phy_config *get_chip_config(enum fdt_compat_id compat)
 	return NULL;
 }
 
-static char *get_speed_string(enum phy_speed speed)
+static char *get_speed_string(u32 speed)
 {
 	char *speed_strings[] = {"1.25Gbps", "1.5Gbps", "2.5Gbps", "3.0Gbps",
 				"3.25Gbps", "5Gbps", "6Gbps", "6.25Gbps",
 				"10.315Gbps" };
-	if (speed < __1_25gbps || speed > __10_3125gbps)
+	if (speed < 0 || speed > PHY_SPEED_MAX)
 		return "invalid";
 	return speed_strings[speed];
 }
 
-static char *get_type_string(enum phy_type type)
+static char *get_type_string(u32 type)
 {
 	char *type_strings[] = {"unconnected", "PEX0", "PEX1", "PEX2", "PEX3",
 				"SATA0", "SATA1", "SATA2", "SATA3", "SGMII0",
 				"SGMII1", "SGMII2", "SGMII3", "QSGMII", "USB3_HOST0",
 				"USB3_HOST1", "USB3_DEVICE", "XAUI0", "XAUI1",
 				"XAUI2", "XAUI3", "RXAUI0", "RXAUI1", "KR"};
-	if (type < UNCONNECTED || type > KR)
+	if (type < 0 || type > PHY_TYPE_MAX)
 		return "invalid";
 	return type_strings[type];
 }
@@ -181,17 +181,18 @@ u32 comphy_init(const void *blob)
 		max_comphy_count = ptr_chip_cfg->comphy_lanes_count;
 		lane = 0;
 		do {
-			comphy_map_data[lane].speed = fdtdec_get_int(blob, sub_node, "phy-speed", INVALID_SPEED);
-			comphy_map_data[lane].type = fdtdec_get_int(blob, sub_node, "phy-type", INVALID_TYPE);
-			if (comphy_map_data[lane].speed == INVALID_SPEED || comphy_map_data[lane].type == INVALID_TYPE)
+			comphy_map_data[lane].speed = fdtdec_get_int(blob, sub_node, "phy-speed", PHY_TYPE_INVALID);
+			comphy_map_data[lane].type = fdtdec_get_int(blob, sub_node, "phy-type", PHY_SPEED_INVALID);
+			if ((comphy_map_data[lane].speed == PHY_TYPE_INVALID) ||
+			    (comphy_map_data[lane].type == PHY_SPEED_INVALID))
 				printf("no phy speed or type for lane %d, setting lane as unconnedted\n", lane + 1);
 			sub_node = fdt_next_subnode(blob, sub_node);
 			lane++;
 		} while (sub_node > 0);
 		while (lane < max_comphy_count) {
 			printf("no phy configuration for lane %d, setting lane as unconnected\n", lane + 1);
-			comphy_map_data[lane].type = UNCONNECTED;
-			comphy_map_data[lane].speed = INVALID_SPEED;
+			comphy_map_data[lane].type = PHY_TYPE_UNCONNECTED;
+			comphy_map_data[lane].speed = PHY_TYPE_INVALID;
 			lane++;
 		}
 

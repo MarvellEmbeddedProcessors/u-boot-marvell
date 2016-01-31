@@ -19,6 +19,7 @@
 #ifndef _COMPHY_H_
 #define _COMPHY_H_
 
+#include <dt-bindings/comphy/comphy_data.h>
 #include <fdtdec.h>
 
 /* COMPHY registers */
@@ -43,51 +44,8 @@
 
 #define MAX_LANE_OPTIONS 10
 
-enum phy_speed {
-	__1_25gbps,
-	__1_5gbps,
-	__2_5gbps,
-	__3gbps,
-	__3_125gbps,
-	__5gbps,
-	__6gbps,
-	__6_25gbps,
-	__10_3125gbps,
-	MAX_SERDES_SPEED,
-	INVALID_SPEED = 0xff
-};
-
-enum phy_type {
-	UNCONNECTED,
-	PEX0,
-	PEX1,
-	PEX2,
-	PEX3,
-	SATA0,
-	SATA1,
-	SATA2,
-	SATA3,
-	SGMII0,
-	SGMII1,
-	SGMII2,
-	SGMII3,
-	QSGMII,
-	USB3_HOST0,
-	USB3_HOST1,
-	USB3_DEVICE,
-	XAUI0,
-	XAUI1,
-	XAUI2,
-	XAUI3,
-	RXAUI0,
-	RXAUI1,
-	KR,
-	MAX_PHY_TYPE,
-	INVALID_TYPE = 0xff
-};
-
 struct comphy_mux_options {
-	enum phy_type type;
+	u32 type;
 	u32 mux_value;
 };
 
@@ -97,8 +55,8 @@ struct comphy_mux_data {
 };
 
 struct comphy_map {
-	enum phy_type type;
-	enum phy_speed speed;
+	u32 type;
+	u32 speed;
 };
 
 struct chip_serdes_phy_config {

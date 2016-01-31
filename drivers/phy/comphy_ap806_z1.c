@@ -164,7 +164,7 @@ int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 
 	/* Check if the first 4 lanes configured as By-4 */
 	for (lane = 0, ptr_comphy_map = serdes_map; lane < 4; lane++, ptr_comphy_map++) {
-		if (ptr_comphy_map->type != PEX0) {
+		if (ptr_comphy_map->type != PHY_TYPE_PEX0) {
 			pcie_by4 = 0;
 			break;
 		}
@@ -174,13 +174,13 @@ int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		debug("Initialize serdes number %d\n", lane);
 		debug("Serdes type = 0x%x\n", ptr_comphy_map->type);
 		switch (ptr_comphy_map->type) {
-		case UNCONNECTED:
+		case PHY_TYPE_UNCONNECTED:
 			continue;
 			break;
-		case PEX0:
-		case PEX1:
-		case PEX2:
-		case PEX3:
+		case PHY_TYPE_PEX0:
+		case PHY_TYPE_PEX1:
+		case PHY_TYPE_PEX2:
+		case PHY_TYPE_PEX3:
 			ret = comphy_pcie_power_up(lane, pcie_by4, HPIPE_ADDR(hpipe_base_addr, lane));
 			udelay(20);
 			break;

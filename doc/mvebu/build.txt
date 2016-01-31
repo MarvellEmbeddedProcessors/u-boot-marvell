@@ -33,7 +33,8 @@ Build Instruction:
 	For AP806 stand alone board use "make mvebu_apn806_defconfig"
 	For Armada 8040Rz board use "make mvebu_armada70x0_defconfig"
 	For ArmadaLP board use "make mvebu_armadalp_defconfig"
-7. Build the U-Boot:
+7. Build the U-Boot (Armada-3700 builds require WTP tools installation -
+   refer to the section "Tools installation for Armada-3700 builds"):
 	# make
 	The -Boot compilation generates 2 files:
 	u-boot.bin - U-Boot image
@@ -50,3 +51,23 @@ Configuration update:
 	To update the U-Boot configuration and the SPL configuration, please refer to
 	doc/README.kconfig
 
+Tools installation for Armada-3700 builds:
+------------------------------------------
+1. Extract the tools/wtp/WTPTP_TOOLS_x_x_xx.zip in a temporary directory
+
+   # cd tools/wtp
+   # 7z x WTPTP_TOOLS_x_x_xx.zip
+
+2. If required, add executable permissions to files in the extracted
+   WTPTP_TOOLS_x_x_xx/Linux_Tools folder:
+
+   # sudo chmod a+x WTPTP_TOOLS_x_x_xx/Linux_Tools/*.exe
+
+3. Copy executable files from WTPTP_TOOLS_x_x_xx/Linux_Tools
+   to location pointed by $PATH environment variable.
+   For instance:
+
+   # sudo cp WTPTP_TOOLS_x_x_xx/Linux_Tools/*.exe /usr/local/bin
+
+4. Make sure the "ntbb_linux.exe" can be executed from any
+   location and the u-boot "make" passes without error.

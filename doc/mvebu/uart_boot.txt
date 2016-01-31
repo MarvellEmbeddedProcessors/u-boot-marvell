@@ -1,5 +1,6 @@
 UART boot
 ---------
+For Armada-3700 please see the section "UART boot for Armada-3700 platform"
 UART boot is used to load ATF image using XMODEM interface when the board boots for
 the first time or the board fails to boot.
 
@@ -17,3 +18,41 @@ the first time or the board fails to boot.
 4. Select the ATF image file, and start transfer.
 5. When transfer is done, U-Boot will start and you should hit <return> to get U-Boot prompt.
 6. When ATF & U-Boot loads refer to doc/mvebu/commands/bubt.txt to burn ATF image.
+
+UART boot for Armada-3700 platform
+---------------------------------
+1. Change the TIM/NTIM file descriptor to use the UART image type
+   (for NTIM - tools/wtp/u-boot-ntim.txt).
+   Replace the following row:
+
+   Boot Flash Signature:          0x5350490A              ; Select SPI'0A
+
+   With the following one:
+
+   Boot Flash Signature:          0x55415223              ; Select UAR'23
+
+2. Build the u-boot image as usual. Files with "_h." in their names
+   are created for usage by the image downloader SW.
+
+3. Make sure the target board is in UART mode and ">" prompt is
+   presented on connected terminal. Pressing "Enter" in this mode
+   will show "E" and then ">" again.
+
+4. Stop the terminal emulator program on UART port attached to the
+   target board (minicom) for releasing the serial port and allowing
+   application to use it for image download.
+
+5. Start the image download application in the root u-boot folder
+   using the following parameters (replace UART port name with the one
+   connected to actual target board):
+
+   sudo WtpDownload_linux.exe -P UART -C /dev/ttyUSB0 -R 115200 \
+   -B TIM_UBOOT_NON_TRUSTED.bin -I spl/u-boot-spl_h.bin \
+   -I ./u-boot_h.bin  -I ./tools/wtp/wtmi_h.dummy -E
+
+   It is possible to add "-V" parameter to the command line for
+   enabling verbose output.
+
+6. Once the process is finished, start the terminal emulator
+   program (minicom) on the UART port attached to the target
+   board and ensure the u-boot prompt is reached.

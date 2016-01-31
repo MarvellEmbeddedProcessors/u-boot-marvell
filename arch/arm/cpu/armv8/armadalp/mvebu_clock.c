@@ -474,6 +474,7 @@ int init_clock(void)
 	int node, count, idx, ret;
 	const void *blob = gd->fdt_blob;
 	int tbl_sz = sizeof(a3700_clock_configs)/sizeof(a3700_clock_configs[0]);
+	u32 vdd_val;
 
 	debug_enter();
 
@@ -498,6 +499,29 @@ int init_clock(void)
 			  a3700_clock_configs[idx].tbg_b.kvco_mhz);
 	if (ret)
 		error("Failed to configure system clocks\n");
+
+	/* Enable AVS for high CPU clocks */
+	if (a3700_clock_configs[idx].cpu_freq_mhz >= 800)
+		vdd_val = AVS_VDD_VAL(AVS_VDD_800_MHZ_MV);
+	else if (a3700_clock_configs[idx].cpu_freq_mhz == 600)
+		vdd_val = AVS_VDD_VAL(AVS_VDD_600_MHZ_MV);
+	else
+		vdd_val = 0;
+
+	if (vdd_val != 0) {
+		u32 avs_reg = AVS_SOFT_RESET | AVS_SPEED_TARGET_MASK | AVS_SEL_VSENCE0 |
+				(vdd_val << AVS_LOW_VDD_LIMIT_OFFS) |
+				(vdd_val << AVS_HIGH_VDD_LIMIT_OFFS);
+
+		writel(avs_reg, MVEBU_AVS_CTRL_0);
+		avs_reg &= ~AVS_SOFT_RESET;
+		writel(avs_reg, MVEBU_AVS_CTRL_0);
+		avs_reg |= AVS_ENABLE;
+		writel(avs_reg, MVEBU_AVS_CTRL_0);
+		printf("AVS enabled (%d mV)\n",
+			a3700_clock_configs[idx].cpu_freq_mhz == 600 ?
+			AVS_VDD_600_MHZ_MV : AVS_VDD_800_MHZ_MV);
+	}
 
 	debug_exit();
 	return ret;

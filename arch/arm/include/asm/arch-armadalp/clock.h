@@ -120,6 +120,23 @@
 /* (GBE0 and GBE1 have reversed logic) */
 #define SB_ALL_CLK_ENABLE			(BIT19 | BIT20)
 
+/* AVS */
+#define MVEBU_AVS_CTRL_0			(MVEBU_AVS_REGS_BASE)
+#define AVS_SOFT_RESET				(BIT31)
+#define AVS_ENABLE				(BIT30)
+#define AVS_SEL_VSENCE0				(BIT28)
+#define AVS_SPEED_TARGET_MASK			(0x0000FFFF)
+#define AVS_HIGH_VDD_LIMIT_OFFS			(16)
+#define AVS_LOW_VDD_LIMIT_OFFS			(22)
+#define AVS_VDD_LIMIT_MASK			(0x3F)
+#define AVS_VDD_MIN				(0x0)	/* 640 mV */
+#define AVS_VDD_MAX				(0x33)	/* 1342 mV */
+
+/* The AVS voltage formula:  AVSmv = (1.05/0.9)*(640 + field_val * 10) */
+#define AVS_VDD_VAL(mv)				((((mv) * 90)/105 - 640)/10)
+#define AVS_VDD_800_MHZ_MV			(1150)	/* mV for CPU >= 800 MHz */
+#define AVS_VDD_600_MHZ_MV			(1100)	/* mV for CPU 600 MHz */
+
 
 enum a3700_clock_src {
 	TBG_A,

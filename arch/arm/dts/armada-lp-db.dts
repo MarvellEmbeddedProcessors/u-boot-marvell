@@ -14,7 +14,6 @@
  * PHY1 (PCIe/SGMII0)	:	PCIe (WiFi via mini_PCIe module)
  * PHY2 (SATA)		:	SATA
  * RGMII-0		:	Ethernet via PHY (1 Lane)
- * RGMII-1		:	Ethernet via PHY (1 Lane)
  * USB2 Port 0		:	USB2 as part USB3
  * USB2 Port 1		:	USB2 Host
  * eMMC*		:	eMMC NAND
@@ -48,11 +47,6 @@
 			neta0: neta@30000 {
 				status = "okay";
 				phy_addr = <0x0>;
-				phy_mode = "rgmii";
-			};
-			neta1: neta@40000 {
-				status = "okay";
-				phy_addr = <0x1>;
 				phy_mode = "rgmii";
 			};
 			i2c: i2c@11000 {

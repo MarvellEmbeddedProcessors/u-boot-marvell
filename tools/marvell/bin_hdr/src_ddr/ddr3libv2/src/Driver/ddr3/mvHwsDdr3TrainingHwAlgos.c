@@ -85,7 +85,7 @@ GT_STATUS    ddr3TipWriteAdditionalOdtSetting
     GT_U32                  interfaceId
 )
 {
-    GT_U32 csNum = 0, maxReadSample = 0, minReadSample = 0;
+    GT_U32 csNum = 0, maxReadSample = 0, minReadSample = 0x1f;
     GT_U32 dataRead[MAX_INTERFACE_NUM] = {0};
     GT_U32 ReadSample[MAX_CS_NUM];
     GT_U32 dataValue;

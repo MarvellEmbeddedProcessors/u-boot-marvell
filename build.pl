@@ -358,6 +358,9 @@ if(defined $opt_i)
 	print "\n";
 }
 
+# -m 3 or 4 option defines CONFIG_DDR3 or 4 correspondingly
+# the option will be set as a default to ddr4 for a39x or
+# ddr3 for others, when not set explicitly.
 if ((!defined $opt_m) or (($opt_m ne 3) & ($opt_m ne 4))) {
 	if ($boardID eq "a39x") {
 		$opt_m = 4;
@@ -366,6 +369,7 @@ if ((!defined $opt_m) or (($opt_m ne 3) & ($opt_m ne 4))) {
 	}
 }
 
+# -d 4 option will build DDR4 sublib and set itself to 2 for ddr3libv2
 if($opt_d eq 4)
 {
 	system("echo \"DDR4SUBLIB = yes\" >> include/config.mk");
@@ -373,10 +377,35 @@ if($opt_d eq 4)
 	$opt_d = 2;
 }
 
-#by default -d 2 will be enabled for new TIP SoCs
-if ($ddr3LibBuild eq "yes") {
-	$opt_d = 2;
+# -d 5 option will build DDR4 sublib and set itself to 3 for mv_ddr
+if ($opt_d eq 5) {
+	system("echo \"DDR4SUBLIB = yes\" >> include/config.mk");
+	print "** Rebuild DDR4 sublib **\n";
+	$opt_d = 3;
 }
+
+# -d 2 option (ddr3libv2) set as a default, when not set explicitly
+if ($ddr3LibBuild eq "yes") {
+	if (!defined $opt_d) {
+		$opt_d = 2;
+	}
+}
+
+# Memory compilation options summary
+# ==================================
+# There are two memory compilation options:
+# 	-d option defines what ddr lib to compile: ddr3libv2 or mv_ddr,
+# 	-m option defines what ddr type to complile for: ddr3 or ddr4,
+# Examples:
+# 	no options sets:
+# 		"-d 2 -m 4" for a39x (ddr3libv2 and ddr4) or
+# 		"-d 2 -m 3" for others (ddr3libv2 and ddr3);
+# 	"-d 2 -m 3" will compile ddr3libv2 and ddr3
+# 	"-d 2 -m 4" will compile ddr3libv2 and ddr4
+# 	"-d 4" will compile as "-d 2" above plus rebuilds DDR4 sub-lib
+# 	"-d 3 -m 3" will compile mv_ddr and ddr3
+# 	"-d 3 -m 4" will compile mv_ddr and ddr4
+# 	"-d 5" will compile as "-d 3" above plus rebuilds DDR4 sub-lib
 
 if (defined $opt_d) {
 	system("echo \"DDR3LIB = $opt_d\" >> include/config.mk");

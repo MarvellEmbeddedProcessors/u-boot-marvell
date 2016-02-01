@@ -1109,7 +1109,13 @@ static GT_STATUS    ddr3TipWlSuppAlignPhaseShift
 		else writeData = (data & ~0x1C0) | ( (originalPhase - 2) << 6);
 		mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, writeData);
 
-		CHECK_STATUS(ddr3TipXsbCompareTest(devNum, interfaceId, busId, -2 ))
+		if( GT_OK == ddr3TipXsbCompareTest(devNum, interfaceId, busId, -2 )){
+			writeSuppResultTable[interfaceId][busId].stage = ALIGN_ERROR_SHIFT;
+			DEBUG_LEVELING(DEBUG_LEVEL_TRACE,("supplementary: shift to -2 from phase %d for if %d pup %d with offset %d success\n",
+				originalPhase, interfaceId, busId, -2));
+			writeSuppResultTable[interfaceId][busId].isPupFail = GT_FALSE;
+			return GT_OK;
+		}
 	}
 
 	/*--- set phase(0x0[6-8]) +2  ---*/
@@ -1117,7 +1123,13 @@ static GT_STATUS    ddr3TipWlSuppAlignPhaseShift
 		writeData = (data & ~0x1C0) | ( (originalPhase + 2) << 6);
 		mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, writeData);
 
-		CHECK_STATUS(ddr3TipXsbCompareTest(devNum, interfaceId, busId, 2))
+		if( GT_OK == ddr3TipXsbCompareTest(devNum, interfaceId, busId, 2)){
+			writeSuppResultTable[interfaceId][busId].stage = ONE_CLOCK_ERROR_SHIFT;
+			DEBUG_LEVELING(DEBUG_LEVEL_TRACE,("supplementary: shift to +2 from phase %d for if %d pup %d with offset %d success\n",
+				originalPhase, interfaceId, busId, 2));
+			writeSuppResultTable[interfaceId][busId].isPupFail = GT_FALSE;
+			return GT_OK;
+		}
 	}
 
 	/*--- set phase(0x0[6-8]) +4  ---*/
@@ -1125,7 +1137,13 @@ static GT_STATUS    ddr3TipWlSuppAlignPhaseShift
 		writeData = (data & ~0x1C0) | ( (originalPhase + 4) << 6);
 		mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, writeData);
 
-		CHECK_STATUS(ddr3TipXsbCompareTest(devNum, interfaceId, busId, 4))
+		if( GT_OK == ddr3TipXsbCompareTest(devNum, interfaceId, busId, 4)){
+			writeSuppResultTable[interfaceId][busId].stage = ONE_CLOCK_ERROR_SHIFT;
+			DEBUG_LEVELING(DEBUG_LEVEL_TRACE,("supplementary: shift to +2 from phase %d for if %d pup %d with offset %d success\n",
+				originalPhase, interfaceId, busId, 4));
+			writeSuppResultTable[interfaceId][busId].isPupFail = GT_FALSE;
+			return GT_OK;
+		}
 	}
 
 	/*--- set phase(0x0[6-8]) +6  ---*/
@@ -1133,7 +1151,13 @@ static GT_STATUS    ddr3TipWlSuppAlignPhaseShift
 		writeData = (data & ~0x1C0) | ( (originalPhase + 6) << 6);
 		mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG + effective_cs*CS_REGISTER_ADDR_OFFSET, writeData);
 
-		CHECK_STATUS(ddr3TipXsbCompareTest(devNum, interfaceId, busId, 6))
+		if( GT_OK == ddr3TipXsbCompareTest(devNum, interfaceId, busId, 6)){
+			writeSuppResultTable[interfaceId][busId].stage = ONE_CLOCK_ERROR_SHIFT;
+			DEBUG_LEVELING(DEBUG_LEVEL_TRACE,("supplementary: shift to +2 from phase %d for if %d pup %d with offset %d success\n",
+				originalPhase, interfaceId, busId, 6));
+			writeSuppResultTable[interfaceId][busId].isPupFail = GT_FALSE;
+			return GT_OK;
+		}
 	}
 
 	/*Nothing sucess, go ahead*/

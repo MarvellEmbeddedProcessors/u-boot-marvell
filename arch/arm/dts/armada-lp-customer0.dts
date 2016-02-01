@@ -2,6 +2,7 @@
 /dts-v1/;
 
 #include "armada-lp.dtsi"
+#include <dt-bindings/ddr/ddr_data.h>
 
 / {
 	model = "DB-88F37XX-Customer0";
@@ -13,6 +14,13 @@
 		};
 
 		internal-regs {
+			ddr-mac {
+				cs_count = <1>;
+				bus_width = <DDR_BUS_WIDTH_16>;
+				cs0 {
+					size = <0x00000000 0x10000000>;
+				};
+			};
 			serial: serial@12000 {
 				status = "okay";
 			};

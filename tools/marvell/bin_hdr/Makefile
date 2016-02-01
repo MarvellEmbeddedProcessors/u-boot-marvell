@@ -138,7 +138,11 @@ $(info ****** Warning: BIN_HDR_DEBUG is enabled. This image cannot be burnt on f
 $(info )
 endif
 
+ifeq ($(DDR3LIB),3)
+all:   subdirs $(TGT).bin $(TGT)_sec.bin $(TGT).uart.bin  $(TGT).dis $(TGT)_sec.dis $(TGT).uart.dis $(TGT).srec $(TGT)_sec.srec $(TGT).uart.srec
+else
 all:   subdirs $(TGT).bin $(TGT)_sec.bin $(TGT).uart.bin  $(TGT).dis $(TGT)_sec.dis $(TGT).uart.dis $(TGT).srec $(TGT)_sec.srec $(TGT).uart.srec $(TGT).debug.bin
+endif
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<

@@ -74,6 +74,10 @@ ifeq ($(NEW_TIP),yes)
 CSRC = ddr3_spd.c ddr3_init_tipv2.c
 endif
 
+ifeq ($(DDR3LIB),3)
+CSRC = mv_ddr_main.c
+endif
+
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
 
@@ -101,6 +105,9 @@ SRC_DDR_SUBDIRS = ddr3lib
 endif
 ifeq ($(DDR3LIB),2)
 SRC_DDR_SUBDIRS = ddr3libv2
+endif
+ifeq ($(DDR3LIB),3)
+SRC_DDR_SUBDIRS = mv_ddr
 endif
 
 clean:

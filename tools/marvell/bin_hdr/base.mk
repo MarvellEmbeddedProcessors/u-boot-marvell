@@ -247,6 +247,10 @@ else
 CFLAGS += -DCONFIG_DDR3
 endif
 
+ifeq ($(DDR3LIB),3)
+CFLAGS += -DMV_DDR
+endif
+
 CPPFLAGS = $(foreach FLAG, $(MVFLAGS), $(addprefix -D, $(FLAG)))
 ASFLAGS  = $(foreach FLAG, $(MVFLAGS), $(addprefix --defsym , $(FLAG)))
 LDFLAGS  = -static -nostartfiles -unwind-tables  -nostdlib -Wl,--build-id=none $(EXTRA_LD_FLAGS)

@@ -73,7 +73,13 @@ typedef struct _binaryHeaderComponent {
 
 
 MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(void);
+#if defined(MV_DDR)
+MV_STATUS ddr_main(void);
+#define DDR_MAIN_FUNC ddr_main
+#else /* MV_DDR */
 MV_STATUS ddr3Init(void);
+#define DDR_MAIN_FUNC ddr3Init
+#endif /* MV_DDR */
 MV_STATUS suspendWakeup(void);
 MV_STATUS mvGeneralInit(void);
 
@@ -88,7 +94,7 @@ MV_STATUS componentExample(void);
 #endif */
 #define BIN_HEADER_COMPONENT_TABLE  	{"General initialization", mvGeneralInit}, 	\
 					{"SERDES initialization", mvCtrlHighSpeedSerdesPhyConfig}, 	\
-					{"DRAM initialization", ddr3Init},				\
+					{"DRAM initialization", DDR_MAIN_FUNC},				\
 					{"Suspend wake up", suspendWakeup}, 			\
 					{NULL,NULL}
 

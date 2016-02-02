@@ -70,6 +70,7 @@ dtb-$(CONFIG_PALLADIUM) += apn-806-pd.dtb \
 dtb-$(CONFIG_DEVEL_BOARD) += apn-806-db.dtb \
 			     apn-806-db-dop.dtb \
 			     armada-80x0-db.dtb \
+			     armada-7040-rz-db_dop.dtb \
 			     armada-7040-rz-db_nand.dtb \
 			     armada-7040-rz-db_router.dtb \
 			     armada-7040-rz-db_all_pci.dtb \

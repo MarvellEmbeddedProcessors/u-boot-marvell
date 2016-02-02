@@ -100,7 +100,7 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base
 	data = 0x1 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET;
 	/* Set PHY datapath width mode for V0 */
 	mask |= HPIPE_RST_CLK_CTRL_FIXED_PCLK_MASK;
-	data |= 0x0 << HPIPE_RST_CLK_CTRL_FIXED_PCLK_OFFSET;
+	data |= 0x1 << HPIPE_RST_CLK_CTRL_FIXED_PCLK_OFFSET;
 	/* Set Data bus width USB mode for V0 */
 	mask |= HPIPE_RST_CLK_CTRL_PIPE_WIDTH_MASK;
 	data |= 0x0 << HPIPE_RST_CLK_CTRL_PIPE_WIDTH_OFFSET;
@@ -203,12 +203,13 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base
 		0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
 
 	/* wait 5ms - for comphy calibration done */
-	mdelay(5);
+	mdelay(10);
 
 	debug("stage: Check PLL\n");
 	/* Read lane status */
 	data = readl(hpipe_addr + HPIPE_LANE_STATUS0_REG);
 	if ((data & HPIPE_LANE_STATUS0_PCLK_EN_MASK) == 0) {
+		debug("Read from reg = %p - value = 0x%x\n", hpipe_addr + HPIPE_LANE_STATUS0_REG, data);
 		error("HPIPE_LANE_STATUS0_PCLK_EN_MASK is 0\n");
 		ret = 0;
 	}

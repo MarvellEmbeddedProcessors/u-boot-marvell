@@ -73,7 +73,7 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base
 	u32 pcie_clk = 0; /* input */
 
 	debug_enter();
-	debug("stage: RFU configurations- hard reset comphy\n");
+	debug("stage: RFU configurations - hard reset comphy\n");
 	/* RFU configurations - hard reset comphy */
 	mask = COMMON_PHY_CFG1_PWR_UP_MASK;
 	data = 0x1 << COMMON_PHY_CFG1_PWR_UP_OFFSET;
@@ -205,7 +205,7 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base
 	reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG,
 		0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
 
-	/* wait 5ms - for comphy calibration done */
+	/* wait 10ms - for comphy calibration done */
 	mdelay(10);
 
 	debug("stage: Check PLL\n");
@@ -308,7 +308,7 @@ static int comphy_usb3_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG,
 		0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
 
-	/* wait 5ms - for comphy calibration done */
+	/* wait 10ms - for comphy calibration done */
 	mdelay(10);
 
 	debug("stage: Check PLL\n");
@@ -332,12 +332,8 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	void __iomem *sata_base;
 
 	debug_enter();
-	sata_base = fdt_get_reg_offs_by_compat(COMPAT_MVEBU_SATA);
-	if (sata_base == 0) {
-		debug("SATA address not found in FDT\n");
-		return 0;
-	}
-	debug("SATA address found in FDT %p\n", sata_base);
+	sata_base = (void __iomem *)MVEBU_SATA3_GENERAL_BASE;
+	debug("SATA3 General address base %p\n", sata_base);
 
 	debug("stage: MAC configuration - power down comphy\n");
 	/* MAC configuration powe down comphy
@@ -358,12 +354,12 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	data |= 0x0 << SATA3_CTRL_SATA_SSU_OFFSET;
 	reg_set(sata_base + SATA3_VENDOR_DATA, data, mask);
 
-	debug("stage: RFU configurations- hard reset comphy\n");
+	debug("stage: RFU configurations - hard reset comphy\n");
 	/* RFU configurations - hard reset comphy */
 	mask = COMMON_PHY_CFG1_PWR_UP_MASK;
 	data = 0x1 << COMMON_PHY_CFG1_PWR_UP_OFFSET;
 	mask |= COMMON_PHY_CFG1_PIPE_SELECT_MASK;
-	data |= 0x1 << COMMON_PHY_CFG1_PIPE_SELECT_OFFSET;
+	data |= 0x0 << COMMON_PHY_CFG1_PIPE_SELECT_OFFSET;
 	mask |= COMMON_PHY_CFG1_PWR_ON_RESET_MASK;
 	data |= 0x0 << COMMON_PHY_CFG1_PWR_ON_RESET_OFFSET;
 	mask |= COMMON_PHY_CFG1_CORE_RSTN_MASK;
@@ -373,21 +369,22 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	/* Set select data  width 40Bit - SATA mode only */
 	reg_set(comphy_addr + COMMON_PHY_CFG6_REG,
 		0x1 << COMMON_PHY_CFG6_IF_40_SEL_OFFSET, COMMON_PHY_CFG6_IF_40_SEL_MASK);
-	/* release from hard reset */
-	mask = COMMON_PHY_CFG1_PWR_ON_RESET_MASK;
-	data = 0x1 << COMMON_PHY_CFG1_PWR_ON_RESET_OFFSET;
-	mask |= COMMON_PHY_CFG1_CORE_RSTN_MASK;
-	data |= 0x1 << COMMON_PHY_CFG1_CORE_RSTN_OFFSET;
-	reg_set(comphy_addr + COMMON_PHY_CFG1_REG, data, mask);
+
+	/* release from hard reset in SD external */
+	mask = SD_EXTERNAL_CONFIG1_RESET_IN_MASK;
+	data = 0x1 << SD_EXTERNAL_CONFIG1_RESET_IN_OFFSET;
+	mask |= SD_EXTERNAL_CONFIG1_RESET_CORE_MASK;
+	data |= 0x1 << SD_EXTERNAL_CONFIG1_RESET_CORE_OFFSET;
+	reg_set(sd_ip_addr + SD_EXTERNAL_CONFIG1_REG, data, mask);
 
 	/* Wait 1ms - until band gap and ref clock ready */
 	mdelay(1);
 
 	debug("stage: Comphy configuration\n");
 	/* Start comphy Configuration */
-	/* Set reference clock to comes from group 2 - choose 25Mhz */
+	/* Set reference clock to comes from group 1 - choose 25Mhz */
 	reg_set(hpipe_addr + HPIPE_MISC_REG,
-		0x1 << HPIPE_MISC_REFCLK_SEL_OFFSET, HPIPE_MISC_REFCLK_SEL_MASK);
+		0x0 << HPIPE_MISC_REFCLK_SEL_OFFSET, HPIPE_MISC_REFCLK_SEL_MASK);
 	/* Reference frequency select set 1 (for SATA = 25Mhz) */
 	mask = HPIPE_PWR_PLL_REF_FREQ_MASK;
 	data = 0x1 << HPIPE_PWR_PLL_REF_FREQ_OFFSET;
@@ -400,7 +397,7 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 		0x2 << HPIPE_INTERFACE_GEN_MAX_OFFSET, HPIPE_INTERFACE_GEN_MAX_MASK);
 	/* Set select data  width 40Bit (SEL_BITS[2:0]) */
 	reg_set(hpipe_addr + HPIPE_LOOPBACK_REG,
-		0x4 << HPIPE_LOOPBACK_SEL_OFFSET, HPIPE_LOOPBACK_SEL_MASK);
+		0x2 << HPIPE_LOOPBACK_SEL_OFFSET, HPIPE_LOOPBACK_SEL_MASK);
 
 	debug("stage: Analog paramters from ETP(HW)\n");
 	/* TODO: Set analog paramters from ETP(HW) - for now use the default datas */
@@ -435,8 +432,8 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	data |= 0x1 << SATA3_CTRL_SATA_SSU_OFFSET;
 	reg_set(sata_base + SATA3_VENDOR_DATA, data, mask);
 
-	/* Wait 5ms - Wait for comphy calibration done */
-	mdelay(5);
+	/* Wait 10ms - Wait for comphy calibration done */
+	mdelay(10);
 
 	/* MBUS request size and interface select register */
 	reg_set(sata_base + SATA3_VENDOR_ADDRESS,

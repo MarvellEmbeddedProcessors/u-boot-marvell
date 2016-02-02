@@ -37,7 +37,7 @@
 				status = "disabled";
 			};
 			i2c0: i2c@511000 {
-				status = "disabled";
+				status = "okay";
 			};
 		};
 		pcie-controller {

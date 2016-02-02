@@ -159,6 +159,7 @@ void dram_over_pci_init(const void *fdt_blob)
 
 	pci_init();
 
+#ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SWITCH
 	/* open 0 - 2G for address space beyound the main switch */
 	hose = pci_bus_to_hose(1);
 	bdf  = PCI_BDF(1, 0, 0);
@@ -175,6 +176,10 @@ void dram_over_pci_init(const void *fdt_blob)
 	   bar 1  address = 0x0 - dram address */
 	hose = pci_bus_to_hose(3);
 	bdf  = PCI_BDF(3, 0, 0);
+#else
+	hose = pci_bus_to_hose(1);
+	bdf  = PCI_BDF(1, 0, 0);
+#endif
 	hose->write_dword(hose, bdf, BAR0_LOW_ADDR_OFFSET, PCI_DEVICE_CONFIG_SPACE);
 	hose->write_dword(hose, bdf, BAR0_HIGH_ADDR_OFFSET, 0);
 	hose->write_dword(hose, bdf, BAR1_LOW_ADDR_OFFSET, DRAM_OFFSET);

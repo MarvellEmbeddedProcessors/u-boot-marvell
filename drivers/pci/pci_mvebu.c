@@ -291,14 +291,24 @@ static void mvebu_pcie_hw_init(void __iomem *reg_base, int first_busno)
  */
 int pci_skip_dev(struct pci_controller *hose, pci_dev_t dev)
 {
-#if defined(CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT) && !defined(CONFIG_SPL_BUILD)
+#ifndef CONFIG_SPL_BUILD
+#ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SWITCH
 	/* skip the switch port connected to the DRAM
 	 * PCIe controller to retain its configuration */
 	if (dev == PCI_BDF(3, 0, 0)) {
 		debug_cfg("Skipping (b,d,f)=(%2ld,%2ld,%2ld)\n", PCI_BUS(dev), PCI_DEV(dev), PCI_FUNC(dev));
 		return 1;
 	}
+#elif defined(CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT)
+	/* skip the DRAM PCIe controller to retain
+	** its configuration */
+	if (dev == PCI_BDF(1, 0, 0)) {
+		debug_cfg("Skipping (b,d,f)=(%2ld,%2ld,%2ld)\n", PCI_BUS(dev), PCI_DEV(dev), PCI_FUNC(dev));
+		return 1;
+	}
+
 #endif
+#endif /* !SPL_BUILD */
 	return 0;
 }
 

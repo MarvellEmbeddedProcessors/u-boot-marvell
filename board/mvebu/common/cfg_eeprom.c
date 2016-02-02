@@ -19,7 +19,7 @@
 #include <asm/arch-mvebu/soc.h>
 #include <fdtdec.h>
 #include <libfdt.h>
-#include "fdt_eeprom.h"
+#include "cfg_eeprom.h"
 
 u8 mapping_default_fdt[] = DEFAULT_FDT_PER_BOARD;
 struct eeprom_struct board_config_val = CFG_DEFAULT_VALUE;

@@ -16,8 +16,8 @@
  * ***************************************************************************
  */
 
-#ifndef _FDT_EEPROM_H_
-#define _FDT_EEPROM_H_
+#ifndef _CFG_EEPROM_H_
+#define _CFG_EEPROM_H_
 #include <common.h>
 #include <i2c.h>
 #include <errno.h>
@@ -116,4 +116,4 @@ bool cfg_eeprom_upload_fdt_from_eeprom(void);
 void cfg_eeprom_save(void);
 struct eeprom_struct *cfg_eeprom_get_board_config(void);
 
-#endif /* _FDT_EEPROM_H_ */
+#endif /* _CFG_EEPROM_H_ */

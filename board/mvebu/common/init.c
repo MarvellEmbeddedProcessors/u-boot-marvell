@@ -34,7 +34,7 @@
 #include "devel-board.h"
 #endif
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
-#include "fdt_eeprom.h"
+#include "cfg_eeprom.h"
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;

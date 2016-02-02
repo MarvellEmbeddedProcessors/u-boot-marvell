@@ -21,7 +21,7 @@
 #include <command.h>
 #include <vsprintf.h>
 #include <errno.h>
-#include "../../board/mvebu/common/fdt_eeprom.h"
+#include "../../board/mvebu/common/cfg_eeprom.h"
 #include "../../board/mvebu/common/fdt_config.h"
 
 int do_fdt_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc,

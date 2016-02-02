@@ -17,7 +17,7 @@
  */
 #ifndef _FDT_CONFIG_H_
 #define _FDT_CONFIG_H_
-#include "fdt_eeprom.h"
+#include "cfg_eeprom.h"
 
 void fdt_cfg_read_eeprom(void);
 int fdt_cfg_read_flash(const char *selected_index);

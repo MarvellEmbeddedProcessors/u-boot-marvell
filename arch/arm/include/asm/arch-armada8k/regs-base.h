@@ -21,6 +21,7 @@
 
 #include <asm/arch/memory-map.h>
 
+/* Base registers for AP */
 #define MPP_REGS_BASE	(MVEBU_REGS_BASE + 0x6F008C)
 
 /* List of register base for all units */
@@ -42,5 +43,8 @@
 #define MVEBU_GENERIC_TIMER_BASE	(MVEBU_REGS_BASE + 0x581000)
 
 #define MVEBU_LLC_BASE		(MVEBU_REGS_BASE + 0x8000)
+
+/* Base registers for CP */
+#define MVEBU_AMB_IP_BASE	(MVEBU_CP0_REGS_BASE + 0x13ff00)
 
 #endif	/* _REGS_BASE_H_ */

@@ -25,6 +25,7 @@
 #include <asm/arch-mvebu/rfu.h>
 #include <asm/arch-mvebu/flc.h>
 #include <asm/arch-mvebu/fdt.h>
+#include <asm/arch-armada8k/misc-regs.h>
 #include <spl.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -50,6 +51,17 @@ void board_init_f(ulong silent)
 #endif
 
 	preloader_console_init();
+
+#ifndef CONFIG_PALLADIUM
+	/* SoC spesific init for AMB-Bridge
+	   Open AMB bridge Window to Access COMPHY/MDIO registers
+	   This relevant for 70x0 only */
+	if (fdt_node_check_compatible(gd->fdt_blob, 0, "marvell,armada-70x0") == 0) {
+		reg_set((void *)MVEBU_AMB_IP_BRIDGE_WIN_REG(0),
+			0x7ff << MVEBU_AMB_IP_BRIDGE_WIN_SIZE_OFFSET | 0x1 << MVEBU_AMB_IP_BRIDGE_WIN_EN_OFFSET,
+			MVEBU_AMB_IP_BRIDGE_WIN_SIZE_MASK | MVEBU_AMB_IP_BRIDGE_WIN_EN_MASK);
+	}
+#endif
 
 #ifdef CONFIG_MVEBU_SPL_SAR_DUMP
 	/* Sample at reset dump register */

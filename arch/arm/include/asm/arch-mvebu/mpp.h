@@ -19,7 +19,7 @@
 #ifndef _MPP_BUS_H_
 #define _MPP_BUS_H_
 
-#define MAX_MPP_BUSES	10
+#define MAX_MPP_BUSES	20
 
 struct mpp_pin {
 	u32 id;

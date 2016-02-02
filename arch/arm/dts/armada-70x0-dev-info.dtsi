@@ -19,6 +19,7 @@
 / {
 	compatible = "marvell,cp110";
 	/* This should go only into devel boards */
+/*
 	sar {
 		compatible = "marvell,sample-at-reset";
 		#address-cells = <1>;
@@ -86,6 +87,7 @@
 			status = "okay";
 		};
 	};
+*/
 	mpp-buses {
 		cp-mpp-bus0 {
 			compatible = "marvell,mvebu-mpp-bus";

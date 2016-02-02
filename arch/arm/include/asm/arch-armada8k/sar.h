@@ -51,6 +51,7 @@
 #define SAR1_STANDALONE_OFFSET		(24)
 #define SAR1_STANDALONE_MASK		(1 << SAR1_STANDALONE_OFFSET)
 
+#define CP0_SAMPLE_AT_RESET_REG_0	(MVEBU_CP0_REGS_BASE + 0x440600)
 
 struct sar_info {
 	char *name;

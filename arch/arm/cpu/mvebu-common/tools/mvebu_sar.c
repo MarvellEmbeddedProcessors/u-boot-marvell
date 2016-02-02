@@ -65,5 +65,8 @@ void mvebu_sar_dump_reg(void)
 		printf("%s  0x%x\n", sar->name, val);
 		sar++;
 	}
+
+	printf("CP110: SAR register 0 reg = 0x%lx [0x%08x]\n",
+		CP0_SAMPLE_AT_RESET_REG_0, readl(CP0_SAMPLE_AT_RESET_REG_0));
 	printf("\n");
 }

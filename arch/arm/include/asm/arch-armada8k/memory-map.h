@@ -30,6 +30,12 @@
 #endif
 #define MVEBU_REGS_SIZE 	(0x100000)
 
+#ifdef __ASSEMBLY__
+#define MVEBU_CP0_REGS_BASE	(0xF2000000)
+#else
+#define MVEBU_CP0_REGS_BASE	(0xF2000000UL)
+#endif
+
 #define DRAM_0_BASE_ADDR	0x0
 #define DRAM_0_SIZE		0x40000000
 

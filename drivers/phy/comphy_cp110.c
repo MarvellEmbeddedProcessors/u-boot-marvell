@@ -225,7 +225,7 @@ static int comphy_usb3_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	void __iomem *comphy_addr = COMPHY_ADDR(comphy_base, lane);
 
 	debug_enter();
-	debug("stage: RFU configurations- hard reset comphy\n");
+	debug("stage: RFU configurations - hard reset comphy\n");
 	/* RFU configurations - hard reset comphy */
 	mask = COMMON_PHY_CFG1_PWR_UP_MASK;
 	data = 0x1 << COMMON_PHY_CFG1_PWR_UP_OFFSET;
@@ -267,8 +267,8 @@ static int comphy_usb3_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	/* Set PLL ready delay for 0x2 */
 	reg_set(hpipe_addr + HPIPE_CLK_SRC_LO_REG,
 		0x2 << HPIPE_CLK_SRC_LO_PLL_RDY_DL_OFFSET, HPIPE_CLK_SRC_LO_PLL_RDY_DL_MASK);
-	/* Set reference clock to come from group 2 */
-	reg_set(hpipe_addr + HPIPE_MISC_REG, 0x1 << HPIPE_MISC_REFCLK_SEL_OFFSET, HPIPE_MISC_REFCLK_SEL_MASK);
+	/* Set reference clock to come from group 1 - 25Mhz */
+	reg_set(hpipe_addr + HPIPE_MISC_REG, 0x0 << HPIPE_MISC_REFCLK_SEL_OFFSET, HPIPE_MISC_REFCLK_SEL_MASK);
 	/* Set reference frequcency select - 0x2 */
 	mask = HPIPE_PWR_PLL_REF_FREQ_MASK;
 	data = 0x2 << HPIPE_PWR_PLL_REF_FREQ_OFFSET;
@@ -306,7 +306,7 @@ static int comphy_usb3_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 		0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
 
 	/* wait 5ms - for comphy calibration done */
-	mdelay(5);
+	mdelay(10);
 
 	debug("stage: Check PLL\n");
 	/* Read lane status */

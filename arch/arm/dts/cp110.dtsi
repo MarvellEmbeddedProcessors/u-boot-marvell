@@ -25,13 +25,22 @@ map-iob {
 		0x0 0xf6000000 0x0 0x1000000 0x4 /* PEX0_X4 window */
 		0x0 0xf9000000 0x0 0x1000000 0x5 /* NAND window */>;
 };
-
-spi@700600 {
+spi0@700600 {
 	compatible = "marvell,orion-spi";
 	reg = <0x700600 0x50>;
 	spi-max-frequency = <10000000>;
 	clock = <&tclk>;
-	cpol-cs-bitmap = <1>; /* bit i is set if the CPOL of
+	cpol-cs-bitmap = <0>; /* bit i is set if the CPOL of
+				CS-i is enabled or not */
+	status = "disable";
+};
+
+spi1@700680 {
+	compatible = "marvell,orion-spi";
+	reg = <0x700680 0x50>;
+	spi-max-frequency = <10000000>;
+	clock = <&tclk>;
+	cpol-cs-bitmap = <0>; /* bit i is set if the CPOL of
 				CS-i is enabled or not */
 	status = "disable";
 };

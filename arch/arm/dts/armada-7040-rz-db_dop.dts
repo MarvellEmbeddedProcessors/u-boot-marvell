@@ -96,7 +96,38 @@
 					     0xE 0xE 0xE 0>;
 			};
 			comphy {
-				status = "disabled";
+				/* Serdes Configuration:
+					Lane 0: UNCONNECTED
+					Lane 1: USB3-HOST0
+					Lane 2: UNCONNECTED
+					Lane 3: SATA1
+					Lane 4: USB3-HOST1
+					Lane 5: PEX2x1
+				*/
+				phy0 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-speed = <PHY_SPEED_1_25G>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_USB3_HOST0>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+				phy2 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-speed = <PHY_SPEED_1_25G>;
+				};
+				phy3 {
+					phy-type = <PHY_TYPE_SATA1>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+				phy4 {
+					phy-type = <PHY_TYPE_PEX0>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+				phy5 {
+					phy-type = <PHY_TYPE_PEX1>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
 			};
 
 		};

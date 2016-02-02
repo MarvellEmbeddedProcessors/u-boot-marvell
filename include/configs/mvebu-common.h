@@ -185,7 +185,8 @@
 
 /* Flash env setup */
 #if !defined(MV_INCLUDE_NOR) && !defined(CONFIG_MVEBU_NAND_BOOT) &&		\
-	!defined(CONFIG_MVEBU_SPI_BOOT) && !defined(CONFIG_ENV_IS_IN_BOOTDEV)
+	!defined(CONFIG_MVEBU_SPI_BOOT) && !defined(CONFIG_MVEBU_MMC_BOOT) &&	\
+	!defined(CONFIG_ENV_IS_IN_BOOTDEV)
 	#undef CONFIG_CMD_FLASH
 	#undef CONFIG_CMD_IMLS
 	#define CONFIG_ENV_IS_NOWHERE
@@ -218,6 +219,14 @@
 	#define CONFIG_DOIMAGE_TYPE	"flash"
 	#define CONFIG_DOIMAGE_SUFFIX	"spi"
 #endif /* CONFIG_MVEBU_SPI_BOOT */
+
+/* Boot from eMMC settings */
+#if defined(CONFIG_MVEBU_MMC_BOOT) && !defined(CONFIG_ENV_IS_IN_BOOTDEV)
+	#define CONFIG_ENV_IS_IN_MMC
+	#define CONFIG_SYS_MMC_ENV_DEV	0
+	#define CONFIG_DOIMAGE_TYPE	"mmc"
+	#define CONFIG_DOIMAGE_SUFFIX	"emmc"
+#endif /* CONFIG_MVEBU_MMC_BOOT */
 
 
 /* Generic Interrupt Controller Definitions */

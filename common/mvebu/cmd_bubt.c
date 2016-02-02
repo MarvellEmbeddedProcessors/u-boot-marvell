@@ -29,6 +29,7 @@
 
 #include <usb.h>
 #include <fs.h>
+#include <mmc.h>
 
 #if defined(CONFIG_TARGET_ARMADA_8K)
 #define MAIN_HDR_MAGIC		0xB105B002
@@ -97,6 +98,110 @@ static ulong get_load_addr(void)
 	return addr;
 }
 
+/********************************************************************
+ *     eMMC services
+ ********************************************************************/
+#ifdef CONFIG_GENERIC_MMC
+static int mmc_burn_image(int image_size)
+{
+	struct mmc	*mmc;
+	lbaint_t	start_lba;
+	lbaint_t	blk_count;
+	ulong		blk_written;
+#ifdef CONFIG_SYS_MMC_ENV_DEV
+	const u8	mmc_dev_num = CONFIG_SYS_MMC_ENV_DEV;
+#else
+	const u8	mmc_dev_num = 0;
+#endif
+
+	mmc = find_mmc_device(mmc_dev_num);
+	if (!mmc) {
+		printf("No SD/MMC/eMMC card found\n");
+		return 1;
+	}
+
+	if (mmc_init(mmc)) {
+		printf("%s(%d) init failed\n", IS_SD(mmc) ? "SD" : "MMC", mmc_dev_num);
+		return 1;
+	}
+
+#ifdef CONFIG_SYS_MMC_ENV_PART
+	if (CONFIG_SYS_MMC_ENV_PART != mmc->part_num) {
+		if (mmc_switch_part(mmc_dev_num, CONFIG_SYS_MMC_ENV_PART)) {
+			printf("MMC partition switch failed\n");
+			return 1;
+		}
+	}
+#endif
+
+	/* SD reserves LBA-0 for MBR and boots from LBA-1, MMC/eMMC boots from LBA-0 */
+	start_lba = IS_SD(mmc) ? 1 : 0;
+	blk_count = image_size / mmc->block_dev.blksz;
+	if (image_size % mmc->block_dev.blksz)
+		blk_count += 1;
+
+	blk_written = mmc->block_dev.block_write(mmc_dev_num,
+						start_lba, blk_count, (void *)get_load_addr());
+	if (blk_written != blk_count) {
+		printf("Error - written %#lx blocks\n", blk_written);
+		return 0;
+	} else {
+		printf("Done!\n");
+	}
+
+#ifdef CONFIG_SYS_MMC_ENV_PART
+	if (CONFIG_SYS_MMC_ENV_PART != mmc->part_num)
+		mmc_switch_part(mmc_dev_num, mmc->part_num);
+#endif
+
+	return 0;
+}
+
+static int mmc_read_file(const char *file_name)
+{
+	loff_t		act_read;
+	struct mmc	*mmc;
+#ifdef CONFIG_SYS_MMC_ENV_DEV
+	const u8	mmc_dev_num = CONFIG_SYS_MMC_ENV_DEV;
+#else
+	const u8	mmc_dev_num = 0;
+#endif
+
+	mmc = find_mmc_device(mmc_dev_num);
+	if (!mmc) {
+		printf("No SD/MMC/eMMC card found\n");
+		return 1;
+	}
+
+	if (mmc_init(mmc)) {
+		printf("%s(%d) init failed\n", IS_SD(mmc) ? "SD" : "MMC", mmc_dev_num);
+		return 1;
+	}
+
+	/* Load from data partition (0) */
+	if (fs_set_blk_dev("usb", "0", FS_TYPE_ANY)) {
+		printf("Error: MMC 0 not found\n");
+		return 0;
+	}
+
+	/* Perfrom file read */
+	return fs_read(file_name, get_load_addr(), 0, 0, &act_read);
+}
+
+int is_mmc_active(void)
+{
+	return 1;
+}
+#else
+#define mmc_burn_image 0
+#define mmc_read_file 0
+#define is_mmc_active 0
+#endif /* CONFIG_GENERIC_MMC */
+
+
+/********************************************************************
+ *     SPI services
+ ********************************************************************/
 #ifdef CONFIG_SPI_FLASH
 static int spi_burn_image(int image_size)
 {
@@ -137,6 +242,9 @@ int is_spi_active(void)
 #define is_spi_active 0
 #endif /* CONFIG_SPI_FLASH */
 
+/********************************************************************
+ *     NAND services
+ ********************************************************************/
 #ifdef CONFIG_CMD_NAND
 static int nand_burn_image(int image_size)
 {
@@ -185,6 +293,9 @@ int is_nand_active(void)
 #define is_nand_active 0
 #endif /* CONFIG_CMD_NAND */
 
+/********************************************************************
+ *     NOR services
+ ********************************************************************/
 #ifdef CONFIG_SYS_FLASH_CFI
 static int nor_burn_image(int image_size)
 {
@@ -200,6 +311,9 @@ int is_nor_active(void)
 #define is_nor_active 0
 #endif /* CONFIG_SYS_FLASH_CFI */
 
+/********************************************************************
+ *     USB services
+ ********************************************************************/
 #ifdef CONFIG_USB_STORAGE
 static int usb_read_file(const char *file_name)
 {
@@ -237,6 +351,9 @@ int is_usb_active(void)
 #define is_usb_active 0
 #endif /* CONFIG_USB_STORAGE */
 
+/********************************************************************
+ *     Network services
+ ********************************************************************/
 #ifdef CONFIG_CMD_NET
 static int tftp_read_file(const char *file_name)
 {
@@ -252,11 +369,21 @@ int is_tftp_active(void)
 #define is_tftp_active 0
 #endif /* CONFIG_CMD_NET */
 
-#define BUBT_MAX_DEV 5
+enum bubt_devices {
+	BUBT_DEV_NET = 0,
+	BUBT_DEV_USB,
+	BUBT_DEV_MMC,
+	BUBT_DEV_SPI,
+	BUBT_DEV_NAND,
+	BUBT_DEV_NOR,
+
+	BUBT_MAX_DEV
+};
 
 struct bubt_dev bubt_devs[BUBT_MAX_DEV] = {
 	{"tftp", tftp_read_file, NULL, is_tftp_active},
 	{"usb",  usb_read_file,  NULL, is_usb_active},
+	{"mmc",  mmc_read_file,  mmc_burn_image, is_mmc_active},
 	{"spi",  NULL, spi_burn_image,  is_spi_active},
 	{"nand", NULL, nand_burn_image, is_nand_active},
 	{"nor",  NULL, nor_burn_image,  is_nor_active}
@@ -445,6 +572,8 @@ struct bubt_dev *find_bubt_dev(char *dev_name)
 #define DEFAULT_BUBT_DST "nand"
 #elif defined(CONFIG_MVEBU_NOR_BOOT)
 #define DEFAULT_BUBT_DST "nor"
+#elif defined(CONFIG_MVEBU_MMC_BOOT)
+#define DEFAULT_BUBT_DST "mmc"
 #else
 #define DEFAULT_BUBT_DST "error"
 #endif
@@ -512,11 +641,11 @@ U_BOOT_CMD(
 	bubt, 4, 0, do_bubt_cmd,
 	"Burn a u-boot image to flash",
 	"[file-name] [destination [source]]\n"
-	"\t-file-name     The image file name to burn. default = u-boot.bin\n"
-	"\t-destination   Flash to burn to [spi, nor, nand]. defualt = active flash\n"
-	"\t-source        The source to load image from [tftp, usb]. default = tftp\n"
+	"\t-file-name     The image file name to burn. Default = u-boot.bin\n"
+	"\t-destination   Flash to burn to [spi, nor, nand, mmc]. Defualt = active boot device\n"
+	"\t-source        The source to load image from [tftp, usb, mmc]. Default = tftp\n"
 	"Examples:\n"
-	"\tbubt - Burn u-boot.bin from tftp to active flash\n"
+	"\tbubt - Burn u-boot.bin from tftp to active boot device\n"
 	"\tbubt latest-spi.bin nand - Burn latest-spi.bin from tftp to NAND flash\n"
 	"\tbubt backup-nor.bin nor usb - Burn backup-nor.bin from usb to NOR flash\n"
 

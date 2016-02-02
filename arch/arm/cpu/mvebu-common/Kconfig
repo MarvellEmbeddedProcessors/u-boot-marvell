@@ -113,6 +113,8 @@ config MVEBU_SPI_BOOT
 config MVEBU_NOR_BOOT
 	bool "NOR flash boot"
 	depends on MVEBU_NOR
+	help
+	  Enable boot from eMMC boot partition
 
 endchoice
 

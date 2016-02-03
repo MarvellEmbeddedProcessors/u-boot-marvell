@@ -102,7 +102,9 @@ choice
 
 config MVEBU_NAND_BOOT
 	bool "NAND flash boot"
-	depends on MVEBU_NAND
+	depends on (MVEBU_NAND || NAND_PXA3XX)
+	help
+	  Enable boot from NAND
 
 config MVEBU_SPI_BOOT
 	bool "SPI flash boot"

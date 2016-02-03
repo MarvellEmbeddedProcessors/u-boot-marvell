@@ -62,9 +62,16 @@ u32 soc_tclk_get(void)
 
 
 #ifdef CONFIG_NAND_PXA3XX
+#define NAND_FLASH_CLK_CTRL (MVEBU_CP0_REGS_BASE + 0x440700)
+#define NF_CLOCK_SEL_MASK	(0x1)
 unsigned long mvebu_get_nand_clock(void)
 {
-	return 0;
+	u32 reg;
+	reg = readl(NAND_FLASH_CLK_CTRL);
+	if (reg & NF_CLOCK_SEL_MASK)
+		return 400 * MHz;
+	else
+		return 250 * MHz;
 }
 #endif
 

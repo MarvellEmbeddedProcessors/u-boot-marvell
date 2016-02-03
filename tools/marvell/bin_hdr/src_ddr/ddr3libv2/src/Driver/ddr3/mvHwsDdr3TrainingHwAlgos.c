@@ -87,7 +87,7 @@ GT_STATUS    ddr3TipWriteAdditionalOdtSetting
 {
     GT_U32 csNum = 0, maxReadSample = 0, minReadSample = 0x1f;
     GT_U32 dataRead[MAX_INTERFACE_NUM] = {0};
-    GT_U32 ReadSample[MAX_CS_NUM];
+    GT_U32 ReadSample[MAX_CS_NUM];/* The phase is in SDR cycles - one phase = 0.5 cycle*/
     GT_U32 dataValue;
     GT_U32 pupIndex;
     GT_32 maxPhase = MIN_VALUE, currentPhase;
@@ -105,23 +105,26 @@ GT_STATUS    ddr3TipWriteAdditionalOdtSetting
         /* find maximum of ReadSamples*/
         if (ReadSample[csNum] >= maxReadSample)
         {
-            if (ReadSample[csNum] == maxReadSample)
-            {
-                maxPhase = MIN_VALUE;
-            }else
+			if (ReadSample[csNum] == maxReadSample)
+			{
+				/* In case the same Read Sample, continue to search for the max phase */
+			}
+			else
 			{
 				maxReadSample = ReadSample[csNum];
+				maxPhase = MIN_VALUE;
 			}
-            for(pupIndex=0 ; pupIndex < octetsPerInterfaceNum; pupIndex++)
-            {
-                CHECK_STATUS(mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, pupIndex, DDR_PHY_DATA, RL_PHY_REG + CS_BYTE_GAP(csNum), &dataValue));
+			for(pupIndex=0 ; pupIndex < octetsPerInterfaceNum; pupIndex++)
+			{
+                VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pupIndex)
+				CHECK_STATUS(mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, pupIndex, DDR_PHY_DATA, RL_PHY_REG + CS_BYTE_GAP(csNum), &dataValue));
 				currentPhase = ((GT_32)dataValue&0xE0)>>6;
-                if ( currentPhase >= maxPhase )
-                {
-                    maxPhase = currentPhase;
-                }
-            }
-        }
+				if ( currentPhase >= maxPhase )
+				{
+					maxPhase = currentPhase;
+				}
+			}
+		}
         /* find minimum */
         if (ReadSample[csNum] < minReadSample)
         {

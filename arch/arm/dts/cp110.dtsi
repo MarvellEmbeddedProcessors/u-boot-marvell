@@ -117,6 +117,13 @@ nand@720000 {
 	nand-ecc-step-size = <512>;
 };
 
+mdio0@12A200 {
+	compatible = "marvell,mvebu-mdio";
+	reg_xsmi = <0x15B000 0x20>;
+	reg_smi = <0x12A200 0x4>;
+	status = "okay";
+};
+
 pcie-controller {
 	#address-cells = <1>;
 	#size-cells = <1>;

@@ -438,7 +438,7 @@ MV_OP_PARAMS usb3ElectricalConfigSerdesRev2Params[] =
 	{ VTHIMPCAL_CTRL_REG,		0x800,		0xFF00,		{ 0x3000	},		0,	0 	}, /* Bits[15:12]= 0x3 - tximpcal_th;Bits[11:8] = 0x0 - RXIMPCAL_TH */
 	{ LANE_CFG5_REG,		0x800,		0x3,		{ 0x3		},		0,	0 	}, /* Bit[1]=0x1 - CFG_SQ_DET_SEL,Bit[0]=0x1-CFG_RX_INIT_SEL, */
 	{ MISC_REG,	            	0x800,		0x42F,		{ 0x42A		},		0,      0 	}, /* Bit[10]=0x1 - REFCLK_SEL(=25Mhz);Bit[5]=0x1  ICP_FORCE_En;Bits[3:0]=0xA  ICP=0xA(210uA); */
-	{ POWER_AND_PLL_CTRL_REG,	0x800,		0x1F,		{ 0x02		},		0,      0 	}, /* Bits[4:0] =0x2 - REF_FREF_SEL(=25Mhz) */
+	{ POWER_AND_PLL_CTRL_REG,	0x800,		0xFF,		{ 0xA2		},	0,      0 	}, /* Bits[7:5] =0x5 - PHY_MODE - USB3, Bits[4:0] =0x2 - REF_FREF_SEL(=25Mhz) */
 	{ G2_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3D2		},		0,      0 	}, /* Bits[9:8]=0x3- G2_RX_SELMUFF;Bits[7:6]=0x3- G2_RX_SELMUFI;Bits[5:3]=0x2  G2_RX_SELMUPF;Bits[2:0]=0x2 -  G2_RX_SELMUPI*/
 	{ RX_REG2,			0x800,		0xF0,		{ 0x70		},		0,      0 	}, /* Dtl Clamping disable and Dtl-clamping-Sel(6000ppm) */
 	{ PCIE_REG1,			0x800,		0xF80,		{ 0xD00		},		0,      0 	}, /* Bits[11:7]=0x1a -  tx_amp_pipe_v0[4:0] */

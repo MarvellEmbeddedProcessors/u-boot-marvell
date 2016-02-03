@@ -26,6 +26,20 @@ struct eeprom_struct board_config_val = CFG_DEFAULT_VALUE;
 struct board_config_struct *board_cfg = &(board_config_val.board_config);
 struct config_types_info config_types_info[] = MV_EEPROM_CONFIG_INFO;
 int eeprom_initialized = -1;
+int g_board_id = -1;
+
+static char hw_info_param_list[][HW_INFO_MAX_NAME_LEN] = {
+	"board_id",
+	"pcb_slm",
+	"pcb_rev",
+	"eco_rev",
+	"pcb_sn",
+	"ethaddr",
+	"eth1addr",
+	"eth2addr",
+	"eth3addr"
+};
+static int hw_info_param_num = (sizeof(hw_info_param_list)/sizeof(hw_info_param_list[0]));
 
 static uint32_t cfg_eeprom_checksum8(uint8_t *start, uint32_t len)
 {
@@ -121,6 +135,9 @@ void cfg_eeprom_save(void)
 
 	i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, i*I2C_PAGE_WRITE_SIZE, MULTI_FDT_EEPROM_ADDR_LEN,
 		  (uint8_t *)&(board_config_val) + i*I2C_PAGE_WRITE_SIZE, reserve_length);
+
+	/* reset g_board_id so it will get board ID from EEPROM again */
+	g_board_id = -1;
 }
 
 /* cfg_eeprom_get_board_config - return the whole board config
@@ -141,6 +158,198 @@ uint8_t *cfg_eeprom_get_fdt(void)
 	return (uint8_t *)&board_config_val.fdt_blob;
 }
 
+/* cfg_eeprom_get_hw_info_str - copy hw_info string from cfg_eeprom module to destination
+ * It is assumed the cfg_eeprom_init must be called prior to this routine,
+ * otherwise static default configuration will be used.
+ */
+void cfg_eeprom_get_hw_info_str(uchar *hw_info_str)
+{
+	int len;
+
+	len = strlen((const char *)board_config_val.man_info.hw_info);
+	if (len >= MVEBU_HW_INFO_LEN)
+		len = MVEBU_HW_INFO_LEN - 1;
+
+	memcpy(hw_info_str, board_config_val.man_info.hw_info, len);
+}
+
+/* cfg_eeprom_set_hw_info_str - copy hw_info sting to cfg_eeprom module
+ * It is assumed the cfg_eeprom_init must be called prior to this routine,
+ * otherwise static default configuration will be used.
+ */
+void cfg_eeprom_set_hw_info_str(uchar *hw_info_str)
+{
+	int len;
+	struct config_types_info config_info;
+
+	/* read hw_info config from EEPROM */
+	if (!cfg_eeprom_get_config_type(MV_CONFIG_HW_INFO, &config_info)) {
+		error("Could not find MV_CONFIG_hw_info\n");
+		return;
+	}
+
+	len = strlen((const char *)hw_info_str);
+	if (len >= config_info.byte_cnt)
+		len = config_info.byte_cnt - 1;
+
+	/* need to set all value to 0 at first for later string operation */
+	memset(board_config_val.man_info.hw_info, 0, config_info.byte_cnt);
+	memcpy(board_config_val.man_info.hw_info, hw_info_str, len);
+}
+
+/* cfg_eeprom_skip_space - skip the space character */
+static char *cfg_eeprom_skip_space(char *buf)
+{
+	while ((buf[0] == ' ' || buf[0] == '\t'))
+		++buf;
+	return buf;
+}
+
+/* cfg_eeprom_char_to_hex - convert char to hex */
+static int cfg_eeprom_char_to_hex(int a)
+{
+	if (a >= '0' && a <= '9')
+		return a - '0';
+	else if (a >= 'a' && a <= 'f')
+		return a - 'a' + 10;
+	else if (a >= 'A' && a <= 'F')
+		return a - 'A' + 10;
+	else
+		return 0;
+}
+
+/* cfg_eeprom_string_to_hex - convert string to hex */
+static u32 cfg_eeprom_string_to_hex(char *str)
+{
+	int len;
+	int idx;
+	u32 value  = 0;
+
+	len = strlen(str);
+	for (idx = 0; idx < len; idx++)
+		value = (value * 0x10 + cfg_eeprom_char_to_hex(str[idx]));
+
+	return value;
+}
+
+/* cfg_eeprom_parse_hw_info - parse the hw_info from string to name/value pairs */
+int cfg_eeprom_parse_hw_info(uchar *hw_info_str, struct hw_info_point_struct *hw_info_point_array)
+{
+	int count;
+	char *name;
+	char *value;
+
+	cfg_eeprom_get_hw_info_str(hw_info_str);
+	name = (char *)hw_info_str;
+	name = cfg_eeprom_skip_space(name);
+	/* return 0 in case the string is empty */
+	if (NULL == name)
+		return 0;
+
+	for (count = 0; name != NULL; count++) {
+		hw_info_point_array[count].name = name;
+		value = strchr(name, '=');
+
+		if (value == NULL)
+			return count;
+
+		*value = '\0';
+		value++;
+		hw_info_point_array[count].value = value;
+
+		name = strchr(value, ' ');
+		if (name == NULL)
+			return ++count;
+
+		*name = '\0';
+		name = cfg_eeprom_skip_space(name + 1);
+	}
+	count++;
+
+	return count;
+}
+
+/* cfg_eeprom_parse_env - parse the env from env to name/value pairs */
+int cfg_eeprom_parse_env(struct hw_info_data_struct *hw_info_data_array, int size)
+{
+	int param_num = 0;
+	int idx;
+	int len;
+	char *name;
+	char *value;
+
+	/* need to memset to 0 for later string operation */
+	memset(hw_info_data_array, 0, size);
+	for (idx = 0; idx < hw_info_param_num; idx++) {
+		name = hw_info_param_list[idx];
+		value = getenv(name);
+
+		/* print indication if the expected HW info parameter does not exist in env */
+		if (NULL == value) {
+			printf("miss %s in env, please set it at first\n", hw_info_param_list[idx]);
+			continue;
+		}
+
+		len = strlen(name);
+		if (len > HW_INFO_MAX_NAME_LEN)
+			len  = HW_INFO_MAX_NAME_LEN;
+		memcpy(hw_info_data_array[param_num].name, name, len);
+
+		len = strlen(value);
+		if (len > HW_INFO_MAX_NAME_LEN)
+			len  = HW_INFO_MAX_NAME_LEN;
+		memcpy(hw_info_data_array[param_num].value, value, len);
+
+		param_num++;
+	}
+
+	return param_num;
+}
+
+/* cfg_eeprom_parse_hw_info - return board ID
+ * this routine will return the board ID from EEPROM in case there is valid
+ * board ID in EEPROM, otherwise it return default board ID per SoC.
+ * It is assumed the cfg_eeprom_init must be called prior to this routine,
+ * otherwise static default configuration will be used.
+ */
+int cfg_eeprom_get_board_id(void)
+{
+	int idx;
+	int param_num;
+	uchar hw_info_str[MVEBU_HW_INFO_LEN];
+	struct hw_info_point_struct hw_info_point_array[HW_INFO_MAX_PARAM_NUM];
+	u32 board_id;
+
+	/* return g_board_id if it is already initialized */
+	if (g_board_id != -1)
+		return g_board_id;
+
+	memset(hw_info_str, 0, sizeof(hw_info_str));
+	cfg_eeprom_get_hw_info_str(hw_info_str);
+
+	param_num = cfg_eeprom_parse_hw_info(hw_info_str, hw_info_point_array);
+	if (param_num == 0)
+		goto default_id;
+
+	if (param_num > HW_INFO_MAX_NAME_LEN) {
+		printf("parameter number should not exceed %d\n", HW_INFO_MAX_NAME_LEN);
+		goto default_id;
+	}
+
+	for (idx = 0; idx < param_num; idx++) {
+		if ((strcmp("board_id", hw_info_point_array[idx].name) == 0) ||
+		    (strcmp("boardid", hw_info_point_array[idx].name) == 0)) {
+			board_id = cfg_eeprom_string_to_hex(hw_info_point_array[idx].value);
+			g_board_id = board_id;
+			return board_id;
+		}
+	}
+
+default_id:
+	g_board_id = MV_DEFAULT_BOARD_ID;
+	return MV_DEFAULT_BOARD_ID;
+}
+
 /* cfg_eeprom_init - initialize FDT configuration struct */
 int cfg_eeprom_init(void)
 {
@@ -151,7 +360,7 @@ int cfg_eeprom_init(void)
 	/* It is possible that this init will be called by several modules during init,
 	 * however only need to initialize it for one time
 	 */
-	if (eeprom_initialized > 0)
+	if (eeprom_initialized == 1)
 		return 0;
 
 	init_func_i2c();
@@ -212,8 +421,8 @@ int cfg_eeprom_init(void)
 
 	/* if checksum is invalid or if select active fdt is invalid */
 	/* need to load default FDT */
-	if (boardid_is_valid(eeprom_buffer.man_info.boardid)) {
-		cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(eeprom_buffer.man_info.boardid));
+	if (boardid_is_valid(cfg_eeprom_get_board_id())) {
+		cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(cfg_eeprom_get_board_id()));
 		debug("read board default FDT\n");
 	} else {
 		cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(MV_DEFAULT_BOARD_ID));

@@ -60,13 +60,11 @@ int fdt_select_list(void)
 	int i, fdt_config_id;
 	char *fdt_model;
 	void *fdt_blob_temp = __dtb_dt_begin;
-	struct eeprom_struct *p_board_config;
 
 	fdt_list_size = 0;
-	p_board_config = cfg_eeprom_get_board_config();
 	printf("FDT config list:\n");
 	for (i = 0; fdt_check_header(fdt_blob_temp) == 0; i++) {
-		if ((u8)fdtdec_get_int(fdt_blob_temp, 0, "board_id", -1) == p_board_config->man_info.boardid) {
+		if ((u8)fdtdec_get_int(fdt_blob_temp, 0, "board_id", -1) == cfg_eeprom_get_board_id()) {
 			fdt_list_size++;
 			fdt_model = (char *)fdt_getprop(fdt_blob_temp, 0, "model", NULL);
 			fdt_config_id = fdtdec_get_int(fdt_blob_temp, 0, "fdt_config_id", -1);

@@ -28,7 +28,7 @@
 enum mv_config_type_id {
 	MV_CONFIG_VERIFICATION_PATTERN,
 	MV_CONFIG_LENGTH,
-	MV_CONFIG_BOARDID,
+	MV_CONFIG_HW_INFO,
 	MV_CONFIG_FDTCFG_EN,
 	MV_CONFIG_ACTIVE_FDT_SELECTION,
 	MV_CONFIG_FDT_FILE,
@@ -37,9 +37,9 @@ enum mv_config_type_id {
 };
 
 /* #pragma pack(1) */
+#define MVEBU_HW_INFO_LEN	256
 struct manufacturing_information_struct {
-	u8 boardid;
-	u8 reserve_manufacturing_information[23];
+	u8 hw_info[MVEBU_HW_INFO_LEN];
 };
 
 /* #pragma pack(1) */
@@ -60,7 +60,7 @@ struct eeprom_struct {
 	u8 fdt_blob[MVEBU_FDT_SIZE];
 };
 
-struct  config_types_info {
+struct config_types_info {
 	enum mv_config_type_id config_id;
 	char name[30];
 	u8 byte_num;
@@ -69,6 +69,19 @@ struct  config_types_info {
 
 #define BOARD_ID_INDEX_MASK		0x10
 #define I2C_PAGE_WRITE_SIZE		32
+
+#define HW_INFO_MAX_PARAM_NUM		32
+struct hw_info_point_struct {
+	char *name;
+	char *value;
+};
+
+#define HW_INFO_MAX_NAME_LEN		32
+#define HW_INFO_MAX_VALUE_LEN		32
+struct hw_info_data_struct {
+	char name[HW_INFO_MAX_NAME_LEN];
+	char value[HW_INFO_MAX_VALUE_LEN];
+};
 
 #define offset_in_eeprom(a)		((u8)(offsetof(struct eeprom_struct, a)))
 #define get_default_fdt_config_id(boardid)	mapping_default_fdt[boardid & (BOARD_ID_INDEX_MASK - 1)]
@@ -81,8 +94,8 @@ struct  config_types_info {
 									sizeof(board_config_val.pattern)},	  \
 { MV_CONFIG_LENGTH,			"Data length",		offset_in_eeprom(length),			  \
 									sizeof(board_config_val.length)},	  \
-{ MV_CONFIG_BOARDID,			"Board ID",		offset_in_eeprom(man_info.boardid),		  \
-									sizeof(board_config_val.man_info.boardid)}, \
+{ MV_CONFIG_HW_INFO,			"Box Information",	offset_in_eeprom(man_info.hw_info),		  \
+									sizeof(board_config_val.man_info.hw_info)}, \
 { MV_CONFIG_FDTCFG_EN,			"EEPROM enable",	offset_in_eeprom(board_config.fdt_cfg_en),	  \
 									sizeof(board_cfg->fdt_cfg_en)},		  \
 { MV_CONFIG_ACTIVE_FDT_SELECTION,	"Active FDT selection", offset_in_eeprom(board_config.active_fdt_selection),\
@@ -96,11 +109,8 @@ struct  config_types_info {
 #define CFG_DEFAULT_VALUE  {											  \
 				0x00000000,				     /* checksum */			  \
 				0xfecadefa,				     /* EEPROM pattern */		  \
-				0x002c,					     /* length = 44 bytes */		  \
-				{MV_DEFAULT_BOARD_ID,			     /* board ID */			  \
-				{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,					  \
-				 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,				  \
-				 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} },/* reserve_man_information */  \
+				0x00114,				     /* length = 0x114 bytes */		  \
+				{{[0 ... 255] = 0x00} },		     /* manufacturing_information */	  \
 				{0x00,					     /* fdt config disable */		  \
 				 0x03,					     /* active fdt selection = default */ \
 				 0x00,					     /* validation counter = 0 */	  \
@@ -115,5 +125,10 @@ bool cfg_eeprom_upload_fdt_from_flash(u8 fdt_config_id);
 bool cfg_eeprom_upload_fdt_from_eeprom(void);
 void cfg_eeprom_save(void);
 struct eeprom_struct *cfg_eeprom_get_board_config(void);
+void cfg_eeprom_get_hw_info_str(uchar *hw_info_str);
+void cfg_eeprom_set_hw_info_str(uchar *hw_info_str);
+int cfg_eeprom_parse_hw_info(uchar *hw_info_str, struct hw_info_point_struct *hw_info_point_array);
+int cfg_eeprom_parse_env(struct hw_info_data_struct *hw_info_data_array, int size);
+int cfg_eeprom_get_board_id(void);
 
 #endif /* _CFG_EEPROM_H_ */

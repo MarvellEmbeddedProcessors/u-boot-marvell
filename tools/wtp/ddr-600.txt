@@ -1,68 +1,3 @@
-Version:                       0x00030500
-Trusted:                       0x00000000
-Issue Date:                    0x12162015		; today's date
-OEM UniqueID:                  0x4D52564C		; MRVL
-Processor Type:                <undefined>		; ARMADALP
-Boot Flash Signature:          0x5350490A		; Select SPI'0A
-Number of Images:              4
-Size of Reserved in bytes:     44
-
-Image ID:                       0x54494D48		; TIMH
-Next Image ID:                  0x4F424d49		; OBMI next
-Flash Entry Address:            0x00000000		; TIM flash addr
-Load Address:                   0x20006000		; TIM ISRAM addr
-Image Size To CRC in bytes:     0x00000000
-Partition Number:               0x00000000
-Image Filename: TIM_UBOOT_NON_TRUSTED.bin
-
-Image ID:                       0x4F424d49		; OBMI - 64K code + 16K data
-Next Image ID:                  0x57544d49		; WTMI next
-Flash Entry Address:            0x00004000		; OBMI flash addr
-Load Address:                   0x1FFF0000		; OBMI RAM addr
-Image Size To CRC in bytes:     0x00000000
-Partition Number:               0x00000000
-Image Filename: spl/u-boot-spl.bin
-
-Image ID:                       0x57544d49		; WTMI
-Next Image ID:                  0x4F534C4F		; OSLO next
-Flash Entry Address:            0x00024000		; WTMI flash addr
-Load Address:                   0x200040F0		; WTMI RAM addr
-Image Size To CRC in bytes:     0x00000000
-Partition Number:               0x00000000
-Image Filename: tools/wtp/wtmi.dummy
-
-Image ID:                       0x4F534C4F		; OSLO
-Next Image ID:                  0xFFFFFFFF		; NONE
-Flash Entry Address:            0x00026000		; OSLO flash addr
-Load Address:                   0x60000000		; OSLO RAM addr
-Image Size To CRC in bytes:     0x00000000
-Partition Number:               0x00000000
-Image Filename: u-boot.bin
-
-Reserved Data:
-0x4F505448	;OPTH
-0x00000002	; Number of Reserved Packages
-0x43525632	;CRV2
-0x0000001C	; Size of CRV2 package in bytes
-0x00000002	; Number of cores to release
-0x00000000	; Core_ID: 0 - AP0, 1 - AP1, 2 - CM3
-0xF0000000	; PC address for Core_ID above
-0x00000002	; Core_ID: 0 - AP0, 1 - AP1, 2 - CM3
-0x200040F0	; PC address for Core_ID above
-0x5465726D	;Term
-0x00000008	; Size of this package in bytes
-
-Extended Reserved Data:
-Consumer ID:
-CID: TBRI
-PID: DDR3
-End Consumer ID:
-DDR Initialization:
-DDR_PID: DDR3
-Operations:
-DDR_INIT_ENABLE: 0x00000001
-End Operations:
-Instructions:
 WRITE: 0xC0014008 0x00404500
 WRITE: 0xC0002000 0x00010000
 WRITE: 0xC0002004 0x00000000
@@ -156,6 +91,3 @@ WAIT_FOR_BIT_SET: 0xC0000008 0x00000001 0x00001000
 WRITE: 0xC0011500 0x98A2FFFF	;# Set VDD to 1150mV and soft reset AVS
 WRITE: 0xC0011500 0x18A2FFFF	;# release AVS reset
 WRITE: 0xC0011500 0x58A2FFFF	;# Enable AVS
-End Instructions:
-End DDR Initialization:
-End Extended Reserved Data:

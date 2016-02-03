@@ -5,7 +5,8 @@ wtmi.elf:     file format elf32-littlearm
 Disassembly of section .ro:
 
 200040f0 <_Reset>:
-200040f0:	e7fe      	b.n	200040f0 <_Reset>
+200040f0:	46c0      	nop			; (mov r8, r8)
+200040f2:	e7fd      	b.n	200040f0 <_Reset>
 
 Disassembly of section .ARM.attributes:
 

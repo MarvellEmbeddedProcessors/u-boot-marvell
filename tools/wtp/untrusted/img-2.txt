@@ -1,0 +1,8 @@
+Image ID:                       0x57544d49		; WTMI
+Next Image ID:                  0x4F534C4F		; OSLO next
+Flash Entry Address:            0x00024000		; WTMI flash addr
+Load Address:                   0x200040F0		; WTMI RAM addr
+Image Size To CRC in bytes:     0x00000000
+Hash Algorithm ID:              32			; SHA-256
+Partition Number:               0x00000000
+Image Filename: tools/wtp/wtmi.dummy

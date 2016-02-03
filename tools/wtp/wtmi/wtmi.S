@@ -1,3 +1,4 @@
 .global _Reset
 _Reset:
-    B .
+    NOP
+    B _Reset

@@ -1,0 +1,11 @@
+0x4F505448	;OPTH
+0x00000002	; Number of Reserved Packages
+0x43525632	;CRV2
+0x0000001C	; Size of CRV2 package in bytes
+0x00000002	; Number of cores to release
+0x00000000	; Core_ID: 0 - AP0, 1 - AP1, 2 - CM3
+0xF0000000	; PC address for Core_ID above
+0x00000002	; Core_ID: 0 - AP0, 1 - AP1, 2 - CM3
+0x200040F0	; PC address for Core_ID above
+0x5465726D	;Term
+0x00000008	; Size of this package in bytes

@@ -443,19 +443,16 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 
 	debug("stage: Check PLL\n");
 	data = readl(sd_ip_addr + SD_EXTERNAL_STATUS0_REG);
+
 	/* check the PLL TX */
 	if ((data & SD_EXTERNAL_STATUS0_PLL_TX_MASK) == 0) {
 		error("SD_EXTERNAL_STATUS0_PLL_TX is 0\n");
 		ret = 0;
 	}
+
 	/* check the PLL RX */
 	if ((data & SD_EXTERNAL_STATUS0_PLL_RX_MASK) == 0) {
 		error("SD_EXTERNAL_STATUS0_PLL_RX is 0\n");
-		ret = 0;
-	}
-	/* check the RX init done */
-	if ((data & SD_EXTERNAL_STATUS0_RX_INIT_MASK) == 0) {
-		error("SD_EXTERNAL_STATUS0_RX_INIT is 0\n");
 		ret = 0;
 	}
 

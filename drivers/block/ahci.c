@@ -47,7 +47,11 @@ u16 *ataid[AHCI_MAX_PORTS];
 
 static inline void __iomem *ahci_port_base(void __iomem *base, u32 port)
 {
+#ifdef CONFIG_CP110_SATA_ADDR_WA
+	return base + 0x10000 + (port * 0x10000);
+#else
 	return base + 0x100 + (port * 0x80);
+#endif
 }
 
 

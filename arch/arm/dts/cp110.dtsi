@@ -56,14 +56,9 @@ i2c@701100 { /* i2c1 */
 	clock = <&tclk>;
 	status = "disabled";
 };
-sata@550000 { /* SATA0 */
+sata@540000 {
 	compatible = "marvell,mvebu-sata";
-	reg = <550000 0x1000>;
-	status = "disabled";
-};
-sata@560000 { /* SATA1 */
-	compatible = "marvell,mvebu-sata";
-	reg = <560000 0x1000>;
+	reg = <0x540000 0x30000>;
 	status = "disabled";
 };
 mmc@780000 {

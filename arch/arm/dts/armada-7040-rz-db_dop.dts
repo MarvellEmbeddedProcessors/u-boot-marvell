@@ -66,8 +66,8 @@
 			usb3@510000 {
 				status = "disabled";
 			};
-			sata@550000 {
-				status = "disabled";
+			sata@540000 {
+				status = "okay";
 			};
 			mmc@780000 {
 				status = "disabled";

@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <netdev.h>
 #include <spi.h>
+#include <miiphy.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

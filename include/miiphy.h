@@ -90,6 +90,11 @@ int bb_miiphy_write(const char *devname, unsigned char addr,
 		     unsigned char reg, unsigned short value);
 #endif
 
+#ifdef CONFIG_MVEBU_MDIO
+int mvebu_mdio_initialize(const void *blob);
+int miiphy_set_current_dev(const char *devname);
+#endif
+
 /* phy seed setup */
 #define AUTO			99
 #define _1000BASET		1000

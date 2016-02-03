@@ -129,7 +129,7 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base
 	data = 0x1 << HPIPE_MISC_CLK100M_125M_OFFSET;
 	/* Set PIN_TXDCLK_2X Clock Frequency Selection for outputs 500MHz clock */
 	mask |= HPIPE_MISC_TXDCLK_2X_MASK;
-	data |= 0x1 << HPIPE_MISC_TXDCLK_2X_OFFSET;
+	data |= 0x0 << HPIPE_MISC_TXDCLK_2X_OFFSET;
 	/* Enable 500MHz Clock */
 	mask |= HPIPE_MISC_CLK500_EN_MASK;
 	data |= 0x1 << HPIPE_MISC_CLK500_EN_OFFSET;

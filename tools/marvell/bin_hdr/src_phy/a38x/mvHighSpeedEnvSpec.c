@@ -1613,8 +1613,11 @@ MV_STATUS mvSerdesPowerUpCtrl
 					/* The WA is required for BC2 A0, so SatR is coded accordingly */
 					mvPrintf("Forcing Link to GEN1 on PCIe-%d\n", pexIdx);
 					regData |= 0x1; /* GEN1, 2.5G */
-				} else
-					regData |= 0x2; /* GEN2, 5G */
+				} else if (baudRate == __2_5Gbps)
+						regData |= 0x1;
+				else
+						regData |= 0x2; /* GEN2, 5G */
+
 				MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(pexIdx), regData);
 
 				/* Setup common clock configuration bit[6] */

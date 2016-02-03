@@ -1571,7 +1571,7 @@ static int pxa3xx_nand_probe_dt(struct pxa3xx_nand_info *info)
 	pdata->ecc_strength = fdtdec_get_int(blob, node, "nand-ecc-strength", 0);
 
 	/* ECC step size */
-	pdata->ecc_strength = fdtdec_get_int(blob, node, "nand-ecc-step-size", 0);
+	pdata->ecc_step_size = fdtdec_get_int(blob, node, "nand-ecc-step-size", 0);
 
 	info->pdata = pdata;
 

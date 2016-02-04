@@ -113,7 +113,7 @@ static struct icu_irq irq_map_ns_multi[NS_MULTI_IRQS] = {
 	{105, 29, 0}, /* USB3 Host-1 irq */
 	{106, 30, 0}, /* USB3 Host-0 irq */
 	{107, 31, 0}, /* SATA Host-1 irq */
-	{109, 32, 0}, /* SATA Host-0 irq */
+	{109, 31, 0}, /* SATA Host-0 irq */
 	{126, 33, 0}, /* PTP irq */
 	{127, 34, 0}, /* GOP-3 irq */
 	{128, 35, 0}, /* GOP-2 irq */

@@ -535,7 +535,7 @@ typedef enum _mvSuspendWakeupStatus {
 {DB_68XX_ID,	 -1 },\
 {RD_AP_68XX_ID,	 -2 },\
 {DB_AP_68XX_ID,	 -2 },\
-{DB_GP_68XX_ID,	 -2 },\
+{DB_GP_68XX_ID,	 43 },\
 {DB_BP_6821_ID,	 -2 },\
 {DB_AMC_6820_ID, -2 },\
 };

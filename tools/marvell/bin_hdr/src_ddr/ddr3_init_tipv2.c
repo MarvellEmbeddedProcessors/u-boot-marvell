@@ -462,12 +462,10 @@ MV_U32 ddr3Init(void)
 	ddr3NewTipDlbConfig();
 
 #if defined(ECC_SUPPORT)
-	if( (MV_TRUE == ddr3IfEccEnabled())/* &&
-		(mvSysEnvSuspendWakeupCheck() != MV_SUSPEND_WAKEUP_ENABLED_GPIO_DETECTED) &&
-		(mvSysEnvCheckWakeupDramEnable() != MV_SUSPEND_WAKEUP_ENABLED_MEM_DETECTED) */){
-		/*Scrub all DRAM area if ECC enabled (and Suspend wakeup state not detected - TBD)*/
-		/* Disabled SuspendWakeup support until debug*/
-		ddr3NewTipEccScrub();
+	if (MV_TRUE == ddr3IfEccEnabled()) {
+		/* Scrub all DRAM area if ECC enabled (and Suspend wakeup state not detected) */
+		if (mvSysEnvSuspendWakeupCheck() != MV_SUSPEND_WAKEUP_ENABLED_GPIO_DETECTED)
+			ddr3NewTipEccScrub();
 	}
 #endif
 

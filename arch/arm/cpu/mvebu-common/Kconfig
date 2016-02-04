@@ -118,6 +118,29 @@ config MVEBU_NOR_BOOT
 
 endchoice
 
+menu "NAND Boot Parameters"
+depends on MVEBU_NAND_BOOT
+
+config MVEBU_NAND_BLOCK_SIZE
+	int "NAND Boot Page Size (KB)"
+	default 256
+	help
+	  Set the nand boot device block size (in KB).
+	  This parameter is used by Bootrom in order to
+	  determine the location of bad blocks
+	  markers.
+
+config MVEBU_NAND_CELL_TYPE
+	string "NAND Boot Cell Type (SLC/MLC)"
+	default SLC
+	help
+	  Set the boot nand cell type (0 for SLC,
+	  1 for MLC).
+	  This parameter is used by bootrom in order
+	  to determine the bad block marker location
+	  within the block.
+endmenu
+
 config ENV_IS_IN_BOOTDEV
 	bool "Boot-time Environment Selection"
 	depends on (MVEBU_SPI || MVEBU_NAND)

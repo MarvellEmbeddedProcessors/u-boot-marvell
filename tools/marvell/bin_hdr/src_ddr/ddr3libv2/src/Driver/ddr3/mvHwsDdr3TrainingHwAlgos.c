@@ -38,7 +38,7 @@
 
 #define MAX_VALUE               (1024-1)
 #define MIN_VALUE               (-MAX_VALUE)
-#define GET_RD_SAMPLE_DELAY(data,cs) ((data >> rdSampleMask[cs]) & 0xf)
+#define GET_RD_SAMPLE_DELAY(data,cs) ((data >> rdSampleMask[cs]) & (GT_U32)0x1f)
 #define GET_MAX(arg1,arg2) (arg1<arg2) ? (arg2) : (arg1);
 
 GT_U32 caDelay;
@@ -78,6 +78,19 @@ static GT_U32 rdSampleMask[] =
 
 /*****************************************************************************
 ODT additional timing
+
+This function target is to find the RX ODT timing.
+the ODT should be opened before data arrived to the phy from the DRAM
+and closed after the data arrived.
+the ODT timing parameter is per interface.
+the ODT timing is consist of two different timing
+1. the RD SAMPLE timing which is read after the read leveling
+2. the phase timing of each phy
+The RD SAMPLE is in SDR cycles
+the phase is in half SDR cycles
+the function goes over all CS in the interface and all active phy
+per CS in the interface and find the minimum and the maximum timing parameters
+and writes them to the ODT_TIMING_LOW register
 ******************************************************************************/
 GT_STATUS    ddr3TipWriteAdditionalOdtSetting
 (
@@ -85,10 +98,10 @@ GT_STATUS    ddr3TipWriteAdditionalOdtSetting
     GT_U32                  interfaceId
 )
 {
-    GT_U32 csNum = 0, maxReadSample = 0, minReadSample = 0x1f;
+    GT_U32 csNum = 0, maxCS = 0, maxReadSample = 0, minReadSample = 0x1f;
     GT_U32 dataRead[MAX_INTERFACE_NUM] = {0};
     GT_U32 ReadSample[MAX_CS_NUM];/* The phase is in SDR cycles - one phase = 0.5 cycle*/
-    GT_U32 dataValue;
+    GT_U32 dataValue, pupdataValue;
     GT_U32 pupIndex;
     GT_32 maxPhase = MIN_VALUE, currentPhase;
     MV_HWS_ACCESS_TYPE  accessType = ACCESS_TYPE_UNICAST;
@@ -98,48 +111,66 @@ GT_STATUS    ddr3TipWriteAdditionalOdtSetting
     CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType, interfaceId, READ_DATA_SAMPLE_DELAY, dataRead, MASK_ALL_BITS));
     dataValue = dataRead[interfaceId];
 
-    for (csNum=0 ; csNum <MAX_CS_NUM ; csNum++)
-    {
+	DEBUG_TRAINING_HW_ALG(DEBUG_LEVEL_TRACE, ("%s: Interface %d,READ_DATA_SAMPLE_DELAY_data 0x%x\n",__FUNCTION__ ,interfaceId, dataValue));
+
+	/* get the maximum CS's */
+	maxCS = mvHwsDdr3TipMaxCSGet(devNum);
+
+	for (csNum = 0; csNum < maxCS; csNum++) {
         ReadSample[csNum] = GET_RD_SAMPLE_DELAY(dataValue,csNum);
 
         /* find maximum of ReadSamples*/
-        if (ReadSample[csNum] >= maxReadSample)
-        {
-			if (ReadSample[csNum] == maxReadSample)
-			{
+        if (ReadSample[csNum] >= maxReadSample) {
+			if (ReadSample[csNum] == maxReadSample) {
 				/* In case the same Read Sample, continue to search for the max phase */
 			}
-			else
-			{
+			else {
 				maxReadSample = ReadSample[csNum];
 				maxPhase = MIN_VALUE;
 			}
-			for(pupIndex=0 ; pupIndex < octetsPerInterfaceNum; pupIndex++)
-			{
+
+			for (pupIndex = 0; pupIndex < octetsPerInterfaceNum; pupIndex++) {
                 VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pupIndex)
-				CHECK_STATUS(mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, pupIndex, DDR_PHY_DATA, RL_PHY_REG + CS_BYTE_GAP(csNum), &dataValue));
-				currentPhase = ((GT_32)dataValue&0xE0)>>6;
-				if ( currentPhase >= maxPhase )
-				{
+				CHECK_STATUS(mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, pupIndex, DDR_PHY_DATA, RL_PHY_REG + CS_BYTE_GAP(csNum), &pupdataValue));
+				currentPhase = ((GT_32)pupdataValue&0xE0)>>6;
+
+				if (currentPhase >= maxPhase)
 					maxPhase = currentPhase;
-				}
+
+				DEBUG_TRAINING_HW_ALG(DEBUG_LEVEL_TRACE, ("%s: Interface %d,	CS# %d,	Pup %d,	Max_CS_in_Interface %d,	CS_Bit_Mask 0x%x,	ReadSample 0x%x,	maxReadSample 0x%x,	currentPhase 0x%x,	maxPhase 0x%x\n"
+														  ,__FUNCTION__ ,interfaceId, csNum, pupIndex, maxCS
+														  , topologyMap->interfaceParams[interfaceId].asBusParams[pupIndex].csBitmask, ReadSample[csNum]
+															, maxReadSample, currentPhase, maxPhase));
 			}
 		}
         /* find minimum */
         if (ReadSample[csNum] < minReadSample)
-        {
-            minReadSample = ReadSample[csNum];
-        }
+			minReadSample = ReadSample[csNum];
+
+		DEBUG_TRAINING_HW_ALG(DEBUG_LEVEL_TRACE, ("%s: Interface %d,	CS# %d,	Max_CS_in_Interface %d,	ReadSample 0x%x,	minReadSample 0x%x\n"
+												  , __FUNCTION__, interfaceId, csNum, maxCS
+												  , ReadSample[csNum], minReadSample));
     }
 
-    minReadSample = minReadSample-1 ;
+    if (minReadSample <= topologyMap->interfaceParams[interfaceId].casL) {
+		DEBUG_TRAINING_HW_ALG(DEBUG_LEVEL_INFO, ("%s: WARNING!!! Interface %d,	Max_CS_in_Interface %d,	minReadSample 0x%x, CL_value %x\
+												 the minimum read sample is less than 1 sample, forcing it to be CL value\n"
+												 , __FUNCTION__, interfaceId, maxCS
+												 , minReadSample, topologyMap->interfaceParams[interfaceId].casL));
+		minReadSample = (GT_32)topologyMap->interfaceParams[interfaceId].casL;
+	}
+
+	minReadSample = minReadSample-1 ;
     maxReadSample = maxReadSample + 4 + (maxPhase+1)/2 + 1;
-    if (minReadSample >= 0xf)
-        minReadSample = 0xf;
-    if (maxReadSample >= 0x1f)
+	if (maxReadSample >= 0x1f)
         maxReadSample = 0x1f;
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, ODT_TIMING_LOW, ((minReadSample-1) << 12) , 0xf << 12));
+
+	CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, ODT_TIMING_LOW, ((minReadSample-1) << 12) , 0xf << 12));
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, ODT_TIMING_LOW, (maxReadSample << 16) , 0x1f << 16));
+
+	DEBUG_TRAINING_HW_ALG(DEBUG_LEVEL_INFO, ("%s: RX ODT Timing: Interface %d,	minReadSample[-1] 0x%x,	maxReadSample 0x%x\n"
+											  , __FUNCTION__, interfaceId
+											  , minReadSample -1, maxReadSample));
 
     return GT_OK;
 }

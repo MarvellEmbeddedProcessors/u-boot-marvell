@@ -128,11 +128,6 @@ int mvebu_soc_init()
 
 	mvebu_thermal_sensor_probe();
 
-#ifdef CONFIG_USB_XHCI
-	/* Power on USB VBUS power */
-	board_usb_vbus_set();
-#endif
-
 	/* Soc specific init */
 	ret = soc_late_init();
 	if (ret)

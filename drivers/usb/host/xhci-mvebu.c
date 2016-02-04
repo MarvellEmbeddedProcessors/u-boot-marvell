@@ -32,8 +32,14 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 	int i, count;
 	unsigned long usb3_reg_base;
 
+	/* Enable USB VBUS
+	 * will be updated according to Device tree, and will be triggered
+	 * below per port (while going through enabled ports DT info) */
+	board_usb_vbus_init();
+
 	/* in dts file, go through all the 'usb3' nodes.
 	 */
+
 	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "usb3",
 			COMPAT_MVEBU_USB3, node_list, CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS);
 	if (count == 0) {

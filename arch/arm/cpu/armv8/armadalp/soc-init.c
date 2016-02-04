@@ -181,9 +181,9 @@ void board_ahci_power_on(void)
 #endif /* CONFIG_SCSI_AHCI_PLAT */
 
 #ifdef CONFIG_USB_XHCI
-void board_usb_vbus_set(void)
-{
 /* Set USB VBUS signals (via I2C IO expander/GPIO) as output and set output value as enabled */
+void board_usb_vbus_init(void)
+{
 #ifdef CONFIG_DEVEL_BOARD
 /* This I2C IO expander configuration is board specific, only to Marvell A3700 DB board.
  * (I2C device at address 0x22, Register 0, BIT 1) */

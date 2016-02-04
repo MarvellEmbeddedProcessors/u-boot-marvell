@@ -130,7 +130,7 @@ void print_soc_specific_info(void)
 }
 
 #ifdef CONFIG_USB_XHCI
-void board_usb_vbus_set(void)
+void board_usb_vbus_init(void)
 {
 	/* TBD - implement VBUS cycle for here*/
 }

@@ -84,4 +84,12 @@ config MVEBU_FLC
 	  Memory Controller driver.
 	  This driver enable FLC and open the FLC windows.
 
+config AP806_Z_SUPPORT
+	bool "Enable support for AP-806-Z1 & Z2"
+	default n
+	help
+	  Choose this option to add support
+	  for Marvell's AP-806-Z1/Z2 devices
+	  This configurations controlls all sorts of fixes
+	  relevant only for the Z1 & Z2 stepping of AP-806
 endif

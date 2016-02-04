@@ -155,7 +155,6 @@ int fdt_cfg_on(void)
 
 	p_board_config = cfg_eeprom_get_board_config();
 	if (cfg_eeprom_fdt_config_is_enable() == false) {
-		p_board_config->length += MVEBU_FDT_SIZE;
 		p_board_config->board_config.fdt_cfg_en = 1;
 	}
 	printf("Do you want to read FDT from EEPROM? <y/N> ");
@@ -174,7 +173,6 @@ int fdt_cfg_off(void)
 
 	p_board_config = cfg_eeprom_get_board_config();
 	if (cfg_eeprom_fdt_config_is_enable()) {
-		p_board_config->length -= MVEBU_FDT_SIZE;
 		p_board_config->board_config.fdt_cfg_en = 0;
 	}
 	printf("config fdt is now disable\n");

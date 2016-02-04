@@ -79,6 +79,60 @@ static bool cfg_eeprom_get_config_type(enum mv_config_type_id config_class, stru
 
 	return false;
 }
+#ifdef CONFIG_TARGET_ARMADA_8K
+int cfg_eeprom_zip_and_unzip(unsigned long size, void *source_fdt, bool zip_flag)
+{
+	uint8_t file_buffer[MVEBU_FDT_SIZE];
+	unsigned long new_size = ~0UL;
+
+	if (zip_flag) {
+		/* compress fdt */
+		if (gzip((void *)file_buffer, &new_size, source_fdt, size) != 0) {
+			error("Could not compress device tree file\n");
+			return -1;
+		}
+	} else {
+		/* decompress fdt */
+		if (gunzip((void *)file_buffer, size, source_fdt, &new_size) != 0) {
+			error("Could not decompress device tree file\n");
+			return -1;
+		}
+	}
+	if (new_size > MVEBU_FDT_SIZE) {
+		error("Unexpected size of zip file = %lu\n", new_size);
+		return -1;
+	}
+	debug("The new size of the fdt = %lu\n", new_size);
+	/* copy the compressed/decompressed file back to the source fdt */
+	memcpy(source_fdt, (void *)file_buffer, new_size);
+
+	return new_size;
+}
+
+int cfg_eeprom_zip_fdt(unsigned long size, void *source_fdt)
+{
+	return cfg_eeprom_zip_and_unzip(size, source_fdt, true);
+}
+
+int cfg_eeprom_unzip_fdt(unsigned long size, void *source_fdt)
+{
+	return cfg_eeprom_zip_and_unzip(size, source_fdt, false);
+}
+
+#else
+int cfg_eeprom_zip_fdt(unsigned long size, void *source_fdt)
+{
+	/* return the orignal size of the fdt blob */
+	return MVEBU_FDT_SIZE;
+}
+
+int cfg_eeprom_unzip_fdt(unsigned long size, void *source_fdt)
+{
+	/* return zero because in armada-3700 there is no compressed fdt,
+	   therefore the unzip function and its return value has no effect the  */
+	return 0;
+}
+#endif
 
 /* cfg_eeprom_upload_fdt_from_flash
  * write the required FDT to local struct,
@@ -106,13 +160,20 @@ bool cfg_eeprom_upload_fdt_from_eeprom(void)
 {
 	struct config_types_info config_info;
 	uint8_t fdt_blob_temp[MVEBU_FDT_SIZE];
+	unsigned long decompressed_size;
 
-	/* read fdt from EEPROM */
+	/* read the compressed file from EEPROM to buffer */
 	if (!cfg_eeprom_get_config_type(MV_CONFIG_FDT_FILE, &config_info))
-		debug("ERROR: Could not find MV_CONFIG_FDT_FILE\n");
+		error("Could not find MV_CONFIG_FDT_FILE\n");
 	printf("Read FDT from EEPROM, please wait.\n");
 	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
-		 (uint8_t *)&fdt_blob_temp, config_info.byte_cnt);
+		 fdt_blob_temp, board_config_val.length - EEPROM_STRUCT_SIZE);
+
+	/* decompress fdt */
+	decompressed_size = cfg_eeprom_unzip_fdt(MVEBU_FDT_SIZE, (void *)fdt_blob_temp);
+
+	if (decompressed_size == -1)
+		return false;
 
 	/* if didn't find FDT in EEPROM */
 	if (fdt_check_header((void *)fdt_blob_temp) != 0) {
@@ -126,28 +187,62 @@ bool cfg_eeprom_upload_fdt_from_eeprom(void)
 	return true;
 }
 
-/* cfg_eeprom_save - write the local struct to EEPROM */
-void cfg_eeprom_save(void)
+/* cfg_eeprom_write_to_eeprom - write the local struct to EEPROM */
+void cfg_eeprom_write_to_eeprom(int length)
 {
 	int reserve_length, size_of_loop, i;
 
 	/* calculate checksum and save it in struct */
 	board_config_val.checksum = cfg_eeprom_checksum8((uint8_t *)&board_config_val.pattern,
-							 (uint32_t) board_config_val.length - 4);
+							 (uint32_t)length - 4);
 
 	/* write fdt struct to EEPROM */
-	size_of_loop = board_config_val.length / I2C_PAGE_WRITE_SIZE;
-	reserve_length = board_config_val.length % I2C_PAGE_WRITE_SIZE;
+	size_of_loop = length / I2C_PAGE_WRITE_SIZE;
+	reserve_length = length % I2C_PAGE_WRITE_SIZE;
 
 	/* i2c support on page write with size 32-byets */
 	for (i = 0; i < size_of_loop; i++) {
 		i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, i*I2C_PAGE_WRITE_SIZE, MULTI_FDT_EEPROM_ADDR_LEN,
 			  (uint8_t *)&(board_config_val) + i*I2C_PAGE_WRITE_SIZE, I2C_PAGE_WRITE_SIZE);
 	}
+	/* write the reserve data from 32-bytes */
+	if (reserve_length)
+		i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, i*I2C_PAGE_WRITE_SIZE, MULTI_FDT_EEPROM_ADDR_LEN,
+			  (uint8_t *)&(board_config_val) + i*I2C_PAGE_WRITE_SIZE, reserve_length);
+}
 
-	i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, i*I2C_PAGE_WRITE_SIZE, MULTI_FDT_EEPROM_ADDR_LEN,
-		  (uint8_t *)&(board_config_val) + i*I2C_PAGE_WRITE_SIZE, reserve_length);
+/* cfg_eeprom_save - write the local struct to EEPROM */
+void cfg_eeprom_save(void)
+{
+	unsigned long compressed_size;
+	unsigned long decompressed_size;
 
+	/* if fdt_config is enable, write also fdt to EEPROM */
+	if (board_config_val.board_config.fdt_cfg_en == 1) {
+		/* compress fdt */
+		compressed_size = cfg_eeprom_zip_fdt(MVEBU_FDT_SIZE, (void *)board_config_val.fdt_blob);
+
+		if (compressed_size == -1)
+			return;
+
+		/* update length  */
+		board_config_val.length = compressed_size + EEPROM_STRUCT_SIZE;
+		debug("size of struct + fdt compressed = %d\n", board_config_val.length);
+
+		/* write local struct with fdt blob to EEPROM */
+		cfg_eeprom_write_to_eeprom(board_config_val.length);
+
+		/* decompress fdt - After saving the fdt, the compressed file is in the struct,
+		   therefore need to return to the state before saving the FDT. to let the user
+		   continue work without resetting his board. */
+		decompressed_size = cfg_eeprom_unzip_fdt(MVEBU_FDT_SIZE, (void *)board_config_val.fdt_blob);
+
+		if (decompressed_size == -1)
+			return;
+	} else {
+		/* write local struct with fdt blob to EEPROM */
+		cfg_eeprom_write_to_eeprom(EEPROM_STRUCT_SIZE);
+	}
 	/* reset g_board_id so it will get board ID from EEPROM again */
 	g_board_id = -1;
 }
@@ -371,6 +466,7 @@ int cfg_eeprom_init(void)
 	struct eeprom_struct eeprom_buffer;
 	struct config_types_info config_info;
 	uint32_t calculate_checksum;
+	unsigned long decompressed_size;
 
 	/* It is possible that this init will be called by several modules during init,
 	 * however only need to initialize it for one time
@@ -401,21 +497,34 @@ int cfg_eeprom_init(void)
 		goto init_done;
 	}
 
-	/* read length from EEPROM */
-	if (!cfg_eeprom_get_config_type(MV_CONFIG_LENGTH, &config_info)) {
-		error("Could not find MV_CONFIG_LENGTH\n");
-		return -1;
-	}
-
-	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
-		 (uint8_t *)&eeprom_buffer.length, config_info.byte_cnt);
-
-	/* read all the struct from EEPROM according to length field */
+	/* read struct (without fdt blob) from EEPROM */
 	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, 0, MULTI_FDT_EEPROM_ADDR_LEN,
-		 (uint8_t *)&eeprom_buffer, eeprom_buffer.length);
-	/* calculate checksum and compare with the checksum that we read */
-	calculate_checksum = cfg_eeprom_checksum8((uint8_t *)&eeprom_buffer.pattern,
-				(uint32_t) eeprom_buffer.length - 4);
+		 (uint8_t *)&eeprom_buffer, EEPROM_STRUCT_SIZE);
+
+	/* examination if it's necessary to read fdt from EEPROM */
+	if (eeprom_buffer.board_config.fdt_cfg_en == 1) {
+		/* read the compressed file from EEPROM to buffer */
+		if (!cfg_eeprom_get_config_type(MV_CONFIG_FDT_FILE, &config_info))
+			error("Could not find MV_CONFIG_FDT_FILE\n");
+
+		i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
+			 (uint8_t *)eeprom_buffer.fdt_blob, eeprom_buffer.length - EEPROM_STRUCT_SIZE);
+
+		/* calculate checksum */
+		calculate_checksum = cfg_eeprom_checksum8((uint8_t *)&eeprom_buffer.pattern,
+							   (uint32_t)eeprom_buffer.length - 4);
+
+		/* decompress fdt */
+		decompressed_size = cfg_eeprom_unzip_fdt(MVEBU_FDT_SIZE, (void *)eeprom_buffer.fdt_blob);
+
+		if (decompressed_size == -1)
+			return -1;
+
+	} else {
+		/* calculate checksum */
+		calculate_checksum = cfg_eeprom_checksum8((uint8_t *)&eeprom_buffer.pattern,
+							(uint32_t)EEPROM_STRUCT_SIZE - 4);
+	}
 
 	/* if checksum is valid and not in recovery boot mode */
 	/* the recovery mode works only on armada-3700 for now */

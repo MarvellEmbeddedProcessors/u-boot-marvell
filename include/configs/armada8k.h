@@ -39,6 +39,8 @@
 #define MV_INCLUDE_RTC
 #define MV_INCLUDE_PEX
 */
+#define CONFIG_GZIP_COMPRESSED
+
 #undef CONFIG_GICV3
 #define CONFIG_GICV2
 

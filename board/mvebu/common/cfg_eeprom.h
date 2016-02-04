@@ -69,7 +69,7 @@ struct config_types_info {
 
 #define BOARD_ID_INDEX_MASK		0x10
 #define I2C_PAGE_WRITE_SIZE		32
-
+#define EEPROM_STRUCT_SIZE		sizeof(struct eeprom_struct) - sizeof(board_config_val.fdt_blob)
 #define HW_INFO_MAX_PARAM_NUM		32
 struct hw_info_point_struct {
 	char *name;
@@ -109,7 +109,7 @@ struct hw_info_data_struct {
 #define CFG_DEFAULT_VALUE  {											  \
 				0x00000000,				     /* checksum */			  \
 				0xfecadefa,				     /* EEPROM pattern */		  \
-				0x00114,				     /* length = 0x114 bytes */		  \
+				EEPROM_STRUCT_SIZE,			     /* length = 0x114 bytes */		  \
 				{{[0 ... 255] = 0x00} },		     /* manufacturing_information */	  \
 				{0x00,					     /* fdt config disable */		  \
 				 0x03,					     /* active fdt selection = default */ \

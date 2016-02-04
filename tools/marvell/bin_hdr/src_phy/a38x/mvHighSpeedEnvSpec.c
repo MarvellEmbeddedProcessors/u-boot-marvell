@@ -1244,6 +1244,11 @@ MV_VOID mvHwsUpdateSerdesPhySelectorsOptions  ( MV_VOID)
             commonPhysSelectorsSerdesRev2Map[SATA3][currLane] = NA;
             commonPhysSelectorsSerdesRev2Map[SATA2][currLane] = NA;
         }
+        /* PEX1 is not functional in 6810*/
+        for (currLane =0; currLane < MAX_SERDES_LANES; currLane++)
+        {
+            commonPhysSelectorsSerdesRev2Map[PEX1][currLane] = NA;
+        }
         break;
 	case MV_6811:
         /* no QSGMII in 6811*/

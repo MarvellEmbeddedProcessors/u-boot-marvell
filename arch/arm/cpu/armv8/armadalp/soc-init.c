@@ -197,6 +197,8 @@ void board_usb_vbus_init(void)
 		return;
 	}
 
+	printf("Enable USB VBUS.\n");
+
 	/* initialize I2C */
 	init_func_i2c();
 
@@ -216,7 +218,9 @@ void board_usb_vbus_init(void)
 	if (ret_read || ret_write)
 		error("failed to lower USB VBUS power on I2C IO expander\n");
 
-	udelay(500000); /* required delay to let output value settle */
+	/* required delay for configuration to settle - must wait for power on port is disabled
+	 * in case VBUS signal was high, required 3 seconds delay to let VBUS signal fully settle down */
+	udelay(3000000);
 
 	/* Enable VBUS power: Set output value of VBUS pin as enabled */
 	out_val[0] |= (1 << I2C_IO_REG_0_USB_H_OFF);
@@ -225,7 +229,7 @@ void board_usb_vbus_init(void)
 	if (ret_write)
 		error("failed to raise USB VBUS power on I2C IO expander\n");
 
-	udelay(500000);/* required delay to let output value settle */
+	udelay(500000); /* required delay to let output value settle up*/
 
 #endif /* CONFIG_DEVEL_BOARD */
 

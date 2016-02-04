@@ -16,15 +16,19 @@
  * ***************************************************************************
  */
 
-/* #define DEBUG*/
+/* #define DEBUG */
 
 #include <common.h>
-#include <linux/compiler.h>
+#include <asm/arch-mvebu/soc.h>
+#include "../common/devel-board.h"
+#include "../common/sar.h"
 
-int mvebu_board_id_get(void)
+int mvebu_devel_board_init(void)
 {
-	/* stub function for future use */
+#ifdef CONFIG_MVEBU_SAR
+	sar_init();
+#endif
+
 	return 0;
 }
-
 

@@ -19,17 +19,16 @@
 /* #define DEBUG */
 
 #include <common.h>
-#include <errno.h>
 #include <asm/arch-mvebu/soc.h>
-#include "devel-board.h"
-
-#include "sar.h"
+#include "../common/devel-board.h"
+#include "../common/sar.h"
 
 int mvebu_devel_board_init(void)
 {
 #ifdef CONFIG_MVEBU_SAR
 	sar_init();
 #endif
+
 	return 0;
 }
 

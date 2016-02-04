@@ -20,6 +20,5 @@ obj-y	+= board-common.o
 obj-y	+= init.o
 obj-$(CONFIG_CMD_NET)		+= eth_init.o
 obj-$(CONFIG_MVEBU_SAR)		+= sar.o
-obj-$(CONFIG_DEVEL_BOARD)	+= devel-board.o
 obj-$(CONFIG_BOARD_CONFIG_EEPROM)	+= cfg_eeprom.o
 obj-$(CONFIG_MULTI_DT_FILE)	+= fdt_config.o

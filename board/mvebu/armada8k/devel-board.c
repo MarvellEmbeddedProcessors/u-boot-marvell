@@ -16,15 +16,31 @@
  * ***************************************************************************
  */
 
-/* #define DEBUG*/
+/* #define DEBUG */
 
 #include <common.h>
-#include <linux/compiler.h>
+#include <errno.h>
+#include <asm/arch-mvebu/soc.h>
+#include <asm/arch-mvebu/mpp.h>
+#include "../common/devel-board.h"
+#include "../common/sar.h"
 
-int mvebu_board_id_get(void)
+int mvebu_devel_board_init(void)
 {
-	/* stub function for future use */
+#ifdef CONFIG_MVEBU_SAR
+	sar_init();
+#endif
+
+
+#ifdef CONFIG_MVEBU_MPP_BUS
+#ifdef CONFIG_MVEBU_NAND_BOOT
+	mpp_enable_bus("nand");
+#endif
+#ifdef CONFIG_MVEBU_SPI_BOOT
+	mpp_enable_bus("spi1");
+#endif
+#endif /* CONFIG_MVEBU_MPP_BUS */
+
 	return 0;
 }
-
 

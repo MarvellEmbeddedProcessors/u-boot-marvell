@@ -17,3 +17,4 @@
 #
 
 obj-y	+= armadalp.o
+obj-$(CONFIG_DEVEL_BOARD)	+= devel-board.o

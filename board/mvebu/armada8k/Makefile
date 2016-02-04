@@ -17,3 +17,4 @@
 #
 
 obj-y	+= armada8k.o
+obj-$(CONFIG_DEVEL_BOARD)	+= devel-board.o

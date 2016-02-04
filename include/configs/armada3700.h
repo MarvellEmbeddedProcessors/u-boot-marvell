@@ -45,6 +45,8 @@
 #define MV_INCLUDE_PEX
 */
 
+#define MVEBU_FDT_SIZE 0x1C00
+
 /* Plaform */
 #define CONFIG_MARVELL
 

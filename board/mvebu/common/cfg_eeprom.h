@@ -110,12 +110,12 @@ struct hw_info_data_struct {
 				0x00000000,				     /* checksum */			  \
 				0xfecadefa,				     /* EEPROM pattern */		  \
 				EEPROM_STRUCT_SIZE,			     /* length = 0x114 bytes */		  \
-				{{[0 ... 255] = 0x00} },		     /* manufacturing_information */	  \
+				{{[0 ... (MVEBU_HW_INFO_LEN - 1)] = 0x00} },   /* manufacturing_information */	  \
 				{0x00,					     /* fdt config disable */		  \
 				 0x03,					     /* active fdt selection = default */ \
 				 0x00,					     /* validation counter = 0 */	  \
 				{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} },/* reserve_board_cgf */		  \
-				{[0 ... 7167] = 1}			     /* fdt file */			  \
+				{[0 ... (MVEBU_FDT_SIZE - 1)] = 1}	     /* fdt file */			  \
 }
 
 #define MV_MAX_FDT_CONFIGURATION	MV_MARVELL_BOARD_NUM * 8

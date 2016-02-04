@@ -17,8 +17,8 @@ config MULTI_DT_FILE
 	select BOARD_CONFIG_EEPROM
 	help
 	  If this option is enabled, U-Boot will support different DT files.
-	  Each FDT has a fixed size of 7KB, so to choose between them in u-boot,
-	  it will be executerd by a jump of 7KB.
+	  Each FDT has a fixed size, so to choose between them in u-boot,
+	  it will be executerd by a jump of this fix size.
 	  The u-boot separates between the DTB by the flavor/board id
 
 config BOARD_CONFIG_EEPROM

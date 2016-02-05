@@ -28,6 +28,7 @@ Table of contents:
    ir - display and change memory values: doc/mvebu/commands/ir.txt
    fdt_config - select & change board configuration: doc/mvebu/commands/fdt_config.txt
    fdt - change and edit FDT file in memory: doc/mvebu/commands/fdt.txt
+   hw_info - load or store HW manufacturing information: doc/mvebu/commands/hw_info.txt
    mmc - mmc usage: doc/mvebu/commands/mmc.txt
    usb - usb usage: doc/mvebu/commands/usb.txt
    sata - sata usage: doc/mvebu/commands/sata.txt

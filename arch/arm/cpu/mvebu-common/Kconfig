@@ -114,6 +114,12 @@ config MVEBU_NOR_BOOT
 	bool "NOR flash boot"
 	depends on MVEBU_NOR
 	help
+	  Enable boot from NOR boot partition
+
+config MVEBU_MMC_BOOT
+	bool "eMMC flash boot"
+	depends on (MVEBU_MMC || XENON_MMC)
+	help
 	  Enable boot from eMMC boot partition
 
 endchoice

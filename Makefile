@@ -923,6 +923,7 @@ endif #CONFIG_MVEBU_SECURE_BOOT
 TIM_IMAGE	:= $(shell grep "Image Filename:" -m 1 $(DOIMAGE_CFG) | cut -c 17-)
 TIMBLDARGS	:= $(SECURE) $(BOOTDEV) $(IMAGESPATH) $(DDRCFG) $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG)
 TIMBLDUARTARGS	:= $(SECURE) UART $(IMAGESPATH) $(DDRCFG) $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG)
+UARTIMGARCH	:= $(srctree)/uart-images
 
 DOIMAGE_FLAGS := -r $(DOIMAGE_CFG)
 DOIMAGE_LIBS_CHECK = \
@@ -937,11 +938,21 @@ DOIMAGE_LIBS_CHECK = \
 		echo "DOIMAGE=$(DOIMAGE)" >&1; \
 	fi
 
+# Start with creation of UART images:
+# - Create TIM descriptor with UART signature
+# - Create binary TIM and UART downloadable images (*_h.*)
+# - Collect all UART downloadable images into archive
+# - Create TIM descriptor(s) with final boot signature according
+#   to defconfig for the next build stage (SPI.eMMC,etc.)
 uartimage: $(obj)/u-boot.bin $(SPLIMAGE)
 		@$(DOIMAGE_LIBS_CHECK)
 		$(TIMBUILD) $(TIMBLDUARTARGS)
 		$(DOIMAGE) $(DOIMAGE_FLAGS)
 		$(TIM2IMG) -i $(DOIMAGE_CFG) -o u-boot-spl-uart.img
+		@mkdir $(UARTIMGARCH)
+		@find $(srctree) -name "*_h.*" |xargs cp -t $(UARTIMGARCH) $(TIM_IMAGE)
+		@tar czf $(UARTIMGARCH).tgz $(UARTIMGARCH)
+		@rm -rf $(UARTIMGARCH)
 		$(TIMBUILD) $(TIMBLDARGS)
 
 secureimg: uartimage

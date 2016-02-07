@@ -42,4 +42,23 @@
 #define PIN_REG_SHIFT		5
 #define PIN_FIELD_MASK		((1 << PIN_REG_SHIFT) - 1)
 
+/********************************/
+/* REF Clock and Boot device    */
+/********************************/
+#define MVEBU_XTAL_MODE_MASK		BIT9
+#define MVEBU_XTAL_MODE_OFFS		(9)
+#define MVEBU_XTAL_CLOCK_25MHZ		(0x0)
+#define MVEBU_XTAL_CLOCK_40MHZ		(0x1)
+
+#define MVEBU_BOOTMODE_OFFS		(5)
+#define MVEBU_BOOTMODE_MASK		(0x7 << MVEBU_BOOTMODE_OFFS)
+#define MVEBU_BOOTMODE_NONE		(0)
+#define MVEBU_BOOTMODE_SPI_NOR		(1)
+#define MVEBU_BOOTMODE_EMMC_NORM	(2)
+#define MVEBU_BOOTMODE_EMMC_ALT		(3)
+#define MVEBU_BOOTMODE_SATA		(4)
+#define MVEBU_BOOTMODE_SPI_NAND		(5)
+#define MVEBU_BOOTMODE_UART		(6)
+#define MVEBU_BOOTMODE_RSRVD		(7)
+
 #endif	/* _SOC_INFO_H_ */

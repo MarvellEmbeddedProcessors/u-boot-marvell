@@ -31,6 +31,11 @@
 #define MPPS_PER_REG		(32 / MPP_BIT_CNT)
 #define MAX_MPP_REGS		((MAX_MPP_ID + MPPS_PER_REG) / MPPS_PER_REG)
 
+/* MPP pins and functions correcsponding to UART RX connections
+   This information is used for detection of recovery boot mode (boot from UART) */
+#define MPP_UART_RX_PINS	{ 3, 5 }
+#define MPP_UART_RX_FUNCTIONS	{ 1, 2 }
+
 /* Pin Ctrl driver definitions */
 #define BITS_PER_PIN		4
 #define PIN_FUNC_MASK		((1 << BITS_PER_PIN) - 1)

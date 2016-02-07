@@ -234,4 +234,23 @@ void board_usb_vbus_init(void)
 #endif /* CONFIG_DEVEL_BOARD */
 
 }
-#endif
+#endif /* CONFIG_USB_XHCI */
+
+/************************************************************************
+   Function:  mvebu_is_in_recovery_mode
+
+   The function checks if the system currently boots into recovery mode.
+   The recovery mode is intended to bring up bricked board using UART
+   port as the boot device. This mode is either trigered by escape
+   sequence or by reset sample jumpers.
+
+   Return - 1 if recovery mode is active or 0 otherwise
+************************************************************************/
+bool mvebu_is_in_recovery_mode(void)
+{
+	u32 regval;
+
+	/* Check if we are in UART recovery boot mode - currently selected by botstrap */
+	regval = (readl(MVEBU_TEST_PIN_LATCH_N) & MVEBU_BOOTMODE_MASK) >> MVEBU_BOOTMODE_OFFS;
+	return regval == MVEBU_BOOTMODE_UART;
+}

@@ -32,15 +32,6 @@
 #define MVEBU_KVCO_MAX		3000
 
 /****************/
-/* REF Clock    */
-/****************/
-#define MVEBU_TEST_PIN_LATCH_N		(MVEBU_TESTPIN_NORTH_REG_BASE + 0x8)
-#define MVEBU_XTAL_MODE_MASK		BIT9
-#define MVEBU_XTAL_MODE_OFFS		9
-#define MVEBU_XTAL_CLOCK_25MHZ		(0x0)
-#define MVEBU_XTAL_CLOCK_40MHZ		(0x1)
-
-/****************/
 /* North Bridge */
 /****************/
 #define MVEBU_NORTH_BRG_PLL_BASE		(MVEBU_NORTH_CLOCK_REGS_BASE + 0x200)

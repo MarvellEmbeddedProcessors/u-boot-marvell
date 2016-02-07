@@ -33,6 +33,7 @@ enum sys_info_type {
 	DRAM_CS1,
 	DRAM_CS2,
 	DRAM_CS3,
+	RECOVERY_MODE,
 	MAX_OPTION,
 };
 

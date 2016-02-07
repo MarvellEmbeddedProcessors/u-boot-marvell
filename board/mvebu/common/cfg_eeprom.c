@@ -350,7 +350,11 @@ default_id:
 	return MV_DEFAULT_BOARD_ID;
 }
 
-/* cfg_eeprom_init - initialize FDT configuration struct */
+/* cfg_eeprom_init - initialize FDT configuration struct
+
+   The EEPROM FDT is used if the checksum is valid and if the system
+   is not in recovery mode. Otherwise the default FDT is used.
+ */
 int cfg_eeprom_init(void)
 {
 	struct eeprom_struct eeprom_buffer;
@@ -402,8 +406,8 @@ int cfg_eeprom_init(void)
 	calculate_checksum = cfg_eeprom_checksum8((uint8_t *)&eeprom_buffer.pattern,
 				(uint32_t) eeprom_buffer.length - 4);
 
-	/* if checksum is valid */
-	if (calculate_checksum == eeprom_buffer.checksum) {
+	/* if checksum is valid and not in recovery boot mode */
+	if (calculate_checksum == eeprom_buffer.checksum && !mvebu_is_in_recovery_mode()) {
 		/* update board_config_val struct with the read values from EEPROM */
 		board_config_val = eeprom_buffer;
 		/* if fdt_config is enabled, return - FDT already read in the struct from EEPROM */

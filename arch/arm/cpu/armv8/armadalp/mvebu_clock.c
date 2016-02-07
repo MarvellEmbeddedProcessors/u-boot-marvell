@@ -22,6 +22,7 @@
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-armadalp/clock.h>
+#include <asm/arch-armadalp/soc-info.h>	/* XTAL and Boot mode */
 #include <asm/io.h>
 
 DECLARE_GLOBAL_DATA_PTR;

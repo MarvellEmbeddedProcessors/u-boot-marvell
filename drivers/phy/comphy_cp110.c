@@ -32,6 +32,13 @@ DECLARE_GLOBAL_DATA_PTR;
 #define HPIPE_ADDR(base, lane)			(SD_ADDR(base, lane) + 0x800)
 #define COMPHY_ADDR(base, lane)			(base + 0x28 * lane)
 
+struct utmi_phy_data {
+	void __iomem *utmi_base_addr;
+	void __iomem *usb_cfg_addr;
+	void __iomem *utmi_cfg_addr;
+	u32 utmi_phy_port;
+};
+
 /* For CP-110 we have 2 Selector registers "PHY Selectors", and " PIPE
    Selectors".
    PIPE selector include USB and PCIe options.
@@ -604,14 +611,12 @@ static int comphy_sgmii_power_up(u32 lane, u32 sgmii_speed, void __iomem *hpipe_
 	return ret;
 }
 
-static u32 comphy_utmi_phy_init(u32 utmi_index, void __iomem *utmi_base_addr,
-				void __iomem *usb_cfg_addr, void __iomem *utmi_cfg_addr, u32 utmi_phy_port)
+static void comphy_utmi_power_down(u32 utmi_index, void __iomem *utmi_base_addr,
+				  void __iomem *usb_cfg_addr, void __iomem *utmi_cfg_addr, u32 utmi_phy_port)
 {
-	u32 mask, data, ret = 1;
+	u32 mask, data;
 
-	debug_enter();
-
-	debug("stage: Power down transceiver (power down Phy), Power down PLL, and SuspendDM\n");
+	debug("stage:  UTMI %d - Power down transceiver (power down Phy), Power down PLL, and SuspendDM\n", utmi_index);
 	/* Power down UTMI PHY */
 	reg_set(utmi_cfg_addr, 0x0 << UTMI_PHY_CFG_PU_OFFSET, UTMI_PHY_CFG_PU_MASK);
 	/* Config USB3 Device UTMI enable */
@@ -626,10 +631,6 @@ static u32 comphy_utmi_phy_init(u32 utmi_index, void __iomem *utmi_base_addr,
 	} else {
 		data = 0x0 << UTMI_USB_CFG_DEVICE_EN_OFFSET;
 	}
-	/* Power down PLL */
-	mask |= UTMI_USB_CFG_PLL_MASK;
-	data |= 0x0 << UTMI_USB_CFG_PLL_OFFSET;
-	reg_set(usb_cfg_addr, data, mask);
 	/* Set Test suspendm mode */
 	mask = UTMI_CTRL_STATUS0_SUSPENDM_MASK;
 	data = 0x1 << UTMI_CTRL_STATUS0_SUSPENDM_OFFSET;
@@ -641,13 +642,21 @@ static u32 comphy_utmi_phy_init(u32 utmi_index, void __iomem *utmi_base_addr,
 	/* Wait for UTMI power down */
 	mdelay(1);
 
-	debug("stage: Configure UTMI PHY registers\n");
+	return;
+}
+
+static void comphy_utmi_phy_config(u32 utmi_index, void __iomem *utmi_base_addr,
+				void __iomem *usb_cfg_addr, void __iomem *utmi_cfg_addr, u32 utmi_phy_port)
+{
+	u32 mask, data;
+
+	debug("stage: Configure UTMI PHY %d registers\n", utmi_index);
 	/* Reference Clock Divider Select */
 	mask = UTMI_PLL_CTRL_REFDIV_MASK;
 	data = 0x5 << UTMI_PLL_CTRL_REFDIV_OFFSET;
 	/* Feedback Clock Divider Select - 90 for 25Mhz*/
 	mask |= UTMI_PLL_CTRL_FBDIV_MASK;
-	data |= 60 << UTMI_PLL_CTRL_FBDIV_OFFSET;
+	data |= 0x60 << UTMI_PLL_CTRL_FBDIV_OFFSET;
 	/* Select LPFR - 0x0 for 25Mhz/5=5Mhz*/
 	mask |= UTMI_PLL_CTRL_SEL_LPFR_MASK;
 	data |= 0x0 << UTMI_PLL_CTRL_SEL_LPFR_OFFSET;
@@ -689,19 +698,25 @@ static u32 comphy_utmi_phy_init(u32 utmi_index, void __iomem *utmi_base_addr,
 	data |= 0x1 << UTMI_CHGDTC_CTRL_VSRC_OFFSET;
 	reg_set(utmi_base_addr + UTMI_CHGDTC_CTRL_REG, data, mask);
 
-	debug("stage: Power up transceiver(Power up Phy), Power up PLL, and exit SuspendDM\n");
+	return;
+}
+
+static int comphy_utmi_power_up(u32 utmi_index, void __iomem *utmi_base_addr,
+				  void __iomem *usb_cfg_addr, void __iomem *utmi_cfg_addr, u32 utmi_phy_port)
+{
+	u32 data, ret = 1;
+
+	debug("stage: UTMI %d - Power up transceiver(Power up Phy), and exit SuspendDM\n", utmi_index);
 	/* Power UP UTMI PHY */
 	reg_set(utmi_cfg_addr, 0x1 << UTMI_PHY_CFG_PU_OFFSET, UTMI_PHY_CFG_PU_MASK);
-	/* Power up PLL */
-	reg_set(usb_cfg_addr, 0x1 << UTMI_USB_CFG_PLL_OFFSET, UTMI_USB_CFG_PLL_MASK);
 	/* Disable Test UTMI select */
 	reg_set(utmi_base_addr + UTMI_CTRL_STATUS0_REG,
-		0x1 << UTMI_CTRL_STATUS0_TEST_SEL_OFFSET, UTMI_CTRL_STATUS0_TEST_SEL_MASK);
+		0x0 << UTMI_CTRL_STATUS0_TEST_SEL_OFFSET, UTMI_CTRL_STATUS0_TEST_SEL_MASK);
 
 	debug("stage: Wait for PLL and impedance calibration done, and PLL ready done\n");
 	mdelay(5);
 
-	debug("stage: Check PLL\n");
+	debug("stage: Check PLL.. ");
 	data = readl(utmi_base_addr + UTMI_CALIB_CTRL_REG);
 	if ((data & UTMI_CALIB_CTRL_IMPCAL_DONE_MASK) == 0) {
 		error("Impedance calibration is not done\n");
@@ -717,17 +732,63 @@ static u32 comphy_utmi_phy_init(u32 utmi_index, void __iomem *utmi_base_addr,
 		ret = 0;
 	}
 
-	debug_exit();
+	if (ret)
+		debug("Passed\n");
+	else
+		debug("\n");
+
 	return ret;
+}
+
+/* comphy_utmi_phy_init initialize the UTMI PHY
+** the init split in 3 parts:
+** 1. Power down transceiver and PLL
+** 2. UTMI PHY configure
+** 3. Powe up transceiver and PLL
+** Note: - Power down/up should be once for both UTMI PHYs
+**       - comphy_dedicated_phys_init call this function if at least there is
+**         one UTMI PHY exists in FDT blob. access to cp110_utmi_data[0] is legal */
+static void comphy_utmi_phy_init(u32 utmi_phy_count, struct utmi_phy_data *cp110_utmi_data)
+{
+	u32 i;
+
+	debug_enter();
+	for (i = 0; i < utmi_phy_count; i++)
+		comphy_utmi_power_down(i, cp110_utmi_data[i].utmi_base_addr, cp110_utmi_data[i].usb_cfg_addr,
+				       cp110_utmi_data[i].utmi_cfg_addr, cp110_utmi_data[i].utmi_phy_port);
+	/* Power down PLL */
+	debug("stage: UTMI PHY power down PLL\n");
+	reg_set(cp110_utmi_data[0].usb_cfg_addr, 0x0 << UTMI_USB_CFG_PLL_OFFSET, UTMI_USB_CFG_PLL_MASK);
+	for (i = 0; i < utmi_phy_count; i++)
+		comphy_utmi_phy_config(i, cp110_utmi_data[i].utmi_base_addr, cp110_utmi_data[i].usb_cfg_addr,
+				       cp110_utmi_data[i].utmi_cfg_addr, cp110_utmi_data[i].utmi_phy_port);
+	for (i = 0; i < utmi_phy_count; i++) {
+		if (!comphy_utmi_power_up(i, cp110_utmi_data[i].utmi_base_addr, cp110_utmi_data[i].usb_cfg_addr,
+					  cp110_utmi_data[i].utmi_cfg_addr, cp110_utmi_data[i].utmi_phy_port)) {
+			error("Failed to initialize UTMI PHY %d\n", i);
+			continue;
+		}
+		printf("UTMI PHY %d initizliazed to ", i);
+		if (cp110_utmi_data[i].utmi_phy_port == UTMI_PHY_TO_USB_DEVICE0)
+			printf("USB Device\n");
+		else
+			printf("USB Host%d\n", cp110_utmi_data[i].utmi_phy_port);
+	}
+	/* Power up PLL */
+	debug("stage: UTMI PHY power up PLL\n");
+	reg_set(cp110_utmi_data[0].usb_cfg_addr, 0x1 << UTMI_USB_CFG_PLL_OFFSET, UTMI_USB_CFG_PLL_MASK);
+
+	debug_exit();
+	return;
 }
 
 /* comphy_dedicated_phys_init initialize the dedicated PHYs - not muxed SerDes lanes
 ** e.g. UTMI PHY */
 static void comphy_dedicated_phys_init(void)
 {
-	void __iomem *utmi_base_addr, *usb_cfg_addr, *utmi_cfg_addr;
+	struct utmi_phy_data cp110_utmi_data[MAX_UTMI_PHY_COUNT];
 	int node_list[MAX_UTMI_PHY_COUNT], node;
-	int i, count, utmi_phy_port;
+	int i, count;
 
 	debug_enter();
 	debug("Initialize USB UTMI PHYs\n");
@@ -745,39 +806,33 @@ static void comphy_dedicated_phys_init(void)
 			if (node <= 0)
 				continue;
 			/* get base address of UTMI phy */
-			utmi_base_addr = fdt_get_regs_offs(gd->fdt_blob, node, "reg-utmi-unit");
-			if (utmi_base_addr == NULL) {
+			cp110_utmi_data[i].utmi_base_addr = fdt_get_regs_offs(gd->fdt_blob, node, "reg-utmi-unit");
+			if (cp110_utmi_data[i].utmi_base_addr == NULL) {
 				error("UTMI PHY base address is invalid\n");
 				continue;
 			}
 			/* get usb config address */
-			usb_cfg_addr = fdt_get_regs_offs(gd->fdt_blob, node, "reg-usb-cfg");
-			if (usb_cfg_addr == NULL) {
+			cp110_utmi_data[i].usb_cfg_addr = fdt_get_regs_offs(gd->fdt_blob, node, "reg-usb-cfg");
+			if (cp110_utmi_data[i].usb_cfg_addr == NULL) {
 				error("UTMI PHY base address is invalid\n");
 				continue;
 			}
 			/* get UTMI config address */
-			utmi_cfg_addr = fdt_get_regs_offs(gd->fdt_blob, node, "reg-utmi-cfg");
-			if (utmi_cfg_addr == NULL) {
+			cp110_utmi_data[i].utmi_cfg_addr = fdt_get_regs_offs(gd->fdt_blob, node, "reg-utmi-cfg");
+			if (cp110_utmi_data[i].utmi_cfg_addr == NULL) {
 				error("UTMI PHY base address is invalid\n");
 				continue;
 			}
 			/* get the port number (to check if the utmi connected to host/device) */
-			utmi_phy_port = fdtdec_get_int(gd->fdt_blob, node, "utmi-port", UTMI_PHY_INVALID);
-			if (utmi_phy_port == UTMI_PHY_INVALID) {
+			cp110_utmi_data[i].utmi_phy_port = fdtdec_get_int(gd->fdt_blob,
+									  node, "utmi-port", UTMI_PHY_INVALID);
+			if (cp110_utmi_data[i].utmi_phy_port == UTMI_PHY_INVALID) {
 				error("UTMI PHY port type is invalid\n");
 				continue;
 			}
-			if (!comphy_utmi_phy_init(i, utmi_base_addr, usb_cfg_addr, utmi_cfg_addr, utmi_phy_port)) {
-				error("Failed to initialize UTMI PHY %d\n", i);
-				continue;
-			}
-			printf("UTMI PHY %d initizliazed to ", i);
-			if (utmi_phy_port == UTMI_PHY_TO_USB_DEVICE0)
-				printf("USB Device\n");
-			else
-				printf("USB Host%d\n", utmi_phy_port);
 		}
+
+		comphy_utmi_phy_init(count, cp110_utmi_data);
 	}
 
 	debug_exit();

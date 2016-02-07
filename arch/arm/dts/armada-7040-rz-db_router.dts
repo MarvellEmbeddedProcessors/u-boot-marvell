@@ -34,7 +34,7 @@
 	ap-806 {
 		internal-regs {
 			spi0: spi@510600 {
-				status = "okay";
+				status = "disabled";
 			};
 			i2c0: i2c@511000 {
 				status = "okay";
@@ -43,17 +43,20 @@
 
 		pcie-controller {
 			pcie@1,0 {
-				status = "okay";
+				status = "disabled";
 			};
 		};
 	};
 	cp110-master {
 		internal-regs {
-			spi@700600 {
+			spi0@700600 {
+				status = "disabled";
+			};
+			spi1@700680 {
 				status = "okay";
 			};
 			i2c@701000 {
-				status = "okay";
+				status = "disabled";
 			};
 			usb3@500000 {
 				status = "okay";
@@ -61,11 +64,16 @@
 			usb3@510000 {
 				status = "okay";
 			};
-			sata@550000 {
+			sata@540000 {
 				status = "okay";
 			};
 			mmc@780000 {
-				status = "okay";
+				status = "disabled";
+			};
+			pcie-controller {
+				pcie@2,0 {
+					status = "okay";
+				};
 			};
 
 			pinctl@440000 {
@@ -92,14 +100,6 @@
 			};
 
 			comphy {
-				/* Serdes Configuration:
-					Lane 0: SGMII2
-					Lane 1: USB3-HOST0
-					Lane 2: SGMII0
-					Lane 3: SATA1
-					Lane 4: USB3-HOST1
-					Lane 5: PEX2x1
-				*/
 				phy0 {
 					phy-type = <PHY_TYPE_SGMII2>;
 					phy-speed = <PHY_SPEED_1_25G>;
@@ -121,7 +121,7 @@
 					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy5 {
-					phy-type = <PHY_TYPE_PEX2>;
+					phy-type = <PHY_TYPE_PEX1>;
 					phy-speed = <PHY_SPEED_5G>;
 				};
 			};

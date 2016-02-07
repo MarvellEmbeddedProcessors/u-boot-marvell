@@ -60,6 +60,7 @@ struct icu_msi {
 #define NS_SINGLE_IRQS		23
 #define REI_IRQS		10
 #define SEI_IRQS		20
+#define MAX_ICU_IRQS		207
 
 
 /* Allocate the MSI address per interrupt group,
@@ -185,6 +186,10 @@ static struct icu_irq irq_map_rei[REI_IRQS] = {
 	{104, 9, 0}, /* USB3H-0 RAM error */
 };
 
+static void icu_clear_irq(uintptr_t icu_base, int nr)
+{
+	writel(0, icu_base + ICU_INT_CFG(nr));
+}
 
 static void icu_set_irq(uintptr_t icu_base, struct icu_irq *irq, u32 spi_base, enum icu_group group)
 {
@@ -220,6 +225,10 @@ void icu_init(uintptr_t cp_base, int spi_base, int spi_offset)
 		writel(msi->clr_spi_addr & 0xFFFFFFFF , icu_base + ICU_CLR_SPI_AL(msi->group));
 		writel(msi->clr_spi_addr >> 32, icu_base + ICU_CLR_SPI_AH(msi->group));
 	}
+
+	/* Mask all ICU interrupts */
+	for (i = 0; i < MAX_ICU_IRQS; i++)
+		icu_clear_irq(icu_base, i);
 
 	/* Configure the ICU interrupt lines */
 	/* Multi instance interrupts use different SPI ID for CP-1*/

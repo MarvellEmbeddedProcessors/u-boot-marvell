@@ -372,8 +372,8 @@
 #endif /* CONFIG_CMD_NET */
 
 /* SATA AHCI via controller or over PCIe */
-#if defined(CONFIG_DEVEL_BOARD) && \
-	(defined(CONFIG_MVEBU_PCI) || defined(CONFIG_MVEBU_DW_PCIE_) || defined(CONFIG_MV_INCLUDE_SATA))
+#if     defined(CONFIG_MVEBU_PCI) || defined(CONFIG_MVEBU_DW_PCIE_) || \
+	defined(CONFIG_MV_INCLUDE_SATA) || defined(CONFIG_SCSI_AHCI_PLAT)
 
 	#define CONFIG_CMD_SCSI
 	#define CONFIG_CMD_EXT2

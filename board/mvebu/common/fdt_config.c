@@ -54,6 +54,26 @@ int fdt_create_list(void)
 	return 0;
 }
 
+/* fdt_select_print - print active FDT selection */
+void fdt_select_print(void)
+{
+	int i;
+	struct eeprom_struct *p_board_config;
+
+	if (fdt_list_size == -1)
+		fdt_create_list();
+
+	p_board_config = cfg_eeprom_get_board_config();
+	for (i = 0; i < fdt_list_size; i++) {
+		if (p_board_config->board_config.active_fdt_selection == fdt_list_of_configs[i].fdt_config_id) {
+			printf("\t%d - %s\n", fdt_list_of_configs[i].fdt_config_id, fdt_list_of_configs[i].fdt_model);
+			return;
+		}
+	}
+
+	return;
+}
+
 /* fdt_select_set - update active_fdt_selection field */
 int fdt_select_set(const char *selected_index)
 {
@@ -89,6 +109,7 @@ int fdt_select_list(void)
 	printf("FDT config list:\n");
 	for (i = 0; i < fdt_list_size; i++)
 		printf("\t%d - %s\n", fdt_list_of_configs[i].fdt_config_id, fdt_list_of_configs[i].fdt_model);
+
 	return 0;
 }
 

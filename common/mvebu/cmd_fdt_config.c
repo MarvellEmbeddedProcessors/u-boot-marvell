@@ -31,9 +31,6 @@ int do_fdt_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 	const char *fdt_option = NULL;
 	const char *fdt_model = NULL;
 
-	if ((strcmp(cmd, "select") == 0) && (argc < 3))
-		return CMD_RET_USAGE;
-
 	if (argc > 2)
 		fdt_option = argv[2];
 
@@ -57,8 +54,11 @@ int do_fdt_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 		if (fdt_cfg_off())
 			return 1;
 	} else if (strcmp(cmd, "select") == 0) {
-		if (fdt_select_set(fdt_option))
-			return 1;
+		if (argc < 3) {
+			fdt_select_print();
+		} else if (fdt_select_set(fdt_option)) {
+				return 1;
+			}
 	} else if (strcmp(cmd, "list") == 0) {
 		if (fdt_select_list())
 			return 1;
@@ -71,14 +71,15 @@ int do_fdt_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 
 U_BOOT_CMD(
 	fdt_config,    6,     1,      do_fdt_config_cmd,
-	"fdt_config - Modify SOC and board configuration\n",
+	"Modify SOC and board configuration\n",
 	"\n"
 	"Modify SOC and board configuration\n"
-	"\tread	eeprom	  - Read FDT from EEPROM and save to DRAM\n"
+	"\tread eeprom	  - Read FDT from EEPROM and save to DRAM\n"
 	"\tread flash <x> - Read x FDT from U-Boot and save to DRAM\n"
 	"\tsave		  - Save FDT in EEPROM\n"
 	"\toff		  - Disable the feature of loading the FDT that saved in EEPROM\n"
 	"\ton		  - Enable the feature of loading the FDT that saved in EEPROM\n"
 	"\tlist		  - Show the options of the board\n"
+	"\tselect	  - Print active FDT selection\n"
 	"\tselect <x>	  - Update active FDT selection\n"
 );

@@ -25,5 +25,6 @@ int fdt_cfg_on(void);
 int fdt_cfg_off(void);
 int fdt_select_set(const char *selected_index);
 int fdt_select_list(void);
+void fdt_select_print(void);
 
 #endif

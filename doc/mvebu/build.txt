@@ -32,7 +32,7 @@ Build Instruction:
 	# make <defconfig_file>
 	For AP806 stand alone board use "make mvebu_apn806_defconfig"
 	For Armada 8040Rz board use "make mvebu_armada70x0_defconfig"
-	For ArmadaLP board use "make mvebu_armadalp_defconfig"
+	For Armada-3700 board use "make mvebu_armadalp_defconfig"
 7. Build the U-Boot (Armada-3700 builds require WTP tools installation -
    refer to the section "Tools installation for Armada-3700 builds"):
 	# make
@@ -50,6 +50,33 @@ Configuration update:
 ---------------------
 	To update the U-Boot configuration and the SPL configuration, please refer to
 	doc/README.kconfig
+
+Boot device selection note:
+---------------------------
+	The Armada-3700 supports eMMC as the boot device on target.
+	The default boot device on this platform is SPI NOR flash.
+	In order to change the boot device to eMMC, set the following parameter
+	the default configuration:
+	CONFIG_MVEBU_MMC_BOOT=y
+	If "menuconfig" is used, navigate to the following location:
+	-> ARM architecture
+	  -> Flash for image
+	and select "eMMC flash boot".
+	The eMMC has 2 boot partitions (BOOT0 and BOOT1), which are numbered as
+	partition 1 and 2 in MMC driver. Partition number 0 is the user data partition.
+	The default build script uses BOOT0 (partition 1) for storing the boot image
+	and u-boot parameters.  For changing the default boot partition, edit the
+	TIM descriptor builder script scripts/builditm.sh.
+	The default value: "EMMCPART=0x00000001" can be changed to "EMMCPART=0x00000002"
+	in order to use eMMC BOOT1 partition as the boot device.
+	The boot partition can be written from Linux command line using the following
+	commands:
+	# sudo echo 0 > /sys/block/mmcblk0boot0/force_ro
+	# sudo dd if=u-boot-spl.img of=/dev/mmcblk0boot0
+	The first commands removes the write protection flag from the boot partition 0.
+	The same operation can be done for BOOT1 partition by replacing the partition
+	id in the above commands from mmcblk0boot0 to mmcblk0boot1.
+
 
 Tools installation for Armada-3700 builds:
 ------------------------------------------

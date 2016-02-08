@@ -434,10 +434,14 @@ void sar_init(void)
 	}
 	sar_var = sar->sar_lookup;
 	/* Find the variables under sample at reset node */
-	do {
+	while (var > 0) {
 		/* if the variable is disabled skip it */
-		if (!fdtdec_get_is_enabled(blob, var))
+		if (!fdtdec_get_is_enabled(blob, var)) {
+			/* Get the offset of the next subnode */
+			var = fdt_next_subnode(blob, var);
+			sar_var++;
 			continue;
+		}
 		/* Get the key of the var option */
 		fdt_get_string(blob, var, "key", (const char **)&sar_var->key);
 		/* Get the descrition of the var */
@@ -467,7 +471,7 @@ void sar_init(void)
 		/* Get the offset of the next subnode */
 		var = fdt_next_subnode(blob, var);
 		sar_var++;
-	} while (var > 0);
+	}
 
 	sar_dump();
 	debug_exit();

@@ -212,8 +212,8 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base
 	reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG,
 		0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
 
-	/* wait 10ms - for comphy calibration done */
-	mdelay(10);
+	/* wait 15ms - for comphy calibration done */
+	mdelay(15);
 
 	debug("stage: Check PLL\n");
 	/* Read lane status */
@@ -315,8 +315,8 @@ static int comphy_usb3_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG,
 		0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
 
-	/* wait 10ms - for comphy calibration done */
-	mdelay(10);
+	/* wait 15ms - for comphy calibration done */
+	mdelay(15);
 
 	debug("stage: Check PLL\n");
 	/* Read lane status */
@@ -439,8 +439,8 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	data |= 0x1 << SATA3_CTRL_SATA_SSU_OFFSET;
 	reg_set(sata_base + SATA3_VENDOR_DATA, data, mask);
 
-	/* Wait 10ms - Wait for comphy calibration done */
-	mdelay(10);
+	/* Wait 15ms - Wait for comphy calibration done */
+	mdelay(15);
 
 #ifdef CONFIG_AP806_Z_SUPPORT
 	/* Reduce read & write burst size to 64 byte due to bug in
@@ -577,8 +577,8 @@ static int comphy_sgmii_power_up(u32 lane, u32 sgmii_speed, void __iomem *hpipe_
 	data |= 0x1 << SD_EXTERNAL_CONFIG0_SD_PU_TX_OFFSET;
 	reg_set(sd_ip_addr + SD_EXTERNAL_CONFIG0_REG, data, mask);
 
-	/* wait 10ms - for comphy calibration done */
-	mdelay(10);
+	/* wait 15ms - for comphy calibration done */
+	mdelay(15);
 
 	/* check PLL rx & tx ready */
 	data = readl(sd_ip_addr + SD_EXTERNAL_STATUS0_REG);
@@ -714,7 +714,7 @@ static int comphy_utmi_power_up(u32 utmi_index, void __iomem *utmi_base_addr,
 		0x0 << UTMI_CTRL_STATUS0_TEST_SEL_OFFSET, UTMI_CTRL_STATUS0_TEST_SEL_MASK);
 
 	debug("stage: Wait for PLL and impedance calibration done, and PLL ready done\n");
-	mdelay(5);
+	mdelay(10);
 
 	debug("stage: Check PLL.. ");
 	data = readl(utmi_base_addr + UTMI_CALIB_CTRL_REG);

@@ -1,0 +1,43 @@
+Armada3700-DB development board setup:
+--------------------------------------
+
+The Armada3700-DB Development Board (DB) is a configurable board designed to test several
+combinations of SOC configurations. U-BOOT supports a predefined set of those configurations
+via different device tree files.
+
+This document describes the board modifications required to setup each configuration and the
+interfaces supported (or disabled in each one).
+
+To switch to a different configuration, follow the instructions in the "board setup" section.
+Once completed, change the FDT file used by U-BOOT by running the U-BOOT command "fdt_config".
+
+Board Physical Setup (Connectors, Jumpers, and modules)
+-------------------------------------------------------
+
+		|	Setup-1				|	Setup-2				|
+Connector	|     Default(USB3)			|     	SGMII1 				|
+------------------------------------------------------------------------------------------------|
+CON8		| eMMC_NAND module 	(SLM1506-v1)	| eMMC_NAND module 	(SLM1506-v1)	|
+CON15		| SDcard module		(SLM1505-v1)	| SDcard module		(SLM1505-v1)	|
+CON17(PCIe)	| PCIe-mPCIe-Jumper: SLM-1496(Optional*)| PCIe-mPCIe-Jumper: SLM-1496(Optional*)|
+CON19		| SerDes-Jumper 	(SLM1502-v1)	| 88E1512 Module 	(SLM-1496-v1)	|
+CON21		| 88E1512 Module 	(SLM-1496-v1)	| 88E1512 Module 	(SLM-1496-v1)	|
+------------------------------------------------------------------------------------------------|
+* PCIe-mPCIe-Jumper is used to enable mini PCIe0 port (CON12)
+
+The tables below summarizes the interface configuration of each setup
+
+
+setup  #	|	1	|	2	|
+name   #	|     Default 	|   SGMII1	|
+-------------------------------------------------
+SerDes PHY0	| PCIe0		| PCIe0		|
+SerDes PHY1	| USB3_H0	| SGMII1	|
+SerDes PHY2	| SATA		| SATA		|
+SATA		| CON6		| CON6		|
+PCIe		| CON12/17	| CON12/17	|
+USB3		| CON13		| N/A		|
+SGMII1		| N/A		| PHY1 (CON19)	|
+RGMII		| PHY0 (CON21)	| PHY0 (CON21)	|
+-------------------------------------------------
+

@@ -339,8 +339,12 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	void __iomem *sata_base;
 
 	debug_enter();
-	sata_base = (void __iomem *)MVEBU_SATA3_GENERAL_BASE;
-	debug("SATA3 General address base %p\n", sata_base);
+	sata_base = fdt_get_reg_offs_by_compat(COMPAT_MVEBU_SATA);
+	if (sata_base == 0) {
+		debug("SATA address not found in FDT\n");
+		return 0;
+	}
+	debug("SATA address found in FDT %p\n", sata_base);
 
 	debug("stage: MAC configuration - power down comphy\n");
 	/* MAC configuration powe down comphy

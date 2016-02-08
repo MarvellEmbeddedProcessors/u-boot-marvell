@@ -46,6 +46,5 @@
 
 /* Base registers for CP */
 #define MVEBU_AMB_IP_BASE		(MVEBU_CP0_REGS_BASE + 0x13ff00)
-#define MVEBU_SATA3_GENERAL_BASE	(MVEBU_CP0_REGS_BASE + 0x540000)
 
 #endif	/* _REGS_BASE_H_ */

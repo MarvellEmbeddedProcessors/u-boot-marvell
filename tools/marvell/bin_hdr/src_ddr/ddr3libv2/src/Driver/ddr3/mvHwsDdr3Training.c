@@ -49,6 +49,7 @@
 #define GET_CS_FROM_MASK(mask) (csMask2Num[mask])
 #define CS_CBE_VALUE(csNum)   (csCbeReg[csNum])
 
+#define TIMES_9_TREFI_CYCLES 0x8
 extern GT_U8 debugTraining;
 extern GT_U8 isRegDump;
 
@@ -712,11 +713,10 @@ GT_STATUS    mvHwsDdr3TipInitController
             }
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DDR_CONTROL_LOW_REG, uiT2t << 3,0x3 << 3));
 			/*move the block to ddr3TipSetTiming -start */
-			tPD = GET_MAX_VALUE(tCKCLK*3, speedBinTable(speedBinIndex,speedBinTableElements_tPD));
-            tPD = TIME_2_CLOCK_CYCLES(tPD, tCKCLK);
+            tPD = TIMES_9_TREFI_CYCLES;
             uiTxpdll = GET_MAX_VALUE(tCKCLK*10, speedBinTable(speedBinIndex,speedBinTableElements_tXPDLL));
             uiTxpdll = CEIL_DIVIDE((uiTxpdll-1), tCKCLK);
-            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DDR_TIMING_REG, uiTxpdll<<4,0x1f << 4));
+            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DDR_TIMING_REG, uiTxpdll<<4 | tPD,0x1f << 4 | 0xf));
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DDR_TIMING_REG, 0x28<<9,0x3f << 9));
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DDR_TIMING_REG, 0xA<<21,0xff << 21));
 			/*move the block to ddr3TipSetTiming - end*/

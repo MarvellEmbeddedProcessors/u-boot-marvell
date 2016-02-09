@@ -10,6 +10,9 @@
 
 #ifdef CONFIG_ARMV8_PSCI
 
+#define ATF_RESERVED_MEM_START	0x4023000
+#define ATF_RESERVED_MEM_SIZE	0x10000
+
 static void psci_reserve_mem(void *fdt)
 {
 #ifndef CONFIG_ARMV8_SECURE_BASE
@@ -36,10 +39,17 @@ static void psci_reserve_mem(void *fdt)
 	nodeoff = fdt_add_subnode(fdt, nodeoff, "psci-area");
 	if (nodeoff < 0)
 		return;
-	fdt_setprop_u64(fdt, nodeoff, "reg", (unsigned long)__secure_start);
-	fdt_appendprop_u64(fdt, nodeoff, "reg",
-			   (unsigned long)__secure_end
-			   - (unsigned long)__secure_start);
+
+	if (is_psci_enabled()) {
+		fdt_setprop_u64(fdt, nodeoff, "reg", (unsigned long)__secure_start);
+		fdt_appendprop_u64(fdt, nodeoff, "reg",
+				   (unsigned long)__secure_end
+				   - (unsigned long)__secure_start);
+	} else {
+		fdt_setprop_u64(fdt, nodeoff, "reg", (unsigned long)ATF_RESERVED_MEM_START);
+		fdt_appendprop_u64(fdt, nodeoff, "reg", (unsigned long)ATF_RESERVED_MEM_SIZE);
+	}
+
 	fdt_setprop(fdt, nodeoff, "no-map", 0, 0);
 #endif
 }
@@ -164,8 +174,7 @@ static void cpu_update_dt_spin_table(void *blob)
 int cpu_update_dt(void *fdt)
 {
 #ifdef CONFIG_ARMV8_PSCI
-	if (is_psci_enabled())
-		cpu_update_dt_psci(fdt);
+	cpu_update_dt_psci(fdt);
 #else
 	cpu_update_dt_spin_table(fdt);
 #endif

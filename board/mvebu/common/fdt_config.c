@@ -82,11 +82,8 @@ void fdt_cfg_read_eeprom(void)
 	struct eeprom_struct *p_board_config;
 
 	p_board_config = cfg_eeprom_get_board_config();
-	if (cfg_eeprom_upload_fdt_from_eeprom()) {
+	if (cfg_eeprom_upload_fdt_from_eeprom())
 		set_working_fdt_addr(p_board_config->fdt_blob);
-		printf("Loaded FDT from EEPROM successfully\n");
-		printf("To save the changes, please run the command fdt_config save.\n");
-	}
 }
 
 /* fdt_cfg_read_flash - write the required FDT to local struct, if found fdt config id in the list.
@@ -128,10 +125,10 @@ int fdt_cfg_on(void)
 	}
 	printf("Do you want to read FDT from EEPROM? <y/N> ");
 	if (confirm_yesno()) {
-		if (cfg_eeprom_upload_fdt_from_eeprom())
-			printf("Load fdt from EEprom\n");
-	}
-	printf("To save the changes, please run the command fdt_config save.\n");
+		if (!cfg_eeprom_upload_fdt_from_eeprom())
+			return 1;
+	} else
+		printf("To save the changes, please run the command fdt_config save.\n");
 	return 0;
 }
 

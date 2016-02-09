@@ -104,13 +104,23 @@ bool cfg_eeprom_upload_fdt_from_flash(u8 fdt_config_id)
 bool cfg_eeprom_upload_fdt_from_eeprom(void)
 {
 	struct config_types_info config_info;
+	uint8_t fdt_blob_temp[MVEBU_FDT_SIZE];
 
 	/* read fdt from EEPROM */
 	if (!cfg_eeprom_get_config_type(MV_CONFIG_FDT_FILE, &config_info))
 		debug("ERROR: Could not find MV_CONFIG_FDT_FILE\n");
-
+	printf("Read FDT from EEPROM, please wait.\n");
 	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
-		 (uint8_t *)&board_config_val.fdt_blob, config_info.byte_cnt);
+		 (uint8_t *)&fdt_blob_temp, config_info.byte_cnt);
+
+	/* if didn't find FDT in EEPROM */
+	if (fdt_check_header((void *)fdt_blob_temp) != 0) {
+		printf("FDT in EEPROM is invalid and didn't loaded to RAM\n");
+		return false;
+	}
+	memcpy((void *)board_config_val.fdt_blob, fdt_blob_temp, MVEBU_FDT_SIZE);
+	printf("Loaded FDT from EEPROM successfully\n");
+	printf("To save the changes, please run the command fdt_config save.\n");
 
 	return true;
 }

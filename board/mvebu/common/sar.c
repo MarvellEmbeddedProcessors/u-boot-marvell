@@ -139,6 +139,7 @@ static int sar_default_var(struct sar_var *var)
 	int i;
 
 	opts = var->option_desc;
+
 	for (i = 0; i < var->option_cnt; i++, opts++) {
 		if (opts->flags & VAR_IS_DEFUALT)
 			dflt = opts;
@@ -461,7 +462,7 @@ void sar_init(void)
 			fdt_get_string_index(blob, var, "options", i + 1, (const char **)
 					&sar_var->option_desc[i/2].desc);
 			if (sar_var->option_desc[i/2].value == var_default)
-				sar_var->option_desc[i/2].flags = var_default;
+				sar_var->option_desc[i/2].flags = VAR_IS_DEFUALT;
 		}
 		/* Get the offset of the next subnode */
 		var = fdt_next_subnode(blob, var);

@@ -292,7 +292,7 @@ static GT_STATUS    ddr3TipCentralization
 		            {
 		                centralizationState[interfaceId][busId] = 2; /*TBD change to enum */
 		            }
-		            if ((busEndWindow[mode][interfaceId][busId] == 0) &&
+		            if ((busStartWindow[mode][interfaceId][busId] == 0) &&
 		                ((busEndWindow[mode][interfaceId][busId]-busStartWindow[mode][interfaceId][busId]) < MIN_WINDOW_SIZE)&&
 		                ((busEndWindow[mode][interfaceId][busId]-busStartWindow[mode][interfaceId][busId]) > 2)) /*prevent false lock */
 		            {

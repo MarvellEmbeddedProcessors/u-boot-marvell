@@ -40,7 +40,6 @@
 		};
 	};
 
-/*
 	sar {
 		compatible = "marvell,sample-at-reset";
 		#address-cells = <1>;
@@ -94,7 +93,7 @@
 			option-cnt = <1>;
 			options = "0x1", "MPP8";
 			default = <0x1>;
-			status = "disable";
+			status = "okay";
 		};
 		boot_mode {
 			key = "boot_mode";
@@ -108,7 +107,7 @@
 			status = "okay";
 		};
 	};
-*/
+
 	mpp-buses {
 		cp-mpp-bus0 {
 			compatible = "marvell,mvebu-mpp-bus";

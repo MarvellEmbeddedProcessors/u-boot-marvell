@@ -949,10 +949,10 @@ uartimage: $(obj)/u-boot.bin $(SPLIMAGE)
 		$(TIMBUILD) $(TIMBLDUARTARGS)
 		$(DOIMAGE) $(DOIMAGE_FLAGS)
 		$(TIM2IMG) -i $(DOIMAGE_CFG) -o u-boot-spl-uart.img
+		@rm -rf $(UARTIMGARCH)*
 		@mkdir $(UARTIMGARCH)
-		@find $(srctree) -name "*_h.*" |xargs cp -t $(UARTIMGARCH) $(TIM_IMAGE)
+		@find $(srctree) -name "*_h.*" |xargs cp -t $(UARTIMGARCH) $(TIM_IMAGE) $(DOIMAGE_CFG)
 		@tar czf $(UARTIMGARCH).tgz $(UARTIMGARCH)
-		@rm -rf $(UARTIMGARCH)
 		$(TIMBUILD) $(TIMBLDARGS)
 
 secureimg: uartimage

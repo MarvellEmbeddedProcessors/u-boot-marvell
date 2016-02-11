@@ -58,6 +58,14 @@ config MVEBU_SPL_CHIP_SAR_DUMP
 	  Choose this option to dump sample at
 	  reset registers
 
+config MVEBU_A3700_MISC_INIT
+	bool "Armada-3700 miscellaneous initialization procedures support"
+	depends on TARGET_ARMADA_3700
+	default n
+	help
+	  Choose this option to add support
+	  for Marvell Armada-3700 miscellaneous init procedures
+
 endmenu
 
 menu "Address Decoding"
@@ -102,5 +110,13 @@ config MVEBU_MBUS
 	  for MBUS address decoding driver.
 	  This driver initialize the MBUS windows
 	  only.
+
+config MVEBU_A3700_IO_ADDR_DEC
+	bool "Armada-3700 Address decoding support"
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT && TARGET_ARMADA_3700
+	default n
+	help
+	  Choose this option to add support
+	  for Marvell Armada-3700 address decoding driver
 
 endmenu

@@ -1,0 +1,9 @@
+config XENON_MMC
+	bool "XENON MMC support"
+	default n
+	select CMD_MMC
+	help
+	  Choose this option to add support
+	  for Marvell XENON MMC driver, using Marvell xenon_mmc.c
+	  driver.
+	  base address is configured under XENON_MMC_BASE

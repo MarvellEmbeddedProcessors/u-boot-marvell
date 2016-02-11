@@ -1,3 +1,5 @@
+menu "GPIO Support"
+
 config DM_GPIO
 	bool "Enable Driver Model for GPIO drivers"
 	depends on DM
@@ -13,3 +15,24 @@ config MVEBU_PINCTL
 	  for pinctl driver. This drive implements
 	  the lowlevel control that allows changing
 	  the function of a multi purpose pin
+
+config MVEBU_MPP_BUS
+	bool "MPP bus support"
+	depends on (DEVEL_BOARD && MVEBU_PINCTL)
+	default n
+	help
+	  Choose this option to add support
+	  for the mpp-bus driver. This driver
+	  is used for enabling or disabling mpp
+	  buses at runtime
+
+config MVEBU_SPL_A3700_GPIO
+	bool "GPIO configuration for A3700 in SPL"
+	depends on TARGET_ARMADA_3700
+	default y
+	help
+	  Choose this option to enable GPIO
+	  configuration for A3700 in SPL.
+	  This will be removed later, and be
+	  implemented by MPP/PIN-CTRL driver.
+endmenu

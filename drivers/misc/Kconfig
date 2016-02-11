@@ -1,15 +1,5 @@
 menu "Misc drivers"
 
-config MVEBU_MBUS
-	bool "MBUS address decoding driver"
-	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
-	default n
-	help
-	  Choose this option to add support
-	  for MBUS address decoding driver.
-	  This driver initialize the MBUS windows
-	  only.
-
 config MVEBU_MBUS_SPL_ONLY
 	bool "MBUS address decoding driver in SPL only"
 	depends on MVEBU_MBUS
@@ -68,5 +58,49 @@ config MVEBU_SPL_CHIP_SAR_DUMP
 	  Choose this option to dump sample at
 	  reset registers
 
+endmenu
+
+menu "Address Decoding"
+depends on MVEBU
+
+config MVEBU_CCU
+	bool "CCU address decoding driver"
+	default n
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT && TARGET_ARMADA_8K
+	help
+	  Choose this option to add support
+	  for CCU address decoding driver.
+	  This driver initialize the CCU windows
+	  only.
+
+config MVEBU_IOB
+	bool "IOB address decoding driver"
+	default n
+	depends on TARGET_ARMADA_8K
+	help
+	  Choose this option to add support
+	  for IOB address decoding driver.
+	  This driver initialize the IOB windows
+	  only.
+
+config MVEBU_RFU
+	bool "RFU address decoding driver"
+	default n
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT && TARGET_ARMADA_8K
+	help
+	  Choose this option to add support
+	  for RFU address decoding driver.
+	  This driver initialize the RFU windows
+	  which come after the CCU window.
+
+config MVEBU_MBUS
+	bool "MBUS address decoding driver"
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+	default n
+	help
+	  Choose this option to add support
+	  for MBUS address decoding driver.
+	  This driver initialize the MBUS windows
+	  only.
 
 endmenu

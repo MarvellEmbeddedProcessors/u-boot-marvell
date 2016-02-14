@@ -1,29 +1,29 @@
 Porting Guide
 -------------
 
-This document provide instructions for porting Marvell U-Boot package to a customer board.
+This document provide instructions for porting the Marvell U-Boot package to a customer board.
 
 Relevant Devices
 ----------------
-	Armada-7040-RZ
+	Armada-7040
 	Armada-3700
 
 Introduction
 ------------
 	U-Boot configuration is based on three elements:
 	- defconfig file:
-		This include compile time options for U-Boot, and is used to enable / disable U-Boot device drivers and
+		This file includes compile-time options for U-Boot, and is used to enable / disable U-Boot device drivers and
 		features.
 	- include/configs/mvebu-common.h, include/configs/<soc-name>.h (e.g. armada8k.h)
-		These files include low level control over U-Boot definitions, and is likely not to be changed when
+		These files include low-level control over U-Boot definitions, and is likely not to be changed when
 		porting to a new board.
 	- device-tree files
-		These exist under arch/arm/dts, and include the runtime configuration of U-Boot, and enables passing
+		These files are located under arch/arm/dts, and include the runtime configuration of U-Boot, and enables passing
 		configuration parameters for each of the drivers / units in U-Boot.
 		The majority of the porting should be done in the device-tree.
 		For more information about device-tree syntax, please refer to the various examples under arch/arm/dts/ or
 		visit http://devicetree.org/Device_Tree_Usage
-	For the sake of simplicity, all examples below will use armada-70x0 board, and the new
+	For the sake of simplicity, all examples below will use the armada-70x0 board, and the new
 	board will be called "my_board".
 
 Customer board porting procedure
@@ -66,14 +66,14 @@ Customer board porting procedure
 	3. Device-tree porting
 	----------------------
 	This is the actual porting of U-Boot to make it work properly on "my_board".
-		o edit  "my_board" dts file under arch/arm/dts/<name of dts given in section 2 above>
+		o Edit the "my_board" dts file under arch/arm/dts/<name of dts given in section 2 above>
 		o For each of the (configurable) U-Boot drivers / units, a device tree binding
-		  description file exist, which explains the different configuration options
+		  description file exists, which explains the different configuration options
 		  for the relevant driver.
 	Below is a list of drivers / units, and their relevant DT binding description file:
 	(all file paths are relative to "doc/device-tree-bindings/")
 
-	3.1. Common for all SoC's
+	3.1. Common for all SoCs
 	-------------------------
 		o COMPHY - phy/mvebu_comphy.txt
 		o MPPs - misc/mvebu-pinctl.txt
@@ -101,5 +101,3 @@ Customer board porting procedure
 		o MBUS - misc/mvebu-mbus.txt
 		o GbE - net/mvebu-gbe.txt
 		o SPI - spi/mvebu-spi-arlp.txt
-
-

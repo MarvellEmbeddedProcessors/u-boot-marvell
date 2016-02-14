@@ -28,9 +28,6 @@
 #include <asm/arch-mvebu/fdt.h>
 #include <linux/sizes.h>
 
-#define MVEBU_MCKINLEY_REGS_BASE	(MVEBU_REGS_BASE + 0x20000)
-#define MVEBU_MC_MEM_ADDR_MAP_REG	(MVEBU_MCKINLEY_REGS_BASE + 0x200)
-
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
 
@@ -136,17 +133,16 @@ int dram_init(void)
 #elif defined(CONFIG_PALLADIUM)
 	gd->ram_size = 0x20000000;
 #else
-	u32 dram_length, ram_size;
+	u32 cs;
+	gd->ram_size = 0;
+	for (cs = 0; cs < 4; cs++)
+		if (get_info(DRAM_CS0 + cs) == 1)
+			gd->ram_size += get_info(DRAM_CS0_SIZE + cs);
 
-	dram_length = (readl(MVEBU_MC_MEM_ADDR_MAP_REG) >> 16) & 0x1F;
-	if (dram_length > 0x3) {
-		dram_length -= 0x7;
-		ram_size = 8 * SZ_1M;
-	} else {
-		ram_size = 384 * SZ_1M;
-	}
-
-	gd->ram_size = (u64)((u64)ram_size << dram_length);
+	gd->ram_size *= SZ_1M;
+	/* if DRAM size == 0, print error message */
+	if (gd->ram_size == 0)
+		error("DRAM size equal 0, check DRAM configuration\n");
 #endif
 
 	return 0;

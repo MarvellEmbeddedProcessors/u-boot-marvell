@@ -1,22 +1,22 @@
 User Guide
 ----------
 
-User Guide for U-Boot 2015.01 for Marvell specific commands and build
+User Guide for U-Boot 2015.01 for Marvell-specific commands and build
 
 Table of contents:
 ------------------
 1. Build instructions:
-   How to compile the U-Boot, and how to change configuration using
-   menuconfig, include description how to add config for SPL:
+   This describes how to compile the U-Boot, and change the configuration using
+   menuconfig, which includes a description of how to add config for SPL:
    doc/mvebu/build.txt
 
 2. Boot U-Boot for the first time
-   How to Boot for the first time on the board using XDB and UART
+   How to boot for the first time on the board using XDB and UART.
    2.1 Booting using XDB: doc/mvebu/xdb_debugger.txt
    2.2 Booting using UART: doc/mvebu/uart_boot.txt
 
 3. U-Boot upgrade instructions
-   Update environment variable parameters, bubt command, and burning U-Boot using
+   How to update environment variable parameters, bubt command, and how to burn U-Boot using
    step-by-step commands.
    doc/mvebu/commands/bubt.txt
 
@@ -25,15 +25,15 @@ Table of contents:
    doc/mvebu/linux_boot.txt
 
 5. Commands:
-   ir - display and change memory values: doc/mvebu/commands/ir.txt
-   fdt_config - select & change board configuration: doc/mvebu/commands/fdt_config.txt
-   fdt - change and edit FDT file in memory: doc/mvebu/commands/fdt.txt
-   hw_info - load or store HW manufacturing information: doc/mvebu/commands/hw_info.txt
+   ir - Display and change memory values: doc/mvebu/commands/ir.txt
+   fdt_config - Select & change board configuration: doc/mvebu/commands/fdt_config.txt
+   fdt - Change and edit FDT file in memory: doc/mvebu/commands/fdt.txt
+   hw_info - Load or store HW manufacturing information: doc/mvebu/commands/hw_info.txt
    mmc - mmc usage: doc/mvebu/commands/mmc.txt
    usb - usb usage: doc/mvebu/commands/usb.txt
    sata - sata usage: doc/mvebu/commands/sata.txt
-   SatR - toggle Sample at reset modes: doc/mvebu/commands/sar.txt
+   SatR - Toggle Sample at reset modes: doc/mvebu/commands/sar.txt
 
 6. Board options:
-   List of board options of development board.
+   List of board options of the development board.
    doc/mvebu/<soc_name>/<board_name>-setup.txt

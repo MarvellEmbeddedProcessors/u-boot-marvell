@@ -6,17 +6,18 @@
 # $2 - Boot device (SPINOR/SPINAND/EMMCNORM/EMMCALT/SATA/UART)
 # $3 - Path to image text files
 # $4 - DDR init data text file
-# $5 - Output TIM/NTIM file name
-# $6 - Output TIMN file name (valid for trusted mode only)
-# $7 - TIMN CSK sign key file name (valid for trusted mode only)
+# $5 - Partition number
+# $6 - Output TIM/NTIM file name
+# $7 - Output TIMN file name (valid for trusted mode only)
+# $8 - TIMN CSK sign key file name (valid for trusted mode only)
 #
 
 DATE=`date +%d%m%Y`
 IMGPATH=$3
 DDRFILE=$4
-OUTFILE=$5
+BOOTPART=$5
+OUTFILE=$6
 
-EMMCPART=0x00000001
 
 # All file names extention
 FILEEXT="txt"
@@ -37,8 +38,8 @@ CSKPREF="csk"
 KAKPREF="kak"
 
 # Below values used only by TIMN
-TIMNOUTFILE=$6
-SIGNFILE=$7
+TIMNOUTFILE=$7
+SIGNFILE=$8
 # TIMN image definition file name prefix
 TIMNPREF="timn"
 # Reserved area definition for TIMN - file name prefix
@@ -214,18 +215,16 @@ else
 	echo "" >> $OUTFILE
 fi
 
-# Replace partition number in the output for EMMC
-if [[ "$2" = "EMMCNORM" || "$2" = "EMMCALT" ]]; then
-	mv $OUTFILE $OUTFILE.temp
-	while IFS='' read -r line; do
-		if [[ "$line" == *"Partition Number:"* ]]; then
-			echo "Partition Number:               $EMMCPART" >> $OUTFILE
-		else
-			echo "$line" >> $OUTFILE
-		fi
-	done < $OUTFILE.temp
-	rm $OUTFILE.temp
-fi
+# Set correct partition number in the output
+mv $OUTFILE $OUTFILE.temp
+while IFS='' read -r line; do
+	if [[ "$line" == *"Partition Number:"* ]]; then
+		echo "Partition Number:               $BOOTPART" >> $OUTFILE
+	else
+		echo "$line" >> $OUTFILE
+	fi
+done < $OUTFILE.temp
+rm $OUTFILE.temp
 
 # Untrusted NTIM does not require more operations, continue with trusted stuff
 if [ "$TRUSTED" = "0x00000001" ]; then

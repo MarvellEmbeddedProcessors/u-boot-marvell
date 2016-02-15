@@ -124,6 +124,20 @@ config MVEBU_MMC_BOOT
 
 endchoice
 
+config SYS_MMC_ENV_PART
+	int "eMMC Boot Partition"
+	depends on MVEBU_MMC_BOOT
+	default 1
+	help
+	  Set the eMMC boot partition to flash
+	  the boot image to and for saving the
+	  u-boot environment.
+	  Partition 0 is used for the user data
+	  and should not be selected for boot.
+	  Partition 1 is named BOOT0 and partition 2
+	  named BOOT1. These are the valid partitions
+	  for usage as a boot device.
+
 menu "NAND Boot Parameters"
 depends on MVEBU_NAND_BOOT
 

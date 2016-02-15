@@ -158,3 +158,5 @@ source "drivers/Kconfig"
 source "fs/Kconfig"
 
 source "lib/Kconfig"
+
+source "board/mvebu/Kconfig"

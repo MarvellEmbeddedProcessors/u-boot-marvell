@@ -1,12 +1,4 @@
 
-source "arch/arm/cpu/armv8/armada8k/Kconfig"
-source "arch/arm/cpu/armv7/armada38x/Kconfig"
-source "arch/arm/cpu/armv8/armada3700/Kconfig"
-
-config MVEBU
-	bool "Support MVEBU devices"
-	depends on $SYS_VENDOR="mvebu"
-	default y
 
 config MVEBU_SECURE_BOOT
 	bool "Trusted Boot Image format"

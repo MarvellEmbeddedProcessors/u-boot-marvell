@@ -1,4 +1,16 @@
-menu "MVEBU Board Support"
+source "arch/arm/cpu/armv8/armada8k/Kconfig"
+source "arch/arm/cpu/armv7/armada38x/Kconfig"
+source "arch/arm/cpu/armv8/armada3700/Kconfig"
+
+config MVEBU
+	bool "Support MVEBU devices"
+	depends on $SYS_VENDOR="mvebu"
+	default y
+
+menu "Marvell Platform Options"
+	depends on MVEBU
+
+menu "Board Options"
 
 config DEVEL_BOARD
 	bool "Support MVEBU development boards"
@@ -11,4 +23,6 @@ config DEVEL_BOARD
 	  If not, keep this off to reduce code size
 
 source "board/mvebu/common/Kconfig"
+endmenu
+
 endmenu

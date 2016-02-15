@@ -96,16 +96,46 @@ int xenon_mmc_phy_init(struct xenon_mmc_cfg *mmc_cfg)
 	u32 var;
 	u32 wait;
 	u16 clk_ctrl;
-	u32 cfg_info;
 	u32 clock = mmc_cfg->clk;
+	u32 time;
 
 	debug_enter();
 
-	/* To force card inserted and enable SD bus clock */
+	/* Need to disable the clock to set EMMC_PHY_TIMING_ADJUST register */
+	clk_ctrl = xenon_mmc_readw(mmc_cfg, SDHCI_CLOCK_CONTROL);
+	clk_ctrl &= ~(SDHCI_CLOCK_CARD_EN | SDHCI_CLOCK_INT_EN);
+	xenon_mmc_writew(mmc_cfg, SDHCI_CLOCK_CONTROL, clk_ctrl);
+
+	/* Enable QSP PHASE SELECT */
+	var = xenon_mmc_readl(mmc_cfg, EMMC_PHY_TIMING_ADJUST);
+	var |= SAMPL_INV_QSP_PHASE_SELECT;
+	xenon_mmc_writel(mmc_cfg, EMMC_PHY_TIMING_ADJUST, var);
+
+	/* Enable internal clock */
+	clk_ctrl = xenon_mmc_readw(mmc_cfg, SDHCI_CLOCK_CONTROL);
+	xenon_mmc_writew(mmc_cfg, SDHCI_CLOCK_CONTROL, clk_ctrl | SDHCI_CLOCK_INT_EN);
+
+	/* Poll for host MMC PHY clock init to be stable */
+	/* Wait up to 10ms */
+	time = 100;
+	while (time--) {
+		var = xenon_mmc_readl(mmc_cfg, SDHCI_CLOCK_CONTROL);
+		if (var & SDHCI_CLOCK_INT_STABLE)
+			break;
+
+		udelay(100);
+	}
+	if (time <= 0) {
+		error("Failed to enable MMC internal clock in time\n");
+		return -1;
+	}
+
+	/* Enable bus clock */
 	clk_ctrl = xenon_mmc_readw(mmc_cfg, SDHCI_CLOCK_CONTROL);
 	xenon_mmc_writew(mmc_cfg, SDHCI_CLOCK_CONTROL, clk_ctrl | SDHCI_CLOCK_CARD_EN);
-	cfg_info = xenon_mmc_readl(mmc_cfg, SDHC_SYS_CFG_INFO);
-	xenon_mmc_writel(mmc_cfg, SDHC_SYS_CFG_INFO, cfg_info | (1 << SLOT_TYPE_SDIO_SHIFT));
+
+	/* Delay 200us to wait for the completion of bus clock */
+	udelay(200);
 
 	/* Init PHY */
 	var = xenon_mmc_readl(mmc_cfg, EMMC_PHY_TIMING_ADJUST);
@@ -136,20 +166,22 @@ int xenon_mmc_phy_init(struct xenon_mmc_cfg *mmc_cfg)
 #endif
 	wait++;
 
-	/* Poll for host eMMC PHY init completes */
-	while (1) {
+	/* Poll for host eMMC PHY init to complete */
+	/* Wait up to 10ms */
+	time = 100;
+	while (time--) {
 		var = xenon_mmc_readl(mmc_cfg, EMMC_PHY_TIMING_ADJUST);
 		var &= PHY_INITIALIZAION;
 		if (!var)
 			break;
 
-		/* wait for host eMMC PHY init completes */
+		/* wait for host eMMC PHY init to complete */
 		udelay(100);
 	}
-
-	/* Recover card inserted state and  SD bus clock */
-	xenon_mmc_writew(mmc_cfg, SDHCI_CLOCK_CONTROL, clk_ctrl);
-	xenon_mmc_writel(mmc_cfg, SDHC_SYS_CFG_INFO, cfg_info);
+	if (time <= 0) {
+		error("Failed to init MMC PHY in time\n");
+		return -1;
+	}
 
 	debug_exit();
 	return 0;

@@ -389,9 +389,6 @@ static unsigned short mvebu_dram_dll_search(unsigned short dll, unsigned short r
 			if (MIN_RD_DLL != 0xFFFF)
 				break;
 		}
-		debug(" RD_DLL = 0x%x.\n", dll_var);
-		if (dll_var == DLL_PHASE_SZ_MASK)
-			break;
 	} /* end of phase loop */
 
 	if (MIN_RD_DLL == 0xFFFF) {
@@ -399,8 +396,8 @@ static unsigned short mvebu_dram_dll_search(unsigned short dll, unsigned short r
 		optimal_rd_dll = 0xFFFF;
 	} else {
 		optimal_rd_dll =  (MAX_RD_DLL - MIN_RD_DLL)/2 + MIN_RD_DLL;
-		debug("DDR: end DLL tuning - MIN = %#x, MAX = %#x, optimal = %#x\n",
-			MIN_RD_DLL, MAX_RD_DLL, optimal_rd_dll);
+		debug("DDR: Round %d, End DLL tuning - MIN = %#x, MAX = %#x, optimal = %#x\n",
+			round, MIN_RD_DLL, MAX_RD_DLL, optimal_rd_dll);
 		if (round == 0) {
 			dll_phsel = optimal_rd_dll;
 			dll_phsel1 = optimal_rd_dll;

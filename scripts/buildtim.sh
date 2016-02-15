@@ -28,7 +28,9 @@ IMGSNUM=`ls -l $IMGPATH/$IMGPREF*.$FILEEXT | wc -l`
 # Reserved area definition for TIM/NTIM - file name prefix
 RSRVDPREF="rsrvd"
 RSRVDLEN=`wc -l < $IMGPATH/$RSRVDPREF.$FILEEXT`
-
+# DLL tuning - same for all DDR frequencies
+# Located in the same folder as DDR init file
+DLLTUNFILE=$(dirname "$DDRFILE")/"dll_tune."$FILEEXT
 
 # TIM/NTIM image definition file name prefix
 TIMPREF="tim"
@@ -209,6 +211,7 @@ else
 	echo "End Operations:" >> $OUTFILE
 	echo "Instructions:" >> $OUTFILE
 	cat $DDRFILE >> $OUTFILE
+	cat $DLLTUNFILE >> $OUTFILE
 	echo "End Instructions:" >> $OUTFILE
 	echo "End DDR Initialization:" >> $OUTFILE
 	echo "End Extended Reserved Data:" >> $OUTFILE

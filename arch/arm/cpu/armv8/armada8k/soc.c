@@ -27,6 +27,7 @@
 #include <asm/arch-mvebu/pinctl.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <linux/sizes.h>
+#include <netdev.h>
 
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
@@ -125,6 +126,30 @@ void soc_init(void)
 
 	return;
 }
+
+#ifdef CONFIG_MVPP2X
+/**
+ * cpu_eth_init()
+ *	invoke mv_pp2x_initialize for each port, which is the initialization
+ *	entrance of mvpp2 driver.
+ *
+ * Input:
+ *	bis - db_info
+ *
+ * Return:
+ *	0 - cool
+ */
+int cpu_eth_init(bd_t *bis)
+{
+	/* init mv_pp2x module */
+	if (0 != mv_pp2x_initialize(bis)) {
+		error("failed to init mv_pp2x\n");
+		return 1;
+	}
+
+	return 0;
+}
+#endif /* CONFIG_MVPP2X */
 
 int dram_init(void)
 {

@@ -71,6 +71,9 @@ int mvneta_initialize(bd_t *bis);
 #else
 int mvneta_initialize(bd_t *bis, int base_addr, int devnum, int phy_addr);
 #endif
+#ifdef CONFIG_MVPP2X
+int mv_pp2x_initialize(bd_t *bis);
+#endif
 int natsemi_initialize(bd_t *bis);
 int ne2k_register(void);
 int npe_initialize(bd_t *bis);

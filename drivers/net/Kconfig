@@ -70,4 +70,14 @@ config MAX_NETA_PORT_NUM
 	  to be supported in marvell
 	  neta driver.
 
+config MVPP2X
+	bool "marvell pp2x driver"
+	default n
+	select PHYLIB
+	help
+	  Choose this option to add support
+	  for marvell pp2x eth driver which
+	  enable RX/TX ethernet packets
+	  using gbe interface on marvell SoC.
+
 endmenu

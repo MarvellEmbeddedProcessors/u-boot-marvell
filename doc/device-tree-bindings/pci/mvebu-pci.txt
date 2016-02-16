@@ -1,27 +1,29 @@
 Marvell MVEBU PCIe bindings
 ===========================
 
-The mvebu-pcie driver controls a set of PCIe ports
+The MVEBU-PCIe driver controls a set of PCIe ports
 that make up PCIe bus.
 
 Mandatory proprties:
+SoC specific:
 	- compatible
-		should be "marvell,mvebu-pcie" for legacy Marvell EBU PCIe IP,
+		Should be "marvell,mvebu-pcie" for legacy Marvell EBU PCIe IP,
 		and "marvell,advk-pcie" for Marvell Ardvark PCIe IP.
 	- pcie
-		a node describing a single PCIe port.
-		each pcie node contains the following properties
+		Node describing a single PCIe port.
+		Each pcie node contains the following properties.
 		- reg
-			the register base of the pci port
+			Register base and size of the pci port.
 		- mem
-			an array describing the PCIe port's memory space
+			Array describing the PCIe port's memory space.
 		- endpoint
-			an optional boolean specifying this port should be
+			Optional boolean specifying this port should be
 			configured as PCIe endpoint.
+Board specific:
 		- status
-			the pcie port's status. can be "okay" or "disabled".
+			PCIe port's status. can be "okay" or "disabled".
 
-Example of a pcie node:
+Example of a PCIe node:
 	pcie-controller {
 		#address-cells = <1>;
 		#size-cells = <1>;

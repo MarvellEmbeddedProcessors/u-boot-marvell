@@ -1,24 +1,26 @@
 Marvell COMPHY SerDes lane bindings
 =====================================
 
-The COMPHY node include description about the COMPHY SerDes lane configuration.
-The comphy driver initialize the MUX of the SerDes lanes, and power up the serdes
+The COMPHY node includes a description of the COMPHY SerDes lane configuration.
+The COMPHY driver initializes the MUX of the SerDes lanes, and powers up the SerDes
 by dependencies on the FDT blob configurations
 
 Mandatory properties:
+SoC specific:
 	- compatible:
-		the compatible should include "marvell,mvebu-comphy"
+		The compatible should include "marvell,mvebu-comphy"
 		and the COMPHY per chip compatible:
-		"marvell,comphy-armada38x" for Armada-38x
-		the COMPHY per chip used to set which MUX configuration to use, and COMPHY power-up revision
-	- reg-comphy: the base address of the COMPHY units
-	- reg-hpipe3: the base address of the hpipe3 units
-	- max-lanes: maximum number of comphy lanes
-	- mux-bitcount: number of bits that allocated for every mux in the comphy-selector register
-	- phy: entry that include the configuration of the phy
-	  every phy should have the below parameters:
-	  - phy-type: the PHY type (SGMII0/SATA1/PEX2...), the posible modes under include/dt-bindings/comphy/comphy_data.h
-	  - phy-speed: the PHY speed (1G/1.5G...), the posible speeds under include/dt-bindings/comphy/comphy_data.h
+		"marvell,comphy-armada38x" for Armada-38x.
+		The COMPHY per chip used to set which MUX configuration to use, and COMPHY power-up revision.
+	- reg-comphy: Base address and size of the COMPHY units.
+	- reg-hpipe3: Base address and size of the hpipe3 units.
+	- max-lanes: Maximum number of comphy lanes.
+	- mux-bitcount: Number of bits that are allocated for every MUX in the COMPHY-selector register.
+Board specific:
+	- phy: Entry that include the configuration of the phy.
+	  Every phy should have the below parameters:
+	  - phy-type: PHY type (SGMII0/SATA1/PEX2...), the posible modes under include/dt-bindings/comphy/comphy_data.h
+	  - phy-speed: PHY speed (1G/1.5G...), the posible speeds under include/dt-bindings/comphy/comphy_data.h
 
 Example:
 	comphy {
@@ -40,4 +42,3 @@ Example:
 			phy-speed = <PHY_SPEED_5G>;
 		};
 	};
-

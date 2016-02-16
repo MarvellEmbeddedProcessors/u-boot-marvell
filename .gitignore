@@ -21,6 +21,7 @@
 *.patch
 *.cfgtmp
 *.hex
+*.dummy
 
 # host programs on Cygwin
 *.exe
@@ -36,6 +37,7 @@
 /System.map
 /u-boot*
 /boards.cfg
+/uart-images*
 
 #
 # git files that we don't want to ignore even it they are dot-files
@@ -49,6 +51,7 @@
 /LOG
 /spl/
 /tpl/
+/tools/wtp/u-boot-ntim.txt
 
 #
 # Generated include files

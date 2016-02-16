@@ -18,7 +18,7 @@
 
 #ifndef _MISC_REGS_H_
 #define _MISC_REGS_H_
-#include <asm/arch-armadalp/regs-base.h>
+#include <asm/arch/regs-base.h>
 
 #define MVEBU_NB_PM_PWRDWN_OPT_REG     (MVEBU_NORTH_PM_REGS_BASE + 0x8)
 #define L2_SRAM_LKG_PD_EN              (BIT8)

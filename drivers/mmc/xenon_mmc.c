@@ -37,7 +37,7 @@
 #include <xenon_mmc.h>
 #include <linux/sizes.h>
 #include <asm/arch-mvebu/mvebu.h>
-#include <asm/arch-armadalp/gpio.h>
+#include <asm/arch/gpio.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

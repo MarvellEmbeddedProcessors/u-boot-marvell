@@ -22,7 +22,7 @@
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/ddr.h>
 #include <asm/arch-mvebu/system_info.h>
-#include <asm/arch-armadalp/misc-regs.h>
+#include <asm/arch/misc-regs.h>
 #include "ddr_mckinley6.h"
 
 enum mvebu_mck_freq_support {

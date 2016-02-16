@@ -18,7 +18,7 @@
 
 #include <common.h>
 #include <asm/arch-mvebu/clock.h>
-#include <asm/arch-armadalp/clock.h>
+#include <asm/arch/clock.h>
 
 u32 soc_tclk_get(void)
 {

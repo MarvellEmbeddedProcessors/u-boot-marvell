@@ -30,7 +30,7 @@
 #include <asm/arch/pcie-core.h>
 #include <pci.h>
 #include <asm/arch-mvebu/fdt.h>
-#include <asm/arch-armadalp/gpio.h>
+#include <asm/arch/gpio.h>
 
 /* #define DEBUG */
 /* #define DEBUG_CFG_CYCLE */

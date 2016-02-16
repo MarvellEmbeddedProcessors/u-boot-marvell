@@ -22,7 +22,7 @@
 #include <asm/io.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/mvebu.h>
-#include <asm/arch-armadalp/clock.h>
+#include <asm/arch/clock.h>
 #include "comphy_a3700.h"
 
 DECLARE_GLOBAL_DATA_PTR;

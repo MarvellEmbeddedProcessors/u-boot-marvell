@@ -19,9 +19,9 @@
 #include <common.h>
 #include <asm/arch-mvebu/comphy.h>
 #include <asm/arch-mvebu/io_addr_dec.h>
-#include <asm/arch-armadalp/clock.h>
+#include <asm/arch/clock.h>
 #include <asm/arch-mvebu/mbus.h>
-#include <asm/arch-armadalp/gpio.h>
+#include <asm/arch/gpio.h>
 #include <asm/arch-mvebu/mvebu_misc.h>
 #include <asm/arch-mvebu/ddr.h>
 #include <asm/arch-mvebu/fdt.h>

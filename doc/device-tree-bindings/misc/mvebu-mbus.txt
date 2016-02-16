@@ -1,17 +1,17 @@
 Marvell MBUS address decoding bindings
 =====================================
 
-The MBUS node include describtion about the address decoding configuration.
+The MBUS node includes a description of the address decoding configuration.
 
 The MBUS node requires the following properties:
-	- compatible
-		should be "marvell,mvebu-mbus"
-	- reg: the base address of the MBUS unit
-	- max-win: number of the max mbus windows
-	- max-remap: number of the max remap windows
-	- internal-win: number of the internal register window
-	- windows: entry that include the configuration of the windows
-	  every window should have 3 parameters:
+SoC specific:
+	- compatible: Should be "marvell,mvebu-mbus".
+	- reg: The base address of the MBUS unit.
+	- max-win: Number of the max mbus windows.
+	- max-remap: Number of the max remap windows.
+	- internal-win: Number of the internal register window.
+	- windows: Entry that include the configuration of the windows.
+	  Every window should have 3 parameters:
 	  - base address of the window
 	  - size of the window
 	  - ATTR: attributes + target-ID + remmap flag (build by bitmask:
@@ -80,4 +80,3 @@ Example:
 			0xE6000000 0x2000000 ATTR(0x1, 0x4, 0xB8)
 			0xfd000000 0x1000000 ATTR(0x0, 0x1, 0x2F)>;
 	};
-

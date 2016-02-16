@@ -1,17 +1,18 @@
 Marvell Clock bindings
 ======================
 
-The Clock nodes is under internal-regs node.
+The Clock nodes are under the internal-regs node.
 
-tclk: define the T-Clock address in the SoC
-	- compatible = "marvell,tclk";
+tclk: Define the T-Clock address in the SoC
+SoC specific:
+	- compatible: Should be "marvell,tclk".
 	- reg = <0x18600 0x4>;
-		base address of sample at reset register.
+		Base address and size of sample at reset register.
 
-In case of Armada 3700 platform, the DT allows to select one of
-CPU/DDR frequency presets under "soc" node.
+For the Armada 3700 platform, the DT allows selecting one of the
+CPU/DDR frequency presets under the SOC node.
 
-freq: define the clock preset for CPU/DDR
+freq: Define the clock preset for CPU/DDR
 	compatible = "marvell,a3700-freq";
 	preset = <freq_preset>;
 		Supported presets:

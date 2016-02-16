@@ -1,13 +1,15 @@
 Marvell ArmadaLP UART bindings
 ==============================
 
-UART driver for Marvell ArmadaLP SoC's.
+UART driver for Marvell ArmadaLP SoCs.
 
 Mandatory properties:
-	- compatible: should be "marvell,armadalp-uart"
-	- reg: the base address of the UART unit
-	- clock_frequency: input clock frequency of UART unit
-	- baudrate: the baudrate of the UART unit
+SoC specific:
+	- compatible: Should be "marvell,armadalp-uart".
+	- reg: The base address of the UART unit.
+	- clock_frequency: Input clock frequency of UART unit.
+Board specific:
+	- baudrate: The baudrate of the UART unit.
 
 Example for armadaLP UART-0 node:
 	serial: serial@12000 {

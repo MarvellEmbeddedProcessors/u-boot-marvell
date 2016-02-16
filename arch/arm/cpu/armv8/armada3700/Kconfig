@@ -6,7 +6,7 @@ config SYS_CPU
 
 config SYS_BOARD
 	string
-	default "armadalp"
+	default "armada3700"
 
 config SYS_VENDOR
 	string
@@ -14,11 +14,11 @@ config SYS_VENDOR
 
 config SYS_SOC
 	string
-	default "armadalp"
+	default "armada3700"
 
 config SYS_CONFIG_NAME
 	string
-	default "armadalp"
+	default "armada3700"
 
 config ARMV8_PSCI
 	bool

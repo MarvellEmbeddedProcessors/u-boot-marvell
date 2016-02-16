@@ -16,5 +16,5 @@
 # ***************************************************************************
 #
 
-obj-y	+= armadalp.o
+obj-y	+= armada3700.o
 obj-$(CONFIG_DEVEL_BOARD)	+= devel-board.o

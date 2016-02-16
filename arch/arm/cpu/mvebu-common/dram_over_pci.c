@@ -95,7 +95,7 @@ void dram_over_pci_window_config(void)
 	writel(val, RFU_WIN_PEX_CFG);
 }
 
-#elif defined(CONFIG_TARGET_ARMADA_LP)
+#elif defined(CONFIG_TARGET_ARMADA_3700)
 
 void dram_over_pci_window_config(void)
 {

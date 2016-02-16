@@ -54,14 +54,14 @@ dtb-$(CONFIG_SOCFPGA) += socfpga_cyclone5_socrates.dtb
 # If Multi-FDT feature is enabled, all the DTB files that are compiled
 # will be linked into SPL, the dtb size increase the SPL size.
 dtb-$(CONFIG_TARGET_ARMADA_38X) += armada-385-db.dtb
-ifdef CONFIG_TARGET_ARMADA_LP
+ifdef CONFIG_TARGET_ARMADA_3700
 ifndef CONFIG_DEVEL_BOARD
 dtb-y += armada-lp-customer0.dtb
 endif #CONFIG_DEVEL_BOARD
 dtb-$(CONFIG_DEVEL_BOARD) += armada-lp-db.dtb \
 			     armada-lp-db-sgmii1.dtb
 dtb-$(CONFIG_PALLADIUM) += armada-lp-palladium.dtb
-endif #CONFIG_TARGET_ARMADA_LP
+endif #CONFIG_TARGET_ARMADA_3700
 
 ifdef CONFIG_TARGET_ARMADA_8K
 dtb-$(CONFIG_PALLADIUM) += apn-806-pd.dtb \

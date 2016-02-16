@@ -487,7 +487,7 @@ static int check_image_header(void)
 
 	return 0;
 }
-#elif defined(CONFIG_TARGET_ARMADA_LP) /* ArmadaLP */
+#elif defined(CONFIG_TARGET_ARMADA_3700) /* Armada 3700 */
 static int check_image_header(void)
 {
 	/* Armada3700 has different Image, without mvebu

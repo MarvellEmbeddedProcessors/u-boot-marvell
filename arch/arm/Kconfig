@@ -111,8 +111,8 @@ config TARGET_ARMADA_38X
 	bool "Support Armada 38x"
 	select SUPPORT_SPL
 
-config TARGET_ARMADA_LP
-	bool "Support Armada LP"
+config TARGET_ARMADA_3700
+	bool "Support Armada 3700"
 	select SUPPORT_SPL
 	select ARM64
 

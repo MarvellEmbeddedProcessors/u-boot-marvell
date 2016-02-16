@@ -886,7 +886,7 @@ bin2phex: doimage
 		$(BIN2PHEX) -w 1  -i u-boot-spl.bin -o u-boot-spl.hex -b 0x0
 		$(BIN2PHEX) -w 16 -i u-boot.bin -o u-boot.hex -b 0x0
 
-else ifeq ($(CONFIG_TARGET_ARMADA_LP), y)
+else ifeq ($(CONFIG_TARGET_ARMADA_3700), y)
 
 BIN2PHEX	:= $(srctree)/scripts/bin2phex.pl
 TIM2PHEX	:= $(srctree)/scripts/tim2phex.pl
@@ -981,7 +981,7 @@ doimage: $(obj)/u-boot.bin $(DOIMAGE) $(SPLIMAGE)
 		cat spl/u-boot-spl.bin.old >> spl/u-boot-spl.bin;
 		$(DOIMAGE) $(DOIMAGE_FLAGS) u-boot.bin u-boot-spl.bin
 
-endif # CONFIG_TARGET_ARMADA_8K/CONFIG_TARGET_ARMADA_LP/CONFIG_TARGET_ARMADA_38X
+endif # CONFIG_TARGET_ARMADA_8K/CONFIG_TARGET_ARMADA_3700/CONFIG_TARGET_ARMADA_38X
 endif # CONFIG_MVEBU
 
 #

@@ -1,20 +1,21 @@
 Marvell IOB address decoding bindings
 =====================================
 
-The IOB node include describtion about the address decoding configuration.
+The IOB node includes descriptions of the address decoding configuration.
 
 IOB supports up to n (in CP110 n=24) windows for external memory transaction.
 When a transaction passes through the IOB, its address is compared to each of
 the enabled windows. If there is a hit and it passes the security checks it is
-advances to the target port.
+advanced to the target port.
 
 Mandatory properties:
+SoC specific:
 	- compatible
 		should be "marvell,mvebu-iob"
 	- reg: the base address of the IOB unit
-	- max-win: number of the max iob windows
-	- windows: entry that include the configuration of the windows
-	  every window should have 5 parameters:
+	- max-win: number of the max IOB windows
+	- windows: entry that includes the configuration of the windows
+	  every window has 5 parameters:
 	  - high base address of the window
 	  - low base address of the window
 	  - high size of the window
@@ -31,8 +32,8 @@ Target ID options:
 	- 0x6 = RUNIT (NOR/SPI/BootRoom)
 	- 0x7 = IHB1
 
-Note: if the base address is more than 32bit, it divided into high and low,
-	same for size field, if it more that 32bit, it divided for high and low.
+Note: if the base address is more than 32bits, it should be divided into high and low,
+	the same applies to the size field, if it more than 32 bits, it should be divided into high and low.
 	Base example:
 		base address: 0x10f0000000 should divided into:
 		base address high: 0x10
@@ -50,4 +51,5 @@ Example:
 		windows = <0x0 0xf8000000 0x0 0x1000000 0x2 /* PEX1_X1 window */
 			0x0 0xf9000000 0x0 0x1000000 0x5 /* NAND window */>;
 	};
+
 

@@ -1,21 +1,22 @@
 Marvell Thermal Sensor V2 bindings
 =====================================
 
-The thermal node v2 include description about the Thermal Sensor External Unit.
-The thernal sensor v2 is an on chip temprature sensor that read the temprature of
-every core and return the average or the maximum between them.
+The thermal node v2 includes a description of the Thermal Sensor External Unit.
+The thernal sensor v2 is an on-chip temperature sensor that reads the temperature of
+every core and returns the average or the maximum between them.
 
 Mandatory properties:
+SoC specific:
 	- compatible
 		should be "marvell,thermal-sensor-v2"
 	- reg: the base address of thermal unit
 	- gain, offset: parameters of the temperature equation
-		the equation:
+		which is:
 		T(in celsius) = T(read value) * gain + offset
-	Note: in Tsen SPEC the default value of gain equal to 0.425
-		In the u-boot we can't calculate real number (no floating point)
-		need to set the gain and offset by multiply them by 1000
-		this will help for calculate the equation, see example below.
+	Note: in the Tsen spec the default value of gain equals 0.425
+		In the u-boot we cannot calculate a real number (no floating point).
+		For this reason, set the gain and offset by multiplying them by 1000.
+		This helps to calculate the equation; see example below.
 
 Example of equation:
 T(in celsius) = T(read value) * 0.425 + 153.4
@@ -31,4 +32,5 @@ Example:
 		divisor = <1000>;
 		status = "okay";
 	};
+
 

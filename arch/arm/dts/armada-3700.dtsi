@@ -4,8 +4,8 @@
 #include <dt-bindings/comphy/comphy_data.h>
 #include <dt-bindings/clock/freq_data.h>
 / {
-	model = "Marvell Armada_LP Development Board";
-	compatible = "marvell,armada-lp";
+	model = "Marvell Armada 3700 Development Board";
+	compatible = "marvell,armada-3700";
 
 	#address-cells = <2>;
 	#size-cells = <2>;

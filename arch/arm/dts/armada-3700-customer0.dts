@@ -1,12 +1,12 @@
 
 /dts-v1/;
 
-#include "armada-lp.dtsi"
+#include "armada-3700.dtsi"
 #include <dt-bindings/ddr/ddr_data.h>
 
 / {
 	model = "DB-88F37XX-Customer0";
-	compatible = "marvell,armada-lp-db0", "marvell,armada-lp";
+	compatible = "marvell,armada-3700-db0", "marvell,armada-3700";
 
 	soc {
 		freq {

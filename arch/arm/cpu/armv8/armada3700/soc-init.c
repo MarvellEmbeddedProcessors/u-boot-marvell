@@ -192,7 +192,7 @@ void board_usb_vbus_init(void)
 	const void *blob = gd->fdt_blob;
 
 	/* Make sure board is supported (currently only A3700-DB is supported) */
-	if (fdt_node_check_compatible(blob, 0, "marvell,armada-lp-db0") != 0) {
+	if (fdt_node_check_compatible(blob, 0, "marvell,armada-3700-db0") != 0) {
 		error("Missing USB VBUS power configuration for current board.\n");
 		return;
 	}

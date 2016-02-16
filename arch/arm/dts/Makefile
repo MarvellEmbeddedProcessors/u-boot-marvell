@@ -56,11 +56,11 @@ dtb-$(CONFIG_SOCFPGA) += socfpga_cyclone5_socrates.dtb
 dtb-$(CONFIG_TARGET_ARMADA_38X) += armada-385-db.dtb
 ifdef CONFIG_TARGET_ARMADA_3700
 ifndef CONFIG_DEVEL_BOARD
-dtb-y += armada-lp-customer0.dtb
+dtb-y += armada-3700-customer0.dtb
 endif #CONFIG_DEVEL_BOARD
-dtb-$(CONFIG_DEVEL_BOARD) += armada-lp-db.dtb \
-			     armada-lp-db-sgmii1.dtb
-dtb-$(CONFIG_PALLADIUM) += armada-lp-palladium.dtb
+dtb-$(CONFIG_DEVEL_BOARD) += armada-3700-db.dtb \
+			     armada-3700-db-sgmii1.dtb
+dtb-$(CONFIG_PALLADIUM) += armada-3700-palladium.dtb
 endif #CONFIG_TARGET_ARMADA_3700
 
 ifdef CONFIG_TARGET_ARMADA_8K

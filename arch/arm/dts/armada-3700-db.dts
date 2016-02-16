@@ -1,7 +1,7 @@
 
 /dts-v1/;
 #include <dt-bindings/ddr/ddr_data.h>
-#include "armada-lp.dtsi"
+#include "armada-3700.dtsi"
 #include <dt-bindings/multi-fdt/multi-fdt.h>
 
 /* detail board setup:
@@ -24,7 +24,7 @@
 
 / {
 	model = "DB-88F3720-DDR3-Modular";
-	compatible = "marvell,armada-lp-db0", "marvell,armada-lp";
+	compatible = "marvell,armada-3700-db0", "marvell,armada-3700";
 	fdt_config_id = <A3700_DB_CONFIG_ID_DEFAULT>;
 	board_id = <A3700_DB_ID>;
 

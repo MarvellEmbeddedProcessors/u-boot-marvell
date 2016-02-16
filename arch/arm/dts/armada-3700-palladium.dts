@@ -1,11 +1,11 @@
 
 /dts-v1/;
 
-#include "armada-lp.dtsi"
+#include "armada-3700.dtsi"
 
 / {
-	model = "PD-MV-ARMADALP";
-	compatible = "marvell,armada-lp-db0", "marvell,armada-lp";
+	model = "PD-MV-ARMADA3700";
+	compatible = "marvell,armada-3700-db0", "marvell,armada-3700";
 
 	soc {
 		internal-regs {

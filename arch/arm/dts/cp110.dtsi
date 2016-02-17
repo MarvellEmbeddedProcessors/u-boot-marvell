@@ -121,7 +121,7 @@ nand@720000 {
 
 mdio0@12A200 {
 	compatible = "marvell,mvebu-mdio";
-	reg_xsmi = <0x15B000 0x20>;
+	reg_xsmi = <0x12A600 0x20>;
 	reg_smi = <0x12A200 0x4>;
 	status = "okay";
 };

@@ -1,12 +1,12 @@
 BUBT (Burn ATF) command
 --------------------------
-Bubt command is used to burn new ATF image to flash device.
+Bubt command is used to burn a new ATF image to flash device.
 
-Bubt command get the ATF file name, destination device, source device as parametr
+The bubt command gets the following parameters: ATF file name, destination device and source device.
 bubt [file-name] [destination [source]]
-	- file-name		The image file name to burn.			default = flash-image.bin
+	- file-name		Image file name to burn.			default = flash-image.bin
 	- destination		Flash to burn to [spi, nor, nand].		defualt = active flash
-	- source		The source to load image from [tftp, usb].	default = tftp
+	- source		Source to load image from [tftp, usb].		default = tftp
 
 Examples:
 	bubt					-	Burn flash-image.bin from tftp to active flash
@@ -14,7 +14,7 @@ Examples:
 	bubt backup-nor.bin nor usb		-	Burn backup-nor.bin from usb to NOR flash
 
 Notes:
-- for TFTP interface need to set serverip and ipaddr.
+- For the TFTP interface set serverip and ipaddr.
 
 Bubt command details (burn image step by-step)
 ----------------------------------------------

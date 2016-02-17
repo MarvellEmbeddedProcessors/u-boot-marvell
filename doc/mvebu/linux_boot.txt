@@ -29,3 +29,4 @@ Run the following commands from the U-Boot prompt:
 
 To boot Linux Kerenl, run from U-Boot prompt:
 	- boot
+

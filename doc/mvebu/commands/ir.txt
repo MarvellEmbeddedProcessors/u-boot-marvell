@@ -3,14 +3,15 @@ ir command:
 Reading and changing internal register values.
 
 Displays the contents of the internal register in 2 forms, hex and binary.
-Its possible to change the value by writing a hex value beginning with 0x
+It is possible to change the value by writing a hex value beginning with 0x
 or by writing 0 or 1 in the required place.
 Pressing enter without any value keeps the value unchanged.
-the IR command use the default base address of the SoC:
+The IR command uses the default base address of the SoC:
 Armada3700	-	0xd0000000
 AP806		-	0xf0000000
+CP110		-	0xf2000000
 
-example:
+Example:
 Marvell>> ir 50000
 Internal register 0x50000 value : 0x6501140
 
@@ -20,13 +21,13 @@ OLD: 0000-0110-0101-0000-0001-0001-0100-0000
 NEW:
 Marvell>>
 
-base command:
+Base command:
 -------------
-Base command provides the ability to change the base address of memory command (ir, md, mm, etc..)
-to show the current base address use "base"
-to change the base address use "base 0xf2000000"
+Base command provides the ability to change the base address of a memory command (ir, md, mm, etc..)
+To show the current base address use "base"
+To change the base address use "base 0xf2000000"
 
-example:
+Example:
 Marvell>> base
 Base Address: 0x00000000
 Marvell>> base 0xf2000000

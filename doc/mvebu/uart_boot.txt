@@ -1,8 +1,8 @@
 UART boot
 ---------
-For Armada-3700 please see the section "UART boot for Armada-3700 platform"
-UART boot is used to load ATF image using XMODEM interface when the board boots for
-the first time or the board fails to boot.
+For Armada-3700 see the section "UART boot for Armada-3700 platform" section.
+UART boot is used to load the ATF image using the Xmodem interface when the board boots for
+the first time or when the board fails to boot.
 
 1. Set the board to receiving mode using either of the following methods:
 	- Start a terminal application (e.g. minicom), and send the Xmodem_boot_pattern.bin file
@@ -12,19 +12,19 @@ the first time or the board fails to boot.
 	  Set the boot source to UART, using boot source DIP-switch pins, and then reset the board.
 2. After booting from UART, or sending the pattern file, characters are displayed on the
    screen every second. These are the Xmodem NACKs that indicate readiness to send the
-   new ATF with Xmodem protocol.
-3. Start the TTY ATF transfer using Xmodem protocol
+   new ATF with the Xmodem protocol.
+3. Start the TTY ATF transfer using the Xmodem protocol
    (for minicom do: Ctrl/A, then S, and select the Xmodem protocol).
-4. Select the ATF image file, and start transfer.
-5. When transfer is done, U-Boot will start and you should hit <return> to get U-Boot prompt.
-6. When ATF & U-Boot loads refer to doc/mvebu/commands/bubt.txt to burn ATF image.
+4. Select the ATF image file, and start the transfer.
+5. When the transfer is done, U-Boot will start and you should hit <return> to get the U-Boot prompt.
+6. When ATF & U-Boot loads refer to doc/mvebu/commands/bubt.txt to burn the ATF image.
 
 UART boot for Armada-3700 platform
 ---------------------------------
 1. The normal build procedure for A3700 target creates an archive
    with all the images required for UART boot. If these images are used,
-   extract the uart-images.tgz archive into temporary folder and
-   continue with below procedure starting paragraph 4.
+   extract the uart-images.tgz archive into a temporary folder and
+   continue with the following procedure starting with paragraph 4.
 
 2. Change the TIM/NTIM file descriptor to use the UART image type
    (for NTIM - tools/wtp/u-boot-ntim.txt).
@@ -36,20 +36,20 @@ UART boot for Armada-3700 platform
 
    Boot Flash Signature:          0x55415223              ; Select UAR'23
 
-3. Build the u-boot image as usual. Files with "_h." in their names
+3. Build the U-Boot image as usual. Files with "_h." in their names
    are created for usage by the image downloader SW.
 
 4. Make sure the target board is in UART mode and ">" prompt is
-   presented on connected terminal. Pressing "Enter" in this mode
+   presented on the connected terminal. Pressing "Enter" in this mode
    will show "E" and then ">" again.
 
-5. Stop the terminal emulator program on UART port attached to the
+5. Stop the terminal emulator program on the UART port attached to the
    target board (minicom) for releasing the serial port and allowing
-   application to use it for image download.
+   an application to use it for image download.
 
-6. Start the image download application in the root u-boot folder
+6. Start the image download application in the root U-Boot folder
    using the following parameters (replace UART port name with the one
-   connected to actual target board).
+   connected to the actual target board).
 
    Linux downloader usage example:
 
@@ -65,16 +65,17 @@ UART boot for Armada-3700 platform
    WtpDownload.exe -P UART -C 7 -R 115200 -B TIM_UBOOT_NON_TRUSTED.bin
    -I u-boot-spl_h.bin -I u-boot_h.bin  -I wtmi_h.dummy -E
 
-   It is possible to add "-V" parameter to the command line for
+   It is possible to add the "-V" parameter to the command line for
    enabling verbose output.
 
    Note that "-E" parameter can be dropped from the above commands.
-   In such case after checking that the BootROM UART download mode is
+   If you do this, check that the BootROM UART download mode is
    selected in paragraph 4, type in terminal "wtp" without quotes and
-   press Enter. Then follow the procedure in paragraph 5.
-   This command will switch BootROM to WTP download mode. The same is
-   archived by "-E" parameter in latest downloader SW.
+   press Enter. Then follow the procedure described in paragraph 5.
+   This command will switch the BootROM to WTP download mode. The same is
+   archieved by "-E" parameter in latest downloader SW.
 
-7. Once the process is finished, start the terminal emulator
-   program (minicom) on the UART port attached to the target
-   board and ensure the u-boot prompt is reached.
+7. After the process is finished, start the terminal emulator
+   program (minicom) on that the UART port attached to the target
+   board and ensure the U-Boot prompt is reached.
+

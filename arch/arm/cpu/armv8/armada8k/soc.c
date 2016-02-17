@@ -23,82 +23,12 @@
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/system_info.h>
 #include <asm/arch/regs-base.h>
-#include <asm/arch/misc-regs.h>
 #include <asm/arch-mvebu/pinctl.h>
-#include <asm/arch-mvebu/fdt.h>
 #include <linux/sizes.h>
 #include <netdev.h>
 
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
-
-/* TODO: move this to firmware code */
-enum axi_attr {
-	AXI_ADUNIT_ATTR = 0,
-	AXI_COMUNIT_ATTR,
-	AXI_EIP197_ATTR,
-	AXI_USB3D_ATTR,
-	AXI_USB3H0_ATTR,
-	AXI_USB3H1_ATTR,
-	AXI_SATA0_ATTR,
-	AXI_SATA1_ATTR,
-	AXI_DAP_ATTR,
-	AXI_DFX_ATTR,
-	AXI_DBG_TRC_ATTR = 12,
-	AXI_SDIO_ATTR,
-	AXI_MSS_ATTR,
-	AXI_MAX_ATTR,
-};
-
-/* Used for Units of CP-110 (e.g. USB device, USB Host, and etc) */
-#define MVEBU_AXI_ATTR_BASE			(MVEBU_CP0_REGS_BASE + 0x441300)
-#define MVEBU_AXI_ATTR_REG(index)		(MVEBU_AXI_ATTR_BASE + 0x4 * index)
-#define MVEBU_AXI_ATTR_ARCACHE_OFFSET		4
-#define MVEBU_AXI_ATTR_ARCACHE_MASK		(0xF << MVEBU_AXI_ATTR_ARCACHE_OFFSET)
-#define MVEBU_AXI_ATTR_ARDOMAIN_OFFSET		12
-#define MVEBU_AXI_ATTR_ARDOMAIN_MASK		(0x3 << MVEBU_AXI_ATTR_ARDOMAIN_OFFSET)
-#define MVEBU_AXI_ATTR_AWCACHE_OFFSET		20
-#define MVEBU_AXI_ATTR_AWCACHE_MASK		(0xF << MVEBU_AXI_ATTR_AWCACHE_OFFSET)
-#define MVEBU_AXI_ATTR_AWDOMAIN_OFFSET		28
-#define MVEBU_AXI_ATTR_AWDOMAIN_MASK		(0x3 << MVEBU_AXI_ATTR_AWDOMAIN_OFFSET)
-
-void soc_axi_attr_init(void)
-{
-	u32 index, data;
-	/* This temporary change in U-Boot - should be moved to firmware */
-	/* Initialize AXI attributes for Armada-7040 SoC */
-	/* check if run on 7040 SoC - and not AP-806 Stand alone */
-	if (fdt_node_check_compatible(gd->fdt_blob, 0, "marvell,armada-70x0") == 0) {
-		/* Go over the AXI attributes and set Ax-Cache and Ax-Domain */
-		for (index = 0; index < AXI_MAX_ATTR; index++) {
-			switch (index) {
-			/* DFX and MSS unit works with no coherent only -
-			** there's no option to configure the Ax-Cache and
-			** Ax-Domain */
-			case AXI_DFX_ATTR:
-			case AXI_MSS_ATTR:
-				continue;
-			default:
-				/* Set Ax-Cache as cacheable, no allocate, modifiable, bufferable
-				** The values are different because Read & Write definition
-				** is different in Ax-Cache */
-				data = readl(MVEBU_AXI_ATTR_REG(index));
-				data &= ~MVEBU_AXI_ATTR_ARCACHE_MASK;
-				data |= 0xB << MVEBU_AXI_ATTR_ARCACHE_OFFSET;
-				data &= ~MVEBU_AXI_ATTR_AWCACHE_MASK;
-				data |= 0x7 << MVEBU_AXI_ATTR_AWCACHE_OFFSET;
-				/* Set Ax-Domain as Outer domain */
-				data &= ~MVEBU_AXI_ATTR_ARDOMAIN_MASK;
-				data |= 0x2 << MVEBU_AXI_ATTR_ARDOMAIN_OFFSET;
-				data &= ~MVEBU_AXI_ATTR_AWDOMAIN_MASK;
-				data |= 0x2 << MVEBU_AXI_ATTR_AWDOMAIN_OFFSET;
-				writel(data, MVEBU_AXI_ATTR_REG(index));
-			}
-		}
-	}
-
-	return;
-}
 
 int soc_early_init_f(void)
 {
@@ -122,8 +52,6 @@ int soc_get_id(void)
 
 void soc_init(void)
 {
-	soc_axi_attr_init();
-
 	return;
 }
 

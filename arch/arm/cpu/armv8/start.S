@@ -170,6 +170,11 @@ ENDPROC(apply_core_errata)
 WEAK(lowlevel_init)
 	mov	x29, lr			/* Save LR */
 
+	mrs     x0, CurrentEL		/* U-boot is running in EL3 as standalone application,
+					    but ATF activates it at lower EL. */
+	cmp     x0, 0x3 << 2            /* Only run when not started from ATF (EL3) */
+	b.ne    2f                      /* since ATF has done all low level tasks already */
+
 #if defined(CONFIG_GICV2) || defined(CONFIG_GICV3)
 	branch_if_slave x0, 1f
 	ldr	x0, =GICD_BASE

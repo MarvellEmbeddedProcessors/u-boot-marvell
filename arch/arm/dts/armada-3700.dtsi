@@ -2,6 +2,7 @@
 #define IO_ATTR(max_win, max_remap, remap_size, win_offset) (((max_win) << 24) | ((max_remap) << 16) | ((remap_size) << 8) | (win_offset))
 
 #include <dt-bindings/comphy/comphy_data.h>
+#include <dt-bindings/gpio/armada-3700-gpio.h>
 / {
 	model = "Marvell Armada 3700 Development Board";
 	compatible = "marvell,armada-3700";
@@ -10,12 +11,12 @@
 	#size-cells = <2>;
 
 	soc {
-	compatible = "marvell,armadalp-mbus";
+	compatible = "marvell,armadalp-mbus", "simple-bus";
 	#address-cells = <1>;
 	#size-cells = <0>;
 
 		internal-regs {
-			compatible = "marvell,internal-regs";
+			compatible = "marvell,internal-regs", "simple-bus";
 			#address-cells = <1>;
 			#size-cells = <1>;
 			ranges = <0x0000 0xd0000000 0x2000000>;
@@ -158,6 +159,20 @@
 			ddr-phy {
 				compatible = "marvell,mvebu-ddr-phy";
 				reg = <0x1000 0x1000>;
+				status = "okay";
+			};
+			gpio0: gpio@13800 {
+				compatible = "marvell,mvebu-gpio";
+				reg = <0x13800 0x800>;
+				bank-name = "armada-3700-north-bridge";
+				ngpios = <ARMADA_3700_BANK_0_GPIO_COUNT>;
+				status = "okay";
+			};
+			gpio1: gpio@18800 {
+				compatible = "marvell,mvebu-gpio";
+				reg = <0x18800 0x800>;
+				bank-name = "armada-3700-south-bridge";
+				ngpios = <ARMADA_3700_BANK_1_GPIO_COUNT>;
 				status = "okay";
 			};
 		};

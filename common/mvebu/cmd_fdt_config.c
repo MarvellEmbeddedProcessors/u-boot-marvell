@@ -31,15 +31,8 @@ int do_fdt_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 	const char *fdt_option = NULL;
 	const char *fdt_model = NULL;
 
-	if ((strcmp(cmd, "read") == 0) && (argc < 3)) {
-		error("Please specify FDT source (eeprom/flash)\n");
-		return 1;
-	}
-
-	if ((strcmp(cmd, "select") == 0) && (argc < 3)) {
-		error("Please specify FDT index option\n");
-		return 1;
-	}
+	if ((strcmp(cmd, "select") == 0) && (argc < 3))
+		return CMD_RET_USAGE;
 
 	if (argc > 2)
 		fdt_option = argv[2];
@@ -53,10 +46,8 @@ int do_fdt_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 		} else if (argc > 3 && (strcmp(fdt_option, "flash") == 0)) {
 			if (fdt_cfg_read_flash(fdt_model))
 				return 1;
-		} else {
-			error("bad parameters for command \"read\"\n");
-			return 1;
-		}
+		} else
+			return CMD_RET_USAGE;
 	} else if (strcmp(cmd, "save") == 0) {
 		cfg_eeprom_save();
 	} else if (strcmp(cmd, "on") == 0) {
@@ -72,8 +63,7 @@ int do_fdt_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 		if (fdt_select_list())
 			return 1;
 	} else {
-		printf("ERROR: unknown command to config: \"%s\"\n", cmd);
-		return 1;
+		return CMD_RET_USAGE;
 	}
 
 	return 0;

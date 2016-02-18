@@ -111,6 +111,7 @@ bool cfg_eeprom_upload_fdt_from_eeprom(void)
 
 	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
 		 (uint8_t *)&board_config_val.fdt_blob, config_info.byte_cnt);
+
 	return true;
 }
 
@@ -351,7 +352,6 @@ default_id:
 }
 
 /* cfg_eeprom_init - initialize FDT configuration struct
-
    The EEPROM FDT is used if the checksum is valid and if the system
    is not in recovery mode. Otherwise the default FDT is used.
  */

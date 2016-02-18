@@ -63,7 +63,7 @@ struct eeprom_struct {
 struct config_types_info {
 	enum mv_config_type_id config_id;
 	char name[30];
-	u8 byte_num;
+	u32 byte_num;
 	u32 byte_cnt;
 };
 
@@ -83,7 +83,7 @@ struct hw_info_data_struct {
 	char value[HW_INFO_MAX_VALUE_LEN];
 };
 
-#define offset_in_eeprom(a)		((u8)(offsetof(struct eeprom_struct, a)))
+#define offset_in_eeprom(a)		((u32)(offsetof(struct eeprom_struct, a)))
 #define get_default_fdt_config_id(boardid)	mapping_default_fdt[boardid & (BOARD_ID_INDEX_MASK - 1)]
 #define boardid_is_valid(boardid)      (((boardid) >= MARVELL_BOARD_ID_BASE) && ((boardid) < MV_MAX_MARVELL_BOARD_ID))\
 					   ? true : false

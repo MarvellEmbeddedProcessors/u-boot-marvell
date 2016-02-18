@@ -395,7 +395,7 @@ int cfg_eeprom_init(void)
 
 	/* check if pattern in EEPROM is invalid */
 	if (eeprom_buffer.pattern != board_config_val.pattern) {
-		debug("Could not find pattern. Loading default FDT\n");
+		printf("Could not find pattern. Loading default FDT\n");
 		cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(MV_DEFAULT_BOARD_ID));
 		goto init_done;
 	}
@@ -422,13 +422,13 @@ int cfg_eeprom_init(void)
 		board_config_val = eeprom_buffer;
 		/* if fdt_config is enabled, return - FDT already read in the struct from EEPROM */
 		if (cfg_eeprom_fdt_config_is_enable()) {
-			debug("read FDT from EEPROM\n");
+			printf("read FDT from EEPROM\n");
 			goto init_done;
 		}
 
 		/* read FDT from flash according to select active fdt */
 		if (cfg_eeprom_upload_fdt_from_flash(board_cfg->active_fdt_selection)) {
-			debug("read selected FDT by USER\n");
+			printf("read selected FDT by USER\n");
 			goto init_done;
 		}
 	}
@@ -437,10 +437,10 @@ int cfg_eeprom_init(void)
 	/* need to load default FDT */
 	if (boardid_is_valid(cfg_eeprom_get_board_id())) {
 		cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(cfg_eeprom_get_board_id()));
-		debug("read board default FDT\n");
+		printf("read board default FDT\n");
 	} else {
 		cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(MV_DEFAULT_BOARD_ID));
-		debug("read SoC default FDT\n");
+		printf("read SoC default FDT\n");
 	}
 
 init_done:

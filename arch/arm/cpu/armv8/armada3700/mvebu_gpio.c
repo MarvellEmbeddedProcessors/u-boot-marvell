@@ -27,28 +27,10 @@ void mvebu_reset_pcie_dev(void)
 {
 	u32 reg_val;
 
-	/* Set PCIe reset to 0 */
-	reg_val = readl(MVEBU_GPIO_SB_OUTPUT_VAL_REG);
-	reg_val &= ~(1 << MVEBU_GPIO_PCIE_RESET_OFF);
-	writel(reg_val, MVEBU_GPIO_SB_OUTPUT_VAL_REG);
-
-	/* Set to GPIO output mode */
-	reg_val = readl(MVEBU_GPIO_SB_OUTPUT_EN_REG);
-	reg_val |= (1 << MVEBU_GPIO_PCIE_RESET_OFF);
-	writel(reg_val, MVEBU_GPIO_SB_OUTPUT_EN_REG);
-
 	/* Set PCIe to GPIO mode */
 	reg_val = readl(MVEBU_GPIO_SB_SEL_REG);
 	reg_val |= (1 << MVEBU_GPIO_PCIE_EN_OFF);
 	writel(reg_val, MVEBU_GPIO_SB_SEL_REG);
-
-	/* typical delay for NIC to finish reset from NIC specification */
-	udelay(100);
-
-	/* Release PCIe reset */
-	reg_val = readl(MVEBU_GPIO_SB_OUTPUT_VAL_REG);
-	reg_val |= (1 << MVEBU_GPIO_PCIE_RESET_OFF);
-	writel(reg_val, MVEBU_GPIO_SB_OUTPUT_VAL_REG);
 }
 
 /*

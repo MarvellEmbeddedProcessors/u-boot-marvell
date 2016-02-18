@@ -30,7 +30,7 @@
 #include <asm/arch/pcie-core.h>
 #include <pci.h>
 #include <asm/arch-mvebu/fdt.h>
-#include <asm/arch/gpio.h>
+#include <asm/gpio.h>
 
 /* #define DEBUG */
 /* #define DEBUG_CFG_CYCLE */
@@ -390,7 +390,39 @@ static int advk_pcie_link_init(void __iomem *reg_base)
 	return 0;
 }
 
-static int advk_pcie_init(int host_id, void __iomem *reg_base, struct pcie_win *win, int first_busno)
+/*
+ * reset PCIe device
+ */
+static void advk_pcie_reset_dev(struct fdt_gpio_state *gpio)
+{
+#ifdef CONFIG_MVEBU_GPIO
+	int val;
+
+	if (!fdt_gpio_isvalid(gpio))
+		return;
+
+	/* Set PCIe reset gpio in output mode with low level */
+	val = gpio->flags & FDT_GPIO_ACTIVE_LOW ? 1 : 0;
+	gpio_direction_output(gpio->gpio, val);
+
+	/* typical delay for NIC to finish reset from NIC specification */
+	udelay(100);
+
+	/* Set PCIe reset gpio in high level */
+	val = gpio->flags & FDT_GPIO_ACTIVE_LOW ? 0 : 1;
+	gpio_set_value(gpio->gpio, val);
+#else
+	printf("ERROR: the PCIe device is not reset, need to implement gpio in SOC code\n");
+#endif
+
+	return;
+}
+
+static int advk_pcie_init(int host_id,
+				void __iomem *reg_base,
+				struct pcie_win *win,
+				int first_busno,
+				struct fdt_gpio_state *gpio)
 {
 	int ret = 0;
 	u32 state;
@@ -405,7 +437,10 @@ static int advk_pcie_init(int host_id, void __iomem *reg_base, struct pcie_win *
 	memset(hose, 0, sizeof(hose));
 
 	/* reset PCIe device in RC mode */
+	/* now the gpio setting for reset is splitted from mvebu_reset_pcie_dev to advk_pcie_reset_dev */
+	/* mvebu_reset_pcie_dev only do the pinctrl work, it will be removed in the future */
 	mvebu_reset_pcie_dev();
+	advk_pcie_reset_dev(gpio);
 
 	/* start link training */
 	ret = advk_pcie_link_init(reg_base);
@@ -499,6 +534,7 @@ void pci_init_board(void)
 	const void *blob = gd->fdt_blob;
 	struct pcie_win win;
 	void __iomem *reg_base;
+	struct fdt_gpio_state reset_gpio;
 	int err;
 
 	count = fdtdec_find_aliases_for_id(blob, "pcie-controller",
@@ -535,8 +571,15 @@ void pci_init_board(void)
 			continue;
 		}
 
+#ifdef CONFIG_MVEBU_GPIO
+		fdtdec_decode_gpio(blob, port_node, "reset-gpio", &reset_gpio);
+		fdtdec_setup_gpio(&reset_gpio);
+#else
+		printf("ERROR: reset gpio is initialized, need to implement gpio in SOC code\n");
+#endif
+
 		/* If all is well register the host */
-		first_busno = advk_pcie_init(host_id, reg_base, &win, first_busno);
+		first_busno = advk_pcie_init(host_id, reg_base, &win, first_busno, &reset_gpio);
 	}
 }
 

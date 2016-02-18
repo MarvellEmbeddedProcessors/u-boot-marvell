@@ -82,19 +82,6 @@ void mvebu_init_gpio(void)
 	reg_val = reg_val & (~(1 << MVEBU_GPIO_SPI_GPIO_EN_OFF));
 	writel(reg_val, MVEBU_GPIO_NB_SEL_REG);
 
-	/* set hiden GPIO setting for SPI
-	 * in north_bridge_test_pin_out_en register 13804,
-	 * bit 28 is the one which enables CS, CLK pin to be
-	 * output, need to set it to 1.
-	 * normally, it is needed only in UART boot mode,
-	 * but after trying all other modes, it is OK to set it.
-	 * later, we could read the SAR register, and do not
-	 * set it in other boot mode.
-	 */
-	reg_val = readl(MVEBU_GPIO_NB_OUTPUT_EN_HIGH_REG);
-	reg_val = reg_val | (1 << MVEBU_GPIO_NB_OUTPUT_SPI_EN_OFF);
-	writel(reg_val, MVEBU_GPIO_NB_OUTPUT_EN_HIGH_REG);
-
 	/* Set test pin to SDIO mode */
 	mvebu_init_sdio();
 

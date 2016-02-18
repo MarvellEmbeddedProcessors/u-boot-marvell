@@ -20,10 +20,6 @@
 #define _MVEBU_GPIO_H_
 #include <asm/arch-mvebu/gpio.h>
 
-#define MVEBU_GPIO_NB_OUTPUT_EN_REG		(MVEBU_GPIO_NB_REG_BASE)
-#define MVEBU_GPIO_NB_OUTPUT_EN_HIGH_REG	(MVEBU_GPIO_NB_REG_BASE + 0x4)
-#define MVEBU_GPIO_NB_OUTPUT_SPI_EN_OFF		(28)/* This is hidden bit which is reserved in function spec */
-#define MVEBU_GPIO_NB_OUTPUT_VAL_REG		(MVEBU_GPIO_NB_REG_BASE + 0x18)
 #define MVEBU_GPIO_NB_SEL_REG			(MVEBU_GPIO_NB_REG_BASE + 0x30)
 #define MVEBU_GPIO_TW1_GPIO_EN_OFF		(10)
 #define MVEBU_GPIO_SPI_GPIO_EN_OFF		(18)

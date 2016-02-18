@@ -37,7 +37,7 @@
 #include <xenon_mmc.h>
 #include <linux/sizes.h>
 #include <asm/arch-mvebu/mvebu.h>
-#include <asm/arch/gpio.h>
+#include <asm/gpio.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -97,13 +97,6 @@ static void xenon_mmc_reset(struct xenon_mmc_cfg *mmc_cfg, u8 mask)
 		timeout--;
 		udelay(100);
 	}
-}
-
-void __weak mvebu_set_sdio(int voltage)
-{
-	error("Voltage not changed to %x, need to implement %s in SOC code\n", voltage, __func__);
-	printf("In addition need to define MVEBU_GPIO_SDIO_VOLTAGE_1_8V,\n");
-	printf("and MVEBU_GPIO_SDIO_VOLTAGE_3_3V according to SOC configuration\n");
 }
 
 int xenon_mmc_phy_init(struct xenon_mmc_cfg *mmc_cfg)
@@ -332,6 +325,27 @@ static void xenon_mmc_set_tuning(struct xenon_mmc_cfg *mmc_cfg, u8 slot, bool en
 	xenon_mmc_writel(mmc_cfg, SDHCI_SIGNAL_ENABLE, var);
 }
 
+static void xenon_mmc_set_sdio_voltage(struct xenon_mmc_cfg *mmc_cfg, int voltage)
+{
+#ifdef CONFIG_MVEBU_GPIO
+	if (!fdt_gpio_isvalid(&mmc_cfg->sdio_vcc_gpio)) {
+		printf("ERROR: SDID vcc gpio is not set!\n");
+		return;
+	}
+
+	if (MVEBU_GPIO_SDIO_VOLTAGE_1_8V == voltage)
+		/* Set SDIO gpio to 1 which is 1.8v */
+		fdtdec_set_gpio(&mmc_cfg->sdio_vcc_gpio, 1);
+	else
+		/* Set SDIO gpio to 0 which is 3.3v */
+		fdtdec_set_gpio(&mmc_cfg->sdio_vcc_gpio, 0);
+#else
+	printf("ERROR: voltage not changed to %x, need to implement gpio in SOC code\n", voltage);
+#endif
+
+	return;
+}
+
 static void xenon_mmc_set_power(struct xenon_mmc_cfg *mmc_cfg, u32 vcc, u32 vccq)
 {
 	u8 pwr = 0;
@@ -342,19 +356,19 @@ static void xenon_mmc_set_power(struct xenon_mmc_cfg *mmc_cfg, u32 vcc, u32 vccq
 	case MMC_VDD_165_195:
 		pwr = SDHCI_POWER_180;
 		if (mmc_cfg->mmc_mode == XENON_MMC_MODE_SD_SDIO)
-			mvebu_set_sdio(MVEBU_GPIO_SDIO_VOLTAGE_1_8V);
+			xenon_mmc_set_sdio_voltage(mmc_cfg, MVEBU_GPIO_SDIO_VOLTAGE_1_8V);
 		break;
 	case MMC_VDD_29_30:
 	case MMC_VDD_30_31:
 		pwr = SDHCI_POWER_300;
 		if (mmc_cfg->mmc_mode == XENON_MMC_MODE_SD_SDIO)
-			mvebu_set_sdio(MVEBU_GPIO_SDIO_VOLTAGE_3_3V);
+			xenon_mmc_set_sdio_voltage(mmc_cfg, MVEBU_GPIO_SDIO_VOLTAGE_3_3V);
 		break;
 	case MMC_VDD_32_33:
 	case MMC_VDD_33_34:
 		pwr = SDHCI_POWER_330;
 		if (mmc_cfg->mmc_mode == XENON_MMC_MODE_SD_SDIO)
-			mvebu_set_sdio(MVEBU_GPIO_SDIO_VOLTAGE_3_3V);
+			xenon_mmc_set_sdio_voltage(mmc_cfg, MVEBU_GPIO_SDIO_VOLTAGE_3_3V);
 		break;
 	default:
 		error("Does not support power mode(0x%X)\n", vcc);
@@ -832,7 +846,8 @@ static const struct mmc_ops xenon_mmc_ops = {
 	.init		= xenon_mmc_init,
 };
 
-int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk, u32 mmc_mode, u32 dt_mmc_host_cap)
+int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk,
+				u32 mmc_mode, u32 dt_mmc_host_cap, struct fdt_gpio_state *gpio)
 {
 	u32 caps;
 	struct xenon_mmc_cfg *mmc_cfg = NULL;
@@ -855,6 +870,11 @@ int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk, u32 mmc_m
 	/* Set version and ops */
 	mmc_cfg->version = xenon_mmc_readw(mmc_cfg, SDHCI_HOST_VERSION);
 	mmc_cfg->cfg.ops = &xenon_mmc_ops;
+
+#ifdef CONFIG_MVEBU_GPIO
+	/*Set sdio vcc gpio*/
+	memcpy(&mmc_cfg->sdio_vcc_gpio, gpio, sizeof(mmc_cfg->sdio_vcc_gpio));
+#endif
 
 	caps = xenon_mmc_readl(mmc_cfg, SDHCI_CAPABILITIES);
 
@@ -957,6 +977,7 @@ int board_mmc_init(bd_t *bis)
 	u32 mmc_mode, dt_mmc_host_cap, bus_width;
 	void __iomem *reg_base;
 	const void *blob = gd->fdt_blob;
+	struct fdt_gpio_state sdio_vcc_gpio;
 
 	count = fdtdec_find_aliases_for_id(blob, "xenon-sdhci",
 			COMPAT_MVEBU_XENON_MMC, &node_list[0], XENON_MMC_PORTS_MAX);
@@ -1004,7 +1025,31 @@ int board_mmc_init(bd_t *bis)
 			dt_mmc_host_cap |= MMC_MODE_8BIT;
 		}
 
-		xenon_mmc_create(port_count, reg_base, XENON_MMC_MAX_CLK, mmc_mode, dt_mmc_host_cap);
+		/* Only SD/SDIO mode supports vcc setting through gpio and emmc mode does not support it. */
+		/* The vcc gpio should be in output mode, the output value 0 means SDIO is in 3.3v */
+		/* and value 1 means SDIO is in 1.8v. */
+		if (mmc_mode == XENON_MMC_MODE_SD_SDIO) {
+#ifdef CONFIG_MVEBU_GPIO
+			/* parse the sdio vcc gpio fdt attibute*/
+			fdtdec_decode_gpio(blob, node_list[port_count], "sdio-vcc-gpio", &sdio_vcc_gpio);
+			fdtdec_setup_gpio(&sdio_vcc_gpio);
+			if (fdt_gpio_isvalid(&sdio_vcc_gpio)) {
+				int val;
+
+				/* initialize SDIO GPIO in low level which is 3.3v by default*/
+				val = sdio_vcc_gpio.flags & FDT_GPIO_ACTIVE_LOW ? 1 : 0;
+
+				/* Set to SDIO GPIO output mode */
+				gpio_direction_output(sdio_vcc_gpio.gpio, val);
+			} else {
+				printf("ERROR: missing SDIO vcc gpio in XENON SDHCI node!\n");
+				continue;
+			}
+#else
+			printf("ERROR: vcc gpio is not initialized, need to implement gpio in SOC code\n");
+#endif
+		}
+		xenon_mmc_create(port_count, reg_base, XENON_MMC_MAX_CLK, mmc_mode, dt_mmc_host_cap, &sdio_vcc_gpio);
 	}
 
 	return err;

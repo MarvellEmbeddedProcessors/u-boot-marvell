@@ -192,6 +192,7 @@ struct xenon_mmc_cfg {
 	void *aligned_buffer;
 	struct mmc_config cfg;
 	struct mmc *mmc;
+	struct fdt_gpio_state sdio_vcc_gpio;
 };
 
 #endif /* _XENON_MMC_H_ */

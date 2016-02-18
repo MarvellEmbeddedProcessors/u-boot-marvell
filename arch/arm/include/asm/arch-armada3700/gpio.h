@@ -31,9 +31,6 @@
 #define MVEBU_GPIO_SB_OUTPUT_EN_REG		(MVEBU_GPIO_SB_REG_BASE)
 #define MVEBU_GPIO_SB_OUTPUT_VAL_REG		(MVEBU_GPIO_SB_REG_BASE + 0x18)
 #define MVEBU_GPIO_PCIE_RESET_OFF		(3)
-#define MVEBU_GPIO_SDIO_VOLTAGE_3_3V		(0)
-#define MVEBU_GPIO_SDIO_VOLTAGE_1_8V		(1)
-#define MVEBU_GPIO_SDIO_VOLTAGE_OFF		(22)
 #define MVEBU_GPIO_SB_SEL_REG			(MVEBU_GPIO_SB_REG_BASE + 0x30)
 #define MVEBU_GPIO_SB_SDIO_EN_OFF		(2)
 #define MVEBU_GPIO_RGMII_GPIO_EN_OFF		(3)
@@ -43,7 +40,6 @@
 #define MVEBU_GPIO_BANKS	2	/* number of banks */
 #define MVEBU_GPIOS_PER_PORT	32	/* number of gpios per port */
 
-void mvebu_set_sdio(int voltage);
 void mvebu_reset_pcie_dev(void);
 void mvebu_init_gpio(void);
 

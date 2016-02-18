@@ -74,6 +74,7 @@
 				status = "okay";
 			};
 			mmc1: mmc@D0000 {
+				sdio-vcc-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 22) GPIO_ACTIVE_HIGH>;
 				status = "okay";
 			};
 			usb3: usb3@58000 {

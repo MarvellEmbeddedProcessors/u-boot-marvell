@@ -91,7 +91,8 @@ bool cfg_eeprom_upload_fdt_from_flash(u8 fdt_config_id)
 
 	debug("FDT config id = %x\n", fdt_config_id);
 	for (i = 0; fdt_check_header(fdt_blob_temp) == 0; i++) {
-		if ((u8)fdtdec_get_int(fdt_blob_temp, 0, "fdt_config_id", -1) == fdt_config_id) {
+		if ((u8)fdtdec_get_int(fdt_blob_temp, 0, "fdt_config_id", -1) == fdt_config_id &&
+		    (u8)fdtdec_get_int(fdt_blob_temp, 0, "board_id", -1) == cfg_eeprom_get_board_id()) {
 			memcpy((void *)board_config_val.fdt_blob, fdt_blob_temp, MVEBU_FDT_SIZE);
 			return true;
 		}

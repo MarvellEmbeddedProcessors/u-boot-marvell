@@ -42,8 +42,8 @@
 #define DRAM_INIT_TIMEOUT		1000
 
 /* DLL Tune definitions */
-#define DLL_PHSEL_START			0x00
-#define DLL_PHSEL_END			0x3F
+#define DLL_PHSEL_START			0x06
+#define DLL_PHSEL_END			0x30
 #define DLL_PHSEL_STEP			0x1
 #define DLL_RST_TIMER_VAL		0x10
 #define DLL_RESET_WAIT_US		100

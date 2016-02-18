@@ -578,6 +578,8 @@ static const struct asix_dongle asix_dongles[] = {
 	{ 0x1557, 0x7720, FLAG_TYPE_AX88772 },	/* 0Q0 cable ethernet */
 	/* DLink DUB-E100 H/W Ver B1 Alternate */
 	{ 0x2001, 0x3c05, FLAG_TYPE_AX88772 },
+	/* DLink DUB-E100 H/W Ver D1 */
+	{ 0x2001, 0x1a02, FLAG_TYPE_AX88772 },
 	/* ASIX 887E2B */
 	{ 0x0b95, 0x7e2b, FLAG_TYPE_AX88772B | FLAG_EEPROM_MAC },
 	/* ASIX 88772B */

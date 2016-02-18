@@ -19,7 +19,7 @@
 #ifndef _MULTI_FDT_H_
 #define _MULTI_FDT_H_
 
-#define A3700_DB_ID			0x10
+#define A3700_DB_ID			0x20
 /*
  * There are two main presets for Armada3700 DB, between
  * these two presets, most of the configurations are the same:

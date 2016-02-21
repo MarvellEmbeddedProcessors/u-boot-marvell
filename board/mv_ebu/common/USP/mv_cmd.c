@@ -337,7 +337,10 @@ int sg_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		printf( "PHY %d :\n", port );
 		printf( "---------\n" );
 
-		mvEthPhyPrintStatus((MV_U32)mvBoardPhyAddrGet(port) );
+		if(mvBoardIsEthConnected(port) == MV_FALSE)
+			printf("GBE MAC%d is not Active\n", port);
+		else
+			mvEthPhyPrintStatus((MV_U32)mvBoardPhyAddrGet(port) );
 
 		printf("\n");
 	}

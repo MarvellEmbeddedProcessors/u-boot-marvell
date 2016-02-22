@@ -59,4 +59,14 @@ config MVEBU_CHIP_SAR
 	  and subsystem to discover the SoC sample at reset
 	  configuration.
 
+config MVEBU_SPL_CHIP_SAR_DUMP
+	bool "Sample at reset dump (in SPL)"
+	depends on SPL && MVEBU_CHIP_SAR
+	default n
+	help
+	  To add this option you need to add it to the spl config
+	  Choose this option to dump sample at
+	  reset registers
+
+
 endmenu

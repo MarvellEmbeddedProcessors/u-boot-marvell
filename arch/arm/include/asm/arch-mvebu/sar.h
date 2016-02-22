@@ -48,5 +48,6 @@ enum mvebu_bootsrc_type {
 
 int mvebu_sar_init(const void *blob);
 int mvebu_sar_value_get(enum mvebu_sar_opts opt, u32 *val);
+void mvebu_sar_dump(void);
 
 #endif	/* _SAR_H_ */

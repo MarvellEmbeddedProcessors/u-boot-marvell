@@ -71,12 +71,11 @@ void board_init_f(ulong silent)
 #ifdef CONFIG_MVEBU_CHIP_SAR
 	/* Sample at reset register init */
 	mvebu_sar_init(gd->fdt_blob);
-#endif
-
-#ifdef CONFIG_MVEBU_SPL_SAR_DUMP
+#ifdef CONFIG_MVEBU_SPL_CHIP_SAR_DUMP
 	/* Sample at reset dump register */
-	mvebu_sar_dump_reg();
-#endif
+	mvebu_sar_dump();
+#endif /* CONFIG_MVEBU_SPL_SAR_DUMP */
+#endif /* CONFIG_MVEBU_CHIP_SAR */
 
 	/* Init all relevant drivers (e.g. DDR, comphy...) */
 #ifndef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT

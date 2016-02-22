@@ -22,7 +22,6 @@
 #include <asm/arch-mvebu/ddr.h>
 #include <asm/arch-mvebu/dram_over_pci.h>
 #include <asm/arch-mvebu/ccu.h>
-#include <asm/arch-mvebu/rfu.h>
 #include <asm/arch-mvebu/flc.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-armada8k/misc-regs.h>
@@ -97,9 +96,6 @@ void board_init_f(ulong silent)
 #ifdef CONFIG_MVEBU_FLC
 #ifdef CONFIG_MVEBU_CCU
 	init_ccu(false);
-#endif
-#ifdef CONFIG_MVEBU_RFU
-	init_rfu(false);
 #endif
 	init_flc();
 #endif

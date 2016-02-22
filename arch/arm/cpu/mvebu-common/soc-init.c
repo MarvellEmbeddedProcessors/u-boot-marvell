@@ -33,9 +33,6 @@
 #ifdef CONFIG_MVEBU_CCU
 #include <asm/arch-mvebu/ccu.h>
 #endif
-#ifdef CONFIG_MVEBU_RFU
-#include <asm/arch-mvebu/rfu.h>
-#endif
 #ifdef CONFIG_MVEBU_IOB
 #include <asm/arch-mvebu/iob.h>
 #endif
@@ -116,9 +113,6 @@ int mvebu_soc_init()
 	/* Initialize physical memory map */
 #ifdef CONFIG_MVEBU_CCU
 	init_ccu(sw_init);
-#endif
-#ifdef CONFIG_MVEBU_RFU
-	init_rfu(sw_init);
 #endif
 #ifdef CONFIG_MVEBU_IOB
 	init_iob();

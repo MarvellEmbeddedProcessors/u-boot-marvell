@@ -20,7 +20,6 @@
 #define _RFU_H_
 
 void dump_rfu(void);
-int init_rfu(bool sw_init);
 
 #endif /* _RFU_H_ */
 

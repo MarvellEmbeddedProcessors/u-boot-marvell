@@ -27,12 +27,10 @@ Table of contents:
 5. Commands:
    ir - Display and change memory values: doc/mvebu/commands/ir.txt
    fdt_config - Select & change board configuration: doc/mvebu/commands/fdt_config.txt
-   fdt - Change and edit FDT file in memory: doc/mvebu/commands/fdt.txt
    hw_info - Load or store HW manufacturing information: doc/mvebu/commands/hw_info.txt
-   mmc - mmc usage: doc/mvebu/commands/mmc.txt
-   usb - usb usage: doc/mvebu/commands/usb.txt
-   sata - sata usage: doc/mvebu/commands/sata.txt
    SatR - Toggle Sample at reset modes: doc/mvebu/commands/sar.txt
+   fdt - Change and edit FDT file in memory.
+   mmc, usb, sata, fdt - refer to denx mainline documentation.
 
 6. Board options:
    List of board options of the development board.

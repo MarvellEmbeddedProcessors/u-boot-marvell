@@ -117,6 +117,7 @@ nand@720000 {
 	num-cs = <1>;
 	nand-ecc-strength = <4>;
 	nand-ecc-step-size = <512>;
+	status = "disabled";
 };
 
 mdio0@12A200 {

@@ -67,6 +67,9 @@
 			mmc@780000 {
 				status = "okay";
 			};
+			nand@720000 {
+				status = "okay";
+			};
 
 			pinctl@440000 {
 					/* MPP Bus:

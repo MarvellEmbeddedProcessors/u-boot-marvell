@@ -121,6 +121,9 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_MDIO, "marvell,mvebu-mdio"),
 	COMPAT(MVEBU_PXA3XX_NAND, "marvell,mvebu-pxa3xx-nand"),
 	COMPAT(MVEBU_UTMI_PHY, "marvell,mvebu-utmi-2.6.0"),
+	COMPAT(MVEBU_SAR_REG_COMMON, "marvell,sample-at-reset-common"),
+	COMPAT(MVEBU_SAR_REG_AP806, "marvell,sample-at-reset-ap806"),
+	COMPAT(MVEBU_SAR_REG_CP110, "marvell,sample-at-reset-cp110"),
 
 };
 

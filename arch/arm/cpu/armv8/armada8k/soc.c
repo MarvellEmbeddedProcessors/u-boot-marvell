@@ -24,6 +24,8 @@
 #include <asm/arch-mvebu/system_info.h>
 #include <asm/arch/regs-base.h>
 #include <asm/arch-mvebu/pinctl.h>
+#include <asm/arch-mvebu/fdt.h>
+#include <asm/arch-mvebu/sar.h>
 #include <linux/sizes.h>
 #include <netdev.h>
 
@@ -32,6 +34,10 @@
 
 int soc_early_init_f(void)
 {
+#ifdef CONFIG_MVEBU_CHIP_SAR
+	/* Sample at reset register init */
+	mvebu_sar_init(gd->fdt_blob);
+#endif
 #ifdef CONFIG_MVEBU_PINCTL
 	mvebu_pinctl_probe();
 #endif

@@ -101,6 +101,11 @@
 				reg = <0x6f8084 0x12>;
 				status = "okay";
 			};
+
+			sar-reg {
+				compatible = "marvell,sample-at-reset-common", "marvell,sample-at-reset-ap806";
+				reg = <0x6F8200 0x8>;
+			};
 		};
 	};
 };

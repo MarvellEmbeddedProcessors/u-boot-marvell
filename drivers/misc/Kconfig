@@ -49,4 +49,14 @@ config MVEBU_ICU
 	  This driver sets up the mapping between CP-110
 	  interrupts and AP GIC interrupts.
 
+config MVEBU_CHIP_SAR
+	bool "Chip sample at reset support"
+	default y
+	help
+	  Enable support for chip level sample at reset
+	  retreval functions.
+	  These functions are used by various U-Boot drivers
+	  and subsystem to discover the SoC sample at reset
+	  configuration.
+
 endmenu

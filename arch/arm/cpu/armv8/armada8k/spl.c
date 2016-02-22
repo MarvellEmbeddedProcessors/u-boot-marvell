@@ -26,6 +26,7 @@
 #include <asm/arch-mvebu/flc.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-armada8k/misc-regs.h>
+#include <asm/arch-mvebu/sar.h>
 #include <spl.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -65,6 +66,11 @@ void board_init_f(ulong silent)
 			0x7ff << MVEBU_AMB_IP_BRIDGE_WIN_SIZE_OFFSET | 0x1 << MVEBU_AMB_IP_BRIDGE_WIN_EN_OFFSET,
 			MVEBU_AMB_IP_BRIDGE_WIN_SIZE_MASK | MVEBU_AMB_IP_BRIDGE_WIN_EN_MASK);
 	}
+#endif
+
+#ifdef CONFIG_MVEBU_CHIP_SAR
+	/* Sample at reset register init */
+	mvebu_sar_init(gd->fdt_blob);
 #endif
 
 #ifdef CONFIG_MVEBU_SPL_SAR_DUMP

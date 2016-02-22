@@ -25,6 +25,7 @@
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/thermal.h>
+#include <asm/arch-mvebu/sar.h>
 #include <asm/arch-mvebu/mvebu_phy_indirect.h>
 #include <ahci.h>
 #include <scsi.h>
@@ -108,6 +109,10 @@ int mvebu_soc_init()
 	sw_init = true;
 #endif
 
+#ifdef CONFIG_MVEBU_CHIP_SAR
+	/* Sample at reset register init */
+	mvebu_sar_init(gd->fdt_blob);
+#endif
 	/* Initialize physical memory map */
 #ifdef CONFIG_MVEBU_CCU
 	init_ccu(sw_init);

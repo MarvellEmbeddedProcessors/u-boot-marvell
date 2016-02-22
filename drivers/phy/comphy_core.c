@@ -183,6 +183,8 @@ u32 comphy_init(const void *blob)
 		do {
 			comphy_map_data[lane].speed = fdtdec_get_int(blob, sub_node, "phy-speed", PHY_TYPE_INVALID);
 			comphy_map_data[lane].type = fdtdec_get_int(blob, sub_node, "phy-type", PHY_SPEED_INVALID);
+			comphy_map_data[lane].invert = fdtdec_get_int(blob, sub_node, "phy-invert",
+												PHY_POLARITY_NO_INVERT);
 			if ((comphy_map_data[lane].speed == PHY_TYPE_INVALID) ||
 			    (comphy_map_data[lane].type == PHY_SPEED_INVALID))
 				printf("no phy speed or type for lane %d, setting lane as unconnedted\n", lane + 1);

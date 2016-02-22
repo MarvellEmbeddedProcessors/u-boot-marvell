@@ -21,6 +21,9 @@ Board specific:
 	  Every phy should have the below parameters:
 	  - phy-type: PHY type (SGMII0/SATA1/PEX2...), the posible modes under include/dt-bindings/comphy/comphy_data.h
 	  - phy-speed: PHY speed (1G/1.5G...), the posible speeds under include/dt-bindings/comphy/comphy_data.h
+	Optional properties:
+	  - phy-invert : Polarity invert (PHY_POLARITY_TXD_INVERT/PHY_POLARITY_RXD_INVERT), the
+	  	posible bits under include/dt-bindings/comphy/comphy_data.h
 
 Example:
 	comphy {

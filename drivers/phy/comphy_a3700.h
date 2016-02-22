@@ -107,6 +107,11 @@
 #define rf_data_width_shift		10
 #define rf_data_width_mask		(0x3 << rf_data_width_shift)
 
+#define PHY_SYNC_PATTERN_ADDR		0x24	/* for phy_read16 and phy_write16 */
+#define SYNC_PATTERN_ADDR(unit)		(PHY_SYNC_PATTERN_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
+#define phy_txd_inv		BIT10
+#define phy_rxd_inv		BIT11
+
 #define PHY_REG_UNIT_CTRL_ADDR		0x48	/* for phy_read16 and phy_write16 */
 #define UNIT_CTRL_ADDR(unit)		(PHY_REG_UNIT_CTRL_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define rb_idle_sync_en			BIT12

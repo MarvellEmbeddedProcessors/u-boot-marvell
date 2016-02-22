@@ -58,6 +58,7 @@ struct comphy_mux_data {
 struct comphy_map {
 	u32 type;
 	u32 speed;
+	u32 invert;
 };
 
 struct chip_serdes_phy_config {

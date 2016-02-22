@@ -144,7 +144,7 @@ static u32 comphy_poll_reg(void *addr, u32 val, u32 mask, u32 timeout, u8 op_typ
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_pcie_power_up(u32 speed)
+static int comphy_pcie_power_up(u32 speed, u32 invert)
 {
 	int	ret;
 
@@ -200,7 +200,16 @@ static int comphy_pcie_power_up(u32 speed)
 	reg_set16((void __iomem *)KVCO_CAL_CTRL_ADDR(PCIE), 0x0040 | rb_use_max_pll_rate, 0xFFFF);
 
 	/*
-	 * 10. Release SW reset
+	 * 10. Check the Polarity invert bit
+	 */
+	if (invert & PHY_POLARITY_TXD_INVERT)
+		reg_set16((void __iomem *)SYNC_PATTERN_ADDR(PCIE), phy_txd_inv, 0);
+
+	if (invert & PHY_POLARITY_RXD_INVERT)
+		reg_set16((void __iomem *)SYNC_PATTERN_ADDR(PCIE), phy_rxd_inv, 0);
+
+	/*
+	 * 11. Release SW reset
 	 */
 	reg_set16((void __iomem *)GLOB_PHY_CTRL0_ADDR(PCIE),
 		  rb_mode_core_clk_freq_sel | rb_mode_pipe_width_32,
@@ -297,7 +306,7 @@ static int comphy_sata_power_up(void)
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_usb3_power_up(u32 speed)
+static int comphy_usb3_power_up(u32 speed, u32 invert)
 {
 	int	ret;
 
@@ -373,6 +382,15 @@ static int comphy_usb3_power_up(u32 speed)
 	 * 8. Override Speed_PLL value and use MAC PLL
 	 */
 	reg_set16((void __iomem *)KVCO_CAL_CTRL_ADDR(USB3), 0x0040 | rb_use_max_pll_rate, 0xFFFF);
+
+	/*
+	 * 9. Check the Polarity invert bit
+	 */
+	if (invert & PHY_POLARITY_TXD_INVERT)
+		reg_set16((void __iomem *)SYNC_PATTERN_ADDR(USB3), phy_txd_inv, 0);
+
+	if (invert & PHY_POLARITY_RXD_INVERT)
+		reg_set16((void __iomem *)SYNC_PATTERN_ADDR(USB3), phy_rxd_inv, 0);
 
 	/*
 	 * 10. Release SW reset
@@ -568,7 +586,7 @@ static void comphy_sgmii_phy_init(u32 lane, u32 speed)
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_sgmii_power_up(u32 lane, u32 speed)
+static int comphy_sgmii_power_up(u32 lane, u32 speed, u32 invert)
 {
 	int	ret;
 
@@ -661,8 +679,18 @@ static int comphy_sgmii_power_up(u32 lane, u32 speed)
 	/* 17. [Simulation Only: should not be used for real chip]
 	   Program COMPHY register FAST_DFE_TIMER_EN=1 to shorten RX training simulation time.
 	*/
+
 	/*
-	   18. Set PHY input ports PIN_PU_PLL, PIN_PU_TX and PIN_PU_RX to 1 to start
+	 * 18. Check the PHY Polarity invert bit
+	 */
+	if (invert & PHY_POLARITY_TXD_INVERT)
+		phy_write16(lane, PHY_SYNC_PATTERN_ADDR, phy_txd_inv, 0);
+
+	if (invert & PHY_POLARITY_RXD_INVERT)
+		phy_write16(lane, PHY_SYNC_PATTERN_ADDR, phy_rxd_inv, 0);
+
+	/*
+	   19. Set PHY input ports PIN_PU_PLL, PIN_PU_TX and PIN_PU_RX to 1 to start
 	   PHY power up sequence. All the PHY register programming should be done before
 	   PIN_PU_PLL=1.
 	   There should be no register programming for normal PHY operation from this point.
@@ -672,7 +700,7 @@ static int comphy_sgmii_power_up(u32 lane, u32 speed)
 		rb_pin_pu_pll | rb_pin_pu_rx | rb_pin_pu_tx);
 
 	/*
-	  19. Wait for PHY power up sequence to finish by checking output ports
+	  20. Wait for PHY power up sequence to finish by checking output ports
 	  PIN_PLL_READY_TX=1 and PIN_PLL_READY_RX=1.
 	 */
 	ret = comphy_poll_reg((void *)COMPHY_PHY_STAT1_ADDR(lane),	/* address */
@@ -684,12 +712,12 @@ static int comphy_sgmii_power_up(u32 lane, u32 speed)
 		error("Failed to lock PLL for SGMII PHY %d\n", lane);
 
 	/*
-	  20. Set COMPHY input port PIN_TX_IDLE=0
+	  21. Set COMPHY input port PIN_TX_IDLE=0
 	 */
 	reg_set((void __iomem *)COMPHY_PHY_CFG1_ADDR(lane), 0x0, rb_pin_tx_idle);
 
 	/*
-	  21. After valid data appear on PIN_RXDATA bus, set PIN_RX_INIT=1.
+	  22. After valid data appear on PIN_RXDATA bus, set PIN_RX_INIT=1.
 	  to start RX initialization. PIN_RX_INIT_DONE will be cleared to 0 by the PHY
 	  After RX initialization is done, PIN_RX_INIT_DONE will be set to 1 by COMPHY
 	  Set PIN_RX_INIT=0 after PIN_RX_INIT_DONE= 1.
@@ -802,7 +830,7 @@ int comphy_a3700_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 
 	for (lane = 0, ptr_comphy_map = serdes_map; lane < comphy_max_count; lane++, ptr_comphy_map++) {
 		debug("Initialize serdes number %d\n", lane);
-		debug("Serdes type = 0x%x\n", ptr_comphy_map->type);
+		debug("Serdes type = 0x%x invert=%d\n", ptr_comphy_map->type, ptr_comphy_map->invert);
 
 		switch (ptr_comphy_map->type) {
 		case PHY_TYPE_UNCONNECTED:
@@ -810,17 +838,17 @@ int comphy_a3700_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 			break;
 
 		case PHY_TYPE_PEX0:
-			ret = comphy_pcie_power_up(ptr_comphy_map->speed);
+			ret = comphy_pcie_power_up(ptr_comphy_map->speed, ptr_comphy_map->invert);
 			break;
 
 		case PHY_TYPE_USB3_HOST0:
 		case PHY_TYPE_USB3_DEVICE:
-			ret = comphy_usb3_power_up(ptr_comphy_map->speed);
+			ret = comphy_usb3_power_up(ptr_comphy_map->speed, ptr_comphy_map->invert);
 			break;
 
 		case PHY_TYPE_SGMII0:
 		case PHY_TYPE_SGMII1:
-			ret = comphy_sgmii_power_up(lane, ptr_comphy_map->speed);
+			ret = comphy_sgmii_power_up(lane, ptr_comphy_map->speed, ptr_comphy_map->invert);
 			break;
 
 		default:

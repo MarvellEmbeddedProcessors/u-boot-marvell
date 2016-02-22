@@ -437,9 +437,6 @@ static int advk_pcie_init(int host_id,
 	memset(hose, 0, sizeof(hose));
 
 	/* reset PCIe device in RC mode */
-	/* now the gpio setting for reset is splitted from mvebu_reset_pcie_dev to advk_pcie_reset_dev */
-	/* mvebu_reset_pcie_dev only do the pinctrl work, it will be removed in the future */
-	mvebu_reset_pcie_dev();
 	advk_pcie_reset_dev(gpio);
 
 	/* start link training */

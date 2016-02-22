@@ -21,7 +21,6 @@
 #include <asm/arch-mvebu/io_addr_dec.h>
 #include <asm/arch/clock.h>
 #include <asm/arch-mvebu/mbus.h>
-#include <asm/arch/gpio.h>
 #include <asm/arch-mvebu/mvebu_misc.h>
 #include <asm/arch/boot_mode.h>
 #include <asm/arch-mvebu/ddr.h>
@@ -50,25 +49,6 @@ void board_init_f(ulong silent)
 	   - Marvell multi FDT mode: set the first compiled relevant device
 	     tree for the SoC, required for i2c initialization to read EEPROM data */
 	setup_fdt();
-
-/* multi FDT feature reads eeprom, which requires I2C support
- * but for Armada3700, I2C feature depends on GPIO configuration,
- * so mvebu_setup_fdt need to be invoked after it.
- *
- * but GPIO driver also need to read FDT file, for reg base and
- * other configurations. For reg base it is OK, since all the fdt
- * files for all the boards should have the same value.
- *
- * as far as the I2C related GPIO settings, we will demand from HW that
- * all Marvell boards will use the same set of I2C pins setup.
- *
- * GPIO need to be split into two stages: static shared (for I2C),
- * and then dynamic-fdt-based. the first step will be done before
- * mvebu_setup_fdt(), and the second one will be after it.
- */
-#ifdef CONFIG_MVEBU_SPL_A3700_GPIO
-	mvebu_init_gpio();
-#endif
 
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
 	cfg_eeprom_init();

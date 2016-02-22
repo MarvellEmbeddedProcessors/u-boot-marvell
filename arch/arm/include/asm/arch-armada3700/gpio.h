@@ -20,20 +20,8 @@
 #define _MVEBU_GPIO_H_
 #include <asm/arch-mvebu/gpio.h>
 
-#define MVEBU_GPIO_NB_SEL_REG			(MVEBU_GPIO_NB_REG_BASE + 0x30)
-#define MVEBU_GPIO_TW1_GPIO_EN_OFF		(10)
-#define MVEBU_GPIO_SPI_GPIO_EN_OFF		(18)
-
-#define MVEBU_GPIO_SB_SEL_REG			(MVEBU_GPIO_SB_REG_BASE + 0x30)
-#define MVEBU_GPIO_SB_SDIO_EN_OFF		(2)
-#define MVEBU_GPIO_RGMII_GPIO_EN_OFF		(3)
-#define MVEBU_GPIO_PCIE_EN_OFF			(4)
-
 #define MVEBU_GPIO_MAX_PORTS	2	/* max number of ports per bank */
 #define MVEBU_GPIO_BANKS	2	/* number of banks */
 #define MVEBU_GPIOS_PER_PORT	32	/* number of gpios per port */
-
-void mvebu_reset_pcie_dev(void);
-void mvebu_init_gpio(void);
 
 #endif /* _MVEBU_GPIO_H_ */

@@ -42,7 +42,10 @@
 		};
 
 		pcie-controller {
-			pcie@1,0 {
+			pcie@0,0 {
+				status = "okay";
+			};
+			pcie@2,0 {
 				status = "okay";
 			};
 		};

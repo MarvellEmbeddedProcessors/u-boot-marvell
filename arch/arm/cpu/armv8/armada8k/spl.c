@@ -26,7 +26,7 @@
 #include <asm/arch-mvebu/flc.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-armada8k/misc-regs.h>
-#include <asm/arch-mvebu/sar.h>
+#include <mvebu_chip_sar.h>
 #include <spl.h>
 
 DECLARE_GLOBAL_DATA_PTR;

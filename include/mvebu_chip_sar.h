@@ -16,8 +16,8 @@
  * ***************************************************************************
  */
 
-#ifndef _SAR_H_
-#define _SAR_H_
+#ifndef _MVEBU_CHIP_SAR_H_
+#define _MVEBU_CHIP_SAR_H_
 
 #include <asm/types.h>
 /*
@@ -77,4 +77,4 @@ int mvebu_sar_init(const void *blob);
 int mvebu_sar_value_get(enum mvebu_sar_opts opt, struct sar_val *val);
 void mvebu_sar_dump(void);
 
-#endif	/* _SAR_H_ */
+#endif	/* _MVEBU_CHIP_SAR_H_ */

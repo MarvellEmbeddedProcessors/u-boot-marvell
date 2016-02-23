@@ -25,10 +25,10 @@
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/thermal.h>
-#include <asm/arch-mvebu/sar.h>
 #include <asm/arch-mvebu/mvebu_phy_indirect.h>
 #include <ahci.h>
 #include <scsi.h>
+#include <mvebu_chip_sar.h>
 
 #ifdef CONFIG_MVEBU_CCU
 #include <asm/arch-mvebu/ccu.h>

@@ -25,9 +25,9 @@
 #include <asm/arch/regs-base.h>
 #include <asm/arch-mvebu/pinctl.h>
 #include <asm/arch-mvebu/fdt.h>
-#include <asm/arch-mvebu/sar.h>
 #include <linux/sizes.h>
 #include <netdev.h>
+#include <mvebu_chip_sar.h>
 
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0

@@ -22,23 +22,31 @@
 #include <errno.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/mpp.h>
+#include <mvebu_chip_sar.h>
 #include "../common/devel-board.h"
 #include "../common/sar.h"
 
 int mvebu_devel_board_init(void)
 {
+#ifdef CONFIG_MVEBU_MPP_BUS
+	struct sar_val sar;
+#endif
+
 #ifdef CONFIG_MVEBU_SAR
 	sar_init();
 #endif
 
-
 #ifdef CONFIG_MVEBU_MPP_BUS
-#ifdef CONFIG_MVEBU_NAND_BOOT
-	mpp_enable_bus("nand");
-#endif
-#ifdef CONFIG_MVEBU_SPI_BOOT
-	mpp_enable_bus("spi1");
-#endif
+	mvebu_sar_value_get(SAR_BOOT_SRC, &sar);
+
+	if (sar.bootsrc.type == BOOTSRC_NAND)
+		mpp_enable_bus("nand");
+
+	if (sar.bootsrc.type == BOOTSRC_SPI) {
+		char name[8];
+		sprintf(name, "spi%d", sar.bootsrc.index);
+		mpp_enable_bus(name);
+	}
 #endif /* CONFIG_MVEBU_MPP_BUS */
 
 	return 0;

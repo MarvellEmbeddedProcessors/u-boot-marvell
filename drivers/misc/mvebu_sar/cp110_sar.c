@@ -48,21 +48,23 @@ struct bootsrc_idx_info {
 	int start;
 	int end;
 	enum mvebu_bootsrc_type src;
+	int index;
 };
 
 static struct bootsrc_idx_info bootsrc_list[] = {
-	{0x0,	0x5,	BOOTSRC_NOR},
-	{0xA,	0x25,	BOOTSRC_NAND},
-	{0x28,	0x28,	BOOTSRC_AP_SD_EMMC},
-	{0x29,	0x29,	BOOTSRC_SD_EMMC},
-	{0x2A,	0x2A,	BOOTSRC_AP_SD_EMMC},
-	{0x2B,	0x2B,	BOOTSRC_SD_EMMC},
-	{0x30,	0x31,	BOOTSRC_AP_SPI},
-	{0x32,	0x35,	BOOTSRC_NOR},
+	{0x0,	0x5,	BOOTSRC_NOR,		0},
+	{0xA,	0x25,	BOOTSRC_NAND,		0},
+	{0x28,	0x28,	BOOTSRC_AP_SD_EMMC,	0},
+	{0x29,	0x29,	BOOTSRC_SD_EMMC,	0},
+	{0x2A,	0x2A,	BOOTSRC_AP_SD_EMMC,	0},
+	{0x2B,	0x2B,	BOOTSRC_SD_EMMC,	0},
+	{0x30,	0x31,	BOOTSRC_AP_SPI,		0},
+	{0x32,	0x33,	BOOTSRC_SPI,		1},
+	{0x34,	0x35,	BOOTSRC_SPI,		0},
 	{-1,	-1,	-1}
 };
 
-int cp110_sar_value_get(enum mvebu_sar_opts sar_opt, u32 *val)
+int cp110_sar_value_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
 {
 	u32 reg, mode;
 	int i;
@@ -75,10 +77,13 @@ int cp110_sar_value_get(enum mvebu_sar_opts sar_opt, u32 *val)
 	reg = readl(sar_base);
 	mode = (reg & SAR1_RST_BOOT_MODE_AP_CP0_MASK) >> SAR1_RST_BOOT_MODE_AP_CP0_OFFSET;
 
+	val->raw_sar_val = mode;
+
 	i = 0;
 	while (bootsrc_list[i].start != -1) {
 		if ((mode >= bootsrc_list[i].start) && (mode <= bootsrc_list[i].end)) {
-			*val = bootsrc_list[i].src;
+			val->bootsrc.type = bootsrc_list[i].src;
+			val->bootsrc.index = bootsrc_list[i].index;
 			break;
 		}
 		i++;

@@ -48,9 +48,33 @@ enum mvebu_bootsrc_type {
 	BOOTSRC_MAX_IDX
 };
 
+/*
+** sample-at-reset information
+**  raw_sar_val: Raw value out of the sample-at-reset register.
+**		This is hw dependent and should not be used for comparison
+**		purposes (useful for debug, or verbose information).
+**  bootsrc (SAR_BOOT_SRC):
+**	type: Boot source interface type.
+**	index: When applicable, indicates the interface index (e.g. SPI #1,
+**		NAND #0).
+**	width: When applicable, indicates the interface bus width (e.g. NAND
+**	8-bit).
+**  freq: Frequency in Hz.
+*/
+struct sar_val {
+	u32 raw_sar_val;
+	union {
+		struct {
+			enum mvebu_bootsrc_type type;
+			int index;
+		} bootsrc;
+		u32 freq;
+	};
+};
+
 
 int mvebu_sar_init(const void *blob);
-int mvebu_sar_value_get(enum mvebu_sar_opts opt, u32 *val);
+int mvebu_sar_value_get(enum mvebu_sar_opts opt, struct sar_val *val);
 void mvebu_sar_dump(void);
 
 #endif	/* _SAR_H_ */

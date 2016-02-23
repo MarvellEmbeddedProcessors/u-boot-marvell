@@ -128,7 +128,7 @@ int mvebu_sar_init(const void *blob)
 	return 0;
 }
 
-int mvebu_sar_value_get(enum mvebu_sar_opts opt, u32 *val)
+int mvebu_sar_value_get(enum mvebu_sar_opts opt, struct sar_val *val)
 {
 	u32 idx;
 	struct sar_chip_info *chip_ptr;

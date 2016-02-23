@@ -118,7 +118,7 @@ static const u32 pll_freq_tbl[7][5] = {
 };
 
 
-int ap806_sar_value_get(enum mvebu_sar_opts sar_opt, u32 *val)
+int ap806_sar_value_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
 {
 	u32 pll_idx, pll_val;
 
@@ -137,7 +137,8 @@ int ap806_sar_value_get(enum mvebu_sar_opts sar_opt, u32 *val)
 		return -EINVAL;
 	}
 	pll_val = sar_get_pll_val(pll_idx);
-	*val = pll_freq_tbl[pll_val][pll_idx];
+	val->raw_sar_val = pll_val;
+	val->freq = pll_freq_tbl[pll_val][pll_idx];
 	return 0;
 }
 

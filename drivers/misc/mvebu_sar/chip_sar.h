@@ -25,7 +25,7 @@ struct sar_chip_info {
 	enum fdt_compat_id compat;
 	int (*sar_init_func)(const void *blob, int node);
 	int (*sar_dump_func)(void);
-	int (*sar_value_get_func)(enum mvebu_sar_opts sar, u32 *val);
+	int (*sar_value_get_func)(enum mvebu_sar_opts sar, struct sar_val *val);
 	int (*sar_bootsrc_get)(u32 *idx);
 };
 

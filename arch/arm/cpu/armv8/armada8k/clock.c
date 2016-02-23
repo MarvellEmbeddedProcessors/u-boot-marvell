@@ -26,10 +26,10 @@
 
 u32 soc_ring_clk_get(void)
 {
-	u32 freq;
+	struct sar_val sar;
 
-	mvebu_sar_value_get(SAR_AP_FABRIC_FREQ , &freq);
-	return freq;
+	mvebu_sar_value_get(SAR_AP_FABRIC_FREQ , &sar);
+	return sar.freq;
 }
 
 u32 soc_mss_clk_get(void)
@@ -63,18 +63,18 @@ unsigned long mvebu_get_nand_clock(void)
 
 u32 soc_cpu_clk_get(void)
 {
-	u32 freq;
+	struct sar_val sar;
 
-	mvebu_sar_value_get(SAR_CPU_FREQ , &freq);
-	return freq;
+	mvebu_sar_value_get(SAR_CPU_FREQ , &sar);
+	return sar.freq;
 }
 
 u32 soc_ddr_clk_get(void)
 {
-	u32 freq;
+	struct sar_val sar;
 
-	mvebu_sar_value_get(SAR_DDR_FREQ, &freq);
-	return freq;
+	mvebu_sar_value_get(SAR_DDR_FREQ, &sar);
+	return sar.freq;
 }
 
 void soc_print_clock_info(void)

@@ -41,7 +41,10 @@ enum mvebu_sar_opts {
 enum mvebu_bootsrc_type {
 	BOOTSRC_NAND,
 	BOOTSRC_SPI,
+	BOOTSRC_AP_SPI,
 	BOOTSRC_SD_EMMC,
+	BOOTSRC_AP_SD_EMMC,
+	BOOTSRC_NOR,
 	BOOTSRC_MAX_IDX
 };
 

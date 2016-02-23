@@ -35,5 +35,5 @@ int mvebu_sar_id_register(uintptr_t chip_id, u32 sar_id);
 /* AP806 SAR functions. */
 int ap806_sar_init(const void *blob, int node);
 
-
-
+/* CP110 SAR functions. */
+int cp110_sar_init(const void *blob, int node);

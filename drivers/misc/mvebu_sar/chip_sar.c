@@ -36,9 +36,9 @@ struct sar_chip_info sar_chip_info[] = {
 	{.compat = COMPAT_MVEBU_SAR_REG_AP806,
 	 .sar_init_func = ap806_sar_init,
 	},
-/*	{.compat = COMPAT_MVEBU_SAR_REG_CP110,
-	 .sar_init_func = sar_cp110_init,
-	},*/
+	{.compat = COMPAT_MVEBU_SAR_REG_CP110,
+	 .sar_init_func = cp110_sar_init,
+	},
 #endif
 	{.compat = COMPAT_UNKNOWN}
 };

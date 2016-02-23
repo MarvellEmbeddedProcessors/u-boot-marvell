@@ -79,8 +79,8 @@ struct mvebu_image_header {
 
 struct bubt_dev {
 	char name[8];
-	int (*read)(const char *file_name);
-	int (*write)(int image_size);
+	size_t (*read)(const char *file_name);
+	int (*write)(size_t image_size);
 	int (*active)(void);
 };
 
@@ -102,7 +102,7 @@ static ulong get_load_addr(void)
  *     eMMC services
  ********************************************************************/
 #ifdef CONFIG_GENERIC_MMC
-static int mmc_burn_image(int image_size)
+static int mmc_burn_image(size_t image_size)
 {
 	struct mmc	*mmc;
 	lbaint_t	start_lba;
@@ -157,7 +157,7 @@ static int mmc_burn_image(int image_size)
 	return 0;
 }
 
-static int mmc_read_file(const char *file_name)
+static size_t mmc_read_file(const char *file_name)
 {
 	loff_t		act_read;
 	struct mmc	*mmc;
@@ -203,7 +203,7 @@ int is_mmc_active(void)
  *     SPI services
  ********************************************************************/
 #ifdef CONFIG_SPI_FLASH
-static int spi_burn_image(int image_size)
+static int spi_burn_image(size_t image_size)
 {
 	int ret;
 	struct spi_flash *flash;
@@ -246,7 +246,7 @@ int is_spi_active(void)
  *     NAND services
  ********************************************************************/
 #ifdef CONFIG_CMD_NAND
-static int nand_burn_image(int image_size)
+static int nand_burn_image(size_t image_size)
 {
 	int ret, block_size;
 	nand_info_t *nand;
@@ -264,8 +264,8 @@ static int nand_burn_image(int image_size)
 	image_size = ((image_size + (block_size - 1)) & (~(block_size-1)));
 
 	/* Erase the U-BOOT image space */
-	printf("Erasing 0x%x - 0x%x:...", 0, image_size);
-	ret = nand_erase(nand, 0, (size_t)image_size);
+	printf("Erasing 0x%x - 0x%x:...", 0, (int)image_size);
+	ret = nand_erase(nand, 0, image_size);
 	if (ret) {
 		printf("Error!\n");
 		goto error;
@@ -274,7 +274,8 @@ static int nand_burn_image(int image_size)
 
 	/* Write the image to flash */
 	printf("Writing image:...");
-	ret = nand_write(nand, 0, (size_t *)&image_size, (void *)get_load_addr());
+	printf("&image_size = 0x%p\n", (void*)&image_size);
+	ret = nand_write(nand, 0, &image_size, (void *)get_load_addr());
 	if (ret)
 		printf("Error!\n");
 	else
@@ -297,7 +298,7 @@ int is_nand_active(void)
  *     NOR services
  ********************************************************************/
 #ifdef CONFIG_SYS_FLASH_CFI
-static int nor_burn_image(int image_size)
+static int nor_burn_image(size_t image_size)
 {
 	return 0;
 }
@@ -315,7 +316,7 @@ int is_nor_active(void)
  *     USB services
  ********************************************************************/
 #ifdef CONFIG_USB_STORAGE
-static int usb_read_file(const char *file_name)
+static size_t usb_read_file(const char *file_name)
 {
 	loff_t act_read;
 
@@ -355,7 +356,7 @@ int is_usb_active(void)
  *     Network services
  ********************************************************************/
 #ifdef CONFIG_CMD_NET
-static int tftp_read_file(const char *file_name)
+static size_t tftp_read_file(const char *file_name)
 {
 	/* update global variable load_addr before tftp file from network */
 	load_addr = get_load_addr();
@@ -391,7 +392,7 @@ struct bubt_dev bubt_devs[BUBT_MAX_DEV] = {
 	{"nor",  NULL, nor_burn_image,  is_nor_active}
 };
 
-static int bubt_write_file(struct bubt_dev *dst, int image_size)
+static int bubt_write_file(struct bubt_dev *dst, size_t image_size)
 {
 	if (!dst->write) {
 		printf("Error: Write not supported on device %s\n", dst->name);
@@ -508,7 +509,7 @@ static int check_image_header(void)
 }
 #endif
 
-static int bubt_verify(int image_size)
+static int bubt_verify(size_t image_size)
 {
 
 	/* Check a correct image header exists */
@@ -522,7 +523,7 @@ static int bubt_verify(int image_size)
 
 static int bubt_read_file(struct bubt_dev *src)
 {
-	int image_size;
+	size_t image_size;
 
 	if (!src->read) {
 		printf("Error: Read not supported on device \"%s\"\n", src->name);
@@ -585,7 +586,7 @@ int do_bubt_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])
 {
 	struct bubt_dev *src, *dst;
-	int image_size;
+	size_t image_size;
 	char src_dev_name[8];
 	char dst_dev_name[8];
 

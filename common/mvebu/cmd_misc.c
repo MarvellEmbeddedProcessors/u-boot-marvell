@@ -121,7 +121,8 @@ U_BOOT_CMD(
 );
 #endif
 
-#if defined(MV_INCLUDE_NOR) || defined(CONFIG_MVEBU_NAND_BOOT) || defined(CONFIG_MVEBU_SPI_BOOT)
+#if defined(MV_INCLUDE_NOR) || defined(CONFIG_MVEBU_NAND_BOOT) || defined(CONFIG_MVEBU_SPI_BOOT) || \
+	defined(CONFIG_ENV_IS_IN_BOOTDEV)
 int resetenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	set_default_env("## Resetting to default environment\n");

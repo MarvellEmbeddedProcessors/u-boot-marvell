@@ -27,6 +27,8 @@
 
 #include <nand.h>
 
+#include <mvebu_chip_sar.h>
+
 #include <usb.h>
 #include <fs.h>
 #include <mmc.h>
@@ -589,16 +591,27 @@ int do_bubt_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 	size_t image_size;
 	char src_dev_name[8];
 	char dst_dev_name[8];
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+	struct sar_val sar;
+#endif
+	char *name;
 
 	if (argc < 2)
 		copy_filename(BootFile, CONFIG_MVEBU_UBOOT_DFLT_NAME, sizeof(BootFile));
 	else
 		copy_filename(BootFile, argv[1], sizeof(BootFile));
 
-	if (argc >= 3)
+	if (argc >= 3) {
 		strncpy(dst_dev_name, argv[2], 8);
-	else
-		strncpy(dst_dev_name, DEFAULT_BUBT_DST, 8);
+	} else {
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+		mvebu_sar_value_get(SAR_BOOT_SRC, &sar);
+		name = mvebu_sar_bootsrc_to_name(sar.bootsrc.type);
+#else
+		name = DEFAULT_BUBT_DST;
+#endif
+		strncpy(dst_dev_name, name, 8);
+	}
 
 	if (argc >= 4)
 		strncpy(src_dev_name, argv[3], 8);

@@ -142,6 +142,24 @@ int mvebu_sar_value_get(enum mvebu_sar_opts opt, struct sar_val *val)
 	return -ENODEV;
 }
 
+char *mvebu_sar_bootsrc_to_name(enum mvebu_bootsrc_type src)
+{
+	switch (src) {
+	case(BOOTSRC_NAND):
+		return "nand";
+	case(BOOTSRC_SPI):
+	case(BOOTSRC_AP_SPI):
+		return "spi";
+	case(BOOTSRC_SD_EMMC):
+	case(BOOTSRC_AP_SD_EMMC):
+		return "mmc";
+	case(BOOTSRC_NOR):
+		return "nor";
+	default:
+		return "unknown";
+	}
+}
+
 void mvebu_sar_dump(void)
 {
 	int i;

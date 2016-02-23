@@ -18,10 +18,11 @@
 
 #include <common.h>
 #include <environment.h>
+#include <mvebu_chip_sar.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
-char *env_name_spec = "SPI Flash";
+char *env_name_spec = "Undefined";
 
 int saveenv(void)
 {
@@ -33,27 +34,37 @@ int saveenv(void)
  */
 int env_init(void)
 {
+	struct sar_val sar;
+
+	mvebu_sar_value_get(SAR_BOOT_SRC, &sar);
 	/* Use ifdef as a temporary solution till we add sample-at-reset
 	** logic. */
-#ifdef CONFIG_MVEBU_NAND_BOOT
-	nand_env_init();
-#else
-	sf_env_init();
-#endif
+	if (sar.bootsrc.type == BOOTSRC_NAND)
+		nand_env_init();
+	else if (sar.bootsrc.type == BOOTSRC_SPI)
+		sf_env_init();
+
 	return gd->arch.env_func.init_env();
 }
 
 void env_relocate_spec(void)
 {
-	/* sf_env_init is called again here because of the
+	struct sar_val sar;
+
+	mvebu_sar_value_get(SAR_BOOT_SRC, &sar);
+	/* env_init is called again here because of the
 	 * address relocation, the addreses need to be corrected
 	 */
 	/* Use ifdef as a temporary solution till we add sample-at-reset
 	** logic. */
-#ifdef CONFIG_MVEBU_NAND_BOOT
-	nand_env_init();
-#else
-	sf_env_init();
-#endif
+	if (sar.bootsrc.type == BOOTSRC_NAND) {
+		nand_env_init();
+		env_name_spec = "NAND Flash";
+	} else if (sar.bootsrc.type == BOOTSRC_SPI) {
+		sf_env_init();
+		env_name_spec = "SPI Flash";
+	}
+
 	gd->arch.env_func.reloc_env();
 }
+

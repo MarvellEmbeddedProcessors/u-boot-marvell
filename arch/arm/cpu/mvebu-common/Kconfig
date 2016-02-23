@@ -99,6 +99,7 @@ endmenu
 choice
 	prompt "Flash for image"
 	default MVEBU_SPI_BOOT
+	depends on !ENV_IS_IN_BOOTDEV
 
 config MVEBU_NAND_BOOT
 	bool "NAND flash boot"

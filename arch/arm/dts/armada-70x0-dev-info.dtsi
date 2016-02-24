@@ -28,8 +28,8 @@
 			ddr-mac {
 				cs_count = <1>;
 				bus_width = <DDR_BUS_WIDTH_32>;
-				cs0 {
-					size = <0x00000002 0x00000000>;
+				cs0 { /* 4GiB */
+					size = <0x00000001 0x00000000>;
 				};
 			};
 			pinctl@6F008C {

@@ -33,9 +33,6 @@
 #ifdef CONFIG_MVEBU_CCU
 #include <asm/arch-mvebu/ccu.h>
 #endif
-#ifdef CONFIG_MVEBU_IOB
-#include <asm/arch-mvebu/iob.h>
-#endif
 #ifdef CONFIG_MVEBU_MBUS
 #include <asm/arch-mvebu/mbus.h>
 #endif
@@ -96,12 +93,11 @@ int mvebu_soc_init()
 	/* Sample at reset register init */
 	mvebu_sar_init(gd->fdt_blob);
 #endif
-#ifdef CONFIG_MVEBU_IOB
-	init_iob();
-#endif
+
 #ifdef CONFIG_MVEBU_PHY_INDIRECT
 	mvebu_phy_indirect_init();
 #endif
+
 #ifdef CONFIG_MVEBU_ICU
 	/* Temporary initialization in u-boot */
 	icu_init(0xF2000000, 64, 0);

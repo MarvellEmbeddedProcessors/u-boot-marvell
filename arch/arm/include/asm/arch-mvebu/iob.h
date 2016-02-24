@@ -20,7 +20,6 @@
 #define _IOB_H_
 
 void dump_iob(void);
-int init_iob(void);
 
 #endif /* _IOB_H_ */
 

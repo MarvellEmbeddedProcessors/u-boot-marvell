@@ -21,13 +21,8 @@
 			};
 			neta0: neta@30000 {
 				status = "okay";
-				phy_addr = <0x1>;
-				phy_mode = "sgmii";
-			};
-			neta1: neta@40000 {
-				status = "disabled";
 				phy_addr = <0x0>;
-				phy_mode = "rgmii";
+				phy_mode = "sgmii";
 			};
 			i2c: i2c@11000 {
 				status = "okay";

@@ -90,29 +90,11 @@ int mvebu_soc_init()
 {
 	int ret;
 
-#if defined(CONFIG_MVEBU_CCU) || defined(CONFIG_MVEBU_RFU) || defined(CONFIG_MVEBU_FLC)
-	/* ccu and rfu init support 2 modes:
-	   1. regular mode - init both sw structures and configure windows
-	   2. sw init - in case that the ccu and rfu were initialized at the SPL,
-					init only the ccu and rfu sw structures
-	   By default use the regular mode */
-	bool sw_init = false;
-#endif
-
 	soc_init();
-
-#ifdef CONFIG_MVEBU_FLC
-	/* when FLC is enable, the ccu & rfu init already done at the SPL */
-	sw_init = true;
-#endif
 
 #ifdef CONFIG_MVEBU_CHIP_SAR
 	/* Sample at reset register init */
 	mvebu_sar_init(gd->fdt_blob);
-#endif
-	/* Initialize physical memory map */
-#ifdef CONFIG_MVEBU_CCU
-	init_ccu(sw_init);
 #endif
 #ifdef CONFIG_MVEBU_IOB
 	init_iob();

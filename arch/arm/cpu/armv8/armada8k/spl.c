@@ -94,9 +94,6 @@ void board_init_f(ulong silent)
 #endif /* CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT */
 
 #ifdef CONFIG_MVEBU_FLC
-#ifdef CONFIG_MVEBU_CCU
-	init_ccu(false);
-#endif
 	init_flc();
 #endif
 

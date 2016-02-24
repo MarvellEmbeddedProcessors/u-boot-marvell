@@ -20,7 +20,6 @@
 #define _CCU_H_
 
 void dump_ccu(void);
-int init_ccu(bool sw_init);
 
 #endif /* _CCU_H_ */
 

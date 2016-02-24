@@ -329,6 +329,16 @@ config CMD_SETGETDCR
 	  getidcr - Get a register value via indirect DCR addressing
 	  setidcr - Set a register value via indirect DCR addressing
 
+config CMD_GPIO
+	bool "gpio"
+	help
+	  Access GPIO.
+	  gpio status - show GPIOs
+	  gpio input - input the specified pin
+	  gpio set - output and set the specified pin
+	  gpio clear - output and clear the specified pin
+	  gpio toggle - output and toggle the specified pin
+
 endmenu
 
 source "common/mvebu/Kconfig"

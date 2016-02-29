@@ -19,6 +19,16 @@ config MVEBU_I2C
 	  I2C driver, which is used
 	  by Armada8k and Armada38x.
 
+config MVEBU_I2C_BRIDGE
+	bool "MVEBU I2C BRIDGE support"
+	default y
+	depends on MVEBU_I2C
+	help
+	  Choose this option to add
+	  support for Marvell's MVEBU
+	  I2C BRIDGE driver, which is used
+	  by Armada8k.
+
 config I2C_MV
 	bool "I2C support for armada100/armadaLP"
 	default n

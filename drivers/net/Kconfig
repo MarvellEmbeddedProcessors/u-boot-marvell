@@ -80,4 +80,50 @@ config MVPP2X
 	  enable RX/TX ethernet packets
 	  using gbe interface on marvell SoC.
 
+choice
+	prompt "Packet Processor Version"
+	depends on MVPP2X
+	default MVPPV22
+	help
+	  There are 2 versions of marvell pp2x driver.
+	  Different version apply to different SoCs.
+
+	  Please select correct version for SoC.
+
+config MVPPV21
+	bool "PP21"
+	help
+	  Choose this option to add support
+	  for marvell pp21 eth driver
+	  using gbe interface on marvell SoC.
+	  pp21 applies to A375 and Avanta LP.
+
+config MVPPV22
+	bool "PP22"
+	help
+	  Choose this option to add support
+	  for marvell pp22 eth driver
+	  using gbe interface on marvell SoC.
+	  pp22 applies to A70xx and A80xx
+endchoice
+
+config MAX_MVPP2X_NUM
+	int "max packet processor number in mvpp2x driver"
+	depends on MVPP2X
+	default 2
+	help
+	  Define the max number of
+	  packet processor v2 that need
+	  to be supported in marvell
+	  mvpp2x driver.
+
+config MAX_MVPP2X_PORT_NUM
+	int "max number of ports connected to each packet processor v2"
+	depends on MVPP2X
+	default 3
+	help
+	  Define the max number of
+	  ethernet ports that connected
+	  to packet processor v2 in marvell
+	  mvpp2x driver.
 endmenu

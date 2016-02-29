@@ -1,7 +1,9 @@
 Marvell CCU address decoding bindings
 =====================================
 
-The CCU node includes descriptions of the address decoding configuration.
+The CCU node includes descriptions of the address decoding unit.
+It is used for u-boot 'map' command which displays the CCU window configuration.
+Note that the windows configuration is done in ATF package (see ATF porting guide under doc/marvell).
 
 Mandatory properties:
 SoC specific:
@@ -9,31 +11,11 @@ SoC specific:
 		should be "marvell,mvebu-ccu"
 	- reg: the base address of the CCU unit
 	- max-win: number of the max mbus windows
-	- windows: entry that includes the configuration of the windows
-	  every window has 5 parameters:
-	  - high base address of the window
-	  - low base address of the window
-	  - high size of the window
-	  - low size of the window
-	  - target-id of the window
 
-Note: if the base address is more than 32bits, it should be divided into high and low,
-	the same applies to the size field, if it more that 32bits, it should be divided into high and low.
-	Base example:
-		base address: 0x10f0000000 should be divided into:
-		base address high: 0x10
-		base address low: 0xf0000000
-	Size example:
-		size: 0x1E00F00000 should divided into:
-		size high: 0x1E
-		size low: 0x00F00000
 
 Example:
 	map-ccu {
 		compatible = "marvell,mvebu-ccu";
 		reg = <0x0 0x50>;
 		max-win = <8>;
-		windows = <0x0 0xf8000000 0x0 0x2000000 0x00 /* IO window */>;
 	};
-
-

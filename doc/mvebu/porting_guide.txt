@@ -87,9 +87,6 @@ Customer board porting procedure
 	-------------------------
 		o DDR - ddr/mvebu_ddr.txt
 		o NAND - nand/marvell-pxa3xx-nand.txt
-		o CCU - misc/mvebu-ccu.txt
-		o IOB - misc/mvebu-iob.txt
-		o RFU - misc/mvebu-rfu.txt
 		o SPI - spi/mvebu-spi.txt
 		o Thermal Sensor - thermal/mvebu-thermal-v2.txt
 

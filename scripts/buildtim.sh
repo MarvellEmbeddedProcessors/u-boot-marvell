@@ -5,18 +5,20 @@
 # $1 - trusted/non trusted (1/0)
 # $2 - Boot device (SPINOR/SPINAND/EMMCNORM/EMMCALT/SATA/UART)
 # $3 - Path to image text files
-# $4 - DDR init data text file
-# $5 - Partition number
-# $6 - Output TIM/NTIM file name
-# $7 - Output TIMN file name (valid for trusted mode only)
-# $8 - TIMN CSK sign key file name (valid for trusted mode only)
+# $4 - Clocks and DDR init data path
+# $5 - Clocks preset
+# $6 - Partition number
+# $7 - Output TIM/NTIM file name
+# $8 - Output TIMN file name (valid for trusted mode only)
+# $9 - TIMN CSK sign key file name (valid for trusted mode only)
 #
 
 DATE=`date +%d%m%Y`
 IMGPATH=$3
-DDRFILE=$4
-BOOTPART=$5
-OUTFILE=$6
+CLOCKSPATH=$4
+PRESET=$5
+BOOTPART=$6
+OUTFILE=$7
 
 
 # All file names extention
@@ -30,7 +32,7 @@ RSRVDPREF="rsrvd"
 RSRVDLEN=`wc -l < $IMGPATH/$RSRVDPREF.$FILEEXT`
 # DLL tuning - same for all DDR frequencies
 # Located in the same folder as DDR init file
-DLLTUNFILE=$(dirname "$DDRFILE")/"dll_tune."$FILEEXT
+DLLTUNFILE=$CLOCKSPATH/dll_tune.$FILEEXT
 
 # TIM/NTIM image definition file name prefix
 TIMPREF="tim"
@@ -40,8 +42,8 @@ CSKPREF="csk"
 KAKPREF="kak"
 
 # Below values used only by TIMN
-TIMNOUTFILE=$7
-SIGNFILE=$8
+TIMNOUTFILE=$8
+SIGNFILE=$9
 # TIMN image definition file name prefix
 TIMNPREF="timn"
 # Reserved area definition for TIMN - file name prefix
@@ -51,11 +53,12 @@ usage () {
 	echo ""
 	echo "$0 - script for creating TIM/NTIM/TIMN image descriptors"
 	echo ""
-	echo "$0 <trusted> <boot_device> <files_path> <DDR> <output> [timN_out] [timN_key]"
+	echo "$0 <trusted> <boot_device> <files_path> <clocks_path> <clocks_preset> <output> [timN_out] [timN_key]"
 	echo " <trusted>     - trusted/non trusted (supported values 0 and 1)"
 	echo " <boot_device> - Boot device (Supported values SPINOR/SPINAND/EMMCNORM/EMMCALT/SATA/UART)"
 	echo " <files_path>  - Path to image and keys descriptors text files"
-	echo " <DDR>         - DDR initialization sequence text file"
+	echo " <clocks_path> - Path to clocks and DDR initialization files"
+	echo " <clocks_preset> - Name of clocks preset to use - see \"freq\" parameter in DTS file for details"
 	echo " <output>      - Output TIM/NTIM file name"
 	echo " [timN_out]    - Output TIMN file name (required for trusted boot only)"
 	echo " [timN_key]    - TIMN CSK sign key file name (required for trusted boot only)"
@@ -106,6 +109,26 @@ UART)
 	echo "Unsupported boot device $2!"
 	usage
 esac
+
+case "$PRESET" in
+PRESET_CPU_600_DDR_600)
+	CLOCKSFILE=$CLOCKSPATH/clocks-600-600.$FILEEXT
+	DDRFILE=$CLOCKSPATH/ddr-600.$FILEEXT
+	;;
+PRESET_CPU_800_DDR_800)
+	CLOCKSFILE=$CLOCKSPATH/clocks-800-800.$FILEEXT
+	DDRFILE=$CLOCKSPATH/ddr-800.$FILEEXT
+	;;
+PRESET_CPU_1000_DDR_800)
+	CLOCKSFILE=$CLOCKSPATH/clocks-1000-800.$FILEEXT
+	DDRFILE=$CLOCKSPATH/ddr-800.$FILEEXT
+	;;
+*)
+	echo "Unsupported clock preset $PRESET!"
+	usage
+esac
+
+
 
 if [ ! -e "$DDRFILE" ]; then
 	echo "Cannot find DDR init file!"
@@ -210,6 +233,7 @@ else
 	echo "DDR_INIT_ENABLE: 0x00000001" >> $OUTFILE
 	echo "End Operations:" >> $OUTFILE
 	echo "Instructions:" >> $OUTFILE
+	cat $CLOCKSFILE >> $OUTFILE
 	cat $DDRFILE >> $OUTFILE
 	cat $DLLTUNFILE >> $OUTFILE
 	echo "End Instructions:" >> $OUTFILE

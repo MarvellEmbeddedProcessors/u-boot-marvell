@@ -850,8 +850,9 @@ BIN2PHEX	:= $(srctree)/scripts/bin2phex.pl
 TIM2PHEX	:= $(srctree)/scripts/tim2phex.pl
 TIM2IMG		:= $(srctree)/scripts/tim2img.pl
 TIMBUILD	:= $(srctree)/scripts/buildtim.sh
-
-DDRCFG		:= $(srctree)/tools/wtp/ddr-600.txt
+CLOCKSPATH	:= $(srctree)/tools/wtp
+CLOCKSPRESET	:= $(shell find $(srctree) -name $(CONFIG_DEFAULT_DEVICE_TREE).dts | \
+			xargs grep preset | sed -n 's/.*<\([^ ]*\)>;/\1/p')
 
 ifeq ($(CONFIG_MVEBU_SPI_BOOT),y)
 BOOTDEV		:= SPINOR
@@ -882,8 +883,10 @@ TIM2IMGARGS	:= -i $(DOIMAGE_CFG)
 endif #CONFIG_MVEBU_SECURE_BOOT
 
 TIM_IMAGE	:= $(shell grep "Image Filename:" -m 1 $(DOIMAGE_CFG) | cut -c 17-)
-TIMBLDARGS	:= $(SECURE) $(BOOTDEV) $(IMAGESPATH) $(DDRCFG) $(PARTNUM) $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG)
-TIMBLDUARTARGS	:= $(SECURE) UART $(IMAGESPATH) $(DDRCFG) 0 $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG)
+TIMBLDARGS	:= $(SECURE) $(BOOTDEV) $(IMAGESPATH) $(CLOCKSPATH) $(CLOCKSPRESET) \
+			$(PARTNUM) $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG)
+TIMBLDUARTARGS	:= $(SECURE) UART $(IMAGESPATH) $(CLOCKSPATH) $(CLOCKSPRESET) \
+			0 $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG)
 UARTIMGARCH	:= $(srctree)/uart-images
 
 DOIMAGE_FLAGS := -r $(DOIMAGE_CFG)

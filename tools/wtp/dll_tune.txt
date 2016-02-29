@@ -1,3 +1,5 @@
+; DLL tune procedures - adjust read phase
+;
 BRANCH: DTUN				; Call mvebu_dram_dll_tune()
 ;
 ;************************************************

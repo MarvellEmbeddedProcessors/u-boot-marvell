@@ -1394,6 +1394,9 @@ CLEAN_DIRS  += $(MODVERDIR) \
 CLEAN_FILES += include/bmp_logo.h include/bmp_logo_data.h \
 	       u-boot* MLO* SPL System.map
 
+MARVELL_CLEAN_DIRS  += uart-images
+MARVELL_CLEAN_FILES += uart-images.tgz TIM_UBOOT*
+
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include/generated spl tpl \
 		  .tmp_objdiff
@@ -1402,8 +1405,8 @@ MRPROPER_FILES += .config .config.old include/autoconf.mk* include/config.h \
 
 # clean - Delete most, but leave enough to build external modules
 #
-clean: rm-dirs  := $(CLEAN_DIRS)
-clean: rm-files := $(CLEAN_FILES)
+clean: rm-dirs  := $(CLEAN_DIRS) $(MARVELL_CLEAN_DIRS)
+clean: rm-files := $(CLEAN_FILES) $(MARVELL_CLEAN_FILES)
 
 clean-dirs	:= $(foreach f,$(u-boot-alldirs),$(if $(wildcard $(srctree)/$f/Makefile),$f))
 

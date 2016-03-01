@@ -71,9 +71,18 @@
 				status = "disabled";
 			};
 			pcie-controller {
+				pcie@0,0 {
+					status = "disabled";
+				};
+				pcie@1,0 {
+					status = "disabled";
+				};
 				pcie@2,0 {
 					status = "okay";
 				};
+			};
+			nand@720000 {
+				status = "disabled";
 			};
 
 			pinctl@440000 {

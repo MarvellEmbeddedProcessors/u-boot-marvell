@@ -34,7 +34,7 @@
 	ap-806 {
 		internal-regs {
 			spi0: spi@510600 {
-				status = "okay";
+				status = "disabled";
 			};
 			i2c0: i2c@511000 {
 				status = "okay";
@@ -43,26 +43,46 @@
 
 		pcie-controller {
 			pcie@1,0 {
-				status = "okay";
+				status = "disabled";
 			};
 		};
 	};
 	cp110-master {
 		internal-regs {
-			spi@700600 {
+			spi0@700600 {
+				status = "disabled";
+			};
+			spi1@700680 {
 				status = "okay";
 			};
 			i2c@701000 {
-				status = "okay";
+				status = "disabled";
+			};
+			usb3@500000 {
+				status = "disabled";
+			};
+			usb3@510000 {
+				status = "disabled";
 			};
 			sata@540000 {
 				status = "okay";
 			};
-			sata@550000 {
-				status = "okay";
-			};
 			mmc@780000 {
-				status = "okay";
+				status = "disabled";
+			};
+			pcie-controller {
+				pcie@0,0 {
+					status = "disabled";
+				};
+				pcie@1,0 {
+					status = "disabled";
+				};
+				pcie@2,0 {
+					status = "disabled";
+				};
+			};
+			nand@720000 {
+				status = "disabled";
 			};
 
 			pinctl@440000 {

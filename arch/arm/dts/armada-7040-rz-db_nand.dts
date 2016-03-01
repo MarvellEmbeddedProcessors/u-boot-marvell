@@ -34,7 +34,7 @@
 	ap-806 {
 		internal-regs {
 			spi0: spi@510600 {
-				status = "okay";
+				status = "disabled";
 			};
 			i2c0: i2c@511000 {
 				status = "okay";
@@ -42,24 +42,21 @@
 		};
 
 		pcie-controller {
-			pcie@0,0 {
-				status = "okay";
-			};
-			pcie@2,0 {
-				status = "okay";
+			pcie@1,0 {
+				status = "disabled";
 			};
 		};
 	};
 	cp110-master {
 		internal-regs {
-			spi@700600 {
-				status = "okay";
+			spi0@700600 {
+				status = "disabled";
+			};
+			spi1@700680 {
+				status = "disabled";
 			};
 			i2c@701000 {
-				status = "okay";
-			};
-			sata@550000 {
-				status = "okay";
+				status = "disabled";
 			};
 			usb3@500000 {
 				status = "okay";
@@ -67,8 +64,22 @@
 			usb3@510000 {
 				status = "okay";
 			};
-			mmc@780000 {
+			sata@540000 {
 				status = "okay";
+			};
+			mmc@780000 {
+				status = "disabled";
+			};
+			pcie-controller {
+				pcie@0,0 {
+					status = "okay";
+				};
+				pcie@1,0 {
+					status = "disabled";
+				};
+				pcie@2,0 {
+					status = "okay";
+				};
 			};
 			nand@720000 {
 				status = "okay";
@@ -76,17 +87,17 @@
 
 			pinctl@440000 {
 					/* MPP Bus:
-					   RGMII0 [0-12]
-					   NAND   [13,16-27]
-					   SATA1  [28]
-					   UART0  [29-30]
-					   SMI	  [32,34]
-					   SATA0  [36]
-					   I2C	  [37-38]
-					   UART1  [40-41]
-					   XSMI	  [42-43]
-					   RGMII1 [44-55]
-					   SD	  [56-62]
+					   RGMII0[0-11]
+					   NAND  [13,16-27]
+					   SATA1 [28]
+					   UART0 [29-30]
+					   SMI	 [32,34]
+					   SATA0 [36]
+					   I2C	 [37-38]
+					   UART1 [40-41]
+					   XSMI	 [42-43]
+					   RGMII1[44-55]
+					   SD	 [56-62]
 					*/
 					/*   0   1   2   3   4   5   6   7   8   9 */
 				pin-func = < 3   3   3   3   3   3   3   3   3   3

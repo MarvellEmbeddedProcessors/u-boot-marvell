@@ -72,8 +72,8 @@ SerDes:	lane0	| sgmii2	| pex_x4_l0	| pex_x4_l0	| pex_x4_l0	| pex_x4_l0	| sata1		
 	lane1	| usb3h0	| pex_x4_l1	| sata0		| usb3h0	| usb3h0	| sata0		| sata0		|
 	lane2	| sgmii0	| pex_x4_l2	| kr		| kr		| sata0		| sgmii0	| sgmii0	|
 	lane3	| sata1		| pex_x4_l3	| sata1		| sata1		| sata1		| sgmii2	| sgmii2	|
-	lane4	| usb3h1	| pex_x1_0	| pex_x1_0	| usb3h1	| usb3h1	| rxauil0	| rxauil0	|
-	lane5	| pex_x1_1	| pex_x1_1	| pex_x1_1	| pex_x1_1	| pex_x1_1	| rxauil1	| rxauil1	|
+	lane4	| usb3h1	| pex_x1_1	| pex_x1_1	| usb3h1	| usb3h1	| rxauil0	| rxauil0	|
+	lane5	| pex_x1_2	| pex_x1_2	| pex_x1_2	| pex_x1_2	| pex_x1_2	| rxauil1	| rxauil1	|
 ---------------------------------------------------------------------------------------------------------------------------------
 
 

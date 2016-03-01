@@ -122,7 +122,7 @@
 					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy5 {
-					phy-type = <PHY_TYPE_PEX1>;
+					phy-type = <PHY_TYPE_PEX2>;
 					phy-speed = <PHY_SPEED_5G>;
 				};
 			};

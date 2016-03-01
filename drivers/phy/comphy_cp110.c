@@ -68,8 +68,8 @@ struct comphy_mux_data cp110_comphy_pipe_mux_data[] = {
 /* Lane 3 */ {3, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_USB3_HOST1, 0x1},
 			{PHY_TYPE_PEX0, 0x4} } },
 /* Lane 4 */ {4, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_USB3_HOST1, 0x1},
-			{PHY_TYPE_USB3_DEVICE, 0x2}, {PHY_TYPE_PEX0, 0x4} } },
-/* Lane 5 */ {2, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX1, 0x4} } },
+			{PHY_TYPE_USB3_DEVICE, 0x2}, {PHY_TYPE_PEX1, 0x4} } },
+/* Lane 5 */ {2, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX2, 0x4} } },
 };
 
 static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base, void __iomem *comphy_base)

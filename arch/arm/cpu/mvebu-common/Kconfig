@@ -107,6 +107,10 @@ config MVEBU_TOOLS_SUPPORT
 	  for different tools function for
 	  U-Boot/SPL code
 
+if MVEBU_TOOLS_SUPPORT
+source "arch/arm/cpu/mvebu-common/tools/Kconfig"
+endif
+
 config MVEBU_SYS_INFO
 	bool "System info transmitted to u-boot"
 	default y
@@ -125,7 +129,3 @@ config MVEBU_ROM_SILENCE_FLAG_SUPPORT
 	  silence parameter passed to SPL by
 	  BootROM for suppressing serial all
 	  port output during SPL run.
-
-if MVEBU_TOOLS_SUPPORT
-source "arch/arm/cpu/mvebu-common/tools/Kconfig"
-endif

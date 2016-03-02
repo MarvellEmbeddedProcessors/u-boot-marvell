@@ -1,3 +1,5 @@
+menu "Serial Driver"
+
 config DM_SERIAL
 	bool "Enable Driver Model for serial drivers"
 	depends on DM
@@ -27,3 +29,5 @@ config MVEBU_UART_ARLP
 	  for UART driver on ArmadaLP, which
 	  is not using COM1 NS16550 driver.
 	  And base address is configured in FDT file.
+
+endmenu

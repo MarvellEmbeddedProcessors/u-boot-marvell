@@ -23,6 +23,7 @@
 #include <errno.h>
 
 #include "../../board/mvebu/common/sar.h"
+#include "mvebu_chip_sar.h"
 
 int do_sar_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])
@@ -91,3 +92,18 @@ U_BOOT_CMD(
 	"\twrite x y	- Write y to SAR variable x\n"
 	"\tread x	- Read SAR variable x\n"
 );
+
+#ifdef CONFIG_MVEBU_CHIP_SAR
+int do_sar_chip_dump_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
+		char * const argv[])
+{
+	mvebu_sar_dump();
+	return 0;
+}
+
+U_BOOT_CMD(
+	sar_chip_dump,      1,     1,      do_sar_chip_dump_cmd,
+	"sar_chip_dump - dump sample at reset options (from the chip)\n",
+	"\n"
+);
+#endif

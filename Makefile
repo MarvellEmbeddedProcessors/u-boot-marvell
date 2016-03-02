@@ -768,6 +768,13 @@ append = cat $(filter-out $< $(PHONY), $^) >> $@
 quiet_cmd_pad_cat = CAT     $@
 cmd_pad_cat = $(cmd_objcopy) && $(append) || rm -f $@
 
+# Add doimage target for mvebu soc
+ifeq ($(CONFIG_TARGET_ARMADA_38X), y)
+ALL-$(CONFIG_MVEBU) += doimage
+else ifeq ($(CONFIG_TARGET_ARMADA_3700), y)
+ALL-$(CONFIG_MVEBU) += doimage
+endif
+
 all:		$(ALL-y)
 ifneq ($(CONFIG_SYS_GENERIC_BOARD),y)
 	@echo "===================== WARNING ======================"
@@ -892,8 +899,6 @@ DOIMAGE_LIBS_CHECK = \
 		echo "DOIMAGE=$(DOIMAGE)" >&1; \
 	fi
 
-ALL-$(CONFIG_MVEBU) += doimage
-
 # Start with creation of UART images:
 # - Create TIM descriptor with UART signature
 # - Create binary TIM and UART downloadable images (*_h.*)
@@ -957,8 +962,6 @@ MKIMAGEFLAGS_u-boot.kwb = -n $(srctree)/$(CONFIG_SYS_KWD_CONFIG:"%"=%) \
 
 MKIMAGEFLAGS_u-boot.pbl = -n $(srctree)/$(CONFIG_SYS_FSL_PBL_RCW:"%"=%) \
 		-R $(srctree)/$(CONFIG_SYS_FSL_PBL_PBI:"%"=%) -T pblimage
-
-ALL-$(CONFIG_MVEBU) += doimage
 
 u-boot.img u-boot.kwb u-boot.pbl: u-boot.bin FORCE
 	$(call if_changed,mkimage)

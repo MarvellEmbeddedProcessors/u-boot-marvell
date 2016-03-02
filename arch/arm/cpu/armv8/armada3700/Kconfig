@@ -35,14 +35,5 @@ config PALLADIUM
 	  like Clock and PHY, this should
 	  not be enabled for real SoC.
 
-config MVEBU_A3700_CLOCK
-	bool "Armada-3700  clock support"
-	default n
-	help
-	  Choose this option to support
-	  Marvell Armada-3700 clock driver.
-	  For the first stage all clocks will be enabled
-	  by default.
-
 endif
 

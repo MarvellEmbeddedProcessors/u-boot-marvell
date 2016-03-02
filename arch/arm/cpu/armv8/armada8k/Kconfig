@@ -28,40 +28,4 @@ config PALLADIUM
 	bool "Support palladium emulation"
 	default n
 
-config MVEBU_LLC_ENABLE
-	depends on TARGET_ARMADA_8K && !MVEBU_SPL_DDR_OVER_PCI_SUPPORT && !SPL_BUILD
-	bool "Enable LLC support"
-	default y
-	help
-	  Enable LLC in PSCI code
-
-config MVEBU_LLC_EXCLUSIVE_EN
-	depends on MVEBU_LLC_ENABLE
-	bool "LLC Exclusive mode"
-	default n
-	help
-	  Enable LLC in exclusive mode.
-	  When Set
-	  1. Upon a Read hit, the CL is evicted from the LLC
-	  2. Read Allocate directive is ignored (i.e. no Linefilll done into LLC as a result of a read that misses)
-
-
-config MVEBU_FLC
-	bool "MBUS Final Level Cache driver"
-	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
-	default n
-	help
-	  Choose this option to add support
-	  for Final Level Cache for the Marvell McKinley
-	  Memory Controller driver.
-	  This driver enable FLC and open the FLC windows.
-
-config AP806_Z_SUPPORT
-	bool "Enable support for AP-806-Z1 & Z2"
-	default n
-	help
-	  Choose this option to add support
-	  for Marvell's AP-806-Z1/Z2 devices
-	  This configurations controlls all sorts of fixes
-	  relevant only for the Z1 & Z2 stepping of AP-806
 endif

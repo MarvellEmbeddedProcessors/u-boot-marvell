@@ -1550,6 +1550,10 @@ static int pxa3xx_nand_probe_dt(struct pxa3xx_nand_info *info)
 		return -1;
 	}
 
+	/* Check if the Node is enabled, if not retun -EINVAL */
+	if (!fdtdec_get_is_enabled(blob, node))
+		return -EINVAL;
+
 	/* Get the NAND controler base address */
 	info->mmio_base = (void *)fdt_get_regs_offs(blob, node, "reg");
 

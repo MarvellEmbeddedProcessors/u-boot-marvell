@@ -17,7 +17,7 @@ config MVEBU_SECURE_BOOT
 
 config MVEBU_SPL_DIFFRENT_BASE_ADDR
 	bool "Use SPL different registers base address"
-	depends on MVEBU
+	depends on MVEBU && TARGET_ARMADA_38X
 	default n
 	help
 	  Choose this option to enable setting of a different

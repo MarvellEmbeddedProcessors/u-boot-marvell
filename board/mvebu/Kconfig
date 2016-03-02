@@ -76,4 +76,18 @@ config MVEBU_A3700_CLOCK
 
 endmenu
 
+config PALLADIUM
+	bool "Support palladium emulation"
+	depends on TARGET_ARMADA_3700 || TARGET_ARMADA_8K
+	default n
+	help
+	  Choose this option to enable
+	  Palladium support.
+	  There are certain differences
+	  between palladium and real SoC,
+	  like Clock and PHY, this should
+	  not be enabled for real SoC.
+
+source "arch/arm/cpu/mvebu-common/Kconfig"
+
 endmenu

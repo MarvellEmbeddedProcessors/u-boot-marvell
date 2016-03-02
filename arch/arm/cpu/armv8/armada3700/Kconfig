@@ -24,16 +24,6 @@ config ARMV8_PSCI
 	bool
 	default y
 
-config PALLADIUM
-	bool "Support palladium emulation"
-	default n
-	help
-	  Choose this option to enable
-	  Palladium support.
-	  There are certain differences
-	  between palladium and real SoC,
-	  like Clock and PHY, this should
-	  not be enabled for real SoC.
 
 endif
 

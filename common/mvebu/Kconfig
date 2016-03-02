@@ -1,4 +1,5 @@
 menu "MVEBU commands"
+depends on MVEBU
 
 config CMD_MVEBU_MISC
 	bool "map, remap, units, ir"

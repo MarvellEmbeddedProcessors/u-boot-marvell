@@ -418,7 +418,12 @@ int cfg_eeprom_init(void)
 				(uint32_t) eeprom_buffer.length - 4);
 
 	/* if checksum is valid and not in recovery boot mode */
+	/* the recovery mode works only on armada-3700 for now */
+#ifdef CONFIG_TARGET_ARMADA_3700
 	if (calculate_checksum == eeprom_buffer.checksum && !mvebu_is_in_recovery_mode()) {
+#else
+	if (calculate_checksum == eeprom_buffer.checksum) {
+#endif
 		/* update board_config_val struct with the read values from EEPROM */
 		board_config_val = eeprom_buffer;
 		/* if fdt_config is enabled, return - FDT already read in the struct from EEPROM */

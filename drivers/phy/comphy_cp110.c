@@ -16,7 +16,7 @@
 * ***************************************************************************
 */
 
-/*#define DEBUG */
+/* #define DEBUG */
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch-mvebu/sata.h>
@@ -494,10 +494,6 @@ static int comphy_sgmii_power_up(u32 lane, u32 sgmii_speed, void __iomem *hpipe_
 	data = 0x1 << COMMON_PHY_CFG1_PWR_UP_OFFSET;
 	mask |= COMMON_PHY_CFG1_PIPE_SELECT_MASK;
 	data |= 0x0 << COMMON_PHY_CFG1_PIPE_SELECT_OFFSET;
-	mask |= COMMON_PHY_CFG1_PWR_ON_RESET_MASK;
-	data |= 0x0 << COMMON_PHY_CFG1_PWR_ON_RESET_OFFSET;
-	mask |= COMMON_PHY_CFG1_CORE_RSTN_MASK;
-	data |= 0x0 << COMMON_PHY_CFG1_CORE_RSTN_OFFSET;
 	reg_set(comphy_addr + COMMON_PHY_CFG1_REG, data, mask);
 
 	/* Select Baud Rate of Comphy And PD_PLL/Tx/Rx */
@@ -523,20 +519,20 @@ static int comphy_sgmii_power_up(u32 lane, u32 sgmii_speed, void __iomem *hpipe_
 
 	/* release from hard reset */
 	mask = SD_EXTERNAL_CONFIG1_RESET_IN_MASK;
+	data = 0x0 << SD_EXTERNAL_CONFIG1_RESET_IN_OFFSET;
+	mask |= SD_EXTERNAL_CONFIG1_RESET_CORE_MASK;
+	data |= 0x0 << SD_EXTERNAL_CONFIG1_RESET_CORE_OFFSET;
+	mask |= SD_EXTERNAL_CONFIG1_RF_RESET_IN_MASK;
+	data |= 0x0 << SD_EXTERNAL_CONFIG1_RF_RESET_IN_OFFSET;
+	reg_set(sd_ip_addr + SD_EXTERNAL_CONFIG1_REG, data, mask);
+
+	/* release from hard reset */
+	mask = SD_EXTERNAL_CONFIG1_RESET_IN_MASK;
 	data = 0x1 << SD_EXTERNAL_CONFIG1_RESET_IN_OFFSET;
 	mask |= SD_EXTERNAL_CONFIG1_RESET_CORE_MASK;
 	data |= 0x1 << SD_EXTERNAL_CONFIG1_RESET_CORE_OFFSET;
-	mask |= SD_EXTERNAL_CONFIG1_RF_RESET_IN_MASK;
-	data |= 0x1 << SD_EXTERNAL_CONFIG1_RF_RESET_IN_OFFSET;
 	reg_set(sd_ip_addr + SD_EXTERNAL_CONFIG1_REG, data, mask);
 
-
-	/* release from hard reset */
-	mask = COMMON_PHY_CFG1_PWR_ON_RESET_MASK;
-	data = 0x1 << COMMON_PHY_CFG1_PWR_ON_RESET_OFFSET;
-	mask |= COMMON_PHY_CFG1_CORE_RSTN_MASK;
-	data |= 0x1 << COMMON_PHY_CFG1_CORE_RSTN_OFFSET;
-	reg_set(comphy_addr + COMMON_PHY_CFG1_REG, data, mask);
 
 	/* Wait 1ms - until band gap and ref clock ready */
 	mdelay(1);
@@ -568,8 +564,11 @@ static int comphy_sgmii_power_up(u32 lane, u32 sgmii_speed, void __iomem *hpipe_
 	data = 0x0 << HPIPE_PWR_CTR_DTL_FLOOP_EN_OFFSET;
 	reg_set(hpipe_addr + HPIPE_PWR_CTR_DTL_REG, data, mask);
 
-	/* TODO: Set analog paramters from ETP(HW) - for now use the default datas */
+	/* Set analog paramters from ETP(HW) - for now use the default datas */
 	debug("stage: Analog paramters from ETP(HW)\n");
+
+	reg_set(hpipe_addr + HPIPE_G1_SET_0_REG,
+		0x1 << HPIPE_G1_SET_0_G1_TX_EMPH1_OFFSET, HPIPE_G1_SET_0_G1_TX_EMPH1_MASK);
 
 	debug("stage: RFU configurations- Power Up PLL,Tx,Rx\n");
 	/* SERDES External Configuration */
@@ -610,6 +609,14 @@ static int comphy_sgmii_power_up(u32 lane, u32 sgmii_speed, void __iomem *hpipe_
 		error("SD_EXTERNAL_STATUS0_RX_INIT is 0\n");
 		ret = 0;
 	}
+
+	debug("stage: RF Reset\n");
+	/* RF Reset */
+	mask =  SD_EXTERNAL_CONFIG1_RX_INIT_MASK;
+	data = 0x0 << SD_EXTERNAL_CONFIG1_RX_INIT_OFFSET;
+	mask |= SD_EXTERNAL_CONFIG1_RF_RESET_IN_MASK;
+	data |= 0x1 << SD_EXTERNAL_CONFIG1_RF_RESET_IN_OFFSET;
+	reg_set(sd_ip_addr + SD_EXTERNAL_CONFIG1_REG, data, mask);
 
 	debug_exit();
 	return ret;

@@ -48,7 +48,7 @@ Customer board porting procedure
 		>> make menuconfig
 			o Disable CONFIG_DEVEL_BOARD to disable Marvell Development board specific features (reduces size and
 			unneeded code).
-				-> ARM architecture -> MVEBU Board Support -> Unselect "Support MVEBU development boards"
+				-> Marvell Platform Options -> Board Options -> Unselect "Support MVEBU development boards"
 			o Update device tree file name:
 				-> Device Tree Control -> Default Device Tree for DT control -> "armada-7040-rz1-my_board"
 			o Save and exit

@@ -75,8 +75,15 @@
    CM3 BootROM uses adresses   0xF0016000 - 0xF001FFFF
    CM3 mapping for SRAM is     0x1FFF0000 - 0x20010000
  */
-#define CONFIG_SPL_TEXT_BASE		0xF0000000
+#define CONFIG_SPL_TEXT_BASE		0x01000000
 #define CONFIG_SPL_MAX_SIZE		0x00010000	/* 64K */
+
+#if (CONFIG_SPL_TEXT_BASE != 0xF0000000)
+#define SPL_IS_IN_DRAM
+#else
+#undef SPL_IS_IN_DRAM
+#endif
+
 
 #ifndef __ASSEMBLY__
 extern char __end_of_spl[];

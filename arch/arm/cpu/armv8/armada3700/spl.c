@@ -82,7 +82,12 @@ void board_init_f(ulong silent)
 	preloader_console_init();
 
 	/* Clock should be enabeld before initialize the I/O units */
-#ifdef CONFIG_MVEBU_A3700_CLOCK
+#if defined(CONFIG_MVEBU_A3700_CLOCK) && !defined(SPL_IS_IN_DRAM)
+	/* Dynamic clocks configuration is only supported for SPL running from SRAM
+	   Changing the DDR clock is not possible when the SPL code is located in DDR.
+	   When SPL is running from DRAM, all clocks should be set by TIM at boot
+	   time, since TIM code is is executed by secure CPU (CM3) from internal SRAM.
+	*/
 	init_clock();
 #endif
 
@@ -112,4 +117,3 @@ void board_init_f(ulong silent)
 	/* Jump from SPL to u-boot start address */
 	ptr_uboot_start();
 }
-

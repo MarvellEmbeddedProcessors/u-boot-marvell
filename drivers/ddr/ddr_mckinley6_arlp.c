@@ -131,6 +131,7 @@ struct mvebu_mckinley_config mckinley_phy_config[] = {
 
 void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config)
 {
+#if !defined(SPL_IS_IN_DRAM)
 	void __iomem *base_addr = dram_config->mac_base;
 	struct mvebu_mckinley_config *mac_config = &mckinley_mac_config[0];
 	u32 freq_indx, reg, idx, size;
@@ -204,6 +205,7 @@ void mvebu_dram_mac_init(struct mvebu_dram_config *dram_config)
 	}
 
 	debug_exit();
+#endif
 }
 
 /* set_dram_info - passing dram information from spl to u-boot by saving it on dram, start from address 0x04000000 */
@@ -243,6 +245,7 @@ void set_dram_info(void *base_addr)
 
 void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config)
 {
+#if !defined(SPL_IS_IN_DRAM)
 	void __iomem *base_addr = dram_config->phy_base;
 	struct mvebu_mckinley_config *phy_config = &mckinley_phy_config[0];
 	u32 freq_indx, reg, cs_mask;
@@ -289,7 +292,7 @@ void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config)
 		error("DDR init timeout!\n");
 
 	debug("DDR init is done.\n");
-
+#endif
 #ifdef CONFIG_MVEBU_SYS_INFO
 	set_dram_info(dram_config->mac_base);
 #endif
@@ -425,6 +428,10 @@ void mvebu_dram_dll_tune(struct mvebu_dram_config *dram_config)
 
 	debug_enter();
 
+#if !defined(SPL_IS_IN_DRAM)
+	printf("DDR: DLL tune should not be called when running from DRAM!\n");
+	return;
+#endif
 	dll = readl(base_addr + MC6_CH0_PHY_DLL_CONTROL_B0);
 	printf("DDR: start DLL tuning with initial phase delays (P) %#x, (N) %#x\n",
 	(dll >> DLL_PHASE_POS_SHIFT) & DLL_PHASE_SZ_MASK,

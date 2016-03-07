@@ -218,6 +218,7 @@
 /* NETA AUTO_NEG_CFG_REG mapping */
 #define MVNETA_AUTONEG_CFG_FORCE_LINK_UP	(3 << 0)
 #define MVNETA_AUTONEG_CFG_BYPASS_AUTO_NEG	(1 << 3)
+#define MVNETA_AUTONEG_CFG_FORCE_LINK_100M	(1 << 5)
 #define MVNETA_AUTONEG_CFG_FORCE_LINK_1G	(1 << 6)
 #define MVNETA_AUTONEG_CFG_FLOW_CTRL_EN		(1 << 8)
 #define MVNETA_AUTONEG_CFG_FLOW_CTRL_ADVERTIZE	(1 << 9)
@@ -566,6 +567,12 @@ static void mvneta_rxq_buf_size_set(struct mvneta_port *pp,
 	mvreg_write(pp, MVNETA_RXQ_SIZE_REG(rxq->id), val);
 }
 
+static int mvneta_port_is_fixed_link(struct mvneta_port *pp)
+{
+	/* phy_addr is set to FDT_ADDR_T_NONE when use fixed link */
+	return pp->phyaddr == FDT_ADDR_T_NONE;
+}
+
 /* Start the Ethernet port RX and TX activity */
 static void mvneta_port_up(struct mvneta_port *pp)
 {
@@ -816,10 +823,12 @@ static void mvneta_defaults_set(struct mvneta_port *pp)
 	/* Assign port SDMA configuration */
 	mvreg_write(pp, MVNETA_SDMA_CONFIG, val);
 
-	/* Enable PHY polling in hardware for U-Boot */
-	val = mvreg_read(pp, MVNETA_UNIT_CONTROL);
-	val |= MVNETA_PHY_POLLING_ENABLE;
-	mvreg_write(pp, MVNETA_UNIT_CONTROL, val);
+	/* Enable PHY polling in hardware for U-Boot if not in fixed-link mode */
+	if (!mvneta_port_is_fixed_link(pp)) {
+		val = mvreg_read(pp, MVNETA_UNIT_CONTROL);
+		val |= MVNETA_PHY_POLLING_ENABLE;
+		mvreg_write(pp, MVNETA_UNIT_CONTROL, val);
+	}
 
 	mvneta_set_ucast_table(pp, -1);
 	mvneta_set_special_mcast_table(pp, -1);
@@ -1136,6 +1145,11 @@ static void mvneta_adjust_link(struct eth_device *dev)
 	struct mvneta_port *pp = dev->priv;
 	struct phy_device *phydev = pp->phydev;
 	int status_change = 0;
+
+	if (mvneta_port_is_fixed_link(pp)) {
+		debug("Using fixed link, skip link adjust\n");
+		return;
+	}
 
 	if (phydev->link) {
 		if ((pp->speed != phydev->speed) ||
@@ -1507,6 +1521,7 @@ static int smi_reg_write(const char *devname, u8 phy_adr, u8 reg_ofs, u16 data)
 static int mvneta_init_u_boot(struct eth_device *dev, bd_t *bis)
 {
 	struct mvneta_port *pp = dev->priv;
+	unsigned long val;
 #ifdef CONFIG_PALLADIUM
 	unsigned long auto_neg_value;
 #else
@@ -1516,42 +1531,66 @@ static int mvneta_init_u_boot(struct eth_device *dev, bd_t *bis)
 	mvneta_port_power_up(pp, pp->phy_interface);
 
 	if (!pp->init || pp->link == 0) {
-		/* Set phy address of the port */
-		mvreg_write(pp, MVNETA_PHY_ADDR, pp->phyaddr);
-#ifdef CONFIG_PALLADIUM
-		/* on Palladium, there is no PHY, need to hardcode Link configuration */
-		pp->init = 1;
-		pp->link = 1;
-		mvneta_probe(dev);
-		mvneta_port_up(pp);
-		mvneta_port_enable(pp);
-#else
-		phydev = phy_connect(pp->bus, pp->phyaddr, dev,
-				     pp->phy_interface);
+		if (mvneta_port_is_fixed_link(pp)) {
+			pp->init = 1;
+			pp->link = 1;
+			mvneta_probe(dev);
 
-		pp->phydev = phydev;
-		phy_config(phydev);
-		phy_startup(phydev);
-		if (!phydev->link) {
-			printf("%s: No link.\n", phydev->dev->name);
-			return -1;
-		}
-		/* Full init on first call */
-		mvneta_probe(dev);
-		/* mark this port being fully inited,
-		 * otherwise it will be inited again
-		 * during next networking transaction,
-		 * including memory allocatation for
-		 * TX/RX queue, PHY connect/configuration
-		 * and address decode configuration.
-		 */
-		pp->init = 1;
+			val = MVNETA_AUTONEG_CFG_FORCE_LINK_UP | MVNETA_AUTONEG_CFG_BYPASS_AUTO_NEG
+			| MVNETA_AUTONEG_CFG_FLOW_CTRL_EN | MVNETA_AUTONEG_CFG_FLOW_CTRL_ADVERTIZE
+			| MVNETA_AUTONEG_CFG_RESERVED;
+
+			if (pp->duplex)
+				val |= MVNETA_AUTONEG_CFG_FORCE_FULL_DPLX;
+
+			if (pp->speed == SPEED_1000)
+				val |= MVNETA_AUTONEG_CFG_FORCE_LINK_1G;
+			else if (pp->speed == SPEED_100)
+				val |= MVNETA_AUTONEG_CFG_FORCE_LINK_100M;
+
+			mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG, val);
+
+			mvneta_port_up(pp);
+			mvneta_port_enable(pp);
+		} else {
+			/* Set phy address of the port */
+			mvreg_write(pp, MVNETA_PHY_ADDR, pp->phyaddr);
+#ifdef CONFIG_PALLADIUM
+			/* on Palladium, there is no PHY, need to hardcode Link configuration */
+			pp->init = 1;
+			pp->link = 1;
+			mvneta_probe(dev);
+			mvneta_port_up(pp);
+			mvneta_port_enable(pp);
+#else
+			phydev = phy_connect(pp->bus, pp->phyaddr, dev,
+					     pp->phy_interface);
+
+			pp->phydev = phydev;
+			phy_config(phydev);
+			phy_startup(phydev);
+			if (!phydev->link) {
+				printf("%s: No link.\n", phydev->dev->name);
+				return -1;
+			}
+			/* Full init on first call */
+			mvneta_probe(dev);
+			/* mark this port being fully inited,
+			 * otherwise it will be inited again
+			 * during next networking transaction,
+			 * including memory allocatation for
+			 * TX/RX queue, PHY connect/configuration
+			 * and address decode configuration.
+			 */
+			pp->init = 1;
 #endif
+		}
 	} else {
 		/* Upon all following calls, this is enough */
 		mvneta_port_up(pp);
 		mvneta_port_enable(pp);
 	}
+
 #ifdef CONFIG_PALLADIUM
 	/* on Palladium, there is no PHY, need to hardcode speed to 1G */
 	auto_neg_value = MVNETA_AUTONEG_CFG_FORCE_LINK_UP | MVNETA_AUTONEG_CFG_BYPASS_AUTO_NEG
@@ -1657,7 +1696,8 @@ static void mvneta_halt(struct eth_device *dev)
 	mvneta_port_disable(pp);
 }
 
-int mvneta_initialize_dev(bd_t *bis, unsigned long base_addr, int devnum, int phy_addr, phy_interface_t phy_type)
+int mvneta_initialize_dev(bd_t *bis, unsigned long base_addr, int devnum, int phy_addr,
+	phy_interface_t phy_type, struct fixed_link *fixed_link_status)
 {
 	struct eth_device *dev;
 	struct mvneta_port *pp;
@@ -1720,8 +1760,16 @@ int mvneta_initialize_dev(bd_t *bis, unsigned long base_addr, int devnum, int ph
 	eth_register(dev);
 
 	pp->phyaddr = phy_addr;
-	miiphy_register(dev->name, smi_reg_read, smi_reg_write);
-	pp->bus = miiphy_get_dev_by_name(dev->name);
+	/* Only register PHY dev when we got the phy_addr */
+	if (mvneta_port_is_fixed_link(pp)) {
+		if (fixed_link_status == NULL)
+			return -EINVAL;
+		pp->duplex = fixed_link_status->duplex;
+		pp->speed = fixed_link_status->link_speed;
+	} else {
+		miiphy_register(dev->name, smi_reg_read, smi_reg_write);
+		pp->bus = miiphy_get_dev_by_name(dev->name);
+	}
 
 	return 1;
 }
@@ -1755,6 +1803,8 @@ int mvneta_initialize(bd_t *bis)
 	unsigned long neta_reg_base;
 	const char *phy_mode_name;
 	int err, loop;
+	int fixed_link_node;
+	struct fixed_link fixed_link_status = {};
 
 	/* in dts file, go through all the 'neta' nodes.
 	 */
@@ -1774,20 +1824,29 @@ int mvneta_initialize(bd_t *bis)
 		 * dtsi file there are the 'reg' attribute for register base of GBE unit, and 'phy_addr'
 		 * attribute for phy address for each 'neta' node.
 		 */
-		/* fetch 'reg' propertiy from 'neta' node */
+		/* fetch 'reg' property from 'neta' node */
 		neta_reg_base = (unsigned long)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
 		if (neta_reg_base == FDT_ADDR_T_NONE) {
 			error("could not find reg in neta node, initialization skipped!\n");
 			return 0;
 		}
 
-		/* fetch 'phy address' propertiy from 'neta' node */
-		phy_addr = (unsigned int)fdtdec_get_addr(gd->fdt_blob, node, "phy_addr");
-		if (phy_addr == FDT_ADDR_T_NONE) {
-			error("could not find phy_addr in neta node, initialization skipped!\n");
-			return 0;
+		/* fetch 'fixed-link' property from 'neta' node */
+		fixed_link_node = fdt_subnode_offset(gd->fdt_blob, node, "fixed-link");
+		if (fixed_link_node != -FDT_ERR_NOTFOUND) {
+			phy_addr = FDT_ADDR_T_NONE;/* set phy_addr to FDT_ADDR_T_NONE when use fixed link */
+			fixed_link_status.duplex = fdtdec_get_bool(gd->fdt_blob, fixed_link_node, "full-duplex");
+			fixed_link_status.link_speed = fdtdec_get_int(gd->fdt_blob, fixed_link_node, "speed", 0);
+		} else {
+			/* fetch 'phy address' property from 'neta' node */
+			phy_addr = (unsigned int)fdtdec_get_addr(gd->fdt_blob, node, "phy_addr");
+			if (phy_addr == FDT_ADDR_T_NONE) {
+				printf("could not find phy_addr or fixed-link in neta node, initialization skipped!\n");
+				return 0;
+			}
 		}
-		/* fetch 'phy mode' propertiy from 'neta' node */
+
+		/* fetch 'phy mode' property from 'neta' node */
 		err = fdt_get_string(gd->fdt_blob, node, "phy_mode", &phy_mode_name);
 		if (err < 0) {
 			error("failed to get phy_mode_name, initialization skipped!\n");
@@ -1807,7 +1866,7 @@ int mvneta_initialize(bd_t *bis)
 		}
 
 		/* call 'real' mvneta init routine */
-		if (1 != mvneta_initialize_dev(bis, neta_reg_base, i, phy_addr, phy_mode)) {
+		if (1 != mvneta_initialize_dev(bis, neta_reg_base, i, phy_addr, phy_mode, &fixed_link_status)) {
 			error("mvneta_initialize_dev failed, initialization skipped!\n");
 			return 0;
 		}
@@ -1820,7 +1879,7 @@ int mvneta_initialize(bd_t *bis)
 #else
 int mvneta_initialize(bd_t *bis, int base_addr, int devnum, int phy_addr)
 {
-	return mvneta_initialize_dev(bis, base_addr, devnum, phy_addr, CONFIG_SYS_NETA_INTERFACE_TYPE);
+	return mvneta_initialize_dev(bis, base_addr, devnum, phy_addr, CONFIG_SYS_NETA_INTERFACE_TYPE, NULL);
 }
 #endif /* CONFIG_OF_CONTROL */
 

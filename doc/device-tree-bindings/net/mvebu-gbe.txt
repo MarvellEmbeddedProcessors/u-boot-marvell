@@ -9,7 +9,6 @@ SoC specific:
 	- compatible: Should be "marvell,armadalp-neta".
 	- reg: The base address of the GBE unit.
 Board specific:
-	- phy_addr: The phy address for the GBE interface.
 	- phy_mode: The phy mode for the GBE interface, which should be one of the following:
 		"mii",
 		"gmii",
@@ -25,11 +24,29 @@ Board specific:
 		"rtbi",
 		"xgmii",
 
-Example for GBE-0 node:
+Optional properties:
+	- phy_addr: The phy address for the GBE interface when connected to
+	  external PHY device.
+	- fixed-link: The GBE interface works at the fixed-link mode,
+	  in this case, "phy_addr" is uesless.
+	  - speed: link speed in Mbits/sec, accepted values are: 10, 100 and 1000
+	  - full-duplex: duplex configuration:
+	    "full-duplex" for full duplex, otherwise, works in half duplex.
+
+Examples:
 	neta0: neta@30000 {
 		compatible = "marvell,armadalp-neta";
 		reg = <0x30000 0x20>;
 		phy_addr = <0x0>;
 		phy_mode = "rgmii";
 		status = "disabled";
+	};
+
+	neta1: neta@40000 {
+		status = "okay";
+		phy_mode = "sgmii";
+		fixed-link {
+			speed = <1000>;
+			full-duplex;
+		};
 	};

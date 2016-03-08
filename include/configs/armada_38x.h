@@ -605,10 +605,10 @@ extern int nand_get_env_offs(void);
 #define MV_MMC_FDT_NODE_NAME	"sdhci"
 
 #ifdef CONFIG_ARMADA_38X
-#define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:Armada38x:eth0:none"
+#define MV_BOOTARGS_END         ":$gatewayip:255.255.255.0:Armada38x:$netdev:none"
 #define MV_DDR_L2_ALIGNMENT
 #elif defined CONFIG_ARMADA_39X
-#define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:Armada39x:eth0:none"
+#define MV_BOOTARGS_END         ":$gatewayip:255.255.255.0:Armada39x:$netdev:none"
 #endif
 #define RCVR_IP_ADDR            "169.254.100.100"
 	#define RCVR_LOAD_ADDR          "0x02000000"

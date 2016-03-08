@@ -66,7 +66,8 @@ void fdt_env_setup(char *fdtfile, MV_BOOL runUpdate)
 		setenv("fdtfile", fdtfile);
 
 	/* boot command to fetch DT file, update DT (if fdt_skip_update=no) and bootz LSP zImage */
-	char bootcmd_fdt[] = "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;"
+	char bootcmd_fdt[] = "setenv bootargs_end :$gatewayip:255.255.255.0:Armada:$netdev:none;"
+		"tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;"
 		"setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
 		"ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
 		"clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel; bootz 0x2000000 - $fdtaddr;";

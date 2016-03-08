@@ -637,6 +637,12 @@ void misc_init_r_env(void)
 		setenv("bootargs_root", "root=/dev/nfs rw");
 
 	/* For open Linux we set boot args differently */
+    env = getenv("gatewayip");
+    if (!env)
+        setenv("gatewayip","10.4.50.254");
+    env = getenv("netdev");
+    if (!env)
+        setenv("netdev","eth0");
 	env = getenv("mainlineLinux");
 	if (env && ((strcmp(env, "yes") == 0) ||  (strcmp(env, "Yes") == 0))) {
 		env = getenv("bootargs_end");

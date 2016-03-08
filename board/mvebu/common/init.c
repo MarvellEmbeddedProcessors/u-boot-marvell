@@ -57,6 +57,11 @@ int soc_early_init_f(void)
 /* Do very basic stuff like board and soc detection */
 int board_early_init_f(void)
 {
+/* fdt_config uses gunzip to decompress FDT when loading it from EEPROM.
+   gunzip uses malloc, therefore it's necessary to enable malloc at this point */
+#ifdef CONFIG_SYS_MALLOC_F_LEN
+	gd->malloc_base = CONFIG_MALLOC_F_ADDR;
+#endif
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
 	cfg_eeprom_init();
 #endif

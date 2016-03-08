@@ -38,6 +38,10 @@
 #define CONFIG_ARMADA_8K_SOC_ID		8022
 
 /* Global definitions */
+#ifndef CONFIG_SPL_BUILD
+#define CONFIG_MALLOC_F_ADDR		0x8000000
+#define CONFIG_SYS_MALLOC_F_LEN		0x5000
+#endif
 #ifndef CONFIG_SYS_TEXT_BASE
 #define CONFIG_SYS_TEXT_BASE            0x00000000
 #endif

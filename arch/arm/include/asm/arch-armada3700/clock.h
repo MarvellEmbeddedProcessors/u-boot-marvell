@@ -141,6 +141,23 @@ enum a3700_clock_line {
 	TBG_B_S = 3
 };
 
+/* Clock source selection */
+enum a3700_clk_select {
+	CLK_SEL_OSC = 0,
+	CLK_SEL_TBG,
+};
+
+/* TBG divider */
+enum a3700_tbg_divider {
+	TBG_DIVIDER_1 = 1,
+	TBG_DIVIDER_2,
+	TBG_DIVIDER_3,
+	TBG_DIVIDER_4,
+	TBG_DIVIDER_5,
+	TBG_DIVIDER_6,
+	TBG_DIVIDER_NUM
+};
+
 /*
  * North Bridge Clocks
  */

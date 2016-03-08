@@ -31,6 +31,7 @@
 #include <libfdt.h>
 #include <asm/arch/boot_mode.h>
 #include <fdt_support.h>
+#include <asm/arch/pm.h>
 
 /* NB warm reset */
 #define MVEBU_NB_WARM_RST_REG	(MVEBU_GPIO_NB_REG_BASE + 0x40)
@@ -88,6 +89,9 @@ void soc_init(void)
 		error("COMPHY initialization failed\n");
 #endif
 
+#ifdef CONFIG_MVEBU_A3700_PM
+	init_pm();
+#endif
 	return;
 }
 

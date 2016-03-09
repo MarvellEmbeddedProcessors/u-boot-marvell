@@ -57,9 +57,9 @@ struct chip_serdes_phy_config *get_chip_config(enum fdt_compat_id compat)
 
 static char *get_speed_string(u32 speed)
 {
-	char *speed_strings[] = {"1.25Gbps", "1.5Gbps", "2.5Gbps", "3.0Gbps",
-				"3.25Gbps", "5Gbps", "6Gbps", "6.25Gbps",
-				"10.315Gbps" };
+	char *speed_strings[] = {"1.25 Gbps", "1.5 Gbps", "2.5 Gbps", "3.0 Gbps",
+				"3.125 Gbps", "5 Gbps", "6 Gbps", "6.25 Gbps",
+				"10.31 Gbps" };
 	if (speed < 0 || speed > PHY_SPEED_MAX)
 		return "invalid";
 	return speed_strings[speed];
@@ -116,15 +116,11 @@ void comphy_print(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map
 	u32 lane;
 	char *speed_str, *type_str;
 
-	printf("COMPHY setup:\n");
-	printf("Lane #   Speed       Type\n");
-	printf("-----------------------------------\n");
 	for (lane = 0; lane < ptr_chip_cfg->comphy_lanes_count; lane++, comphy_map_data++) {
 		speed_str = get_speed_string(comphy_map_data->speed);
 		type_str = get_type_string(comphy_map_data->type);
-		printf("%s %-4d  %-10s  %-13s\n", " ", lane, speed_str, type_str);
+		printf("Comphy-%d: %-13s %-10s\n", lane, type_str, speed_str);
 	}
-	printf("\n");
 }
 
 u32 comphy_init(const void *blob)

@@ -27,4 +27,23 @@ config SYS_HZ
 	  get_timer() must operate in milliseconds and this option must be
 	  set to 1000.
 
+config SHA256
+	bool "hash_256"
+	default n
+	help
+	  sha256 - Calculate hash values with hash_256 algorithm.
+	  Enabling this option will use sha256 to calculate hash value
+	  when codes try to call sha256_start,sha256_update and
+	  sha256_finish functions.
+
+
+config SHA1
+	bool "hash_160"
+	default n
+	help
+	  sha1 - Caculate hash values with hash_160 algorithm.
+	  Enabling this option will use sha1 to calculate hash value
+	  when codes try to call sha1_start,sha1_update and
+	  sha1_finish functions.
+
 endmenu

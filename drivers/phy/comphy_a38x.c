@@ -71,8 +71,8 @@ static int comphy_pcie_power_up(u32 pex_index, void __iomem *comphy_addr, void _
 
 	/* PEX - electrical configuration seq */
 	debug("**** start of PCIe electrical configuration sequence ****\n");
-	reg_set(hpipe_addr + HPIPE_G1_SETTINGS_0_REG, 0xB000, 0xF000);
-	reg_set(hpipe_addr + HPIPE_G1_SETTINGS_1_REG, 0x3C9, 0x3FF);
+	reg_set(hpipe_addr + HPIPE_G1_SET_0_REG, 0xB000, 0xF000);
+	reg_set(hpipe_addr + HPIPE_G1_SET_1_REG, 0x3C9, 0x3FF);
 	reg_set(hpipe_addr + HPIPE_G1_SETTINGS_3_REG, 0xCF, 0xFF);
 	reg_set(hpipe_addr + HPIPE_G2_SETTINGS_1_REG, 0x3C9, 0x3FF);
 	reg_set(hpipe_addr + HPIPE_G2_SETTINGS_3_REG, 0xAF, 0xFF);

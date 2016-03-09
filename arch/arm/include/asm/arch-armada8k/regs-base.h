@@ -44,7 +44,4 @@
 
 #define MVEBU_LLC_BASE		(MVEBU_REGS_BASE + 0x8000)
 
-/* Base registers for CP */
-#define MVEBU_AMB_IP_BASE		(MVEBU_CP0_REGS_BASE + 0x13ff00)
-
 #endif	/* _REGS_BASE_H_ */

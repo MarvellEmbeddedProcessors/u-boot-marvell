@@ -1,8 +1,12 @@
+OUTPUT_FORMAT ("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
+
+ENTRY(_start)
+
 SECTIONS
 {
-  . = 0x200040F0;
+  . = 0x1FFF0000;
   .ro : {
-    wtmi.o (.text)
+    start.o (.text)
     *(.text)
     *(.rodata)
   }
@@ -11,5 +15,7 @@ SECTIONS
     *(.bss)
     *(COMMON)
   }
- . = ALIGN(8);
+  . = ALIGN(8);
+  . = . + 0x1000; /* 4kB of stack memory */
+  stack_top = .;
 }

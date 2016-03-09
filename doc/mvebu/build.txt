@@ -148,3 +148,15 @@ Tools installation for Armada-3700 builds:
 
 4. Make sure the "ntbb_linux.exe" can be executed from any
    location and the U-Boot "make" passes without error.
+
+5. Install a cross GNU ARM tool chain for building the WTMI binary.
+   Any cross GNU ARM tool chain able to build ARM Cortex M3 binaries
+   is suitable.
+   On Debian/Uboot hosts the default GNU ARM tool chain can be installed
+   using the following command:
+   # sudo apt-get install gcc-arm-linux-gnueabi
+   If required, the default tool chain prefix "arm-linux-gnueabi-" can be
+   overwritten using environment variable CROSS_CM3.
+   Example for BASH shell:
+   # export CROSS_CM3=/opt/arm-cross/bin/arm-linux-gnueabi
+

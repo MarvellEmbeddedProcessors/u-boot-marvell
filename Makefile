@@ -842,6 +842,8 @@ OBJCOPYFLAGS_u-boot.ldr.srec := -I binary -O srec
 u-boot.ldr.hex u-boot.ldr.srec: u-boot.ldr FORCE
 	$(call if_changed,objcopy)
 
+WTMIPATH	:= $(srctree)/tools/wtp/wtmi
+
 ifdef CONFIG_MVEBU
 SPLIMAGE	:= $(srctree)/spl/u-boot-spl.bin
 
@@ -920,7 +922,7 @@ DOIMAGE_LIBS_CHECK = \
 # - Collect all UART downloadable images into archive
 # - Create TIM descriptor(s) with final boot signature according
 #   to defconfig for the next build stage (SPI.eMMC,etc.)
-uartimage: $(obj)/u-boot.bin $(SPLIMAGE)
+uartimage: $(obj)/u-boot.bin $(SPLIMAGE) wtmi
 		@$(DOIMAGE_LIBS_CHECK)
 		$(TIMBUILD) $(TIMBLDUARTARGS)
 		$(DOIMAGE) $(DOIMAGE_FLAGS)
@@ -941,6 +943,10 @@ doimage: uartimage $(SECURETGT)
 bin2phex: doimage
 		$(TIM2PHEX) -i $(DOIMAGE_CFG) -o u-boot-$(CONFIG_SYS_SOC).hex
 		$(BIN2PHEX) -w 16 -i u-boot.bin -o u-boot.hex -b 0x0
+
+wtmi:
+	@echo "  =====WTMI====="
+	@$(MAKE) -C $(WTMIPATH)
 
 else # CONFIG_TARGET_ARMADA_38X
 
@@ -1406,8 +1412,8 @@ CLEAN_DIRS  += $(MODVERDIR) \
 CLEAN_FILES += include/bmp_logo.h include/bmp_logo_data.h \
 	       u-boot* MLO* SPL System.map
 
-MARVELL_CLEAN_DIRS  += uart-images
-MARVELL_CLEAN_FILES += uart-images.tgz TIM_UBOOT*
+MARVELL_CLEAN_DIRS  += uart-images $(WTMIPATH)/build
+MARVELL_CLEAN_FILES += uart-images.tgz TIM_UBOOT* $(WTMIPATH)/*.o
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include/generated spl tpl \

@@ -5,4 +5,4 @@ Load Address:                   0x1FFF0000		; WTMI RAM addr
 Image Size To CRC in bytes:     0x00000000
 Hash Algorithm ID:              32			; SHA-256
 Partition Number:               0x00000000
-Image Filename: tools/wtp/wtmi.dummy
+Image Filename: tools/wtp/wtmi/build/wtmi.bin

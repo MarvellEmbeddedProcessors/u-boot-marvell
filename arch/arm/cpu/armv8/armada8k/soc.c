@@ -21,6 +21,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch-mvebu/soc.h>
+#include <asm/arch-mvebu/comphy.h>
 #include <asm/arch-mvebu/system_info.h>
 #include <asm/arch/regs-base.h>
 #include <asm/arch-mvebu/pinctl.h>
@@ -58,6 +59,10 @@ int soc_get_id(void)
 
 void soc_init(void)
 {
+#ifdef CONFIG_MVEBU_COMPHY_SUPPORT
+	if (comphy_init(gd->fdt_blob))
+		error("COMPHY initialization failed\n");
+#endif
 	return;
 }
 

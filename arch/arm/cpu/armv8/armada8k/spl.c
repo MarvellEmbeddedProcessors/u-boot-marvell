@@ -17,7 +17,6 @@
  */
 
 #include <common.h>
-#include <asm/arch-mvebu/comphy.h>
 #include <asm/arch-mvebu/tools.h>
 #include <asm/arch-mvebu/ddr.h>
 #include <asm/arch-mvebu/dram_over_pci.h>
@@ -25,6 +24,7 @@
 #include <asm/arch-mvebu/flc.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-armada8k/misc-regs.h>
+#include <asm/arch-mvebu/comphy.h>
 #include <mvebu_chip_sar.h>
 #include <spl.h>
 
@@ -78,13 +78,6 @@ void board_init_f(ulong silent)
 
 	/* Init all relevant drivers (e.g. DDR, comphy...) */
 #ifndef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
-	/* when DDR over PCIE is enabled, add delay before and after the comphy_init
-	   to verify that the PCIE card init done, before setting the comphy to avoid
-	   collisions. and no ddr init require */
-#ifdef CONFIG_MVEBU_COMPHY_SUPPORT
-	if (comphy_init(gd->fdt_blob))
-		error("COMPHY initialization failed\n");
-#endif
 #ifdef CONFIG_MVEBU_SPL_DDR_SUPPORT
 	mvebu_dram_init(gd->fdt_blob);
 #endif

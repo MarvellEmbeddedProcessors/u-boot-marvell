@@ -43,8 +43,15 @@
 #define CONFIG_SYS_MALLOC_F_LEN		0x5000
 #endif
 #ifndef CONFIG_SYS_TEXT_BASE
+#ifdef CONFIG_PALLADIUM
+/* Overcome issue in emulation where writes to address 0x0 might
+   sometimes fail. */
+#define CONFIG_SYS_TEXT_BASE            0x00001000
+#else
 #define CONFIG_SYS_TEXT_BASE            0x00000000
 #endif
+#endif
+
 #define CONFIG_SYS_SDRAM_BASE           0x00000000
 #define CONFIG_SYS_RESET_ADDRESS        0xffff0000
 #define CONFIG_SYS_MALLOC_BASE          (CONFIG_SYS_TEXT_BASE + (3 << 20))  /* TEXT_BASE + 3M */

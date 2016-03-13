@@ -19,12 +19,10 @@
 #define _FDT_CONFIG_H_
 #include "cfg_eeprom.h"
 
-void fdt_cfg_read_eeprom(void);
-int fdt_cfg_read_flash(const char *selected_index);
-int fdt_cfg_on(void);
-int fdt_cfg_off(void);
-int fdt_select_set(const char *selected_index);
-int fdt_select_list(void);
-void fdt_select_print(void);
+int fdt_cfg_load(const char *selected_index);
+void fdt_cfg_print_select(void);
+int fdt_cfg_set_select(const char *selected_index);
+int fdt_cfg_list(void);
+int fdt_cfg_save(uint8_t *fdt_blob);
 
 #endif

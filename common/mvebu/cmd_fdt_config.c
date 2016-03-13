@@ -21,6 +21,7 @@
 #include <command.h>
 #include <vsprintf.h>
 #include <errno.h>
+#include <asm/arch-mvebu/fdt.h>
 #include "../../board/mvebu/common/cfg_eeprom.h"
 #include "../../board/mvebu/common/fdt_config.h"
 
@@ -29,38 +30,29 @@ int do_fdt_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 {
 	const char *cmd = argv[1];
 	const char *fdt_option = NULL;
-	const char *fdt_model = NULL;
+	uint8_t *fdt_blob;
 
 	if (argc > 2)
 		fdt_option = argv[2];
 
-	if (argc > 3)
-		fdt_model = argv[3];
-
-	if (strcmp(cmd, "read") == 0) {
-		if (argc < 4 && (strcmp(fdt_option, "eeprom") == 0)) {
-			fdt_cfg_read_eeprom();
-		} else if (argc > 3 && (strcmp(fdt_option, "flash") == 0)) {
-			if (fdt_cfg_read_flash(fdt_model))
+	if (strcmp(cmd, "load") == 0) {
+		if (argc == 3) {
+			if (fdt_cfg_load(fdt_option))
 				return 1;
-		} else
+		} else {
 			return CMD_RET_USAGE;
+		}
 	} else if (strcmp(cmd, "save") == 0) {
-		cfg_eeprom_save();
-	} else if (strcmp(cmd, "on") == 0) {
-		if (fdt_cfg_on())
-			return 1;
-	} else if (strcmp(cmd, "off") == 0) {
-		if (fdt_cfg_off())
-			return 1;
+		fdt_blob = cfg_eeprom_get_fdt();
+		fdt_cfg_save(fdt_blob);
 	} else if (strcmp(cmd, "select") == 0) {
 		if (argc < 3) {
-			fdt_select_print();
-		} else if (fdt_select_set(fdt_option)) {
-				return 1;
-			}
+			fdt_cfg_print_select();
+		} else if (fdt_cfg_set_select(fdt_option)) {
+			return 1;
+		}
 	} else if (strcmp(cmd, "list") == 0) {
-		if (fdt_select_list())
+		if (fdt_cfg_list())
 			return 1;
 	} else {
 		return CMD_RET_USAGE;
@@ -71,15 +63,13 @@ int do_fdt_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 
 U_BOOT_CMD(
 	fdt_config,    6,     1,      do_fdt_config_cmd,
-	"Modify SOC and board configuration\n",
+	"Modify SOC and board FDT configuration\n",
 	"\n"
 	"Modify SOC and board configuration\n"
-	"\tread eeprom	  - Read FDT from EEPROM and save to DRAM\n"
-	"\tread flash <x> - Read x FDT from U-Boot and save to DRAM\n"
+	"\tlist		  - List the available FDT: preset and customized FDT on EEPROM (if exist)\n"
+	"\tselect [x]	  - Select active FDT to boot from\n\n"
+
+	"To create modified FDT on EEPROM, use the following\n"
+	"\tload <x>	  - Load FDT <x> to DRAM (loaded to fdt_addr env. variable)\n"
 	"\tsave		  - Save FDT in EEPROM\n"
-	"\toff		  - Disable the feature of loading the FDT that saved in EEPROM\n"
-	"\ton		  - Enable the feature of loading the FDT that saved in EEPROM\n"
-	"\tlist		  - Show the options of the board\n"
-	"\tselect	  - Print active FDT selection\n"
-	"\tselect <x>	  - Update active FDT selection\n"
 );

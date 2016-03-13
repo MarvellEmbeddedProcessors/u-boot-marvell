@@ -122,8 +122,8 @@ struct hw_info_data_struct {
 
 bool cfg_eeprom_fdt_config_is_enable(void);
 bool cfg_eeprom_upload_fdt_from_flash(u8 fdt_config_id);
-bool cfg_eeprom_upload_fdt_from_eeprom(void);
-void cfg_eeprom_save(void);
+bool cfg_eeprom_upload_fdt_from_eeprom(uint8_t *fdt_blob);
+void cfg_eeprom_save(uint8_t *fdt_blob, int with_fdt_blob);
 struct eeprom_struct *cfg_eeprom_get_board_config(void);
 void cfg_eeprom_get_hw_info_str(uchar *hw_info_str);
 void cfg_eeprom_set_hw_info_str(uchar *hw_info_str);

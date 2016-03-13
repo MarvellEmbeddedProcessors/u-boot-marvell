@@ -20,6 +20,7 @@
 #include <common.h>
 #include <command.h>
 #include <errno.h>
+#include <asm/arch-mvebu/fdt.h>
 #include "../../board/mvebu/common/cfg_eeprom.h"
 
 /* load the HW configuration from cfg_eeprom module and dump them */
@@ -130,6 +131,7 @@ static int cmd_hw_info_store(char *name)
 	int hw_param_num;
 	uchar hw_info_str[MVEBU_HW_INFO_LEN];
 	struct hw_info_data_struct hw_info_data_arry[HW_INFO_MAX_PARAM_NUM];
+	uint8_t *fdt_blob;
 
 	printf("Are you sure you want to override factory settings in EEPROM? <y/N>");
 	if (!confirm_yesno())
@@ -190,7 +192,9 @@ static int cmd_hw_info_store(char *name)
 	}
 
 	cfg_eeprom_set_hw_info_str(hw_info_str);
-	cfg_eeprom_save();
+	/* save hw_info to EEPROM, and also the rest of the eeprom struct without changing it */
+	fdt_blob = cfg_eeprom_get_fdt();
+	cfg_eeprom_save(fdt_blob, 0);
 
 	printf("hw_info is saved to EEPROM\n");
 	cmd_hw_info_dump(name);

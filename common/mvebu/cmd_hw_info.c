@@ -225,10 +225,12 @@ U_BOOT_CMD(
 	hw_info,      3,     0,      do_hw_info,
 	"hw_info\n",
 	"\n"
-	"Load or store HW information such as board ID, PCB SLM number, MAC addresses between EEPROM and env variables\n"
-	"\tdump  <name>            - Dump all or specific HW parameter from EEPROM\n"
-	"\tload  <name>            - Load all or specific HW parameter from EEPROM to env variables\n"
-	"\tstore <name>            - Store all or specific HW parameter from env variables to EEPROM\n"
+	"Load/Store HW information environment variables from/to EEPROM\n"
+	"HW information includes predefined list of Env. variables (such as board ID, PCB SLM number, MAC addresses, etc).\n"
+	"\tdump  <evn_name>            - Dump all (or specific <env_name>) HW parameter from EEPROM\n"
+	"\tload  <env_name>            - Load all (or specific <env_name>) HW parameter from EEPROM to env variables\n"
+	"\tstore <env_name>            - Store all or specific HW parameter from env variables to EEPROM\n"
+	"\t				 usage of 'hw_info store' requires proper values to be set for the variables listed below\n"
 	"Supported HW information parameters\n"
 	"\tboard_id      board ID\n"
 	"\tpcb_slm       PCB SLM number\n"

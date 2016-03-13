@@ -25,9 +25,11 @@
 #include <asm/arch/mbus_reg.h>
 #include <asm/arch-mvebu/mbus.h>
 #include <asm/arch-mvebu/pinctl.h>
+#include <asm/arch-mvebu/fdt.h>
 #include <i2c.h>
 #include <libfdt.h>
 #include <asm/arch/boot_mode.h>
+#include <fdt_support.h>
 
 /* IO expander I2C device */
 #define I2C_IO_EXP_ADDR	0x22
@@ -259,6 +261,11 @@ bool mvebu_is_in_recovery_mode(void)
 #ifdef CONFIG_LAST_STAGE_INIT
 int last_stage_init(void)
 {
+#ifdef CONFIG_MULTI_DT_FILE
+	uint8_t *fdt_blob;
+	fdt_blob = cfg_eeprom_get_fdt();
+	set_working_fdt_addr(fdt_blob);
+#endif
 	/* here we switch back to original mode mode by
 	 * writing I2C chip 4c address 0.
 	 */

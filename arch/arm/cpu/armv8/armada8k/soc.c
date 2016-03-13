@@ -29,6 +29,7 @@
 #include <linux/sizes.h>
 #include <netdev.h>
 #include <mvebu_chip_sar.h>
+#include <fdt_support.h>
 
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
@@ -220,6 +221,11 @@ bool mvebu_is_in_recovery_mode(void)
 #ifdef CONFIG_LAST_STAGE_INIT
 int last_stage_init(void)
 {
+#ifdef CONFIG_MULTI_DT_FILE
+	uint8_t *fdt_blob;
+	fdt_blob = cfg_eeprom_get_fdt();
+	set_working_fdt_addr(fdt_blob);
+#endif
 	return 0;
 }
 #endif

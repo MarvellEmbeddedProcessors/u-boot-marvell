@@ -54,6 +54,32 @@
 					mem = <0xfc000000 0x1000000>;
 				};
 			};
+
+			gop {
+				emac4: mac0 {
+					mac-address = [00 00 00 00 00 04];
+					port-id = <0>; /* gop_port_id */
+				};
+				emac6: mac2 {
+					mac-address = [00 00 00 00 00 06];
+					port-id = <2>; /* gop_port_id */
+				};
+				emac7: mac3 {
+					mac-address = [00 00 00 00 00 07];
+					port-id = <3>; /* gop_port_id */
+				};
+			};
+			ppv22@000000 {
+				eth0@010000 {
+					emac-data = <&emac4>;
+				};
+				eth1@020000 {
+					emac-data = <&emac6>;
+				};
+				eth2@030000 {
+					emac-data = <&emac7>;
+				};
+			};
 		};
 	};
 };

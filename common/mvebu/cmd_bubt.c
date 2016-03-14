@@ -32,6 +32,8 @@
 #include <usb.h>
 #include <fs.h>
 #include <mmc.h>
+#include <u-boot/sha1.h>
+#include <u-boot/sha256.h>
 
 #if defined(CONFIG_TARGET_ARMADA_8K)
 #define MAIN_HDR_MAGIC		0xB105B002
@@ -57,7 +59,7 @@ struct mvebu_image_header {
 	uint32_t	rsrvd2;			/* 56-59 */
 	uint32_t	rsrvd3;			/* 60-63 */
 };
-#else /* A38x */
+#elif defined(CONFIG_TARGET_ARMADA_38X) /* A38x */
 struct mvebu_image_header {
 	u8	block_id;		/* 0 */
 	u8	rsvd1;			/* 1 */
@@ -76,6 +78,38 @@ struct mvebu_image_header {
 	u16	rsvd2;			/* 28-29 */
 	u8	ext;			/* 30 */
 	u8	checksum;		/* 31 */
+};
+#elif defined(CONFIG_TARGET_ARMADA_3700)	/* A3700 */
+#define HASH_SUM_LEN		16
+#define IMAGE_VERSION_3_6_0		0x030600
+#define IMAGE_VERSION_3_5_0		0x030500
+
+struct common_tim_data {
+	u32	version;
+	u32	identifier;
+	u32	trusted;
+	u32	issue_date;
+	u32	oem_unique_id;
+	u32	reserved[5];		/* Reserve 20 bytes */
+	u32	boot_flash_sign;
+	u32	num_images;
+	u32	num_keys;
+	u32	size_of_reserved;
+};
+
+struct mvebu_image_info {
+	u32	image_id;
+	u32	next_image_id;
+	u32	flash_entry_addr;
+	u32	load_addr;
+	u32	image_size;
+	u32	image_size_to_hash;
+	u32	hash_algorithm_id;
+	u32	hash[HASH_SUM_LEN];		/* Reserve 512 bits for the hash */
+	u32	partition_number;
+	u32	enc_algorithm_id;
+	u32	encrypt_start_offset;
+	u32	encrypt_size;
 };
 #endif
 
@@ -505,12 +539,82 @@ static int check_image_header(void)
 #elif defined(CONFIG_TARGET_ARMADA_3700) /* Armada 3700 */
 static int check_image_header(void)
 {
-	/* Armada3700 has different Image, without mvebu
-	  * header at begining.
-	  * BootRom will also do the image check, if something
-	  * is not right, CM3 would not run the image.
-	  */
-	/* printf("Image checksum...OK!\n"); */
+	struct common_tim_data *hdr = (struct common_tim_data *)get_load_addr();
+	int image_num;
+	u8 hash_160_output[SHA1_SUM_LEN];
+	u8 hash_256_output[SHA256_SUM_LEN];
+	sha1_context hash1_text;
+	sha256_context hash256_text;
+	u8 *hash_output;
+	u32 hash_algorithm_id;
+	u32 image_size_to_hash;
+	u32 flash_entry_addr;
+	u32 *hash_value;
+	u32 internal_hash[HASH_SUM_LEN];
+	const uint8_t *buff;
+	u32 num_of_image = hdr->num_images;
+	u32 version = hdr->version;
+	u32 trusted = hdr->trusted;
+
+	/* bubt checksum validation only supports nontrusted images */
+	if (trusted == 1) {
+		printf("bypass image validation, only untrusted image is supported now\n");
+		return 0;
+	}
+	/* only supports image version 3.5 and 3.6 */
+	if (version != IMAGE_VERSION_3_5_0 && version != IMAGE_VERSION_3_6_0) {
+		printf("Error: Unsupported Image version = 0x%08x\n", version);
+		return -ENOEXEC;
+	}
+	/* validate images hash value */
+	for (image_num = 0; image_num < num_of_image; image_num++) {
+		struct mvebu_image_info *info = (struct mvebu_image_info *)(get_load_addr()
+			     + sizeof(struct common_tim_data) + image_num * sizeof(struct mvebu_image_info));
+		hash_algorithm_id = info->hash_algorithm_id;
+		image_size_to_hash = info->image_size_to_hash;
+		flash_entry_addr = info->flash_entry_addr;
+		hash_value = info->hash;
+		buff = (const uint8_t *)(get_load_addr() + flash_entry_addr);
+
+		if (image_num == 0) {
+			/* The first image includes hash values in itself content. For hash calculation, we need
+			 * to save original hash values to local variable that will be copied back for comparsion
+			 * and set all zeros to replace orignal hash values to calculate its new hash value.
+			 * First image original format : x...x (datum1) x...x(original hash values) x...x(datum2)
+			 * Replaced first image format : x...x (datum1) 0...0(hash values) x...x(datum2)
+			 */
+			memcpy(internal_hash, hash_value, sizeof(internal_hash));
+			memset(hash_value, 0, sizeof(internal_hash));
+		}
+		if (image_size_to_hash == 0) {
+			printf("Warning: Image_%d hash checksum is disable, skip the image validation.\n", image_num);
+			continue;
+		}
+		switch (hash_algorithm_id) {
+		case SHA1_SUM_LEN:
+			sha1_starts(&hash1_text);
+			sha1_update(&hash1_text, buff, image_size_to_hash);
+			sha1_finish(&hash1_text, hash_160_output);
+			hash_output = hash_160_output;
+			break;
+		case SHA256_SUM_LEN:
+			sha256_starts(&hash256_text);
+			sha256_update(&hash256_text, buff, image_size_to_hash);
+			sha256_finish(&hash256_text, hash_256_output);
+			hash_output = hash_256_output;
+			break;
+		default:
+			printf("Error: Unsupported hash_algorithm_id = %d\n", hash_algorithm_id);
+			return -ENOEXEC;
+		}
+		if (image_num == 0)
+			memcpy(hash_value, internal_hash, sizeof(internal_hash));
+		if (memcmp(hash_value, hash_output, hash_algorithm_id) != 0) {
+			printf("Error: Image_%d checksum is not correct\n", image_num);
+			return -ENOEXEC;
+		}
+	}
+	printf("Image checksum...OK!\n");
 	return 0;
 }
 #else

@@ -67,7 +67,7 @@ static char *get_speed_string(u32 speed)
 
 static char *get_type_string(u32 type)
 {
-	char *type_strings[] = {"unconnected", "PEX0", "PEX1", "PEX2", "PEX3",
+	char *type_strings[] = {"UNCONNECTED", "PEX0", "PEX1", "PEX2", "PEX3",
 				"SATA0", "SATA1", "SATA2", "SATA3", "SGMII0",
 				"SGMII1", "SGMII2", "SGMII3", "QSGMII", "USB3_HOST0",
 				"USB3_HOST1", "USB3_DEVICE", "XAUI0", "XAUI1",
@@ -194,10 +194,10 @@ u32 comphy_init(const void *blob)
 			lane++;
 		}
 
-		/* PHY print SerDes status */
-		comphy_print(ptr_chip_cfg, comphy_map_data);
 		/* PHY power UP sequence */
 		ptr_chip_cfg->ptr_comphy_chip_init(ptr_chip_cfg, comphy_map_data);
+		/* PHY print SerDes status */
+		comphy_print(ptr_chip_cfg, comphy_map_data);
 	}
 	debug_exit();
 

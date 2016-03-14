@@ -145,7 +145,6 @@ int mvebu_board_init(void)
 {
 	debug("Initializing board\n");
 
-	mvebu_print_info();
 #ifdef CONFIG_MVEBU_MPP_BUS
 	mpp_bus_probe();
 #endif
@@ -158,6 +157,8 @@ int mvebu_board_init(void)
 
 int board_init(void)
 {
+	mvebu_print_info();
+
 	mvebu_soc_init();
 
 	mvebu_board_init();

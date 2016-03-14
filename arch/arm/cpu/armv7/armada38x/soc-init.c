@@ -108,3 +108,10 @@ int dram_init(void)
 	return 0;
 }
 
+#ifdef CONFIG_LAST_STAGE_INIT
+int last_stage_init(void)
+{
+	return 0;
+}
+#endif
+

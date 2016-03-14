@@ -254,3 +254,11 @@ bool mvebu_is_in_recovery_mode(void)
 	regval = (readl(MVEBU_TEST_PIN_LATCH_N) & MVEBU_BOOTMODE_MASK) >> MVEBU_BOOTMODE_OFFS;
 	return regval == MVEBU_BOOTMODE_UART;
 }
+
+#ifdef CONFIG_LAST_STAGE_INIT
+int last_stage_init(void)
+{
+	return 0;
+}
+#endif
+

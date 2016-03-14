@@ -85,6 +85,7 @@
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_ENV_OVERWRITE            /* allow to change env parameters */
 #undef  CONFIG_WATCHDOG                 /* watchdog disabled */
+#define CONFIG_LAST_STAGE_INIT	1	    /* call last_stage_init()	*/
 
 /* SPL */
 /* Common defines for SPL */

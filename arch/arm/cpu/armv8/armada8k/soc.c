@@ -216,3 +216,11 @@ bool mvebu_is_in_recovery_mode(void)
 	return get_info(RECOVERY_MODE);
 #endif
 }
+
+#ifdef CONFIG_LAST_STAGE_INIT
+int last_stage_init(void)
+{
+	return 0;
+}
+#endif
+

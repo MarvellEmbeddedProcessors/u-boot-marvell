@@ -16,35 +16,23 @@
  * ***************************************************************************
  */
 
-#ifndef _SYSTEM_INFO_H_
-#define _SYSTEM_INFO_H_
+#include <common.h>
+#include <asm/io.h>
+#include <asm/arch/boot_mode.h>
+#include <i2c.h>
 
-#define SYSTEM_INFO_ADDRESS	0x4000000
+/*
+ * switch to uart boot mode, this routine will be invoked
+ * 1. in early stage of SPL to switch boot mode to UART
+ * 2. in the latest stage of u-boot switch back to original mode
+ */
+void mvebu_boot_mode_set(uchar boot_mode)
+{
+	i2c_write(BOOT_MODE_I2C_CHIP, BOOT_MODE_I2C_ADDR, BOOT_MODE_I2C_LENG, &boot_mode, BOOT_MODE_I2C_LENG);
+}
 
-enum sys_info_type {
-	ARRAY_SIZE,
-	DRAM_CS0_SIZE,
-	DRAM_CS1_SIZE,
-	DRAM_CS2_SIZE,
-	DRAM_CS3_SIZE,
-	DRAM_BUS_WIDTH,
-	DRAM_ECC,
-	DRAM_CS0,
-	DRAM_CS1,
-	DRAM_CS2,
-	DRAM_CS3,
-	RECOVERY_MODE,
-	BOOT_MODE,
-	MAX_OPTION,
-};
+void mvebu_boot_mode_get(uchar *boot_mode)
+{
+	i2c_read(BOOT_MODE_I2C_CHIP, BOOT_MODE_I2C_ADDR, BOOT_MODE_I2C_LENG, boot_mode, BOOT_MODE_I2C_LENG);
+}
 
-struct sys_info {
-	enum sys_info_type field_id;
-	unsigned int value;
-};
-
-int get_info(enum sys_info_type field);
-void set_info(enum sys_info_type field, unsigned int value);
-void sys_info_init(void);
-
-#endif /* _SYSTEM_INFO_H_ */

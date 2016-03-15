@@ -25,5 +25,17 @@ config ARMV8_PSCI
 	default y
 
 
+config MVEBU_BOOTMODE_SWITCH_SUPPORT
+	bool "Mvebu bootmode switch support"
+	depends on DEVEL_BOARD
+	default y
+	help
+	  Choose this option to switch the boot source
+	  to uart at the early stage of SPL while the boot source
+	  is supposed to be restored at the last stage before reaching
+	  u-boot prompt. This mechanism is introduced
+	  in order to fallback to uart mode automatically
+	  when a mal-function bootloader image is present in flash.
+
 endif
 

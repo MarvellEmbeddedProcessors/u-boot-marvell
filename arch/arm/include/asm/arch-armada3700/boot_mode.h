@@ -16,35 +16,27 @@
  * ***************************************************************************
  */
 
-#ifndef _SYSTEM_INFO_H_
-#define _SYSTEM_INFO_H_
+#ifndef _BOOT_MODE_H_
+#define _BOOT_MODE_H_
 
-#define SYSTEM_INFO_ADDRESS	0x4000000
-
-enum sys_info_type {
-	ARRAY_SIZE,
-	DRAM_CS0_SIZE,
-	DRAM_CS1_SIZE,
-	DRAM_CS2_SIZE,
-	DRAM_CS3_SIZE,
-	DRAM_BUS_WIDTH,
-	DRAM_ECC,
-	DRAM_CS0,
-	DRAM_CS1,
-	DRAM_CS2,
-	DRAM_CS3,
-	RECOVERY_MODE,
-	BOOT_MODE,
-	MAX_OPTION,
+/* BOOT MODE */
+enum boot_mode_ids {
+	BOOT_MODE_AUTO_SCAN = 0,
+	BOOT_MODE_SPI,
+	BOOT_MODE_EMMC,
+	BOOT_MODE_EMMC_ALTERNATE,
+	BOOT_MODE_SATA,
+	BOOT_MODE_NAND,
+	BOOT_MODE_UART,
+	BOOT_MODE_MAX,
 };
 
-struct sys_info {
-	enum sys_info_type field_id;
-	unsigned int value;
-};
+/* EEPROM FOR BOOT MODE */
+#define BOOT_MODE_I2C_CHIP	0x4c
+#define BOOT_MODE_I2C_ADDR	0
+#define BOOT_MODE_I2C_LENG	1
 
-int get_info(enum sys_info_type field);
-void set_info(enum sys_info_type field, unsigned int value);
-void sys_info_init(void);
+void mvebu_boot_mode_set(uchar boot_mode);
+void mvebu_boot_mode_get(uchar *boot_mode);
 
-#endif /* _SYSTEM_INFO_H_ */
+#endif /* _BOOT_MODE_H_ */

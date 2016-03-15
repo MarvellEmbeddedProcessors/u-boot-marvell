@@ -23,6 +23,7 @@
 #include <asm/arch-mvebu/mbus.h>
 #include <asm/arch/gpio.h>
 #include <asm/arch-mvebu/mvebu_misc.h>
+#include <asm/arch/boot_mode.h>
 #include <asm/arch-mvebu/ddr.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <spl.h>
@@ -33,6 +34,10 @@ void (*ptr_uboot_start)(void);
 
 void board_init_f(ulong silent)
 {
+#ifdef CONFIG_MVEBU_BOOTMODE_SWITCH_SUPPORT
+	uchar boot_mode_read;
+#endif
+
 	gd = &gdata;
 	gd->baudrate = CONFIG_BAUDRATE;
 
@@ -80,6 +85,27 @@ void board_init_f(ulong silent)
 	* Therefore it is safe to start using UART before call to early_spl_init()
 	*/
 	preloader_console_init();
+
+#ifdef CONFIG_MVEBU_BOOTMODE_SWITCH_SUPPORT
+	/* Armada3700-Z chip doesn't support escape string to enter the uart mode.
+	 * So that the u-boot cannot be recovered via uart on a boot failure. For Marvell
+	 * board, it supports to switch the boot_src by modifying the sample at reset
+	 * value in PCA9560.
+	 *
+	 * 1. in early stage of SPL, boot mode from SatR device will be read, kept
+	 *    the original value, I2C mem will be written to boot from UART, so if
+	 *    SPL/u-boot crashed, board stays in boot from UART mode.
+	 * 2. in the last stage of u-boot, boot mode will be written back to
+	 *    oringal value.
+	 */
+	mvebu_boot_mode_get(&boot_mode_read);
+
+	/* Pass BOOT_MODE from SPL to u-boot */
+	set_info(BOOT_MODE, boot_mode_read);
+
+	/* switch to uart boot mode */
+	mvebu_boot_mode_set(BOOT_MODE_UART);
+#endif
 
 	/* Clock should be enabeld before initialize the I/O units */
 #if defined(CONFIG_MVEBU_A3700_CLOCK) && !defined(SPL_IS_IN_DRAM)

@@ -27,6 +27,7 @@
 #include <asm/arch-mvebu/pinctl.h>
 #include <i2c.h>
 #include <libfdt.h>
+#include <asm/arch/boot_mode.h>
 
 /* IO expander I2C device */
 #define I2C_IO_EXP_ADDR	0x22
@@ -258,7 +259,16 @@ bool mvebu_is_in_recovery_mode(void)
 #ifdef CONFIG_LAST_STAGE_INIT
 int last_stage_init(void)
 {
+	/* here we switch back to original mode mode by
+	 * writing I2C chip 4c address 0.
+	 */
+	uchar boot_mode_set = get_info(BOOT_MODE);
+
+	/* Check if oringinal mode is invalid, if it is invalid and set it to auto scan mode */
+	if (boot_mode_set < BOOT_MODE_AUTO_SCAN || boot_mode_set >= BOOT_MODE_MAX)
+		mvebu_boot_mode_set(BOOT_MODE_AUTO_SCAN);
+	else
+		mvebu_boot_mode_set(boot_mode_set);
 	return 0;
 }
 #endif
-

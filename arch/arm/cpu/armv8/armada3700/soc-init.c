@@ -21,6 +21,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch-mvebu/soc.h>
+#include <asm/arch-mvebu/comphy.h>
 #include <netdev.h>
 #include <asm/arch/mbus_reg.h>
 #include <asm/arch-mvebu/mbus.h>
@@ -84,6 +85,12 @@ void soc_init(void)
 #endif /* CONFIG_I2C_MV */
 
 #endif /* CONFIG_PALLADIUM */
+
+#ifdef CONFIG_MVEBU_COMPHY_SUPPORT
+	if (comphy_init(gd->fdt_blob))
+		error("COMPHY initialization failed\n");
+#endif
+
 	return;
 }
 

@@ -80,12 +80,12 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 	usb_brg_adrdec_setup();
 
 	*hccr = (struct ehci_hccr *)(MVUSB0_BASE + 0x100);
-	*hcor = (struct ehci_hcor *)((uint32_t) *hccr
+	*hcor = (struct ehci_hcor *)((uintptr_t) *hccr
 			+ HC_LENGTH(ehci_readl(&(*hccr)->cr_capbase)));
 
-	debug("ehci-marvell: init hccr %x and hcor %x hc_length %d\n",
-		(uint32_t)*hccr, (uint32_t)*hcor,
-		(uint32_t)HC_LENGTH(ehci_readl(&(*hccr)->cr_capbase)));
+	debug("ehci-marvell: init hccr %lx and hcor %lx hc_length %ld\n",
+		(uintptr_t)*hccr, (uintptr_t)*hcor,
+		(uintptr_t)HC_LENGTH(ehci_readl(&(*hccr)->cr_capbase)));
 
 	return 0;
 }

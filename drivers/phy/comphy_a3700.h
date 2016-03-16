@@ -203,6 +203,21 @@
 #define USB2_RX_CHAN_CTRL1_ADDR		(0x18 + USB2PHY_BASE)
 #define rb_usb2phy_sqcal_done		BIT31
 
+#define USB2_PHY2_CTRL_ADDR		(0x804 + USB2PHY2_BASE)
+#define rb_usb2phy2_suspm		BIT7
+#define rb_usb2phy2_pu			BIT0
+#define USB2_PHY2_CAL_CTRL_ADDR		(0x8 + USB2PHY2_BASE)
+#define USB2_PHY2_PLL_CTRL0_ADDR	(0x0 + USB2PHY2_BASE)
+#define USB2_PHY2_RX_CHAN_CTRL1_ADDR	(0x18 + USB2PHY2_BASE)
+
+#define USB2_PHY_BASE(usb32) (usb32 == 0 ? USB2PHY2_BASE : USB2PHY_BASE)
+#define USB2_PHY_CTRL_ADDR(usb32) (usb32 == 0 ? USB2_PHY2_CTRL_ADDR : USB2_OTG_PHY_CTRL_ADDR)
+#define RB_USB2PHY_SUSPM(usb32) (usb32 == 0 ? rb_usb2phy2_suspm : rb_usb2phy_suspm)
+#define RB_USB2PHY_PU(usb32) (usb32 == 0 ? rb_usb2phy2_pu : rb_usb2phy_pu)
+#define USB2_PHY_CAL_CTRL_ADDR(usb32) (usb32 == 0 ? USB2_PHY2_CAL_CTRL_ADDR : USB2_CAL_CTRL_ADDR)
+#define USB2_PHY_RX_CHAN_CTRL1_ADDR(usb32) (usb32 == 0 ? USB2_PHY2_RX_CHAN_CTRL1_ADDR : USB2_RX_CHAN_CTRL1_ADDR)
+#define USB2_PHY_PLL_CTRL0_ADDR(usb32) (usb32 == 0 ? USB2_PHY2_PLL_CTRL0_ADDR : USB2_PLL_CTRL0_ADDR)
+
 /********************/
 /* SATA definitions */
 /********************/

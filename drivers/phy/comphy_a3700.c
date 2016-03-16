@@ -434,69 +434,74 @@ static int comphy_usb2_power_up(u8 usb32)
 
 	debug_enter();
 
-	/* TODO - add support for second USB2 UTMI - JIRA SYSTEMSW-2055 */
-	if (usb32 == 0)
-		return 1;
+	if (usb32 != 0 && usb32 != 1) {
+		error("invalid usb32 value: (%d), should be either 0 or 1\n", usb32);
+		debug_exit();
+		return 0;
+	}
 
 	/*
 	 * 0. Setup PLL. 40MHz clock uses defaults.
 	 *    See "PLL Settings for Typical REFCLK" table
 	 */
 	if (get_ref_clk() == 25)
-		reg_set((void __iomem *)USB2PHY_BASE,
+		reg_set((void __iomem *)USB2_PHY_BASE(usb32),
 			5 | (96 << 16), 0x3F | (0xFF << 16) | (0x3 << 28));
 
 	/*
 	 * 1. PHY pull up and disable USB2 suspend
 	 */
-	reg_set((void __iomem *)USB2_OTG_PHY_CTRL_ADDR,
-		rb_usb2phy_suspm | rb_usb2phy_pu, 0);
+	reg_set((void __iomem *)USB2_PHY_CTRL_ADDR(usb32),
+		RB_USB2PHY_SUSPM(usb32) | RB_USB2PHY_PU(usb32), 0);
 
-	/*
-	 * 2. Power up OTG module
-	 */
-	reg_set((void __iomem *)USB2_PHY_OTG_CTRL_ADDR, rb_pu_otg, 0);
+	if (usb32 != 0) {
+		/*
+		 * 2. Power up OTG module
+		 */
+		reg_set((void __iomem *)USB2_PHY_OTG_CTRL_ADDR, rb_pu_otg, 0);
 
-	/*
-	 * 3. Configure PHY charger detection
-	 */
-	reg_set((void __iomem *)USB2_PHY_CHRGR_DET_ADDR, 0,
-		rb_cdp_en | rb_dcp_en | rb_pd_en | rb_cdp_dm_auto |
-		rb_enswitch_dp | rb_enswitch_dm | rb_pu_chrg_dtc);
+		/*
+		 * 3. Configure PHY charger detection
+		 */
+		reg_set((void __iomem *)USB2_PHY_CHRGR_DET_ADDR, 0,
+			rb_cdp_en | rb_dcp_en | rb_pd_en | rb_cdp_dm_auto |
+			rb_enswitch_dp | rb_enswitch_dm | rb_pu_chrg_dtc);
+	}
 
 	/* Assert PLL calibration done */
-	ret = comphy_poll_reg((void *)USB2_CAL_CTRL_ADDR,	/* address */
-			      rb_usb2phy_pllcal_done,		/* value */
-			      rb_usb2phy_pllcal_done,		/* mask */
-			      PLL_LOCK_TIMEOUT,			/* timeout */
-			      POLL_32B_REG);			/* 32bit */
+	ret = comphy_poll_reg((void *)USB2_PHY_CAL_CTRL_ADDR(usb32),	/* address */
+				  rb_usb2phy_pllcal_done,		/* value */
+				  rb_usb2phy_pllcal_done,		/* mask */
+				  PLL_LOCK_TIMEOUT,		/* timeout */
+				  POLL_32B_REG);			/* 32bit */
 	if (ret == 0)
 		error("Failed to end USB2 PLL calibration\n");
 
 	/* Assert impedance calibration done */
-	ret = comphy_poll_reg((void *)USB2_CAL_CTRL_ADDR,	/* address */
-			      rb_usb2phy_impcal_done,		/* value */
-			      rb_usb2phy_impcal_done,		/* mask */
-			      PLL_LOCK_TIMEOUT,			/* timeout */
-			      POLL_32B_REG);			/* 32bit */
+	ret = comphy_poll_reg((void *)USB2_PHY_CAL_CTRL_ADDR(usb32),	/* address */
+				  rb_usb2phy_impcal_done,		/* value */
+				  rb_usb2phy_impcal_done,		/* mask */
+				  PLL_LOCK_TIMEOUT,		/* timeout */
+				  POLL_32B_REG);			/* 32bit */
 	if (ret == 0)
 		error("Failed to end USB2 impedance calibration\n");
 
 	/* Assert squetch calibration done */
-	ret = comphy_poll_reg((void *)USB2_RX_CHAN_CTRL1_ADDR,	/* address */
-			      rb_usb2phy_sqcal_done,		/* value */
-			      rb_usb2phy_sqcal_done,		/* mask */
-			      PLL_LOCK_TIMEOUT,			/* timeout */
-			      POLL_32B_REG);			/* 32bit */
+	ret = comphy_poll_reg((void *)USB2_PHY_RX_CHAN_CTRL1_ADDR(usb32),	/* address */
+				  rb_usb2phy_sqcal_done,		/* value */
+				  rb_usb2phy_sqcal_done,		/* mask */
+				  PLL_LOCK_TIMEOUT,		/* timeout */
+				  POLL_32B_REG);			/* 32bit */
 	if (ret == 0)
 		error("Failed to end USB2 unknown calibration\n");
 
 	/* Assert PLL is ready */
-	ret = comphy_poll_reg((void *)USB2_PLL_CTRL0_ADDR,	/* address */
-			      rb_usb2phy_pll_ready,		/* value */
-			      rb_usb2phy_pll_ready,		/* mask */
-			      PLL_LOCK_TIMEOUT,			/* timeout */
-			      POLL_32B_REG);			/* 32bit */
+	ret = comphy_poll_reg((void *)USB2_PHY_PLL_CTRL0_ADDR(usb32), /* address */
+				  rb_usb2phy_pll_ready,		/* value */
+				  rb_usb2phy_pll_ready,		/* mask */
+				  PLL_LOCK_TIMEOUT,		/* timeout */
+				  POLL_32B_REG);			/* 32bit */
+
 	if (ret == 0)
 		error("Failed to lock USB2 PLL\n");
 

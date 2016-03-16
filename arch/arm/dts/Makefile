@@ -70,14 +70,19 @@ dtb-$(CONFIG_PALLADIUM) += apn-806-pd.dtb \
 dtb-$(CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT) += apn-806-db-dop.dtb \
 						armada-7040-rz-db_dop.dtb
 dtb-$(CONFIG_DEVEL_BOARD) += apn-806-db.dtb \
-			     armada-80x0-db.dtb \
-			     armada-7040-rz-db_nand.dtb \
+			     armada-80x0-db.dtb
+
+ifdef CONFIG_AP806_Z_SUPPORT
+dtb-$(CONFIG_DEVEL_BOARD) += armada-7040-rz-db_nand.dtb \
 			     armada-7040-rz-db_router.dtb \
 			     armada-7040-rz-db_all_pci.dtb \
 			     armada-7040-rz-db_rgmii_only.dtb \
 			     armada-7040-rz-db_kr.dtb \
 			     armada-7040-rz-db_rxaui_pci.dtb \
 			     armada-7040-rz-db_rxaui.dtb
+else
+dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-db_router.dtb
+endif
 endif #CONFIG_TARGET_ARMADA_8K
 
 targets += $(dtb-y)

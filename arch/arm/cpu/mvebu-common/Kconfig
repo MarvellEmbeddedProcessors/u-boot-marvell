@@ -120,12 +120,3 @@ config MVEBU_SYS_INFO
 	  If you want to transfer information
 	  from spl to u-boot, you need to choose
 	  this option.
-
-config MVEBU_ROM_SILENCE_FLAG_SUPPORT
-	bool "BootROM silence flag support"
-	default n
-	help
-	  Choose this option to add support for
-	  silence parameter passed to SPL by
-	  BootROM for suppressing serial all
-	  port output during SPL run.

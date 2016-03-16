@@ -1,8 +1,7 @@
 Build instructions:
 -------------------
 
-This document describe how to compile the U-Boot and how to change U-Boot and
-SPL (secondary program loader) configuration
+This document describe how to compile the U-Boot and how to change U-Boot configuration
 
 Build Instruction:
 ------------------
@@ -31,25 +30,23 @@ Build Instruction:
 6. Configure the U-Boot:
 	# make <defconfig_file>
 	For AP806 stand alone board use "make mvebu_apn806_defconfig"
-	For Armada 8040Rz board use "make mvebu_armada70x0_defconfig"
+	For Armada 70x0 board use "make mvebu_armada70x0_defconfig"
 	For Armada-3700 board use "make mvebu_armada3700_defconfig"
 7. Build the U-Boot (Armada-3700 builds require WTP tools installation -
    refer to the section "Tools installation for Armada-3700 builds"):
 	# make
-	The -Boot compilation generates 2 files:
+	The U-Boot compilation generate:
 	u-boot.bin - U-Boot image
-	spl/u-boot-spl.bin - SPL image.
 
 Please Note:
 ------------
-	The u-boot.bin and spl/u-boot-spl.bin should not be used as a stand alone images.
-	The ARM Trusted Firmware (ATF) build process use this images to generates the
+	The u-boot.bin should not be used as a stand alone image.
+	The ARM Trusted Firmware (ATF) build process use this image to generates the
 	flash image.
 
 Configuration update:
 ---------------------
-	To update the U-Boot configuration and the SPL configuration, please refer to
-	doc/README.kconfig
+	To update the U-Boot configuration, please refer to doc/README.kconfig
 
 Boot device selection note:
 ---------------------------

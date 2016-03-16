@@ -86,6 +86,7 @@ static struct icu_irq irq_map_ns_multi[NS_MULTI_IRQS] = {
 	{36, 3, 0}, /* PPv2     AXI monitor */
 
 	{38,  4, 0}, /* PPv2 Misc */
+
 	{39,  5, 0}, /* PPv2 irq */
 	{40,  6, 0}, /* PPv2 irq */
 	{41,  7, 0}, /* PPv2 irq */
@@ -100,8 +101,8 @@ static struct icu_irq irq_map_ns_multi[NS_MULTI_IRQS] = {
 	{50, 16, 0}, /* PPv2 irq */
 	{51, 17, 0}, /* PPv2 irq */
 	{52, 18, 0}, /* PPv2 irq */
-	{52, 19, 0}, /* PPv2 irq */
-	{52, 20, 0}, /* PPv2 irq */
+	{53, 19, 0}, /* PPv2 irq */
+	{54, 20, 0}, /* PPv2 irq */
 
 	{78, 21, 0}, /* MG irq */
 	{88, 22, 0}, /* EIP-197 ring-0 */

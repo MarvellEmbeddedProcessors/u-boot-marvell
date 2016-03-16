@@ -46,6 +46,7 @@
 #define CONFIG_REMAKE_ELF
 
 /* Clock Definitions */
+#define CONFIG_TCLK_FREQUENCY	200 * MHz
 #ifndef CONFIG_PALLADIUM
 #define COUNTER_FREQUENCY	(25 * 1000000)
 #else

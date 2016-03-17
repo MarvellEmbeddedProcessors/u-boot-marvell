@@ -140,6 +140,15 @@
 				reg = <0x58000 0x450>;
 				status = "disabled";
 			};
+			/* no concurrent support for USB2.0 and USB3.0 now
+			 * Need to disable the XHCI driver and enable EHCI
+			 * driver before turn on USB2.0 interface.
+			 */
+			usb: usb@5e000 {
+				compatible = "marvell,mvebu-usb";
+				reg = <0x5e000 0x450>;
+				status = "disabled";
+			};
 			ddr-mac {
 				compatible = "marvell,mvebu-ddr-mac";
 				reg = <0x0000 0x1000>;

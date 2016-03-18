@@ -55,6 +55,16 @@ config USB_EHCI
 
 if USB_EHCI_HCD
 
+config USB_EHCI_MARVELL
+	bool "MARVELL USB 2.0 support"
+	default y
+	depends on MVEBU
+	---help---
+	  Choose this option to add support
+	  for USB 2.0 driver on mvebu SoCs,
+	  which includes Armada3700 and
+	  other Armada family SoCs.
+
 config USB_EHCI_UNIPHIER
 	bool "Support for Panasonic UniPhier on-chip EHCI USB controller"
 	depends on ARCH_UNIPHIER

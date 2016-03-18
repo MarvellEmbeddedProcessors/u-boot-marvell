@@ -13,6 +13,11 @@
 #ifndef CONFIG_USB_EHCI_MARVELL_BYPASS_BRG_ADDR_DEC
 #include <asm/arch/cpu.h>
 #endif
+#ifdef CONFIG_OF_CONTROL
+#include <fdtdec.h>
+#include <asm/arch-mvebu/fdt.h>
+#include <asm/errno.h>
+#endif
 
 #if defined(CONFIG_KIRKWOOD)
 #include <asm/arch/soc.h>
@@ -21,6 +26,19 @@
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#ifdef CONFIG_OF_CONTROL
+/* without FDT support, MVUSB0_BASE is defined in header file,
+ * and be used in routine ehci_hcd_init.
+ *
+ * with FDT support, to keep legacy SoCs' ehci working,
+ * MVUSB0_BASE is redefined as usb_reg_base,
+ * and will be initialized in routine ehci_hcd_init.
+ */
+static uintptr_t usb_reg_base;
+#undef MVUSB0_BASE
+#define MVUSB0_BASE usb_reg_base
+#endif
 
 #ifndef CONFIG_USB_EHCI_MARVELL_BYPASS_BRG_ADDR_DEC
 #define rdl(off)	readl(MVUSB0_BASE + (off))
@@ -75,6 +93,30 @@ static void usb_brg_adrdec_setup(void)
 }
 #endif
 
+/* Device tree global data scanned at 1st init for usb2 nodes */
+int node_list[CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS];
+
+#ifdef CONFIG_OF_CONTROL
+/* Parse and save enabled device tree usb nodes, and return enabled node count */
+int board_usb_get_enabled_port_count(void)
+{
+	static int count = -1;
+
+	/* Scan the device tree once only */
+	if (count < 0) {
+		/* Scan device tree usb nodes once, and save relevant nodes in static node_list */
+		count = fdtdec_find_aliases_for_id(gd->fdt_blob, "usb",
+				COMPAT_MVEBU_USB, node_list, CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS);
+	}
+
+	if (count == 0)
+		printf("%s: 'usb' is disabled in Device Tree\n", __func__);
+
+	/* Return enabled port count */
+	return count;
+}
+#endif
+
 /*
  * Create the appropriate control structures to manage
  * a new EHCI host controller.
@@ -82,10 +124,31 @@ static void usb_brg_adrdec_setup(void)
 int ehci_hcd_init(int index, enum usb_init_type init,
 		struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 {
+#ifdef CONFIG_OF_CONTROL
+	unsigned long node;
+
+	/* node_list: Enabled DT nodes were initialized in usb_device_tree_init(),
+	 * so it's valid to use node_list[index] to fetch its registers */
+	node = node_list[index];
+
+	/* fetch 'reg' property from 'usb' node */
+	usb_reg_base = (unsigned long)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
+	if (usb_reg_base == FDT_ADDR_T_NONE) {
+		error("could not find reg in usb node, initialization skipped!\n");
+		return -ENXIO;
+	}
+#endif
 #ifndef CONFIG_USB_EHCI_MARVELL_BYPASS_BRG_ADDR_DEC
 	usb_brg_adrdec_setup();
 #endif
 
+	/* without FDT support, MVUSB0_BASE is defined in header file,
+	 * and only one usb2 controller is supported.
+	 *
+	 * with FDT support, MVUSB0_BASE is defined as usb_reg_base,
+	 * and will be initialized again in this routine for different
+	 * usb2 controller, so multiple usb2 controllers are supported.
+	 */
 	*hccr = (struct ehci_hccr *)(MVUSB0_BASE + 0x100);
 	*hcor = (struct ehci_hcor *)((uintptr_t) *hccr
 			+ HC_LENGTH(ehci_readl(&(*hccr)->cr_capbase)));

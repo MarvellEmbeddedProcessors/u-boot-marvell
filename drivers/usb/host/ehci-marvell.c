@@ -40,6 +40,18 @@ static uintptr_t usb_reg_base;
 #define MVUSB0_BASE usb_reg_base
 #endif
 
+#ifdef CONFIG_USB_EHCI_MARVELL_SBUSCFG
+#define USB2_SBUSCFG_OFF	0x90
+
+#define USB_SBUSCFG_BAWR_OFF	0x6
+#define USB_SBUSCFG_BARD_OFF	0x3
+#define USB_SBUSCFG_AHBBRST_OFF	0x0
+
+#define USB_SBUSCFG_BAWR_ALIGN_64B	0x4
+#define USB_SBUSCFG_BARD_ALIGN_64B	0x4
+#define USB_SBUSCFG_AHBBRST_INCR16	0x7
+#endif
+
 #ifndef CONFIG_USB_EHCI_MARVELL_BYPASS_BRG_ADDR_DEC
 #define rdl(off)	readl(MVUSB0_BASE + (off))
 #define wrl(off, val)	writel((val), MVUSB0_BASE + (off))
@@ -114,6 +126,30 @@ int board_usb_get_enabled_port_count(void)
 
 	/* Return enabled port count */
 	return count;
+}
+#endif
+
+#ifdef CONFIG_USB_EHCI_MARVELL_SBUSCFG
+/* For SoC without hlock, need to program sbuscfg value to guarantee
+ * AHB master's burst would not overrun or underrun FIFO.
+ *
+ * sbuscfg reg has to be set after usb controller reset, otherwise the value
+ * would be override to 0, in order not to change mainline ehci driver,
+ * __weak routine ehci_powerup_fixup which is invoked in mainline ehci driver
+ * is override to perform this configuration.
+ */
+void ehci_powerup_fixup(uint32_t *status_reg, uint32_t *reg)
+{
+	/* set default value for reg SBUSCFG, which is Control for the AMBA
+	 * system bus interface,
+	 * BAWR = BARD = 4 : Align read/write bursts packets larger than 64 bytes
+	 * AHBBRST = 7     : Align AHB Burst for packets larger than 64 bytes
+	 */
+	writel((USB_SBUSCFG_BAWR_ALIGN_64B << USB_SBUSCFG_BAWR_OFF)
+	      | (USB_SBUSCFG_BARD_ALIGN_64B << USB_SBUSCFG_BARD_OFF)
+	      | (USB_SBUSCFG_AHBBRST_INCR16 << USB_SBUSCFG_AHBBRST_OFF),
+	      usb_reg_base + USB2_SBUSCFG_OFF);
+	mdelay(50);
 }
 #endif
 

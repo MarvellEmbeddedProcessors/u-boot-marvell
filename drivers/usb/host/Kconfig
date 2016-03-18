@@ -77,6 +77,16 @@ config USB_EHCI_MARVELL_BYPASS_BRG_ADDR_DEC
 	  Armada-XP, Armada-37x, Armada-38x and Armada-390
 	  SoCs, while not needed by Armada-3700.
 
+config USB_EHCI_MARVELL_SBUSCFG
+	bool "MARVELL USB 2.0 sbuscfg setting"
+	default n
+	depends on USB_EHCI_MARVELL
+	---help---
+	  Choose this option to add support
+	  for USB 2.0 sbuscfg setting on
+	  certain mvebu SoCs, which includes
+	  Armada-37xx SoCs.
+
 config USB_EHCI_UNIPHIER
 	bool "Support for Panasonic UniPhier on-chip EHCI USB controller"
 	depends on ARCH_UNIPHIER

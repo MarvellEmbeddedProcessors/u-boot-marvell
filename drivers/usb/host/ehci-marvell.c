@@ -10,7 +10,9 @@
 #include <asm/io.h>
 #include <usb.h>
 #include "ehci.h"
+#ifndef CONFIG_USB_EHCI_MARVELL_BYPASS_BRG_ADDR_DEC
 #include <asm/arch/cpu.h>
+#endif
 
 #if defined(CONFIG_KIRKWOOD)
 #include <asm/arch/soc.h>
@@ -20,6 +22,7 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#ifndef CONFIG_USB_EHCI_MARVELL_BYPASS_BRG_ADDR_DEC
 #define rdl(off)	readl(MVUSB0_BASE + (off))
 #define wrl(off, val)	writel((val), MVUSB0_BASE + (off))
 
@@ -29,6 +32,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 /*
  * USB 2.0 Bridge Address Decoding registers setup
+ * that only relevant to AXP, a37x, a38x, a39x and etc..
  */
 static void usb_brg_adrdec_setup(void)
 {
@@ -69,6 +73,7 @@ static void usb_brg_adrdec_setup(void)
 		wrl(USB_WINDOW_BASE(i), base);
 	}
 }
+#endif
 
 /*
  * Create the appropriate control structures to manage
@@ -77,7 +82,9 @@ static void usb_brg_adrdec_setup(void)
 int ehci_hcd_init(int index, enum usb_init_type init,
 		struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 {
+#ifndef CONFIG_USB_EHCI_MARVELL_BYPASS_BRG_ADDR_DEC
 	usb_brg_adrdec_setup();
+#endif
 
 	*hccr = (struct ehci_hccr *)(MVUSB0_BASE + 0x100);
 	*hcor = (struct ehci_hcor *)((uintptr_t) *hccr

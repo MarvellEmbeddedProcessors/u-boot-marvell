@@ -65,6 +65,18 @@ config USB_EHCI_MARVELL
 	  which includes Armada3700 and
 	  other Armada family SoCs.
 
+config USB_EHCI_MARVELL_BYPASS_BRG_ADDR_DEC
+	bool "Bypass MARVELL USB 2.0 bridge address decode setting"
+	default n
+	depends on USB_EHCI_MARVELL
+	---help---
+	  Choose this option to bypass configuration
+	  for USB 2.0 bridge address decode
+	  setting on certain mvebu SoCs.
+	  Address decode configuration is needed for
+	  Armada-XP, Armada-37x, Armada-38x and Armada-390
+	  SoCs, while not needed by Armada-3700.
+
 config USB_EHCI_UNIPHIER
 	bool "Support for Panasonic UniPhier on-chip EHCI USB controller"
 	depends on ARCH_UNIPHIER

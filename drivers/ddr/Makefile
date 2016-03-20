@@ -3,7 +3,6 @@ obj-$(CONFIG_MVEBU_DUNIT_SUPPORT) += ddr_dunit.o
 ifdef CONFIG_MVEBU_MK6_SUPPORT
 ifdef CONFIG_MVEBU_STATIC_SUPPORT
 obj-$(CONFIG_TARGET_ARMADA_3700) +=ddr_mckinley6_arlp.o
-obj-$(CONFIG_TARGET_ARMADA_8K) +=ddr_mckinley6_8k.o
 endif# CONFIG_MVEBU_STATIC_SUPPORT
 # in case of dynamic supprt include the below
 ifdef CONFIG_MVEBU_DYNAMIC_SUPPORT

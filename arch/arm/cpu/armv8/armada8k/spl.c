@@ -65,12 +65,7 @@ void board_init_f(ulong silent)
 #endif /* CONFIG_MVEBU_CHIP_SAR */
 
 	/* Init all relevant drivers (e.g. DDR, comphy...) */
-#ifndef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
-#ifdef CONFIG_MVEBU_SPL_DDR_SUPPORT
-	mvebu_dram_init(gd->fdt_blob);
-#endif
-
-#else /* CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT */
+#ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 	dram_over_pci_init(gd->fdt_blob);
 #endif /* CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT */
 

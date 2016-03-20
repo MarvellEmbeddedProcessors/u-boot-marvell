@@ -22,14 +22,6 @@
 / {
 	ap-806 {
 		internal-regs {
-
-			ddr-mac {
-				cs_count = <1>;
-				bus_width = <DDR_BUS_WIDTH_64>;
-				cs0 {
-					size = <0x00000002 0x00000000>;
-				};
-			};
 			comphy {
 				status = "okay";
 				phy0 {

@@ -38,25 +38,86 @@ static void exception_handler(int exception)
  ***************************************************************************************************/
 u32 cmd_execute(u32 cmd, u32 *args, u32 *nargs)
 {
-	u32 row;
-	u32 status;
+	u32			status;
+	enum mbox_opsize	opsz;
+	enum mbox_op		op;
+	u32			row;
+	u32			size;
+	u32			offset;
+	u32			*wr_args;
 
-	*nargs = 0;
+	op = MBOX_OPERATION(cmd);
+	opsz = MBOX_OP_SIZE(cmd);
 
-	if ((cmd >= CMD_WRITE_EFUSE_ROW_BASE) &&
-	    (cmd <= (CMD_WRITE_EFUSE_ROW_BASE + EFUSE_MAX_ROW))) {
+	/* For bit fields, the first argument is the efuse
+	   row number, the second argument is the bit offset
+	   within the row.
+	   For other efuse fild sizes, the first argument
+	   defines the row number */
+
+	row = args[0];
+	if (row > EFUSE_MAX_ROW) {
+		args[0] = MB_STAT_BAD_ARGUMENT;
+		return ERR_INVALID_ARGUMENT;
+	}
+
+	switch (opsz) {
+	case MB_OPSZ_BIT:
+		size = 1;
+		offset = args[1];
+		wr_args = args + 2;
+		break;
+
+	case MB_OPSZ_BYTE:
+		size = 8;
+		offset = args[1];
+		wr_args = args + 2;
+		break;
+
+	case MB_OPSZ_WORD:
+		size = 32;
+		offset = args[1];
+		wr_args = args + 2;
+		break;
+
+	case MB_OPSZ_DWORD:
+		size = 64;
+		offset = 0;
+		wr_args = args + 1;
+		break;
+
+	case MB_OPSZ_256B:
+		size = 256;
+		offset = 0;
+		wr_args = args + 1;
+		break;
+
+	default:
+		args[0] = MB_STAT_BAD_ARGUMENT;
+		return ERR_INVALID_ARGUMENT;
+	}
+
+	/* Execute command */
+	if (op == MB_OP_WRITE) {
 		/* WRITE */
-		row = cmd - CMD_WRITE_EFUSE_ROW_BASE;
-		status = efuse_write(row, args);
-	} else if ((cmd >= CMD_READ_EFUSE_ROW_BASE) &&
-		   (cmd <= (CMD_READ_EFUSE_ROW_BASE + EFUSE_MAX_ROW))) {
+		*nargs = 0;
+		status = efuse_write(size, row, offset, wr_args);
+
+	} else if (op == MB_OP_READ) {
 		/* READ */
-		row = cmd - CMD_READ_EFUSE_ROW_BASE;
-		*nargs = EFUSE_WORDS_IN_ROW;
-		status = efuse_read(row, args);
+		if (opsz == MB_OPSZ_DWORD)
+			*nargs = 2;
+		else if (opsz == MB_OPSZ_256B)
+			*nargs = 8;
+		else
+			*nargs = 1;
+		status = efuse_read(size, row, offset, args);
+
 	} else {
 		/* ERROR */
 		status = ERR_INVALID_COMMAND;
+		args[0] = MB_STAT_BAD_COMMAND;
+
 	}
 
 	return status;
@@ -69,8 +130,9 @@ u32 cmd_execute(u32 cmd, u32 *args, u32 *nargs)
  ***************************************************************************************************/
 int main(int exception, char **dummy)
 {
-	u32 cmd, args[MAILBOX_MAX_ARGS];
-	u32 status, nargs;
+	u32			cmd, args[MAILBOX_MAX_ARGS];
+	u32			status, nargs;
+	enum mbox_status	mb_stat = MB_STAT_SUCCESS;
 
 	if (exception != 0) {
 		exception_handler(exception);
@@ -78,7 +140,9 @@ int main(int exception, char **dummy)
 	}
 
 	/* Initialization stuff */
-	clock_init();
+	status = clock_init();
+	if (status)
+		return status;
 
 	/* Mailbox commands handling loop */
 	while (1) {
@@ -86,11 +150,14 @@ int main(int exception, char **dummy)
 		if (status == NO_ERROR)
 			status = cmd_execute(cmd, args, &nargs);
 
-		if (status != NO_ERROR)
+		/* In case of error, the status saved in args[0] */
+		if (status != NO_ERROR) {
 			nargs = 0;
+			mb_stat = args[0];
+		}
 
-
-		mbox_send(status, args, nargs);
+		/* Send the results back */
+		mbox_send(mb_stat, args, nargs);
 
 	} /* read and execute mailbox commands */
 

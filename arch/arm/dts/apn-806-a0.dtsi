@@ -79,6 +79,12 @@
 				reg = <0x4000 0x50>;
 				max-win = <8>;
 			};
+			rfu {
+
+				compatible = "marvell,mvebu-rfu";
+				reg = <0x6f0000 0x28>;
+				max-win = <7>;
+			};
 
 			thermal: thermal@6f8084 {
 				compatible = "marvell,thermal-sensor-v2";

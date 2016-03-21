@@ -275,11 +275,11 @@
 	#define CONFIG_DEFAULT_CONSOLE		"console=ttyS0,115200"
 #endif /* CONFIG_SYS_NS16550 */
 
-#ifdef CONFIG_MVEBU_UART_ARLP
+#ifdef CONFIG_MVEBU_A3700_UART
 	#define CONFIG_DEFAULT_CONSOLE		"console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000"
 #endif
 
-#if defined(CONFIG_SYS_NS16550) || defined(CONFIG_MVEBU_UART_ARLP)
+#if defined(CONFIG_SYS_NS16550) || defined(CONFIG_MVEBU_A3700_UART)
 #define CONFIG_BAUDRATE		115200
 #endif
 

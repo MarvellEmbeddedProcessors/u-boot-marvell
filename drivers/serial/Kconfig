@@ -21,12 +21,12 @@ config UNIPHIER_SERIAL
 	help
 	  Support for the on-chip UARTs on the Panasonic UniPhier platform.
 
-config MVEBU_UART_ARLP
-	bool "UART support for ArmadaLP"
+config MVEBU_A3700_UART
+	bool "UART support for Armada3700"
 	default n
 	help
 	  Choose this option to add support
-	  for UART driver on ArmadaLP, which
+	  for UART driver on Armada3700, which
 	  is not using COM1 NS16550 driver.
 	  And base address is configured in FDT file.
 

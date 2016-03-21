@@ -82,4 +82,11 @@ config CMD_MVEBU_HW_INFO
 	  And update the MAC address in FDT file for Linux.
 	  When save the box information, it will be saved to EEPROM.
 
+config CMD_MVEBU_EFUSE
+	bool "efuse"
+	depends on MVEBU_EFUSE_SUPPORT
+	default n
+	help
+	  eFuse - allow access to SoC eFuse (OTP) entries
+
 endmenu

@@ -68,5 +68,7 @@
 /* AVS */
 #define MVEBU_AVS_REGS_BASE		(MVEBU_REGS_BASE + 0x11500)
 
+/* Mailbox */
+#define MVEBU_MBOX_REGS_BASE		(MVEBU_REGS_BASE + 0xB0000)
 
 #endif	/* _REGS_BASE_H_ */

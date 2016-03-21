@@ -54,4 +54,6 @@ source "drivers/thermal/Kconfig"
 
 source "drivers/ddr/Kconfig"
 
+source "drivers/efuse/Kconfig"
+
 endmenu

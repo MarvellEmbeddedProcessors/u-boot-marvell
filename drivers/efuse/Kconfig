@@ -1,0 +1,11 @@
+menu "eFuse support"
+
+config MVEBU_EFUSE_SUPPORT
+	bool "eFuse support"
+	depends on (TARGET_ARMADA_3700 || TARGET_ARMADA_8K)
+	default y
+	help
+	  Choose this option to add support
+	  for eFuse access driver
+
+endmenu

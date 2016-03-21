@@ -25,3 +25,4 @@ obj-$(CONFIG_CMD_MVEBU_MSS_BOOT) += cmd_mss.o
 obj-$(CONFIG_CMD_MVEBU_PHY_INDIRECT) += cmd_phy_indirect.o
 obj-$(CONFIG_ENV_IS_IN_BOOTDEV) += env_bootdev.o
 obj-$(CONFIG_CMD_MVEBU_HW_INFO) += cmd_hw_info.o
+obj-$(CONFIG_CMD_MVEBU_EFUSE) += cmd_efuse.o

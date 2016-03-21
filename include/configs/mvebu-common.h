@@ -364,6 +364,10 @@
 	#define CONFIG_PCI_ADDR_PREFIX
 	#define CONFIG_PCIE_RC_MODE
 
+	#if defined(CONFIG_PCIE_RC_MODE) && defined(CONFIG_PCI_CHECK_EP_PAYLOAD)
+	#define CONFIG_PCI_FIXUP_DEV
+	#endif
+
 	/* Enable PCIE NIC for devel boards */
 	#ifdef CONFIG_DEVEL_BOARD
 		#define CONFIG_E1000

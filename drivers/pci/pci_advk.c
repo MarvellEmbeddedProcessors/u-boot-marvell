@@ -539,3 +539,47 @@ void pci_init_board(void)
 		first_busno = advk_pcie_init(host_id, reg_base, &win, first_busno);
 	}
 }
+
+#ifdef CONFIG_PCI_CHECK_EP_PAYLOAD
+#define PCIE_CAP_DCR1			0x4
+#define MAX_PAYLOAD_SIZE_MASK	0x7
+#define PCIE_CORE_MAX_PAYLAOD_SIZE_SHIFT 5
+
+/* Update the MAX_PAYLOAD_SIZE, use the minimal value between RC and EP */
+static void advk_pcie_set_payload(struct pci_controller *hose, u32 payload)
+{
+	u32 reg, tmp;
+
+	/* Get the MAX_PAYLOAD_SIZE of hose */
+	reg = readl(PCIE_CORE_CONFIG_REG_ADDR(hose->cfg_addr, PCIE_CORE_DEV_CTRL_STATS_REG));
+	tmp = (reg >> PCIE_CORE_MAX_PAYLAOD_SIZE_SHIFT) & MAX_PAYLOAD_SIZE_MASK;
+
+	/* Update the setting to the minimal value */
+	reg &= ~(MAX_PAYLOAD_SIZE_MASK << PCIE_CORE_MAX_PAYLAOD_SIZE_SHIFT);
+	reg |= (min(tmp, payload) << PCIE_CORE_MAX_PAYLAOD_SIZE_SHIFT);
+	writel(reg, PCIE_CORE_CONFIG_REG_ADDR(hose->cfg_addr, PCIE_CORE_DEV_CTRL_STATS_REG));
+}
+
+void board_pci_fixup_dev(struct pci_controller *hose, pci_dev_t dev,
+			 unsigned short vendor, unsigned short device,
+			 unsigned short class)
+{
+	int pcie_cap_pos, pci_dcr1;
+	u32 tmp;
+
+	/* Get PCIe capability structure. */
+	pcie_cap_pos = pci_hose_find_capability(hose, dev, PCI_CAP_ID_EXP);
+	if (pcie_cap_pos == 0) {
+		error("Could not find PCIE CAP structure.\n");
+		return;
+	}
+
+	/* Get supported MAX_PAYLOAD_SIZE from EP */
+	pci_dcr1 = pcie_cap_pos + PCIE_CAP_DCR1;
+	pci_hose_read_config_dword(hose, dev, pci_dcr1, &tmp);
+	tmp &= MAX_PAYLOAD_SIZE_MASK;
+
+	/* Set the MAX_PAYLOAD_SIZE of hose according to EP */
+	advk_pcie_set_payload(hose, tmp);
+}
+#endif /* CONFIG_PCI_CHECK_EP_PAYLOAD */

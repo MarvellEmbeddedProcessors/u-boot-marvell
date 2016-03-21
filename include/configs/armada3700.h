@@ -106,6 +106,11 @@ extern char __end_of_spl[];
 
 #endif /* CONFIG_MVEBU_SPI */
 
+/* The MAX_PAYLOAD_SIZE of A3700 should be aligned with the capability
+   of the EndPoint.
+ */
+#define CONFIG_PCI_CHECK_EP_PAYLOAD
+
 /* The EEPROM ST M24C64 has 32 byte page write mode and takes up to 10 msec.
  */
 #define CONFIG_MVEBU_EEPROM_PAGE_WRITE_DELAY_MS	10

@@ -33,8 +33,8 @@ obj-$(CONFIG_FTSSP010_SPI) += ftssp010_spi.o
 obj-$(CONFIG_ICH_SPI) +=  ich.o
 obj-$(CONFIG_KIRKWOOD_SPI) += kirkwood_spi.o
 ifdef CONFIG_MVEBU_SPI
-ifdef CONFIG_MVEBU_SPI_ARLP
-obj-y += mvebu_spi_arlp.o
+ifdef CONFIG_MVEBU_SPI_A3700
+obj-y += mvebu_spi_a3700.o
 else
 obj-y += mvebu_spi.o
 endif

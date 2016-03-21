@@ -84,7 +84,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(INTEL_GMA, "intel,gma"),
 	COMPAT(AMS_AS3722, "ams,as3722"),
 	COMPAT(MVEBU_SPI, "marvell,orion-spi"),
-	COMPAT(MVEBU_ARLP_SPI, "marvell,armadalp-spi"),
+	COMPAT(MVEBU_A3700_SPI, "marvell,armada-3700-spi"),
 	COMPAT(MVEBU_UART, "marvell,armadalp-uart"),
 	COMPAT(MVEBU_NETA, "marvell,armadalp-neta"),
 	COMPAT(MVEBU_PP2, "marvell,armada-a8k-pp2"),

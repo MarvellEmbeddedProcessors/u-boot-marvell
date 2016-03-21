@@ -23,6 +23,7 @@
 #include <asm/io.h>
 #include <fdtdec.h>
 #include <asm/arch-mvebu/fdt.h>
+#include <asm/arch-mvebu/mvebu.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -30,33 +31,33 @@ DECLARE_GLOBAL_DATA_PTR;
 unsigned long mvebu_spi_reg_base = 100;
 #define MVEBU_SPI_BASE         mvebu_spi_reg_base
 
-unsigned int mvebu_spi_input_clock = 0;
-unsigned int mvebu_spi_max_freq = 0;
+unsigned int mvebu_spi_input_clock;
+unsigned int mvebu_spi_max_freq;
 
 #define CONFIG_MAX_SPI_NUM	8
 #define CONFIG_MAX_SPI_CS_NUM	4
 
 #define SPI_TIMEOUT		10000
 
-#define MVEBU_SPI_ARLP_CTRL_OFFSET         0x00
-#define MVEBU_SPI_ARLP_CONF_OFFSET         0x04
-#define MVEBU_SPI_ARLP_DOUT_OFFSET         0x08
-#define MVEBU_SPI_ARLP_DIN_OFFSET          0x0c
+#define MVEBU_SPI_A3700_CTRL_OFFSET         0x00
+#define MVEBU_SPI_A3700_CONF_OFFSET         0x04
+#define MVEBU_SPI_A3700_DOUT_OFFSET         0x08
+#define MVEBU_SPI_A3700_DIN_OFFSET          0x0c
 
-#define MVEBU_SPI_ARLP_CTRL_ADDR           (MVEBU_SPI_BASE + MVEBU_SPI_ARLP_CTRL_OFFSET)
-#define MVEBU_SPI_ARLP_CONF_ADDR           (MVEBU_SPI_BASE + MVEBU_SPI_ARLP_CONF_OFFSET)
-#define MVEBU_SPI_ARLP_DOUT_ADDR           (MVEBU_SPI_BASE + MVEBU_SPI_ARLP_DOUT_OFFSET)
-#define MVEBU_SPI_ARLP_DIN_ADDR            (MVEBU_SPI_BASE + MVEBU_SPI_ARLP_DIN_OFFSET)
+#define MVEBU_SPI_A3700_CTRL_ADDR           (MVEBU_SPI_BASE + MVEBU_SPI_A3700_CTRL_OFFSET)
+#define MVEBU_SPI_A3700_CONF_ADDR           (MVEBU_SPI_BASE + MVEBU_SPI_A3700_CONF_OFFSET)
+#define MVEBU_SPI_A3700_DOUT_ADDR           (MVEBU_SPI_BASE + MVEBU_SPI_A3700_DOUT_OFFSET)
+#define MVEBU_SPI_A3700_DIN_ADDR            (MVEBU_SPI_BASE + MVEBU_SPI_A3700_DIN_OFFSET)
 
-#define MVEBU_SPI_ARLP_XFER_RDY				(1 << 1)
-#define MVEBU_SPI_ARLP_FIFO_FLUSH			(1 << 9)
-#define MVEBU_SPI_ARLP_BYTE_LEN				(1 << 5)
-#define MVEBU_SPI_ARLP_BYTE_CLK_PHA			(1 << 6)
-#define MVEBU_SPI_ARLP_CLK_POL				(1 << 7)
-#define MVEBU_SPI_ARLP_FIFO_EN				(1 << 17)
-#define MVEBU_SPI_ARLP_SPI_EN_0				(1 << 16)
-#define MVEBU_SPI_ARLP_CLK_PRESCALE_BIT			0
-#define MVEBU_SPI_ARLP_CLK_PRESCALE_MASK		(0x1F << MVEBU_SPI_ARLP_CLK_PRESCALE_BIT)
+#define MVEBU_SPI_A3700_XFER_RDY				BIT1
+#define MVEBU_SPI_A3700_FIFO_FLUSH			BIT9
+#define MVEBU_SPI_A3700_BYTE_LEN				BIT5
+#define MVEBU_SPI_A3700_BYTE_CLK_PHA			BIT6
+#define MVEBU_SPI_A3700_CLK_POL				BIT7
+#define MVEBU_SPI_A3700_FIFO_EN				BIT17
+#define MVEBU_SPI_A3700_SPI_EN_0				BIT16
+#define MVEBU_SPI_A3700_CLK_PRESCALE_BIT			0
+#define MVEBU_SPI_A3700_CLK_PRESCALE_MASK		(0x1F << MVEBU_SPI_A3700_CLK_PRESCALE_BIT)
 
 /**
  * if_spi_flags_is_set() - poll a register to check if certain flags is set
@@ -101,7 +102,7 @@ static inline int poll_spi_xfer_ready(void)
 {
 	unsigned int timeout = SPI_TIMEOUT;
 
-	return if_spi_flags_is_set(MVEBU_SPI_ARLP_CTRL_ADDR, MVEBU_SPI_ARLP_XFER_RDY, timeout);
+	return if_spi_flags_is_set(MVEBU_SPI_A3700_CTRL_ADDR, MVEBU_SPI_A3700_XFER_RDY, timeout);
 }
 
 /**
@@ -120,22 +121,22 @@ int spi_set_legacy(void)
 	unsigned int val_conf;
 
 	/* Always shift 1 byte at a time */
-	val_conf = readl(MVEBU_SPI_ARLP_CONF_ADDR);
-	val_conf = val_conf & (~MVEBU_SPI_ARLP_BYTE_LEN);
+	val_conf = readl(MVEBU_SPI_A3700_CONF_ADDR);
+	val_conf = val_conf & (~MVEBU_SPI_A3700_BYTE_LEN);
 
 	/* Set legacy mode */
-	val_conf = val_conf & (~MVEBU_SPI_ARLP_BYTE_CLK_PHA);
+	val_conf = val_conf & (~MVEBU_SPI_A3700_BYTE_CLK_PHA);
 
 	/* Set CPOL = 0 */
-	val_conf = val_conf & (~MVEBU_SPI_ARLP_CLK_POL);
+	val_conf = val_conf & (~MVEBU_SPI_A3700_CLK_POL);
 
 	/* Set Prescaler */
-	val_conf = val_conf & (~MVEBU_SPI_ARLP_CLK_PRESCALE_MASK);
+	val_conf = val_conf & (~MVEBU_SPI_A3700_CLK_PRESCALE_MASK);
 
 	/* calculate Prescaler = (spi_input_freq / spi_max_freq) */
 	val_conf = val_conf | (mvebu_spi_input_clock / mvebu_spi_max_freq);
 
-	writel(val_conf, MVEBU_SPI_ARLP_CONF_ADDR);
+	writel(val_conf, MVEBU_SPI_A3700_CONF_ADDR);
 
 	return 0;
 }
@@ -192,14 +193,14 @@ int spi_legacy_shift_byte(unsigned int bytelen, const void *dout, void *din)
 			pending_dout = (u32)dummy_dout;
 
 		/* Trigger the xfer */
-		writel(pending_dout, MVEBU_SPI_ARLP_DOUT_ADDR);
+		writel(pending_dout, MVEBU_SPI_A3700_DOUT_ADDR);
 
 		if (din) {
 			if (!poll_spi_xfer_ready())
 				return -ETIMEDOUT;
 
 			/* Read what is transferred in */
-			*din_8 = (u8)readl(MVEBU_SPI_ARLP_DIN_ADDR);
+			*din_8 = (u8)readl(MVEBU_SPI_A3700_DIN_ADDR);
 		}
 
 		/* Don't increment the current pointer if NULL */
@@ -213,7 +214,6 @@ int spi_legacy_shift_byte(unsigned int bytelen, const void *dout, void *din)
 
 	return 0;
 }
-
 
 /**
  * spi_init() - API implementation
@@ -237,19 +237,18 @@ void spi_init(void)
  * Return:	0 - cool
  */
 struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
-				unsigned int max_hz, unsigned int mode)
+				  unsigned int max_hz, unsigned int mode)
 {
 	struct spi_slave *slave;
 	u32 timeout = SPI_TIMEOUT;
 	u32 data;
-
 
 	int node_list[CONFIG_MAX_SPI_NUM], node;
 	u32 i, count;
 
 	/* get reg_base from FDT */
 	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "spi",
-					COMPAT_MVEBU_ARLP_SPI, node_list, CONFIG_MAX_SPI_NUM);
+					   COMPAT_MVEBU_A3700_SPI, node_list, CONFIG_MAX_SPI_NUM);
 
 	/* in FDT file, there should be only one "spi" node that are enabled,
 	* which has the 'reg' attribute for register base of SPI unit */
@@ -289,25 +288,25 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 	slave->cs = cs;
 
 	/* flush read/write FIFO */
-	data = readl(MVEBU_SPI_ARLP_CONF_ADDR);
-	writel((data | MVEBU_SPI_ARLP_FIFO_FLUSH), MVEBU_SPI_ARLP_CONF_ADDR);
+	data = readl(MVEBU_SPI_A3700_CONF_ADDR);
+	writel((data | MVEBU_SPI_A3700_FIFO_FLUSH), MVEBU_SPI_A3700_CONF_ADDR);
 
 	do {
-		data = readl(MVEBU_SPI_ARLP_CONF_ADDR);
+		data = readl(MVEBU_SPI_A3700_CONF_ADDR);
 		if (timeout-- == 0)
 			return NULL;
-	} while (data & MVEBU_SPI_ARLP_FIFO_FLUSH);
+	} while (data & MVEBU_SPI_A3700_FIFO_FLUSH);
 
 	/* set SPI polarity
 	 * 0: Serial interface clock is low when inactive
 	 * 1: Serial interface clock is high when inactive
 	 */
 	if (mode & SPI_CPOL)
-		data |= MVEBU_SPI_ARLP_CLK_POL;
+		data |= MVEBU_SPI_A3700_CLK_POL;
 
 	/* disable FIFO mode */
-	data &= ~MVEBU_SPI_ARLP_FIFO_EN;
-	writel(data, MVEBU_SPI_ARLP_CONF_ADDR);
+	data &= ~MVEBU_SPI_A3700_FIFO_EN;
+	writel(data, MVEBU_SPI_A3700_CONF_ADDR);
 
 	return slave;
 }
@@ -345,6 +344,7 @@ int spi_claim_bus(struct spi_slave *slave)
 {
 	return 0;
 }
+
 /**
  * spi_release_bus() - API implementation
  *
@@ -356,6 +356,7 @@ int spi_claim_bus(struct spi_slave *slave)
 void spi_release_bus(struct spi_slave *slave)
 {
 }
+
 /**
  * spi_cs_is_valid() - API implementation
  *
@@ -373,6 +374,7 @@ int spi_cs_is_valid(unsigned int bus, unsigned int cs)
 	else
 		return 0;
 }
+
 /**
  * spi_cs_activate() - API implementation
  *
@@ -386,10 +388,11 @@ void spi_cs_activate(struct spi_slave *slave)
 	u32 val_conf;
 
 	/* enable cs */
-	val_conf = readl(MVEBU_SPI_ARLP_CTRL_ADDR);
-	val_conf = val_conf | (MVEBU_SPI_ARLP_SPI_EN_0 << slave->cs);
-	writel(val_conf, MVEBU_SPI_ARLP_CTRL_ADDR);
+	val_conf = readl(MVEBU_SPI_A3700_CTRL_ADDR);
+	val_conf = val_conf | (MVEBU_SPI_A3700_SPI_EN_0 << slave->cs);
+	writel(val_conf, MVEBU_SPI_A3700_CTRL_ADDR);
 }
+
 /**
  * spi_cs_activate() - API implementation
  *
@@ -403,11 +406,10 @@ void spi_cs_deactivate(struct spi_slave *slave)
 	u32 val_conf;
 
 	/* disable cs */
-	val_conf = readl(MVEBU_SPI_ARLP_CTRL_ADDR);
-	val_conf = val_conf & (~(MVEBU_SPI_ARLP_SPI_EN_0 << slave->cs));
-	writel(val_conf, MVEBU_SPI_ARLP_CTRL_ADDR);
+	val_conf = readl(MVEBU_SPI_A3700_CTRL_ADDR);
+	val_conf = val_conf & (~(MVEBU_SPI_A3700_SPI_EN_0 << slave->cs));
+	writel(val_conf, MVEBU_SPI_A3700_CTRL_ADDR);
 }
-
 
 /**
  * spi_xfer() - API function to start SPI transfer
@@ -419,7 +421,7 @@ void spi_cs_deactivate(struct spi_slave *slave)
  * This function should send the content in *dout, write incoming data
  * in *din, and return 0 if no issues.
  *
- * ArmadaLP SPI module supports two modes: legacy mode and non-legacy
+ * Armada3700 SPI module supports two modes: legacy mode and non-legacy
  * mode. You can choose to use Legacy mode or Non-Legacy mode at
  * compilation. For details, please see the sub-routines.
  *

@@ -98,7 +98,7 @@ extern char __end_of_spl[];
 /* SPI flash for Palladium */
 #ifdef CONFIG_MVEBU_SPI
 
-#define CONFIG_MVEBU_SPI_ARLP
+#define CONFIG_MVEBU_SPI_A3700
 
 #ifdef CONFIG_PALLADIUM
 #define CONFIG_SPI_FLASH_SPANSION

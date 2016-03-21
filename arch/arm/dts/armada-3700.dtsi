@@ -35,7 +35,7 @@
 			};
 
 			spi0: spi@10600 {
-				compatible = "marvell,armadalp-spi";
+				compatible = "marvell,armada-3700-spi";
 				reg = <0x10600 0x50>;
 				#clock-cells = <0>;
 				clock-frequency = <160000>;

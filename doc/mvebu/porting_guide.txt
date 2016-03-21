@@ -97,4 +97,4 @@ Customer board porting procedure
 		o IO-Decode - misc/mvebu-io-decode.txt
 		o MBUS - misc/mvebu-mbus.txt
 		o GbE - net/mvebu-gbe.txt
-		o SPI - spi/mvebu-spi-arlp.txt
+		o SPI - spi/mvebu-spi-a3700.txt

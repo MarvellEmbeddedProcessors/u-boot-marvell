@@ -37,7 +37,7 @@ struct chip_serdes_phy_config chip_config[] = {
 	 .ptr_comphy_chip_init = comphy_cp110_init },
 #endif
 #ifdef CONFIG_TARGET_ARMADA_3700
-	{.compat = COMPAT_COMPHY_ARMADA_LP,
+	{.compat = COMPAT_COMPHY_ARMADA_3700,
 	 .ptr_comphy_chip_init = comphy_a3700_init },
 #endif
 	{.compat = COMPAT_UNKNOWN}

@@ -100,7 +100,7 @@
 				status = "disabled";
 			};
 			comphy {
-				compatible = "marvell,mvebu-comphy", "marvell,comphy-armadalp";
+				compatible = "marvell,mvebu-comphy", "marvell,comphy-armada-3700";
 				mux-bitcount = <1>;
 				max-lanes = <2>;
 				reg-comphy = <0x18300 0x28>;

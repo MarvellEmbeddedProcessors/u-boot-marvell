@@ -292,7 +292,7 @@ void i2c_init(int speed, int slaveaddr)
 	/* in dts file, go through all the 'i2c' nodes.
 	 */
 	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "i2c",
-			COMPAT_MVEBU_ARLP_I2C, node_list, 2);
+			COMPAT_MVEBU_A3700_I2C, node_list, 2);
 	if (count == 0) {
 		error("could not find i2c node in FDT, initialization failed!\n");
 		return;
@@ -533,7 +533,7 @@ int i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len)
  * has 32 byte page write mode and takes up to 10 msec.
  *
  * in mainline code common/cmd_i2c.c, routine mod_i2c_mem, there is a delay
- * for CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS, and in armadalp.h, this macro
+ * for CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS, and in armada3700.h, this macro
  * is defined as 10ms. So it was OK without delay in I2C driver.
  *
  * But many new features read/write eeprom, such as Multi-fdt, unique

@@ -30,6 +30,16 @@ config MVEBU_PHY_INDIRECT
 	  for PHY indirect access.
 	  This driver initialize the IHB window.
 
+config MVEBU_IHB_INIT
+	bool "Initialize IHB configuration"
+	depends on TARGET_ARMADA_8K
+	default n
+	help
+	  Choose this option to add support
+	  for IHB phy configuration init
+	  enable this option when needed,
+	  if device is connected over IHB
+
 config MVEBU_ICU
 	bool "Interrupt Consolidation Unit (ICU) driver"
 	default n

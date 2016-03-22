@@ -32,3 +32,4 @@ obj-$(CONFIG_MVEBU_MBUS) += mvebu_mbus.o
 obj-$(CONFIG_MVEBU_PHY_INDIRECT) += mvebu_phy_indirect.o
 obj-$(CONFIG_MVEBU_ICU) += mvebu_icu.o
 obj-$(CONFIG_MVEBU_CHIP_SAR) += mvebu_sar/
+obj-$(CONFIG_MVEBU_IHB_INIT) = mvebu_ihb.o

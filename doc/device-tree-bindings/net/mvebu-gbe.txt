@@ -1,12 +1,12 @@
-Marvell ArmadaLP GBE bindings
+Marvell Armada3700 GBE bindings
 ====================
 
-This GBE driver supports Marvell ArmadaLP SoC, which implements the GBE core operations.
+This GBE driver supports Marvell Armada3700 SoC, which implements the GBE core operations.
 The node name is neta0 to show that it's GBE-0, for GBE-1 it should be neta1.
 
-The GBE node for ArmadaLP requires the following properties:
+The GBE node for Armada3700 requires the following properties:
 SoC specific:
-	- compatible: Should be "marvell,armadalp-neta".
+	- compatible: Should be "marvell,armada-3700-neta".
 	- reg: The base address of the GBE unit.
 Board specific:
 	- phy_mode: The phy mode for the GBE interface, which should be one of the following:
@@ -35,7 +35,7 @@ Optional properties:
 
 Examples:
 	neta0: neta@30000 {
-		compatible = "marvell,armadalp-neta";
+		compatible = "marvell,armada-3700-neta";
 		reg = <0x30000 0x20>;
 		phy_addr = <0x0>;
 		phy_mode = "rgmii";

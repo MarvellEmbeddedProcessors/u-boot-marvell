@@ -106,13 +106,13 @@ int cpu_eth_init(bd_t *bis)
 		error("failed to init mvneta\n");
 		return 1;
 	}
-	/* in ArmadaLP, there is a new register, internal Register Base Address, for GBE to
+	/* in Armada3700, there is a new register, internal Register Base Address, for GBE to
 	    access other internal Register. since GBE is on South bridge, not the same island
 	    as CPU, here we set internal reg base value 0xf100000 into it.
 	    NETA drvier initialization does not rely on this configuration, so do it after
 	    mvneta_initialize() */
-	writel(MVEBU_REGS_BASE, MVEBU_ARLP_GBE0_INTERNAL_REG_BASE);
-	writel(MVEBU_REGS_BASE, MVEBU_ARLP_GBE1_INTERNAL_REG_BASE);
+	writel(MVEBU_REGS_BASE, MVEBU_A3700_GBE0_INTERNAL_REG_BASE);
+	writel(MVEBU_REGS_BASE, MVEBU_A3700_GBE1_INTERNAL_REG_BASE);
 
 	return 0;
 }

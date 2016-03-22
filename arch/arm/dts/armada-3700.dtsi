@@ -85,12 +85,12 @@
 			};
 
 			neta0: neta@30000 {
-				compatible = "marvell,armadalp-neta";
+				compatible = "marvell,armada-3700-neta";
 				reg = <0x30000 0x20>;
 				status = "disabled";
 			};
 			neta1: neta@40000 {
-				compatible = "marvell,armadalp-neta";
+				compatible = "marvell,armada-3700-neta";
 				reg = <0x40000 0x20>;
 				status = "disabled";
 			};

@@ -1270,10 +1270,10 @@ static int mvneta_init(struct mvneta_port *pp)
 /* platform glue : initialize decoding windows */
 
 #ifdef CONFIG_MVEBU_NETA_BYPASS_DEC_WIN
-/* not like A380, in ArmadaLP, there are two layers of decode window for GBE,
+/* not like A380, in Armada3700, there are two layers of decode window for GBE,
  * first layer is: GbE Address window that resides inside the GBE unit,
  * second layer is: Fabric address window which is located in the NIC400 (South Fabric).
- * to simple the address decode configuration for ArmadaLP,
+ * to simple the address decode configuration for Armada3700,
  * we bypass the first layer of GBE decode window by setting the first window to 4GB.
  */
 static void mvneta_bypass_mbus_windows(struct mvneta_port *pp)

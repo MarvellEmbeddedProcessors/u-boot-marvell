@@ -3220,18 +3220,3 @@ enum mv_netc_lanes {
 	MV_NETC_LANE_23,
 	MV_NETC_LANE_45,
 };
-
-#ifdef CONFIG_MVPP2_FPGA
-
-#define FPGA_PORTS_BASE          0
-#define MVPP2_FPGA_PERODIC_TIME 10
-#define FPGA_PORT_0_OFFSET       0x104000
-
-void *mv_pp2x_vfpga_address;
-void __iomem *fpga_base;
-
-#endif
-
-/* Functuions */
-void mv_pp2x_write(struct mv_pp2x *pp2, u32 offset, u32 data);
-u32 mv_pp2x_read(struct mv_pp2x *pp2, u32 offset);

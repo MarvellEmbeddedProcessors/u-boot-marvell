@@ -66,7 +66,7 @@ void fdt_env_setup(char *fdtfile, MV_BOOL runUpdate)
 		setenv("fdtfile", fdtfile);
 
 	/* boot command to fetch DT file, update DT (if fdt_skip_update=no) and bootz LSP zImage */
-	char bootcmd_fdt[] = "setenv bootargs_end :$gatewayip:255.255.255.0:Armada:$netdev:none;"
+	char bootcmd_fdt[] = "setenv bootargs_end :$gatewayip:255.255.255.0:Armada:$netdev:none; "
 		"tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;"
 		"setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
 		"ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
@@ -75,7 +75,8 @@ void fdt_env_setup(char *fdtfile, MV_BOOL runUpdate)
 	/* boot command to and bootz LSP zImage (after DT already fetch and set) */
 	env = getenv("bootcmd_fdt_boot");
 	if (!env)
-		setenv("bootcmd_fdt_boot", "tftpboot 0x2000000 $image_name; setenv bootargs $console $nandEcc "
+		setenv("bootcmd_fdt_boot", "setenv bootargs_end :$gatewayip:255.255.255.0:Armada:$netdev:none; "
+			"tftpboot 0x2000000 $image_name; setenv bootargs $console $nandEcc "
 			"$mtdparts $bootargs_root nfsroot=$serverip:$rootpath ip=$ipaddr:$serverip$bootargs_end "
 			"$mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable "
 			"clcd.lcd_panel=$lcd_panel; bootz 0x2000000 - $fdtaddr;");
@@ -83,7 +84,8 @@ void fdt_env_setup(char *fdtfile, MV_BOOL runUpdate)
 	/* boot command to fetch DT file, and set bootcmd_fdt_boot as new bootcmd (manually edit DT & run 'boot') */
 	env = getenv("bootcmd_fdt_edit");
 	if (!env)
-		setenv("bootcmd_fdt_edit", "tftpboot $fdtaddr $fdtfile; fdt addr $fdtaddr; setenv bootcmd $bootcmd_fdt_boot");
+		setenv("bootcmd_fdt_edit", "setenv bootargs_end :$gatewayip:255.255.255.0:Armada:$netdev:none; "
+			"tftpboot $fdtaddr $fdtfile; fdt addr $fdtaddr; setenv bootcmd $bootcmd_fdt_boot");
 
 	env = getenv("bootcmd_fdt");
 	if (!env)

@@ -69,7 +69,7 @@ struct config_types_info {
 
 #define BOARD_ID_INDEX_MASK		0x10
 #define I2C_PAGE_WRITE_SIZE		32
-#define EEPROM_STRUCT_SIZE		sizeof(struct eeprom_struct) - sizeof(board_config_val.fdt_blob)
+#define EEPROM_STRUCT_SIZE		(sizeof(struct eeprom_struct) - sizeof(board_config_val.fdt_blob))
 #define HW_INFO_MAX_PARAM_NUM		32
 struct hw_info_point_struct {
 	char *name;

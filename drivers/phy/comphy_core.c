@@ -203,3 +203,18 @@ u32 comphy_init(const void *blob)
 
 	return 0;
 }
+
+u32 polling_with_timeout(void __iomem *addr, u32 val, u32 mask, unsigned long
+		usec_timout)
+{
+	u32 data;
+
+	do {
+		udelay(1);
+		data = readl(addr) & mask;
+	} while (data != val  && --usec_timout > 0);
+
+	if (usec_timout == 0)
+		return data;
+	return 0;
+}

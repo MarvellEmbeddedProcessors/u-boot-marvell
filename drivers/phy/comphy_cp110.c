@@ -77,6 +77,7 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_width, void __iomem *hpipe_ba
 	u32 mask, data, ret = 1;
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
 	void __iomem *comphy_addr = COMPHY_ADDR(comphy_base, lane);
+	void __iomem *addr;
 	u32 pcie_clk = 0; /* input */
 
 	debug_enter();
@@ -277,8 +278,6 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_width, void __iomem *hpipe_ba
 				0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
 		}
 
-		/* wait 15ms - for comphy calibration done */
-		mdelay(15);
 
 		if (pcie_width != 1) {
 			/* disable writing to all lanes with one write */
@@ -290,13 +289,17 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_width, void __iomem *hpipe_ba
 		debug("stage: Check PLL\n");
 		/* Read lane status */
 		for (i = start_lane; i < end_lane; i++) {
-			data = readl(HPIPE_ADDR(hpipe_base, i) + HPIPE_LANE_STATUS0_REG);
-			if ((data & HPIPE_LANE_STATUS0_PCLK_EN_MASK) == 0) {
+			addr = HPIPE_ADDR(hpipe_base, i) + HPIPE_LANE_STATUS0_REG;
+			data = HPIPE_LANE_STATUS0_PCLK_EN_MASK;
+			mask = data;
+			data = polling_with_timeout(addr, data, mask, 15000);
+			if (data != 0) {
 				debug("Read from reg = %p - value = 0x%x\n", hpipe_addr + HPIPE_LANE_STATUS0_REG, data);
 				error("HPIPE_LANE_STATUS0_PCLK_EN_MASK is 0\n");
 				ret = 0;
 			}
 		}
+
 	}
 
 	debug_exit();
@@ -308,6 +311,7 @@ static int comphy_usb3_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	u32 mask, data, ret = 1;
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
 	void __iomem *comphy_addr = COMPHY_ADDR(comphy_base, lane);
+	void __iomem *addr;
 
 	debug_enter();
 	debug("stage: RFU configurations - hard reset comphy\n");
@@ -391,12 +395,14 @@ static int comphy_usb3_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 		0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
 
 	/* wait 15ms - for comphy calibration done */
-	mdelay(15);
-
 	debug("stage: Check PLL\n");
 	/* Read lane status */
-	data = readl(hpipe_addr + HPIPE_LANE_STATUS0_REG);
-	if ((data & HPIPE_LANE_STATUS0_PCLK_EN_MASK) == 0) {
+	addr = hpipe_addr + HPIPE_LANE_STATUS0_REG;
+	data = HPIPE_LANE_STATUS0_PCLK_EN_MASK;
+	mask = data;
+	data = polling_with_timeout(addr, data, mask, 15000);
+	if (data != 0) {
+		debug("Read from reg = %p - value = 0x%x\n", hpipe_addr + HPIPE_LANE_STATUS0_REG, data);
 		error("HPIPE_LANE_STATUS0_PCLK_EN_MASK is 0\n");
 		ret = 0;
 	}
@@ -412,6 +418,7 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	void __iomem *sd_ip_addr = SD_ADDR(hpipe_base, lane);
 	void __iomem *comphy_addr = COMPHY_ADDR(comphy_base, lane);
 	void __iomem *sata_base;
+	void __iomem *addr;
 
 	debug_enter();
 	sata_base = fdt_get_reg_offs_by_compat(COMPAT_MVEBU_SATA);
@@ -518,9 +525,6 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	data |= 0x1 << SATA3_CTRL_SATA_SSU_OFFSET;
 	reg_set(sata_base + SATA3_VENDOR_DATA, data, mask);
 
-	/* Wait 15ms - Wait for comphy calibration done */
-	mdelay(15);
-
 #ifdef CONFIG_AP806_Z_SUPPORT
 	/* Reduce read & write burst size to 64 byte due to bug in
 	 * AP-806-Z Aurora 2 that prohibits writes larger than 64 byte */
@@ -537,17 +541,16 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	reg_set(sata_base + SATA3_VENDOR_DATA, 0x1 << SATA_MBUS_REGRET_EN_OFFSET, SATA_MBUS_REGRET_EN_MASK);
 
 	debug("stage: Check PLL\n");
-	data = readl(sd_ip_addr + SD_EXTERNAL_STATUS0_REG);
 
-	/* check the PLL TX */
-	if ((data & SD_EXTERNAL_STATUS0_PLL_TX_MASK) == 0) {
-		error("SD_EXTERNAL_STATUS0_PLL_TX is 0\n");
-		ret = 0;
-	}
-
-	/* check the PLL RX */
-	if ((data & SD_EXTERNAL_STATUS0_PLL_RX_MASK) == 0) {
-		error("SD_EXTERNAL_STATUS0_PLL_RX is 0\n");
+	addr = sd_ip_addr + SD_EXTERNAL_STATUS0_REG;
+	data = SD_EXTERNAL_STATUS0_PLL_TX_MASK & SD_EXTERNAL_STATUS0_PLL_RX_MASK;
+	mask = data;
+	data = polling_with_timeout(addr, data, mask, 15000);
+	if (data != 0) {
+		debug("Read from reg = %p - value = 0x%x\n", hpipe_addr + HPIPE_LANE_STATUS0_REG, data);
+		error("SD_EXTERNAL_STATUS0_PLL_TX is %d, SD_EXTERNAL_STATUS0_PLL_RX is %d\n",
+				(data & SD_EXTERNAL_STATUS0_PLL_TX_MASK),
+				(data & SD_EXTERNAL_STATUS0_PLL_RX_MASK));
 		ret = 0;
 	}
 
@@ -561,6 +564,7 @@ static int comphy_sgmii_power_up(u32 lane, u32 sgmii_speed, void __iomem *hpipe_
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
 	void __iomem *sd_ip_addr = SD_ADDR(hpipe_base, lane);
 	void __iomem *comphy_addr = COMPHY_ADDR(comphy_base, lane);
+	void __iomem *addr;
 
 	debug_enter();
 	debug("stage: RFU configurations - hard reset comphy\n");
@@ -655,13 +659,12 @@ static int comphy_sgmii_power_up(u32 lane, u32 sgmii_speed, void __iomem *hpipe_
 	data |= 0x1 << SD_EXTERNAL_CONFIG0_SD_PU_TX_OFFSET;
 	reg_set(sd_ip_addr + SD_EXTERNAL_CONFIG0_REG, data, mask);
 
-	/* wait 15ms - for comphy calibration done */
-	mdelay(15);
-
 	/* check PLL rx & tx ready */
-	data = readl(sd_ip_addr + SD_EXTERNAL_STATUS0_REG);
-	if (((data & SD_EXTERNAL_STATUS0_PLL_RX_MASK) == 0) ||
-		((data & SD_EXTERNAL_STATUS0_PLL_TX_MASK) == 0)) {
+	addr = sd_ip_addr + SD_EXTERNAL_STATUS0_REG;
+	data = SD_EXTERNAL_STATUS0_PLL_RX_MASK | SD_EXTERNAL_STATUS0_PLL_TX_MASK;
+	mask = data;
+	data = polling_with_timeout(addr, data, mask, 15000);
+	if (data != 0) {
 		debug("Read from reg = %p - value = 0x%x\n", sd_ip_addr + SD_EXTERNAL_STATUS0_REG, data);
 		error("SD_EXTERNAL_STATUS0_PLL_RX is %d, SD_EXTERNAL_STATUS0_PLL_TX is %d\n",
 			  (data & SD_EXTERNAL_STATUS0_PLL_RX_MASK),
@@ -674,12 +677,12 @@ static int comphy_sgmii_power_up(u32 lane, u32 sgmii_speed, void __iomem *hpipe_
 	data = 0x1 << SD_EXTERNAL_CONFIG1_RX_INIT_OFFSET;
 	reg_set(sd_ip_addr + SD_EXTERNAL_CONFIG1_REG, data, mask);
 
-	/* Wait 100us */
-	udelay(100);
-
 	/* check that RX init done */
-	data = readl(sd_ip_addr + SD_EXTERNAL_STATUS0_REG);
-	if ((data & SD_EXTERNAL_STATUS0_RX_INIT_MASK) == 0) {
+	addr = sd_ip_addr + SD_EXTERNAL_STATUS0_REG;
+	data = SD_EXTERNAL_STATUS0_RX_INIT_MASK;
+	mask = data;
+	data = polling_with_timeout(addr, data, mask, 100);
+	if (data != 0) {
 		debug("Read from reg = %p - value = 0x%x\n", sd_ip_addr + SD_EXTERNAL_STATUS0_REG, data);
 		error("SD_EXTERNAL_STATUS0_RX_INIT is 0\n");
 		ret = 0;
@@ -703,6 +706,7 @@ static int comphy_kr_power_up(u32 lane, void __iomem *hpipe_base, void __iomem *
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
 	void __iomem *sd_ip_addr = SD_ADDR(hpipe_base, lane);
 	void __iomem *comphy_addr = COMPHY_ADDR(comphy_base, lane);
+	void __iomem *addr;
 
 	debug_enter();
 	debug("stage: RFU configurations - hard reset comphy\n");
@@ -818,17 +822,17 @@ static int comphy_kr_power_up(u32 lane, void __iomem *hpipe_base, void __iomem *
 	data |= 0x1 << SD_EXTERNAL_CONFIG0_SD_PU_TX_OFFSET;
 	reg_set(sd_ip_addr + SD_EXTERNAL_CONFIG0_REG, data, mask);
 
-	/* wait 15ms - for comphy calibration done */
-	mdelay(15);
 
 	/* check PLL rx & tx ready */
-	data = readl(sd_ip_addr + SD_EXTERNAL_STATUS0_REG);
-	if (((data & SD_EXTERNAL_STATUS0_PLL_RX_MASK) == 0) ||
-	    ((data & SD_EXTERNAL_STATUS0_PLL_TX_MASK) == 0)) {
+	addr = sd_ip_addr + SD_EXTERNAL_STATUS0_REG;
+	data = SD_EXTERNAL_STATUS0_PLL_RX_MASK | SD_EXTERNAL_STATUS0_PLL_TX_MASK;
+	mask = data;
+	data = polling_with_timeout(addr, data, mask, 15000);
+	if (data != 0) {
 		debug("Read from reg = %p - value = 0x%x\n", sd_ip_addr + SD_EXTERNAL_STATUS0_REG, data);
 		error("SD_EXTERNAL_STATUS0_PLL_RX is %d, SD_EXTERNAL_STATUS0_PLL_TX is %d\n",
-		      (data & SD_EXTERNAL_STATUS0_PLL_RX_MASK),
-		      (data & SD_EXTERNAL_STATUS0_PLL_TX_MASK));
+			  (data & SD_EXTERNAL_STATUS0_PLL_RX_MASK),
+			  (data & SD_EXTERNAL_STATUS0_PLL_TX_MASK));
 		ret = 0;
 	}
 
@@ -837,12 +841,13 @@ static int comphy_kr_power_up(u32 lane, void __iomem *hpipe_base, void __iomem *
 	data = 0x1 << SD_EXTERNAL_CONFIG1_RX_INIT_OFFSET;
 	reg_set(sd_ip_addr + SD_EXTERNAL_CONFIG1_REG, data, mask);
 
-	/* Wait 100us */
-	udelay(100);
 
 	/* check that RX init done */
-	data = readl(sd_ip_addr + SD_EXTERNAL_STATUS0_REG);
-	if ((data & SD_EXTERNAL_STATUS0_RX_INIT_MASK) == 0) {
+	addr = sd_ip_addr + SD_EXTERNAL_STATUS0_REG;
+	data = SD_EXTERNAL_STATUS0_RX_INIT_MASK;
+	mask = data;
+	data = polling_with_timeout(addr, data, mask, 100);
+	if (data != 0) {
 		debug("Read from reg = %p - value = 0x%x\n", sd_ip_addr + SD_EXTERNAL_STATUS0_REG, data);
 		error("SD_EXTERNAL_STATUS0_RX_INIT is 0\n");
 		ret = 0;
@@ -866,6 +871,7 @@ static int comphy_rxauii_power_up(u32 lane, void __iomem *hpipe_base, void __iom
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
 	void __iomem *sd_ip_addr = SD_ADDR(hpipe_base, lane);
 	void __iomem *comphy_addr = COMPHY_ADDR(comphy_base, lane);
+	void __iomem *addr;
 
 	debug_enter();
 	debug("stage: RFU configurations - hard reset comphy\n");
@@ -980,17 +986,17 @@ static int comphy_rxauii_power_up(u32 lane, void __iomem *hpipe_base, void __iom
 	data |= 0x1 << SD_EXTERNAL_CONFIG0_SD_PU_TX_OFFSET;
 	reg_set(sd_ip_addr + SD_EXTERNAL_CONFIG0_REG, data, mask);
 
-	/* wait 15ms - for comphy calibration done */
-	mdelay(15);
 
 	/* check PLL rx & tx ready */
-	data = readl(sd_ip_addr + SD_EXTERNAL_STATUS0_REG);
-	if (((data & SD_EXTERNAL_STATUS0_PLL_RX_MASK) == 0) ||
-	    ((data & SD_EXTERNAL_STATUS0_PLL_TX_MASK) == 0)) {
+	addr = sd_ip_addr + SD_EXTERNAL_STATUS0_REG;
+	data = SD_EXTERNAL_STATUS0_PLL_RX_MASK | SD_EXTERNAL_STATUS0_PLL_TX_MASK;
+	mask = data;
+	data = polling_with_timeout(addr, data, mask, 15000);
+	if (data != 0) {
 		debug("Read from reg = %p - value = 0x%x\n", sd_ip_addr + SD_EXTERNAL_STATUS0_REG, data);
 		error("SD_EXTERNAL_STATUS0_PLL_RX is %d, SD_EXTERNAL_STATUS0_PLL_TX is %d\n",
-		      (data & SD_EXTERNAL_STATUS0_PLL_RX_MASK),
-		      (data & SD_EXTERNAL_STATUS0_PLL_TX_MASK));
+			  (data & SD_EXTERNAL_STATUS0_PLL_RX_MASK),
+			  (data & SD_EXTERNAL_STATUS0_PLL_TX_MASK));
 		ret = 0;
 	}
 
@@ -998,12 +1004,13 @@ static int comphy_rxauii_power_up(u32 lane, void __iomem *hpipe_base, void __iom
 	reg_set(sd_ip_addr + SD_EXTERNAL_CONFIG1_REG,
 		0x1 << SD_EXTERNAL_CONFIG1_RX_INIT_OFFSET, SD_EXTERNAL_CONFIG1_RX_INIT_MASK);
 
-	/* Wait 100us */
-	udelay(100);
 
 	/* check that RX init done */
-	data = readl(sd_ip_addr + SD_EXTERNAL_STATUS0_REG);
-	if ((data & SD_EXTERNAL_STATUS0_RX_INIT_MASK) == 0) {
+	addr = sd_ip_addr + SD_EXTERNAL_STATUS0_REG;
+	data = SD_EXTERNAL_STATUS0_RX_INIT_MASK;
+	mask = data;
+	data = polling_with_timeout(addr, data, mask, 100);
+	if (data != 0) {
 		debug("Read from reg = %p - value = 0x%x\n", sd_ip_addr + SD_EXTERNAL_STATUS0_REG, data);
 		error("SD_EXTERNAL_STATUS0_RX_INIT is 0\n");
 		ret = 0;

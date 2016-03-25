@@ -265,14 +265,22 @@ uint8_t *cfg_eeprom_get_fdt(void)
 	return (uint8_t *)&board_config_val.fdt_blob;
 }
 
-/* cfg_eeprom_get_hw_info_str - copy hw_info string from cfg_eeprom module to destination
- * It is assumed the cfg_eeprom_init must be called prior to this routine,
- * otherwise static default configuration will be used.
- */
+/* cfg_eeprom_get_hw_info_str - copy hw_info string from cfg_eeprom module to destination */
 void cfg_eeprom_get_hw_info_str(uchar *hw_info_str)
 {
 	int len;
+	struct config_types_info config_info;
 
+	/* if board_id isn't initialized, need to read hw_info and board_id from EEPROM */
+	if (g_board_id == -1) {
+		/* read hw_info config from EEPROM */
+		if (!cfg_eeprom_get_config_type(MV_CONFIG_HW_INFO, &config_info)) {
+			error("Could not find MV_CONFIG_hw_info\n");
+			return;
+		}
+		i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
+			 (uint8_t *)board_config_val.man_info.hw_info, config_info.byte_cnt);
+	}
 	len = strlen((const char *)board_config_val.man_info.hw_info);
 	if (len >= MVEBU_HW_INFO_LEN)
 		len = MVEBU_HW_INFO_LEN - 1;
@@ -479,7 +487,7 @@ int cfg_eeprom_init(void)
 	/* update default active_fdt_selection, just in case there is no valid data in eeprom,
 	 * and need to write default active_fdt_selection per SoC.
 	 */
-	board_cfg->active_fdt_selection = get_default_fdt_config_id(MV_DEFAULT_BOARD_ID);
+	board_cfg->active_fdt_selection = get_default_fdt_config_id(cfg_eeprom_get_board_id());
 
 	/* read pattern from EEPROM */
 	if (!cfg_eeprom_get_config_type(MV_CONFIG_VERIFICATION_PATTERN, &config_info)) {
@@ -493,7 +501,7 @@ int cfg_eeprom_init(void)
 	/* check if pattern in EEPROM is invalid */
 	if (eeprom_buffer.pattern != board_config_val.pattern) {
 		printf("Could not find pattern. Loading default FDT\n");
-		cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(MV_DEFAULT_BOARD_ID));
+		cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(cfg_eeprom_get_board_id()));
 		goto init_done;
 	}
 

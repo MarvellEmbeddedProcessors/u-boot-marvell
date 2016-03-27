@@ -171,7 +171,7 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base
 
 	/* Set Maximal PHY Generation Setting(8Gbps) */
 	mask = HPIPE_INTERFACE_GEN_MAX_MASK;
-	data = 0x1 << HPIPE_INTERFACE_GEN_MAX_OFFSET;
+	data = 0x2 << HPIPE_INTERFACE_GEN_MAX_OFFSET;
 	/* Set Link Train Mode (Tx training control pins are used) */
 	mask |= HPIPE_INTERFACE_LINK_TRAIN_MASK;
 	data |= 0x1 << HPIPE_INTERFACE_LINK_TRAIN_OFFSET;

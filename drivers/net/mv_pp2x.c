@@ -4675,8 +4675,6 @@ int mv_pp2x_phylib_init(struct eth_device *dev, int phyid, int gop_index)
 		return -ENODEV;
 	}
 	phy_config(phydev);
-	phy_startup(phydev);
-	return 1;
 #elif defined(CONFIG_MII) || defined(CONFIG_CMD_MII)
 			miiphy_register(dev->name, bus->read, bus->write);
 			/* Set phy address of the port */

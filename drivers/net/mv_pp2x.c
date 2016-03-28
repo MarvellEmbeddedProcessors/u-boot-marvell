@@ -5124,10 +5124,6 @@ int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 		if (bd_space == NULL)
 			return -ENOMEM;
 
-#ifndef CONFIG_SYS_DCACHE_OFF /* Uboot cache always off */
-		mmu_set_region_dcache_behaviour((u32)bd_space, BD_SPACE,
-						DCACHE_OFF);
-#endif
 		buffer_loc.tx_descs = (struct mv_pp2x_tx_desc *)bd_space;
 
 		buffer_loc.aggr_tx_descs = (struct mv_pp2x_tx_desc *)

@@ -19,15 +19,6 @@
 #include "mv_pp2x.h"
 
 /* Static declaractions */
-
-#ifdef CONFIG_MVPP2_FPGA
-
-static struct pci_device_id fpga_id_table[] = {
-	{0x1234, 0x1234},
-	{}
-};
-#endif
-
 /* Number of RXQs used by single port */
 static int rxq_number = 1;
 /* Number of TXQs used by single port */
@@ -2632,7 +2623,6 @@ static void mv_pp2x_ingress_enable(struct mv_pp2x_port *pp, bool en)
 	}
 }
 
-#ifndef CONFIG_MVPP2_FPGA
 /* PP2 GOP/GMAC config */
 
 /* GOP Functions */
@@ -3679,21 +3669,13 @@ int mv_gop110_smi_init(struct gop_hw *gop)
 
 	return 0;
 }
-#endif
+
 
 /* Set defaults to the MVPP2 port */
 static void mv_pp2x_defaults_set(struct mv_pp2x_port *port)
 {
 	int tx_port_num, val, queue, ptxq;
 
-#ifdef CONFIG_MVPP2_FPGA
-	writel(0x8be4, port->base);
-	writel(0xc200, port->base + 0x8);
-	writel(0x3, port->base + 0x90);
-
-	writel(0x902A, port->base + 0xC);    /*force link to 100Mb*/
-	writel(0x8be5, port->base);          /*enable port        */
-#endif
 	/* Disable Legacy WRR, Disable EJP, Release from reset */
 	tx_port_num = mv_pp2x_egress_port(port);
 	mv_pp2x_write(port->pp2, MVPP2_TXP_SCHED_PORT_INDEX_REG,
@@ -4264,7 +4246,7 @@ static void mv_pp2x_start_dev(struct mv_pp2x_port *pp)
 	/* Config classifier decoding table */
 	mv_pp2x_cls_port_default_config(pp);
 	mv_pp2x_cls_oversize_rxq_set(pp);
-#if defined(CONFIG_MVPP2_FPGA) || defined(CONFIG_MVPPV21)
+#if defined(CONFIG_MVPPV21)
 	/* start the Rx/Tx activity */
 	mv_pp2x_port_enable(pp);
 #else
@@ -4327,15 +4309,11 @@ static int mv_pp2x_port_init(struct mv_pp2x_port *pp)
 
 	/* Disable port */
 	mv_pp2x_egress_disable(pp);
-#ifdef CONFIG_MVPP2_FPGA
-	mv_pp2x_port_disable(pp);
-#else
 #ifdef CONFIG_MVPPV21
 	mv_pp2x_port_disable(pp);
 #else
 	mv_gop110_port_events_mask(&pp->pp2->gop, &pp->mac_data);
 	mv_gop110_port_disable(&pp->pp2->gop, &pp->mac_data);
-#endif
 #endif
 
 	pp->txqs = kzalloc(txq_number * sizeof(struct mv_pp2x_tx_queue),
@@ -4410,7 +4388,6 @@ static int mv_pp2x_probe(struct eth_device *dev)
 		return err;
 	}
 
-#ifndef CONFIG_MVPP2_FPGA
 	mv_pp2x_write(pp->pp2, MVPP22_AXI_BM_WR_ATTR_REG,
 				MVPP22_AXI_ATTR_SNOOP_CNTRL_BIT);
 	mv_pp2x_write(pp->pp2, MVPP22_AXI_BM_RD_ATTR_REG,
@@ -4427,10 +4404,9 @@ static int mv_pp2x_probe(struct eth_device *dev)
 				MVPP22_AXI_ATTR_SNOOP_CNTRL_BIT);
 	mv_pp2x_write(pp->pp2, MVPP22_AXI_TX_DATA_RD_ATTR_REG,
 				MVPP22_AXI_ATTR_SNOOP_CNTRL_BIT);
-#endif
 
 	/* Enable HW PHY polling */
-#if !defined(CONFIG_MVPP2_FPGA) && defined(CONFIG_MVPPV21)
+#if defined(CONFIG_MVPPV21)
 	u32 val;
 
 	val = readl(pp->pp2->lms_base + MVPP2_PHY_AN_CFG0_REG);
@@ -4466,10 +4442,6 @@ static int mv_pp2x_init_u_boot(struct eth_device *dev, bd_t *bis)
 {
 struct mv_pp2x_port *pp = dev->priv;
 
-#ifdef CONFIG_PALLADIUM
-	unsigned long auto_neg_value;
-#endif /* CONFIG_PALLADIUM */
-
 	if (!pp->init/* || pp->link == 0*/) {
 		mv_pp2x_bm_start(pp->pp2);
 		/* Full init on first call */
@@ -4489,7 +4461,7 @@ struct mv_pp2x_port *pp = dev->priv;
 		/* Upon all following calls, this is enough */
 		mv_pp2x_bm_start(pp->pp2);
 		mv_pp2x_txq_drain_set(pp, 0, false);
-#if defined(CONFIG_MVPP2_FPGA) || defined(CONFIG_MVPPV21)
+#if defined(CONFIG_MVPPV21)
 		/* start the Rx/Tx activity */
 		mv_pp2x_port_enable(pp);
 #else
@@ -4513,7 +4485,7 @@ static void mv_pp2x_halt(struct eth_device *dev)
 	mv_pp2x_ingress_enable(pp, false);
 	mv_pp2x_egress_disable(pp);
 
-#if defined(CONFIG_MVPP2_FPGA) || defined(CONFIG_MVPPV21)
+#if defined(CONFIG_MVPPV21)
 	mv_pp2x_port_disable(pp);
 #else
 	mv_gop110_port_events_mask(&pp->pp2->gop, &pp->mac_data);
@@ -5090,8 +5062,6 @@ void mv_pp2x_axi_config(struct mv_pp2x *pp2)
 	mv_pp2x_write(pp2, MVPP22_AXI_WR_SNP_CODE_REG, MVPP22_AXI_WR_CODE_MASK);
 }
 
-#ifdef CONFIG_OF_CONTROL
-
 DECLARE_GLOBAL_DATA_PTR;
 
 char *phy_mode_str[] = {
@@ -5190,13 +5160,7 @@ int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 	dev->recv = mv_pp2x_recv;
 	dev->write_hwaddr = NULL;
 	dev->index = pp2_port->id;
-#ifdef CONFIG_PALLADIUM
-	/* on Palladium, there is no mac address in env,
-	 * so put a value to skip the validation  otherwise
-	 *u-boot would fail at common net driver validation.
-	 */
-	dev->enetaddr[1] = 51;
-#endif
+
 	/*
 	 * The PHY interface type is configured via the
 	 * board specific CONFIG_SYS_NETA_INTERFACE_TYPE
@@ -5435,5 +5399,3 @@ int mv_pp2x_initialize(bd_t *bis)
 
 	return 0;
 }
-
-#endif /* CONFIG_MVPP2_FPGA */

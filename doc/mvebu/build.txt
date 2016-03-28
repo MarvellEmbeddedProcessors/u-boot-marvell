@@ -54,13 +54,15 @@ Configuration update:
 
 Boot device selection note for Armada-3700 builds:
 --------------------------------------------------
+	eMMC boot device:
+	-----------------
 	The Armada-3700 supports eMMC as the boot device on the target.
 	The default boot device on this platform is SPI NOR flash.
 	In order to change the boot device to eMMC, set the following parameter
 	the default configuration:
 	CONFIG_MVEBU_MMC_BOOT=y
 	If "menuconfig" is used, navigate to the following location:
-	-> ARM architecture
+	-> Marvell Platform Options
 	  -> Flash for image
 	and select "eMMC flash boot".
 	The eMMC has 2 boot partitions (BOOT0 and BOOT1) and a user data partition (DATA).
@@ -73,7 +75,7 @@ Boot device selection note for Armada-3700 builds:
 	Valid values for this parameter are 1 for BOOT0 and 2 for BOOT1.
 	Please never use partition number 0 here!
 	It can be changed in the "menuconfig" location:
-	-> ARM architecture
+	-> Marvell Platform Options
 	  -> eMMC Boot Partition
 	Please note that this configuration is only available when "Flash for image"
 	selects "eMMC flash boot" device as described above.
@@ -86,6 +88,44 @@ Boot device selection note for Armada-3700 builds:
 	The first commands remove the write protection flag from the boot partition 0.
 	The same operation can be done for BOOT1 partition by replacing the partition
 	ID in the above commands from mmcblk0boot0 to mmcblk0boot1.
+
+
+	SATA boot device:
+	-----------------
+	The Armada-3700 supports SATA as the boot device on the target.
+	In order to change the boot device to SATA, set the following parameter
+	the default configuration:
+	CONFIG_MVEBU_SATA_BOOT=y
+	If "menuconfig" is used, navigate to the following location:
+	-> Marvell Platform Options
+	  -> Flash for image
+	and select "SATA device boot".
+	The SATA boot image uses FAT partition for storing the U-Boot environment.
+	The internal BootROM looks for a special partition in order to load U-Boot binary.
+	So normally 2 partitions are required for using the SATA boot option.
+	The boot partition has to have ID 0x4D, or ASCII "M". The environment partition can
+	be FAT32 with ID 0xB. In order to change the default environment partition location
+	and number, please change the value of FAT_ENV_DEVICE_AND_PART constant defined
+	in mvebu-common.h file. The default value of this constant assumes that environment
+	stored on SATA device 0, partition number 2 (the boot image itself is stored on
+	partition number 1).
+	Follow the BootROM manual for details about GPT boot partition selection.
+	Partitioning example for 500GB hard disk using MBR scheme:
+	Part    Start Sector    Num Sectors     UUID            Type
+	1       4096            524288          9c1661a5-01     4d
+	2       528384          524288          9c1661a5-02     0b
+	3       1052672         975720496       9c1661a5-03     83
+	Using the example above, the boot image can be placed into the boot partition using
+	the following Linux command (assuming that SATA device is /dev/sda)
+	# sudo dd if=u-boot-spl.img of=/dev/sda1
+
+	Special note:
+	-------------
+	A3700 Z0 BootROM does not support SATA SERDES lines polarity swap. Therefore the A3700 DB
+	equipped with this SoC cannot be used for directly booting from SATA device without
+	board modification (the board has reverse polarity on SATA TX line).
+	Future A3700 revisions will include a special eFuse fields for instructing the BootROM
+	to swap polarity on SATA RX and/or TX lines.
 
 
 Tools installation for Armada-3700 builds:

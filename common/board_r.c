@@ -553,7 +553,12 @@ static int initr_scsi(void)
 {
 	puts("SCSI:  ");
 	scsi_init();
-
+#if defined(CONFIG_MVEBU_SATA_BOOT)
+	/* BootROM SATA device requres FAT partition
+	   to be ready for the environment file access
+	*/
+	scsi_scan(0);
+#endif
 	return 0;
 }
 #endif
@@ -781,8 +786,12 @@ init_fnc_t init_sequence_r[] = {
 #ifdef CONFIG_HAS_DATAFLASH
 	initr_dataflash,
 #endif
+	/* SATA boot mode assumes the environment is on FAT
+	   Therefore SCSI init should be executed before ENV init */
+#if !defined(CONFIG_MVEBU_SATA_BOOT)
 	initr_env,
 	INIT_FUNC_WATCHDOG_RESET
+#endif
 	initr_secondary_cpu,
 #ifdef CONFIG_SC3
 	initr_sc3_read_eeprom,
@@ -836,6 +845,10 @@ init_fnc_t init_sequence_r[] = {
 #ifdef CONFIG_CMD_SCSI
 	INIT_FUNC_WATCHDOG_RESET
 	initr_scsi,
+#endif
+#if defined(CONFIG_MVEBU_SATA_BOOT)
+	initr_env,
+	INIT_FUNC_WATCHDOG_RESET
 #endif
 #ifdef CONFIG_CMD_DOC
 	INIT_FUNC_WATCHDOG_RESET

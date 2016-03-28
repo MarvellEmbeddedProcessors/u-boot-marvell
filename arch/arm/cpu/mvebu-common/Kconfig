@@ -50,6 +50,14 @@ config MVEBU_MMC_BOOT
 	help
 	  Enable boot from eMMC boot partition
 
+config MVEBU_SATA_BOOT
+	bool "SATA device boot"
+	depends on MV_INCLUDE_SATA
+	help
+	  Enable boot from SATA device boot partition
+	  For details about image placement on the
+	  boot device please refer to the BootROM manual
+
 endchoice
 
 config SYS_MMC_ENV_PART

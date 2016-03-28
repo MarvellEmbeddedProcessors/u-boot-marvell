@@ -198,7 +198,7 @@
 /* Flash env setup */
 #if !defined(MV_INCLUDE_NOR) && !defined(CONFIG_MVEBU_NAND_BOOT) &&		\
 	!defined(CONFIG_MVEBU_SPI_BOOT) && !defined(CONFIG_MVEBU_MMC_BOOT) &&	\
-	!defined(CONFIG_ENV_IS_IN_BOOTDEV)
+	!defined(CONFIG_MVEBU_SATA_BOOT) && !defined(CONFIG_ENV_IS_IN_BOOTDEV)
 	#undef CONFIG_CMD_FLASH
 	#undef CONFIG_CMD_IMLS
 	#define CONFIG_ENV_IS_NOWHERE
@@ -240,6 +240,15 @@
 	#define CONFIG_DOIMAGE_SUFFIX	"emmc"
 #endif /* CONFIG_MVEBU_MMC_BOOT */
 
+/* Boot from SATA settings */
+#if defined(CONFIG_MVEBU_SATA_BOOT) && !defined(CONFIG_ENV_IS_IN_BOOTDEV)
+	#define CONFIG_ENV_IS_IN_FAT
+	#define FAT_ENV_INTERFACE	"scsi"
+	#define FAT_ENV_DEVICE_AND_PART	"0:2"
+	#define FAT_ENV_FILE		"uboot.env"
+	#define CONFIG_FAT_WRITE
+	#define CONFIG_DOIMAGE_SUFFIX	"sata"
+#endif /* CONFIG_MVEBU_SATA_BOOT */
 
 /* Generic Interrupt Controller Definitions */
 #define GICD_BASE                       MVEBU_GICD_BASE

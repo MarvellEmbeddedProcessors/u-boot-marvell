@@ -322,12 +322,16 @@ MV_U16 mvEthSwitchGetDeviceID(void)
 
 	if (switchAccessMode == SMI_MULTI_ADDR_MODE || switchAccessMode == SMI_MANUAL_MODE) {
 		switchDeviceID = mvEthSwitchGetDeviceIDInMultiorManualMode();
+		if (switchDeviceID == 0){
+			mvOsPrintf("switchDeviceID value %d is error!\n", switchDeviceID);
+		}
 		return (MV_U16)switchDeviceID;
 	} else if (switchAccessMode == SMI_AUTO_SCAN_MODE) {
 		switchDeviceID = mvEthSwitchGetDeviceIDInAutoScanMode(&highSmiDevAddr);
 		return (MV_U16)switchDeviceID;
 	} else {
 		switchDeviceID = 0;
+		mvOsPrintf("switchDeviceID value %d is error!\n", switchDeviceID);
 		return (MV_U16)switchDeviceID;
 	}
 }

@@ -2704,7 +2704,7 @@ enum mv_pp2x_tag_type {
 #define MVPP2_PRINT_LINE() \
 	printf("Passed: %s(%d)\n", __FILENAME__, __LINE__)
 
-/* Masks used for pp3_emac flags */
+/* Masks used for pp2_emac flags */
 #define MV_EMAC_F_LINK_UP_BIT	0
 #define MV_EMAC_F_INIT_BIT	1
 #define MV_EMAC_F_SGMII2_5_BIT	2
@@ -2712,6 +2712,35 @@ enum mv_pp2x_tag_type {
 #define MV_EMAC_F_LINK_UP	(1 << MV_EMAC_F_LINK_UP_BIT)
 #define MV_EMAC_F_INIT		(1 << MV_EMAC_F_INIT_BIT)
 #define MV_EMAC_F_SGMII2_5	(1 << MV_EMAC_F_SGMII2_5_BIT)
+
+/* MPCS registers */
+#define PCS40G_COMMON_CONTROL					(0x014)
+
+#define FORWARD_ERROR_CORRECTION_OFFSET				10
+#define FORWARD_ERROR_CORRECTION_MASK	\
+	(0x1 << FORWARD_ERROR_CORRECTION_OFFSET)
+
+#define PCS_CLOCK_RESET						(0x14C)
+
+#define CLK_DIV_PHASE_SET_OFFSET				11
+#define CLK_DIV_PHASE_SET_MASK	\
+	(0x1 << CLK_DIV_PHASE_SET_OFFSET)
+
+#define CLK_DIVISION_RATIO_OFFSET				4
+#define CLK_DIVISION_RATIO_MASK	\
+	(0x7 << CLK_DIVISION_RATIO_OFFSET)
+
+#define MAC_CLK_RESET_OFFSET					2
+#define MAC_CLK_RESET_MASK	\
+	(0x1 << MAC_CLK_RESET_OFFSET)
+
+#define RX_SD_CLK_RESET_OFFSET					1
+#define RX_SD_CLK_RESET_MASK	\
+	(0x1 << RX_SD_CLK_RESET_OFFSET)
+
+#define TX_SD_CLK_RESET_OFFSET					0
+#define TX_SD_CLK_RESET_MASK	\
+	(0x1 << TX_SD_CLK_RESET_OFFSET)
 
 /* Definitions */
 

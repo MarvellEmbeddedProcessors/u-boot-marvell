@@ -2697,6 +2697,19 @@ static inline void mv_gop110_serdes_write(struct gop_hw *gop,
 		lane_num * gop->gop_110.serdes.obj_size + offset, data);
 }
 
+/* MPCS Functions */
+
+static inline u32 mv_gop110_mpcs_global_read(struct gop_hw *gop, u32 offset)
+{
+	return mv_gop_gen_read(gop->gop_110.mspg_base, offset);
+}
+
+static inline void mv_gop110_mpcs_global_write(struct gop_hw *gop, u32 offset,
+					       u32 data)
+{
+	mv_gop_gen_write(gop->gop_110.mspg_base, offset, data);
+}
+
 /* XPCS Functions */
 
 static inline u32 mv_gop110_xpcs_global_read(struct gop_hw *gop, u32 offset)
@@ -3071,6 +3084,39 @@ int mv_gop110_xpcs_mode(struct gop_hw *gop, int num_of_lanes)
 	return 0;
 }
 
+int mv_gop110_mpcs_mode(struct gop_hw *gop)
+{
+	u32 reg_addr;
+	u32 val;
+
+	/* configure PCS40G COMMON CONTROL */
+	reg_addr = PCS40G_COMMON_CONTROL;
+	val = mv_gop110_mpcs_global_read(gop, reg_addr);
+	U32_SET_FIELD(val, FORWARD_ERROR_CORRECTION_MASK,
+			0 << FORWARD_ERROR_CORRECTION_OFFSET);
+
+	mv_gop110_mpcs_global_write(gop, reg_addr, val);
+
+	/* configure PCS CLOCK RESET */
+	reg_addr = PCS_CLOCK_RESET;
+	val = mv_gop110_mpcs_global_read(gop, reg_addr);
+	U32_SET_FIELD(val, CLK_DIVISION_RATIO_MASK, 1 <<
+			CLK_DIVISION_RATIO_OFFSET);
+
+	mv_gop110_mpcs_global_write(gop, reg_addr, val);
+
+	val = mv_gop110_mpcs_global_read(gop, reg_addr);
+	U32_SET_FIELD(val, CLK_DIV_PHASE_SET_MASK, 0 <<
+		CLK_DIV_PHASE_SET_OFFSET);
+	U32_SET_FIELD(val, MAC_CLK_RESET_MASK, 1 << MAC_CLK_RESET_OFFSET);
+	U32_SET_FIELD(val, RX_SD_CLK_RESET_MASK, 1 << RX_SD_CLK_RESET_OFFSET);
+	U32_SET_FIELD(val, TX_SD_CLK_RESET_MASK, 1 << TX_SD_CLK_RESET_OFFSET);
+
+	mv_gop110_mpcs_global_write(gop, reg_addr, val);
+
+	return 0;
+}
+
 void mv_gop110_xlg_port_link_event_mask(struct gop_hw *gop, int mac_num)
 {
 	u32 reg_val;
@@ -3095,6 +3141,7 @@ int mv_gop110_port_events_mask(struct gop_hw *gop, struct mv_mac_data *mac)
 
 	case PHY_INTERFACE_MODE_XAUI:
 	case PHY_INTERFACE_MODE_RXAUI:
+	case PHY_INTERFACE_MODE_KR:
 		mv_gop110_xlg_port_link_event_mask(gop, port_num);
 	break;
 
@@ -3113,36 +3160,44 @@ int mv_gop110_xlg_mac_mode_cfg(struct gop_hw *gop, int mac_num,
 	u32 reg_addr;
 	u32 val;
 
-	/* Set TX FIFO thresholds */
-	reg_addr = MV_XLG_PORT_FIFOS_THRS_CFG_REG;
+	/* configure 10G MAC mode */
+	reg_addr = MV_XLG_PORT_MAC_CTRL0_REG;
 	val = mv_gop110_xlg_mac_read(gop, mac_num, reg_addr);
-	U32_SET_FIELD(val, MV_XLG_MAC_PORT_FIFOS_THRS_CFG_TXRDTHR_MASK,
-		(6 << MV_XLG_MAC_PORT_FIFOS_THRS_CFG_TXRDTHR_OFFS));
+	U32_SET_FIELD(val, MV_XLG_MAC_CTRL0_RXFCEN_MASK,
+		      (1 << MV_XLG_MAC_CTRL0_RXFCEN_OFFS));
 	mv_gop110_xlg_mac_write(gop, mac_num, reg_addr, val);
 
-	/* configure 10G MAC mode */
 	reg_addr = MV_XLG_PORT_MAC_CTRL3_REG;
 	val = mv_gop110_xlg_mac_read(gop, mac_num, reg_addr);
 	U32_SET_FIELD(val, MV_XLG_MAC_CTRL3_MACMODESELECT_MASK,
-		(1 << MV_XLG_MAC_CTRL3_MACMODESELECT_OFFS));
+		      (1 << MV_XLG_MAC_CTRL3_MACMODESELECT_OFFS));
 	mv_gop110_xlg_mac_write(gop, mac_num, reg_addr, val);
 
 	reg_addr = MV_XLG_PORT_MAC_CTRL4_REG;
 
 	/* read - modify - write */
 	val = mv_gop110_xlg_mac_read(gop, mac_num, reg_addr);
-	U32_SET_FIELD(val, 0x1F10, 0x310);
+	U32_SET_FIELD(val, MV_XLG_MAC_CTRL4_MAC_MODE_DMA_1G_MASK, 0 <<
+					MV_XLG_MAC_CTRL4_MAC_MODE_DMA_1G_OFFS);
+	U32_SET_FIELD(val, MV_XLG_MAC_CTRL4_FORWARD_PFC_EN_MASK, 1 <<
+					MV_XLG_MAC_CTRL4_FORWARD_PFC_EN_OFFS);
+	U32_SET_FIELD(val, MV_XLG_MAC_CTRL4_FORWARD_802_3X_FC_EN_MASK, 1 <<
+					MV_XLG_MAC_CTRL4_FORWARD_802_3X_FC_EN_OFFS);
 	mv_gop110_xlg_mac_write(gop, mac_num, reg_addr, val);
 
 	/* Jumbo frame support - 0x1400*2= 0x2800 bytes */
 	val = mv_gop110_xlg_mac_read(gop, mac_num, MV_XLG_PORT_MAC_CTRL1_REG);
-	U32_SET_FIELD(val, 0x1FFF, 0x1400);
+	U32_SET_FIELD(val, MV_XLG_MAC_CTRL1_FRAMESIZELIMIT_MASK, 0x1400);
 	mv_gop110_xlg_mac_write(gop, mac_num, MV_XLG_PORT_MAC_CTRL1_REG, val);
 
 	/* mask all port interrupts */
 	mv_gop110_xlg_port_link_event_mask(gop, mac_num);
 
 	/* unmask link change interrupt */
+	val = mv_gop110_xlg_mac_read(gop, mac_num, MV_XLG_INTERRUPT_MASK_REG);
+	val |= MV_XLG_INTERRUPT_LINK_CHANGE_MASK;
+	val |= 1; /* unmask summary bit */
+	mv_gop110_xlg_mac_write(gop, mac_num, MV_XLG_INTERRUPT_MASK_REG, val);
 
 	return 0;
 }
@@ -3318,7 +3373,21 @@ int mv_gop110_port_init(struct gop_hw *gop, struct mv_mac_data *mac)
 		mv_gop110_serdes_reset(gop, 0, false, false, false);
 		mv_gop110_serdes_reset(gop, 1, false, false, false);
 	break;
+	case PHY_INTERFACE_MODE_KR:
+		num_of_act_lanes = 2;
+		mac_num = 0;
+		/* configure PCS */
+		mv_gop110_xpcs_mode(gop, num_of_act_lanes);
+		mv_gop110_mpcs_mode(gop);
+		/* configure MAC */
+		mv_gop110_xlg_mac_mode_cfg(gop, mac_num, num_of_act_lanes);
 
+		/* pcs unreset */
+		mv_gop110_xpcs_reset(gop, UNRESET);
+
+		/* mac unreset */
+		mv_gop110_xlg_mac_reset(gop, mac_num, UNRESET);
+	break;
 	default:
 		netdev_err(NULL, "%s: Requested port mode (%d) not supported",
 				__func__, mac->phy_mode);
@@ -3416,6 +3485,7 @@ int mv_gop110_speed_duplex_set(struct gop_hw *gop, struct mv_mac_data *mac,
 
 	case PHY_INTERFACE_MODE_XAUI:
 	case PHY_INTERFACE_MODE_RXAUI:
+	case PHY_INTERFACE_MODE_KR:
 		mv_gop110_xlg_mac_speed_duplex_set(gop, port_num,
 			speed, duplex);
 	break;
@@ -3480,6 +3550,7 @@ int mv_gop110_fl_cfg(struct gop_hw *gop, struct mv_mac_data *mac)
 
 	case PHY_INTERFACE_MODE_XAUI:
 	case PHY_INTERFACE_MODE_RXAUI:
+	case PHY_INTERFACE_MODE_KR:
 		return 0;
 
 	default:
@@ -3559,6 +3630,7 @@ void mv_gop110_port_enable(struct gop_hw *gop, struct mv_mac_data *mac)
 
 	case PHY_INTERFACE_MODE_XAUI:
 	case PHY_INTERFACE_MODE_RXAUI:
+	case PHY_INTERFACE_MODE_KR:
 		mv_gop110_xlg_mac_port_enable(gop, port_num);
 
 	break;
@@ -3582,6 +3654,7 @@ void mv_gop110_port_disable(struct gop_hw *gop, struct mv_mac_data *mac)
 
 	case PHY_INTERFACE_MODE_XAUI:
 	case PHY_INTERFACE_MODE_RXAUI:
+	case PHY_INTERFACE_MODE_KR:
 		mv_gop110_xlg_mac_port_disable(gop, port_num);
 	break;
 
@@ -5143,7 +5216,8 @@ int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 
 	/* GOP Init  */
 	mvcpn110_mac_hw_init(pp2_port);
-	mv_pp2x_phylib_init(dev, para->phy_addr, para->gop_port);
+	if (pp2_port->mac_data.phy_mode == PHY_INTERFACE_MODE_RGMII)
+		mv_pp2x_phylib_init(dev, para->phy_addr, para->gop_port);
 
 	return 1;
 }
@@ -5312,8 +5386,12 @@ int mv_pp2x_initialize(bd_t *bis)
 			else if (strncmp(phy_mode_str, "rgmii", 5) == 0)
 				phy_mode = PHY_INTERFACE_MODE_RGMII;
 
+			else if (strncmp(phy_mode_str, "kr", 2) == 0)
+				phy_mode = PHY_INTERFACE_MODE_KR;
+
 			if (phy_mode != PHY_INTERFACE_MODE_SGMII &&
-				phy_mode != PHY_INTERFACE_MODE_RGMII) {
+				phy_mode != PHY_INTERFACE_MODE_RGMII &&
+				phy_mode != PHY_INTERFACE_MODE_KR) {
 				printf(
 				"could not find phy-mode in pp2 node, init skipped!\n");
 			}
@@ -5340,17 +5418,18 @@ int mv_pp2x_initialize(bd_t *bis)
 					printf("could not find mdio phy address\n");
 					return -1;
 				}
-				dev_para[port_id].dev_num = port_id;
-				dev_para[port_id].base = pp2->base;
 				dev_para[port_id].phy_addr = mdio_phy;
-				dev_para[port_id].phy_type = phy_mode;
-				dev_para[port_id].gop_port = gop_port;
-				if (1 != mv_pp2x_initialize_dev(bis,
-					pp2, &dev_para[port_id])) {
-					printf(
-					"mv_pp2x_initialize_dev failed, initialization skipped!\n");
-					return -1;
-				}
+
+			}
+			dev_para[port_id].dev_num = port_id;
+			dev_para[port_id].base = pp2->base;
+			dev_para[port_id].phy_type = phy_mode;
+			dev_para[port_id].gop_port = gop_port;
+			if (1 != mv_pp2x_initialize_dev(bis,
+				pp2, &dev_para[port_id])) {
+				printf(
+				"mv_pp2x_initialize_dev failed, initialization skipped!\n");
+				return -1;
 			}
 		}
 

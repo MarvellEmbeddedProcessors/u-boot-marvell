@@ -72,7 +72,7 @@ struct comphy_mux_data cp110_comphy_pipe_mux_data[] = {
 /* Lane 5 */ {2, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX2, 0x4} } },
 };
 
-static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base, void __iomem *comphy_base)
+static int comphy_pcie_power_up(u32 lane, u32 pcie_width, void __iomem *hpipe_base, void __iomem *comphy_base)
 {
 	u32 mask, data, ret = 1;
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
@@ -80,6 +80,19 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base
 	u32 pcie_clk = 0; /* input */
 
 	debug_enter();
+
+	debug("\nPCIe Width %d\n", pcie_width);
+	/* enable PCIe by4 and by2 */
+	if (lane == 0) {
+		if (pcie_width == 4) {
+			reg_set(comphy_addr + COMMON_PHY_SD_CTRL1,
+				0x1 << COMMON_PHY_SD_CTRL1_PCIE_X4_EN_OFFSET, COMMON_PHY_SD_CTRL1_PCIE_X4_EN_MASK);
+		} else if (pcie_width == 2) {
+			reg_set(comphy_addr + COMMON_PHY_SD_CTRL1,
+				0x1 << COMMON_PHY_SD_CTRL1_PCIE_X2_EN_OFFSET, COMMON_PHY_SD_CTRL1_PCIE_X2_EN_MASK);
+		}
+	}
+
 	debug("stage: RFU configurations - hard reset comphy\n");
 	/* RFU configurations - hard reset comphy */
 	mask = COMMON_PHY_CFG1_PWR_UP_MASK;
@@ -119,11 +132,31 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base
 	data |= 0x0 << HPIPE_RST_CLK_CTRL_CORE_FREQ_SEL_OFFSET;
 	reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG, data, mask);
 	/* Set PLL ready delay for 0x2 */
-	reg_set(hpipe_addr + HPIPE_CLK_SRC_LO_REG,
-		0x2 << HPIPE_CLK_SRC_LO_PLL_RDY_DL_OFFSET, HPIPE_CLK_SRC_LO_PLL_RDY_DL_MASK);
-	/* Set PIPE mode interface to PCIe3 - 0x1 */
-	reg_set(hpipe_addr + HPIPE_CLK_SRC_HI_REG,
-		0x1 << HPIPE_CLK_SRC_HI_MODE_PIPE_OFFSET, HPIPE_CLK_SRC_HI_MODE_PIPE_MASK);
+	data = 0x2 << HPIPE_CLK_SRC_LO_PLL_RDY_DL_OFFSET;
+	mask = HPIPE_CLK_SRC_LO_PLL_RDY_DL_MASK;
+	if (pcie_width != 1) {
+		data |= 0x1 << HPIPE_CLK_SRC_LO_BUNDLE_PERIOD_SEL_OFFSET;
+		mask |= HPIPE_CLK_SRC_LO_BUNDLE_PERIOD_SEL_MASK;
+		data |= 0x1 << HPIPE_CLK_SRC_LO_BUNDLE_PERIOD_SCALE_OFFSET;
+		mask |= HPIPE_CLK_SRC_LO_BUNDLE_PERIOD_SCALE_MASK;
+	}
+	reg_set(hpipe_addr + HPIPE_CLK_SRC_LO_REG, data, mask);
+
+	/* Set PIPE mode interface to PCIe3 - 0x1  & set lane order */
+	data = 0x1 << HPIPE_CLK_SRC_HI_MODE_PIPE_OFFSET;
+	mask = HPIPE_CLK_SRC_HI_MODE_PIPE_MASK;
+	if (pcie_width != 1) {
+		mask |= HPIPE_CLK_SRC_HI_LANE_STRT_MASK;
+		mask |= HPIPE_CLK_SRC_HI_LANE_MASTER_MASK;
+		mask |= HPIPE_CLK_SRC_HI_LANE_BREAK_MASK;
+		if (lane == 0) {
+			data |= 0x1 << HPIPE_CLK_SRC_HI_LANE_STRT_OFFSET;
+			data |= 0x1 << HPIPE_CLK_SRC_HI_LANE_MASTER_OFFSET;
+		} else if (lane == (pcie_width - 1)) {
+			data |= 0x1 << HPIPE_CLK_SRC_HI_LANE_BREAK_OFFSET;
+		}
+	}
+	reg_set(hpipe_addr + HPIPE_CLK_SRC_HI_REG, data, mask);
 	/* Config update polarity equalization */
 	reg_set(hpipe_addr + HPIPE_LANE_EQ_CFG1_REG,
 		0x1 << HPIPE_CFG_UPDATE_POLARITY_OFFSET, HPIPE_CFG_UPDATE_POLARITY_MASK);
@@ -163,6 +196,14 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base
 	mask |= HPIPE_PWR_PLL_PHY_MODE_MASK;
 	data |= 0x3 << HPIPE_PWR_PLL_PHY_MODE_OFFSET;
 	reg_set(hpipe_addr + HPIPE_PWR_PLL_REG, data, mask);
+
+	/* ref clock alignment */
+	if (pcie_width != 1) {
+		mask = HPIPE_LANE_ALIGN_OFF_MASK;
+		data = 0x0 << HPIPE_LANE_ALIGN_OFF_OFFSET;
+		reg_set(hpipe_addr + HPIPE_LANE_ALIGN_REG, data, mask);
+	}
+
 	/* Set the amount of time spent in the LoZ state - set for 0x7 only if
 	   the PCIe clock is output */
 	if (pcie_clk)
@@ -208,20 +249,54 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_base
 	debug("stage: Analog paramters from ETP(HW)\n");
 
 	debug("stage: Comphy power up\n");
-	/* Release from PIPE soft reset */
-	reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG,
-		0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
 
-	/* wait 15ms - for comphy calibration done */
-	mdelay(15);
+	/* for PCIe by4 or by2 - release from reset only after finish to configure all lanes */
+	if ((pcie_width == 1) || (lane == (pcie_width - 1))) {
+		u32 i, start_lane, end_lane;
 
-	debug("stage: Check PLL\n");
-	/* Read lane status */
-	data = readl(hpipe_addr + HPIPE_LANE_STATUS0_REG);
-	if ((data & HPIPE_LANE_STATUS0_PCLK_EN_MASK) == 0) {
-		debug("Read from reg = %p - value = 0x%x\n", hpipe_addr + HPIPE_LANE_STATUS0_REG, data);
-		error("HPIPE_LANE_STATUS0_PCLK_EN_MASK is 0\n");
-		ret = 0;
+		if (pcie_width != 1) {
+			/* allows writing to all lanes in one write */
+			reg_set(comphy_base + COMMON_PHY_SD_CTRL1,
+				0x0 << COMMON_PHY_SD_CTRL1_COMPHY_0_4_PORT_OFFSET,
+				COMMON_PHY_SD_CTRL1_COMPHY_0_4_PORT_MASK);
+			start_lane = 0;
+			end_lane = pcie_width;
+
+			/* Release from PIPE soft reset
+			for PCIe by4 or by2 - release from soft reset all lanes - can't use
+			read modify write */
+			reg_set(HPIPE_ADDR(hpipe_base, 0) + HPIPE_RST_CLK_CTRL_REG,
+				0x24, 0xffffffff);
+		} else {
+			start_lane = lane;
+			end_lane = lane + 1;
+
+			/* Release from PIPE soft reset
+			   for PCIe by4 or by2 - release from soft reset all lanes */
+			reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG,
+				0x0 << HPIPE_RST_CLK_CTRL_PIPE_RST_OFFSET, HPIPE_RST_CLK_CTRL_PIPE_RST_MASK);
+		}
+
+		/* wait 15ms - for comphy calibration done */
+		mdelay(15);
+
+		if (pcie_width != 1) {
+			/* disable writing to all lanes with one write */
+			reg_set(comphy_base + COMMON_PHY_SD_CTRL1,
+				0x3210 << COMMON_PHY_SD_CTRL1_COMPHY_0_4_PORT_OFFSET,
+				COMMON_PHY_SD_CTRL1_COMPHY_0_4_PORT_MASK);
+		}
+
+		debug("stage: Check PLL\n");
+		/* Read lane status */
+		for (i = start_lane; i < end_lane; i++) {
+			data = readl(HPIPE_ADDR(hpipe_base, i) + HPIPE_LANE_STATUS0_REG);
+			if ((data & HPIPE_LANE_STATUS0_PCLK_EN_MASK) == 0) {
+				debug("Read from reg = %p - value = 0x%x\n", hpipe_addr + HPIPE_LANE_STATUS0_REG, data);
+				error("HPIPE_LANE_STATUS0_PCLK_EN_MASK is 0\n");
+				ret = 0;
+			}
+		}
 	}
 
 	debug_exit();
@@ -1209,7 +1284,7 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 	struct comphy_map *ptr_comphy_map;
 	void __iomem *comphy_base_addr, *hpipe_base_addr;
 	u32 comphy_max_count, lane, ret = 0;
-	u32 pcie_by4 = 1;
+	u32 pcie_width = 0;
 
 	debug_enter();
 
@@ -1223,14 +1298,18 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 	/* Check if the first 4 lanes configured as By-4 */
 	for (lane = 0, ptr_comphy_map = serdes_map; lane < 4; lane++, ptr_comphy_map++) {
 		if (ptr_comphy_map->type != PHY_TYPE_PEX0) {
-			pcie_by4 = 0;
 			break;
 		}
+		pcie_width++;
 	}
 
 	for (lane = 0, ptr_comphy_map = serdes_map; lane < comphy_max_count; lane++, ptr_comphy_map++) {
 		debug("Initialize serdes number %d\n", lane);
 		debug("Serdes type = 0x%x\n", ptr_comphy_map->type);
+		if (lane == 4) {
+			/* PCIe lanes above the first 4 lanes, can be only by1 */
+			pcie_width = 1;
+		}
 		switch (ptr_comphy_map->type) {
 		case PHY_TYPE_UNCONNECTED:
 			continue;
@@ -1239,7 +1318,7 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		case PHY_TYPE_PEX1:
 		case PHY_TYPE_PEX2:
 		case PHY_TYPE_PEX3:
-			ret = comphy_pcie_power_up(lane, pcie_by4, hpipe_base_addr, comphy_base_addr);
+			ret = comphy_pcie_power_up(lane, pcie_width, hpipe_base_addr, comphy_base_addr);
 			break;
 		case PHY_TYPE_SATA0:
 		case PHY_TYPE_SATA1:

@@ -2788,7 +2788,8 @@ static void mv_gop110_gmac_sgmii2_5_cfg(struct gop_hw *gop, int mac_num)
 	mv_gop110_gmac_write(gop, mac_num, MV_GMAC_PORT_CTRL0_REG, val);
 
 	/* configure AN 0x9268 */
-	an = MV_GMAC_PORT_AUTO_NEG_CFG_AN_BYPASS_EN_MASK |
+	an = MV_GMAC_PORT_AUTO_NEG_CFG_EN_PCS_AN_MASK |
+		MV_GMAC_PORT_AUTO_NEG_CFG_AN_BYPASS_EN_MASK |
 		MV_GMAC_PORT_AUTO_NEG_CFG_SET_MII_SPEED_MASK  |
 		MV_GMAC_PORT_AUTO_NEG_CFG_SET_GMII_SPEED_MASK     |
 		MV_GMAC_PORT_AUTO_NEG_CFG_ADV_PAUSE_MASK    |
@@ -3294,7 +3295,6 @@ static int mv_gop110_port_init(struct gop_hw *gop, struct mv_mac_data *mac)
 		/* mac unreset */
 		mv_gop110_gmac_reset(gop, mac_num, UNRESET);
 	break;
-
 	case PHY_INTERFACE_MODE_XAUI:
 		num_of_act_lanes = 4;
 		mac_num = 0;
@@ -3345,7 +3345,7 @@ static int mv_gop110_port_init(struct gop_hw *gop, struct mv_mac_data *mac)
 
 		/* mac unreset */
 		mv_gop110_xlg_mac_reset(gop, mac_num, UNRESET);
-		break;
+	break;
 	default:
 		netdev_err(NULL, "%s: Requested port mode (%d) not supported",
 				__func__, mac->phy_mode);
@@ -3359,33 +3359,26 @@ static int mv_gop110_port_init(struct gop_hw *gop, struct mv_mac_data *mac)
 *  Sets port duplex to Auto Negotiation / Full / Half Duplex.
 */
 static int mv_gop110_gmac_speed_duplex_set(struct gop_hw *gop,
-	int mac_num, enum mv_port_speed speed, enum mv_port_duplex duplex)
+	int mac_num, int speed, enum mv_port_duplex duplex)
 {
 	u32 reg_val;
-
-	/* Check validity */
-	if ((speed == MV_PORT_SPEED_1000) && (duplex == MV_PORT_DUPLEX_HALF))
-		return -EINVAL;
 
 	reg_val = mv_gop110_gmac_read(gop, mac_num,
 					MV_GMAC_PORT_AUTO_NEG_CFG_REG);
 
 	switch (speed) {
-	case MV_PORT_SPEED_AN:
-		reg_val |= MV_GMAC_PORT_AUTO_NEG_CFG_EN_AN_SPEED_MASK;
-		/* the other bits don't matter in this case */
-		break;
-	case MV_PORT_SPEED_1000:
+	case 2500:
+	case 1000:
 		reg_val &= ~MV_GMAC_PORT_AUTO_NEG_CFG_EN_AN_SPEED_MASK;
 		reg_val |= MV_GMAC_PORT_AUTO_NEG_CFG_SET_GMII_SPEED_MASK;
 		/* the 100/10 bit doesn't matter in this case */
 		break;
-	case MV_PORT_SPEED_100:
+	case 100:
 		reg_val &= ~MV_GMAC_PORT_AUTO_NEG_CFG_EN_AN_SPEED_MASK;
 		reg_val &= ~MV_GMAC_PORT_AUTO_NEG_CFG_SET_GMII_SPEED_MASK;
 		reg_val |= MV_GMAC_PORT_AUTO_NEG_CFG_SET_MII_SPEED_MASK;
 		break;
-	case MV_PORT_SPEED_10:
+	case 10:
 		reg_val &= ~MV_GMAC_PORT_AUTO_NEG_CFG_EN_AN_SPEED_MASK;
 		reg_val &= ~MV_GMAC_PORT_AUTO_NEG_CFG_SET_GMII_SPEED_MASK;
 		reg_val &= ~MV_GMAC_PORT_AUTO_NEG_CFG_SET_MII_SPEED_MASK;
@@ -3422,7 +3415,7 @@ static int mv_gop110_gmac_speed_duplex_set(struct gop_hw *gop,
 *  Sets port duplex to Auto Negotiation / Full / Half Duplex.
 */
 static int mv_gop110_xlg_mac_speed_duplex_set(struct gop_hw *gop, int mac_num,
-			enum mv_port_speed speed, enum mv_port_duplex duplex)
+			int speed, enum mv_port_duplex duplex)
 {
 	/* not supported */
 	return -1;
@@ -3430,7 +3423,7 @@ static int mv_gop110_xlg_mac_speed_duplex_set(struct gop_hw *gop, int mac_num,
 
 /* set port speed and duplex */
 static int mv_gop110_speed_duplex_set(struct gop_hw *gop, struct mv_mac_data *mac,
-			enum mv_port_speed speed, enum mv_port_duplex duplex)
+			int speed, enum mv_port_duplex duplex)
 {
 	int port_num = mac->gop_index;
 
@@ -3489,21 +3482,14 @@ static int mv_gop110_gmac_force_link_mode_set(struct gop_hw *gop,
 
 static int mv_gop110_fl_cfg(struct gop_hw *gop, struct mv_mac_data *mac)
 {
-	int port_num = mac->gop_index;
 
 	switch (mac->phy_mode) {
 	case PHY_INTERFACE_MODE_RGMII:
 	case PHY_INTERFACE_MODE_SGMII:
 	case PHY_INTERFACE_MODE_QSGMII:
 		/* disable AN */
-		if (mac->speed == 2500)
-			mv_gop110_speed_duplex_set(gop, mac, MV_PORT_SPEED_2000,
+		mv_gop110_speed_duplex_set(gop, mac, mac->speed,
 							MV_PORT_DUPLEX_FULL);
-		else
-			mv_gop110_speed_duplex_set(gop, mac, MV_PORT_SPEED_1000,
-							MV_PORT_DUPLEX_FULL);
-		/* force link */
-		mv_gop110_gmac_force_link_mode_set(gop, port_num, true, false);
 	break;
 
 	case PHY_INTERFACE_MODE_XAUI:
@@ -4588,7 +4574,6 @@ static int mv_pp2x_phylib_init(struct eth_device *dev, int phyid, int gop_index)
 				return 1;
 			}
 #endif
-
 	return 0;
 }
 
@@ -4611,28 +4596,28 @@ static inline void mv_gop110_rfu1_print(struct gop_hw *gop, char *reg_name,
 	mv_gop110_rfu1_read(gop, reg));
 }
 
-static u32 mvp_pp2x_gop110_netc_cfg_create(struct mv_pp2x_port *pp2_port)
+static u32 mvp_pp2x_gop110_netc_cfg_create(struct mv_pp2x_dev_para *para)
 {
 	u32 val = 0;
 
-		if (pp2_port->mac_data.gop_index == 0) {
-			if (pp2_port->mac_data.phy_mode ==
+		if (para->gop_port == 0) {
+			if (para->phy_type ==
 				PHY_INTERFACE_MODE_XAUI)
 				val |= MV_NETC_GE_MAC0_XAUI;
-			else if (pp2_port->mac_data.phy_mode ==
+			else if (para->phy_type ==
 				PHY_INTERFACE_MODE_RXAUI)
 				val |= MV_NETC_GE_MAC0_RXAUI_L23;
 		}
-		if (pp2_port->mac_data.gop_index == 2) {
-			if (pp2_port->mac_data.phy_mode ==
+		if (para->gop_port == 2) {
+			if (para->phy_type ==
 				PHY_INTERFACE_MODE_SGMII)
 				val |= MV_NETC_GE_MAC2_SGMII;
 		}
-		if (pp2_port->mac_data.gop_index == 3) {
-			if (pp2_port->mac_data.phy_mode ==
+		if (para->gop_port == 3) {
+			if (para->phy_type ==
 				PHY_INTERFACE_MODE_SGMII)
 				val |= MV_NETC_GE_MAC3_SGMII;
-			else if (pp2_port->mac_data.phy_mode ==
+			else if (para->phy_type ==
 				PHY_INTERFACE_MODE_RGMII)
 				val |= MV_NETC_GE_MAC3_RGMII;
 		}
@@ -4940,11 +4925,16 @@ static int mvcpn110_mac_hw_init(struct mv_pp2x_port *port)
 {
 	struct gop_hw *gop = &port->pp2->gop;
 	struct mv_mac_data *mac = &port->mac_data;
+	int mac_num = mac->gop_index;
 
 	mv_gop110_port_init(gop, mac);
 
-	if (mac->force_link)
+	if (mac->speed == 2500 || mac->speed == 1000 || mac->speed == 100
+		|| mac->speed == 10)
 		mv_gop110_fl_cfg(gop, mac);
+
+	if (mac->force_link)
+		mv_gop110_gmac_force_link_mode_set(gop, mac_num, true, false);
 
 	mac->flags |= MV_EMAC_F_INIT;
 
@@ -4995,7 +4985,6 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 	void *bd_space;
 	char *enet_addr;
 	char enetvar[9];
-	u32 net_comp_config;
 
 	dev = calloc(1, sizeof(*dev));
 	if (dev == NULL)
@@ -5012,6 +5001,7 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 	dev->priv = pp2_port;
 	pp2_port->mac_data.gop_index = para->gop_port;
 	pp2_port->mac_data.phy_mode = para->phy_type;
+	pp2_port->mac_data.speed = para->phy_speed;
 
 	/*
 	 * Allocate buffer area for tx/rx descs and rx_buffers. This is only
@@ -5068,16 +5058,9 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 
 	eth_register(dev);
 
-	/* netcomp  Init  */
-	net_comp_config = mvp_pp2x_gop110_netc_cfg_create(pp2_port);
-	mv_gop110_netc_init(&pp2_port->pp2->gop, net_comp_config,
-				MV_NETC_FIRST_PHASE);
-	mv_gop110_netc_init(&pp2_port->pp2->gop, net_comp_config,
-				MV_NETC_SECOND_PHASE);
-
 	/* GOP Init  */
 	mvcpn110_mac_hw_init(pp2_port);
-	if (pp2_port->mac_data.phy_mode == PHY_INTERFACE_MODE_RGMII)
+	if (para->phy_handle)
 		mv_pp2x_phylib_init(dev, para->phy_addr, para->gop_port);
 
 	return 1;
@@ -5087,13 +5070,14 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 int mv_pp2x_initialize(bd_t *bis)
 {
 	int mv_pp2x_node_list[CONFIG_MAX_MVPP2X_NUM], node, port_node;
-	int pp2_count, emac_off, phy_off, port_id, gop_port, mdio_phy;
+	int pp2_count, emac_off, phy_off, port_id, gop_port, mdio_phy, speed;
 	int phy_mode = 0;
 	struct mv_pp2x *pp2;
 	struct mv_pp2x_dev_para dev_para[CONFIG_MAX_PP2_PORT_NUM];
 	int err;
 	u32 *emac_handle, *phy_handle;
 	char *phy_mode_str;
+	u32 net_comp_config = 0;
 
 	/* in dts file, go through all the 'pp2' nodes.
 	 */
@@ -5242,6 +5226,7 @@ int mv_pp2x_initialize(bd_t *bis)
 
 			phy_mode_str = (void *)fdt_getprop(gd->fdt_blob, emac_off,
 						   "phy-mode", NULL);
+
 			if (strncmp(phy_mode_str, "sgmii", 5) == 0)
 				phy_mode = PHY_INTERFACE_MODE_SGMII;
 			else if (strncmp(phy_mode_str, "rgmii", 5) == 0)
@@ -5257,15 +5242,17 @@ int mv_pp2x_initialize(bd_t *bis)
 				"could not find phy-mode in pp2 node, init skipped!\n");
 			}
 
-			/*skip if port is configured not to use */
-			if (phy_mode == PHY_INTERFACE_MODE_RGMII) {
-				phy_handle = (u32 *)fdt_getprop(gd->fdt_blob,
-							emac_off, "phy", NULL);
-				if (!phy_handle) {
-					printf("no phy property\n");
-					return -1;
-				}
+			if (phy_mode == PHY_INTERFACE_MODE_SGMII) {
+				speed = (uintptr_t)fdtdec_get_int(gd->fdt_blob,
+						emac_off, "phy-speed", 0);
+				dev_para[port_id].phy_speed = speed;
+			}
 
+			phy_handle = (u32 *)fdt_getprop(gd->fdt_blob,
+							emac_off, "phy", NULL);
+
+			/*skip if port is configured as unused */
+			if (phy_handle) {
 				phy_off = fdt_node_offset_by_phandle(gd->fdt_blob,
 					  fdt32_to_cpu(*phy_handle));
 				if (phy_off < 0) {
@@ -5282,10 +5269,13 @@ int mv_pp2x_initialize(bd_t *bis)
 				dev_para[port_id].phy_addr = mdio_phy;
 
 			}
+			dev_para[port_id].phy_handle = phy_handle;
 			dev_para[port_id].dev_num = port_id;
 			dev_para[port_id].base = pp2->base;
 			dev_para[port_id].phy_type = phy_mode;
 			dev_para[port_id].gop_port = gop_port;
+			net_comp_config |=
+				mvp_pp2x_gop110_netc_cfg_create(&dev_para[port_id]);
 			if (1 != mv_pp2x_initialize_dev(bis,
 				pp2, &dev_para[port_id])) {
 				printf(
@@ -5293,6 +5283,9 @@ int mv_pp2x_initialize(bd_t *bis)
 				return -1;
 			}
 		}
+	/*Netcomplex configurations for all ports.*/
+	mv_gop110_netc_init(&pp2->gop, net_comp_config,	MV_NETC_FIRST_PHASE);
+	mv_gop110_netc_init(&pp2->gop, net_comp_config,	MV_NETC_SECOND_PHASE);
 
 	return 0;
 }

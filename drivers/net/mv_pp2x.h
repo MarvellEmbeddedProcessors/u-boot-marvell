@@ -2859,6 +2859,8 @@ struct mv_pp2x_dev_para {
 	int phy_addr;
 	int gop_port;
 	phy_interface_t phy_type;
+	u32 *phy_handle;
+	int phy_speed;
 };
 
 struct pp21_specific_tx_desc {
@@ -3166,15 +3168,6 @@ enum mv_pp2x_prs_l3_cast {
 enum mv_reset {RESET, UNRESET};
 
 enum sd_media_mode {MV_RXAUI, MV_XAUI};
-
-enum mv_port_speed {
-	MV_PORT_SPEED_AN,
-	MV_PORT_SPEED_10,
-	MV_PORT_SPEED_100,
-	MV_PORT_SPEED_1000,
-	MV_PORT_SPEED_2000,
-	MV_PORT_SPEED_10000
-};
 
 enum mv_port_duplex {
 	MV_PORT_DUPLEX_AN,

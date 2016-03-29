@@ -159,7 +159,7 @@
 			};
 			gop {
 				mac0 {
-					phy-mode = "sgmii"; /* lane-2 */
+					phy-mode = "kr"; /* lane-2 */
 					status = "okay";
 				};
 				mac2 {

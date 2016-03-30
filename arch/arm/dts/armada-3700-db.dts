@@ -44,6 +44,9 @@
 				output-enable-gpio = <&gpio0 ARMADA_3700_GPIO(BANK_0, 60) GPIO_ACTIVE_HIGH>;
 				status = "okay";
 			};
+			pm@14000 {
+				status = "okay";
+			};
 			neta0: neta@30000 {
 				status = "okay";
 				phy_addr = <0x0>;

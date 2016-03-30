@@ -31,7 +31,7 @@ refclk {
 spi0@700600 {
 	compatible = "marvell,orion-spi";
 	reg = <0x700600 0x50>;
-	spi-max-frequency = <10000000>;
+	spi-max-frequency = <50000000>;
 	clock = <&refclk>;
 	cpol-cs-bitmap = <0>; /* bit i is set if the CPOL of
 				CS-i is enabled or not */
@@ -41,7 +41,7 @@ spi0@700600 {
 spi1@700680 {
 	compatible = "marvell,orion-spi";
 	reg = <0x700680 0x50>;
-	spi-max-frequency = <10000000>;
+	spi-max-frequency = <50000000>;
 	clock = <&refclk>;
 	cpol-cs-bitmap = <0>; /* bit i is set if the CPOL of
 				CS-i is enabled or not */

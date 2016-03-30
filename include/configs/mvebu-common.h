@@ -162,7 +162,7 @@
 					"$ramfs_name; else setenv ramfs_addr -;fi\0"				\
 					"get_images=tftp $kernel_addr $image_name; tftp $fdt_addr $fdt_name; "	\
 						"run get_ramfs\0"						\
-					"console=console=ttyS0,115200\0"					\
+					"console=" CONFIG_DEFAULT_CONSOLE "\0"					\
 					"root=root=/dev/nfs rw\0"						\
 					"set_bootargs=setenv bootargs $console $root "				\
 						"ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:none "\
@@ -272,7 +272,12 @@
 	#define CONFIG_CONS_INDEX		1
 	#define CONFIG_SYS_LOADS_BAUD_CHANGE	/* allow baudrate changes */
 	/*#define CONFIG_SYS_DUART_CHAN		0*/
+	#define CONFIG_DEFAULT_CONSOLE		"console=ttyS0,115200"
 #endif /* CONFIG_SYS_NS16550 */
+
+#ifdef CONFIG_MVEBU_UART_ARLP
+	#define CONFIG_DEFAULT_CONSOLE		"console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000"
+#endif
 
 #if defined(CONFIG_SYS_NS16550) || defined(CONFIG_MVEBU_UART_ARLP)
 #define CONFIG_BAUDRATE		115200

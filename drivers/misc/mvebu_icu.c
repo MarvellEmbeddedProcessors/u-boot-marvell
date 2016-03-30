@@ -57,7 +57,7 @@ struct icu_msi {
 };
 
 #define NS_MULTI_IRQS		40
-#define NS_SINGLE_IRQS		23
+#define NS_SINGLE_IRQS		27
 #define REI_IRQS		10
 #define SEI_IRQS		20
 #define MAX_ICU_IRQS		207
@@ -147,6 +147,13 @@ static struct icu_irq irq_map_ns_single[NS_SINGLE_IRQS] = {
 	{123, 57, 0}, /* UART 1 irq */
 	{124, 58, 0}, /* UART 2 irq */
 	{125, 59, 0}, /* UART 3 irq */
+
+	/* Temporary PPv2 interrupts
+	 * should be moved to second interrupt bank */
+	{55, 60, 0}, /* PPv2 irq */
+	{56, 61, 0}, /* PPv2 irq */
+	{57, 62, 0}, /* PPv2 irq */
+	{58, 63, 0}, /* PPv2 irq */
 };
 
 /* SEI - System Error Interrupts */

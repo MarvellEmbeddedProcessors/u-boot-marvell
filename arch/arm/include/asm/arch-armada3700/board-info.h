@@ -44,6 +44,7 @@
 	It starts from 1.
 	+ arch/arm/dts/armada-lp-db.dts, board_id = A3700_DB_CONFIG_ID_USB3..
 	+ arch/arm/dts/armada-lp-db-sgmii1.dts, board_id = A3700_DB_CONFIG_ID_SGMII1.
+	+ arch/arm/dts/armada-lp-db-sfp2_5G.dts, board_id = A3700_DB_CONFIG_ID_SFP_2_5G
 */
 #define DEFAULT_FDT_CONFIG_ID	A3700_DB_CONFIG_ID_USB3
 

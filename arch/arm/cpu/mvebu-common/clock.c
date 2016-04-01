@@ -27,6 +27,13 @@ __weak u32 get_fdt_tclk(const void *blob, int node)
 	return fdtdec_get_int(blob, node, "clock-frequency", -1);
 }
 
+__weak u32 get_fdt_refclk(const void *blob, int node)
+{
+	if (node == -1)
+		node = fdt_node_offset_by_compatible(blob, -1, "marvell,ref-clock");
+	return fdtdec_get_int(blob, node, "clock-frequency", -1);
+}
+
 u32 soc_clock_get(const void *blob, int node)
 {
 	int ptr_node, id;
@@ -36,6 +43,8 @@ u32 soc_clock_get(const void *blob, int node)
 	switch (id) {
 	case COMPAT_MVEBU_TCLOCK:
 		return get_fdt_tclk(blob, ptr_node);
+	case COMPAT_MVEBU_REFLOCK:
+		return get_fdt_refclk(blob, ptr_node);
 	}
 	return -1;
 }

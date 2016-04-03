@@ -2388,15 +2388,44 @@ static void mv_pp2x_rx_fifo_init(struct mv_pp2x *pp2)
 	int port;
 
 	for (port = 0; port < CONFIG_MAX_PP2_PORT_NUM; port++) {
-		mv_pp2x_write(pp2, MVPP2_RX_DATA_FIFO_SIZE_REG(port),
-			    MVPP2_RX_FIFO_PORT_DATA_SIZE);
-		mv_pp2x_write(pp2, MVPP2_RX_ATTR_FIFO_SIZE_REG(port),
-			    MVPP2_RX_FIFO_PORT_ATTR_SIZE);
+		if (port == 0) {
+			mv_pp2x_write(pp2, MVPP2_RX_DATA_FIFO_SIZE_REG(port),
+					MVPP2_RX_FIFO_10GB_PORT_DATA_SIZE);
+			mv_pp2x_write(pp2, MVPP2_RX_ATTR_FIFO_SIZE_REG(port),
+					MVPP2_RX_FIFO_10GB_PORT_ATTR_SIZE);
+		} else if (port == 1) {
+			mv_pp2x_write(pp2, MVPP2_RX_DATA_FIFO_SIZE_REG(port),
+					MVPP2_RX_FIFO_2_5GB_PORT_DATA_SIZE);
+			mv_pp2x_write(pp2, MVPP2_RX_ATTR_FIFO_SIZE_REG(port),
+					MVPP2_RX_FIFO_2_5GB_PORT_ATTR_SIZE);
+		} else {
+			mv_pp2x_write(pp2, MVPP2_RX_DATA_FIFO_SIZE_REG(port),
+					MVPP2_RX_FIFO_1GB_PORT_DATA_SIZE);
+			mv_pp2x_write(pp2, MVPP2_RX_ATTR_FIFO_SIZE_REG(port),
+					MVPP2_RX_FIFO_1GB_PORT_ATTR_SIZE);
+		}
 	}
 
 	mv_pp2x_write(pp2, MVPP2_RX_MIN_PKT_SIZE_REG,
 		    MVPP2_RX_FIFO_PORT_MIN_PKT);
 	mv_pp2x_write(pp2, MVPP2_RX_FIFO_INIT_REG, 0x1);
+}
+
+/* Initialize Tx FIFO's */
+static void mv_pp2x_tx_fifo_init(struct mv_pp2x *pp2)
+{
+	int port, val;
+
+	for (port = 0; port < CONFIG_MAX_PP2_PORT_NUM; port++) {
+		/*Port0 support 10KB TX FIFO*/
+		if (port == 0)
+			val = MVPP2_TX_FIFO_DATA_SIZE_10KB &
+				MVPP22_TX_FIFO_SIZE_MASK;
+		else
+			val = MVPP2_TX_FIFO_DATA_SIZE_3KB &
+				MVPP22_TX_FIFO_SIZE_MASK;
+		mv_pp2x_write(pp2, MVPP22_TX_FIFO_SIZE_REG(port), val);
+	}
 }
 
 /* BM */
@@ -5188,6 +5217,9 @@ int mv_pp2x_initialize(bd_t *bis)
 
 		/* Rx Fifo Init */
 		mv_pp2x_rx_fifo_init(pp2);
+
+		/* Tx Fifo Init */
+		mv_pp2x_tx_fifo_init(pp2);
 
 		/* Parser Init */
 		err = mv_pp2x_prs_default_init(pp2);

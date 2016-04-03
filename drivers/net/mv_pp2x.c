@@ -2966,7 +2966,7 @@ static int mv_gop110_gmac_mode_cfg(struct gop_hw *gop, struct mv_mac_data *mac)
 	/* Set TX FIFO thresholds */
 	switch (mac->phy_mode) {
 	case PHY_INTERFACE_MODE_SGMII:
-		if (mac->speed == 2500)
+		if (mac->speed == MV_PORT_SPEED_2500)
 			mv_gop110_gmac_sgmii2_5_cfg(gop, mac_num);
 		else
 			mv_gop110_gmac_sgmii_cfg(gop, mac_num);
@@ -3396,18 +3396,18 @@ static int mv_gop110_gmac_speed_duplex_set(struct gop_hw *gop,
 					MV_GMAC_PORT_AUTO_NEG_CFG_REG);
 
 	switch (speed) {
-	case 2500:
-	case 1000:
+	case MV_PORT_SPEED_2500:
+	case MV_PORT_SPEED_1000:
 		reg_val &= ~MV_GMAC_PORT_AUTO_NEG_CFG_EN_AN_SPEED_MASK;
 		reg_val |= MV_GMAC_PORT_AUTO_NEG_CFG_SET_GMII_SPEED_MASK;
 		/* the 100/10 bit doesn't matter in this case */
 		break;
-	case 100:
+	case MV_PORT_SPEED_100:
 		reg_val &= ~MV_GMAC_PORT_AUTO_NEG_CFG_EN_AN_SPEED_MASK;
 		reg_val &= ~MV_GMAC_PORT_AUTO_NEG_CFG_SET_GMII_SPEED_MASK;
 		reg_val |= MV_GMAC_PORT_AUTO_NEG_CFG_SET_MII_SPEED_MASK;
 		break;
-	case 10:
+	case MV_PORT_SPEED_10:
 		reg_val &= ~MV_GMAC_PORT_AUTO_NEG_CFG_EN_AN_SPEED_MASK;
 		reg_val &= ~MV_GMAC_PORT_AUTO_NEG_CFG_SET_GMII_SPEED_MASK;
 		reg_val &= ~MV_GMAC_PORT_AUTO_NEG_CFG_SET_MII_SPEED_MASK;
@@ -4625,31 +4625,26 @@ static inline void mv_gop110_rfu1_print(struct gop_hw *gop, char *reg_name,
 	mv_gop110_rfu1_read(gop, reg));
 }
 
-static u32 mvp_pp2x_gop110_netc_cfg_create(struct mv_pp2x_dev_para *para)
+static u32 mvp_pp2x_gop110_netc_cfg_create(struct mv_pp2x_dev_param *param)
 {
 	u32 val = 0;
 
-		if (para->gop_port == 0) {
-			if (para->phy_type ==
-				PHY_INTERFACE_MODE_XAUI)
-				val |= MV_NETC_GE_MAC0_XAUI;
-			else if (para->phy_type ==
-				PHY_INTERFACE_MODE_RXAUI)
-				val |= MV_NETC_GE_MAC0_RXAUI_L23;
-		}
-		if (para->gop_port == 2) {
-			if (para->phy_type ==
-				PHY_INTERFACE_MODE_SGMII)
-				val |= MV_NETC_GE_MAC2_SGMII;
-		}
-		if (para->gop_port == 3) {
-			if (para->phy_type ==
-				PHY_INTERFACE_MODE_SGMII)
-				val |= MV_NETC_GE_MAC3_SGMII;
-			else if (para->phy_type ==
-				PHY_INTERFACE_MODE_RGMII)
-				val |= MV_NETC_GE_MAC3_RGMII;
-		}
+	if (param->gop_port == 0) {
+		if (param->phy_type == PHY_INTERFACE_MODE_XAUI)
+			val |= MV_NETC_GE_MAC0_XAUI;
+		else if (param->phy_type == PHY_INTERFACE_MODE_RXAUI)
+			val |= MV_NETC_GE_MAC0_RXAUI_L23;
+	}
+	if (param->gop_port == 2) {
+		if (param->phy_type == PHY_INTERFACE_MODE_SGMII)
+			val |= MV_NETC_GE_MAC2_SGMII;
+	}
+	if (param->gop_port == 3) {
+		if (param->phy_type == PHY_INTERFACE_MODE_SGMII)
+			val |= MV_NETC_GE_MAC3_SGMII;
+		else if (param->phy_type == PHY_INTERFACE_MODE_RGMII)
+			val |= MV_NETC_GE_MAC3_RGMII;
+	}
 
 	return val;
 }
@@ -4958,8 +4953,9 @@ static int mvcpn110_mac_hw_init(struct mv_pp2x_port *port)
 
 	mv_gop110_port_init(gop, mac);
 
-	if (mac->speed == 2500 || mac->speed == 1000 || mac->speed == 100
-		|| mac->speed == 10)
+	if (mac->speed == MV_PORT_SPEED_10000 || mac->speed == MV_PORT_SPEED_2500
+		|| mac->speed == MV_PORT_SPEED_100 || mac->speed == MV_PORT_SPEED_10
+		|| mac->speed == MV_PORT_SPEED_1000)
 		mv_gop110_fl_cfg(gop, mac);
 
 	if (mac->force_link)
@@ -5007,7 +5003,7 @@ struct mv_pp2x_reg_info {
 };
 
 static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
-						struct mv_pp2x_dev_para *para)
+						struct mv_pp2x_dev_param *param)
 {
 	struct eth_device *dev;
 	struct mv_pp2x_port *pp2_port;
@@ -5023,14 +5019,14 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 	if (pp2_port == NULL)
 		return -ENOMEM;
 
-	pp2_port->id = para->dev_num;
+	pp2_port->id = param->dev_num;
 	pp2_port->txp_num = 1;
 	pp2_port->pp2 = pp2;
-	pp2_port->base = para->base;
+	pp2_port->base = param->base;
 	dev->priv = pp2_port;
-	pp2_port->mac_data.gop_index = para->gop_port;
-	pp2_port->mac_data.phy_mode = para->phy_type;
-	pp2_port->mac_data.speed = para->phy_speed;
+	pp2_port->mac_data.gop_index = param->gop_port;
+	pp2_port->mac_data.phy_mode = param->phy_type;
+	pp2_port->mac_data.speed = param->phy_speed;
 
 	/*
 	 * Allocate buffer area for tx/rx descs and rx_buffers. This is only
@@ -5064,7 +5060,7 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 	/* interface name */
 	sprintf(dev->name, "egiga%d", pp2_port->id);
 	/* interface MAC addr extract */
-	sprintf(enetvar, para->dev_num ? "eth%daddr" :
+	sprintf(enetvar, param->dev_num ? "eth%daddr" :
 			"ethaddr", pp2_port->id);
 	enet_addr = getenv(enetvar);
 	mv_pp2x_mac_str_to_hex(enet_addr, (unsigned char *)(dev->enetaddr));
@@ -5082,15 +5078,15 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 	 * board specific CONFIG_SYS_NETA_INTERFACE_TYPE
 	 * define.
 	 */
-	pp2_port->mac_data.phy_mode = para->phy_type;
-	pp2_port->mac_data.phy_addr = para->phy_addr;
+	pp2_port->mac_data.phy_mode = param->phy_type;
+	pp2_port->mac_data.phy_addr = param->phy_addr;
 
 	eth_register(dev);
 
 	/* GOP Init  */
 	mvcpn110_mac_hw_init(pp2_port);
-	if (para->phy_handle)
-		mv_pp2x_phylib_init(dev, para->phy_addr, para->gop_port);
+	if (param->phy_handle)
+		mv_pp2x_phylib_init(dev, param->phy_addr, param->gop_port);
 
 	return 1;
 }
@@ -5102,7 +5098,7 @@ int mv_pp2x_initialize(bd_t *bis)
 	int pp2_count, emac_off, phy_off, port_id, gop_port, mdio_phy, speed;
 	int phy_mode = 0;
 	struct mv_pp2x *pp2;
-	struct mv_pp2x_dev_para dev_para[CONFIG_MAX_PP2_PORT_NUM];
+	struct mv_pp2x_dev_param dev_param[CONFIG_MAX_PP2_PORT_NUM];
 	int err;
 	u32 *emac_handle, *phy_handle;
 	char *phy_mode_str;
@@ -5123,198 +5119,174 @@ int mv_pp2x_initialize(bd_t *bis)
 		return -ENOMEM;
 
 #ifdef CONFIG_MVPPV21
-		pp2->gop.lms_base =
+	pp2->gop.lms_base =
 		(unsigned long)fdt_get_regs_offs(gd->fdt_blob, node, "lms_reg");
-		if (pp2->gop.lms_base == FDT_ADDR_T_NONE) {
-			printf(
-			"could not find reg in pp2 node, initialization skipped!\n");
-			return 0;
-		}
+	if (pp2->gop.lms_base == FDT_ADDR_T_NONE) {
+		printf("could not find reg in pp2 node, initialization skipped!\n");
+		return 0;
+	}
 #endif
 
-		node = mv_pp2x_node_list[pp2_count - 1];
+	node = mv_pp2x_node_list[pp2_count - 1];
 
-		pp2->base =
-			(void *)fdt_get_regs_offs(gd->fdt_blob,
-							 node, "pp");
-		if (pp2->base == 0) {
-			printf(
-			"could not find base reg in pp2 node, init skipped!\n");
-		}
-		pp2->gop.gop_110.serdes.base =
-			(void *)fdt_get_regs_offs(gd->fdt_blob,
-							 node, "serdes");
-		if (pp2->gop.gop_110.serdes.base == 0) {
-			printf(
-			"could not find serdes reg in pp2 node, init skipped!\n");
-		}
-		pp2->gop.gop_110.serdes.obj_size = 0x1000;
-		pp2->gop.gop_110.xmib.base =
-			(void *)fdt_get_regs_offs(gd->fdt_blob,
-							 node, "xmib");
-		if (pp2->gop.gop_110.xmib.base == 0) {
-			printf(
-			"could not find xmib reg in pp2 node, init skipped!\n");
-		}
-		pp2->gop.gop_110.xmib.obj_size = 0x0100;
-		pp2->gop.gop_110.smi_base =
-			(void *)fdt_get_regs_offs(gd->fdt_blob,
-							 node, "smi");
-		if (pp2->gop.gop_110.smi_base == 0) {
-			printf(
-			"could not find smi reg in pp2 node, init skipped!\n");
-		}
-		pp2->gop.gop_110.xsmi_base =
-			(void *)fdt_get_regs_offs(gd->fdt_blob,
-							 node, "xsmi");
-		if (pp2->gop.gop_110.xsmi_base == 0) {
-			printf(
-			"could not find xsmi reg in pp2 node, init skipped!\n");
-		}
-		pp2->gop.gop_110.mspg_base =
-			(void *)fdt_get_regs_offs(gd->fdt_blob,
-							 node, "mspg");
-		if (pp2->gop.gop_110.mspg_base == 0) {
-			printf(
-			"could not find mspg reg in pp2 node, init skipped!\n");
-		}
-		pp2->gop.gop_110.xpcs_base =
-			(void *)fdt_get_regs_offs(gd->fdt_blob,
-							 node, "xpcs");
-		if (pp2->gop.gop_110.xpcs_base == 0) {
-			printf(
-			"could not find xpcs reg in pp2 node, init skipped!\n");
-		}
-		pp2->gop.gop_110.gmac.base =
-			(void *)fdt_get_regs_offs(gd->fdt_blob,
-							 node, "gmac");
-		if (pp2->gop.gop_110.gmac.base == 0) {
-			printf(
-			"could not find gmac reg in pp2 node, init skipped!\n");
-		}
-		pp2->gop.gop_110.gmac.obj_size = 0x1000;
-		pp2->gop.gop_110.xlg_mac.base =
-			(void *)fdt_get_regs_offs(gd->fdt_blob,
-							 node, "xlg");
-		if (pp2->gop.gop_110.xlg_mac.base == 0) {
-			printf(
-			"could not find xlg reg in pp2 node, init skipped!\n");
-		}
-		pp2->gop.gop_110.xlg_mac.obj_size = 0x1000;
-		pp2->gop.gop_110.rfu1_base =
-			(void *)fdt_get_regs_offs(gd->fdt_blob,
-							 node, "rfu1");
-		if (pp2->gop.gop_110.rfu1_base == 0) {
-			printf(
-			"could not find rfu1 reg in pp2 node, init skipped!\n");
-		}
+	pp2->base = (void *)fdt_get_regs_offs(gd->fdt_blob, node, "pp");
+	if (pp2->base == 0)
+		printf("could not find base reg in pp2 node, init skipped!\n");
 
-		/* AXI config */
-		mv_pp2x_axi_config(pp2);
+	pp2->gop.gop_110.serdes.base =
+		(void *)fdt_get_regs_offs(gd->fdt_blob, node, "serdes");
+	if (pp2->gop.gop_110.serdes.base == 0)
+		printf("could not find serdes reg in pp2 node, init skipped!\n");
+	pp2->gop.gop_110.serdes.obj_size = 0x1000;
 
-		/* Init BM */
-		mv_pp2x_bm_pool_init(pp2);
+	pp2->gop.gop_110.xmib.base =
+		(void *)fdt_get_regs_offs(gd->fdt_blob, node, "xmib");
+	if (pp2->gop.gop_110.xmib.base == 0)
+		printf("could not find xmib reg in pp2 node, init skipped!\n");
+	pp2->gop.gop_110.xmib.obj_size = 0x0100;
 
-		/* Rx Fifo Init */
-		mv_pp2x_rx_fifo_init(pp2);
+	pp2->gop.gop_110.smi_base =
+		(void *)fdt_get_regs_offs(gd->fdt_blob, node, "smi");
+	if (pp2->gop.gop_110.smi_base == 0)
+		printf("could not find smi reg in pp2 node, init skipped!\n");
 
-		/* Tx Fifo Init */
-		mv_pp2x_tx_fifo_init(pp2);
+	pp2->gop.gop_110.xsmi_base =
+		(void *)fdt_get_regs_offs(gd->fdt_blob, node, "xsmi");
+	if (pp2->gop.gop_110.xsmi_base == 0)
+		printf("could not find xsmi reg in pp2 node, init skipped!\n");
 
-		/* Parser Init */
-		err = mv_pp2x_prs_default_init(pp2);
-		if (err) {
-			printf("Parser init error\n");
-			return -1;
-		}
+	pp2->gop.gop_110.mspg_base =
+		(void *)fdt_get_regs_offs(gd->fdt_blob, node, "mspg");
+	if (pp2->gop.gop_110.mspg_base == 0)
+		printf("could not find mspg reg in pp2 node, init skipped!\n");
 
-		/* Cls Init */
-		err = mv_pp2x_cls_default_init(pp2);
-		if (err) {
-			printf("Cls init error\n");
-			return -1;
-		}
+	pp2->gop.gop_110.xpcs_base =
+		(void *)fdt_get_regs_offs(gd->fdt_blob, node, "xpcs");
+	if (pp2->gop.gop_110.xpcs_base == 0)
+		printf("could not find xpcs reg in pp2 node, init skipped!\n");
 
-		fdt_for_each_subnode(gd->fdt_blob, port_node, node) {
-			port_id = (uintptr_t)fdtdec_get_int(gd->fdt_blob,
+	pp2->gop.gop_110.gmac.base =
+		(void *)fdt_get_regs_offs(gd->fdt_blob, node, "gmac");
+	if (pp2->gop.gop_110.gmac.base == 0)
+		printf("could not find gmac reg in pp2 node, init skipped!\n");
+	pp2->gop.gop_110.gmac.obj_size = 0x1000;
+
+	pp2->gop.gop_110.xlg_mac.base =
+		(void *)fdt_get_regs_offs(gd->fdt_blob, node, "xlg");
+	if (pp2->gop.gop_110.xlg_mac.base == 0)
+		printf("could not find xlg reg in pp2 node, init skipped!\n");
+	pp2->gop.gop_110.xlg_mac.obj_size = 0x1000;
+
+	pp2->gop.gop_110.rfu1_base =
+		(void *)fdt_get_regs_offs(gd->fdt_blob, node, "rfu1");
+	if (pp2->gop.gop_110.rfu1_base == 0)
+		printf("could not find rfu1 reg in pp2 node, init skipped!\n");
+
+	/* AXI config */
+	mv_pp2x_axi_config(pp2);
+
+	/* Init BM */
+	mv_pp2x_bm_pool_init(pp2);
+
+	/* Rx Fifo Init */
+	mv_pp2x_rx_fifo_init(pp2);
+
+	/* Tx Fifo Init */
+	mv_pp2x_tx_fifo_init(pp2);
+
+	/* Parser Init */
+	err = mv_pp2x_prs_default_init(pp2);
+	if (err) {
+		printf("Parser init error\n");
+		return -1;
+	}
+
+	/* Cls Init */
+	err = mv_pp2x_cls_default_init(pp2);
+	if (err) {
+		printf("Cls init error\n");
+		return -1;
+	}
+
+	fdt_for_each_subnode(gd->fdt_blob, port_node, node) {
+		port_id = (uintptr_t)fdtdec_get_int(gd->fdt_blob,
 						port_node, "port-id", 0);
 
-			emac_handle = (u32 *)fdt_getprop(gd->fdt_blob,
-						port_node, "emac-data", NULL);
-			if (!emac_handle) {
-				printf("no emac-data property\n");
-				return -1;
-			}
-
-			emac_off = fdt_node_offset_by_phandle(gd->fdt_blob,
-				  fdt32_to_cpu(*emac_handle));
-			if (emac_off < 0) {
-				printf("%s: %s\n", __func__, fdt_strerror(emac_off));
-				return -1;
-			}
-
-			gop_port = (uintptr_t)fdtdec_get_int(gd->fdt_blob,
-						emac_off, "port-id", 0);
-
-			phy_mode_str = (void *)fdt_getprop(gd->fdt_blob, emac_off,
-						   "phy-mode", NULL);
-
-			if (strncmp(phy_mode_str, "sgmii", 5) == 0)
-				phy_mode = PHY_INTERFACE_MODE_SGMII;
-			else if (strncmp(phy_mode_str, "rgmii", 5) == 0)
-				phy_mode = PHY_INTERFACE_MODE_RGMII;
-
-			else if (strncmp(phy_mode_str, "kr", 2) == 0)
-				phy_mode = PHY_INTERFACE_MODE_KR;
-
-			if (phy_mode != PHY_INTERFACE_MODE_SGMII &&
-				phy_mode != PHY_INTERFACE_MODE_RGMII &&
-				phy_mode != PHY_INTERFACE_MODE_KR) {
-				printf(
-				"could not find phy-mode in pp2 node, init skipped!\n");
-			}
-
-			if (phy_mode == PHY_INTERFACE_MODE_SGMII) {
-				speed = (uintptr_t)fdtdec_get_int(gd->fdt_blob,
-						emac_off, "phy-speed", 0);
-				dev_para[port_id].phy_speed = speed;
-			}
-
-			phy_handle = (u32 *)fdt_getprop(gd->fdt_blob,
-							emac_off, "phy", NULL);
-
-			/*skip if port is configured as unused */
-			if (phy_handle) {
-				phy_off = fdt_node_offset_by_phandle(gd->fdt_blob,
-					  fdt32_to_cpu(*phy_handle));
-				if (phy_off < 0) {
-					printf("could not find phy address\n");
-					return -1;
-				}
-
-				mdio_phy = (uintptr_t)fdtdec_get_int(gd->fdt_blob,
-							phy_off, "reg", 0);
-				if (mdio_phy < 0) {
-					printf("could not find mdio phy address\n");
-					return -1;
-				}
-				dev_para[port_id].phy_addr = mdio_phy;
-
-			}
-			dev_para[port_id].phy_handle = phy_handle;
-			dev_para[port_id].dev_num = port_id;
-			dev_para[port_id].base = pp2->base;
-			dev_para[port_id].phy_type = phy_mode;
-			dev_para[port_id].gop_port = gop_port;
-			net_comp_config |=
-				mvp_pp2x_gop110_netc_cfg_create(&dev_para[port_id]);
-			if (1 != mv_pp2x_initialize_dev(bis,
-				pp2, &dev_para[port_id])) {
-				printf(
-				"mv_pp2x_initialize_dev failed, initialization skipped!\n");
-				return -1;
-			}
+		emac_handle = (u32 *)fdt_getprop(gd->fdt_blob,
+					port_node, "emac-data", NULL);
+		if (!emac_handle) {
+			printf("no emac-data property\n");
+			return -1;
 		}
+
+		emac_off = fdt_node_offset_by_phandle(gd->fdt_blob,
+			  fdt32_to_cpu(*emac_handle));
+		if (emac_off < 0) {
+			printf("%s: %s\n", __func__, fdt_strerror(emac_off));
+			return -1;
+		}
+
+		gop_port = (uintptr_t)fdtdec_get_int(gd->fdt_blob,
+					emac_off, "port-id", 0);
+
+		phy_mode_str = (void *)fdt_getprop(gd->fdt_blob, emac_off,
+					   "phy-mode", NULL);
+
+		if (strncmp(phy_mode_str, "sgmii", 5) == 0)
+			phy_mode = PHY_INTERFACE_MODE_SGMII;
+		else if (strncmp(phy_mode_str, "rgmii", 5) == 0)
+			phy_mode = PHY_INTERFACE_MODE_RGMII;
+
+		else if (strncmp(phy_mode_str, "kr", 2) == 0)
+			phy_mode = PHY_INTERFACE_MODE_KR;
+
+		if (phy_mode != PHY_INTERFACE_MODE_SGMII &&
+			phy_mode != PHY_INTERFACE_MODE_RGMII &&
+			phy_mode != PHY_INTERFACE_MODE_KR) {
+			printf("could not find phy-mode in pp2 node, init skipped!\n");
+		}
+
+		if (phy_mode == PHY_INTERFACE_MODE_SGMII) {
+			speed = (uintptr_t)fdtdec_get_int(gd->fdt_blob,
+					emac_off, "phy-speed", 0);
+			dev_param[port_id].phy_speed = speed;
+		}
+
+		phy_handle = (u32 *)fdt_getprop(gd->fdt_blob,
+						emac_off, "phy", NULL);
+
+		/*skip if port is configured as unused */
+		if (phy_handle) {
+			phy_off = fdt_node_offset_by_phandle(gd->fdt_blob,
+				  fdt32_to_cpu(*phy_handle));
+			if (phy_off < 0) {
+				printf("could not find phy address\n");
+				return -1;
+			}
+
+			mdio_phy = (uintptr_t)fdtdec_get_int(gd->fdt_blob,
+						phy_off, "reg", 0);
+			if (mdio_phy < 0) {
+				printf("could not find mdio phy address\n");
+				return -1;
+			}
+			dev_param[port_id].phy_addr = mdio_phy;
+
+		}
+		dev_param[port_id].phy_handle = phy_handle;
+		dev_param[port_id].dev_num = port_id;
+		dev_param[port_id].base = pp2->base;
+		dev_param[port_id].phy_type = phy_mode;
+		dev_param[port_id].gop_port = gop_port;
+		net_comp_config |=
+			mvp_pp2x_gop110_netc_cfg_create(&dev_param[port_id]);
+		if (1 != mv_pp2x_initialize_dev(bis,
+			pp2, &dev_param[port_id])) {
+			printf("mv_pp2x_initialize_dev failed, initialization skipped!\n");
+			return -1;
+		}
+	}
+
 	/*Netcomplex configurations for all ports.*/
 	mv_gop110_netc_init(&pp2->gop, net_comp_config,	MV_NETC_FIRST_PHASE);
 	mv_gop110_netc_init(&pp2->gop, net_comp_config,	MV_NETC_SECOND_PHASE);

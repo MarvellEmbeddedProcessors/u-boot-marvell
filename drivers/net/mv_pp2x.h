@@ -2626,6 +2626,12 @@
 #define SD1_CONTROL_RXAUI1_L45_EN_MASK	(0x1 << \
 					SD1_CONTROL_RXAUI1_L45_EN_OFFSET)
 
+/*Port speeds */
+#define	MV_PORT_SPEED_10	10
+#define	MV_PORT_SPEED_100	100
+#define	MV_PORT_SPEED_1000	1000
+#define	MV_PORT_SPEED_2500	2500
+#define	MV_PORT_SPEED_10000	10000
 
 enum mv_pp2x_bm_type {
 	MVPP2_BM_FREE,
@@ -2823,7 +2829,6 @@ struct mv_mac_data {
 	int			phy_addr;
 	phy_interface_t		phy_mode; /* RXAUI, SGMII, etc. */
 	struct phy_device	*phy_dev;
-	struct device_node	*phy_node;
 	bool			force_link;
 	unsigned int		autoneg;
 	unsigned int		link;
@@ -2865,7 +2870,7 @@ struct mv_pp2x_port {
 	int init;
 };
 
-struct mv_pp2x_dev_para {
+struct mv_pp2x_dev_param {
 	int dev_num;
 	void __iomem *base;
 	int phy_addr;

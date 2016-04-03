@@ -36,7 +36,6 @@
 #define CONFIG_MV_ETH_NETA
 #define MV_INCLUDE_GPIO
 #define MV_INCLUDE_I2C
-#define MV_INCLUDE_RTC
 #define MV_INCLUDE_PEX
 */
 #define CONFIG_GZIP_COMPRESSED
@@ -55,6 +54,9 @@
 #else
 #define COUNTER_FREQUENCY	(48000)
 #define CONFIG_MSS_FREQUENCY	(384000)
+#endif
+#if defined(CONFIG_MVEBU_RTC)
+#define ERRATA_FE_3124064
 #endif
 
 #ifdef CONFIG_SPL_BUILD

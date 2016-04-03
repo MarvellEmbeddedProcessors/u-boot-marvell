@@ -128,6 +128,10 @@ sar-reg {
 	reg = <0x400200 0x8>;
 };
 
+rtc-reg {
+	compatible = "marvell,real-time-clock";
+	reg = <0x284000 104>;
+};
 
 pcie-controller {
 	#address-cells = <1>;

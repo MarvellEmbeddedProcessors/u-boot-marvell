@@ -302,10 +302,8 @@
 #endif
 
 /* RTC */
-#if defined(MV_INCLUDE_RTC)
+#if defined(CONFIG_MVEBU_RTC)
 	#define CONFIG_CMD_DATE
-	#define CONFIG_RTC_MVEBU
-	#define CONFIG_SYS_NVRAM_SIZE  0x00                     /* dummy */
 	#define CONFIG_SYS_NVRAM_BASE_ADDR DEVICE_CS1_BASE      /* dummy */
 #endif
 

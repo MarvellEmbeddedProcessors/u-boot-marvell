@@ -1,0 +1,12 @@
+menu "RTC Support"
+
+config MVEBU_RTC
+	bool "MVEBU RTC support"
+	default n
+	help
+	  Choose this option to add
+	  support for Marvell's MVEBU
+	  RTC driver, which is used
+	  by Armada8k.
+
+endmenu

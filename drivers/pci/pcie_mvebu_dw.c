@@ -63,7 +63,7 @@ static int mvebu_pcie_link_up(uintptr_t regs_base)
 		if ((reg & mask) == mask)
 			return 1;
 
-		udelay(1);
+		udelay(5);
 		timeout--;
 	}
 

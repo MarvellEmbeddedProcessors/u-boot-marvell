@@ -3892,6 +3892,10 @@ int mv_pp2x_initialize(bd_t *bis)
 	fdt_for_each_subnode(gd->fdt_blob, port_node, node) {
 		port_id = (uintptr_t)fdtdec_get_int(gd->fdt_blob,
 				port_node, "port-id", 0);
+		if (!fdtdec_get_is_enabled(gd->fdt_blob, port_node)) {
+			printf("Skipping disabled port egiga%d\n", port_id);
+			continue;
+		}
 		err = mv_pp2x_dts_port_param_set(port_node, &dev_param[port_id]);
 		if (err) {
 			printf("Failed to set port parameters\n");

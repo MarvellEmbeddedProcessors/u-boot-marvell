@@ -35,13 +35,6 @@
 			i2c0: i2c@511000 {
 				status = "okay";
 			};
-			ddr-mac {
-				cs_count = <1>;
-				bus_width = <DDR_BUS_WIDTH_32>;
-				cs0 { /* 4GiB */
-					size = <0x00000001 0x00000000>;
-				};
-			};
 			pinctl: pinctl@6F4000 {
 					/* MPP Bus:
 						SPI0 [0-3]

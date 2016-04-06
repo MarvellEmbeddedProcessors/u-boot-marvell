@@ -299,7 +299,6 @@ void mvebu_dram_phy_init(struct mvebu_dram_config *dram_config)
 	debug_exit();
 }
 
-
 static void mvebu_dram_dll_set(unsigned short dll_phsel, unsigned short dll_phsel1, void *base_addr)
 {
 	debug_enter();
@@ -398,9 +397,9 @@ static unsigned short mvebu_dram_dll_search(unsigned short dll, unsigned short r
 		debug("DDR: No DLL found.\n");
 		optimal_rd_dll = 0xFFFF;
 	} else {
-		optimal_rd_dll =  (MAX_RD_DLL - MIN_RD_DLL)/2 + MIN_RD_DLL;
+		optimal_rd_dll =  (MAX_RD_DLL - MIN_RD_DLL) / 2 + MIN_RD_DLL;
 		debug("DDR: Round %d, End DLL tuning - MIN = %#x, MAX = %#x, optimal = %#x\n",
-			round, MIN_RD_DLL, MAX_RD_DLL, optimal_rd_dll);
+		      round, MIN_RD_DLL, MAX_RD_DLL, optimal_rd_dll);
 		if (round == 0) {
 			dll_phsel = optimal_rd_dll;
 			dll_phsel1 = optimal_rd_dll;
@@ -434,7 +433,7 @@ void mvebu_dram_dll_tune(struct mvebu_dram_config *dram_config)
 #endif
 	dll = readl(base_addr + MC6_CH0_PHY_DLL_CONTROL_B0);
 	printf("DDR: start DLL tuning with initial phase delays (P) %#x, (N) %#x\n",
-	(dll >> DLL_PHASE_POS_SHIFT) & DLL_PHASE_SZ_MASK,
+	       (dll >> DLL_PHASE_POS_SHIFT) & DLL_PHASE_SZ_MASK,
 	(dll >> DLL_PHASE_NEG_SHIFT) & DLL_PHASE_SZ_MASK);
 
 	dll = (dll >> DLL_PHASE_POS_SHIFT) & DLL_PHASE_SZ_MASK;
@@ -471,11 +470,9 @@ void mvebu_dram_dll_tune(struct mvebu_dram_config *dram_config)
 	if (status) {
 		printf("DDR: using initial DLL phase delays\n");
 		mvebu_dram_dll_set(dll, dll, base_addr);
-	} else
+	} else {
 		printf("DDR: set new DLL phase delays (P) %#x, (N) %#x\n", dll_phsel, dll_phsel1);
-
+	}
 
 	debug_exit();
-
-	return;
 }

@@ -16,8 +16,9 @@ Board specific:
 	- spi-max-frequency
 		This property is used to calculate the SPI max bus frequency.
 		The value is in Bytes.
-	- cpol-cs-bitmap
+	- cpol-cpha-cs-bitmap
 		This property is bitmap that defines whether the SCK idles high for chip-select i by enabling bit i.
+		This one of SPI modes (to idle in high for, for exmaple in Network over SPI)
 	- status
 		Set if the SPI interface is enabled/disabled.
 
@@ -30,5 +31,5 @@ Example: For SPI-0 node:
 		spi-max-frequency = <20971520>;
 		clock = <&tclk>;
 		status = "okay";
-		cpol-cs-bitmap = <1>; /*bit i is set if the cs-i SCK idles high */
+		cpol-cpha-cs-bitmap = <1>; /*bit i is set if the cs-i SCK idles high */
 	};

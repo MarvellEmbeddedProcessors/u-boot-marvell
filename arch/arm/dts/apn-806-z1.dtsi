@@ -65,8 +65,8 @@
 				reg = <0x510600 0x50>;
 				spi-max-frequency = <10000000>;
 				clock = <&tclk>;
-				cpol-cs-bitmap = <1>; /* bit i is set if the CPOL of
-							 CS-i is enabled or not */
+				cpol-cpha-cs-bitmap = <1>; /* bit i is set if the CPOL and CPHA
+							      of CS-i is enabled or not */
 				status = "disable";
 			};
 

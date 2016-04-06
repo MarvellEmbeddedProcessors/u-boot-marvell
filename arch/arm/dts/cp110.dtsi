@@ -33,8 +33,8 @@ spi0@700600 {
 	reg = <0x700600 0x50>;
 	spi-max-frequency = <50000000>;
 	clock = <&refclk>;
-	cpol-cs-bitmap = <0>; /* bit i is set if the CPOL of
-				CS-i is enabled or not */
+	cpol-cpha-cs-bitmap = <0>; /* bit i is set if the CPOL and CPHA
+				      of CS-i is enabled or not */
 	status = "disable";
 };
 
@@ -43,8 +43,8 @@ spi1@700680 {
 	reg = <0x700680 0x50>;
 	spi-max-frequency = <50000000>;
 	clock = <&refclk>;
-	cpol-cs-bitmap = <0>; /* bit i is set if the CPOL of
-				CS-i is enabled or not */
+	cpol-cpha-cs-bitmap = <0>; /* bit i is set if the CPOL and CPHA
+				      of CS-i is enabled or not */
 	status = "disable";
 };
 i2c@701000 { /* i2c0 */

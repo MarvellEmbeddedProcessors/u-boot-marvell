@@ -153,7 +153,7 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 	struct spi_slave *slave;
 	u32 ctrl_reg, clock = -1;
 	int node_list[CONFIG_MAX_SPI_NUM], node;
-	u32 i, count, cpol = -1;
+	u32 i, count, polarity = -1;
 
 	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "spi",
 			COMPAT_MVEBU_SPI, node_list, CONFIG_MAX_SPI_NUM);
@@ -169,7 +169,7 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 			spi_bus.base_reg = fdt_get_regs_offs(gd->fdt_blob, node, "reg");
 			spi_bus.max_freq = fdtdec_get_int(gd->fdt_blob, node, "spi-max-frequency", CONFIG_MIN_SPI_CLK);
 			clock = soc_clock_get(gd->fdt_blob, node);
-			cpol = (1 << cs) & fdtdec_get_int(gd->fdt_blob, node, "cpol-cs-bitmap", 0);
+			polarity = (1 << cs) & fdtdec_get_int(gd->fdt_blob, node, "cpol-cpha-cs-bitmap", 0);
 		}
 	}
 
@@ -199,9 +199,10 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 	/* Set the SPI interface parameters */
 	ctrl_reg = readl(spi_bus.base_reg + SPI_IF_CONFIG_REG);
 	ctrl_reg &= ~(SPI_CPOL_MASK | SPI_CPHA_MASK | SPI_TXLSBF_MASK | SPI_RXLSBF_MASK);
-	if (cpol)
+	if (polarity) {
 		ctrl_reg |= SPI_CPOL_MASK;
-	ctrl_reg |= SPI_CPHA_MASK;
+		ctrl_reg |= SPI_CPHA_MASK;
+	}
 	writel(ctrl_reg, spi_bus.base_reg + SPI_IF_CONFIG_REG);
 
 	return slave;

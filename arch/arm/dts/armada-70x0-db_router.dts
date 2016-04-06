@@ -42,7 +42,7 @@
 					size = <0x00000001 0x00000000>;
 				};
 			};
-			pinctl@6F008C {
+			pinctl: pinctl@6F4000 {
 					/* MPP Bus:
 						SPI0 [0-3]
 						I2C0 [4-5]

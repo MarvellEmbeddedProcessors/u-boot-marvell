@@ -87,7 +87,7 @@
 
 			pinctl@440000 {
 					/* MPP Bus:
-					   RGMII0[0-11]
+					   TDM	 [0-12]
 					   SPI   [13-16]
 					   SATA1 [28]
 					   UART0 [29-30]
@@ -99,8 +99,8 @@
 					   SD	 [56-62]
 					*/
 					/*   0   1   2   3   4   5   6   7   8   9 */
-				pin-func = < 3   3   3   3   3   3   3   3   3   3
-					     3   3   0   3   3   3   3   0   0   0
+				pin-func = < 4   4   4   4   4   4   4   4   4   4
+					     4   4   0   3   3   3   3   0   0   0
 					     0   0   0   0   0   0   0   0   9   0xA
 					     0xA 0   7   0   7   7   7   2   2   0
 					     0   0   0   0   1   1   1   1   1   1
@@ -111,7 +111,7 @@
 			comphy {
 				phy0 {
 					phy-type = <PHY_TYPE_SGMII2>;
-					phy-speed = <PHY_SPEED_1_25G>;
+					phy-speed = <PHY_SPEED_3_125G>;
 				};
 				phy1 {
 					phy-type = <PHY_TYPE_USB3_HOST0>;
@@ -150,8 +150,9 @@
 					status = "okay";
 				};
 				mac2 {
-					phy-mode = "rgmii"; /* rgmii-0 */
+					phy-mode = "sgmii"; /* lane-0 */
 					phy = <&phy2>;
+					phy-speed = <2500>;
 					status = "okay";
 				};
 				mac3 {

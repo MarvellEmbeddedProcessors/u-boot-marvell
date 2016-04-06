@@ -62,7 +62,19 @@ int board_early_init_f(void)
 #ifdef CONFIG_SYS_MALLOC_F_LEN
 	gd->malloc_base = CONFIG_MALLOC_F_ADDR;
 #endif
+
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
+	/* set default FDT to work with:
+	 ** - customer/regular mode: point to the defined FDT by CONFIG_DEFAULT_DEVICE_TREE.
+	 ** - Marvell multi FDT mode: set the first compiled relevant device
+	 **   tree for the SoC, required for i2c initialization to read EEPROM data */
+	setup_fdt();
+#ifdef CONFIG_MVEBU_PINCTL
+	/* Init the MPP in this stage - to initialize the MPPs of the I2C
+	 ** The SOC initialization code will re-call this function with the
+	 ** correct device tree to re-set the correct MPPs */
+	mvebu_pinctl_probe();
+#endif
 	cfg_eeprom_init();
 #endif
 

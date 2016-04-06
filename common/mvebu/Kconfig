@@ -73,6 +73,7 @@ config CMD_MVEBU_PHY_INDIRECT
 
 config CMD_MVEBU_HW_INFO
 	bool "hw_info"
+	depends on DEVEL_BOARD
 	select BOARD_CONFIG_EEPROM
 	default n
 	help

@@ -16,8 +16,8 @@
  * ***************************************************************************
  */
 
-#ifndef _ARMADALP_CLOCK_H_
-#define _ARMADALP_CLOCK_H_
+#ifndef _ARMADA3700_CLOCK_H_
+#define _ARMADA3700_CLOCK_H_
 
 /* Spread Spectrum Clock */
 #undef MVEBU_A3700_ENABLE_SSC
@@ -579,4 +579,4 @@ u32 set_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 tbg_b_k
 
 int init_clock(void);
 
-#endif /* _ARMADALP_CLOCK_H_ */
+#endif /* _ARMADA3700_CLOCK_H_ */

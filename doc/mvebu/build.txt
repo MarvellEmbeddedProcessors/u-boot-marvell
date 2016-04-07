@@ -33,6 +33,7 @@ Build Instruction:
 6. Configure the U-Boot:
 	# make <defconfig_file>
 	For AP806 stand-alone board use "make mvebu_apn806_defconfig"
+	For the Armada-7040-RZ board use "make mvebu_armada70x0_rz_defconfig"
 	For the Armada-70x0 board use "make mvebu_armada70x0_defconfig"
 	For the Armada-3700 board use "make mvebu_armada3700_defconfig"
 7. Build the U-Boot (Armada-3700 builds required WTP tools installation -

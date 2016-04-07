@@ -309,7 +309,7 @@ int init_mbus(void)
 */
 #if (defined(CONFIG_MVEBU_MBUS_SPL_ONLY) && defined(CONFIG_SPL_BUILD)) || !defined(CONFIG_MVEBU_MBUS_SPL_ONLY)
 #ifdef CONFIG_MVEBU_MBUS_SKIP_DRAM_WIN
-	/* for some Soc, like ArmadaLP, DRAM window has to be at the begining,
+	/* for some Soc, like Armada3700, DRAM window has to be at the beginning,
 	     and could not be configured by anyway (keep the default value),
 	     In this case, need to skip DRAM window configuration */
 	for (start_win_id = 0, win = memory_map; start_win_id < count; start_win_id++, win++)

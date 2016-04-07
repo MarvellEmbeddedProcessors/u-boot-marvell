@@ -16,8 +16,8 @@
 * ***************************************************************************
 */
 
-#ifndef _MBUS_ARLP_H_
-#define _MBUS_ARLP_H_
+#ifndef _MBUS_A3700_H_
+#define _MBUS_A3700_H_
 
 #define MBUS_WIN_CTRL_REG(win_num)		(win_num * 0x10)
 #define MBUS_CR_WIN_ENABLE				0x1
@@ -40,10 +40,10 @@
 #define MBUS_RLR_REMAP_LOW_OFFS			0
 #define MBUS_RLR_REMAP_LOW_MASK			(0xffffff << MBUS_RLR_REMAP_LOW_OFFS)
 
-/* there is no remap_high reg in ArmadaLP, just define here to pass compilation */
+/* there is no remap_high reg in Armada3700, just define here to pass compilation */
 #define MBUS_WIN_REMAP_HIGH_REG(win_num)	(0xc + win_num * 0x10)
 
 #define MBUS_WIN_INTEREG_REG			(0xF0)
 
-#endif	/* _MBUS_ARLP_H_ */
+#endif	/* _MBUS_A3700_H_ */
 

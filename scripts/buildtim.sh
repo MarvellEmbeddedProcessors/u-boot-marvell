@@ -158,7 +158,7 @@ echo "Trusted:                        $TRUSTED" >> $OUTFILE
 echo "Issue Date:                     0x$DATE		; today's date" >> $OUTFILE
 echo "OEM UniqueID:                   0x4D52564C		; MRVL" >> $OUTFILE
 echo "Stepping:                       0x00000000" >> $OUTFILE
-echo "Processor Type:                 <undefined>		; ARMADALP" >> $OUTFILE
+echo "Processor Type:                 <undefined>		; ARMADA3700" >> $OUTFILE
 echo "Boot Flash Signature:           $FLASH" >> $OUTFILE
 if [ "$TRUSTED" = "0x00000000" ]; then
 	echo "Number of Images:               $IMGSNUM" >> $OUTFILE
@@ -317,7 +317,7 @@ if [ "$TRUSTED" = "0x00000001" ]; then
 	echo "Issue Date:                     0x$DATE		; today's date" >> $TIMNOUTFILE
 	echo "OEM UniqueID:                   0x4D52564C		; MRVL" >> $TIMNOUTFILE
 	echo "Stepping:                       0x00000000" >> $TIMNOUTFILE
-	echo "Processor Type:                 <undefined>		; ARMADALP" >> $TIMNOUTFILE
+	echo "Processor Type:                 <undefined>		; ARMADA3700" >> $TIMNOUTFILE
 	echo "Boot Flash Signature:           $FLASH" >> $TIMNOUTFILE
 	echo "Number of Images:               $IMGSNUM" >> $TIMNOUTFILE
 	echo "Number of Keys:                 0			; DSIG key is not counted" >> $TIMNOUTFILE

@@ -1,0 +1,63 @@
+Armada70x0 development board setup:
+-----------------------------------
+
+The Armada70x0 Development Board (DB) is a configurable board designed to test several
+combinations of SOC configurations. U-BOOT supports a defined set of those configurations
+via different device tree files.
+
+This document describes the board modifications required to setup each configuration and the
+interfaces supported (or disabled in each one).
+
+To switch to a different configuration, follow the instructions in the "board setup" section.
+Once completed change the FDT file used by U-BOOT by running the U-BOOT command "fdt_config".
+
+
+Board Setup
+------------
+
+## setup 1: Router ###
+
+  Serdes site
+   - module: SLM1524
+   - Module DIP switch
+
+
+The tables below summarizes the interface configuration of each setup
+
+Serdes PHY configuration
+------------------------
+
+setup  #	|	1	|
+name   #	|     router 	|
+---------------------------------
+SerDes:	lane0	| sgmii2	|
+	lane1	| usb3h0	|
+	lane2	| sgmii0	|
+	lane3	| sata1		|
+	lane4	| usb3h1	|
+	lane5	| pex_x1_2	|
+---------------------------------
+
+
+Multi purpose pin configurations
+--------------------------------
+
+setup  #	|	1	|
+name   #	|     router 	|
+---------------------------------
+
+MPPs: 	CP-SPI0	| N/C		|
+	CP-SPI1	| [13-16]	|
+	NAND	| N/C		|
+	RGMII0	| [0-11]	|
+	RGMII1	| [44-55]	|
+	CP-UART0| [29-30]	|
+	CP-UART1| [40-41]	|
+	SD	| [56-62]	|
+	TDM	| N/C		|
+	TWSI	| [37-38]	|
+	SATA0	| N/C		|
+	SATA1	| [28]		|
+	SMI	| [32-34]	|
+	XSMI	| [35-36]	|
+---------------------------------

@@ -4,16 +4,15 @@
 #include <dt-bindings/comphy/comphy_data.h>
 #include <dt-bindings/gpio/armada-3700-gpio.h>
 / {
-	model = "Marvell Armada 3700 Development Board";
+	model = "Marvell Armada 3700 SoC";
 	compatible = "marvell,armada-3700";
-
 	#address-cells = <2>;
 	#size-cells = <2>;
 
 	soc {
-	compatible = "marvell,armadalp-mbus", "simple-bus";
-	#address-cells = <1>;
-	#size-cells = <0>;
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
 
 		internal-regs {
 			compatible = "marvell,internal-regs", "simple-bus";

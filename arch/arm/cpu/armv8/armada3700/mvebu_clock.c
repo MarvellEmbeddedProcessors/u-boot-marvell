@@ -601,3 +601,28 @@ u32 get_ddr_clk(void)
 
 	return tbg>>1;
 }
+
+/******************************************************************************
+* Name: get_cpu_clk_src_div
+*
+* Description: Get CPU clock source selection and prescaling divider
+*
+* Input:	None
+* Output:	cpu_clk_sel: CPU clock source selection
+*		cpu_clk_prscl: CPU clock prescaling divider
+* Return:	Non-zero if failed to get the CPU clock selection and prescaling
+******************************************************************************/
+int get_cpu_clk_src_div(u32 *cpu_clk_sel, u32 *cpu_clk_prscl)
+{
+	/* 1. check cpu clock select */
+	if (!((readl(MVEBU_NORTH_CLOCK_SELECT_REG) >> 15) & 0x1))
+		return -1; /* CPU clock is using XTAL output*/
+
+	/* 2. get TBG select */
+	*cpu_clk_sel = (readl(MVEBU_NORTH_CLOCK_TBG_SELECT_REG) >> 22) & 0x3;
+
+	/* 3. get CPU clk divider */
+	*cpu_clk_prscl = (readl(MVEBU_NORTH_CLOCK_DIVIDER_SELECT0_REG) >> 28) & 0x7;
+
+	return 0;
+}

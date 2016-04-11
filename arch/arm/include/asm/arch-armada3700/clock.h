@@ -577,6 +577,18 @@ u32 get_ddr_clk(void);
 ******************************************************************************/
 u32 set_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 tbg_b_kvco_mhz);
 
+/******************************************************************************
+* Name: get_cpu_clk_src_div
+*
+* Description: Get CPU clock source selection and prescaling divider
+*
+* Input:	None
+* Output:	cpu_clk_sel: CPU clock source selection
+*		cpu_clk_prscl: CPU clock prescaling divider
+* Return:	Non-zero if failed to get the CPU clock selection and prescaling
+******************************************************************************/
+int get_cpu_clk_src_div(u32 *cpu_clk_sel, u32 *cpu_clk_prscl);
+
 int init_clock(void);
 
 #endif /* _ARMADA3700_CLOCK_H_ */

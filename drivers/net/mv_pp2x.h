@@ -2979,9 +2979,6 @@ struct mv_pp2x_tx_queue {
 	/* Number of Tx DMA descriptors in the descriptor ring */
 	int size;
 
-	/* Number of Tx DMA descriptors to be used in software forwarding */
-	int swf_size;
-
 	/* Number of currently used Tx DMA descriptor in the
 	 * descriptor ring
 	 */

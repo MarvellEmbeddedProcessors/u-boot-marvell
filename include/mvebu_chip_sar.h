@@ -34,6 +34,8 @@ enum mvebu_sar_opts {
 	SAR_DDR_FREQ,
 	SAR_AP_FABRIC_FREQ,
 	SAR_CP_FABRIC_FREQ,
+	SAR_CP_PCIE0_CLK,
+	SAR_CP_PCIE1_CLK,
 	SAR_BOOT_SRC,
 	SAR_MAX_IDX
 };
@@ -69,6 +71,7 @@ struct sar_val {
 			int index;
 		} bootsrc;
 		u32 freq;
+		u32 clk_direction; /* input = 0 */
 	};
 };
 

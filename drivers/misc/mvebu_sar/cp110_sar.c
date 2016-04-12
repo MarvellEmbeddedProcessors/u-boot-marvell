@@ -28,6 +28,11 @@
 #include "chip_sar.h"
 
 /* SAR CP110 registers */
+#define SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_OFFSET	(2)
+#define SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_MASK	(0x1 << SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_OFFSET)
+#define SAR1_RST_PCIE1_CLOCK_CONFIG_CP0_OFFSET	(3)
+#define SAR1_RST_PCIE1_CLOCK_CONFIG_CP0_MASK	(0x1 << SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_OFFSET)
+
 #define SAR1_RST_BOOT_MODE_AP_CP0_OFFSET	(4)
 #define SAR1_RST_BOOT_MODE_AP_CP0_MASK		(0x3f << SAR1_RST_BOOT_MODE_AP_CP0_OFFSET)
 
@@ -40,6 +45,8 @@ struct sar_info {
 };
 
 struct sar_info cp110_sar_0[] = {
+	{"PCIE0 clock config   ", SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_OFFSET, SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_MASK},
+	{"PCIE1 clock config   ", SAR1_RST_PCIE1_CLOCK_CONFIG_CP0_OFFSET, SAR1_RST_PCIE1_CLOCK_CONFIG_CP0_MASK},
 	{"Reset Boot Mode     ", SAR1_RST_BOOT_MODE_AP_CP0_OFFSET, SAR1_RST_BOOT_MODE_AP_CP0_MASK },
 	{"",			-1,			-1},
 };
@@ -64,15 +71,10 @@ static struct bootsrc_idx_info bootsrc_list[] = {
 	{-1,	-1,	-1}
 };
 
-int cp110_sar_value_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
+int cp110_sar_bootsrc_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
 {
 	u32 reg, mode;
 	int i;
-
-	if (sar_opt != SAR_BOOT_SRC) {
-		error("AP806-SAR: Unsupported SAR option %d.\n", sar_opt);
-		return -EINVAL;
-	}
 
 	reg = readl(sar_base);
 	mode = (reg & SAR1_RST_BOOT_MODE_AP_CP0_MASK) >> SAR1_RST_BOOT_MODE_AP_CP0_OFFSET;
@@ -97,6 +99,31 @@ int cp110_sar_value_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
 	return 0;
 }
 
+int cp110_sar_value_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
+{
+	u32 reg, mode;
+
+	reg = readl(sar_base);
+
+	switch (sar_opt) {
+	case SAR_BOOT_SRC:
+		return cp110_sar_bootsrc_get(sar_opt, val);
+	case SAR_CP_PCIE0_CLK:
+		mode = (reg & SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_MASK) >> SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_OFFSET;
+		val->raw_sar_val = mode;
+		val->clk_direction = mode;
+		break;
+	case SAR_CP_PCIE1_CLK:
+		mode = (reg & SAR1_RST_PCIE1_CLOCK_CONFIG_CP0_MASK) >> SAR1_RST_PCIE1_CLOCK_CONFIG_CP0_OFFSET;
+		val->raw_sar_val = mode;
+		val->clk_direction = mode;
+		break;
+	default:
+		error("AP806-SAR: Unsupported SAR option %d.\n", sar_opt);
+		return -EINVAL;
+	}
+	return 0;
+}
 
 static int cp110_sar_dump(void)
 {
@@ -122,6 +149,8 @@ int cp110_sar_init(const void *blob, int node)
 	struct sar_chip_info info;
 
 	u32 sar_list[] = {
+		SAR_CP_PCIE0_CLK,
+		SAR_CP_PCIE1_CLK,
 		SAR_BOOT_SRC
 	};
 

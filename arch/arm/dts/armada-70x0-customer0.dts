@@ -32,7 +32,7 @@
 				status = "disabled";
 			};
 			i2c0: i2c@511000 {
-				status = "okay";
+				status = "disabled";
 			};
 			pinctl: pinctl@6F4000 {
 					/* MPP Bus:
@@ -55,7 +55,7 @@
 				status = "okay";
 			};
 			i2c@701000 {
-				status = "disabled";
+				status = "okay";
 			};
 			usb3@500000 {
 				status = "okay";

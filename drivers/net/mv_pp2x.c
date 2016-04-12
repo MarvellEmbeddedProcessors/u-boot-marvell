@@ -5073,6 +5073,7 @@ int mv_pp2x_dts_port_param_set(int port_node, struct mv_pp2x_dev_param *param)
 	int emac_off, phy_off, gop_port, mdio_phy, speed;
 	int phy_mode = 0;
 	u32 *emac_handle, *phy_handle;
+	bool force_link;
 
 	emac_handle = (u32 *)fdt_getprop(gd->fdt_blob,
 				port_node, "emac-data", NULL);
@@ -5114,6 +5115,8 @@ int mv_pp2x_dts_port_param_set(int port_node, struct mv_pp2x_dev_param *param)
 		param->phy_speed = speed;
 	}
 
+	force_link = fdtdec_get_bool(gd->fdt_blob, emac_off, "force-link");
+
 	phy_handle = (u32 *)fdt_getprop(gd->fdt_blob,
 					emac_off, "phy", NULL);
 
@@ -5135,6 +5138,7 @@ int mv_pp2x_dts_port_param_set(int port_node, struct mv_pp2x_dev_param *param)
 		param->phy_addr = mdio_phy;
 
 	}
+	param->force_link = force_link;
 	param->phy_handle = phy_handle;
 	param->phy_type = phy_mode;
 	param->gop_port = gop_port;
@@ -5167,6 +5171,7 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 	pp2_port->mac_data.gop_index = param->gop_port;
 	pp2_port->mac_data.phy_mode = param->phy_type;
 	pp2_port->mac_data.speed = param->phy_speed;
+	pp2_port->mac_data.force_link = param->force_link;
 
 	/*
 	 * Allocate buffer area for tx/rx descs and rx_buffers. This is only

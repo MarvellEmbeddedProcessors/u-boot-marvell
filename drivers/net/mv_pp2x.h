@@ -2878,6 +2878,7 @@ struct mv_pp2x_dev_param {
 	phy_interface_t phy_type;
 	u32 *phy_handle;
 	int phy_speed;
+	bool force_link;
 };
 
 struct pp21_specific_tx_desc {

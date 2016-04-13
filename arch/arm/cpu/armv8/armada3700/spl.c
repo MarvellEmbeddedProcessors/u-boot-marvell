@@ -30,7 +30,7 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-void (*ptr_uboot_start)(void);
+void (*ptr_oslo_start)(void);
 
 void board_init_f(ulong silent)
 {
@@ -138,8 +138,8 @@ void board_init_f(ulong silent)
 	init_io_addr_dec();
 #endif
 
-	debug("SPL processing done. Jumping to u-boot\n\n");
-	ptr_uboot_start = 0;
-	/* Jump from SPL to u-boot start address */
-	ptr_uboot_start();
+	debug("SPL processing done. Jumping to OSLO image\n\n");
+	ptr_oslo_start = (void *)CONFIG_OSLO_START_ADDR;
+	/* Jump from SPL to OSLO start address, which could be u-boot or ATF */
+	ptr_oslo_start();
 }

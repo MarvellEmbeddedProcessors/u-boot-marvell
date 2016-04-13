@@ -37,5 +37,16 @@ config MVEBU_BOOTMODE_SWITCH_SUPPORT
 	  in order to fallback to uart mode automatically
 	  when a mal-function bootloader image is present in flash.
 
+config OSLO_START_ADDR
+        hex "OSLO image start address"
+        default 4100000
+        help
+          Define the OSLO image start address.
+          In case of SPL+u-boot, it is the u-boot start address 0,
+          in case of SPI+ATF+u-boot, it is the start
+          address of ATF.
+          The default OSLO start address 0x4100000 is the ATF image start
+          address after it is loaded.
+
 endif
 

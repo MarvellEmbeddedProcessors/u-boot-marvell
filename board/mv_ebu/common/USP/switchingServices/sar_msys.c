@@ -60,86 +60,12 @@ disclaimer.
 #include "cntmr/mvCntmrRegs.h"
 #include "switchingServices.h"
 
-/* defines  */
-#undef MV_DEBUG
-#ifdef MV_DEBUG
-#define DB(x) x
-#define DB1(x)  x
-#else
-#define DB(x)
-#define DB1(x)
-#endif
+#include "sar_external_i2c.h"
 
-/* SAR defines when Connected to MSYS (Only Bc2 & BOBK) */
-#define MV_BOARD_CTRL_I2C_ADDR_MSYS	0x0
-#define TWSI_CHANNEL_MSYS			0
-#define TWSI_SPEED_MSYS		20000 /* wa for bits 1,2 in 0x4c. Mmust lower
-					 100000 -> 20000 . adiy, erez*/
 typedef volatile unsigned long VUL;
 const char *chipStr[] = {"XCAT2", "NP5", "BC2", "BOBK", "AC3", "OTHER"};
 
 static int do_sar_read_msys(int silt, uint *value, int argc, char *const argv[]);
-
-
-static MV_U8 tread_msys(MV_U8 addr, int reg, MV_BOOL moreThen256)
-{
-	MV_TWSI_SLAVE twsiSlave;
-	MV_TWSI_ADDR slave;
-	MV_U8 data;
-
-	DB(printf("tread_msys, DevAddr = 0x%x\n", addr));
-
-	/* TWSI init */
-	slave.address = MV_BOARD_CTRL_I2C_ADDR_MSYS;
-	slave.type = ADDR7_BIT;
-
-	mvTwsiInit(TWSI_CHANNEL_MSYS, TWSI_SPEED_MSYS, mvBoardTclkGet(), &slave, 0);
-
-	/* read SatR */
-	twsiSlave.slaveAddr.type = ADDR7_BIT;
-	twsiSlave.slaveAddr.address = addr ;
-	twsiSlave.validOffset = MV_TRUE;
-	twsiSlave.offset = reg;
-	twsiSlave.moreThen256 = moreThen256;
-
-	if (MV_OK != mvTwsiRead(TWSI_CHANNEL_MSYS, &twsiSlave, &data, 1)) {
-		DB(printf("tread_msys : twsi read fail\n"));
-		return MV_ERROR;
-	}
-	DB(printf("tread_msys: twsi read succeeded, data = 0x%x\n", data));
-
-	return data;
-}
-
-static MV_STATUS twrite_msys(MV_U8 addr, int reg, MV_U8 regVal, MV_BOOL moreThen256)
-{
-	MV_TWSI_SLAVE twsiSlave;
-	MV_TWSI_ADDR slave;
-	MV_U8 data;
-
-	/* printf(">>> in twrite_msys, addr=0x%x, reg = 0x%x, val=0x%x\n", addr, reg, regVal);*/
-	/* TWSI init */
-	slave.address = MV_BOARD_CTRL_I2C_ADDR_MSYS;
-	slave.type = ADDR7_BIT;
-
-	mvTwsiInit(TWSI_CHANNEL_MSYS, TWSI_SPEED_MSYS, mvBoardTclkGet(), &slave, 0);
-
-	/* write SatR */
-	twsiSlave.slaveAddr.address = addr;
-	twsiSlave.slaveAddr.type = ADDR7_BIT;
-	twsiSlave.validOffset = MV_TRUE;
-	twsiSlave.offset = reg;
-	twsiSlave.moreThen256 = moreThen256;
-
-	data = regVal;
-	if (MV_OK != mvTwsiWrite(TWSI_CHANNEL_MSYS, &twsiSlave, &data, 1)) {
-		DB(mvOsPrintf("twrite_msys: twsi write fail\n"));
-		return MV_ERROR;
-	}
-	DB(mvOsPrintf("twrite_msys: twsi write succeeded\n"));
-
-	return MV_OK;
-}
 
 static int do_sar_list_msys(int silt, int argc, char *const argv[])
 {
@@ -527,17 +453,6 @@ static int do_sar_write_msys(int silt, int argc, char *const argv[])
 	return 0;
 }
 
-
-
-MV_STATUS check_twsi_msys(void)
-{
-	MV_U8 reg = tread_msys(0x4c, 0, MV_FALSE);
-	DB(printf("\ncheck_twsi_msys: read_MSYS= 0x%x\n", reg));
-	if (reg == 0xff)
-		return MV_ERROR;
-	else
-		return MV_OK;
-}
 
 /* Now only support BC2 and BOBK, AC3 only support "boardid" field */
 int do_sar_msys(cmd_tbl_t * cmdtp, int flag, int silt, int argc, char * const argv[])

@@ -78,12 +78,13 @@
    CM3 mapping for SRAM is     0x1FFF0000 - 0x20010000
  */
 #define CONFIG_SPL_TEXT_BASE		0x01000000
-#define CONFIG_SPL_MAX_SIZE		0x00010000	/* 64K */
 
 #if (CONFIG_SPL_TEXT_BASE != 0xF0000000)
 #define SPL_IS_IN_DRAM
+#define CONFIG_SPL_MAX_SIZE		0x00020000	/* 128K */
 #else
 #undef SPL_IS_IN_DRAM
+#define CONFIG_SPL_MAX_SIZE		0x00010000	/* 64K */
 #endif
 
 

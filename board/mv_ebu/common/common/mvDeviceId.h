@@ -460,6 +460,9 @@ extern "C" {
 #define MV_BOBK_LEWIS_98DX8212_DEV_ID		0xBE10
 #define MV_BOBK_CYGNUS_98DX4211_DEV_ID		0xBC10
 
+/* Aldrin Family */
+#define MV_ALDRIN_DEV_ID	0xC81F
+
 /* BobK  Revisions */
 #define MV_BOBK_A0_ID		0x0
 #define MV_BOBK_A0_NAME		"A0"

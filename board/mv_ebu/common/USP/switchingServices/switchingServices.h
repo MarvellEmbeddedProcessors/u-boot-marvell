@@ -67,6 +67,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "mvCommon.h"
+#include "sar_sw_lib.h"
 
 struct partitionInformation {
 	char *defaultImage;
@@ -160,6 +161,7 @@ typedef enum {	// special device enum
 		SILT_BC2,
 		SILT_BOBK,
 		SILT_AC3,
+		SILT_ALDR,
 		SILT_OTHER,
 		SILT_NOT_DETECT = 0x5a5a
 } SILICON_TYPE;
@@ -185,5 +187,7 @@ typedef enum {	// special device enum
 
 SILICON_TYPE get_attached_silicon_type(void);
 int do_sar_msys(cmd_tbl_t * cmdtp, int flag, int silt, int argc, char * const argv[]);
+int do_sar_switch(int argc, char * const argv[], struct satr_info *sar_info);
 void hwServicesLateInit(void);
+extern struct satr_info aldrin_satr_info[];
 #endif

@@ -1,0 +1,7 @@
+; Enable secure access for eMMC/SATA/USB.
+; SEC_AXPROT_ST bits Controls the Secure AxPROT[1] Operating State of
+; its associated AXI routing port: these attributes has to match that
+; of the CPU’s regarding IO coherency. So, for IO coherency to work,
+; we need CM3 code to enable bits SEC_AXPROT[7:4] so set them also
+; to non-secure.
+WRITE: 0x400001A0 0x000000B0        ; BIT4 | BIT5 | BIT7

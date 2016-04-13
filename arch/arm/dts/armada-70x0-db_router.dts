@@ -58,6 +58,12 @@
 			i2c@701000 {
 				status = "okay";
 			};
+			i2c@211000 { /* MSS_i2c0 */
+				status = "disabled";
+			};
+			i2c@211100 { /* MSS_i2c1 */
+				status = "disabled";
+			};
 			usb3@500000 {
 				status = "okay";
 			};

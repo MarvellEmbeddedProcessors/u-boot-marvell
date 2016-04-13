@@ -21,6 +21,10 @@ map-iob {
 	reg = <0x190000 0x50>;
 	max-win = <16>;
 };
+map-amb-adec {
+	compatible = "marvell,mvebu-amb-adec";
+	reg = <0x70ff00 0x50>;
+};
 
 refclk {
 	compatible = "marvell,refclk";

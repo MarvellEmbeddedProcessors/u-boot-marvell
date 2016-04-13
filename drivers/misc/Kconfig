@@ -91,6 +91,16 @@ config MVEBU_CCU
 	  This driver initialize the CCU windows
 	  only.
 
+config MVEBU_AMB_ADEC
+	bool "AXI MBUS address decoding driver"
+	default n
+	depends on TARGET_ARMADA_8K
+	help
+	  Choose this option to add support
+	  for AXI MBUS address decoding driver.
+	  This driver initialize the IOB windows
+	  only.
+
 config MVEBU_IOB
 	bool "IOB address decoding driver"
 	default n

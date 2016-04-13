@@ -24,4 +24,5 @@ obj-$(CONFIG_MVEBU_LLC_ENABLE)	+= cache_llc.o
 obj-$(CONFIG_MVEBU_CCU) += mvebu_ccu.o
 obj-$(CONFIG_MVEBU_RFU) += mvebu_rfu.o
 obj-$(CONFIG_MVEBU_IOB) += mvebu_iob.o
+obj-$(CONFIG_MVEBU_AMB_ADEC) += mvebu_amb_adec.o
 obj-$(CONFIG_MVEBU_FLC) += mvebu_flc.o

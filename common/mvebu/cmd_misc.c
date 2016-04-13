@@ -34,6 +34,9 @@
 #ifdef CONFIG_MVEBU_IOB
 #include <asm/arch-mvebu/iob.h>
 #endif
+#ifdef CONFIG_MVEBU_AMB_ADEC
+#include <asm/arch-mvebu/amb_adec.h>
+#endif
 #ifdef CONFIG_MVEBU_MBUS
 #include <asm/arch-mvebu/mbus.h>
 #endif
@@ -52,6 +55,9 @@ int do_map_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 #endif
 #ifdef CONFIG_MVEBU_IOB
 	dump_iob();
+#endif
+#ifdef CONFIG_MVEBU_AMB_ADEC
+	dump_amb_adec();
 #endif
 #ifdef CONFIG_MVEBU_MBUS
 	dump_mbus();

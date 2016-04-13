@@ -48,6 +48,12 @@ SIGNFILE=$9
 TIMNPREF="timn"
 # Reserved area definition for TIMN - file name prefix
 RSRVD2PREF="rsrvdtimn"
+# General Purpose Patch files -
+# can be different for trusted/non-trusted boot modes
+GPP1PREF="gpp1"
+GPP2PREF="gpp2"
+GPP1FILE="$IMGPATH/$GPP1PREF.$FILEEXT"
+GPP2FILE="$IMGPATH/$GPP2PREF.$FILEEXT"
 
 usage () {
 	echo ""
@@ -217,16 +223,51 @@ else
 	echo "" >> $OUTFILE
 fi
 
-# DDR init
+# Extended reserved area - GPP actions and DDR init
 if [ ! -e "$DDRFILE" ]; then
+	# DDR init is mandatory
 	echo "Cannot find $DDRFILE file!"
 	exit 1
 else
 	echo "Extended Reserved Data:" >> $OUTFILE
 	echo "Consumer ID:" >> $OUTFILE
 	echo "CID: TBRI" >> $OUTFILE
+
+	# GPPn packages are optional
+	if [ -e "$GPP1FILE" ]; then
+		echo "PID: GPP1" >> $OUTFILE
+	fi
+	if [ -e "$GPP2FILE" ]; then
+		echo "PID: GPP2" >> $OUTFILE
+	fi
 	echo "PID: DDR3" >> $OUTFILE
 	echo "End Consumer ID:" >> $OUTFILE
+
+	# GPPn packages are optional
+	if [ -e "$GPP1FILE" ]; then
+		echo "GPP:" >> $OUTFILE
+		echo "GPP_PID: GPP1" >> $OUTFILE
+		echo "GPP Operations:" >> $OUTFILE
+		echo "GPP_IGNORE_INST_TO: 0x0" >> $OUTFILE
+		echo "End GPP Operations:" >> $OUTFILE
+		echo "Instructions:" >> $OUTFILE
+		cat $GPP1FILE >> $OUTFILE
+		echo "End Instructions:" >> $OUTFILE
+		echo "End GPP:" >> $OUTFILE
+	fi
+
+	if [ -e "$GPP2FILE" ]; then
+		echo "GPP:" >> $OUTFILE
+		echo "GPP_PID: GPP2" >> $OUTFILE
+		echo "GPP Operations:" >> $OUTFILE
+		echo "GPP_IGNORE_INST_TO: 0x0" >> $OUTFILE
+		echo "End GPP Operations:" >> $OUTFILE
+		echo "Instructions:" >> $OUTFILE
+		cat $GPP2FILE >> $OUTFILE
+		echo "End Instructions:" >> $OUTFILE
+		echo "End GPP:" >> $OUTFILE
+	fi
+
 	echo "DDR Initialization:" >> $OUTFILE
 	echo "DDR_PID: DDR3" >> $OUTFILE
 	echo "Operations:" >> $OUTFILE
@@ -238,6 +279,7 @@ else
 	cat $DLLTUNFILE >> $OUTFILE
 	echo "End Instructions:" >> $OUTFILE
 	echo "End DDR Initialization:" >> $OUTFILE
+
 	echo "End Extended Reserved Data:" >> $OUTFILE
 	echo "" >> $OUTFILE
 fi

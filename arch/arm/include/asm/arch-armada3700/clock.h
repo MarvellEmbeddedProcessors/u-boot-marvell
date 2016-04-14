@@ -275,9 +275,11 @@ struct a3700_clock_cfg {
 	struct a3700_sb_clock_cfg	sb_clk_cfg;
 };
 
-/* This index points to configuration selected in MVEBU_A3700_CLOCK_CFGS
-   when DT entry is missing or invalid */
-#define MVEBU_A3700_DEF_CLOCK_PRESET_IDX	1
+/* Indexes to MVEBU_A3700_CLOCK_CFGS array */
+#define MVEBU_A3700_PRESET_IDX_CPU_600_DDR_600		0
+#define MVEBU_A3700_PRESET_IDX_CPU_400_DDR_600		1
+#define MVEBU_A3700_PRESET_IDX_CPU_1000_DDR_800		2
+#define MVEBU_A3700_PRESET_IDX_CPU_800_DDR_800		3
 
 /* Init values for the static clock configurations array */
 /*

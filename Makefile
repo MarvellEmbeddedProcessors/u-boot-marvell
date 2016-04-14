@@ -852,8 +852,16 @@ TIM2PHEX	:= $(srctree)/scripts/tim2phex.pl
 TIM2IMG		:= $(srctree)/scripts/tim2img.pl
 TIMBUILD	:= $(srctree)/scripts/buildtim.sh
 CLOCKSPATH	:= $(srctree)/tools/wtp
-CLOCKSPRESET	:= $(shell find $(srctree) -name $(CONFIG_DEFAULT_DEVICE_TREE).dts | \
-			xargs grep preset | sed -n 's/.*<\([^ ]*\)>;/\1/p')
+
+ifeq ($(CONFIG_PRESET_CPU_600_DDR_600),y)
+CLOCKSPRESET	:= PRESET_CPU_600_DDR_600
+else ifeq ($(CONFIG_PRESET_CPU_800_DDR_800),y)
+CLOCKSPRESET	:= PRESET_CPU_800_DDR_800
+else ifeq ($(CONFIG_PRESET_CPU_1000_DDR_800),y)
+CLOCKSPRESET	:= PRESET_CPU_1000_DDR_800
+else
+CLOCKSPRESET	:= PRESET_INVALID
+endif
 
 ifeq ($(CONFIG_MVEBU_SPI_BOOT),y)
 BOOTDEV		:= SPINOR

@@ -472,24 +472,20 @@ u32 set_clocks(u32 cpu_clk_mhz, u32 ddr_clk_mhz, u32 tbg_a_kvco_mhz, u32 tbg_b_k
 
 int init_clock(void)
 {
-	int node, count, idx, ret;
-	const void *blob = gd->fdt_blob;
-	int tbl_sz = sizeof(a3700_clock_configs)/sizeof(a3700_clock_configs[0]);
+	int idx, ret;
 	u32 vdd_val;
 
 	debug_enter();
 
-	count = fdtdec_find_aliases_for_id(blob, "freq", COMPAT_MVEBU_A3700_FREQ, &node, 1);
-	if (count == 0) {
-		error("The frequency preset is not defined in DT, using default\n");
-		idx = MVEBU_A3700_DEF_CLOCK_PRESET_IDX;
-	} else {
-		idx = fdtdec_get_int(blob, node, "preset", MVEBU_A3700_DEF_CLOCK_PRESET_IDX);
-		if ((idx >= tbl_sz) || (idx < 0)) {
-			error("Unsupported frequency preset in DT (%d), using default\n", idx);
-			idx = MVEBU_A3700_DEF_CLOCK_PRESET_IDX;
-		}
-	}
+#if defined(CONFIG_PRESET_CPU_600_DDR_600)
+	idx = MVEBU_A3700_PRESET_IDX_CPU_600_DDR_600;
+#elif defined(CONFIG_PRESET_CPU_800_DDR_800)
+	idx = MVEBU_A3700_PRESET_IDX_CPU_800_DDR_800;
+#elif defined(CONFIG_PRESET_CPU_1000_DDR_800)
+	idx = MVEBU_A3700_PRESET_IDX_CPU_1000_DDR_800;
+#else
+#error "Bad clock preset!"
+#endif
 
 	printf("Setting clocks to CPU=%dMHz and DDR=%dMHz\n",
 		a3700_clock_configs[idx].cpu_freq_mhz, a3700_clock_configs[idx].ddr_freq_mhz);

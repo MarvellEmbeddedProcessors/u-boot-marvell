@@ -9,10 +9,6 @@
 	compatible = "marvell,armada-3700-db0", "marvell,armada-3700";
 
 	soc {
-		freq {
-			preset = <PRESET_CPU_600_DDR_600>;
-		};
-
 		internal-regs {
 			ddr-mac {
 				cs_count = <1>;

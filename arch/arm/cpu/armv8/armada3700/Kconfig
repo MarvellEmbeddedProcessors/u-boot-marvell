@@ -50,3 +50,29 @@ config OSLO_START_ADDR
 
 endif
 
+choice
+	prompt "CPU and DDR Clock preset"
+	default PRESET_CPU_800_DDR_800
+
+config PRESET_CPU_600_DDR_600
+	bool "CPU at 600 MHz, DDR at 600 MHz"
+	help
+	  Run system with the following clock
+	  tree configuration preset:
+	  CPU at 600 MHz, DDR3 at 600 MHz
+
+config PRESET_CPU_800_DDR_800
+	bool "CPU at 800 MHz, DDR at 800 MHz"
+	help
+	  Run system with the following clock
+	  tree configuration preset:
+	  CPU at 800 MHz, DDR3 at 800 MHz
+
+config PRESET_CPU_1000_DDR800
+	bool "CPU at 1000 MHz, DDR at 800 MHz"
+	help
+	  Run system with the following clock
+	  tree configuration preset:
+	  CPU at 1000 MHz, DDR3 at 800 MHz
+
+endchoice

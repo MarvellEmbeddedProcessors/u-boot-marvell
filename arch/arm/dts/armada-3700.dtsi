@@ -2,7 +2,6 @@
 #define IO_ATTR(max_win, max_remap, remap_size, win_offset) (((max_win) << 24) | ((max_remap) << 16) | ((remap_size) << 8) | (win_offset))
 
 #include <dt-bindings/comphy/comphy_data.h>
-#include <dt-bindings/clock/freq_data.h>
 / {
 	model = "Marvell Armada 3700 Development Board";
 	compatible = "marvell,armada-3700";
@@ -14,11 +13,6 @@
 	compatible = "marvell,armadalp-mbus";
 	#address-cells = <1>;
 	#size-cells = <0>;
-
-		freq {
-			compatible = "marvell,a3700-freq";
-			preset = <PRESET_CPU_600_DDR_600>;
-		};
 
 		internal-regs {
 			compatible = "marvell,internal-regs";

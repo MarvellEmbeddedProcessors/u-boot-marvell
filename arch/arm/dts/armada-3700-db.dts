@@ -29,10 +29,6 @@
 	board_id = <A3700_DB_ID>;
 
 	soc {
-		freq {
-			preset = <PRESET_CPU_800_DDR_800>;
-		};
-
 		internal-regs {
 			ddr-mac {
 				cs_count = <1>;

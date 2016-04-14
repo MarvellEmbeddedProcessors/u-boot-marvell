@@ -19,6 +19,7 @@
 /* #define DEBUG */
 #include <common.h>
 #include <asm/io.h>
+#include <mvebu_chip_sar.h>
 #include <asm/arch-mvebu/sata.h>
 #include <asm/arch-mvebu/comphy.h>
 #include <asm/arch-mvebu/comphy_hpipe.h>
@@ -78,11 +79,22 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_width, void __iomem *hpipe_ba
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
 	void __iomem *comphy_addr = COMPHY_ADDR(comphy_base, lane);
 	void __iomem *addr;
-	u32 pcie_clk = 0; /* input */
+	struct sar_val sar;
+	u32 pcie_clk = 0; /* set input by default */
 
 	debug_enter();
 
-	debug("\nPCIe Width %d\n", pcie_width);
+	/* SerDes Lane 4/5 got the PCIe ref-clock #1, and SerDes Lane 0 got
+	** PCIe ref-clock #0 */
+	if (lane == 4 || lane == 5)
+		mvebu_sar_value_get(SAR_CP_PCIE1_CLK, &sar);
+	else
+		mvebu_sar_value_get(SAR_CP_PCIE0_CLK, &sar);
+
+	pcie_clk = sar.clk_direction;
+	debug("PCIe clock = %x\n", pcie_clk);
+
+	debug("PCIe Width = %d\n", pcie_width);
 	/* enable PCIe by4 and by2 */
 	if (lane == 0) {
 		if (pcie_width == 4) {

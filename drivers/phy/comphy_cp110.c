@@ -73,7 +73,8 @@ struct comphy_mux_data cp110_comphy_pipe_mux_data[] = {
 /* Lane 5 */ {2, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX2, 0x4} } },
 };
 
-static int comphy_pcie_power_up(u32 lane, u32 pcie_width, void __iomem *hpipe_base, void __iomem *comphy_base)
+static int comphy_pcie_power_up(u32 lane, u32 pcie_width, bool clk_src, void __iomem *hpipe_base,
+				void __iomem *comphy_base)
 {
 	u32 mask, data, ret = 1;
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
@@ -105,6 +106,12 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_width, void __iomem *hpipe_ba
 				0x1 << COMMON_PHY_SD_CTRL1_PCIE_X2_EN_OFFSET, COMMON_PHY_SD_CTRL1_PCIE_X2_EN_MASK);
 		}
 	}
+
+	/* if PCIe clock is output and clock source from SerDes lane 5, need to configure the clock-source MUX.
+	** By default, the clock source is from lane 4 */
+	if (pcie_clk && clk_src && (lane == 5))
+		reg_set((void __iomem *)DFX_DEV_GEN_CTRL12, 0x3 << DFX_DEV_GEN_PCIE_CLK_SRC_OFFSET,
+			DFX_DEV_GEN_PCIE_CLK_SRC_MASK);
 
 	debug("stage: RFU configurations - hard reset comphy\n");
 	/* RFU configurations - hard reset comphy */
@@ -178,8 +185,13 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_width, void __iomem *hpipe_ba
 		0x1 << HPIPE_DFE_CTRL_28_PIPE4_OFFSET, HPIPE_DFE_CTRL_28_PIPE4_MASK);
 	/* TODO: check if pcie clock is output/input - for bringup use input*/
 	/* Enable PIN clock 100M_125M */
-	mask = HPIPE_MISC_CLK100M_125M_MASK;
-	data = 0x1 << HPIPE_MISC_CLK100M_125M_OFFSET;
+	mask = 0;
+	data = 0;
+	/* Only if clock is output, configure the clock-source mux */
+	if (pcie_clk) {
+		mask |= HPIPE_MISC_CLK100M_125M_MASK;
+		data |= 0x1 << HPIPE_MISC_CLK100M_125M_OFFSET;
+	}
 	/* Set PIN_TXDCLK_2X Clock Frequency Selection for outputs 500MHz clock */
 	mask |= HPIPE_MISC_TXDCLK_2X_MASK;
 	data |= 0x0 << HPIPE_MISC_TXDCLK_2X_OFFSET;
@@ -1337,7 +1349,8 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		case PHY_TYPE_PEX1:
 		case PHY_TYPE_PEX2:
 		case PHY_TYPE_PEX3:
-			ret = comphy_pcie_power_up(lane, pcie_width, hpipe_base_addr, comphy_base_addr);
+			ret = comphy_pcie_power_up(lane, pcie_width, ptr_comphy_map->clk_src,
+						   hpipe_base_addr, comphy_base_addr);
 			break;
 		case PHY_TYPE_SATA0:
 		case PHY_TYPE_SATA1:

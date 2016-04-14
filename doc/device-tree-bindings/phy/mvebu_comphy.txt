@@ -24,6 +24,9 @@ Board specific:
 	Optional properties:
 	  - phy-invert : Polarity invert (PHY_POLARITY_TXD_INVERT/PHY_POLARITY_RXD_INVERT), the
 	  	posible bits under include/dt-bindings/comphy/comphy_data.h
+	  - clk-src : Set the clock source of PCIe, if configured to PCIe clock output
+		This relevant for SerDes lane 5 only (by default, lane 4 is the clock source)
+		for Armada-7040 boards.
 
 Example:
 	comphy {

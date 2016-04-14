@@ -54,6 +54,10 @@
 #define COMMON_PHY_SD_CTRL1_RXAUI0_OFFSET		27
 #define COMMON_PHY_SD_CTRL1_RXAUI0_MASK			(0x1 << COMMON_PHY_SD_CTRL1_RXAUI0_OFFSET)
 
+#define DFX_DEV_GEN_CTRL12			(MVEBU_CP0_REGS_BASE + 0x400280)
+#define DFX_DEV_GEN_PCIE_CLK_SRC_OFFSET		7
+#define DFX_DEV_GEN_PCIE_CLK_SRC_MASK		(0x3 << DFX_DEV_GEN_PCIE_CLK_SRC_OFFSET)
+
 #define MAX_LANE_OPTIONS			10
 #define MAX_UTMI_PHY_COUNT			2
 
@@ -71,6 +75,7 @@ struct comphy_map {
 	u32 type;
 	u32 speed;
 	u32 invert;
+	bool clk_src;
 };
 
 struct chip_serdes_phy_config {

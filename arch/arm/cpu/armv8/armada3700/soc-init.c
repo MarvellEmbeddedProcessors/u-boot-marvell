@@ -27,6 +27,7 @@
 #include <asm/arch-mvebu/mbus.h>
 #include <asm/arch-mvebu/pinctl.h>
 #include <asm/arch-mvebu/fdt.h>
+#include <asm/arch-mvebu/io_addr_dec.h>
 #include <libfdt.h>
 #include <asm/arch/boot_mode.h>
 #include <fdt_support.h>
@@ -77,6 +78,10 @@ void soc_init(void)
 #endif /* CONFIG_I2C_MV */
 
 #endif /* CONFIG_PALLADIUM */
+
+#ifdef CONFIG_MVEBU_A3700_IO_ADDR_DEC
+	init_io_addr_dec();
+#endif
 
 #ifdef CONFIG_MVEBU_COMPHY_SUPPORT
 	if (comphy_init(gd->fdt_blob))

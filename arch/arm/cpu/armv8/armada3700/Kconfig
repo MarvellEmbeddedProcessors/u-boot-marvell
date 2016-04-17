@@ -68,7 +68,7 @@ config PRESET_CPU_800_DDR_800
 	  tree configuration preset:
 	  CPU at 800 MHz, DDR3 at 800 MHz
 
-config PRESET_CPU_1000_DDR800
+config PRESET_CPU_1000_DDR_800
 	bool "CPU at 1000 MHz, DDR at 800 MHz"
 	help
 	  Run system with the following clock

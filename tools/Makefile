@@ -144,14 +144,8 @@ HOSTCFLAGS_ubsha1.o := -pedantic
 
 hostprogs-$(CONFIG_KIRKWOOD) += kwboot
 hostprogs-$(CONFIG_ARMADA_XP) += kwboot
-hostprogs-$(CONFIG_MVEBU) += doimage
 hostprogs-y += proftool
 hostprogs-$(CONFIG_STATIC_RELA) += relocate-rela
-
-ifneq ($(CONFIG_MVEBU_SECURE_BOOT),)
-HOSTCFLAGS_doimage.o := -DCONFIG_MVEBU_SECURE_BOOT
-HOSTLOADLIBES_doimage += -lconfig -lpolarssl
-endif
 
 # We build some files with extra pedantic flags to try to minimize things
 # that won't build on some weird host compiler -- though there are lots of

@@ -769,10 +769,8 @@ append = cat $(filter-out $< $(PHONY), $^) >> $@
 quiet_cmd_pad_cat = CAT     $@
 cmd_pad_cat = $(cmd_objcopy) && $(append) || rm -f $@
 
-# Add doimage target for mvebu soc
-ifeq ($(CONFIG_TARGET_ARMADA_38X), y)
-ALL-$(CONFIG_MVEBU) += doimage
-else ifeq ($(CONFIG_TARGET_ARMADA_3700), y)
+# Add doimage target for A3700 mvebu soc
+ifeq ($(CONFIG_TARGET_ARMADA_3700), y)
 ALL-$(CONFIG_MVEBU) += doimage
 endif
 
@@ -845,10 +843,9 @@ u-boot.ldr.hex u-boot.ldr.srec: u-boot.ldr FORCE
 WTMIPATH	:= $(srctree)/tools/wtp/wtmi
 
 ifdef CONFIG_MVEBU
-SPLIMAGE	:= $(srctree)/spl/u-boot-spl.bin
-
 ifeq ($(CONFIG_TARGET_ARMADA_3700), y)
 
+SPLIMAGE	:= $(srctree)/spl/u-boot-spl.bin
 BIN2PHEX	:= $(srctree)/scripts/bin2phex.pl
 TIM2PHEX	:= $(srctree)/scripts/tim2phex.pl
 TIM2IMG		:= $(srctree)/scripts/tim2img.pl
@@ -948,22 +945,7 @@ wtmi:
 	@echo "  =====WTMI====="
 	@$(MAKE) -C $(WTMIPATH)
 
-else # CONFIG_TARGET_ARMADA_38X
-
-DOIMAGE		:= $(srctree)/tools/marvell/doimage
-
-ifdef CONFIG_MVEBU_NAND_BOOT
-NAND_OPTS	:= -P $(CONFIG_MVEBU_NAND_PAGE_SIZE) -L $(CONFIG_MVEBU_NAND_BLOCK_SIZE) -N $(CONFIG_MVEBU_NAND_CELL_TYPE)
-endif
-
-DOIMAGE_FLAGS	:= -T $(CONFIG_DOIMAGE_TYPE) -D 0x0 -E 0x0 $(NAND_OPTS) -G $(SPLIMAGE)
-
-doimage: $(obj)/u-boot.bin $(DOIMAGE) $(SPLIMAGE)
-		cp spl/u-boot-spl.bin spl/u-boot-spl.bin.old; cat tools/marvell/params.raw > spl/u-boot-spl.bin;
-		cat spl/u-boot-spl.bin.old >> spl/u-boot-spl.bin;
-		$(DOIMAGE) $(DOIMAGE_FLAGS) u-boot.bin u-boot-spl.bin
-
-endif # CONFIG_TARGET_ARMADA_8K/CONFIG_TARGET_ARMADA_3700/CONFIG_TARGET_ARMADA_38X
+endif # CONFIG_TARGET_ARMADA_3700
 endif # CONFIG_MVEBU
 
 #

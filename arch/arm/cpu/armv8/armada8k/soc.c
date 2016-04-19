@@ -34,8 +34,15 @@
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
 
+#define EMMC_PHY_IO_CTRL		(MVEBU_IP_CONFIG_REG)
+#define EMMC_PHY_CTRL_SDPHY_EN		(1 << 0)
+
 int soc_early_init_f(void)
 {
+#ifdef CONFIG_XENON_MMC
+	u32 reg;
+#endif
+
 #ifdef CONFIG_MVEBU_CHIP_SAR
 	/* Sample at reset register init */
 	mvebu_sar_init(gd->fdt_blob);
@@ -43,6 +50,14 @@ int soc_early_init_f(void)
 #ifdef CONFIG_MVEBU_PINCTL
 	mvebu_pinctl_probe();
 #endif
+
+#ifdef CONFIG_XENON_MMC
+	/* set eMMC/SD PHY output instead of MPPs */
+	reg = readl(EMMC_PHY_IO_CTRL);
+	reg &= ~EMMC_PHY_CTRL_SDPHY_EN;
+	writel(reg, EMMC_PHY_IO_CTRL);
+#endif
+
 	return 0;
 }
 

@@ -43,6 +43,14 @@ config MVEBU_SATA_BOOT
 	  For details about image placement on the
 	  boot device please refer to the BootROM manual
 
+config MVEBU_SPINAND_BOOT
+	bool "SPINAND flash boot"
+	depends on MVEBU_SPI
+	help
+	  Enable boot from SPINAND device
+	  For details about image placement on the
+	  boot device, please refer to the BootROM manual
+
 endchoice
 
 config SYS_MMC_ENV_PART

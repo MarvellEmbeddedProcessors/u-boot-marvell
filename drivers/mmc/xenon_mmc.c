@@ -44,6 +44,14 @@ DECLARE_GLOBAL_DATA_PTR;
 static const char driver_name[] = "XENON-SDHCI";
 const u32 block_size[4] = {512, 1024, 2048, 512};
 
+/* GPIO output set to 1 to be 1.8v and 0 to be 3.3v */
+#ifndef MVEBU_GPIO_SDIO_VOLTAGE_1_8V
+#define MVEBU_GPIO_SDIO_VOLTAGE_1_8V 1
+#endif
+#ifndef MVEBU_GPIO_SDIO_VOLTAGE_3_3V
+#define MVEBU_GPIO_SDIO_VOLTAGE_3_3V 0
+#endif
+
 static void xenon_mmc_writel(struct xenon_mmc_cfg *mmc_cfg, u32 offs, u32 val)
 {
 	writel(val, mmc_cfg->reg_base + (offs));
@@ -89,6 +97,13 @@ static void xenon_mmc_reset(struct xenon_mmc_cfg *mmc_cfg, u8 mask)
 		timeout--;
 		udelay(100);
 	}
+}
+
+void __weak mvebu_set_sdio(int voltage)
+{
+	error("Voltage not changed to %x, need to implement %s in SOC code\n", voltage, __func__);
+	printf("In addition need to define MVEBU_GPIO_SDIO_VOLTAGE_1_8V,\n");
+	printf("and MVEBU_GPIO_SDIO_VOLTAGE_3_3V according to SOC configuration\n");
 }
 
 int xenon_mmc_phy_init(struct xenon_mmc_cfg *mmc_cfg)

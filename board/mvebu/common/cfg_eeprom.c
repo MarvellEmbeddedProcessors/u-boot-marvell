@@ -531,7 +531,7 @@ int cfg_eeprom_init(void)
 
 	/* check if pattern in EEPROM is invalid */
 	if (eeprom_buffer.pattern != board_config_val.pattern) {
-		printf("Could not find pattern. Loading default FDT\n");
+		printf("EEPROM configuration pattern not detected. Loading default FDT\n");
 		cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(cfg_eeprom_get_board_id()));
 		goto init_done;
 	}

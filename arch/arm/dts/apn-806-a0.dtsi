@@ -99,6 +99,13 @@
 				compatible = "marvell,sample-at-reset-common", "marvell,sample-at-reset-ap806";
 				reg = <0x6F8200 0x8>;
 			};
+
+			mmc0: mmc@6E0000 {
+				compatible = "marvell,xenon-sdhci";
+				reg = <0x6E0000 0x300>;
+				xenon,emmc;
+				status = "disabled";
+			};
 		};
 	};
 };

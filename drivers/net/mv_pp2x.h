@@ -2308,7 +2308,6 @@
  * - header data - 8 bytes
  * The fields are represented by MVPP2_PRS_TCAM_DATA_REG(5)->(0).
  */
-#define MVPP2_PRS_AI_BITS			8
 #define MVPP2_PRS_PORT_MASK			0xff
 #define MVPP2_PRS_LU_MASK			0xf
 #define MVPP2_PRS_TCAM_DATA_BYTE(offs)		\
@@ -2436,16 +2435,6 @@
 #define MVPP2_PRS_RI_UDF7_IP6_LITE		BIT(29)
 #define MVPP2_PRS_RI_DROP_MASK			0x80000000
 
-/* Sram additional info bits assignment */
-#define MVPP2_PRS_IPV4_DIP_AI_BIT		BIT(0)
-#define MVPP2_PRS_IPV6_NO_EXT_AI_BIT		BIT(0)
-#define MVPP2_PRS_IPV6_EXT_AI_BIT		BIT(1)
-#define MVPP2_PRS_IPV6_EXT_AH_AI_BIT		BIT(2)
-#define MVPP2_PRS_IPV6_EXT_AH_LEN_AI_BIT	BIT(3)
-#define MVPP2_PRS_IPV6_EXT_AH_L4_AI_BIT		BIT(4)
-#define MVPP2_PRS_SINGLE_VLAN_AI		0
-#define MVPP2_PRS_DBL_VLAN_AI_BIT		BIT(7)
-
 #define MVPP2_PRS_SRAM_BIT_TO_BYTE(_bit_)	HW_BYTE_OFFS((_bit_) / 8)
 #define MVPP2_PRS_SRAM_SHIFT_MASK	((1 << MVPP2_PRS_SRAM_SHIFT_BITS) - 1)
 
@@ -2518,7 +2507,6 @@
  */
 #define MVPP2_MH_SIZE			2
 #define MVPP2_ETH_TYPE_LEN		2
-#define MVPP2_PPPOE_HDR_SIZE		8
 #define MVPP2_VLAN_TAG_LEN		4
 
 /* Maximum number of T-CONTs of PON port */
@@ -2810,11 +2798,6 @@ struct mv_pp2x {
 
 	/* BM pools */
 	struct mv_pp2x_bm_pool *bm_pools;
-
-	/* PRS shadow table */
-	struct mv_pp2x_prs_shadow *prs_shadow;
-	/* PRS auxiliary table for double vlan entries control */
-	bool *prs_double_vlans;
 
 	/* Tclk value */
 	u32 tclk;

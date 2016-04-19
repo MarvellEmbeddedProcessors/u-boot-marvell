@@ -16,11 +16,17 @@
  * ***************************************************************************
  */
 
-#include <dt-bindings/comphy/comphy_data.h>
-#include "apn-806-a0.dtsi"
-#include "cp110-master.dtsi"
-/* #include "cp110-slave.dtsi" */
+/dts-v1/;
 
+#include "armada-80x0-db.dtsi" /* include initial Board device tree */
 / {
-	compatible = "marvell,armada-80x0";
+	model = "DB-ARMADA-80x0 (Default)";
+	compatible = "marvell,armada-80x0-db", "marvell,armada-80x0";
+	fdt_config_id = <1>;
+	board_id = <0x13>;
+
+	/*
+	This is the default device tree for Armada 8040-DB board,
+	All board interface settings are reflected in armada-80x0-db.dtsi
+	*/
 };

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ***************************************************************************
  */
-
+ /* TODO: align with cp110-master.dtsi */
 / {
 	model = "Marvell Armada CPN-110 Slave";
 

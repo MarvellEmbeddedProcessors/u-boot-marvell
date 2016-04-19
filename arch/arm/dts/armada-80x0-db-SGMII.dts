@@ -18,62 +18,37 @@
 
 /dts-v1/;
 
-#include "armada-80x0.dtsi" /* include SoC device tree */
-
+#include "armada-80x0-db.dtsi" /* include initial Board device tree */
 / {
-	model = "DB-ARMADA-80x0";
+	model = "DB-ARMADA-80x0 (10G)";
 	compatible = "marvell,armada-80x0-db", "marvell,armada-80x0";
-	fdt_config_id = <3>;
-	board_id = <0x10>;
+	fdt_config_id = <2>;
+	board_id = <0x13>;
 
-	memory {
-		device_type = "memory";
-		reg = <0x00000000 0x10000000 0 0>; /* 256 MB */
-	};
-	ap-806 {
-		internal-regs {
-			i2c0: i2c@511000 {
-				status = "okay";
-			};
-
-			spi0: spi@510600 {
-				status = "okay";
-			};
-		};
-
-		pcie-controller {
-			pcie@1,0 {
-				status = "okay";
-			};
-		};
-	};
 	cp110-master {
 		internal-regs {
-			pinctl@440000 {
-					/*   0 1 2 3 4 5 6 7 8 9 */
-				pin-func = < 0 0 0 0 0 0 0 0 0 0
-					     0 0 0 0 0 0 0 0 0 0
-					     0 0 0 0 0 0 0 0 0 0
-					     0 0 0 0 0 0 0 0 0 0
-					     0 0 0 0 0 0 0 0 0 0
-					     0 0 0 0 0 0 6 6 6 6
-					     0 0 0 0>;
-			};
-		};
-	};
-	cp110-slave {
-		internal-regs {
-			pinctl@440000 {
-					/*   0 1 2 3 4 5 6 7 8 9 */
-				pin-func = < 0 0 0 0 0 0 0 0 0 0
-					     0 0 0 0 0 0 0 0 0 0
-					     0 0 0 0 0 0 0 0 0 0
-					     0 0 0 0 0 0 0 0 0 0
-					     0 0 0 0 0 0 0 0 0 0
-					     0 0 0 0 0 0 6 6 6 6
-					     0 0 0 0>;
-			};
-		};
-	};
+			comphy {
+				/* Serdes Configuration:
+					Lane 0: SGMII2
+					Lane 1: USB3_HOST0
+					Lane 2: SGMII
+					Lane 3: SATA1
+					Lane 4: USB3_HOST1
+					Lane 5: PEX2x1
+				*/
 
+				phy2 {
+					phy-type = <PHY_TYPE_SGMII0>;
+					phy-speed = <PHY_SPEED_1_25G>;
+				};
+
+			};
+			gop {
+				mac0 {
+					phy-mode = "sgmii"; /* lane-2 */
+					status = "okay";
+				};
+			};
+		};
+	};
 };

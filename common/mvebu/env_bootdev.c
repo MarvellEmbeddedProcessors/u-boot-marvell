@@ -39,10 +39,20 @@ int env_init(void)
 	mvebu_sar_value_get(SAR_BOOT_SRC, &sar);
 	/* Use ifdef as a temporary solution till we add sample-at-reset
 	** logic. */
-	if (sar.bootsrc.type == BOOTSRC_NAND)
+	switch (sar.bootsrc.type) {
+	case BOOTSRC_NAND:
 		nand_env_init();
-	else if (sar.bootsrc.type == BOOTSRC_SPI)
+		break;
+	case BOOTSRC_SPI:
 		sf_env_init();
+		break;
+	case BOOTSRC_AP_SD_EMMC:
+	case BOOTSRC_SD_EMMC:
+		mmc_boot_env_init();
+		break;
+	default:
+		error("Sample at reset boot source type %x is not supported\n", sar.bootsrc.type);
+	}
 
 	return gd->arch.env_func.init_env();
 }
@@ -57,12 +67,22 @@ void env_relocate_spec(void)
 	 */
 	/* Use ifdef as a temporary solution till we add sample-at-reset
 	** logic. */
-	if (sar.bootsrc.type == BOOTSRC_NAND) {
+	switch (sar.bootsrc.type) {
+	case BOOTSRC_NAND:
 		nand_env_init();
 		env_name_spec = "NAND Flash";
-	} else if (sar.bootsrc.type == BOOTSRC_SPI) {
+		break;
+	case BOOTSRC_SPI:
 		sf_env_init();
 		env_name_spec = "SPI Flash";
+		break;
+	case BOOTSRC_AP_SD_EMMC:
+	case BOOTSRC_SD_EMMC:
+		mmc_boot_env_init();
+		env_name_spec = "SD/MMC Flash";
+		break;
+	default:
+		error("Sample at reset boot source type %x is not supported\n", sar.bootsrc.type);
 	}
 
 	gd->arch.env_func.reloc_env();

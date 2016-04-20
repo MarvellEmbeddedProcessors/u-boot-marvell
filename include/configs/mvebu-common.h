@@ -188,9 +188,11 @@
 #if defined(CONFIG_ENV_IS_IN_BOOTDEV)
 	#define CONFIG_ENV_IS_IN_SPI_FLASH
 	#define CONFIG_ENV_IS_IN_NAND
+	#define CONFIG_ENV_IS_IN_MMC
 	#define DEFAULT_BUBT_DST "spi"
 	#define CONFIG_DOIMAGE_TYPE     "flash"
 	#define CONFIG_DOIMAGE_SUFFIX   "dynamic"
+	#define CONFIG_SYS_MMC_ENV_DEV	0
 #endif  /* CONIFG_ENV_IS_IN_BOOTDEV */
 
 

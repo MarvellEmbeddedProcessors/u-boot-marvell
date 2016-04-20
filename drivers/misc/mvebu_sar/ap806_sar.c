@@ -24,6 +24,7 @@
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/clock.h>
 #include <mvebu_chip_sar.h>
+#include <asm/arch-mvebu/mvebu.h>
 
 #include "chip_sar.h"
 
@@ -220,6 +221,8 @@ int ap806_sar_init(const void *blob, int node)
 	int ret, i;
 	struct sar_chip_info info;
 
+	debug_enter();
+
 	u32 sar_list[] = {
 		SAR_CPU_FREQ,
 		SAR_DDR_FREQ,
@@ -244,6 +247,8 @@ int ap806_sar_init(const void *blob, int node)
 			return ret;
 		}
 	}
+
+	debug_exit();
 
 	return 0;
 }

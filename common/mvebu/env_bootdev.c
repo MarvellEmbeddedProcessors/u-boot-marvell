@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ***************************************************************************
  */
-
+/* #define DEBUG */
 #include <common.h>
 #include <environment.h>
 #include <mvebu_chip_sar.h>
+#include <asm/arch-mvebu/mvebu.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -36,6 +37,7 @@ int env_init(void)
 {
 	struct sar_val sar;
 
+	debug_enter();
 	mvebu_sar_value_get(SAR_BOOT_SRC, &sar);
 	/* Use ifdef as a temporary solution till we add sample-at-reset
 	** logic. */
@@ -54,6 +56,7 @@ int env_init(void)
 		error("Sample at reset boot source type %x is not supported\n", sar.bootsrc.type);
 	}
 
+	debug_exit();
 	return gd->arch.env_func.init_env();
 }
 
@@ -61,6 +64,7 @@ void env_relocate_spec(void)
 {
 	struct sar_val sar;
 
+	debug_enter();
 	mvebu_sar_value_get(SAR_BOOT_SRC, &sar);
 	/* env_init is called again here because of the
 	 * address relocation, the addreses need to be corrected
@@ -85,6 +89,7 @@ void env_relocate_spec(void)
 		error("Sample at reset boot source type %x is not supported\n", sar.bootsrc.type);
 	}
 
+	debug_exit();
 	gd->arch.env_func.reloc_env();
 }
 

@@ -24,6 +24,7 @@
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/clock.h>
 #include <mvebu_chip_sar.h>
+#include <asm/arch-mvebu/mvebu.h>
 
 #include "chip_sar.h"
 
@@ -75,7 +76,7 @@ int cp110_sar_bootsrc_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
 {
 	u32 reg, mode;
 	int i;
-
+	debug_enter();
 	reg = readl(sar_base);
 	mode = (reg & SAR1_RST_BOOT_MODE_AP_CP0_MASK) >> SAR1_RST_BOOT_MODE_AP_CP0_OFFSET;
 
@@ -95,7 +96,7 @@ int cp110_sar_bootsrc_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
 		error("Bad CP110 sample at reset mode (%d).\n", mode);
 		return -EINVAL;
 	}
-
+	debug_exit();
 	return 0;
 }
 
@@ -103,6 +104,7 @@ int cp110_sar_value_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
 {
 	u32 reg, mode;
 
+	debug_enter();
 	reg = readl(sar_base);
 
 	switch (sar_opt) {
@@ -122,6 +124,7 @@ int cp110_sar_value_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
 		error("AP806-SAR: Unsupported SAR option %d.\n", sar_opt);
 		return -EINVAL;
 	}
+	debug_exit();
 	return 0;
 }
 
@@ -148,6 +151,8 @@ int cp110_sar_init(const void *blob, int node)
 	int ret, i;
 	struct sar_chip_info info;
 
+	debug_enter();
+
 	u32 sar_list[] = {
 		SAR_CP_PCIE0_CLK,
 		SAR_CP_PCIE1_CLK,
@@ -172,6 +177,8 @@ int cp110_sar_init(const void *blob, int node)
 			return ret;
 		}
 	}
+
+	debug_exit();
 
 	return 0;
 }

@@ -16,7 +16,7 @@
  * ***************************************************************************
  */
 
-#define DEBUG
+/* #define DEBUG */
 
 #include <common.h>
 #include <asm/io.h>
@@ -30,6 +30,7 @@
 #include <netdev.h>
 #include <mvebu_chip_sar.h>
 #include <fdt_support.h>
+#include <asm/arch-mvebu/mvebu.h>
 
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
@@ -42,7 +43,7 @@ int soc_early_init_f(void)
 #ifdef CONFIG_XENON_MMC
 	u32 reg;
 #endif
-
+	debug_enter();
 #ifdef CONFIG_MVEBU_CHIP_SAR
 	/* Sample at reset register init */
 	mvebu_sar_init(gd->fdt_blob);
@@ -58,6 +59,7 @@ int soc_early_init_f(void)
 	writel(reg, EMMC_PHY_IO_CTRL);
 #endif
 
+	debug_exit();
 	return 0;
 }
 
@@ -108,6 +110,7 @@ int cpu_eth_init(bd_t *bis)
 
 int dram_init(void)
 {
+	debug_enter();
 #ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 	gd->ram_size = CONFIG_DDR_OVER_PCI_SIZE;
 #elif defined(CONFIG_PALLADIUM)
@@ -124,7 +127,7 @@ int dram_init(void)
 	if (gd->ram_size == 0)
 		error("DRAM size equal 0, check DRAM configuration\n");
 #endif
-
+	debug_exit();
 	return 0;
 }
 
@@ -155,10 +158,12 @@ void dram_init_banksize(void)
 
 void reset_cpu(ulong ignored)
 {
+	debug_enter();
 	u32 reg;
 	reg = readl(RFU_GLOBAL_SW_RST);
 	reg &= ~(1 << RFU_SW_RESET_OFFSET);
 	writel(reg, RFU_GLOBAL_SW_RST);
+	debug_exit();
 }
 
 void print_soc_specific_info(void)
@@ -199,6 +204,7 @@ void board_usb_vbus_init(void)
 ************************************************************************/
 bool mvebu_is_in_recovery_mode(void)
 {
+	debug_enter();
 #ifdef CONFIG_SPL_BUILD
 	bool	recovery = 0;
 	/* UART RX pin numbers and their MPP functions */
@@ -231,16 +237,19 @@ bool mvebu_is_in_recovery_mode(void)
 #else
 	return get_info(RECOVERY_MODE);
 #endif
+	debug_exit();
 }
 
 #ifdef CONFIG_LAST_STAGE_INIT
 int last_stage_init(void)
 {
+	debug_enter();
 #ifdef CONFIG_MULTI_DT_FILE
 	uint8_t *fdt_blob;
 	fdt_blob = cfg_eeprom_get_fdt();
 	set_working_fdt_addr(fdt_blob);
 #endif
+	debug_exit();
 	return 0;
 }
 #endif

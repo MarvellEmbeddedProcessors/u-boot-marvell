@@ -23,6 +23,7 @@
 #include <libfdt.h>
 #include <asm/arch-mvebu/fdt.h>
 #include "chip_sar.h"
+#include <asm/arch-mvebu/mvebu.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -132,6 +133,7 @@ int mvebu_sar_value_get(enum mvebu_sar_opts opt, struct sar_val *val)
 {
 	u32 idx;
 	struct sar_chip_info *chip_ptr;
+	debug_enter();
 	if (soc_sar_info[opt]) {
 		idx = CHIP_ID_TO_INDEX(soc_sar_info[opt]);
 		chip_ptr = &sar_chip_info[idx];
@@ -139,6 +141,7 @@ int mvebu_sar_value_get(enum mvebu_sar_opts opt, struct sar_val *val)
 	}
 
 	error("SAR - No chip registered on sar %d.\n", opt);
+	debug_exit();
 	return -ENODEV;
 }
 

@@ -57,6 +57,7 @@ int soc_early_init_f(void)
 /* Do very basic stuff like board and soc detection */
 int board_early_init_f(void)
 {
+	debug_enter();
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
 	/* set default FDT to work with:
 	 ** - customer/regular mode: point to the defined FDT by CONFIG_DEFAULT_DEVICE_TREE.
@@ -93,6 +94,7 @@ int board_early_init_f(void)
 	  */
 	init_mbus();
 #endif
+	debug_exit();
 	return 0;
 }
 #endif
@@ -149,6 +151,7 @@ int mvebu_print_info(void)
 
 int mvebu_board_init(void)
 {
+	debug_enter();
 	debug("Initializing board\n");
 
 #ifdef CONFIG_MVEBU_MPP_BUS
@@ -157,12 +160,14 @@ int mvebu_board_init(void)
 #ifdef CONFIG_DEVEL_BOARD
 	mvebu_devel_board_init();
 #endif
+	debug_exit();
 	return 0;
 }
 
 
 int board_init(void)
 {
+	debug_enter();
 	mvebu_print_info();
 
 	mvebu_soc_init();
@@ -170,7 +175,8 @@ int board_init(void)
 	mvebu_board_init();
 
 	mvebu_io_init();
-	
+
+	debug_exit();
 	return 0;
 }
 

@@ -222,7 +222,7 @@ static int sar_cmd_get(const char *cmd)
 static int do_sar_list(int mode)
 {
 	int i;
-#if defined CONFIG_ALLEYCAT3
+#if defined(CONFIG_ALLEYCAT3) || defined(CONFIG_BOBK)
 	MV_U32 revId = mvCtrlRevGet();
 #endif
 
@@ -234,20 +234,25 @@ static int do_sar_list(int mode)
 		for (i = 0; i < coreClockTblSize; i++)
 			printf("\t| %2d  |      %4d        |\n", i, coreClockTbl[i]);
 #if defined CONFIG_BOBK
-		/* Bypass mode is reserved(out of table), print it seperately */
-		printf("\t| %2d  |   Bypass Mode    |\n", 7);
+		if (revId == MV_BOBK_A0_ID)
+			/* Bypass mode is reserved(out of table), print it separately */
+			printf("\t| %2d  |   Bypass Mode    |\n", 7);
 #endif
 		printf("\t--------------------------\n");
 		break;
 #if defined CONFIG_BOBK
-		case CMD_BYPASS_CORE_CLK_FREQ:
-		printf("Determines the core clock frequency used in bypass mode(when \"coreclock\"=7):\n");
-		printf("\t| ID  | Core clock (MHz) |\n");
-		printf("\t--------------------------\n");
-		for (i = 0; i < ARRAY_SIZE(bypassCoreClockTbl); i++)
-			printf("\t| %2d  |      %4d        |\n", i, bypassCoreClockTbl[i]);
-		printf("\t--------------------------\n");
-		break;
+	case CMD_BYPASS_CORE_CLK_FREQ:
+		if (revId != MV_BOBK_A0_ID) {
+			printf("Bypass coreclock is not supported\n");
+			break;
+		}
+	printf("Determines the core clock frequency used in bypass mode(when \"coreclock\"=7):\n");
+	printf("\t| ID  | Core clock (MHz) |\n");
+	printf("\t--------------------------\n");
+	for (i = 0; i < ARRAY_SIZE(bypassCoreClockTbl); i++)
+		printf("\t| %2d  |      %4d        |\n", i, bypassCoreClockTbl[i]);
+	printf("\t--------------------------\n");
+	break;
 #endif
 	case CMD_CPU_DDR_REQ:
 		printf("Determines the CPU and DDR frequency:\n");
@@ -409,7 +414,7 @@ static int do_sar_list(int mode)
 static int do_sar_read(int mode)
 {
 	MV_U8 tmp, i;
-#if defined CONFIG_ALLEYCAT3
+#if defined(CONFIG_ALLEYCAT3) || defined(CONFIG_BOBK)
 	MV_U32 revId = mvCtrlRevGet();
 #endif
 
@@ -417,9 +422,9 @@ static int do_sar_read(int mode)
 	case CMD_CORE_CLK_FREQ:
 		if (mvBoardCoreFreqGet(&tmp) == MV_OK) {
 #if defined CONFIG_BOBK
-			if (tmp == 7) {
+			if (tmp == 7 && (revId == MV_BOBK_A0_ID))
 				printf("coreclock\t\t= %d ==>  bypass mode, refer to bypass_coreclock\n", tmp);
-			} else
+			else
 #endif
 				printf("coreclock\t\t= %d ==>  Core @ %dMHz\n", tmp, coreClockTbl[tmp]);
 		} else
@@ -428,6 +433,10 @@ static int do_sar_read(int mode)
 
 #if defined CONFIG_BOBK
 	case CMD_BYPASS_CORE_CLK_FREQ:
+		if (revId != MV_BOBK_A0_ID) {
+			printf("Bypass coreclock is not supported\n");
+			break;
+		}
 		if (mvBoardBypassCoreFreqGet(&tmp) == MV_OK) {
 			printf("bypass_coreclock\t= %d ==>  Core @ %dMHz valid only when \"coreclock\"=7(bypass mode)\n",
 				tmp, bypassCoreClockTbl[tmp]);
@@ -586,7 +595,7 @@ static int do_sar_write(int mode, int value)
 {
 	MV_U8 tmp, i;
 	MV_STATUS rc = MV_OK;
-#if defined CONFIG_ALLEYCAT3
+#if defined(CONFIG_ALLEYCAT3) || defined(CONFIG_BOBK)
 	MV_U32 revId = mvCtrlRevGet();
 #endif
 
@@ -594,9 +603,10 @@ static int do_sar_write(int mode, int value)
 	switch (mode) {
 	case CMD_CORE_CLK_FREQ:
 #if defined CONFIG_BOBK
-		/* In Bobk, we need to valid the bypass mode(coreclock=7) to enble the CorePLL WA,
-		and the index 7 is out of table limit */
-		if ((value != 7) && ((value < 0) || (value >= coreClockTblSize))) {
+		/* In Bobk (only A0 Chip), we need to valid the bypass mode(coreclock=7) to enble the
+		CorePLL WA, and the index 7 is out of table limit. For A1 chip, there is no CorePLL WA*/
+		if ((!(value == 7 && revId == MV_BOBK_A0_ID)) && ((value < 0)
+			 || (value >= coreClockTblSize))) {
 #else
 		if ((value < 0) || (value >= coreClockTblSize)) {
 #endif
@@ -608,6 +618,11 @@ static int do_sar_write(int mode, int value)
 		break;
 #if defined CONFIG_BOBK
 	case CMD_BYPASS_CORE_CLK_FREQ:
+		if (revId != MV_BOBK_A0_ID) {
+			mvOsPrintf("Bypass coreclock is not supported\n\n");
+			rc = MV_NOT_SUPPORTED;
+			break;
+		}
 		if ((value < 0) || (value >= ARRAY_SIZE(bypassCoreClockTbl))) {
 			mvOsPrintf("S@R incorrect value for Core Clock in bypass mode: %d\n", value);
 			rc = MV_ERROR;
@@ -823,7 +838,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "\t--------------\n"
 "boardid                    - Board ID\n"
 #if defined CONFIG_BOBK
-"bypass_coreclock			- Core frequency used in bypass mode(when coreclock=7)\n"
+"bypass_coreclock			- Core frequency used in bypass mode(when coreclock=7) only for A0 chip\n"
 #endif
 #ifdef CONFIG_ALLEYCAT3
 "ddreccenable               - DDR ECC modes\n"

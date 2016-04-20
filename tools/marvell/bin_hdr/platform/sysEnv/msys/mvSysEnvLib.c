@@ -422,3 +422,13 @@ MV_BOOL mvSysEnvTimerIsRefClk25Mhz(void)
 {
 	return MV_FALSE;
 }
+
+#if defined CONFIG_BOBK
+MV_U8 mvCtrlRevGet(MV_VOID)
+{
+	MV_U32 value;
+
+	value = MV_DFX_REG_READ(DEV_REV_ID_REG);
+	return (value & (REVISON_ID_MASK)) >> REVISON_ID_OFFS;
+}
+#endif

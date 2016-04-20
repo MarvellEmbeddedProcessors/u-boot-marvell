@@ -727,7 +727,8 @@ MV_STATUS mvSiliconInit(MV_VOID)
 	mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
 	/** CPLL setting **/
 #ifdef CONFIG_INTERNAL_CPLL_FOR_SERDES_REFCLK
-	CPLL_Initialization();
+	if (mvCtrlRevGet() == MV_MSYS_BOBK_A0_ID)
+		CPLL_Initialization();
 #endif
 	return MV_OK;
 }

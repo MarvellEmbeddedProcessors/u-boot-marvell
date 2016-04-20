@@ -914,6 +914,7 @@ MV_VOID mvCtrlRevNameGet(char *pNameBuff)
 
 		switch (revId) {
 		case MV_BOBK_A0_ID:
+		case MV_BOBK_A1_ID:
 			mvOsSPrintf(pNameBuff, " Rev %s", revArrayBOBK[revId]);
 			return;
 		}

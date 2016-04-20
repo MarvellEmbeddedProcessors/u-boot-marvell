@@ -325,7 +325,13 @@ MV_STATUS mvGeneralInit(void)
 #endif
 
 #ifdef CONFIG_BOBK
-	mvBypassCoreClockWA();
+	{
+		MV_U32 revId = mvCtrlRevGet();
+
+		/* Enable Core PLL WA for BobK A0 chip */
+		if (revId == MV_MSYS_BOBK_A0_ID)
+			mvBypassCoreClockWA();
+	}
 #endif
 
 	return MV_OK;

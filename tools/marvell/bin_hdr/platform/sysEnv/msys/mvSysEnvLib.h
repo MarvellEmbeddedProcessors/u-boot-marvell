@@ -179,6 +179,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* BobK device revision TBD !!!*/
 #define MV_MSYS_BOBK_A0_ID			0x0
+#define MV_MSYS_BOBK_A1_ID			0x1
 
 /* MV_DFX_REG_READ/WRITE API are used to access DFX data prior to SerDes initialization.
    As a part of SerDes init flow, mvGenUnitRegisterSet/Get API's are enabled to access
@@ -262,6 +263,10 @@ typedef enum _mvSuspendWakeupStatus {
 #define DEVICE_GENERAL_CONTROL_17	0xF8294
 #define DEVICE_GENERAL_CONTROL_20	0xF82A0
 #define DEVICE_GENERAL_CONTROL_21	0xF82A4
+
+#define DEV_REV_ID_REG			0xF8244
+#define REVISON_ID_OFFS			28
+#define REVISON_ID_MASK			0xF0000000
 
 /* BobK Core Clock setting index*/
 typedef enum _mvBypassCoreClcokFreq {
@@ -508,5 +513,6 @@ MV_STATUS mvSysEnvTimerIsRefClk25Mhz(MV_VOID);
  * RETURNS:              None.
  ***************************************************************************/
 MV_STATUS mvHwsTwsiInitWrapper(MV_VOID);
+MV_U8 mvCtrlRevGet(MV_VOID);
 #endif /* __INCmvBHboardEnvSpech */
 

@@ -16,8 +16,8 @@
  * ***************************************************************************
  */
 
-#ifndef __ARMADA_LP_H
-#define __ARMADA_LP_H
+#ifndef __ARMADA_3700_H
+#define __ARMADA_3700_H
 
 /* Version */
 #define CONFIG_BOOTP_VCI_STRING		" U-boot.armv8.armada3700"
@@ -156,4 +156,4 @@ extern char __end_of_spl[];
 					"fdt_high=0xa0000000\0"
 #endif /*CONFIG_PALLADIUM*/
 
-#endif /* __ARMADA_LP_H */
+#endif /* __ARMADA_3700_H */

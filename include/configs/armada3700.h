@@ -20,7 +20,7 @@
 #define __ARMADA_LP_H
 
 /* Version */
-#define CONFIG_BOOTP_VCI_STRING		" U-boot.armv8.armadalp"
+#define CONFIG_BOOTP_VCI_STRING		" U-boot.armv8.armada3700"
 
 /* Platform */
 /* Support GICv3 */

@@ -15,6 +15,20 @@ config MVEBU_SECURE_BOOT
 	  boot flow algorithm described in details
 	  in appropriate device specification.
 
+config MVEBU_IMAGE_ENCRYPT
+	bool "Encrypt Boot Image in Trusted Boot mode"
+	depends on MVEBU_SECURE_BOOT
+	default n
+	help
+	  Instructs the u-boot to use AES-256 encryption
+	  when building image for the trusted boot mode on
+	  MVEBU device.
+	  The AES-256 symmetric key should be burned in
+	  the device eFuse for allowing BootROM to decrypt
+	  the boot image upon startup.
+	  Refer to the appropriate device specification
+	  and eFuse module help for detailes about this feature
+
 config MVEBU_SPL_DIFFRENT_BASE_ADDR
 	bool "Use SPL different registers base address"
 	depends on MVEBU && TARGET_ARMADA_38X

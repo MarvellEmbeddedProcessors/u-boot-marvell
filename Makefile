@@ -881,6 +881,11 @@ DOIMAGE		:= $(shell which tbb_linux.exe)
 DOIMAGE_CFG	:= $(srctree)/tools/wtp/u-boot-tim.txt
 IMAGESPATH	:= $(srctree)/tools/wtp/trusted
 SECURE		:= 1
+ifdef CONFIG_MVEBU_IMAGE_ENCRYPT
+ENCRYPT		:= 1
+else
+ENCRYPT		:= 0
+endif
 TIMNCFG		:= $(srctree)/tools/wtp/u-boot-timN.txt
 TIMNSIG		:= $(IMAGESPATH)/timnsign.txt
 TIM2IMGARGS	:= -i $(DOIMAGE_CFG) -n $(TIMNCFG)
@@ -893,11 +898,11 @@ SECURE		:= 0
 TIM2IMGARGS	:= -i $(DOIMAGE_CFG)
 endif #CONFIG_MVEBU_SECURE_BOOT
 
-TIM_IMAGE	:= $(shell grep "Image Filename:" -m 1 $(DOIMAGE_CFG) | cut -c 17-)
+TIM_IMAGE	:= $$(grep "Image Filename:" -m 1 $(DOIMAGE_CFG) | cut -c 17-)
 TIMBLDARGS	:= $(SECURE) $(BOOTDEV) $(IMAGESPATH) $(CLOCKSPATH) $(CLOCKSPRESET) \
-			$(PARTNUM) $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG)
+			$(PARTNUM) $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG) $(ENCRYPT)
 TIMBLDUARTARGS	:= $(SECURE) UART $(IMAGESPATH) $(CLOCKSPATH) $(CLOCKSPRESET) \
-			0 $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG)
+			0 $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG) $(ENCRYPT)
 UARTIMGARCH	:= $(srctree)/uart-images
 
 DOIMAGE_FLAGS := -r $(DOIMAGE_CFG) -v -D
@@ -919,7 +924,7 @@ DOIMAGE_LIBS_CHECK = \
 # - Collect all UART downloadable images into archive
 # - Create TIM descriptor(s) with final boot signature according
 #   to defconfig for the next build stage (SPI.eMMC,etc.)
-uartimage: $(obj)/u-boot.bin $(SPLIMAGE) wtmi
+uartimage: $(obj)/u-boot.bin $(SPLIMAGE) wtmi encrypt
 	@$(DOIMAGE_LIBS_CHECK)
 	@echo -e "\n\t=====================================\n"
 	@echo -e "\t=====        UART IMAGES        =====\n"
@@ -933,18 +938,36 @@ uartimage: $(obj)/u-boot.bin $(SPLIMAGE) wtmi
 	@cp -t $(UARTIMGARCH) $(TIM_IMAGE) $(TIMN_IMAGE) $(TIMNCFG) $(DOIMAGE_CFG)
 	@tar czf $(UARTIMGARCH).tgz $(UARTIMGARCH)
 
-doimage: uartimage
+doimage: uartimage encrypt
 	@echo -e "\n\t=====================================\n"
 	@echo -e "\t=====        BOOT IMAGES         =====\n"
 	@echo -e "\t=====================================\n"
 	$(TIMBUILD) $(TIMBLDARGS)
 	$(DOIMAGE) $(DOIMAGE_FLAGS)
 	@if [ -e "$(TIMNCFG)" ]; then $(DOIMAGE) -r $(TIMNCFG) -v -D; fi
+	@if [ "$(ENCRYPT)" = "1" ]; then sed -i 's|u-boot.bin|u-boot-enc.bin|1' $(TIMNCFG); fi
 	$(TIM2IMG) $(TIM2IMGARGS) -o u-boot-spl.img
 
 bin2phex: doimage
 	$(TIM2PHEX) -i $(DOIMAGE_CFG) -o u-boot-$(CONFIG_SYS_SOC).hex
 	$(BIN2PHEX) -w 16 -i u-boot.bin -o u-boot.hex -b 0x0
+
+encrypt:
+	@if [ "$(ENCRYPT)" = "1" ]; then \
+		echo -e "\n\t=======================================================\n";\
+		echo -e "\t  Secure boot. Encrypting u-boot.bin \n";\
+		echo -e "\t=======================================================\n";\
+		truncate -s %16 u-boot.bin; \
+		openssl enc -aes-256-cbc -e -in u-boot.bin -out u-boot-enc.bin \
+		-K `cat $(IMAGESPATH)/aes-256.txt` -k 0 -nosalt \
+		-iv `cat $(IMAGESPATH)/iv.txt` -p; \
+	else \
+		if [ "$(SECURE)" = "1" ]; then \
+			echo -e "\n\t=======================================================\n";\
+			echo -e "\t  Secure boot. U-boot image is not encrypted \n";\
+			echo -e "\t=======================================================\n";\
+		fi; \
+	fi
 
 wtmi:
 	@echo "  =====WTMI====="

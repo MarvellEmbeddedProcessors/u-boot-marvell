@@ -8,4 +8,4 @@ Partition Number:               0x00000000
 Encrypt Algorithm ID:           0x00000000
 Encrypt Start Offset:           0x00000000
 Encrypt Size:                   0x00000000
-Image Filename: tools/wtp/wtmi.dummy
+Image Filename: tools/wtp/wtmi/build/wtmi.bin

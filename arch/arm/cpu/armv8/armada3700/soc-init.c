@@ -54,7 +54,7 @@ int soc_get_rev(void)
 int soc_get_id(void)
 {
 	/* TO-DO, get soc ID from PCIe register */
-	/* in ArmadaLP, there is no device ID register, like A38x,
+	/* in Armada3700, there is no device ID register, like A38x,
 	    it needs to be got from PCIe register, like A370 and AXP */
 	u32 id = 0x9991;
 	return id;

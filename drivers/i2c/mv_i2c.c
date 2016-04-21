@@ -392,6 +392,11 @@ int i2c_read(uchar chip, uint addr, int alen, uchar *buffer, int len)
 	PRINTD(("i2c_read(chip=0x%02x, addr=0x%02x, alen=0x%02x, "
 		"len=0x%02x)\n", chip, addr, alen, len));
 
+	if (len == 0) {
+		printf("reading zero byte is invalid\n");
+		return -1;
+	}
+
 	i2c_reset();
 
 	/* dummy chip address write */

@@ -24,6 +24,7 @@ SoC specific:
 Board specific:
 	- pin-func
 		Array specifying the function per pin, from left to right.
+		mark function as 0xff to keep default pin setting (skip modifying pin value)
 
 Example of a pinctl bank node:
 	pinctl@18000 {

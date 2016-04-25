@@ -16,6 +16,7 @@
  * ***************************************************************************
  */
 
+/* #define DEBUG */
 #include <config.h>
 #include <common.h>
 #include <asm/system.h>
@@ -24,6 +25,7 @@
 #include <errno.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch/soc-info.h>
+#include <asm/arch-mvebu/mvebu.h>
 
 #define CONFIG_MAX_PINCTL_BANKS		4
 #define CONFIG_MAX_PINS_PER_BANK	100
@@ -132,6 +134,7 @@ int mvebu_pinctl_probe(void)
 	int count, i, err, pin;
 	u32 *pin_func;
 
+	debug_enter();
 
 	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "pinctl",
 			COMPAT_MVEBU_PINCTL, node_list, CONFIG_MAX_PINCTL_BANKS);
@@ -173,11 +176,14 @@ int mvebu_pinctl_probe(void)
 		}
 
 		for (pin = 0; pin < pinctl->pin_cnt; pin++) {
-			err = pinctl_set_pin_func(i, pin, pin_func[pin]);
-			if (err)
-				printf("Warning: pin %d is not set for bank %d\n", pin, i);
+			if (pin_func[pin] != 0xff) {
+				err = pinctl_set_pin_func(i, pin, pin_func[pin]);
+				if (err)
+					printf("Warning: pin %d is not set for bank %d\n", pin, i);
+			} else
+				debug("Warning: pin %d value is not modified (kept as default\n", pin);
 		}
 	}
-
+	debug_exit();
 	return 0;
 }

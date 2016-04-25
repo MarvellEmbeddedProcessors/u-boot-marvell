@@ -46,6 +46,7 @@ int env_init(void)
 		nand_env_init();
 		break;
 	case BOOTSRC_SPI:
+	case BOOTSRC_AP_SPI:
 		sf_env_init();
 		break;
 	case BOOTSRC_AP_SD_EMMC:
@@ -54,10 +55,17 @@ int env_init(void)
 		break;
 	default:
 		error("Sample at reset boot source type %x is not supported\n", sar.bootsrc.type);
+		return 0;
 	}
 
 	debug_exit();
-	return gd->arch.env_func.init_env();
+
+	/* if pointer initialized & routine returned 0 (successfully) */
+	if (gd->arch.env_func.init_env && !(gd->arch.env_func.init_env()))
+			return 0;
+
+	error("Failed to initialize environment variables.\n");
+	return 0;
 }
 
 void env_relocate_spec(void)
@@ -77,6 +85,7 @@ void env_relocate_spec(void)
 		env_name_spec = "NAND Flash";
 		break;
 	case BOOTSRC_SPI:
+	case BOOTSRC_AP_SPI:
 		sf_env_init();
 		env_name_spec = "SPI Flash";
 		break;
@@ -87,9 +96,14 @@ void env_relocate_spec(void)
 		break;
 	default:
 		error("Sample at reset boot source type %x is not supported\n", sar.bootsrc.type);
+		return;
 	}
 
 	debug_exit();
-	gd->arch.env_func.reloc_env();
+
+	if (gd->arch.env_func.reloc_env)
+		gd->arch.env_func.reloc_env();
+	else
+		error("Failed to initialize environment variables.\n");
 }
 

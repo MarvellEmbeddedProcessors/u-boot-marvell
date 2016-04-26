@@ -1035,7 +1035,7 @@ int ahci_init(void)
 	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "sata",
 			COMPAT_MVEBU_SATA, node_list, MAX_SATA_PORT_NUM);
 	if (count == 0) {
-		error("could not find sata node in FDT, initialization skipped!\n");
+		debug("could not find sata node in FDT, initialization skipped!\n");
 		return -ENXIO;
 	}
 	for (i = 0; i < count ; i++) {

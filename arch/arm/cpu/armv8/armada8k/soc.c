@@ -26,6 +26,7 @@
 #include <asm/arch/regs-base.h>
 #include <asm/arch-mvebu/pinctl.h>
 #include <asm/arch-mvebu/fdt.h>
+#include <asm/arch-armada8k/cache_llc.h>
 #include <linux/sizes.h>
 #include <netdev.h>
 #include <mvebu_chip_sar.h>
@@ -168,18 +169,15 @@ void reset_cpu(ulong ignored)
 
 void print_soc_specific_info(void)
 {
+	int llc_en, llc_excl_mode;
+
 #ifdef CONFIG_MVEBU_SYS_INFO
 	printf("\tDDR %d Bit width\n", get_info(DRAM_BUS_WIDTH));
 #endif
-#ifdef CONFIG_MVEBU_LLC_ENABLE
-	printf("\tLLC Enabled");
-#ifdef CONFIG_MVEBU_LLC_EXCLUSIVE_EN
-	printf(" (Exclusive Mode)");
-#endif
-	printf("\n");
-#else /* CONFIG_MVEBU_LLC_ENABLE */
-	printf("\tLLC Disabled\n");
-#endif
+
+	llc_en = llc_mode_get(&llc_excl_mode);
+	printf("\tLLC %s%s\n", llc_en ? "Enabled" : "Disabled",
+	       llc_excl_mode ? " (Exclusive Mode)" : "");
 }
 
 #ifdef CONFIG_USB_XHCI

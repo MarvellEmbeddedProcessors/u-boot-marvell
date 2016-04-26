@@ -16,34 +16,10 @@
  * ***************************************************************************
  */
 
-#include <asm/io.h>
+#ifndef _CACHE_LLC_INC_
+#define _CACHE_LLC_INC_
 #include <common.h>
-#include <asm/arch-armada8k/regs-base.h>
 
-#define LLC_CTRL                       0x100
+int llc_mode_get(int *excl_mode);
 
-#define LLC_CTRL_EN	                1
-#define LLC_EXCLUSIVE_EN		0x100
-
-/*
-** Get LLC status and mode.
-** Returns 1 if LLC is enabled.
-*/
-int llc_mode_get(int *excl_mode)
-{
-	u32 val;
-	int ret = 0, excl = 0;
-
-	val = readl(MVEBU_LLC_BASE + LLC_CTRL);
-	if (val & LLC_CTRL_EN) {
-		ret = 1;
-		if (val & LLC_EXCLUSIVE_EN)
-			excl = 1;
-	}
-	if (excl_mode)
-		*excl_mode = excl;
-
-	return ret;
-}
-
-
+#endif /* _CACHE_LLC_INC_ */

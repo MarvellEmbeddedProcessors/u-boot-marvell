@@ -41,9 +41,6 @@
 
 int soc_early_init_f(void)
 {
-#ifdef CONFIG_XENON_MMC
-	u32 reg;
-#endif
 	debug_enter();
 #ifdef CONFIG_MVEBU_CHIP_SAR
 	/* Sample at reset register init */
@@ -51,13 +48,6 @@ int soc_early_init_f(void)
 #endif
 #ifdef CONFIG_MVEBU_PINCTL
 	mvebu_pinctl_probe();
-#endif
-
-#ifdef CONFIG_XENON_MMC
-	/* set eMMC/SD PHY output instead of MPPs */
-	reg = readl(EMMC_PHY_IO_CTRL);
-	reg &= ~EMMC_PHY_CTRL_SDPHY_EN;
-	writel(reg, EMMC_PHY_IO_CTRL);
 #endif
 
 	debug_exit();
@@ -184,6 +174,19 @@ void print_soc_specific_info(void)
 void board_usb_vbus_init(void)
 {
 	/* TBD - implement VBUS cycle for here*/
+}
+#endif
+
+
+#ifdef CONFIG_XENON_MMC
+void mmc_soc_init(void)
+{
+	u32 reg;
+
+	/* set eMMC/SD PHY output instead of MPPs */
+	reg = readl(EMMC_PHY_IO_CTRL);
+	reg &= ~EMMC_PHY_CTRL_SDPHY_EN;
+	writel(reg, EMMC_PHY_IO_CTRL);
 }
 #endif
 

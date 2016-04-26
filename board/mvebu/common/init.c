@@ -64,12 +64,6 @@ int board_early_init_f(void)
 	 ** - Marvell multi FDT mode: set the first compiled relevant device
 	 **   tree for the SoC, required for i2c initialization to read EEPROM data */
 	setup_fdt();
-#ifdef CONFIG_MVEBU_PINCTL
-	/* Init the MPP in this stage - to initialize the MPPs of the I2C
-	 ** The SOC initialization code will re-call this function with the
-	 ** correct device tree to re-set the correct MPPs */
-	mvebu_pinctl_probe();
-#endif
 	cfg_eeprom_init();
 #endif
 

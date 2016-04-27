@@ -37,6 +37,11 @@ DECLARE_GLOBAL_DATA_PTR;
 
 /* PCI Config space registers */
 #define PCIE_CONFIG_BAR0		0x10
+#define PCIE_LINK_STATUS_REG		0x80
+#define PCIE_LINK_STATUS_SPEED_OFF	16
+#define PCIE_LINK_STATUS_SPEED_MASK	0xf
+#define PCIE_LINK_STATUS_WIDTH_OFF	20
+#define PCIE_LINK_STATUS_WIDTH_MASK	0xf
 
 /* Resizable bar capability registers */
 #define RESIZABLE_BAR_CAP		0x250
@@ -73,6 +78,16 @@ DECLARE_GLOBAL_DATA_PTR;
 #define PCIE_GEN3_RELATED		0x890
 #define GEN3_EQU_DISABLE		(1 << 16)
 #define GEN3_ZRXDC_NON_COMP		(1 << 0)
+
+int dw_pcie_get_link_speed(uintptr_t regs_base)
+{
+	return ((readl(regs_base + PCIE_LINK_STATUS_REG)) >> PCIE_LINK_STATUS_SPEED_OFF) & PCIE_LINK_STATUS_SPEED_MASK;
+}
+
+int dw_pcie_get_link_width(uintptr_t regs_base)
+{
+	return ((readl(regs_base + PCIE_LINK_STATUS_REG)) >> PCIE_LINK_STATUS_WIDTH_OFF) & PCIE_LINK_STATUS_WIDTH_MASK;
+}
 
 /*
  * iATU region setup

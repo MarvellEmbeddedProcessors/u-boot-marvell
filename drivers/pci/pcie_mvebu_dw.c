@@ -135,7 +135,8 @@ void pci_init_board(void)
 			printf("PCIE-%d: Link down\n", host_id);
 			continue;
 		}
-		printf("PCIE-%d: Link up (Bus %d)\n", host_id, first_busno);
+		printf("PCIE-%d: Link up (Gen%d-x%d, Bus%d)\n", host_id, dw_pcie_get_link_speed(regs_base),
+		       dw_pcie_get_link_width(regs_base), first_busno);
 
 		err = fdtdec_get_int_array(blob, port_node, "mem", (u32 *)&mem_win, 2);
 		if (err) {

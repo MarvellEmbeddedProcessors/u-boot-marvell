@@ -10,13 +10,6 @@
 
 	soc {
 		internal-regs {
-			ddr-mac {
-				cs_count = <1>;
-				bus_width = <DDR_BUS_WIDTH_16>;
-				cs0 {
-					size = <0x00000000 0x10000000>;
-				};
-			};
 			serial: serial@12000 {
 				status = "okay";
 			};

@@ -832,7 +832,7 @@ static const struct mmc_ops xenon_mmc_ops = {
 	.init		= xenon_mmc_init,
 };
 
-int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk, u32 mmc_mode)
+int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk, u32 mmc_mode, u32 dt_mmc_host_cap)
 {
 	u32 caps;
 	struct xenon_mmc_cfg *mmc_cfg = NULL;
@@ -921,6 +921,9 @@ int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk, u32 mmc_m
 		if (caps & SDHCI_CAN_DO_8BIT)
 			mmc_cfg->cfg.host_caps |= MMC_MODE_8BIT;
 	}
+	/* Update the capability of the host, by the capability of the system/board that
+	** got from device-tree */
+	mmc_cfg->cfg.host_caps &= dt_mmc_host_cap;
 
 	/* Set max block size in byte and part type */
 	mmc_cfg->cfg.b_max = block_size[(caps & SDHCI_MAX_BLOCK_MASK) >> SDHCI_MAX_BLOCK_SHIFT];
@@ -943,7 +946,7 @@ int board_mmc_init(bd_t *bis)
 	int node_list[XENON_MMC_PORTS_MAX];
 	int count, err = 0;
 	int port_count;
-	u32 mmc_mode;
+	u32 mmc_mode, dt_mmc_host_cap, bus_width;
 	void __iomem *reg_base;
 	const void *blob = gd->fdt_blob;
 
@@ -977,7 +980,21 @@ int board_mmc_init(bd_t *bis)
 		else
 			mmc_mode = XENON_MMC_MODE_SD_SDIO;
 
-		xenon_mmc_create(port_count, reg_base, XENON_MMC_MAX_CLK, mmc_mode);
+		/* Enable all modes for now - later we can add every parameter
+		** easly to device-tree, and enable/disable it */
+		dt_mmc_host_cap = MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_HC | MMC_MODE_DDR_52MHz;
+		/* Get bus-width from device-tree and update the capability of
+		** the SoC */
+		bus_width = fdtdec_get_int(blob, node_list[port_count], "bus-width", 1);
+		if (bus_width == 4) {
+			dt_mmc_host_cap |= MMC_MODE_4BIT;
+		} else if (bus_width == 8) {
+			/* Enable 4Bit for backward compatibility for 4Bit support */
+			dt_mmc_host_cap |= MMC_MODE_4BIT;
+			dt_mmc_host_cap |= MMC_MODE_8BIT;
+		}
+
+		xenon_mmc_create(port_count, reg_base, XENON_MMC_MAX_CLK, mmc_mode, dt_mmc_host_cap);
 	}
 
 	return err;

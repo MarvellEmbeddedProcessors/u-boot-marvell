@@ -104,6 +104,7 @@
 				compatible = "marvell,xenon-sdhci";
 				reg = <0x6E0000 0x300>;
 				xenon,emmc;
+				bus-width = <4>;
 				status = "disabled";
 			};
 		};

@@ -66,9 +66,11 @@ static struct bootsrc_idx_info bootsrc_list[] = {
 	{0x29,	0x29,	BOOTSRC_SD_EMMC,	0},
 	{0x2A,	0x2A,	BOOTSRC_AP_SD_EMMC,	0},
 	{0x2B,	0x2B,	BOOTSRC_SD_EMMC,	0},
-	{0x30,	0x31,	BOOTSRC_AP_SPI,		0},
+	{0x30,	0x30,	BOOTSRC_AP_SPI,		0},
+	{0x31,	0x31,	BOOTSRC_AP_SPI,		0}, /* BootRom disabled */
 	{0x32,	0x33,	BOOTSRC_SPI,		1},
 	{0x34,	0x35,	BOOTSRC_SPI,		0},
+	{0x36,	0x37,	BOOTSRC_SPI,		1}, /* BootRom disabled */
 	{-1,	-1,	-1}
 };
 

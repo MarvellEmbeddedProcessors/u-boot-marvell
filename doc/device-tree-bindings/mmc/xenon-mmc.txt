@@ -3,8 +3,8 @@ This file documents the properties used by the sdhci-xenon drivers.
 
 Required properties:
 - compatible: Should be "marvell,xenon-sdhci".
-- reg: base register offiset for the SDHCI registers.
-- status: enable or disable this node
+- reg: Base register offiset for the SDHCI registers.
+- status: Enable or disable this node
 
 Optional properties:
 - xenon,emmc: whether only used for eMMC mode(does not support SD)
@@ -13,6 +13,8 @@ Optional properties:
   inform driver whether current slot is used for eMMC or SD/SDIO.
   If this property is set, current slot will be used for eMMC.
   If this property is not set, current slot will be used for SD/SDIO.
+- bus-width: Number of data lines, can be <1>, <4>, or <8>.  The default
+  will be <1> if the property is absent.
 
 Example:
 mmc0: mmc@D8000 {

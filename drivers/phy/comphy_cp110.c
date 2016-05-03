@@ -1300,7 +1300,7 @@ static void comphy_utmi_phy_init(u32 utmi_phy_count, struct utmi_phy_data *cp110
 			error("Failed to initialize UTMI PHY %d\n", i);
 			continue;
 		}
-		printf("UTMI PHY %d initizliazed to ", i);
+		printf("UTMI PHY %d initialized to ", i);
 		if (cp110_utmi_data[i].utmi_phy_port == UTMI_PHY_TO_USB_DEVICE0)
 			printf("USB Device\n");
 		else

@@ -117,6 +117,8 @@ void comphy_print(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map
 	char *speed_str, *type_str;
 
 	for (lane = 0; lane < ptr_chip_cfg->comphy_lanes_count; lane++, comphy_map_data++) {
+		if (comphy_map_data->type == PHY_TYPE_UNCONNECTED)
+			continue;
 		speed_str = get_speed_string(comphy_map_data->speed);
 		type_str = get_type_string(comphy_map_data->type);
 		printf("Comphy-%d: %-13s %-10s\n", lane, type_str, speed_str);
@@ -138,13 +140,15 @@ u32 comphy_init(const void *blob)
 		return 1;
 
 	for (i = 0; i < chip_count ; i++) {
+		if (chip_count > 1)
+			printf("Comphy chip #%d:\n", i);
 		node = comphy_list[i];
 		if (node <= 0)
 			continue;
 
 		ptr_chip_cfg = get_chip_config(fdtdec_next_lookup(blob, node, COMPAT_MVEBU_COMPHY));
 		if (ptr_chip_cfg == NULL) {
-			error("comaptible of comphy-chip is wrong\n");
+			error("compatible of comphy-chip is wrong\n");
 			continue;
 		}
 		ptr_chip_cfg->comphy_lanes_count = fdtdec_get_int(blob, node, "max-lanes", 0);
@@ -154,9 +158,10 @@ u32 comphy_init(const void *blob)
 		}
 		ptr_chip_cfg->comphy_mux_bitcount = fdtdec_get_int(blob, node, "mux-bitcount", 0);
 		if (ptr_chip_cfg->comphy_mux_bitcount <= 0) {
-			error("comphy mux bitcount is wrong, skip PHY%d\n", i);
+			error("comphy mux bit count is wrong, skip PHY%d\n", i);
 			continue;
 		}
+
 		ptr_chip_cfg->comphy_base_addr = fdt_get_regs_offs(blob, node, "reg-comphy");
 		if (ptr_chip_cfg->comphy_base_addr == 0) {
 			error("comphy base address is NULL, skip PHY%d\n", i);

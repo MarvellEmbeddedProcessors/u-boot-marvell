@@ -142,6 +142,7 @@ mdio0@12A200 {
 sar-reg {
 	compatible = "marvell,sample-at-reset-common", "marvell,sample-at-reset-cp110";
 	reg = <0x400200 0x8>;
+	status = "disabled";
 };
 
 rtc-reg {

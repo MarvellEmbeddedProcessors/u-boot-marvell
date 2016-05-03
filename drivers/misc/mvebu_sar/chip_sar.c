@@ -111,8 +111,13 @@ int mvebu_sar_init(const void *blob)
 	}
 
 	for (i = 0; i < chip_count ; i++) {
+
 		node = sar_list[i];
 		if (node <= 0)
+			continue;
+
+		/* Skip if Node is disabled */
+		if (!fdtdec_get_is_enabled(blob, node))
 			continue;
 
 		chip_cfg_ptr = get_chip_config(fdtdec_next_lookup(blob, node, COMPAT_MVEBU_SAR_REG_COMMON));
@@ -120,6 +125,7 @@ int mvebu_sar_init(const void *blob)
 			error("Bad compatible for sar-reg.\n");
 			continue;
 		}
+
 		ret = chip_cfg_ptr->sar_init_func(blob, node);
 		if (ret) {
 			error("sar_init failed (%d).\n", ret);

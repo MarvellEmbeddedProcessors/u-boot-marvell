@@ -39,6 +39,9 @@
 		internal-regs {
 			refclk: refclk {
 			};
+			sar-reg {
+				status = "okay";
+			};
 			gop {
 				emac0: mac0 {
 					mac-address = [00 00 00 00 00 01];

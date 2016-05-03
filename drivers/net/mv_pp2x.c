@@ -3745,12 +3745,40 @@ int mv_pp2x_dts_port_param_set(int port_node, struct mv_pp2x_dev_param *param)
 	return 0;
 }
 
+int mv_pp2x_buffer_allocation(void)
+{
+	void *bd_space;
+
+	/* Align buffer area for descs and rx_buffers to 1MiB */
+	bd_space = memalign(MVPP2_BUFFER_ALIGN_SIZE, BD_SPACE);
+
+	if (bd_space == NULL)
+		return 1;
+
+	buffer_loc.tx_descs = (struct mv_pp2x_tx_desc *)bd_space;
+
+	buffer_loc.aggr_tx_descs = (struct mv_pp2x_tx_desc *)
+			((unsigned long)bd_space + MVPP2_MAX_TXD
+			* sizeof(struct mv_pp2x_tx_desc));
+
+	buffer_loc.rx_descs = (struct mv_pp2x_rx_desc *)
+		((unsigned long)bd_space +
+		(MVPP2_MAX_TXD + MVPP2_AGGR_TXQ_SIZE)
+		* sizeof(struct mv_pp2x_tx_desc));
+
+	buffer_loc.rx_buffers = (unsigned long)
+		(bd_space + (MVPP2_MAX_TXD + MVPP2_AGGR_TXQ_SIZE)
+		* sizeof(struct mv_pp2x_tx_desc) +
+		MVPP2_MAX_RXD * sizeof(struct mv_pp2x_rx_desc));
+
+	return 0;
+}
+
 static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 						struct mv_pp2x_dev_param *param)
 {
 	struct eth_device *dev;
 	struct mv_pp2x_port *pp2_port;
-	void *bd_space;
 	char *enet_addr;
 	char enetvar[9];
 
@@ -3771,35 +3799,6 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 	pp2_port->mac_data.phy_mode = param->phy_type;
 	pp2_port->mac_data.speed = param->phy_speed;
 	pp2_port->mac_data.force_link = param->force_link;
-
-	/*
-	 * Allocate buffer area for tx/rx descs and rx_buffers. This is only
-	 * done once for all interfaces. As only one interface can
-	 * be active. Make this area DMA save by disabling the D-cache
-	 */
-	if (!buffer_loc.tx_descs) {
-		/* Align buffer area for descs and rx_buffers to 1MiB */
-		bd_space = memalign(MVPP2_BUFFER_ALIGN_SIZE, BD_SPACE);
-
-		if (bd_space == NULL)
-			return -ENOMEM;
-
-		buffer_loc.tx_descs = (struct mv_pp2x_tx_desc *)bd_space;
-
-		buffer_loc.aggr_tx_descs = (struct mv_pp2x_tx_desc *)
-			((unsigned long)bd_space + MVPP2_MAX_TXD
-			* sizeof(struct mv_pp2x_tx_desc));
-
-		buffer_loc.rx_descs = (struct mv_pp2x_rx_desc *)
-			((unsigned long)bd_space +
-			(MVPP2_MAX_TXD + MVPP2_AGGR_TXQ_SIZE)
-			* sizeof(struct mv_pp2x_tx_desc));
-
-		buffer_loc.rx_buffers = (unsigned long)
-			(bd_space + (MVPP2_MAX_TXD + MVPP2_AGGR_TXQ_SIZE)
-			* sizeof(struct mv_pp2x_tx_desc) +
-			 MVPP2_MAX_RXD * sizeof(struct mv_pp2x_rx_desc));
-	}
 
 	/* interface name */
 	sprintf(dev->name, "egiga%d", pp2_port->id);
@@ -3860,6 +3859,17 @@ int mv_pp2x_initialize(bd_t *bis)
 		return -ENOMEM;
 
 	node = mv_pp2x_node_list[pp2_count - 1];
+
+	/*
+	 * Allocate buffer area for tx/rx descs and rx_buffers. This is only
+	 * done once for all interfaces. As only one interface can
+	 * be active.
+	 */
+	if (!buffer_loc.tx_descs) {
+		err = mv_pp2x_buffer_allocation();
+		if (err)
+			return -ENOMEM;
+		}
 
 	/* set base addresses */
 	mv_pp2x_dts_base_address_set(pp2, node);

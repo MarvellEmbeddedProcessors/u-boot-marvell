@@ -28,7 +28,7 @@ config ARMV8_PSCI
 config MVEBU_BOOTMODE_SWITCH_SUPPORT
 	bool "Mvebu bootmode switch support"
 	depends on DEVEL_BOARD
-	default y
+	default n
 	help
 	  Choose this option to switch the boot source
 	  to uart at the early stage of SPL while the boot source

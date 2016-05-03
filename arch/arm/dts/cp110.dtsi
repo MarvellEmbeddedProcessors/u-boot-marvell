@@ -39,7 +39,7 @@ spi0@700600 {
 	clock = <&refclk>;
 	cpol-cpha-cs-bitmap = <0>; /* bit i is set if the CPOL and CPHA
 				      of CS-i is enabled or not */
-	status = "disable";
+	status = "disabled";
 };
 
 spi1@700680 {
@@ -49,7 +49,7 @@ spi1@700680 {
 	clock = <&refclk>;
 	cpol-cpha-cs-bitmap = <0>; /* bit i is set if the CPOL and CPHA
 				      of CS-i is enabled or not */
-	status = "disable";
+	status = "disabled";
 };
 i2c@701000 { /* i2c0 */
 	compatible = "marvell,mvebu-i2c";

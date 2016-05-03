@@ -190,7 +190,144 @@
 	};
 
 	cp110-slave {
+		internal-regs {
+			spi0@700600 {
+				status = "disabled";
+			};
+			spi1@700680 {
+				status = "disabled";
+			};
+			i2c@701000 {
+				status = "disabled";
+			};
+			i2c@211000 { /* MSS_i2c0 */
+				status = "disabled";
+			};
+			i2c@211100 { /* MSS_i2c1 */
+				status = "disabled";
+			};
+			usb3@500000 {
+				status = "disabled";
+			};
+			usb3@510000 {
+				status = "disabled";
+			};
+			sata@540000 {
+				status = "disabled";
+			};
+			mmc@780000 {
+				status = "disabled";
+			};
+			pcie-controller {
+				pcie@0,0 {
+					status = "disabled";
+				};
+				pcie@1,0 {
+					status = "disabled";
+				};
+				pcie@2,0 {
+					status = "disabled";
+				};
+			};
+			nand@720000 {
+				status = "disabled";
+			};
+			pinctl@440000 {
+					/* MPP Bus:
+					   [0-31] = 0xff: Keep default CP0_shared_pins:
+						[11] CLKOUT_MPP_11 (out)
+						[23] LINK_RD_IN_CP2CP (in)
+						[25] CLKOUT_MPP_25 (out)
+						[29] AVS_FB_IN_CP2CP (in)
+					   [32,34] SMI
+					   [31]    GPIO: push button/Wake
+					   [35-36] XSMI
+					   [37-38] I2C
+					   [40-41] SATA[0/1]_PRESENT_ACTIVEn
+					   [44-55] RGMII1
+					   [56-62] SD
+					*/
+					/*   0    1    2    3    4    5    6    7    8    9 */
+				pin-func = < 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0    7    0    7    7    7    2    2    0
+					     0    0    0    0    1    1    1    1    1    1
+					     1    1    1    1    1    1    0xE  0xE  0xE  0xE
+					     0xE  0xE  0xE>;
+			};
 
+			comphy {
+				/* Serdes Configuration:
+					Lane 0,1,3,4,5: UNCONNECTED
+					Lane 2: 10G (KR)
+				*/
+				phy0 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-speed = <PHY_SPEED_3_125G>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+				phy2 {
+					phy-type = <PHY_TYPE_KR>;
+					phy-speed = <PHY_SPEED_10_3125G>;
+				};
+				phy3 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+				phy4 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+				phy5 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+			};
+			mdio {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				phy4: ethernet-phy@2 {
+					reg = <0>;
+				};
+				phy5: ethernet-phy@3 {
+					reg = <1>;
+				};
+			};
+			gop {
+				mac0 {
+					phy-mode = "sgmii"; /* lane-2 */
+					status = "disabled";
+				};
+				mac2 {
+					phy-mode = "sgmii"; /* lane-0 */
+					phy = <&phy4>;
+					phy-speed = <2500>;
+					status = "disabled";
+				};
+				mac3 {
+					phy-mode = "rgmii"; /* rgmii-1 */
+					phy = <&phy5>;
+					status = "disabled";
+				};
+			};
+			ppv22@000000 {
+				status = "disabled";
+				eth0@010000 {
+					status = "disabled";
+				};
+				eth1@020000 {
+					status = "disabled";
+				};
+				eth2@030000 {
+					status = "disabled";
+				};
+			};
+		};
 	};
+
 
 };

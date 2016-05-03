@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ***************************************************************************
  */
- /* TODO: align with cp110-master.dtsi */
+
 / {
 	model = "Marvell Armada CPN-110 Slave";
 
@@ -34,25 +34,22 @@
 		};
 	};
 
-	/* Override the above configurations taken from cp110.dtsi */
 	cp110-slave {
 		internal-regs {
-			map-iob {
-				windows = <0x0 0xfb000000 0x0 0x1000000 0x2 /* PEX1_X1 window */
-					0x0 0xfc000000 0x0 0x1000000 0x3 /* PEX2_X1 window */
-					0x0 0xfa000000 0x0 0x1000000 0x4 /* PEX0_X4 window */>;
+			refclk1: refclk {
 			};
-
-			pcie-controller {
-				pcie@0,0 {
-					mem = <0xfa000000 0x1000000>;
-				};
-				pcie@1,0 {
-					mem = <0xfb000000 0x1000000>;
-				};
-				pcie@2,0 {
-					mem = <0xfc000000 0x1000000>;
-				};
+			/* TODO: disable utmi0,utmi1,mdio in cp110.dtsi; enable in board dtsi */
+			utmi0@580000 {
+				status = "disabled";
+			};
+			utmi1@581000 {
+				status = "disabled";
+			};
+			mdio0@12A200 {
+				status = "disabled";
+			};
+			sar-reg {
+				status = "disabled";
 			};
 
 			gop {

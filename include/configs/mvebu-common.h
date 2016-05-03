@@ -104,6 +104,14 @@
  * the maximum mapped by the Linux kernel during initialization.
  */
 #define CONFIG_SYS_BOOTMAPSZ	(16 << 20)	/* Initial Memory map for Linux */
+
+/*
+ * Increase maximum gunzip output size
+ * with compressed kernel images.
+ * Default in common/bootm.c is 8MB.
+ */
+#define CONFIG_SYS_BOOTM_LEN	(20 << 20)	/* max Image size */
+
 #define CONFIG_CMDLINE_TAG              1	/* enable passing of ATAGs  */
 #define CONFIG_CMDLINE_EDITING          1
 #define CONFIG_INITRD_TAG               1       /* enable INITRD tag for ramdisk data */

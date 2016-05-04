@@ -29,8 +29,8 @@ enum phy_indirect_unit {
  */
 
 int mvebu_phy_indirect_init(void);
-int mvebu_phy_indirect_read(enum phy_indirect_unit unit, int reg_ofs, u32 *val);
-int mvebu_phy_indirect_write(enum phy_indirect_unit unit, int reg_ofs, u32 val);
+int mvebu_phy_indirect_read(enum phy_indirect_unit unit, int unit_id, int reg_ofs, u32 *val);
+int mvebu_phy_indirect_write(enum phy_indirect_unit unit, int unit_id, int reg_ofs, u32 val);
 
 
 #endif /* __MVEBU_MMC_H__ */

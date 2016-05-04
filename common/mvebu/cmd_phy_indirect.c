@@ -33,10 +33,11 @@ int do_indirect_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])
 {
 	const char *unit = argv[1];
-	const char *cmd = argv[2];
+	const char *cmd = argv[3];
 	enum phy_indirect_unit phy_unit;
 	u32 reg_ofs;
 	u32 value;
+	int unit_id = simple_strtoul(argv[2], NULL, 10);
 
 	phy_unit = parse_unit(unit);
 	if (phy_unit == INDIRECT_MAX) {
@@ -44,29 +45,29 @@ int do_indirect_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 		return 1;
 	}
 
-	if ((strcmp(cmd, "write") == 0) && (argc < 5)) {
+	if ((strcmp(cmd, "write") == 0) && (argc < 6)) {
 		error("missing parameters for 'write' command\n");
 		printf("make sure you specify both offset and value\n");
 		return 1;
 	}
-	if ((strcmp(cmd, "read") == 0) && (argc < 4)) {
+	if ((strcmp(cmd, "read") == 0) && (argc < 5)) {
 		error("missing parameters for 'read' command\n");
 		printf("make sure you specify register offset\n");
 		return 1;
 	}
 
 	/* Get Offset */
-	reg_ofs = simple_strtoul(argv[3], NULL, 16);
+	reg_ofs = simple_strtoul(argv[4], NULL, 16);
 
 	/* read commnad */
 	if (strcmp(cmd, "read") == 0) {
-		if (mvebu_phy_indirect_read(phy_unit, reg_ofs, &value))
+		if (mvebu_phy_indirect_read(phy_unit, unit_id, reg_ofs, &value))
 			return 1;
 		printf("0x%x: 0x%x\n", reg_ofs, value);
 	} else if (strcmp(cmd, "write") == 0) {
-		value = simple_strtoul(argv[4], NULL, 16);
+		value = simple_strtoul(argv[5], NULL, 16);
 
-		if (mvebu_phy_indirect_write(phy_unit, reg_ofs, value))
+		if (mvebu_phy_indirect_write(phy_unit, unit_id, reg_ofs, value))
 			return 1;
 	} else {
 		error("unknown command \"%s\"\n", cmd);
@@ -77,15 +78,16 @@ int do_indirect_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 }
 
 U_BOOT_CMD(
-	indirect,      5,     0,      do_indirect_cmd,
+	indirect,      6,     0,      do_indirect_cmd,
 	"Access to PHY indirect registers\n",
-	"<unit> <command> <offset> <value>\n"
+	"<unit> <unit id> <command> <offset> <value>\n"
 	"	- Read/Write from/to indirect registers\n"
 	"\n"
 	"Parameters:\n"
 	"\tunit		ihb\n"
-	"\tcommand	read/write\n"
+	"\tunit id		0/1\n"
+	"\tcommand		read/write\n"
 	"\toffset		register address\n"
 	"\tvalue		register data to write\n"
-	"Example: indirect ihb read 0x20\n"
+	"Example: indirect ihb 0 read 0x20\n"
 );

@@ -167,7 +167,7 @@
 					phy-mode = "sgmii"; /* lane-0 */
 					phy = <&phy2>;
 					phy-speed = <2500>;
-					status = "okay";
+					status = "disabled";
 				};
 				mac3 {
 					phy-mode = "rgmii"; /* rgmii-1 */
@@ -180,7 +180,7 @@
 					status = "okay";
 				};
 				eth1@020000 {
-					status = "okay";
+					status = "disabled";
 				};
 				eth2@030000 {
 					status = "okay";
@@ -291,8 +291,8 @@
 			};
 			gop {
 				mac0 {
-					phy-mode = "sgmii"; /* lane-2 */
-					status = "disabled";
+					phy-mode = "kr"; /* lane-2 */
+					status = "okay";
 				};
 				mac2 {
 					phy-mode = "sgmii"; /* lane-0 */
@@ -303,19 +303,19 @@
 				mac3 {
 					phy-mode = "rgmii"; /* rgmii-1 */
 					phy = <&phy5>;
-					status = "disabled";
+					status = "okay";
 				};
 			};
 			ppv22@000000 {
-				status = "disabled";
+				status = "okay";
 				eth0@010000 {
-					status = "disabled";
+					status = "okay";
 				};
 				eth1@020000 {
 					status = "disabled";
 				};
 				eth2@030000 {
-					status = "disabled";
+					status = "okay";
 				};
 			};
 		};

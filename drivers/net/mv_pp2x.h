@@ -38,6 +38,7 @@
 #endif
 
 #define MV_PP2x_INTERRUPT 0
+#define MAX_CHIP_NUM 4
 
 /* Some linux -> U-Boot compatibility stuff */
 #define netdev_err(dev, fmt, args...)		\
@@ -2861,6 +2862,7 @@ struct mv_pp2x_dev_param {
 	phy_interface_t phy_type;
 	u32 *phy_handle;
 	int phy_speed;
+	int interface;
 	bool force_link;
 };
 

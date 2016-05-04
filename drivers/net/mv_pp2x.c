@@ -3799,6 +3799,18 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 	pp2_port->mac_data.phy_mode = param->phy_type;
 	pp2_port->mac_data.speed = param->phy_speed;
 	pp2_port->mac_data.force_link = param->force_link;
+	pp2_port->mac_data.phy_mode = param->phy_type;
+	pp2_port->mac_data.phy_addr = param->phy_addr;
+
+	/* GOP Init  */
+	mvcpn110_mac_hw_init(pp2_port);
+
+	/*Skip device configuration for cp110-slave interfaces
+	* Ony GOP configuration requered for cp110-slave
+	*/
+	/*TODO: add device support for cp110-slave*/
+	if (param->interface >= CONFIG_MAX_PP2_PORT_NUM)
+		return 1;
 
 	/* interface name */
 	sprintf(dev->name, "egiga%d", pp2_port->id);
@@ -3816,18 +3828,8 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 	dev->write_hwaddr = NULL;
 	dev->index = pp2_port->id;
 
-	/*
-	 * The PHY interface type is configured via the
-	 * board specific CONFIG_SYS_NETA_INTERFACE_TYPE
-	 * define.
-	 */
-	pp2_port->mac_data.phy_mode = param->phy_type;
-	pp2_port->mac_data.phy_addr = param->phy_addr;
-
 	eth_register(dev);
 
-	/* GOP Init  */
-	mvcpn110_mac_hw_init(pp2_port);
 	if (param->phy_handle)
 		mv_pp2x_phylib_init(dev, param->phy_addr, param->gop_port);
 
@@ -3837,28 +3839,24 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 /* get all configuration from FDT file, no finish yet!!!!!!! */
 int mv_pp2x_initialize(bd_t *bis)
 {
-	int mv_pp2x_node_list[CONFIG_MAX_MVPP2X_NUM], node, port_node;
+	int mv_pp2x_node_list[CONFIG_MAX_MVPP2X_NUM], node, port_node, i;
 	int pp2_count, port_id;
-	struct mv_pp2x *pp2;
+	int interface = 0;
+	struct mv_pp2x *pp2[MAX_CHIP_NUM];
 	struct mv_pp2x_dev_param dev_param[CONFIG_MAX_PP2_PORT_NUM];
 	int err;
-	u32 net_comp_config = 0;
+	u32 net_comp_config;
 
 	/* in dts file, go through all the 'pp2' nodes.
 	 */
 	pp2_count = fdtdec_find_aliases_for_id(gd->fdt_blob, "pp2",
-			COMPAT_MVEBU_PP2, mv_pp2x_node_list, 2);
+			COMPAT_MVEBU_PP2, mv_pp2x_node_list, MAX_CHIP_NUM);
+
 	if (pp2_count == 0) {
 		printf(
 		"could not find pp2 node in FDT, initialization skipped!\n");
 		return 0;
 	}
-
-	pp2 = calloc(1, sizeof(*pp2));
-	if (pp2 == NULL)
-		return -ENOMEM;
-
-	node = mv_pp2x_node_list[pp2_count - 1];
 
 	/*
 	 * Allocate buffer area for tx/rx descs and rx_buffers. This is only
@@ -3871,62 +3869,79 @@ int mv_pp2x_initialize(bd_t *bis)
 			return -ENOMEM;
 		}
 
-	/* set base addresses */
-	mv_pp2x_dts_base_address_set(pp2, node);
+	/*Iterate and  initialize pp ports*/
+	for (i = 0; i < pp2_count; i++) {
+		pp2[i] = calloc(1, sizeof(struct mv_pp2x));
+		if (pp2[i] == NULL)
+			return -ENOMEM;
 
-	/* AXI config */
-	mv_pp2x_axi_config(pp2);
+		node = mv_pp2x_node_list[i];
 
-	/* Init BM */
-	mv_pp2x_bm_pool_init(pp2);
+		/* set base addresses */
+		mv_pp2x_dts_base_address_set(pp2[i], node);
 
-	/* Rx Fifo Init */
-	mv_pp2x_rx_fifo_init(pp2);
+		/* AXI config */
+		mv_pp2x_axi_config(pp2[i]);
 
-	/* Tx Fifo Init */
-	mv_pp2x_tx_fifo_init(pp2);
+		/* Rx Fifo Init */
+		mv_pp2x_rx_fifo_init(pp2[i]);
 
-	/* Parser Init */
-	err = mv_pp2x_prs_default_init(pp2);
-	if (err) {
-		printf("Parser init error\n");
-		return -1;
-	}
+		/* Tx Fifo Init */
+		mv_pp2x_tx_fifo_init(pp2[i]);
 
-	/* Cls Init */
-	err = mv_pp2x_cls_default_init(pp2);
-	if (err) {
-		printf("Cls init error\n");
-		return -1;
-	}
+		/*Configure BM, Parser and Cls only for cp110-master*/
+		/*TODO: add device support for cp110-slave*/
+		if (i == 0) {
+			/* Init BM */
+			mv_pp2x_bm_pool_init(pp2[i]);
 
-	fdt_for_each_subnode(gd->fdt_blob, port_node, node) {
-		port_id = (uintptr_t)fdtdec_get_int(gd->fdt_blob,
-				port_node, "port-id", 0);
-		if (!fdtdec_get_is_enabled(gd->fdt_blob, port_node)) {
-			printf("Skipping disabled port egiga%d\n", port_id);
-			continue;
+			/* Parser Init */
+			err = mv_pp2x_prs_default_init(pp2[i]);
+			if (err) {
+				printf("Parser init error\n");
+				return -1;
+			}
+
+			/* Cls Init */
+			err = mv_pp2x_cls_default_init(pp2[i]);
+			if (err) {
+				printf("Cls init error\n");
+				return -1;
+			}
 		}
-		err = mv_pp2x_dts_port_param_set(port_node, &dev_param[port_id]);
-		if (err) {
-			printf("Failed to set port parameters\n");
-			return -1;
+
+		/*Netcomplex configuration and device initialization*/
+		net_comp_config = 0;
+		fdt_for_each_subnode(gd->fdt_blob, port_node, node) {
+			port_id = (uintptr_t)fdtdec_get_int(gd->fdt_blob,
+					port_node, "port-id", 0);
+			if (!fdtdec_get_is_enabled(gd->fdt_blob, port_node)) {
+				printf("Skipping disabled port egiga%d\n", port_id);
+				continue;
+			}
+			err = mv_pp2x_dts_port_param_set(port_node, &dev_param[port_id]);
+			if (err) {
+				printf("Failed to set port parameters\n");
+				return -1;
+			}
+
+			dev_param[port_id].base = pp2[i]->base;
+			dev_param[port_id].dev_num = port_id;
+			dev_param[port_id].interface = interface;
+			net_comp_config |=
+				mvp_pp2x_gop110_netc_cfg_create(&dev_param[port_id]);
+			if (1 != mv_pp2x_initialize_dev(bis,
+				pp2[i], &dev_param[port_id])) {
+				printf("mv_pp2x_initialize_dev failed, initialization skipped!\n");
+				return -1;
+			}
+			interface++;
 		}
 
-		dev_param[port_id].base = pp2->base;
-		dev_param[port_id].dev_num = port_id;
-		net_comp_config |=
-			mvp_pp2x_gop110_netc_cfg_create(&dev_param[port_id]);
-		if (1 != mv_pp2x_initialize_dev(bis,
-			pp2, &dev_param[port_id])) {
-			printf("mv_pp2x_initialize_dev failed, initialization skipped!\n");
-			return -1;
-		}
+		/*Netcomplex configurations for all ports.*/
+		mv_gop110_netc_init(&pp2[i]->gop, net_comp_config, MV_NETC_FIRST_PHASE);
+		mv_gop110_netc_init(&pp2[i]->gop, net_comp_config, MV_NETC_SECOND_PHASE);
 	}
-
-	/*Netcomplex configurations for all ports.*/
-	mv_gop110_netc_init(&pp2->gop, net_comp_config,	MV_NETC_FIRST_PHASE);
-	mv_gop110_netc_init(&pp2->gop, net_comp_config,	MV_NETC_SECOND_PHASE);
 
 	return 0;
 }

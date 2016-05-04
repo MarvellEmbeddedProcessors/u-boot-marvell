@@ -71,13 +71,19 @@ DECLARE_GLOBAL_DATA_PTR;
 #define PCIE_ATU_FUNC(x)		(((x) & 0x7) << 16)
 #define PCIE_ATU_UPPER_TARGET		0x91C
 
+#define PCIE_LINK_CAPABILITY		0x7C
 #define PCIE_LINK_CTL_2			0xA0
 #define TARGET_LINK_SPEED_MASK		0xF
 #define LINK_SPEED_GEN_1		0x1
+#define LINK_SPEED_GEN_2		0x2
+#define LINK_SPEED_GEN_3		0x3
 
 #define PCIE_GEN3_RELATED		0x890
 #define GEN3_EQU_DISABLE		(1 << 16)
 #define GEN3_ZRXDC_NON_COMP		(1 << 0)
+
+#define PCIE_GEN3_EQU_CTRL		0x8A8
+#define GEN3_EQU_EVAL_2MS_DISABLE	(1 << 5)
 
 int dw_pcie_get_link_speed(uintptr_t regs_base)
 {
@@ -203,9 +209,9 @@ static int dw_pcie_write_config(struct pci_controller *hose, pci_dev_t bdf,
 
 void dw_pcie_configure(uintptr_t regs_base)
 {
-#ifdef CONFIG_PALLADIUM
 	u32 reg;
 
+#ifdef CONFIG_PALLADIUM
 	/*  Set link to GEN 1 */;
 	reg  = readl(regs_base + PCIE_LINK_CTL_2);
 	reg &= ~TARGET_LINK_SPEED_MASK;
@@ -216,6 +222,24 @@ void dw_pcie_configure(uintptr_t regs_base)
 	reg |= GEN3_EQU_DISABLE;
 	reg |= GEN3_ZRXDC_NON_COMP;
 	writel(reg, regs_base + PCIE_GEN3_RELATED);
+#else
+	/* TODO: need to read the serdes speed from the dts
+		 and according to it configure the PCIe gen  */
+
+	/*  Set link to GEN 3 */;
+	reg  = readl(regs_base + PCIE_LINK_CTL_2);
+	reg &= ~TARGET_LINK_SPEED_MASK;
+	reg |= LINK_SPEED_GEN_3;
+	writel(reg, regs_base + PCIE_LINK_CTL_2);
+
+	reg  = readl(regs_base + PCIE_LINK_CAPABILITY);
+	reg &= ~TARGET_LINK_SPEED_MASK;
+	reg |= LINK_SPEED_GEN_3;
+	writel(reg, regs_base + PCIE_LINK_CAPABILITY);
+
+	reg = readl(regs_base + PCIE_GEN3_EQU_CTRL);
+	reg |= GEN3_EQU_EVAL_2MS_DISABLE;
+	writel(reg, regs_base + PCIE_GEN3_EQU_CTRL);
 #endif
 }
 

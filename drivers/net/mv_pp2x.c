@@ -1594,13 +1594,6 @@ static int mv_gop110_gmac_mode_cfg(struct gop_hw *gop, struct mv_mac_data *mac)
 	/* mask all ports interrupts */
 	mv_gop110_gmac_port_link_event_mask(gop, mac_num);
 
-#if MV_PP2x_INTERRUPT
-	/* unmask link change interrupt */
-	val = mv_gop110_gmac_read(gop, mac_num, MV_GMAC_INTERRUPT_MASK_REG);
-	val |= MV_GMAC_INTERRUPT_CAUSE_LINK_CHANGE_MASK;
-	val |= 1; /* unmask summary bit */
-	mv_gop110_gmac_write(gop, mac_num, MV_GMAC_INTERRUPT_MASK_REG, val);
-#endif
 	return 0;
 }
 

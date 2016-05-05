@@ -37,7 +37,6 @@
 # error Marvell mv_pp2x requires PHYLIB
 #endif
 
-#define MV_PP2x_INTERRUPT 0
 #define MAX_CHIP_NUM 4
 
 /* Some linux -> U-Boot compatibility stuff */

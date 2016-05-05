@@ -56,16 +56,11 @@ struct icu_msi {
 	uintptr_t clr_spi_addr;
 };
 
-#define NS_MULTI_IRQS		40
-#define NS_SINGLE_IRQS		27
-#define REI_IRQS		10
-#define SEI_IRQS		20
 #define MAX_ICU_IRQS		207
-
 
 /* Allocate the MSI address per interrupt group,
  * unsopprted groups get NULL address */
-static struct icu_msi msi_addr[ICU_GRP_MAX] = {
+static struct icu_msi msi_addr[] = {
 	{ICU_GRP_NSR,  0xf03f0040, 0xf03f0048}, /* Non secure interrupts*/
 	{ICU_GRP_SR,   0,	   0x0},	/* Secure interrupts */
 	{ICU_GRP_LPI,  0x0,	   0x0},	/* LPI interrupts */
@@ -75,7 +70,7 @@ static struct icu_msi msi_addr[ICU_GRP_MAX] = {
 };
 
 /* Multi instance sources, multipllied in dual CP mode */
-static struct icu_irq irq_map_ns_multi[NS_MULTI_IRQS] = {
+static struct icu_irq irq_map_ns_multi[] = {
 	{22, 0, 0}, /* PCIx4 INT A interrupt */
 	{23, 1, 0}, /* PCIx1 INT A interrupt */
 	{24, 2, 0}, /* PCIx1 INT A interrupt */
@@ -123,7 +118,7 @@ static struct icu_irq irq_map_ns_multi[NS_MULTI_IRQS] = {
 };
 
 /* Single instance sources, not multiplies in dual CP mode */
-static struct icu_irq irq_map_ns_single[NS_SINGLE_IRQS] = {
+static struct icu_irq irq_map_ns_single[] = {
 	{27, 37, 0}, /* SD/MMC */
 	{76, 38, 0}, /* Audio */
 	{77, 39, 0}, /* MSS RTC */
@@ -157,7 +152,7 @@ static struct icu_irq irq_map_ns_single[NS_SINGLE_IRQS] = {
 };
 
 /* SEI - System Error Interrupts */
-static struct icu_irq irq_map_sei[SEI_IRQS] = {
+static struct icu_irq irq_map_sei[] = {
 	{11, 0, 0}, /* SEI error CP-2-CP */
 	{15, 1, 0}, /* PIDI-64 SOC */
 	{16, 2, 0}, /* D2D error irq */
@@ -181,7 +176,7 @@ static struct icu_irq irq_map_sei[SEI_IRQS] = {
 };
 
 /* REI - RAM Error Interrupts */
-static struct icu_irq irq_map_rei[REI_IRQS] = {
+static struct icu_irq irq_map_rei[] = {
 	{12, 0, 0}, /* REI error CP-2-CP */
 	{26, 1, 0}, /* SDIO memory error */
 	{87, 2, 0}, /* EIP-197 ECC error */
@@ -241,19 +236,19 @@ void icu_init(uintptr_t cp_base, int spi_base, int spi_offset)
 	/* Configure the ICU interrupt lines */
 	/* Multi instance interrupts use different SPI ID for CP-1*/
 	irq = irq_map_ns_multi;
-	for (i = 0; i < NS_MULTI_IRQS; i++, irq++)
+	for (i = 0; i < ARRAY_SIZE(irq_map_ns_multi); i++, irq++)
 		icu_set_irq(icu_base, irq, spi_base + spi_offset, ICU_GRP_NSR);
 
 	irq = irq_map_ns_single;
-	for (i = 0; i < NS_MULTI_IRQS; i++, irq++)
+	for (i = 0; i < ARRAY_SIZE(irq_map_ns_single); i++, irq++)
 		icu_set_irq(icu_base, irq, spi_base, ICU_GRP_NSR);
 
 	irq = irq_map_sei;
-	for (i = 0; i < NS_MULTI_IRQS; i++, irq++)
+	for (i = 0; i < ARRAY_SIZE(irq_map_sei); i++, irq++)
 		icu_set_irq(icu_base, irq, spi_base, ICU_GRP_SEI);
 
 	irq = irq_map_rei;
-	for (i = 0; i < NS_MULTI_IRQS; i++, irq++)
+	for (i = 0; i < ARRAY_SIZE(irq_map_rei); i++, irq++)
 		icu_set_irq(icu_base, irq, spi_base, ICU_GRP_REI);
 
 	return;

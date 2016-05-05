@@ -98,15 +98,6 @@ int mvebu_soc_init()
 	mvebu_phy_indirect_init();
 #endif
 
-#ifdef CONFIG_MVEBU_ICU
-	/* Temporary initialization in u-boot */
-#ifdef CONFIG_AP806_Z_SUPPORT
-	icu_init(0xF2000000, 64, 0);
-#else
-	icu_init(0xF2000000, 0, 0);
-#endif /* CONFIG_AP806_Z_SUPPORT */
-#endif
-
 	mvebu_thermal_sensor_probe();
 
 	/* Soc specific init */

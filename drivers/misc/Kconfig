@@ -40,15 +40,6 @@ config MVEBU_IHB_INIT
 	  enable this option when needed,
 	  if device is connected over IHB
 
-config MVEBU_ICU
-	bool "Interrupt Consolidation Unit (ICU) driver"
-	default n
-	help
-	  Choose this option to add support
-	  for Interrupt consolidation unit.
-	  This driver sets up the mapping between CP-110
-	  interrupts and AP GIC interrupts.
-
 config MVEBU_CHIP_SAR
 	bool "Chip sample at reset support"
 	default y

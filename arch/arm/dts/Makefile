@@ -83,8 +83,9 @@ dtb-$(CONFIG_DEVEL_BOARD) += armada-7040-rz-db_nand.dtb \
 			     armada-7040-rz-db_rxaui.dtb
 else
 dtb-y += armada-70x0-customer0.dtb
-dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-db_router.dtb \
-			     armada-70x0-db_kr.dtb
+dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-db_router.dtb 	\
+			     armada-70x0-db_kr.dtb	\
+			     armada-70x0-db_all_pcie.dtb
 endif
 endif #CONFIG_TARGET_ARMADA_8K
 

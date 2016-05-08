@@ -483,6 +483,12 @@ static int comphy_usb3_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	/* Set select data width 20Bit (SEL_BITS[2:0]) */
 	reg_set(hpipe_addr + HPIPE_LOOPBACK_REG,
 		0x1 << HPIPE_LOOPBACK_SEL_OFFSET, HPIPE_LOOPBACK_SEL_MASK);
+	/* select de-emphasize 3.5db */
+	reg_set(hpipe_addr + HPIPE_LANE_CONFIG0_REG,
+		0x1 << HPIPE_LANE_CONFIG0_TXDEEMPH0_OFFSET, HPIPE_LANE_CONFIG0_TXDEEMPH0_MASK);
+	/* override tx margining from the MAC */
+	reg_set(hpipe_addr + HPIPE_TST_MODE_CTRL_REG,
+		0x1 << HPIPE_TST_MODE_CTRL_MODE_MARGIN_OFFSET, HPIPE_TST_MODE_CTRL_MODE_MARGIN_MASK);
 
 	/* Start analog paramters from ETP(HW) */
 	debug("stage: Analog paramters from ETP(HW)\n");

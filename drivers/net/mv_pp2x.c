@@ -3798,18 +3798,11 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 	/* GOP Init  */
 	mvcpn110_mac_hw_init(pp2_port);
 
-	/*Skip device configuration for cp110-slave interfaces
-	* Ony GOP configuration requered for cp110-slave
-	*/
-	/*TODO: add device support for cp110-slave*/
-	if (param->interface >= CONFIG_MAX_PP2_PORT_NUM)
-		return 1;
-
 	/* interface name */
-	sprintf(dev->name, "egiga%d", pp2_port->id);
+	sprintf(dev->name, "egiga%d", param->interface);
 	/* interface MAC addr extract */
 	sprintf(enetvar, param->dev_num ? "eth%daddr" :
-			"ethaddr", pp2_port->id);
+			"ethaddr", param->interface);
 	enet_addr = getenv(enetvar);
 	mv_pp2x_mac_str_to_hex(enet_addr, (unsigned char *)(dev->enetaddr));
 
@@ -3882,25 +3875,21 @@ int mv_pp2x_initialize(bd_t *bis)
 		/* Tx Fifo Init */
 		mv_pp2x_tx_fifo_init(pp2[i]);
 
-		/*Configure BM, Parser and Cls only for cp110-master*/
-		/*TODO: add device support for cp110-slave*/
-		if (i == 0) {
-			/* Init BM */
-			mv_pp2x_bm_pool_init(pp2[i]);
+		/* Init BM */
+		mv_pp2x_bm_pool_init(pp2[i]);
 
-			/* Parser Init */
-			err = mv_pp2x_prs_default_init(pp2[i]);
-			if (err) {
-				printf("Parser init error\n");
-				return -1;
-			}
+		/* Parser Init */
+		err = mv_pp2x_prs_default_init(pp2[i]);
+		if (err) {
+			printf("Parser init error\n");
+			return -1;
+		}
 
-			/* Cls Init */
-			err = mv_pp2x_cls_default_init(pp2[i]);
-			if (err) {
-				printf("Cls init error\n");
-				return -1;
-			}
+		/* Cls Init */
+		err = mv_pp2x_cls_default_init(pp2[i]);
+		if (err) {
+			printf("Cls init error\n");
+			return -1;
 		}
 
 		/*Netcomplex configuration and device initialization*/
@@ -3910,6 +3899,7 @@ int mv_pp2x_initialize(bd_t *bis)
 					port_node, "port-id", 0);
 			if (!fdtdec_get_is_enabled(gd->fdt_blob, port_node)) {
 				printf("Skipping disabled port egiga%d\n", port_id);
+				interface++;
 				continue;
 			}
 			err = mv_pp2x_dts_port_param_set(port_node, &dev_param[port_id]);

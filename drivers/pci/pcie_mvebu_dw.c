@@ -51,6 +51,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define ARCACHE_SHAREABLE_CACHEABLE	0x3511
 #define AWCACHE_SHAREABLE_CACHEABLE	0x5311
 
+#define LINK_SPEED_GEN_1                0x1
+#define LINK_SPEED_GEN_2                0x2
+#define LINK_SPEED_GEN_3                0x3
 
 static int mvebu_pcie_link_up(uintptr_t regs_base)
 {
@@ -70,7 +73,7 @@ static int mvebu_pcie_link_up(uintptr_t regs_base)
 	return 0;
 }
 
-int dw_pcie_link_up(uintptr_t regs_base)
+int dw_pcie_link_up(uintptr_t regs_base, u32 cap_speed)
 {
 	u32 reg;
 
@@ -87,7 +90,7 @@ int dw_pcie_link_up(uintptr_t regs_base)
 	writel(AWCACHE_SHAREABLE_CACHEABLE, regs_base + PCIE_AWCACHE_TRC);
 
 	/* DW pre link configurations */
-	dw_pcie_configure(regs_base);
+	dw_pcie_configure(regs_base, cap_speed);
 
 	/* Configuration done. Start LTSSM */
 	reg = readl(regs_base + PCIE_GLOBAL_CONTROL);
@@ -102,6 +105,7 @@ void pci_init_board(void)
 	int host_id = -1;
 	int first_busno = 0;
 	int bus_node, port_node, count;
+	u32 cap_speed;
 	const void *blob = gd->fdt_blob;
 	struct pcie_win mem_win, cfg_win;
 	uintptr_t regs_base;
@@ -130,8 +134,15 @@ void pci_init_board(void)
 			continue;
 		}
 
+		cap_speed = fdtdec_get_int(blob, port_node, "force_cap_speed", LINK_SPEED_GEN_3);
+
+		if (cap_speed < LINK_SPEED_GEN_1 || cap_speed > LINK_SPEED_GEN_3) {
+			debug("invalid PCIe Gen %d. Forcing to Gen 3\n", cap_speed);
+			cap_speed = LINK_SPEED_GEN_3;
+		}
+
 		/* Don't register host if link is down */
-		if (!dw_pcie_link_up(regs_base)) {
+		if (!dw_pcie_link_up(regs_base, cap_speed)) {
 			printf("PCIE-%d: Link down\n", host_id);
 			continue;
 		}

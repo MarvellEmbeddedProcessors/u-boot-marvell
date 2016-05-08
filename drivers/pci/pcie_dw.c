@@ -207,7 +207,7 @@ static int dw_pcie_write_config(struct pci_controller *hose, pci_dev_t bdf,
 	return 0;
 }
 
-void dw_pcie_configure(uintptr_t regs_base)
+void dw_pcie_configure(uintptr_t regs_base, u32 cap_speed)
 {
 	u32 reg;
 
@@ -215,7 +215,7 @@ void dw_pcie_configure(uintptr_t regs_base)
 	/*  Set link to GEN 1 */;
 	reg  = readl(regs_base + PCIE_LINK_CTL_2);
 	reg &= ~TARGET_LINK_SPEED_MASK;
-	reg |= LINK_SPEED_GEN_1;
+	reg |= cap_speed;
 	writel(reg, regs_base + PCIE_LINK_CTL_2);
 
 	reg  = readl(regs_base + PCIE_GEN3_RELATED);
@@ -229,12 +229,12 @@ void dw_pcie_configure(uintptr_t regs_base)
 	/*  Set link to GEN 3 */;
 	reg  = readl(regs_base + PCIE_LINK_CTL_2);
 	reg &= ~TARGET_LINK_SPEED_MASK;
-	reg |= LINK_SPEED_GEN_3;
+	reg |= cap_speed;
 	writel(reg, regs_base + PCIE_LINK_CTL_2);
 
 	reg  = readl(regs_base + PCIE_LINK_CAPABILITY);
 	reg &= ~TARGET_LINK_SPEED_MASK;
-	reg |= LINK_SPEED_GEN_3;
+	reg |= cap_speed;
 	writel(reg, regs_base + PCIE_LINK_CAPABILITY);
 
 	reg = readl(regs_base + PCIE_GEN3_EQU_CTRL);

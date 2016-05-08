@@ -24,7 +24,7 @@
 #include <asm/arch-mvebu/clock.h>
 #include <asm/arch-mvebu/fdt.h>
 
-#define CONFIG_MAX_I2C_NUM			2
+#define CONFIG_MAX_I2C_NUM			5
 #define I2C_TIMEOUT_VALUE			0x500
 #define I2C_MAX_RETRY_CNT			1000
 #define I2C_CMD_WRITE				0x0
@@ -122,7 +122,14 @@ enum i2c_bridge_error {
 static struct mvebu_i2c_bus i2c_bus[CONFIG_MAX_I2C_NUM] = { { .i2c_reg = NULL, .i2c_bridge_reg = NULL, .clock = -1,
 					 .two_bytes_addr = {[0 ... MAX_CHIPS_PER_BUS - 1] = -1}, .status = false},
 							    { .i2c_reg = NULL, .i2c_bridge_reg = NULL, .clock = -1,
+					 .two_bytes_addr = {[0 ... MAX_CHIPS_PER_BUS - 1] = -1}, .status = false},
+							    { .i2c_reg = NULL, .i2c_bridge_reg = NULL, .clock = -1,
+					 .two_bytes_addr = {[0 ... MAX_CHIPS_PER_BUS - 1] = -1}, .status = false},
+							    { .i2c_reg = NULL, .i2c_bridge_reg = NULL, .clock = -1,
+					 .two_bytes_addr = {[0 ... MAX_CHIPS_PER_BUS - 1] = -1}, .status = false},
+							    { .i2c_reg = NULL, .i2c_bridge_reg = NULL, .clock = -1,
 					 .two_bytes_addr = {[0 ... MAX_CHIPS_PER_BUS - 1] = -1}, .status = false} };
+
 
 #define i2c_reg(x) (&i2c_bus[gd->cur_i2c_bus].i2c_reg->x)
 #define i2c_bridge_reg(x) (&i2c_bus[gd->cur_i2c_bus].i2c_bridge_reg->x)
@@ -877,3 +884,18 @@ U_BOOT_I2C_ADAP_COMPLETE(mvebu1, mvebu_i2c_init, mvebu_i2c_probe,
 			 mvebu_i2c_read, mvebu_i2c_write,
 			 mvebu_i2c_bus_speed_set,
 			 CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE, 1)
+
+U_BOOT_I2C_ADAP_COMPLETE(mvebu2, mvebu_i2c_init, mvebu_i2c_probe,
+			 mvebu_i2c_read, mvebu_i2c_write,
+			 mvebu_i2c_bus_speed_set,
+			 CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE, 2)
+
+U_BOOT_I2C_ADAP_COMPLETE(mvebu3, mvebu_i2c_init, mvebu_i2c_probe,
+			 mvebu_i2c_read, mvebu_i2c_write,
+			 mvebu_i2c_bus_speed_set,
+			 CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE, 3)
+
+U_BOOT_I2C_ADAP_COMPLETE(mvebu4, mvebu_i2c_init, mvebu_i2c_probe,
+			 mvebu_i2c_read, mvebu_i2c_write,
+			 mvebu_i2c_bus_speed_set,
+			 CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE, 4)

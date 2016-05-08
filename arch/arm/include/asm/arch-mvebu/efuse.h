@@ -1,21 +1,36 @@
 /*
- * ***************************************************************************
- * Copyright (C) 2015 Marvell International Ltd.
- * ***************************************************************************
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 2 of the License, or any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * ***************************************************************************
- */
-
+* ***************************************************************************
+* Copyright (C) 2016 Marvell International Ltd.
+* ***************************************************************************
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+* Redistributions of source code must retain the above copyright notice, this
+* list of conditions and the following disclaimer.
+*
+* Redistributions in binary form must reproduce the above copyright notice,
+* this list of conditions and the following disclaimer in the documentation
+* and/or other materials provided with the distribution.
+*
+* Neither the name of Marvell nor the names of its contributors may be used
+* to endorse or promote products derived from this software without specific
+* prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+* ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+* LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+* OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE.
+*
+***************************************************************************
+*/
 #ifndef _MVEBU_EFUSE_H_
 #define _MVEBU_EFUSE_H_
 
@@ -28,6 +43,7 @@ enum efuse_id {
 	EFUSE_ID_KAK_DIGEST		= 1,	/* KAK key digest (OEM key hash) */
 	EFUSE_ID_CSK_INDEX		= 2,	/* CSK key valid index (0-15) */
 	EFUSE_ID_AES_KEY		= 3,	/* Symmetric key / RKEK (write only) */
+#ifdef CONFIG_TARGET_ARMADA_3700
 	EFUSE_ID_ENCRYPTION_EN		= 4,	/* Enable boot image encryption */
 	EFUSE_ID_JTAG_DIGECT		= 5,	/* JTAG key digest */
 	EFUSE_ID_SEC_JTAG_DIS		= 6,	/* Secure CPU JTAG disable */
@@ -45,7 +61,17 @@ enum efuse_id {
 	EFUSE_ID_ESC_SEQ_DIS		= 18,	/* UART escape sequence disable */
 	EFUSE_ID_GPIO_TOGGLE_DIS	= 19,	/* GPIO toggle disable */
 	EFUSE_ID_LONG_KEY_EN		= 20,	/* Long key enable */
-
+#else /* CONFIG_TARGET_ARMADA_8K */
+	EFUSE_ID_FLASH_ID		= 4,	/* Flash ID*/
+	EFUSE_ID_BOX_ID			= 5,	/* Box ID*/
+	EFUSE_ID_JTAG_PERM_EN		= 6,	/* JTAG permanently enabled */
+	EFUSE_ID_TRUSTED_EN		= 7,	/* Trusted boot enabled */
+	EFUSE_ID_CFG_BASE_ADDR		= 8,	/* Configuration base address */
+	EFUSE_ID_CFG_BASE_USE		= 9,	/* Use configuration base address */
+	EFUSE_ID_ROM_BASE_ADDR		= 10,	/* ROM base address */
+	EFUSE_ID_ROM_BASE_USE		= 11,	/* Use ROM base address */
+	EFUSE_ID_CP0_BOOT_DEVICE	= 12,	/* Use ROM base address */
+#endif
 	EFUSE_ID_MAX
 };
 
@@ -54,6 +80,7 @@ struct efuse_info {
 	char *note;
 };
 
+#ifdef CONFIG_TARGET_ARMADA_3700
 #define MVEBU_EFUSE_INFO	{ \
 		{"BOOT_DEVICE", "SPINOR, SPINAND, EMMCNORM, EMMCALT, SATA, UART, AUTO"}, \
 		{"KAK_DIGEST", "SHA-256 KAK key digest in HEX format"}, \
@@ -90,6 +117,30 @@ struct efuse_info {
 		{"LONG_KEY_EN", "Enabe/Disable long key (512b) support  - 0 or 1"}, \
 		{"INVALID", "Invalid ID"} \
 	}
+#else /* CONFIG_TARGET_ARMADA_8K */
+#define MVEBU_EFUSE_INFO	{ \
+		{"BOOT_DEVICE", "CP0, SPI0, SD, EMMC"}, \
+		{"KAK_DIGEST", "SHA-256 KAK key digest in HEX format"}, \
+		{"CSK_INDEX", "CSK index in range 0 to 15 in DEC format"}, \
+		{"AES256_KEY", "AES-256 symmetric encryption key in HEX format"}, \
+		{"FLASH_ID", "4-byte FLASH ID in HEX format"}, \
+		{"BOX_ID", "4-byte BOX ID in HEX format"}, \
+		{"PERM_JTAG_EN", "Override default JTAG functionality\n" \
+				"\t\t\t0 - In trusted boot mode some JTAG functionality disabled\n" \
+				"\t\t\t1 - The JTAG is permanently enabled"}, \
+		{"TRUSTED_EN", "Trusted boot enable\n" \
+				"\t\t\t0 - Non-trusted boot\n" \
+				"\t\t\t1 - Trusted boot, all security checks are performed"}, \
+		{"CFG_BASE", "Configuration base address of boot device in HEX format, 1MB aligned."}, \
+		{"CFG_BASE_USE", "Single bit. If set, the value of The base address is used\n" \
+				"\t\tas the reset value of BOOT_CFG_BAR register."}, \
+		{"ROM_BASE", "Base address of ROM program on boot device (SB) in HEX format, 1MB aligned."}, \
+		{"ROM_BASE_USE", "Single bit. If set, the value of the base address is used\n" \
+				"\t\tas the reset value of IOROM_BAR register."}, \
+		{"CP0_BOOT_DEVICE", "HEX value in range 0x00 to 0x3F. Please refer to SoC manual for details"}, \
+		{"INVALID", "Invalid ID"} \
+	}
+#endif /* CONFIG_TARGET_ARMADA_3700 */
 
 int efuse_id_valid(enum efuse_id fid);
 int efuse_write(enum efuse_id fid, const char *value);

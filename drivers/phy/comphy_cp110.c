@@ -398,13 +398,13 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_width, bool clk_src, void __i
 		debug("stage: Check PLL\n");
 		/* Read lane status */
 		for (i = start_lane; i < end_lane; i++) {
-			addr = HPIPE_ADDR(hpipe_base, i) + HPIPE_LANE_STATUS0_REG;
-			data = HPIPE_LANE_STATUS0_PCLK_EN_MASK;
+			addr = HPIPE_ADDR(hpipe_base, i) + HPIPE_LANE_STATUS1_REG;
+			data = HPIPE_LANE_STATUS1_PCLK_EN_MASK;
 			mask = data;
 			data = polling_with_timeout(addr, data, mask, 15000);
 			if (data != 0) {
-				debug("Read from reg = %p - value = 0x%x\n", hpipe_addr + HPIPE_LANE_STATUS0_REG, data);
-				error("HPIPE_LANE_STATUS0_PCLK_EN_MASK is 0\n");
+				debug("Read from reg = %p - value = 0x%x\n", hpipe_addr + HPIPE_LANE_STATUS1_REG, data);
+				error("HPIPE_LANE_STATUS1_PCLK_EN_MASK is 0\n");
 				ret = 0;
 			}
 		}
@@ -506,13 +506,13 @@ static int comphy_usb3_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	/* wait 15ms - for comphy calibration done */
 	debug("stage: Check PLL\n");
 	/* Read lane status */
-	addr = hpipe_addr + HPIPE_LANE_STATUS0_REG;
-	data = HPIPE_LANE_STATUS0_PCLK_EN_MASK;
+	addr = hpipe_addr + HPIPE_LANE_STATUS1_REG;
+	data = HPIPE_LANE_STATUS1_PCLK_EN_MASK;
 	mask = data;
 	data = polling_with_timeout(addr, data, mask, 15000);
 	if (data != 0) {
-		debug("Read from reg = %p - value = 0x%x\n", hpipe_addr + HPIPE_LANE_STATUS0_REG, data);
-		error("HPIPE_LANE_STATUS0_PCLK_EN_MASK is 0\n");
+		debug("Read from reg = %p - value = 0x%x\n", hpipe_addr + HPIPE_LANE_STATUS1_REG, data);
+		error("HPIPE_LANE_STATUS1_PCLK_EN_MASK is 0\n");
 		ret = 0;
 	}
 
@@ -656,7 +656,7 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	mask = data;
 	data = polling_with_timeout(addr, data, mask, 15000);
 	if (data != 0) {
-		debug("Read from reg = %p - value = 0x%x\n", hpipe_addr + HPIPE_LANE_STATUS0_REG, data);
+		debug("Read from reg = %p - value = 0x%x\n", hpipe_addr + HPIPE_LANE_STATUS1_REG, data);
 		error("SD_EXTERNAL_STATUS0_PLL_TX is %d, SD_EXTERNAL_STATUS0_PLL_RX is %d\n",
 				(data & SD_EXTERNAL_STATUS0_PLL_TX_MASK),
 				(data & SD_EXTERNAL_STATUS0_PLL_RX_MASK));

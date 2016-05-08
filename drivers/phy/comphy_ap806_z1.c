@@ -46,10 +46,10 @@ static void comphy_pcie_release_soft_reset(void __iomem *hpipe_addr)
 	/* Set MAX PLL Calibration */
 	reg_set(hpipe_addr + HPIPE_KVCO_CALIB_CTRL_REG,
 		0x1 << HPIPE_KVCO_CALIB_CTRL_MAX_PLL_OFFSET, HPIPE_KVCO_CALIB_CTRL_MAX_PLL_MASK);
-	reg_set(hpipe_addr + HPIPE_LANE_CONFIG0_REG,
-		0x1 << HPIPE_LANE_CONFIG0_MAX_PLL_OFFSET, HPIPE_LANE_CONFIG0_MAX_PLL_MASK);
-	reg_set(hpipe_addr + HPIPE_LANE_CONFIG0_REG,
-		0x1 << HPIPE_LANE_CONFIG0_GEN2_PLL_OFFSET, HPIPE_LANE_CONFIG0_GEN2_PLL_MASK);
+	reg_set(hpipe_addr + HPIPE_LANE_CONFIG1_REG,
+		0x1 << HPIPE_LANE_CONFIG1_MAX_PLL_OFFSET, HPIPE_LANE_CONFIG1_MAX_PLL_MASK);
+	reg_set(hpipe_addr + HPIPE_LANE_CONFIG1_REG,
+		0x1 << HPIPE_LANE_CONFIG1_GEN2_PLL_OFFSET, HPIPE_LANE_CONFIG1_GEN2_PLL_MASK);
 
 	/* DFE reset sequence */
 	reg_set(hpipe_addr + HPIPE_PWR_CTR_REG,
@@ -142,7 +142,7 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_by4, void __iomem *hpipe_addr
 
 	debug_exit();
 	/* Return the status of the PLL */
-	return readl(hpipe_addr + HPIPE_LANE_STATUS0_REG) & HPIPE_LANE_STATUS0_PCLK_EN_MASK;
+	return readl(hpipe_addr + HPIPE_LANE_STATUS1_REG) & HPIPE_LANE_STATUS1_PCLK_EN_MASK;
 }
 
 int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map)
@@ -209,7 +209,7 @@ int comphy_ap806_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		udelay(20000);
 		for (lane = 0; lane < 4; lane++) {
 			ret = readl(HPIPE_ADDR(hpipe_base_addr, lane) +
-				   HPIPE_LANE_STATUS0_REG) & HPIPE_LANE_STATUS0_PCLK_EN_MASK;
+				   HPIPE_LANE_STATUS1_REG) & HPIPE_LANE_STATUS1_PCLK_EN_MASK;
 			if (ret == 0)
 				error("PLL is not locked - Failed to initialize lane %d\n", lane);
 		}

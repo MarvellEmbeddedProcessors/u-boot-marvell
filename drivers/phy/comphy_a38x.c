@@ -103,7 +103,7 @@ static int comphy_pcie_power_up(u32 pex_index, void __iomem *comphy_addr, void _
 	udelay(20000);
 
 	debug_exit();
-	return readl(hpipe_addr + HPIPE_LANE_STATUS0_REG) & 0x1;
+	return readl(hpipe_addr + HPIPE_LANE_STATUS1_REG) & 0x1;
 }
 
 int comphy_a38x_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map)

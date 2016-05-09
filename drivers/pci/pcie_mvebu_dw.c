@@ -97,7 +97,15 @@ int dw_pcie_link_up(uintptr_t regs_base, u32 cap_speed)
 	reg |= PCIE_APP_LTSSM_EN;
 	writel(reg, regs_base + PCIE_GLOBAL_CONTROL);
 
-	return mvebu_pcie_link_up(regs_base);
+	/* Check that link was established */
+	if (!mvebu_pcie_link_up(regs_base))
+		return 0;
+
+	/* Link can be established in Gen 1. still need to wait
+	   till MAC nagaotiation is completed */
+	udelay(100);
+
+	return 1;
 }
 
 void pci_init_board(void)

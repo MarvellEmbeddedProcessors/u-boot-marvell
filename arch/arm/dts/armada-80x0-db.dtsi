@@ -267,7 +267,7 @@
 					phy-speed = <PHY_SPEED_10_3125G>;
 				};
 				phy3 {
-					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-type = <PHY_TYPE_SATA1>;
 					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy4 {

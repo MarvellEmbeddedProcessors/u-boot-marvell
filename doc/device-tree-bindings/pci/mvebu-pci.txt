@@ -22,6 +22,10 @@ SoC specific:
 Board specific:
 		- status
 			PCIe port's status. can be "okay" or "disabled".
+		- force_cap_speed
+			Optional int which specifies the PCIe generation
+			capability. Valid values are 1 to 3.
+			If not specified, Gen 3 is set.
 
 Example of a PCIe node:
 	pcie-controller {
@@ -32,6 +36,7 @@ Example of a PCIe node:
 		pcie@1,0 {
 			reg = <0x80000 0x2000>;
 			mem = <0xe0000000 0x2000000>;
+			force_cap_speed = <2>
 			status = "okay";
 		};
 

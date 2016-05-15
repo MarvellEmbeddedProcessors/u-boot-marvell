@@ -883,8 +883,8 @@ IMAGESPATH	:= $(srctree)/tools/wtp/trusted
 SECURE		:= 1
 TIMNCFG		:= $(srctree)/tools/wtp/u-boot-timN.txt
 TIMNSIG		:= $(IMAGESPATH)/timnsign.txt
-SECURETGT	:= secureimg
 TIM2IMGARGS	:= -i $(DOIMAGE_CFG) -n $(TIMNCFG)
+TIMN_IMAGE	:= $(shell grep "Image Filename:" -m 1 $(TIMNCFG) | cut -c 17-)
 else #CONFIG_MVEBU_SECURE_BOOT
 DOIMAGE		:= $(shell which ntbb_linux.exe)
 DOIMAGE_CFG	:= $(srctree)/tools/wtp/u-boot-ntim.txt
@@ -900,7 +900,7 @@ TIMBLDUARTARGS	:= $(SECURE) UART $(IMAGESPATH) $(CLOCKSPATH) $(CLOCKSPRESET) \
 			0 $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG)
 UARTIMGARCH	:= $(srctree)/uart-images
 
-DOIMAGE_FLAGS := -r $(DOIMAGE_CFG)
+DOIMAGE_FLAGS := -r $(DOIMAGE_CFG) -v -D
 DOIMAGE_LIBS_CHECK = \
 	if [ -z "$(DOIMAGE)" ]; then \
 		echo "**********************************************************************" >&2; \
@@ -920,26 +920,31 @@ DOIMAGE_LIBS_CHECK = \
 # - Create TIM descriptor(s) with final boot signature according
 #   to defconfig for the next build stage (SPI.eMMC,etc.)
 uartimage: $(obj)/u-boot.bin $(SPLIMAGE) wtmi
-		@$(DOIMAGE_LIBS_CHECK)
-		$(TIMBUILD) $(TIMBLDUARTARGS)
-		$(DOIMAGE) $(DOIMAGE_FLAGS)
-		$(TIM2IMG) -i $(DOIMAGE_CFG) -o u-boot-spl-uart.img
-		@rm -rf $(UARTIMGARCH)*
-		@mkdir $(UARTIMGARCH)
-		@find $(srctree) -name "*_h.*" |xargs cp -t $(UARTIMGARCH) $(TIM_IMAGE) $(DOIMAGE_CFG)
-		@tar czf $(UARTIMGARCH).tgz $(UARTIMGARCH)
-		$(TIMBUILD) $(TIMBLDARGS)
+	@$(DOIMAGE_LIBS_CHECK)
+	@echo -e "\n\t=====================================\n"
+	@echo -e "\t=====        UART IMAGES        =====\n"
+	@echo -e "\t=====================================\n"
+	$(TIMBUILD) $(TIMBLDUARTARGS)
+	$(DOIMAGE) $(DOIMAGE_FLAGS)
+	@if [ -e "$(TIMNCFG)" ]; then $(DOIMAGE) -r $(TIMNCFG) -v -D; fi
+	@rm -rf $(UARTIMGARCH)*
+	@mkdir $(UARTIMGARCH)
+	@find $(srctree) -name "*_h.*" |xargs cp -t $(UARTIMGARCH)
+	@cp -t $(UARTIMGARCH) $(TIM_IMAGE) $(TIMN_IMAGE) $(TIMNCFG) $(DOIMAGE_CFG)
+	@tar czf $(UARTIMGARCH).tgz $(UARTIMGARCH)
 
-secureimg: uartimage
-		$(DOIMAGE) -r $(TIMNCFG)
-
-doimage: uartimage $(SECURETGT)
-		$(DOIMAGE) $(DOIMAGE_FLAGS)
-		$(TIM2IMG) $(TIM2IMGARGS) -o u-boot-spl.img
+doimage: uartimage
+	@echo -e "\n\t=====================================\n"
+	@echo -e "\t=====        BOOT IMAGES         =====\n"
+	@echo -e "\t=====================================\n"
+	$(TIMBUILD) $(TIMBLDARGS)
+	$(DOIMAGE) $(DOIMAGE_FLAGS)
+	@if [ -e "$(TIMNCFG)" ]; then $(DOIMAGE) -r $(TIMNCFG) -v -D; fi
+	$(TIM2IMG) $(TIM2IMGARGS) -o u-boot-spl.img
 
 bin2phex: doimage
-		$(TIM2PHEX) -i $(DOIMAGE_CFG) -o u-boot-$(CONFIG_SYS_SOC).hex
-		$(BIN2PHEX) -w 16 -i u-boot.bin -o u-boot.hex -b 0x0
+	$(TIM2PHEX) -i $(DOIMAGE_CFG) -o u-boot-$(CONFIG_SYS_SOC).hex
+	$(BIN2PHEX) -w 16 -i u-boot.bin -o u-boot.hex -b 0x0
 
 wtmi:
 	@echo "  =====WTMI====="

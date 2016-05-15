@@ -47,8 +47,8 @@ sub tim2img
 			$value =~ s/^\s+|\s+$//g;
 
 			if ($name eq "Number of Images") {
-					$img_num = $value;
-					print ("Total number of images to process in file[$cfg_idx] - $img_num\n");
+					$img_num += $value;
+					print ("Total number of images to process in file[$cfg_idx] - $value\n");
 			} elsif ($name eq "Image Filename") {
 					$img_names[$index] = $value;
 					print ("is $img_names[$index]\n");
@@ -67,6 +67,7 @@ sub tim2img
 		print ("The \"Number of Images\" field was not found in input files\n");
 		goto ERROR;
 	}
+	print ("Total number of images $img_num\n");
 
 	#--------------------------------------------------------------------------
 	# Create output from collected images data

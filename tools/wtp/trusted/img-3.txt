@@ -1,6 +1,6 @@
 Image ID:                       0x4F534C4F		; OSLO
 Next Image ID:                  0xFFFFFFFF		; NONE
-Flash Entry Address:            0x0002A000		; OSLO flash addr
+Flash Entry Address:            0x00038000		; OSLO flash addr
 Load Address:                   0x60000000		; OSLO RAM addr
 Image Size To Hash in bytes:    0xFFFFFFFF		; Hash complete image file
 Hash Algorithm ID:              32			; SHA-256

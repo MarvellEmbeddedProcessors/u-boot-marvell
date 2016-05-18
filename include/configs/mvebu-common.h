@@ -293,11 +293,6 @@
 #define CONFIG_BAUDRATE		115200
 #endif
 
-/* GPIO */
-#ifdef MV_INCLUDE_GPIO
-	#define CONFIG_KIRKWOOD_GPIO
-#endif /* MV_INCLUDE_GPIO */
-
 /* I2C */
 #ifdef CONFIG_MVEBU_I2C
 	#define CONFIG_SYS_I2C

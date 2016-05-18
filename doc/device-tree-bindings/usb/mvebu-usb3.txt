@@ -9,12 +9,15 @@ SoC specific:
 	- compatible: Should be "marvell,mvebu-usb3".
 	- reg: Base address and size of the xHCI unit.
 Board specific:
+	- gpio-vbus: Should specify the GPIO for VBUS change
+		for more information check: check doc/device-tree-bindings/gpio/mvebu-gpio.txt
 	- status
 		The USB3 port status can be "okay" or "disabled".
 
 Example for USB 3.0 node:
 	usb3: usb3@58000 {
 		compatible = "marvell,mvebu-usb3";
+		gpio-vbus = <&gpio1 CP0_GPIO(12) GPIO_ACTIVE_LOW>;
 		reg = <0x58000 0x450>;
 		status = "disabled";
 	};

@@ -25,7 +25,7 @@
  *
  *
  * @gpio: gpio global id
- * @param label	User label for this GPIO
+ * @param label User label for this GPIO
  * @return 0 if ok, others on failure
  */
 int mvebu_soc_gpio_request(unsigned gpio, const char *label);

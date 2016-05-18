@@ -28,7 +28,7 @@ DECLARE_GLOBAL_DATA_PTR;
 /* GPIO Controller registers for a single bank */
 struct mvebu_gpio_regs {
 	u32 gpdr[MVEBU_GPIO_MAX_PORTS];		/* Pin Direction Registers of GPIO ports */
-	u32 reserved0[2];
+	u32 reserved0[2];			/* Reserved for Pin Latch Registers of GPIO ports */
 	u32 gpir[MVEBU_GPIO_MAX_PORTS];		/* Pin input Level Registers of GPIO ports */
 	u32 gpor[MVEBU_GPIO_MAX_PORTS];		/* Pin output Level Registers of GPIO ports */
 };

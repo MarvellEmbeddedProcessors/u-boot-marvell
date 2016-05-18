@@ -18,6 +18,7 @@
 #include <common.h>
 #include <asm/arch-mvebu/soc.h>
 #include <fdtdec.h>
+#include <asm/gpio.h>
 #include <asm/arch-mvebu/fdt.h>
 
 #ifdef CONFIG_USB_XHCI
@@ -37,6 +38,9 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 	int node_list[CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS], node;
 	int i, count;
 	unsigned long usb3_reg_base;
+#ifdef CONFIG_MVEBU_GPIO
+	struct fdt_gpio_state gpio;
+#endif
 
 	/* Enable USB VBUS
 	 * will be updated according to Device tree, and will be triggered
@@ -68,6 +72,19 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 		*hccr = (struct xhci_hccr *)usb3_reg_base;
 		*hcor = (struct xhci_hcor *)((unsigned long) *hccr
 					+ HC_LENGTH(xhci_readl(&(*hccr)->cr_capbase)));
+
+#ifdef CONFIG_MVEBU_GPIO
+		fdtdec_decode_gpio(gd->fdt_blob, node, "gpio-vbus", &gpio);
+		fdtdec_setup_gpio(&gpio);
+		if (fdt_gpio_isvalid(&gpio)) {
+			if (gpio.flags & FDT_GPIO_ACTIVE_LOW)
+				gpio_direction_output(gpio.gpio, FDT_GPIO_ACTIVE_LOW);
+			else if (gpio.flags & FDT_GPIO_ACTIVE_HIGH)
+				gpio_direction_output(gpio.gpio, FDT_GPIO_ACTIVE_HIGH);
+			else
+				error("Error: GPIO flag is wrong\n");
+		}
+#endif
 
 		debug("mvebu-xhci: init hccr %lx and hcor %lx hc_length %ld\n",
 		      (uintptr_t)*hccr, (uintptr_t)*hcor,

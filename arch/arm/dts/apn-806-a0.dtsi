@@ -32,12 +32,12 @@
 	};
 
 	ap-806 {
-		compatible = "marvell,mvebu-apn-806";
+		compatible = "marvell,mvebu-apn-806", "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <0>;
 
 		internal-regs {
-			compatible = "marvell,internal-regs";
+			compatible = "marvell,internal-regs", "simple-bus";
 			#address-cells = <1>;
 			#size-cells = <1>;
 			ranges = <0x0000 0xf0000000 0x1000000>;
@@ -72,6 +72,13 @@
 				reg = <0x6F4000 0x10>;
 				pin-count = <20>;
 				max-func = <3>;
+			};
+			gpio0: gpio@6F5040 {
+				compatible = "marvell,mvebu-gpio";
+				reg = <0x6F5040 0x40>;
+				bank-name = "armada-ap806";
+				ngpios = <ARMADA_AP806_GPIO_COUNT>;
+				status = "okay";
 			};
 
 			ccu {

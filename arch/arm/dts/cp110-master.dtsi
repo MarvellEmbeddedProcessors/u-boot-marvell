@@ -21,12 +21,12 @@
 	model = "Marvell Armada CPN-110 Master";
 
 	cp110-master {
-		compatible = "marvell,armada-cpn110-master";
+		compatible = "marvell,armada-cpn110-master", "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <1>;
 
 		internal-regs {
-			compatible = "marvell,internal-regs";
+			compatible = "marvell,internal-regs", "simple-bus";
 			ranges = <0x0000 0xf2000000 0x1000000>;
 			#address-cells = <1>;
 			#size-cells = <1>;
@@ -42,6 +42,11 @@
 			sar-reg {
 				status = "okay";
 			};
+			gpio1: gpio@440100 {
+			};
+			gpio2: gpio@440140 {
+			};
+
 			gop {
 				emac0: mac0 {
 					mac-address = [00 00 00 00 00 01];

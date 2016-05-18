@@ -16,6 +16,7 @@
  * ***************************************************************************
  */
 
+#include <dt-bindings/gpio/armada-8k-gpio.h>
 #include "apn-806-z1.dtsi"
 #include "cp110-master.dtsi"
 

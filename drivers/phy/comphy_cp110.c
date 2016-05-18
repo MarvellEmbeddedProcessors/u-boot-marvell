@@ -99,10 +99,10 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_width, bool clk_src, void __i
 	/* enable PCIe by4 and by2 */
 	if (lane == 0) {
 		if (pcie_width == 4) {
-			reg_set(comphy_addr + COMMON_PHY_SD_CTRL1,
+			reg_set(comphy_base + COMMON_PHY_SD_CTRL1,
 				0x1 << COMMON_PHY_SD_CTRL1_PCIE_X4_EN_OFFSET, COMMON_PHY_SD_CTRL1_PCIE_X4_EN_MASK);
 		} else if (pcie_width == 2) {
-			reg_set(comphy_addr + COMMON_PHY_SD_CTRL1,
+			reg_set(comphy_base + COMMON_PHY_SD_CTRL1,
 				0x1 << COMMON_PHY_SD_CTRL1_PCIE_X2_EN_OFFSET, COMMON_PHY_SD_CTRL1_PCIE_X2_EN_MASK);
 		}
 	}
@@ -998,10 +998,10 @@ static int comphy_rxauii_power_up(u32 lane, void __iomem *hpipe_base, void __iom
 	reg_set(comphy_addr + COMMON_PHY_CFG1_REG, data, mask);
 
 	if (lane == 2)
-		reg_set(comphy_addr + COMMON_PHY_SD_CTRL1,
+		reg_set(comphy_base + COMMON_PHY_SD_CTRL1,
 			0x1 << COMMON_PHY_SD_CTRL1_RXAUI0_OFFSET, COMMON_PHY_SD_CTRL1_RXAUI0_MASK);
 	if (lane == 4)
-		reg_set(comphy_addr + COMMON_PHY_SD_CTRL1,
+		reg_set(comphy_base + COMMON_PHY_SD_CTRL1,
 			0x1 << COMMON_PHY_SD_CTRL1_RXAUI1_OFFSET, COMMON_PHY_SD_CTRL1_RXAUI1_MASK);
 
 	/* Select Baud Rate of Comphy And PD_PLL/Tx/Rx */

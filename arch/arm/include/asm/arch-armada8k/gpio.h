@@ -15,3 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ***************************************************************************
  */
+
+#ifndef _MVEBU_GPIO_H_
+#define _MVEBU_GPIO_H_
+#include <asm/arch-mvebu/gpio.h>
+
+#define MVEBU_GPIO_BANKS	5	/* number of banks */
+#define MVEBU_GPIOS_PER_PORT	32	/* number of gpios per port */
+
+void mvebu_init_gpio(void);
+
+#endif /* _MVEBU_GPIO_H_ */

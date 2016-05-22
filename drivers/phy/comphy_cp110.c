@@ -869,8 +869,10 @@ static int comphy_kr_power_up(u32 lane, void __iomem *hpipe_base, void __iomem *
 	/* Start comphy Configuration */
 	debug("stage: Comphy configuration\n");
 	/* set reference clock */
-	mask = HPIPE_MISC_REFCLK_SEL_MASK;
-	data = 0x0 << HPIPE_MISC_REFCLK_SEL_OFFSET;
+	mask = HPIPE_MISC_ICP_FORCE_MASK;
+	data = 0x1 << HPIPE_MISC_ICP_FORCE_OFFSET;
+	mask |= HPIPE_MISC_REFCLK_SEL_MASK;
+	data |= 0x0 << HPIPE_MISC_REFCLK_SEL_OFFSET;
 	reg_set(hpipe_addr + HPIPE_MISC_REG, data, mask);
 	/* Power and PLL Control */
 	mask = HPIPE_PWR_PLL_REF_FREQ_MASK;
@@ -904,9 +906,33 @@ static int comphy_kr_power_up(u32 lane, void __iomem *hpipe_base, void __iomem *
 	data = 0x1 << HPIPE_DFE_RES_FORCE_OFFSET;
 	reg_set(hpipe_addr + HPIPE_DFE_REG0, data, mask);
 	/* 0xd-G1_Setting_0 */
-	mask = HPIPE_G1_SET_0_G1_TX_EMPH1_MASK;
-	data = 0xd << HPIPE_G1_SET_0_G1_TX_EMPH1_OFFSET;
+	mask = HPIPE_G1_SET_0_G1_TX_AMP_MASK;
+	data = 0x1c << HPIPE_G1_SET_0_G1_TX_AMP_OFFSET;
+	mask |= HPIPE_G1_SET_0_G1_TX_EMPH1_MASK;
+	data |= 0xe << HPIPE_G1_SET_0_G1_TX_EMPH1_OFFSET;
 	reg_set(hpipe_addr + HPIPE_G1_SET_0_REG, data, mask);
+	/* Genration 1 setting 2 (G1_Setting_2) */
+	mask = HPIPE_G1_SET_2_G1_TX_EMPH0_MASK;
+	data = 0x0 << HPIPE_G1_SET_2_G1_TX_EMPH0_OFFSET;
+	mask |= HPIPE_G1_SET_2_G1_TX_EMPH0_EN_MASK;
+	data |= 0x1 << HPIPE_G1_SET_2_G1_TX_EMPH0_EN_OFFSET;
+	reg_set(hpipe_addr + HPIPE_G1_SET_2_REG, data, mask);
+	/* Transmitter Slew Rate Control register (tx_reg1) */
+	mask = HPIPE_TX_REG1_TX_EMPH_RES_MASK;
+	data = 0x3 << HPIPE_TX_REG1_TX_EMPH_RES_OFFSET;
+	mask |= HPIPE_TX_REG1_SLC_EN_MASK;
+	data |= 0x3f << HPIPE_TX_REG1_SLC_EN_OFFSET;
+	reg_set(hpipe_addr + HPIPE_TX_REG1_REG, data, mask);
+	/* Impedance Calibration Control register (cal_reg1) */
+	mask = HPIPE_CAL_REG_1_EXT_TXIMP_MASK;
+	data = 0xe << HPIPE_CAL_REG_1_EXT_TXIMP_OFFSET;
+	mask |= HPIPE_CAL_REG_1_EXT_TXIMP_EN_MASK;
+	data |= 0x1 << HPIPE_CAL_REG_1_EXT_TXIMP_EN_OFFSET;
+	reg_set(hpipe_addr + HPIPE_CAL_REG1_REG, data, mask);
+	/* Generation 1 Setting 5 (g1_setting_5) */
+	mask = HPIPE_G1_SETTING_5_G1_ICP_MASK;
+	data = 0 << HPIPE_CAL_REG_1_EXT_TXIMP_OFFSET;
+	reg_set(hpipe_addr + HPIPE_G1_SETTING_5_REG, data, mask);
 	/* 0xE-G1_Setting_1 */
 	mask = HPIPE_G1_SET_1_G1_RX_SELMUPI_MASK;
 	data = 0x1 << HPIPE_G1_SET_1_G1_RX_SELMUPI_OFFSET;

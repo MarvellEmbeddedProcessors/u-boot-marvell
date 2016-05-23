@@ -34,6 +34,7 @@ int mvebu_setup_fdt(void);
 
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
 int cfg_eeprom_init(void);
+int cfg_eeprom_finish(void);
 uint8_t *cfg_eeprom_get_fdt(void);
 #endif
 

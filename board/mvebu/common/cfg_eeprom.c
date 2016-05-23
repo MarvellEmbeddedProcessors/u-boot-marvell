@@ -22,6 +22,8 @@
 #include <fdt_support.h>
 #include "cfg_eeprom.h"
 
+#define AUTO_RECOVERY_RETRY_TIMES 10
+
 u8 mapping_default_fdt[] = DEFAULT_FDT_PER_BOARD;
 struct eeprom_struct board_config_val = CFG_DEFAULT_VALUE;
 struct board_config_struct *board_cfg = &(board_config_val.board_config);
@@ -497,9 +499,43 @@ default_id:
 	return MV_DEFAULT_BOARD_ID;
 }
 
+#ifdef CONFIG_TARGET_ARMADA_3700
+static u32 cfg_eeprom_check_validation_counter(void)
+{
+	u32 load_default = 0;
+
+	/* Only increase the validation_counter if we are not using the default FDT  */
+	if (board_cfg->fdt_cfg_en ||
+	    board_cfg->active_fdt_selection != get_default_fdt_config_id(cfg_eeprom_get_board_id())) {
+		board_cfg->validation_counter++;
+		cfg_eeprom_save(board_config_val.fdt_blob, 0);
+	}
+
+	/* Add hints here if validation_counter != 0 when the system starts */
+	if (board_cfg->validation_counter > 1)
+		error("Detect system crash %d times, will use defalut FDT if detect %d crashes\n",
+		      board_cfg->validation_counter, AUTO_RECOVERY_RETRY_TIMES);
+
+	/* Load the default FDT when validation_counter >= AUTO_RECOVERY_RETRY_TIMES */
+	if (board_cfg->validation_counter >= AUTO_RECOVERY_RETRY_TIMES) {
+		printf("Exceed maximum retry counter. Use default FDT\n");
+		load_default = 1;
+		/* reset the validation_counter here, not in cfg_eeprom_finish,
+		 * otherwise the eeprom will be overrided by the default FDT
+		 */
+		board_cfg->validation_counter = 0;
+		cfg_eeprom_save(board_config_val.fdt_blob, 0);
+	}
+
+	return load_default;
+}
+#endif
+
+
 /* cfg_eeprom_init - initialize FDT configuration struct
-   The EEPROM FDT is used if the checksum is valid and if the system
-   is not in recovery mode. Otherwise the default FDT is used.
+   The EEPROM FDT is used if 1) the checksum is valid, 2) the system
+   is not in recovery mode, 3) validation_counter < AUTO_RECOVERY_RETRY_TIMES
+   Otherwise the default FDT is used.
  */
 int cfg_eeprom_init(void)
 {
@@ -507,6 +543,7 @@ int cfg_eeprom_init(void)
 	struct config_types_info config_info;
 	uint32_t calculate_checksum;
 	unsigned long decompressed_size;
+	u32 load_default = 0;
 
 	/* It is possible that this init will be called by several modules during init,
 	 * however only need to initialize it for one time
@@ -574,6 +611,14 @@ int cfg_eeprom_init(void)
 #endif
 		/* update board_config_val struct with the read values from EEPROM */
 		board_config_val = eeprom_buffer;
+
+#ifdef CONFIG_TARGET_ARMADA_3700
+		/* load default FDT if validation_counter >= AUTO_RECOVERY_RETRY_TIMES */
+		load_default = cfg_eeprom_check_validation_counter();
+#endif
+	}
+
+	if (!load_default) {
 		/* if fdt_config is enabled, return - FDT already read in the struct from EEPROM */
 		if (cfg_eeprom_fdt_config_is_enable()) {
 			printf("read FDT from EEPROM\n");
@@ -587,8 +632,9 @@ int cfg_eeprom_init(void)
 		}
 	}
 
-	/* if checksum is invalid or if select active fdt is invalid */
-	/* need to load default FDT */
+	/* if checksum is invalid or if select active fdt is invalid or
+	 * validation_counter >= AUTO_RECOVERY_RETRY_TIMES, need to load default FDT
+	 */
 	if (boardid_is_valid(cfg_eeprom_get_board_id())) {
 		cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(cfg_eeprom_get_board_id()));
 		printf("read board default FDT\n");
@@ -601,3 +647,15 @@ init_done:
 	eeprom_initialized = 1;
 	return 0;
 }
+
+/* cfg_eeprom_finish - reset the validation_counter if boots normally */
+int cfg_eeprom_finish(void)
+{
+	if (board_cfg->validation_counter != 0) {
+		board_cfg->validation_counter = 0;
+		cfg_eeprom_save(board_config_val.fdt_blob, 0);
+	}
+
+	return 0;
+}
+

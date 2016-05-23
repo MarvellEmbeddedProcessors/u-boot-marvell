@@ -24,6 +24,7 @@
 #include <asm/arch-mvebu/comphy.h>
 #include <netdev.h>
 #include <asm/arch/mbus_reg.h>
+#include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/mbus.h>
 #include <asm/arch-mvebu/pinctl.h>
 #include <asm/arch-mvebu/fdt.h>
@@ -193,6 +194,12 @@ int last_stage_init(void)
 	fdt_blob = cfg_eeprom_get_fdt();
 	set_working_fdt_addr(fdt_blob);
 #endif
+
+#ifdef CONFIG_BOARD_CONFIG_EEPROM
+	/* reset the validation_counter */
+	cfg_eeprom_finish();
+#endif
+
 
 #ifdef CONFIG_MVEBU_BOOTMODE_SWITCH_SUPPORT
 	/* here we switch back to original mode mode by

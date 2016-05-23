@@ -189,6 +189,8 @@ int last_stage_init(void)
 	fdt_blob = cfg_eeprom_get_fdt();
 	set_working_fdt_addr(fdt_blob);
 #endif
+
+#ifdef CONFIG_MVEBU_BOOTMODE_SWITCH_SUPPORT
 	/* here we switch back to original mode mode by
 	 * writing I2C chip 4c address 0.
 	 */
@@ -199,6 +201,8 @@ int last_stage_init(void)
 		mvebu_boot_mode_set(BOOT_MODE_AUTO_SCAN);
 	else
 		mvebu_boot_mode_set(boot_mode_set);
+#endif
+
 	return 0;
 }
 #endif

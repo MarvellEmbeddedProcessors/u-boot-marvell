@@ -20,11 +20,11 @@ Board specific:
 	- phy: Entry that include the configuration of the phy.
 	  Every phy should have the below parameters:
 	  - phy-type: PHY type (SGMII0/SATA1/PEX2...), the posible modes under include/dt-bindings/comphy/comphy_data.h
-	  - phy-speed: PHY speed (1G/1.5G...), the posible speeds under include/dt-bindings/comphy/comphy_data.h
 	Optional properties:
-	  - phy-invert : Polarity invert (PHY_POLARITY_TXD_INVERT/PHY_POLARITY_RXD_INVERT), the
+	  - phy-speed: PHY speed (1G/1.5G...), the posible speeds under include/dt-bindings/comphy/comphy_data.h
+	  - phy-invert: Polarity invert (PHY_POLARITY_TXD_INVERT/PHY_POLARITY_RXD_INVERT), the
 	  	posible bits under include/dt-bindings/comphy/comphy_data.h
-	  - clk-src : Set the clock source of PCIe, if configured to PCIe clock output
+	  - clk-src: Set the clock source of PCIe, if configured to PCIe clock output
 		This relevant for SerDes lane 5 only (by default, lane 4 is the clock source)
 		for Armada-7040 boards.
 
@@ -37,14 +37,12 @@ Example:
 		reg-hpipe3 = <0xa0000 0x800>;
 		phy0 {
 			phy-type = <PHY_TYPE_SATA0>;
-			phy-speed = <PHY_SPEED_1_25G>;
 		};
 		phy1 {
 			phy-type = <PHY_TYPE_PEX0>;
-			phy-speed = <PHY_SPEED_5G>;
 		};
 		phy2 {
-			phy-type = <PHY_TYPE_PEX1>;
-			phy-speed = <PHY_SPEED_5G>;
+			phy-type = <PHY_TYPE_SGMII0>;
+			phy-speed = <PHY_SPEED_3_125G>;
 		};
 	};

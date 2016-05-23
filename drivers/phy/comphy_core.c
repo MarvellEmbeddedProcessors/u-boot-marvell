@@ -119,9 +119,14 @@ void comphy_print(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map
 	for (lane = 0; lane < ptr_chip_cfg->comphy_lanes_count; lane++, comphy_map_data++) {
 		if (comphy_map_data->type == PHY_TYPE_UNCONNECTED)
 			continue;
-		speed_str = get_speed_string(comphy_map_data->speed);
-		type_str = get_type_string(comphy_map_data->type);
-		printf("Comphy-%d: %-13s %-10s\n", lane, type_str, speed_str);
+		if (comphy_map_data->speed == PHY_SPEED_INVALID) {
+			type_str = get_type_string(comphy_map_data->type);
+			printf("Comphy-%d: %-13s\n", lane, type_str);
+		} else {
+			speed_str = get_speed_string(comphy_map_data->speed);
+			type_str = get_type_string(comphy_map_data->type);
+			printf("Comphy-%d: %-13s %-10s\n", lane, type_str, speed_str);
+		}
 	}
 }
 
@@ -187,9 +192,8 @@ u32 comphy_init(const void *blob)
 			comphy_map_data[lane].invert = fdtdec_get_int(blob, sub_node, "phy-invert",
 												PHY_POLARITY_NO_INVERT);
 			comphy_map_data[lane].clk_src = fdtdec_get_bool(blob, sub_node, "clk-src");
-			if ((comphy_map_data[lane].speed == PHY_TYPE_INVALID) ||
-			    (comphy_map_data[lane].type == PHY_SPEED_INVALID))
-				printf("no phy speed or type for lane %d, setting lane as unconnedted\n", lane + 1);
+			if (comphy_map_data[lane].type == PHY_TYPE_INVALID)
+				printf("no phy type for lane %d, setting lane as unconnedted\n", lane + 1);
 			sub_node = fdt_next_subnode(blob, sub_node);
 			lane++;
 		} while (sub_node > 0);

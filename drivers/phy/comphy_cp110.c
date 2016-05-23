@@ -1457,6 +1457,10 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		case PHY_TYPE_SGMII1:
 		case PHY_TYPE_SGMII2:
 		case PHY_TYPE_SGMII3:
+			if (ptr_comphy_map->speed == PHY_SPEED_INVALID) {
+				debug("Warning: SGMII PHY speed in lane %d is invalid, set PHY speed to 1.25G\n", lane);
+				ptr_comphy_map->speed = PHY_SPEED_1_25G;
+			}
 			ret = comphy_sgmii_power_up(lane, ptr_comphy_map->speed, hpipe_base_addr, comphy_base_addr);
 			break;
 		case PHY_TYPE_KR:

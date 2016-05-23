@@ -124,27 +124,21 @@
 				*/
 				phy0 {
 					phy-type = <PHY_TYPE_PEX0>;
-					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy1 {
 					phy-type = <PHY_TYPE_SATA0>;
-					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy2 {
 					phy-type = <PHY_TYPE_KR>;
-					phy-speed = <PHY_SPEED_10_3125G>;
 				};
 				phy3 {
 					phy-type = <PHY_TYPE_SATA1>;
-					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy4 {
 					phy-type = <PHY_TYPE_PEX1>;
-					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy5 {
 					phy-type = <PHY_TYPE_PEX2>;
-					phy-speed = <PHY_SPEED_5G>;
 				};
 			};
 			mdio {

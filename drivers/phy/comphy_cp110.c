@@ -1236,7 +1236,8 @@ static void comphy_utmi_phy_config(u32 utmi_index, void __iomem *utmi_base_addr,
 static int comphy_utmi_power_up(u32 utmi_index, void __iomem *utmi_base_addr,
 				  void __iomem *usb_cfg_addr, void __iomem *utmi_cfg_addr, u32 utmi_phy_port)
 {
-	u32 data, ret = 1;
+	u32 data, mask, ret = 1;
+	void __iomem *addr;
 
 	debug("stage: UTMI %d - Power up transceiver(Power up Phy), and exit SuspendDM\n", utmi_index);
 	/* Power UP UTMI PHY */
@@ -1245,22 +1246,32 @@ static int comphy_utmi_power_up(u32 utmi_index, void __iomem *utmi_base_addr,
 	reg_set(utmi_base_addr + UTMI_CTRL_STATUS0_REG,
 		0x0 << UTMI_CTRL_STATUS0_TEST_SEL_OFFSET, UTMI_CTRL_STATUS0_TEST_SEL_MASK);
 
-	debug("stage: Wait for PLL and impedance calibration done, and PLL ready done\n");
-	mdelay(10);
-
-	debug("stage: Check PLL.. ");
-	data = readl(utmi_base_addr + UTMI_CALIB_CTRL_REG);
-	if ((data & UTMI_CALIB_CTRL_IMPCAL_DONE_MASK) == 0) {
+	debug("stage: Polling for PLL and impedance calibration done, and PLL ready done\n");
+	addr = utmi_base_addr + UTMI_CALIB_CTRL_REG;
+	data = UTMI_CALIB_CTRL_IMPCAL_DONE_MASK;
+	mask = data;
+	data = polling_with_timeout(addr, data, mask, 100);
+	if (data != 0) {
 		error("Impedance calibration is not done\n");
+		debug("Read from reg = %p - value = 0x%x\n", addr, data);
 		ret = 0;
 	}
-	if ((data & UTMI_CALIB_CTRL_PLLCAL_DONE_MASK) == 0) {
+
+	data = mask = UTMI_CALIB_CTRL_PLLCAL_DONE_MASK;
+	data = polling_with_timeout(addr, data, mask, 100);
+	if (data != 0) {
 		error("PLL calibration is not done\n");
+		debug("Read from reg = %p - value = 0x%x\n", addr, data);
 		ret = 0;
 	}
-	data = readl(utmi_base_addr + UTMI_PLL_CTRL_REG);
-	if ((data & UTMI_PLL_CTRL_PLL_RDY_MASK) == 0) {
+
+	addr = utmi_base_addr + UTMI_PLL_CTRL_REG;
+	data = UTMI_PLL_CTRL_PLL_RDY_MASK;
+	mask = data;
+	data = polling_with_timeout(addr, data, mask, 100);
+	if (data != 0) {
 		error("PLL is not ready\n");
+		debug("Read from reg = %p - value = 0x%x\n", addr, data);
 		ret = 0;
 	}
 

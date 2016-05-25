@@ -20,12 +20,12 @@
 	model = "Marvell Armada CPN-110 Slave";
 
 	cp110-slave {
-		compatible = "marvell,armada-cpn110-slave";
+		compatible = "marvell,armada-cpn110-slave", "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <1>;
 
 		internal-regs {
-			compatible = "marvell,internal-regs";
+			compatible = "marvell,internal-regs", "simple-bus";
 			ranges = <0x0000 0xf4000000 0x1000000>;
 			#address-cells = <1>;
 			#size-cells = <1>;
@@ -51,7 +51,6 @@
 			sar-reg {
 				status = "disabled";
 			};
-
 			gop {
 				emac4: mac0 {
 					mac-address = [00 00 00 00 00 04];

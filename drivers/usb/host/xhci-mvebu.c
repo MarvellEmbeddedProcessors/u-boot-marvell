@@ -26,6 +26,8 @@
 #include "xhci.h"
 #endif
 
+/* board_usb_vbus_init: to be implemented for special usage of VBUS (i.e. marvell
+** IO-Expander) */
 #ifdef CONFIG_USB_XHCI
 void __board_usb_vbus_init(void)
 {
@@ -33,23 +35,37 @@ void __board_usb_vbus_init(void)
 }
 void board_usb_vbus_init(void) __attribute__((weak, alias("__board_usb_vbus_init")));
 
+/* usb_vbus_init: generic device tree dependent routine for VBUS handling */
+static void usb_vbus_init(int node)
+{
+#ifdef CONFIG_MVEBU_GPIO
+	struct fdt_gpio_state gpio;
+	fdtdec_decode_gpio(gd->fdt_blob, node, "gpio-vbus", &gpio);
+	fdtdec_setup_gpio(&gpio);
+	if (fdt_gpio_isvalid(&gpio)) {
+		if (gpio.flags & FDT_GPIO_ACTIVE_LOW)
+			gpio_direction_output(gpio.gpio, FDT_GPIO_ACTIVE_LOW);
+		else if (gpio.flags & FDT_GPIO_ACTIVE_HIGH)
+			gpio_direction_output(gpio.gpio, FDT_GPIO_ACTIVE_HIGH);
+		else
+			error("Error: GPIO flag is wrong\n");
+	}
+#endif
+}
+
 int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 {
 	int node_list[CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS], node;
 	int i, count;
 	unsigned long usb3_reg_base;
-#ifdef CONFIG_MVEBU_GPIO
-	struct fdt_gpio_state gpio;
-#endif
 
-	/* Enable USB VBUS
-	 * will be updated according to Device tree, and will be triggered
-	 * below per port (while going through enabled ports DT info) */
+	/* Enable USB VBUS using I2C io-expander
+	** TODO: need to be updated according to Device tree, and will be triggered
+	** below per port (while going through enabled ports DT info) */
 	board_usb_vbus_init();
 
 	/* in dts file, go through all the 'usb3' nodes.
 	 */
-
 	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "usb3",
 			COMPAT_MVEBU_USB3, node_list, CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS);
 	if (count == 0) {
@@ -73,18 +89,10 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 		*hcor = (struct xhci_hcor *)((unsigned long) *hccr
 					+ HC_LENGTH(xhci_readl(&(*hccr)->cr_capbase)));
 
-#ifdef CONFIG_MVEBU_GPIO
-		fdtdec_decode_gpio(gd->fdt_blob, node, "gpio-vbus", &gpio);
-		fdtdec_setup_gpio(&gpio);
-		if (fdt_gpio_isvalid(&gpio)) {
-			if (gpio.flags & FDT_GPIO_ACTIVE_LOW)
-				gpio_direction_output(gpio.gpio, FDT_GPIO_ACTIVE_LOW);
-			else if (gpio.flags & FDT_GPIO_ACTIVE_HIGH)
-				gpio_direction_output(gpio.gpio, FDT_GPIO_ACTIVE_HIGH);
-			else
-				error("Error: GPIO flag is wrong\n");
-		}
-#endif
+		/* Enable USB VBUS:
+		** enable VBUS using GPIO, and got information from USB node in
+		** device tree */
+		usb_vbus_init(node);
 
 		debug("mvebu-xhci: init hccr %lx and hcor %lx hc_length %ld\n",
 		      (uintptr_t)*hccr, (uintptr_t)*hcor,

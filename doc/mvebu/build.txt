@@ -81,13 +81,6 @@ Boot device selection note for Armada-3700 builds:
 	selects "eMMC flash boot" device as described above.
 	The selected partition will be used by U-Boot "bubt" and "savenv" commands
 	for flashing the boot image and saving U-Boot configuration.
-	The boot partition can be written from Linux command line using the following
-	commands:
-	# sudo echo 0 > /sys/block/mmcblk0boot0/force_ro
-	# sudo dd if=u-boot-spl.img of=/dev/mmcblk0boot0
-	The first commands remove the write protection flag from the boot partition 0.
-	The same operation can be done for BOOT1 partition by replacing the partition
-	ID in the above commands from mmcblk0boot0 to mmcblk0boot1.
 
 
 	SATA boot device:
@@ -117,7 +110,7 @@ Boot device selection note for Armada-3700 builds:
 	3       1052672         975720496       9c1661a5-03     83
 	Using the example above, the boot image can be placed into the boot partition using
 	the following Linux command (assuming that SATA device is /dev/sda)
-	# sudo dd if=u-boot-spl.img of=/dev/sda1
+	# sudo dd if=flash-image.bin of=/dev/sda1
 
 	Special note:
 	-------------

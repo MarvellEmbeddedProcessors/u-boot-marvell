@@ -97,7 +97,7 @@ targets += $(dtb-y)
 # alignment fdt file to 7K in Armada3700 and to 12k in Armada8k. this is helpful to support multi fdt.
 # This alignment allows selecting DT files easily by skipping over a predefined DT size.
 ifdef CONFIG_TARGET_ARMADA_8K
-DTC_FLAGS += -R 4 -S 0x3000
+DTC_FLAGS += -R 4 -S $(CONFIG_FDT_SIZE)
 else
 DTC_FLAGS += -R 4 -S 0x1C00
 endif #CONFIG_TARGET_ARMADA_8K

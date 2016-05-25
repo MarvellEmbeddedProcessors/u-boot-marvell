@@ -39,7 +39,6 @@
 #define MV_INCLUDE_PEX
 */
 #define CONFIG_GZIP_COMPRESSED
-#define MVEBU_FDT_SIZE 0x3000
 
 #undef CONFIG_GICV3
 #define CONFIG_GICV2

@@ -30,12 +30,12 @@ struct board_config_struct *board_cfg = &(board_config_val.board_config);
 struct config_types_info config_types_info[] = MV_EEPROM_CONFIG_INFO;
 /* this array is used as temporary fdt, in order to enable to make changes
  on the fdt_blob without changing the fdt in the local struct */
-uint8_t fdt_blob_temp[MVEBU_FDT_SIZE];
+uint8_t fdt_blob_temp[CONFIG_FDT_SIZE];
 int eeprom_initialized = -1;
 int g_board_id = -1;
 #ifdef CONFIG_TARGET_ARMADA_8K
 /* this array is used a buffer to zip and unzip the fdt blob */
-uint8_t fdt_zip_buffer[MVEBU_FDT_SIZE];
+uint8_t fdt_zip_buffer[CONFIG_FDT_SIZE];
 #endif
 
 static char hw_info_param_list[][HW_INFO_MAX_NAME_LEN] = {
@@ -107,7 +107,7 @@ int cfg_eeprom_zip_and_unzip(unsigned long size, void *source_fdt, bool zip_flag
 			return -1;
 		}
 	}
-	if (new_size > MVEBU_FDT_SIZE) {
+	if (new_size > CONFIG_FDT_SIZE) {
 		error("Unexpected size of zip file = %lu\n", new_size);
 		return -1;
 	}
@@ -132,7 +132,7 @@ int cfg_eeprom_unzip_fdt(unsigned long size, void *source_fdt)
 int cfg_eeprom_zip_fdt(unsigned long size, void *source_fdt)
 {
 	/* return the orignal size of the fdt blob */
-	return MVEBU_FDT_SIZE;
+	return CONFIG_FDT_SIZE;
 }
 
 int cfg_eeprom_unzip_fdt(unsigned long size, void *source_fdt)
@@ -156,10 +156,10 @@ bool cfg_eeprom_upload_fdt_from_flash(u8 fdt_config_id)
 	for (i = 0; fdt_check_header(fdt_blob) == 0; i++) {
 		if ((u8)fdtdec_get_int(fdt_blob, 0, "fdt_config_id", -1) == fdt_config_id &&
 		    (u8)fdtdec_get_int(fdt_blob, 0, "board_id", -1) == cfg_eeprom_get_board_id()) {
-			memcpy((void *)board_config_val.fdt_blob, fdt_blob, MVEBU_FDT_SIZE);
+			memcpy((void *)board_config_val.fdt_blob, fdt_blob, CONFIG_FDT_SIZE);
 			return true;
 		}
-		fdt_blob += MVEBU_FDT_SIZE;
+		fdt_blob += CONFIG_FDT_SIZE;
 	}
 	return false;
 }
@@ -179,7 +179,7 @@ bool cfg_eeprom_upload_fdt_from_eeprom(uint8_t *fdt_blob)
 			 fdt_blob_temp, fdt_blob_size);
 
 		/* decompress fdt */
-		decompressed_size = cfg_eeprom_unzip_fdt(MVEBU_FDT_SIZE, (void *)fdt_blob_temp);
+		decompressed_size = cfg_eeprom_unzip_fdt(CONFIG_FDT_SIZE, (void *)fdt_blob_temp);
 
 		if (decompressed_size == -1)
 			return false;
@@ -189,7 +189,7 @@ bool cfg_eeprom_upload_fdt_from_eeprom(uint8_t *fdt_blob)
 			debug("FDT in EEPROM is invalid and didn't loaded to RAM\n");
 			return false;
 		}
-		memcpy((void *)fdt_blob, fdt_blob_temp, MVEBU_FDT_SIZE);
+		memcpy((void *)fdt_blob, fdt_blob_temp, CONFIG_FDT_SIZE);
 	} else {
 		debug("FDT in EEPROM is invalid and didn't loaded to RAM\n");
 		return false;
@@ -239,12 +239,12 @@ void cfg_eeprom_save(uint8_t *fdt_blob, int write_forced_fdt)
 	if (board_config_val.board_config.fdt_cfg_en == 1 || write_forced_fdt) {
 		/* back up the fdt that is in the local struct, and restore it at the end of this function */
 		if (fdt_blob != board_config_val.fdt_blob) {
-			memcpy((void *)fdt_blob_temp, (void *)board_config_val.fdt_blob, MVEBU_FDT_SIZE);
-			memcpy((void *)board_config_val.fdt_blob, (void *)fdt_blob, MVEBU_FDT_SIZE);
+			memcpy((void *)fdt_blob_temp, (void *)board_config_val.fdt_blob, CONFIG_FDT_SIZE);
+			memcpy((void *)board_config_val.fdt_blob, (void *)fdt_blob, CONFIG_FDT_SIZE);
 		}
 
 		/* compress fdt */
-		compressed_size = cfg_eeprom_zip_fdt(MVEBU_FDT_SIZE, (void *)board_config_val.fdt_blob);
+		compressed_size = cfg_eeprom_zip_fdt(CONFIG_FDT_SIZE, (void *)board_config_val.fdt_blob);
 
 		if (compressed_size == -1)
 			return;
@@ -262,15 +262,15 @@ void cfg_eeprom_save(uint8_t *fdt_blob, int write_forced_fdt)
 		/* decompress fdt - After saving the fdt, the compressed file is in the struct,
 		   therefore need to return to the state before saving the FDT. to let the user
 		   continue work without resetting his board. */
-		decompressed_size = cfg_eeprom_unzip_fdt(MVEBU_FDT_SIZE, (void *)board_config_val.fdt_blob);
+		decompressed_size = cfg_eeprom_unzip_fdt(CONFIG_FDT_SIZE, (void *)board_config_val.fdt_blob);
 
 		if (decompressed_size == -1)
 			return;
 
 		/* restore the fdt from local struct after it was written*/
 		if (fdt_blob != board_config_val.fdt_blob) {
-			memcpy((void *)fdt_blob, (void *)board_config_val.fdt_blob, MVEBU_FDT_SIZE);
-			memcpy((void *)board_config_val.fdt_blob, (void *)fdt_blob_temp, MVEBU_FDT_SIZE);
+			memcpy((void *)fdt_blob, (void *)board_config_val.fdt_blob, CONFIG_FDT_SIZE);
+			memcpy((void *)board_config_val.fdt_blob, (void *)fdt_blob_temp, CONFIG_FDT_SIZE);
 		}
 
 	} else {
@@ -591,7 +591,7 @@ int cfg_eeprom_init(void)
 							   (uint32_t)eeprom_buffer.length - 4);
 
 		/* decompress fdt */
-		decompressed_size = cfg_eeprom_unzip_fdt(MVEBU_FDT_SIZE, (void *)eeprom_buffer.fdt_blob);
+		decompressed_size = cfg_eeprom_unzip_fdt(CONFIG_FDT_SIZE, (void *)eeprom_buffer.fdt_blob);
 
 		if (decompressed_size == -1)
 			return -1;

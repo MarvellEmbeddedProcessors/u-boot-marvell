@@ -39,7 +39,7 @@ int fdt_create_list(void)
 	int fdt_config_id;
 	char *fdt_model;
 	void *fdt_blob_temp = __dtb_dt_begin;
-	uint8_t fdt_blob[MVEBU_FDT_SIZE];
+	uint8_t fdt_blob[CONFIG_FDT_SIZE];
 
 	fdt_list_size = 1;
 
@@ -60,7 +60,7 @@ int fdt_create_list(void)
 			fdt_list_of_configs[fdt_list_size].fdt_config_id = fdt_config_id;
 			fdt_list_size++;
 		}
-		fdt_blob_temp += MVEBU_FDT_SIZE;
+		fdt_blob_temp += CONFIG_FDT_SIZE;
 	}
 	return 0;
 }
@@ -89,7 +89,7 @@ int fdt_cfg_set_select(const char *selected_index)
 {
 	int i, index_int, index_exist = 0;
 	struct eeprom_struct *p_board_config;
-	uint8_t fdt_blob[MVEBU_FDT_SIZE];
+	uint8_t fdt_blob[CONFIG_FDT_SIZE];
 
 	if (fdt_list_size == -1) {
 		fdt_create_list();

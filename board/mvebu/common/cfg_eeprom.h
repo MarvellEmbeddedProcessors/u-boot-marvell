@@ -57,7 +57,7 @@ struct eeprom_struct {
 	u16 length;
 	struct manufacturing_information_struct man_info;
 	struct board_config_struct board_config;
-	u8 fdt_blob[MVEBU_FDT_SIZE];
+	u8 fdt_blob[CONFIG_FDT_SIZE];
 };
 
 struct config_types_info {
@@ -115,7 +115,7 @@ struct hw_info_data_struct {
 				 0x03,					     /* active fdt selection = default */ \
 				 0x00,					     /* validation counter = 0 */	  \
 				{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} },/* reserve_board_cgf */		  \
-				{[0 ... (MVEBU_FDT_SIZE - 1)] = 1}	     /* fdt file */			  \
+				{[0 ... (CONFIG_FDT_SIZE - 1)] = 1}	     /* fdt file */			  \
 }
 
 #define MV_MAX_FDT_CONFIGURATION	MV_MARVELL_BOARD_NUM * 8

@@ -5,7 +5,7 @@ Bubt command is used to burn a new ATF image to flash device.
 The bubt command gets the following parameters: ATF file name, destination device and source device.
 bubt [file-name] [destination [source]]
 	- file-name		Image file name to burn.			default = flash-image.bin
-	- destination		Flash to burn to [spi, nor, nand].		defualt = active flash
+	- destination		Flash to burn to [spi, nor, nand, mmc].		defualt = active flash
 	- source		Source to load image from [tftp, usb].		default = tftp
 
 Examples:
@@ -33,8 +33,13 @@ This section describe bubt implementation step-by-step:
 			# erase bank 1
 	- SPI:		# sf probe 0
 			# sf erase 0 100000
+	- MMC:		# mmc dev 0 <boot_partition>
+
+Notes:
+- For the options of MMC boot partition, please refer to 'eMMC boot device' in doc/mvebu/build.txt.
 
 3. Write the ATF image:
 	- NAND:		# nand write <load_address> 0 <ATF Size>
 	- NOR:		# cp.b <load_address> fd000000 <ATF Size>
 	- SPI:		# sf write <load_address> 0 <ATF Size>
+	- MMC:		# mmc write <load_address> 0 <ATF Size>/<block_size>

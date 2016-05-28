@@ -98,9 +98,9 @@ void __reset_cpu(ulong addr)
 void reset_cpu(ulong addr) __attribute__((weak, alias("__reset_cpu")));
 
 
-
-void _enable_caches(void)
+#ifdef CONFIG_SYS_DCACHE_OFF
+void enable_caches(void)
 {
 	/* Nothing to be done */
 }
-void enable_caches(void) __attribute__((weak, alias("_enable_caches")));
+#endif

@@ -35,3 +35,8 @@ int efuse_read(enum efuse_id fid, char *value)
 {
 	return 0;
 }
+
+void efuse_raw_dump(void)
+{
+	return;
+}

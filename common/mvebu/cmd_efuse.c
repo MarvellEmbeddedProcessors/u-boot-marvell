@@ -122,6 +122,9 @@ int do_efuse_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			status = CMD_RET_FAILURE;
 		}
 
+	} else if (strcmp(cmd, "raw") == 0) {
+		/* RAW DUMP */
+		efuse_raw_dump();
 	} else {
 
 		/* ERROR */
@@ -140,6 +143,7 @@ U_BOOT_CMD(
 	"Access to SoC eFuse entry values\n"
 	"\tlist         - Display all supported eFuse entry ids\n"
 	"\tdump         - Dump all supported eFuse entries\n"
+	"\traw          - Dump all eFuses in raw format\n"
 	"\tread id      - Read eFuse entry \"id\"\n"
 	"\twrite id val - Write \"val\" to eFuse entry \"id\"\n"
 );

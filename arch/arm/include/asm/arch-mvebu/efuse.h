@@ -94,5 +94,6 @@ struct efuse_info {
 int efuse_id_valid(enum efuse_id fid);
 int efuse_write(enum efuse_id fid, const char *value);
 int efuse_read(enum efuse_id fid, char *value);
+void efuse_raw_dump(void);
 
 #endif /* _MVEBU_EFUSE_H_ */

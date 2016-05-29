@@ -369,3 +369,12 @@ int efuse_read(enum efuse_id fid, char *value)
 
 	return 0;
 }
+
+/******************************************************************************
+ *	efuse_raw_dump
+ ******************************************************************************/
+void efuse_raw_dump(void)
+{
+	printf("Raw eFuse dump is not supported on this platfrorm\n");
+	return;
+}

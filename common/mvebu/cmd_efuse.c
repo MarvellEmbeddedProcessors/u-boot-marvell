@@ -141,5 +141,5 @@ U_BOOT_CMD(
 	"\tlist         - Display all supported eFuse entry ids\n"
 	"\tdump         - Dump all supported eFuse entries\n"
 	"\tread id      - Read eFuse entry \"id\"\n"
-	"\twrite val id - Write \"val\" to eFuse entry \"id\"\n"
+	"\twrite id val - Write \"val\" to eFuse entry \"id\"\n"
 );

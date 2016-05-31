@@ -21,9 +21,12 @@
 #include <asm/arch-armada8k/regs-base.h>
 
 #define LLC_CTRL                       0x100
-
 #define LLC_CTRL_EN	                1
 #define LLC_EXCLUSIVE_EN		0x100
+
+#define LLC_MNT_CW			0x7bc /* Clean by Way */
+#define LLC_MNT_CIW			0x7fc /* Clean-invalidate by Way */
+#define LLC_SYNC			0x700
 
 /*
 ** Get LLC status and mode.
@@ -46,4 +49,22 @@ int llc_mode_get(int *excl_mode)
 	return ret;
 }
 
+/*
+ * flush_l3_cache: cache_v8 only calls a weakly aliased flush_l3_cache
+ * in flush_dcache_all(), while invalidate_dcache_all() does not call
+ * the appropriate l3 function.
+ * While flush_ has "clean" semantics, not "clean-invalidate",
+ * we have to make sure no valid LLC contents after this, otherwise
+ * when caches are re-enabled by kernel, stale LLC content may eclipse
+ * the more up-to-date data written after u-boot disabled caches.
+ * Therefore, flush-invalidate all LLC using CIW register.
+ */
+void flush_l3_cache(void)
+{
+	if (llc_mode_get(0)) {
+		writel(0xffffffff, MVEBU_LLC_BASE + LLC_MNT_CIW);
+		writel(1, MVEBU_LLC_BASE + LLC_SYNC);
+		asm volatile("dsb sy");
+	}
+}
 

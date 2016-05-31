@@ -55,6 +55,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define LINK_SPEED_GEN_2                0x2
 #define LINK_SPEED_GEN_3                0x3
 
+#define MAX_PCIE_BUSES		2
+
 static int mvebu_pcie_link_up(uintptr_t regs_base)
 {
 	u32 reg;
@@ -112,69 +114,73 @@ void pci_init_board(void)
 {
 	int host_id = -1;
 	int first_busno = 0;
+	int bus_node_list[MAX_PCIE_BUSES];
 	int bus_node, port_node, count;
 	u32 cap_speed;
 	const void *blob = gd->fdt_blob;
 	struct pcie_win mem_win, cfg_win;
 	uintptr_t regs_base;
-	int err;
+	int err, i;
 
 	count = fdtdec_find_aliases_for_id(blob, "pcie-controller",
-			COMPAT_MVEBU_DW_PCIE, &bus_node, 1);
+			COMPAT_MVEBU_DW_PCIE, bus_node_list, MAX_PCIE_BUSES);
 
-	if (count <= 0)
-		return;
+	for (i = 0; i < count; i++) {
+		bus_node = bus_node_list[i];
 
-	fdt_for_each_subnode(blob, port_node, bus_node) {
-		host_id++;
-
-		if (!fdtdec_get_is_enabled(blob, port_node))
+		if (bus_node <= 0)
 			continue;
 
-		regs_base = (uintptr_t)fdt_get_regs_offs(blob, port_node, "reg");
-		if (regs_base == 0) {
-			error("Missing registers in PCIe node\n");
-			continue;
+		fdt_for_each_subnode(blob, port_node, bus_node) {
+			host_id++;
+
+			if (!fdtdec_get_is_enabled(blob, port_node))
+				continue;
+
+			regs_base = (uintptr_t)fdt_get_regs_offs(blob, port_node, "reg");
+			if (regs_base == 0) {
+				error("Missing registers in PCIe node\n");
+				continue;
+			}
+
+			if (fdtdec_get_bool(blob, port_node, "endpoint")) {
+				dw_pcie_set_endpoint(host_id, regs_base);
+				continue;
+			}
+
+			cap_speed = fdtdec_get_int(blob, port_node, "force_cap_speed", LINK_SPEED_GEN_3);
+
+			if (cap_speed < LINK_SPEED_GEN_1 || cap_speed > LINK_SPEED_GEN_3) {
+				debug("invalid PCIe Gen %d. Forcing to Gen 3\n", cap_speed);
+				cap_speed = LINK_SPEED_GEN_3;
+			}
+
+			/* Don't register host if link is down */
+			if (!dw_pcie_link_up(regs_base, cap_speed)) {
+				printf("PCIE-%d: Link down\n", host_id);
+				continue;
+			}
+			printf("PCIE-%d: Link up (Gen%d-x%d, Bus%d)\n", host_id, dw_pcie_get_link_speed(regs_base),
+			       dw_pcie_get_link_width(regs_base), first_busno);
+
+			err = fdtdec_get_int_array(blob, port_node, "mem", (u32 *)&mem_win, 2);
+			if (err) {
+				error("pcie: missing pci memory space in fdt\n");
+				continue;
+			}
+
+			err = fdtdec_get_int_array(blob, port_node, "cfg", (u32 *)&cfg_win, 2);
+			if (err) {
+				error("pcie: missing pci configuration space in fdt\n");
+				continue;
+			}
+
+			/* If all is well register the host */
+			first_busno = dw_pcie_init(host_id, regs_base, &mem_win, &cfg_win, first_busno);
+			if (first_busno < 0)
+				/* Print error message, and try to initialize other hosts */
+				printf("Failed to initialize PCIe host %d.\n", host_id);
+
 		}
-
-		if (fdtdec_get_bool(blob, port_node, "endpoint")) {
-			dw_pcie_set_endpoint(host_id, regs_base);
-			continue;
-		}
-
-		cap_speed = fdtdec_get_int(blob, port_node, "force_cap_speed", LINK_SPEED_GEN_3);
-
-		if (cap_speed < LINK_SPEED_GEN_1 || cap_speed > LINK_SPEED_GEN_3) {
-			debug("invalid PCIe Gen %d. Forcing to Gen 3\n", cap_speed);
-			cap_speed = LINK_SPEED_GEN_3;
-		}
-
-		/* Don't register host if link is down */
-		if (!dw_pcie_link_up(regs_base, cap_speed)) {
-			printf("PCIE-%d: Link down\n", host_id);
-			continue;
-		}
-		printf("PCIE-%d: Link up (Gen%d-x%d, Bus%d)\n", host_id, dw_pcie_get_link_speed(regs_base),
-		       dw_pcie_get_link_width(regs_base), first_busno);
-
-		err = fdtdec_get_int_array(blob, port_node, "mem", (u32 *)&mem_win, 2);
-		if (err) {
-			error("pcie: missing pci memory space in fdt\n");
-			continue;
-		}
-
-		err = fdtdec_get_int_array(blob, port_node, "cfg", (u32 *)&cfg_win, 2);
-		if (err) {
-			error("pcie: missing pci configuration space in fdt\n");
-			continue;
-		}
-
-		/* If all is well register the host */
-		first_busno = dw_pcie_init(host_id, regs_base, &mem_win, &cfg_win, first_busno);
-		if (first_busno < 0)
-			/* Print error message, and try to initialize other hosts */
-			printf("Failed to initialize PCIe host %d.\n", host_id);
-
 	}
 }
-

@@ -71,6 +71,8 @@
 
 #define	MVEBU_IHB_BASE_HIGH_BYTE_OFF		24
 
+int __attribute__((section(".data"))) ihb_init_done = 0; /* inidicates whether IHB PHY access was initialized */
+
 enum ihb_access_type {
 	IHB_WRITE = 0,
 	IHB_READ  = 1
@@ -152,6 +154,10 @@ static int mvebu_ihb_command_set(enum ihb_access_type access_type, int reg_ofs,	
 
 static int mvebu_ihb_read(int reg_ofs, u32 *val, int unit_id)
 {
+	/* initialize access to ihb phy (incase it wasn't already) */
+	if (!ihb_init_done)
+		mvebu_phy_indirect_init();
+
 	/* set read command */
 	if (mvebu_ihb_command_set(IHB_READ, reg_ofs, 0 /* dummy */, unit_id)) {
 		error("IHB read: set command failed\n");
@@ -169,6 +175,10 @@ static int mvebu_ihb_read(int reg_ofs, u32 *val, int unit_id)
 
 static int mvebu_ihb_write(int reg_ofs, u32 data, int unit_id)
 {
+	/* initialize access to ihb phy (incase it wasn't already) */
+	if (!ihb_init_done)
+		mvebu_phy_indirect_init();
+
 	/* set write command */
 	if (mvebu_ihb_command_set(IHB_WRITE, reg_ofs, data, unit_id)) {
 		error("IHB write: set command failed\n");
@@ -232,5 +242,8 @@ int mvebu_phy_indirect_init(void)
 		ihb_cmd_reg = MVEBU_IHB_CMD_GET(IHB_WRITE, IHB_CTRL_REGION, MVEBU_IHB_PHY_CTRL_REG_OFF);
 		writel(ihb_cmd_reg, MVEBU_IHB_PHY_BASE(i) | MVEBU_IHB_PHY_CMD_REG_OFF);
 	}
+
+	ihb_init_done = 1; /* inidcate that IHB PHY access was initialized */
+
 	return 0;
 }

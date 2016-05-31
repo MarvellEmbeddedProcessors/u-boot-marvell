@@ -94,10 +94,6 @@ int mvebu_soc_init()
 	mvebu_sar_init(gd->fdt_blob);
 #endif
 
-#ifdef CONFIG_MVEBU_PHY_INDIRECT
-	mvebu_phy_indirect_init();
-#endif
-
 	mvebu_thermal_sensor_probe();
 
 	/* Soc specific init */

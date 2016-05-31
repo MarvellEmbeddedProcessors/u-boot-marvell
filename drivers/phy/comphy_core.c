@@ -141,9 +141,6 @@ u32 comphy_init(const void *blob)
 	chip_count = fdtdec_find_aliases_for_id(blob, "comphy",
 			COMPAT_MVEBU_COMPHY, comphy_list, COMPHY_MAX_CHIP);
 
-	if (chip_count <= 0)
-		return 1;
-
 	for (i = 0; i < chip_count ; i++) {
 		if (chip_count > 1)
 			printf("Comphy chip #%d:\n", i);
@@ -209,7 +206,15 @@ u32 comphy_init(const void *blob)
 		/* PHY print SerDes status */
 		comphy_print(ptr_chip_cfg, comphy_map_data);
 	}
+
+	/* Initialize dedicated PHYs (not muxed SerDes lanes) */
+	comphy_dedicated_phys_init();
+
 	debug_exit();
+
+	/*  Return failure in case no comphy unit was set in Device tree */
+	if (chip_count <= 0)
+		return 1;
 
 	return 0;
 }

@@ -94,6 +94,7 @@ void reg_set16(void __iomem *addr, u16 data, u16 mask);
 void reg_set_silent16(void __iomem *addr, u16 data, u16 mask);
 u32 comphy_init(const void *blob);
 u32 polling_with_timeout(void __iomem *addr, u32 val, u32 mask, unsigned long usec_timout);
+void comphy_dedicated_phys_init(void);
 
 #ifdef CONFIG_TARGET_ARMADA_38X
 int comphy_a38x_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *comphy_map_data);

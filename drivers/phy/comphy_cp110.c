@@ -1359,7 +1359,7 @@ static void comphy_utmi_phy_init(u32 utmi_phy_count, struct utmi_phy_data *cp110
 
 /* comphy_dedicated_phys_init initialize the dedicated PHYs - not muxed SerDes lanes
 ** e.g. UTMI PHY */
-static void comphy_dedicated_phys_init(void)
+void comphy_dedicated_phys_init(void)
 {
 	struct utmi_phy_data cp110_utmi_data[MAX_UTMI_PHY_COUNT];
 	int node_list[MAX_UTMI_PHY_COUNT], node;
@@ -1520,9 +1520,6 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		if (ret == 0)
 			error("PLL is not locked - Failed to initialize lane %d\n", lane);
 	}
-
-	/* Initialize dedicated PHYs (not muxed SerDes lanes) */
-	comphy_dedicated_phys_init();
 
 	debug_exit();
 	return 0;

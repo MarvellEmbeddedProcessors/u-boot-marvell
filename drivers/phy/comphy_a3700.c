@@ -748,7 +748,7 @@ static int comphy_sgmii_power_up(u32 lane, u32 speed, u32 invert)
 /***************************************************************************************************
   * comphy_dedicated_phys_init
  ***************************************************************************************************/
-static void comphy_dedicated_phys_init(void)
+void comphy_dedicated_phys_init(void)
 {
 	int node, count, usb32, ret = 1;
 	const void *blob = gd->fdt_blob;
@@ -864,8 +864,6 @@ int comphy_a3700_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		if (ret == 0)
 			error("PLL is not locked - Failed to initialize lane %d\n", lane);
 	}
-
-	comphy_dedicated_phys_init();
 
 	debug_exit();
 	return ret;

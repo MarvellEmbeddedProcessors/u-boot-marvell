@@ -526,21 +526,40 @@ static int comphy_usb3_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	return ret;
 }
 
-static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem *comphy_base)
+static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem *comphy_base,
+				int comphy_index)
 {
-	u32 mask, data, ret = 1;
+	u32 mask, data, i, ret = 1;
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
 	void __iomem *sd_ip_addr = SD_ADDR(hpipe_base, lane);
 	void __iomem *comphy_addr = COMPHY_ADDR(comphy_base, lane);
-	void __iomem *sata_base;
 	void __iomem *addr;
+	void __iomem *sata_base;
+	int sata_node = -1; /* Set to -1 in order to read the first sata node */
 
 	debug_enter();
-	sata_base = fdt_get_reg_offs_by_compat(COMPAT_MVEBU_SATA);
-	if (sata_base == 0) {
-		debug("SATA address not found in FDT\n");
+
+	/* Assumption - each CP has only one SATA controller
+	 * Calling fdt_node_offset_by_compatible first time (with sata_node = -1
+	 * will return the first node always.
+	 * In order to parse each CPs SATA node, fdt_node_offset_by_compatible
+	 * must be called again (according to the CP id)
+	 */
+	for (i = 0; i < (comphy_index + 1); i++)
+		sata_node = fdt_node_offset_by_compatible(gd->fdt_blob, sata_node,
+							  fdtdec_get_compatible(COMPAT_MVEBU_SATA));
+
+	if (sata_node == 0) {
+		error("SATA node not found in FDT\n");
 		return 0;
 	}
+
+	sata_base = fdt_get_regs_offs(gd->fdt_blob, sata_node, "reg");
+	if (sata_base == 0) {
+		error("SATA address not found in FDT\n");
+		return 0;
+	}
+
 	debug("SATA address found in FDT %p\n", sata_base);
 
 	debug("stage: MAC configuration - power down comphy\n");
@@ -1490,7 +1509,8 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		case PHY_TYPE_SATA1:
 		case PHY_TYPE_SATA2:
 		case PHY_TYPE_SATA3:
-			ret = comphy_sata_power_up(lane, hpipe_base_addr, comphy_base_addr);
+			ret = comphy_sata_power_up(lane, hpipe_base_addr, comphy_base_addr,
+						   ptr_chip_cfg->comphy_index);
 			break;
 		case PHY_TYPE_USB3_HOST0:
 		case PHY_TYPE_USB3_HOST1:

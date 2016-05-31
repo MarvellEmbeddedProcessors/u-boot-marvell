@@ -17,7 +17,7 @@ void set_pgtable_section(u64 *page_table, u64 index, u64 section,
 {
 	u64 value;
 
-	value = section | PMD_TYPE_SECT | PMD_SECT_AF;
+	value = section | PMD_TYPE_SECT | PMD_SECT_AF | PMD_SECT_S;
 	value |= PMD_ATTRINDX(memory_type);
 	page_table[index] = value;
 }

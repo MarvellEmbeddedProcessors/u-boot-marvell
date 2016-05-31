@@ -246,36 +246,31 @@
 
 			comphy {
 				/* Serdes Configuration:
-					Lane 0: Unconnected
-					Lane 1: Unconnected
+					Lane 0: SGMII2
+					Lane 1: USB3_HOST0
 					Lane 2: KR (10G)
 					Lane 3: SATA1
 					Lane 4: Unconnected
 					Lane 5: PEX2x1
 				*/
 				phy0 {
-					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-type = <PHY_TYPE_SGMII2>;
 					phy-speed = <PHY_SPEED_3_125G>;
 				};
 				phy1 {
-					phy-type = <PHY_TYPE_UNCONNECTED>;
-					phy-speed = <PHY_SPEED_5G>;
+					phy-type = <PHY_TYPE_USB3_HOST0>;
 				};
 				phy2 {
 					phy-type = <PHY_TYPE_KR>;
-					phy-speed = <PHY_SPEED_10_3125G>;
 				};
 				phy3 {
 					phy-type = <PHY_TYPE_SATA1>;
-					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy4 {
 					phy-type = <PHY_TYPE_UNCONNECTED>;
-					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy5 {
 					phy-type = <PHY_TYPE_PEX2>;
-					phy-speed = <PHY_SPEED_5G>;
 				};
 			};
 			mdio {

@@ -59,7 +59,7 @@ int usb_init(void)
 	void *ctrl;
 	struct usb_device *dev;
 	int i, start_index = 0;
-	int ret;
+	int ret, enable_port_count;
 
 	dev_index = 0;
 	asynch_allowed = 1;
@@ -71,8 +71,11 @@ int usb_init(void)
 		usb_dev[i].devnum = -1;
 	}
 
+	/* Parse device tree mapping for usb nodes, and initialize only enabled ports */
+	enable_port_count = usb_device_tree_init();
+
 	/* init low_level USB */
-	for (i = 0; i < CONFIG_USB_MAX_CONTROLLER_COUNT; i++) {
+	for (i = 0; i < enable_port_count ; i++) {
 		/* init low_level USB */
 		printf("USB%d:   ", i);
 		ret = usb_lowlevel_init(i, USB_INIT_HOST, &ctrl);

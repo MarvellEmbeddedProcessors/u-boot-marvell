@@ -53,54 +53,62 @@ static void usb_vbus_init(int node)
 #endif
 }
 
-int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
+/* Device tree global data scanned at 1st init for usb3 nodes */
+int node_list[CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS], count = 0;
+
+/* Parse and save enabled device tree usb3 nodes, and return enabled node count */
+int usb_device_tree_init(void)
 {
-	int node_list[CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS], node;
-	int i, count;
-	unsigned long usb3_reg_base;
-
-	/* Enable USB VBUS using I2C io-expander
-	** TODO: need to be updated according to Device tree, and will be triggered
-	** below per port (while going through enabled ports DT info) */
-	board_usb_vbus_init();
-
-	/* in dts file, go through all the 'usb3' nodes.
-	 */
+	/* - Scan device tree usb3 nodes once, and save relevant nodes in static node_list */
 	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "usb3",
 			COMPAT_MVEBU_USB3, node_list, CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS);
-	if (count == 0) {
-		error("could not find usb3 node in FDT, initialization skipped!\n");
+
+	if (count == 0)
+		printf("%s: 'usb3' is disabled in Device Tree\n", __func__);
+
+	/* Return enabled port count */
+	return count;
+}
+
+bool vbus_initialized = 0;
+int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
+{
+	int node;
+	unsigned long usb3_reg_base;
+
+	/* Enable USB VBUS for all ports at once, using I2C io-expander */
+	if (!vbus_initialized) {
+		/* TODO: need to be updated according to Device tree */
+		board_usb_vbus_init();
+		vbus_initialized = 1; /* mark I2C USB VBUS cycle completed */
+	}
+
+	/* node_list: Enabled DT nodes were initialized in usb_device_tree_init(),
+	 * so it's valid to use node_list[index] to fetch its registers */
+	node = node_list[index];
+
+	/* fetch 'reg' property from 'usb3' node */
+	usb3_reg_base = (unsigned long)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
+
+	if (usb3_reg_base == FDT_ADDR_T_NONE) {
+		error("could not find reg property in usb3 node, initialization skipped!\n");
 		return -ENXIO;
 	}
-	for (i = 0; i < count ; i++) {
-		node = node_list[i];
 
-		if (node <= 0)
-			continue;
-
-		/* fetch 'reg' propertiy from 'usb3' node */
-		usb3_reg_base = (unsigned long)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
-		if (usb3_reg_base == FDT_ADDR_T_NONE) {
-			error("could not find reg in usb3 node, initialization skipped!\n");
-			return -ENXIO;
-		}
-
-		*hccr = (struct xhci_hccr *)usb3_reg_base;
-		*hcor = (struct xhci_hcor *)((unsigned long) *hccr
+	*hccr = (struct xhci_hccr *)usb3_reg_base;
+	*hcor = (struct xhci_hcor *)((unsigned long) *hccr
 					+ HC_LENGTH(xhci_readl(&(*hccr)->cr_capbase)));
 
-		/* Enable USB VBUS:
-		** enable VBUS using GPIO, and got information from USB node in
-		** device tree */
-		usb_vbus_init(node);
+	/* Enable USB VBUS per port (only via GPIO):
+	** enable VBUS using GPIO, and got information from USB node in
+	** device tree */
+	usb_vbus_init(node);
 
-		debug("mvebu-xhci: init hccr %lx and hcor %lx hc_length %ld\n",
-		      (uintptr_t)*hccr, (uintptr_t)*hcor,
-			(uintptr_t)HC_LENGTH(xhci_readl(&(*hccr)->cr_capbase)));
-		return 0;
-	}
+	debug("mvebu-xhci: init hccr %lx and hcor %lx hc_length %ld\n",
+	      (uintptr_t)*hccr, (uintptr_t)*hcor,
+		(uintptr_t)HC_LENGTH(xhci_readl(&(*hccr)->cr_capbase)));
 
-	return -ENXIO;
+	return 0;
 }
 
 void xhci_hcd_stop(int index)

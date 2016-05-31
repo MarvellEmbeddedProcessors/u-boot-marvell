@@ -221,7 +221,7 @@
 					status = "disabled";
 				};
 				pcie@2,0 {
-					status = "disabled";
+					status = "okay";
 				};
 			};
 			nand@720000 {
@@ -246,8 +246,12 @@
 
 			comphy {
 				/* Serdes Configuration:
-					Lane 0,1,3,4,5: UNCONNECTED
-					Lane 2: 10G (KR)
+					Lane 0: Unconnected
+					Lane 1: Unconnected
+					Lane 2: KR (10G)
+					Lane 3: SATA1
+					Lane 4: Unconnected
+					Lane 5: PEX2x1
 				*/
 				phy0 {
 					phy-type = <PHY_TYPE_UNCONNECTED>;
@@ -270,7 +274,7 @@
 					phy-speed = <PHY_SPEED_5G>;
 				};
 				phy5 {
-					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-type = <PHY_TYPE_PEX2>;
 					phy-speed = <PHY_SPEED_5G>;
 				};
 			};

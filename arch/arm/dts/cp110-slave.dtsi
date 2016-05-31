@@ -31,6 +31,31 @@
 			#size-cells = <1>;
 
 			#include "cp110.dtsi"
+
+			pcie-controller {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "marvell,mvebu-dw-pcie";
+
+				pcie@0,0 {
+					reg = <0x00600000 0x20000>;
+					mem = <0xfa000000 0x1000000>;
+					cfg = <0xfaf00000 0x100000>;
+					status = "disabled";
+				};
+				pcie@1,0 {
+					reg = <0x00620000 0x20000>;
+					mem = <0xfb000000 0x1000000>;
+					cfg = <0xfbf00000 0x100000>;
+					status = "disabled";
+				};
+				pcie@2,0 {
+					reg = <0x00640000 0x20000>;
+					mem = <0xfc000000 0x1000000>;
+					cfg = <0xfcf00000 0x100000>;
+					status = "disabled";
+				};
+			};
 		};
 	};
 

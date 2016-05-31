@@ -36,7 +36,7 @@ struct tsen_info {
 struct tsen_info __attribute__((section(".data")))tsen_config;
 struct tsen_info __attribute__((section(".data")))*tsen = &tsen_config;
 
-#define THERMAL_TIMEOUT		1000
+#define THERMAL_TIMEOUT		1200
 
 #define THERMAL_SEN_CTRL_LSB				0x0
 #define THERMAL_SEN_CTRL_LSB_STRT_OFFSET		0

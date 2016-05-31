@@ -76,10 +76,12 @@
 			};
 			mmc0: mmc@D8000 {
 				xenon,emmc;
+				bus-width = <8>;
 				status = "okay";
 			};
 			mmc1: mmc@D0000 {
 				sdio-vcc-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 22) GPIO_ACTIVE_HIGH>;
+				bus-width = <4>;
 				status = "okay";
 			};
 			usb3: usb3@58000 {

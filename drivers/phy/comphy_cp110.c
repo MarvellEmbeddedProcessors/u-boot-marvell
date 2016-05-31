@@ -1347,15 +1347,19 @@ static void comphy_utmi_phy_init(u32 utmi_phy_count, struct utmi_phy_data *cp110
 	u32 i;
 
 	debug_enter();
+	/* UTMI Power down */
 	for (i = 0; i < utmi_phy_count; i++)
 		comphy_utmi_power_down(i, cp110_utmi_data[i].utmi_base_addr, cp110_utmi_data[i].usb_cfg_addr,
 				       cp110_utmi_data[i].utmi_cfg_addr, cp110_utmi_data[i].utmi_phy_port);
-	/* Power down PLL */
+	/* PLL Power down */
 	debug("stage: UTMI PHY power down PLL\n");
-	reg_set(cp110_utmi_data[0].usb_cfg_addr, 0x0 << UTMI_USB_CFG_PLL_OFFSET, UTMI_USB_CFG_PLL_MASK);
+	for (i = 0; i < utmi_phy_count; i++)
+		reg_set(cp110_utmi_data[i].usb_cfg_addr, 0x0 << UTMI_USB_CFG_PLL_OFFSET, UTMI_USB_CFG_PLL_MASK);
+	/* UTMI configure */
 	for (i = 0; i < utmi_phy_count; i++)
 		comphy_utmi_phy_config(i, cp110_utmi_data[i].utmi_base_addr, cp110_utmi_data[i].usb_cfg_addr,
 				       cp110_utmi_data[i].utmi_cfg_addr, cp110_utmi_data[i].utmi_phy_port);
+	/* UTMI Power up */
 	for (i = 0; i < utmi_phy_count; i++) {
 		if (!comphy_utmi_power_up(i, cp110_utmi_data[i].utmi_base_addr, cp110_utmi_data[i].usb_cfg_addr,
 					  cp110_utmi_data[i].utmi_cfg_addr, cp110_utmi_data[i].utmi_phy_port)) {
@@ -1368,9 +1372,10 @@ static void comphy_utmi_phy_init(u32 utmi_phy_count, struct utmi_phy_data *cp110
 		else
 			printf("USB Host%d\n", cp110_utmi_data[i].utmi_phy_port);
 	}
-	/* Power up PLL */
+	/* PLL Power up */
 	debug("stage: UTMI PHY power up PLL\n");
-	reg_set(cp110_utmi_data[0].usb_cfg_addr, 0x1 << UTMI_USB_CFG_PLL_OFFSET, UTMI_USB_CFG_PLL_MASK);
+	for (i = 0; i < utmi_phy_count; i++)
+		reg_set(cp110_utmi_data[i].usb_cfg_addr, 0x1 << UTMI_USB_CFG_PLL_OFFSET, UTMI_USB_CFG_PLL_MASK);
 
 	debug_exit();
 	return;

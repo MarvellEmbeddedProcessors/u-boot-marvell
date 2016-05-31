@@ -67,6 +67,15 @@
 			sar-reg {
 				status = "okay";
 			};
+			utmi0@580000 {
+				status = "okay";
+			};
+			utmi1@581000 {
+				status = "okay";
+			};
+			mdio0@12A200 {
+				status = "okay";
+			};
 			gpio1: gpio@440100 {
 			};
 			gpio2: gpio@440140 {

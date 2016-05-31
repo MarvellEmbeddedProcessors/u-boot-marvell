@@ -91,7 +91,7 @@ utmi0@580000 {
 	reg-usb-cfg = <0x440420 0x4>;
 	reg-utmi-cfg = <0x440440 0x4>;
 	utmi-port = <UTMI_PHY_TO_USB_HOST0>;
-	status = "okay";
+	status = "disabled";
 };
 utmi1@581000 {
 	compatible = "marvell,mvebu-utmi-2.6.0";
@@ -99,7 +99,7 @@ utmi1@581000 {
 	reg-usb-cfg = <0x440420 0x4>;
 	reg-utmi-cfg = <0x440444 0x4>;
 	utmi-port = <UTMI_PHY_TO_USB_HOST1>;
-	status = "okay";
+	status = "disabled";
 };
 usb3@500000 { /* USB3_H0 */
 	compatible = "marvell,mvebu-usb3";
@@ -152,7 +152,7 @@ mdio0@12A200 {
 	compatible = "marvell,mvebu-mdio";
 	reg_xsmi = <0x12A600 0x20>;
 	reg_smi = <0x12A200 0x4>;
-	status = "okay";
+	status = "disabled";
 };
 
 sar-reg {

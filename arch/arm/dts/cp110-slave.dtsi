@@ -63,15 +63,8 @@
 		internal-regs {
 			refclk1: refclk {
 			};
-			/* TODO: disable utmi0,utmi1,mdio in cp110.dtsi; enable in board dtsi */
 			utmi0@580000 {
-				status = "disabled";
-			};
-			utmi1@581000 {
-				status = "disabled";
-			};
-			mdio0@12A200 {
-				status = "disabled";
+				status = "okay";
 			};
 			sar-reg {
 				status = "disabled";

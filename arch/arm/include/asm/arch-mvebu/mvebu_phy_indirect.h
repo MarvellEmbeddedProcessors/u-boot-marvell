@@ -24,13 +24,17 @@ enum phy_indirect_unit {
 	INDIRECT_MAX
 };
 
+enum ihb_region {
+	IHB_CTRL_REGION     = 0,
+	IHB_PHY_REG_REGION  = 3,
+};
 /*
  * Functions prototypes
  */
 
 int mvebu_phy_indirect_init(void);
-int mvebu_phy_indirect_read(enum phy_indirect_unit unit, int unit_id, int reg_ofs, u32 *val);
-int mvebu_phy_indirect_write(enum phy_indirect_unit unit, int unit_id, int reg_ofs, u32 val);
+int mvebu_phy_indirect_read(enum ihb_region region, enum phy_indirect_unit unit, int unit_id, int reg_ofs, u32 *val);
+int mvebu_phy_indirect_write(enum ihb_region region, enum phy_indirect_unit unit, int unit_id, int reg_ofs, u32 val);
 
 
 #endif /* __MVEBU_MMC_H__ */

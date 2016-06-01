@@ -45,13 +45,13 @@ int do_indirect_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 		return 1;
 	}
 
-	if ((strcmp(cmd, "write") == 0) && (argc < 6)) {
-		error("missing parameters for 'write' command\n");
+	if ((strcmp(cmd, "write") == 0 || strcmp(cmd, "ctrl_write") == 0) && (argc < 6)) {
+		error("missing parameters for 'write'/'ctrl_write' command\n");
 		printf("make sure you specify both offset and value\n");
 		return 1;
 	}
-	if ((strcmp(cmd, "read") == 0) && (argc < 5)) {
-		error("missing parameters for 'read' command\n");
+	if ((strcmp(cmd, "read") == 0 || strcmp(cmd, "ctrl_read") == 0) && (argc < 5)) {
+		error("missing parameters for 'read'/'ctrl_read' command\n");
 		printf("make sure you specify register offset\n");
 		return 1;
 	}
@@ -61,13 +61,22 @@ int do_indirect_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 
 	/* read commnad */
 	if (strcmp(cmd, "read") == 0) {
-		if (mvebu_phy_indirect_read(phy_unit, unit_id, reg_ofs, &value))
+		if (mvebu_phy_indirect_read(IHB_PHY_REG_REGION, phy_unit, unit_id, reg_ofs, &value))
 			return 1;
 		printf("0x%x: 0x%x\n", reg_ofs, value);
 	} else if (strcmp(cmd, "write") == 0) {
 		value = simple_strtoul(argv[5], NULL, 16);
 
-		if (mvebu_phy_indirect_write(phy_unit, unit_id, reg_ofs, value))
+		if (mvebu_phy_indirect_write(IHB_PHY_REG_REGION, phy_unit, unit_id, reg_ofs, value))
+			return 1;
+	} else if (strcmp(cmd, "ctrl_read") == 0) {
+		if (mvebu_phy_indirect_read(IHB_CTRL_REGION, phy_unit, unit_id, reg_ofs, &value))
+			return 1;
+		printf("0x%x: 0x%x\n", reg_ofs, value);
+	} else if (strcmp(cmd, "ctrl_write") == 0) {
+		value = simple_strtoul(argv[5], NULL, 16);
+
+		if (mvebu_phy_indirect_write(IHB_CTRL_REGION, phy_unit, unit_id, reg_ofs, value))
 			return 1;
 	} else {
 		error("unknown command \"%s\"\n", cmd);
@@ -86,7 +95,7 @@ U_BOOT_CMD(
 	"Parameters:\n"
 	"\tunit		ihb\n"
 	"\tunit id		0/1\n"
-	"\tcommand		read/write\n"
+	"\tcommand		read/write/ctrl_read/ctrl_write\n"
 	"\toffset		register address\n"
 	"\tvalue		register data to write\n"
 	"Example: indirect ihb 0 read 0x20\n"

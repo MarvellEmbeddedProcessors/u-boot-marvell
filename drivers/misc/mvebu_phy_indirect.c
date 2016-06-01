@@ -78,10 +78,6 @@ enum ihb_access_type {
 	IHB_READ  = 1
 };
 
-enum ihb_region {
-	IHB_CTRL_REGION     = 0,
-	IHB_PHY_REG_REGION  = 3,
-};
 
 
 static int mvebu_ihb_poll_read_done(int reg_ofs, int unit_id)
@@ -115,7 +111,8 @@ static int mvebu_ihb_poll_read_done(int reg_ofs, int unit_id)
  *      (MSB are set to IHB_PHY_CTRL register (0x7) bit [28:27]
 */
 
-static int mvebu_ihb_command_set(enum ihb_access_type access_type, int reg_ofs,	u32 data, int unit_id)
+static int mvebu_ihb_command_set(enum ihb_access_type access_type, int reg_ofs,
+		u32 data, int unit_id, enum ihb_region region)
 {
 	u32 ihb_cmd_reg = 0;
 	u32 ihb_phy_ctrl_reg = 0;
@@ -146,20 +143,21 @@ static int mvebu_ihb_command_set(enum ihb_access_type access_type, int reg_ofs,	
 		writel(data, MVEBU_IHB_PHY_BASE(unit_id) | MVEBU_IHB_PHY_DATA_REG_OFF);
 	}
 
-	ihb_cmd_reg = MVEBU_IHB_CMD_GET(access_type, IHB_PHY_REG_REGION, reg_ofs);
+	ihb_cmd_reg = MVEBU_IHB_CMD_GET(access_type, region, reg_ofs);
 	writel(ihb_cmd_reg, MVEBU_IHB_PHY_BASE(unit_id) | MVEBU_IHB_PHY_CMD_REG_OFF);		/* set commnd */
 
 	return 0;
 }
 
-static int mvebu_ihb_read(int reg_ofs, u32 *val, int unit_id)
+static int mvebu_ihb_read(int reg_ofs, u32 *val, int unit_id, enum ihb_region
+		region)
 {
 	/* initialize access to ihb phy (incase it wasn't already) */
 	if (!ihb_init_done)
 		mvebu_phy_indirect_init();
 
 	/* set read command */
-	if (mvebu_ihb_command_set(IHB_READ, reg_ofs, 0 /* dummy */, unit_id)) {
+	if (mvebu_ihb_command_set(IHB_READ, reg_ofs, 0 /* dummy */, unit_id, region)) {
 		error("IHB read: set command failed\n");
 		return 1;
 	}
@@ -173,14 +171,14 @@ static int mvebu_ihb_read(int reg_ofs, u32 *val, int unit_id)
 	return 0;
 }
 
-static int mvebu_ihb_write(int reg_ofs, u32 data, int unit_id)
+static int mvebu_ihb_write(int reg_ofs, u32 data, int unit_id, enum ihb_region region)
 {
 	/* initialize access to ihb phy (incase it wasn't already) */
 	if (!ihb_init_done)
 		mvebu_phy_indirect_init();
 
 	/* set write command */
-	if (mvebu_ihb_command_set(IHB_WRITE, reg_ofs, data, unit_id)) {
+	if (mvebu_ihb_command_set(IHB_WRITE, reg_ofs, data, unit_id, region)) {
 		error("IHB write: set command failed\n");
 		return 1;
 	}
@@ -188,22 +186,22 @@ static int mvebu_ihb_write(int reg_ofs, u32 data, int unit_id)
 	return 0;
 }
 
-int mvebu_phy_indirect_read(enum phy_indirect_unit phy_unit, int unit_id, int reg_ofs, u32 *val)
+int mvebu_phy_indirect_read(enum ihb_region region, enum phy_indirect_unit phy_unit, int unit_id, int reg_ofs, u32 *val)
 {
 	switch (phy_unit) {
 	case INDIRECT_IHB:
-		return mvebu_ihb_read(reg_ofs, val, unit_id);
+		return mvebu_ihb_read(reg_ofs, val, unit_id, region);
 	default:
 		error("unit %d is not supported\n", phy_unit);
 		return 1;
 	}
 }
 
-int mvebu_phy_indirect_write(enum phy_indirect_unit phy_unit, int unit_id, int reg_ofs, u32 val)
+int mvebu_phy_indirect_write(enum ihb_region region, enum phy_indirect_unit phy_unit, int unit_id, int reg_ofs, u32 val)
 {
 	switch (phy_unit) {
 	case INDIRECT_IHB:
-		return mvebu_ihb_write(reg_ofs, val, unit_id);
+		return mvebu_ihb_write(reg_ofs, val, unit_id, region);
 	default:
 		error("unit %d is not supported\n", phy_unit);
 		return 1;

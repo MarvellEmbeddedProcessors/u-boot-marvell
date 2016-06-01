@@ -1174,6 +1174,7 @@ static void comphy_utmi_power_down(u32 utmi_index, void __iomem *utmi_base_addr,
 {
 	u32 mask, data;
 
+	debug_enter();
 	debug("stage:  UTMI %d - Power down transceiver (power down Phy), Power down PLL, and SuspendDM\n", utmi_index);
 	/* Power down UTMI PHY */
 	reg_set(utmi_cfg_addr, 0x0 << UTMI_PHY_CFG_PU_OFFSET, UTMI_PHY_CFG_PU_MASK);
@@ -1200,6 +1201,7 @@ static void comphy_utmi_power_down(u32 utmi_index, void __iomem *utmi_base_addr,
 	/* Wait for UTMI power down */
 	mdelay(1);
 
+	debug_exit();
 	return;
 }
 
@@ -1208,6 +1210,7 @@ static void comphy_utmi_phy_config(u32 utmi_index, void __iomem *utmi_base_addr,
 {
 	u32 mask, data;
 
+	debug_exit();
 	debug("stage: Configure UTMI PHY %d registers\n", utmi_index);
 	/* Reference Clock Divider Select */
 	mask = UTMI_PLL_CTRL_REFDIV_MASK;
@@ -1256,6 +1259,7 @@ static void comphy_utmi_phy_config(u32 utmi_index, void __iomem *utmi_base_addr,
 	data |= 0x1 << UTMI_CHGDTC_CTRL_VSRC_OFFSET;
 	reg_set(utmi_base_addr + UTMI_CHGDTC_CTRL_REG, data, mask);
 
+	debug_exit();
 	return;
 }
 
@@ -1265,6 +1269,7 @@ static int comphy_utmi_power_up(u32 utmi_index, void __iomem *utmi_base_addr,
 	u32 data, mask, ret = 1;
 	void __iomem *addr;
 
+	debug_enter();
 	debug("stage: UTMI %d - Power up transceiver(Power up Phy), and exit SuspendDM\n", utmi_index);
 	/* Power UP UTMI PHY */
 	reg_set(utmi_cfg_addr, 0x1 << UTMI_PHY_CFG_PU_OFFSET, UTMI_PHY_CFG_PU_MASK);
@@ -1306,6 +1311,7 @@ static int comphy_utmi_power_up(u32 utmi_index, void __iomem *utmi_base_addr,
 	else
 		debug("\n");
 
+	debug_exit();
 	return ret;
 }
 

@@ -59,7 +59,7 @@
 #define DFX_DEV_GEN_PCIE_CLK_SRC_MASK		(0x3 << DFX_DEV_GEN_PCIE_CLK_SRC_OFFSET)
 
 #define MAX_LANE_OPTIONS			10
-#define MAX_UTMI_PHY_COUNT			2
+#define MAX_UTMI_PHY_COUNT			3
 
 struct comphy_mux_options {
 	u32 type;

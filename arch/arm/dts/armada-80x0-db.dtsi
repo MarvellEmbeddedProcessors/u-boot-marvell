@@ -202,10 +202,7 @@
 				status = "disabled";
 			};
 			usb3@500000 {
-				status = "disabled";
-			};
-			usb3@510000 {
-				status = "disabled";
+				status = "okay";
 			};
 			sata@540000 {
 				status = "disabled";

@@ -875,6 +875,13 @@ void misc_init_r_env(void)
 	if (!env)
 		setenv("lcd_panel", "0");
 
+	if (mvBoardIdGet() == DB_AMC_6820_ID)
+	{
+		env = getenv("skip_switch_pci_scan");
+		if (!env)
+			setenv("skip_switch_pci_scan","no");
+	}
+
 	return;
 }
 

@@ -1537,8 +1537,13 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 			debug("Unknown SerDes type, skip initialize SerDes %d\n", lane);
 			break;
 		}
-		if (ret == 0)
+		if (ret == 0) {
+			/* If interface wans't initialiuzed, set the lane to
+			 * PHY_TYPE_UNCONNECTED state.
+			 */
+			ptr_comphy_map->type = PHY_TYPE_UNCONNECTED;
 			error("PLL is not locked - Failed to initialize lane %d\n", lane);
+		}
 	}
 
 	debug_exit();

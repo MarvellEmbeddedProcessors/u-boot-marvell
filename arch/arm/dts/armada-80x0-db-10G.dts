@@ -201,7 +201,7 @@
 				status = "okay";
 			};
 			sata@540000 {
-				status = "disabled";
+				status = "okay";
 			};
 			spi1@700680 {
 				status = "okay";

@@ -204,7 +204,7 @@
 				status = "okay";
 			};
 			sata@540000 {
-				status = "disabled";
+				status = "okay";
 			};
 			pcie-controller {
 				pcie@0,0 {

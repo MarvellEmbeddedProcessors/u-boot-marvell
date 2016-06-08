@@ -42,14 +42,8 @@ static void usb_vbus_init(int node)
 	struct fdt_gpio_state gpio;
 	fdtdec_decode_gpio(gd->fdt_blob, node, "gpio-vbus", &gpio);
 	fdtdec_setup_gpio(&gpio);
-	if (fdt_gpio_isvalid(&gpio)) {
-		if (gpio.flags & FDT_GPIO_ACTIVE_LOW)
-			gpio_direction_output(gpio.gpio, FDT_GPIO_ACTIVE_LOW);
-		else if (gpio.flags & FDT_GPIO_ACTIVE_HIGH)
-			gpio_direction_output(gpio.gpio, FDT_GPIO_ACTIVE_HIGH);
-		else
-			error("Error: GPIO flag is wrong\n");
-	}
+	if (fdt_gpio_isvalid(&gpio))
+		gpio_direction_output(gpio.gpio, (gpio.flags & FDT_GPIO_ACTIVE_LOW ? 0 : 1));
 #endif
 }
 

@@ -174,8 +174,8 @@ enum fdt_compat_id {
 enum {
 	FDT_GPIO_NONE = -1U,	/* an invalid GPIO used to end our list */
 
-	FDT_GPIO_ACTIVE_HIGH = 0,
-	FDT_GPIO_ACTIVE_LOW = 1 << 0,	/* input is active low (else high) */
+	FDT_GPIO_ACTIVE_LOW = 1 << 0,	/* input is active low */
+	FDT_GPIO_ACTIVE_HIGH = 1 << 1,	/* input is active high */
 };
 
 /* This is the state of a GPIO pin as defined by the fdt */

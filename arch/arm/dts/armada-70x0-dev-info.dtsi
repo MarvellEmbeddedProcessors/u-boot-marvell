@@ -16,6 +16,7 @@
  * ***************************************************************************
  */
 
+#include "cp110-mpp-bus-info.dtsi" /* include MPP bus info */
 / {
 	/* This should go only into devel boards */
 	compatible = "marvell,cp110";

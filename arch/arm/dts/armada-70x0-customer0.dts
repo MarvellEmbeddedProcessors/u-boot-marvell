@@ -21,7 +21,7 @@
 #include "armada-70x0.dtsi" /* include SoC device tree */
 
 / {
-	model = "DB-ARMADA-70x0 (Customer)";
+	model = "DB-ARMADA-70x0 (SPI-Customer)";
 	compatible = "marvell,armada-70x0";
 	fdt_config_id = <2>;
 	board_id = <0x12>;

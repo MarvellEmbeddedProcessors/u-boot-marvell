@@ -22,7 +22,7 @@
 #include "armada-70x0-dev-info.dtsi" /* include Marvell specific info (S@R, MPP cmd) */
 
 / {
-	model = "DB-ARMADA-70x0 (KR)";
+	model = "DB-ARMADA-70x0 (SPI-KR)";
 	compatible = "marvell,armada-70x0-db", "marvell,armada-70x0";
 	fdt_config_id = <3>;
 	board_id = <0x12>;

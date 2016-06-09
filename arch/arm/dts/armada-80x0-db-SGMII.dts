@@ -20,7 +20,7 @@
 
 #include "armada-80x0-db.dtsi" /* include initial Board device tree */
 / {
-	model = "DB-ARMADA-80x0 (SGMII)";
+	model = "DB-ARMADA-80x0 (SPI-SGMII)";
 	compatible = "marvell,armada-80x0-db", "marvell,armada-80x0";
 	fdt_config_id = <2>;
 	board_id = <0x13>;

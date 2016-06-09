@@ -911,7 +911,7 @@ static int comphy_kr_power_up(u32 lane, void __iomem *hpipe_base, void __iomem *
 	reg_set(hpipe_addr + HPIPE_RX_CONTROL_1_REG, data, mask);
 	/* DTL Control */
 	mask = HPIPE_PWR_CTR_DTL_FLOOP_EN_MASK;
-	data = 0x0 << HPIPE_PWR_CTR_DTL_FLOOP_EN_OFFSET;
+	data = 0x1 << HPIPE_PWR_CTR_DTL_FLOOP_EN_OFFSET;
 	reg_set(hpipe_addr + HPIPE_PWR_CTR_DTL_REG, data, mask);
 
 	/* Set analog paramters from ETP(HW) */
@@ -971,6 +971,10 @@ static int comphy_kr_power_up(u32 lane, void __iomem *hpipe_base, void __iomem *
 	mask = HPIPE_G1_SETTINGS_4_G1_DFE_RES_MASK;
 	data = 0x1 << HPIPE_G1_SETTINGS_4_G1_DFE_RES_OFFSET;
 	reg_set(hpipe_addr + HPIPE_G1_SETTINGS_4_REG, data, mask);
+	/* Genration 1 setting 3 (G1_Setting_3) */
+	mask = HPIPE_G1_SETTINGS_3_G1_FBCK_SEL_MASK;
+	data = 0x1 << HPIPE_G1_SETTINGS_3_G1_FBCK_SEL_OFFSET;
+	reg_set(hpipe_addr + HPIPE_G1_SETTINGS_3_REG, data, mask);
 
 	debug("stage: RFU configurations- Power Up PLL,Tx,Rx\n");
 	/* SERDES External Configuration */

@@ -167,6 +167,7 @@ void board_usb_vbus_init(void)
 int mvebu_devel_board_init(void)
 {
 #ifdef CONFIG_MVEBU_MPP_BUS
+	char name[8];
 	struct sar_val sar;
 #endif
 
@@ -178,13 +179,17 @@ int mvebu_devel_board_init(void)
 	mvebu_sar_value_get(SAR_BOOT_SRC, &sar);
 
 	if (sar.bootsrc.type == BOOTSRC_NAND)
-		mpp_enable_bus("nand");
-
-	if (sar.bootsrc.type == BOOTSRC_SPI) {
-		char name[8];
+		sprintf(name, "nand");
+	else if (sar.bootsrc.type == BOOTSRC_SPI)
 		sprintf(name, "spi%d", sar.bootsrc.index);
-		mpp_enable_bus(name);
+	else
+		sprintf(name, "na");
+
+	if (!mpp_is_bus_enabled(name)) {
+		error("Selected boot source (%s) does not match MPP configuration in device tree\n", name);
+		printf("HINT: please select proper device tree using fdt_config command\n");
 	}
+
 #endif /* CONFIG_MVEBU_MPP_BUS */
 
 	/* Set USB Current Limit signals as output and set output value as enabled */

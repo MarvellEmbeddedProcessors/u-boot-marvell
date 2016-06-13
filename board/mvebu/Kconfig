@@ -66,6 +66,49 @@ config MVEBU_A3700_PM
 	  This configuration set default PM settings
 	  according to current DT and clock configuration.
 
+config MVEBU_BOOTMODE_SWITCH_SUPPORT
+	bool "Mvebu bootmode switch support"
+	depends on DEVEL_BOARD && TARGET_ARMADA_3700
+	default n
+	help
+	  For armada-3700 Z series DB board, the boot source is
+	  switched to uart at the early stage of ATF, choose this
+	  option to restore the boot source at the last stage before
+	  reaching u-boot prompt. This mechanism is introduced
+	  in order to fallback to uart mode automatically
+	  when a mal-function bootloader image is present in flash.
+
+choice
+	depends on TARGET_ARMADA_3700
+	prompt "CPU and DDR Clock preset"
+	default PRESET_CPU_800_DDR_800
+
+config PRESET_CPU_600_DDR_600
+	bool "CPU at 600 MHz, DDR at 600 MHz"
+	help
+	  Run system with the following clock
+	  tree configuration preset:
+	  CPU at 600 MHz,
+	  DDR3 at 600 MHz
+
+config PRESET_CPU_800_DDR_800
+	bool "CPU at 800 MHz, DDR at 800 MHz"
+	help
+	  Run system with the following clock
+	  tree configuration preset:
+	  CPU at 800 MHz,
+	  DDR3 at 800 MHz
+
+config PRESET_CPU_1000_DDR_800
+	bool "CPU at 1000 MHz, DDR at 800 MHz"
+	help
+	  Run system with the following clock
+	  tree configuration preset:
+	  CPU at 1000 MHz,
+	  DDR3 at 800 MHz
+
+endchoice
+
 endmenu
 
 config PALLADIUM

@@ -24,19 +24,6 @@ config ARMV8_PSCI
 	bool
 	default y
 
-
-config MVEBU_BOOTMODE_SWITCH_SUPPORT
-	bool "Mvebu bootmode switch support"
-	depends on DEVEL_BOARD
-	default n
-	help
-	  Choose this option to switch the boot source
-	  to uart at the early stage of SPL while the boot source
-	  is supposed to be restored at the last stage before reaching
-	  u-boot prompt. This mechanism is introduced
-	  in order to fallback to uart mode automatically
-	  when a mal-function bootloader image is present in flash.
-
 config OSLO_START_ADDR
         hex "OSLO image start address"
         default 4100000
@@ -49,30 +36,3 @@ config OSLO_START_ADDR
           address after it is loaded.
 
 endif
-
-choice
-	prompt "CPU and DDR Clock preset"
-	default PRESET_CPU_800_DDR_800
-
-config PRESET_CPU_600_DDR_600
-	bool "CPU at 600 MHz, DDR at 600 MHz"
-	help
-	  Run system with the following clock
-	  tree configuration preset:
-	  CPU at 600 MHz, DDR3 at 600 MHz
-
-config PRESET_CPU_800_DDR_800
-	bool "CPU at 800 MHz, DDR at 800 MHz"
-	help
-	  Run system with the following clock
-	  tree configuration preset:
-	  CPU at 800 MHz, DDR3 at 800 MHz
-
-config PRESET_CPU_1000_DDR_800
-	bool "CPU at 1000 MHz, DDR at 800 MHz"
-	help
-	  Run system with the following clock
-	  tree configuration preset:
-	  CPU at 1000 MHz, DDR3 at 800 MHz
-
-endchoice

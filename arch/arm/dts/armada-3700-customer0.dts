@@ -1,0 +1,105 @@
+
+/dts-v1/;
+#include <dt-bindings/ddr/ddr_data.h>
+#include "armada-3700.dtsi"
+
+/* detail board setup:
+ * PHY0 (USB3/SGMII1)	:	USB3
+ * PHY1 (PCIe/SGMII0)	:	PCIe (WiFi via mini_PCIe module)
+ * PHY2 (SATA)		:	SATA
+ * RGMII-0		:	Ethernet via PHY (1 Lane)
+ * USB2 Port 0		:	USB2 as part USB3
+ * USB2 Port 1		:	USB2 Host
+ * eMMC*		:	eMMC NAND
+ * SDIO*		:	SD card
+ * BOOT device*		:	SPI Flash
+*/
+
+/ {
+	model = "88F37XX-Customer0";
+	compatible = "marvell,armada-3700-customer0", "marvell,armada-3700";
+
+	soc {
+		internal-regs {
+			spi0: spi@10600 {
+				status = "okay";
+			};
+			i2c: i2c@11000 {
+				status = "okay";
+			};
+			avs@11500 {
+				status = "okay";
+			};
+			serial: serial@12000 {
+				status = "okay";
+			};
+			pm@14000 {
+				vdd_control = "avs";
+				status = "okay";
+			};
+			comphy {
+				phy0 {
+					phy-type = <PHY_TYPE_PEX0>;
+					phy-speed = <PHY_SPEED_2_5G>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_USB3_HOST0>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+			};
+			neta0: neta@30000 {
+				status = "okay";
+				phy_addr = <0x0>;
+				phy_mode = "rgmii";
+			};
+			usb3: usb3@58000 {
+				status = "okay";
+			};
+			usb: usb@5e000 {
+				status = "okay";
+			};
+			pcie-controller {
+				pcie@1,0 {
+					reset-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 3) GPIO_ACTIVE_HIGH>;
+					status = "okay";
+				};
+			};
+			mmc1: mmc@D0000 {
+				sdio-vcc-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 22) GPIO_ACTIVE_HIGH>;
+				bus-width = <4>;
+				status = "okay";
+			};
+			mmc0: mmc@D8000 {
+				xenon,emmc;
+				bus-width = <8>;
+				status = "okay";
+			};
+			sata: sata@e0000 {
+				status = "okay";
+			};
+			sataphy@e0000 {
+				phy-invert = <PHY_POLARITY_TXD_INVERT>;
+				status = "okay";
+			};
+		};
+	};
+};
+
+&pinctl0 { /* north bridge */
+		  /* 0 1 2 3 4 5 6 7 */
+	pin-func = < 0 0 1 1 1 0 1 1	/* 0 - 7 */
+		     1 1 1 1 1 1 1 0	/* 8 - 15 */
+		     0 1 1 1 0 0 0 0	/* 16 - 23 */
+		     0 0 0 0 0 0 0 0	/* 24 - 31 */
+		     0 0 0 0 >;		/* 32 - 35 */
+
+};
+
+&pinctl1 { /* south bridge */
+		  /* 0 1 2 3 4 5 6 7 */
+	pin-func = < 1 1 0 1 1 0 0 0	/* 0 - 7 */
+		     0 0 0 0 0 0 0 0	/* 8 - 15 */
+		     0 0 0 0 1 1 1 0	/* 16 - 23 */
+		     0 0 0 0 0 0 >;	/* 24 - 29 */
+
+};

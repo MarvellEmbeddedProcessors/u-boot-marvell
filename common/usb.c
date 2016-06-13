@@ -137,14 +137,18 @@ int usb_init(void)
  */
 int usb_stop(void)
 {
-	int i;
+	int i, enable_port_count;
 
 	if (usb_started) {
 		asynch_allowed = 1;
 		usb_started = 0;
 		usb_hub_reset();
 
-		for (i = 0; i < CONFIG_USB_MAX_CONTROLLER_COUNT; i++) {
+		/* if device tree is supported, stop only the ports enabled in fdt.
+		   if not, try to stop all the usb ports supported by the device. */
+		enable_port_count = board_usb_get_enabled_port_count();
+
+		for (i = 0; i < enable_port_count; i++) {
 			if (usb_lowlevel_stop(i))
 				printf("failed to stop USB controller %d\n", i);
 		}

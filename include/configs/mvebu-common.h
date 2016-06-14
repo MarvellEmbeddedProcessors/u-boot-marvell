@@ -400,7 +400,7 @@
 	#define CONFIG_ETH1ADDR		00:00:00:00:51:82
 	#define CONFIG_HAS_ETH2
 	#define CONFIG_ETH2ADDR		00:00:00:00:51:83
-	#define ENV_ETH_PRIME           "e1000#0"
+	#define CONFIG_ETHPRIME         "egiga0"
 	#define CONFIG_PHY_GIGE			/* Include GbE speed/duplex detection */
 
 #endif /* CONFIG_CMD_NET */

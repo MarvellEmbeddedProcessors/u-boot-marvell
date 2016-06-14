@@ -34,18 +34,16 @@ u32 soc_ring_clk_get(void)
 
 u32 soc_mss_clk_get(void)
 {
+#ifdef CONFIG_AP806_Z_SUPPORT
 	return soc_ring_clk_get() / MSS_CLOCK_DIV;
+#else
+	return CONFIG_MSS_FREQUENCY;
+#endif
 }
 
 u32 soc_tclk_get(void)
 {
-#ifdef CONFIG_PALLADIUM
-	return CONFIG_MSS_FREQUENCY;
-#elif defined CONFIG_AP806_Z_SUPPORT
 	return soc_mss_clk_get();
-#else
-	return CONFIG_TCLK_FREQUENCY;
-#endif
 }
 
 

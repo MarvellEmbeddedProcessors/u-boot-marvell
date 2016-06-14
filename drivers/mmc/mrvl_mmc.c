@@ -10,7 +10,6 @@
 #include "mrvl_mmc.h"
 #define MRVL_MMC_MAKE_CMD(c, f) (((c & 0xff) << 8) | (f & 0xff))
 
-
 static int mrvl_mmc_setup_data(struct mmc_data *data)
 {
 	if (data->flags & MMC_DATA_READ) {
@@ -148,15 +147,22 @@ static int mrvl_mmc_send_cmd (struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_d
 		}
 	}
 
-#ifdef DEBUG
+ #ifdef DEBUG
 	printf("resp index[0x%x] ", response[0] >> 10);
-	printf("[0x%x] ", cmd->response[0]);
-	printf("[0x%x] ", cmd->response[1]);
-	printf("[0x%x] ", cmd->response[2]);
-	printf("[0x%x] ", cmd->response[3]);
+	if !(cmd->resp_type & MMC_RSP_R2)
+	{
+		printf("resp index[0x%x] ", response[0] >> 10);
+		printf("[0x%x] ", cmd->response[0]);
+	}
+	else
+	{
+		printf("[0x%x] ", cmd->response[0]);
+		printf("[0x%x] ", cmd->response[1]);
+		printf("[0x%x] ", cmd->response[2]);
+		printf("[0x%x] ", cmd->response[3]);
+	}
 	printf("\n");
 #endif
-
 	return 0;
 }
 

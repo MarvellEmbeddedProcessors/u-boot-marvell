@@ -769,11 +769,6 @@ append = cat $(filter-out $< $(PHONY), $^) >> $@
 quiet_cmd_pad_cat = CAT     $@
 cmd_pad_cat = $(cmd_objcopy) && $(append) || rm -f $@
 
-# Add doimage target for A3700 mvebu soc
-ifeq ($(CONFIG_TARGET_ARMADA_3700), y)
-ALL-$(CONFIG_MVEBU) += doimage
-endif
-
 all:		$(ALL-y)
 ifneq ($(CONFIG_SYS_GENERIC_BOARD),y)
 	@echo "===================== WARNING ======================"
@@ -840,138 +835,11 @@ OBJCOPYFLAGS_u-boot.ldr.srec := -I binary -O srec
 u-boot.ldr.hex u-boot.ldr.srec: u-boot.ldr FORCE
 	$(call if_changed,objcopy)
 
-WTMIPATH	:= $(srctree)/tools/wtp/wtmi
-
 ifdef CONFIG_MVEBU
 ifeq ($(CONFIG_TARGET_ARMADA_3700), y)
 
 SPLIMAGE	:= $(srctree)/spl/u-boot-spl.bin
 BIN2PHEX	:= $(srctree)/scripts/bin2phex.pl
-TIM2PHEX	:= $(srctree)/scripts/tim2phex.pl
-TIM2IMG		:= $(srctree)/scripts/tim2img.pl
-TIMBUILD	:= $(srctree)/scripts/buildtim.sh
-CLOCKSPATH	:= $(srctree)/tools/wtp
-
-ifeq ($(CONFIG_PRESET_CPU_600_DDR_600),y)
-CLOCKSPRESET	:= PRESET_CPU_600_DDR_600
-else ifeq ($(CONFIG_PRESET_CPU_800_DDR_800),y)
-CLOCKSPRESET	:= PRESET_CPU_800_DDR_800
-else ifeq ($(CONFIG_PRESET_CPU_1000_DDR_800),y)
-CLOCKSPRESET	:= PRESET_CPU_1000_DDR_800
-else
-CLOCKSPRESET	:= PRESET_INVALID
-endif
-
-ifeq ($(CONFIG_MVEBU_SPI_BOOT),y)
-BOOTDEV		:= SPINOR
-PARTNUM		:= 0
-else ifeq ($(CONFIG_MVEBU_MMC_BOOT),y)
-BOOTDEV		:= EMMCNORM
-PARTNUM		:= $(CONFIG_SYS_MMC_ENV_PART)
-else ifeq ($(CONFIG_MVEBU_SATA_BOOT),y)
-BOOTDEV		:= SATA
-PARTNUM		:= 0
-else
-BOOTDEV		:= UART
-PARTNUM		:= 0
-endif
-
-ifdef CONFIG_MVEBU_SECURE_BOOT
-DOIMAGE		:= $(shell which tbb_linux.exe)
-DOIMAGE_CFG	:= $(srctree)/tools/wtp/u-boot-tim.txt
-IMAGESPATH	:= $(srctree)/tools/wtp/trusted
-SECURE		:= 1
-ifdef CONFIG_MVEBU_IMAGE_ENCRYPT
-ENCRYPT		:= 1
-else
-ENCRYPT		:= 0
-endif
-TIMNCFG		:= $(srctree)/tools/wtp/u-boot-timN.txt
-TIMNSIG		:= $(IMAGESPATH)/timnsign.txt
-TIM2IMGARGS	:= -i $(DOIMAGE_CFG) -n $(TIMNCFG)
-TIMN_IMAGE	:= $(shell grep "Image Filename:" -m 1 $(TIMNCFG) | cut -c 17-)
-else #CONFIG_MVEBU_SECURE_BOOT
-DOIMAGE		:= $(shell which ntbb_linux.exe)
-DOIMAGE_CFG	:= $(srctree)/tools/wtp/u-boot-ntim.txt
-IMAGESPATH	:= $(srctree)/tools/wtp/untrusted
-SECURE		:= 0
-TIM2IMGARGS	:= -i $(DOIMAGE_CFG)
-endif #CONFIG_MVEBU_SECURE_BOOT
-
-TIM_IMAGE	:= $$(grep "Image Filename:" -m 1 $(DOIMAGE_CFG) | cut -c 17-)
-TIMBLDARGS	:= $(SECURE) $(BOOTDEV) $(IMAGESPATH) $(CLOCKSPATH) $(CLOCKSPRESET) \
-			$(PARTNUM) $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG) $(ENCRYPT)
-TIMBLDUARTARGS	:= $(SECURE) UART $(IMAGESPATH) $(CLOCKSPATH) $(CLOCKSPRESET) \
-			0 $(DOIMAGE_CFG) $(TIMNCFG) $(TIMNSIG) $(ENCRYPT)
-UARTIMGARCH	:= $(srctree)/uart-images
-
-DOIMAGE_FLAGS := -r $(DOIMAGE_CFG) -v -D
-DOIMAGE_LIBS_CHECK = \
-	if [ -z "$(DOIMAGE)" ]; then \
-		echo "**********************************************************************" >&2; \
-		echo "The Marvell Wireless Trusted Platform Package installation is missing!" >&2; \
-		echo "Please install the WTPTP binary tools to the folder pointed by PATH" >&2; \
-		echo "This build required WTPTP version 3.3.11 or later" >&2; \
-		echo "**********************************************************************" >&2; \
-		exit 1; \
-	else \
-		echo "DOIMAGE=$(DOIMAGE)" >&1; \
-	fi
-
-# Start with creation of UART images:
-# - Create TIM descriptor with UART signature
-# - Create binary TIM and UART downloadable images (*_h.*)
-# - Collect all UART downloadable images into archive
-# - Create TIM descriptor(s) with final boot signature according
-#   to defconfig for the next build stage (SPI.eMMC,etc.)
-uartimage: $(obj)/u-boot.bin $(SPLIMAGE) wtmi encrypt
-	@$(DOIMAGE_LIBS_CHECK)
-	@echo -e "\n\t=====================================\n"
-	@echo -e "\t=====        UART IMAGES        =====\n"
-	@echo -e "\t=====================================\n"
-	$(TIMBUILD) $(TIMBLDUARTARGS)
-	$(DOIMAGE) $(DOIMAGE_FLAGS)
-	@if [ -e "$(TIMNCFG)" ]; then $(DOIMAGE) -r $(TIMNCFG) -v -D; fi
-	@rm -rf $(UARTIMGARCH)*
-	@mkdir $(UARTIMGARCH)
-	@find $(srctree) -name "*_h.*" |xargs cp -t $(UARTIMGARCH)
-	@cp -t $(UARTIMGARCH) $(TIM_IMAGE) $(TIMN_IMAGE) $(TIMNCFG) $(DOIMAGE_CFG)
-	@tar czf $(UARTIMGARCH).tgz $(UARTIMGARCH)
-
-doimage: uartimage encrypt
-	@echo -e "\n\t=====================================\n"
-	@echo -e "\t=====        BOOT IMAGES         =====\n"
-	@echo -e "\t=====================================\n"
-	$(TIMBUILD) $(TIMBLDARGS)
-	$(DOIMAGE) $(DOIMAGE_FLAGS)
-	@if [ -e "$(TIMNCFG)" ]; then $(DOIMAGE) -r $(TIMNCFG) -v -D; fi
-	@if [ "$(ENCRYPT)" = "1" ]; then sed -i 's|u-boot.bin|u-boot-enc.bin|1' $(TIMNCFG); fi
-	$(TIM2IMG) $(TIM2IMGARGS) -o u-boot-spl.img
-
-bin2phex: doimage
-	$(TIM2PHEX) -i $(DOIMAGE_CFG) -o u-boot-$(CONFIG_SYS_SOC).hex
-	$(BIN2PHEX) -w 16 -i u-boot.bin -o u-boot.hex -b 0x0
-
-encrypt:
-	@if [ "$(ENCRYPT)" = "1" ]; then \
-		echo -e "\n\t=======================================================\n";\
-		echo -e "\t  Secure boot. Encrypting u-boot.bin \n";\
-		echo -e "\t=======================================================\n";\
-		truncate -s %16 u-boot.bin; \
-		openssl enc -aes-256-cbc -e -in u-boot.bin -out u-boot-enc.bin \
-		-K `cat $(IMAGESPATH)/aes-256.txt` -k 0 -nosalt \
-		-iv `cat $(IMAGESPATH)/iv.txt` -p; \
-	else \
-		if [ "$(SECURE)" = "1" ]; then \
-			echo -e "\n\t=======================================================\n";\
-			echo -e "\t  Secure boot. U-boot image is not encrypted \n";\
-			echo -e "\t=======================================================\n";\
-		fi; \
-	fi
-
-wtmi:
-	@echo "  =====WTMI====="
-	@$(MAKE) -C $(WTMIPATH)
 
 endif # CONFIG_TARGET_ARMADA_3700
 endif # CONFIG_MVEBU
@@ -1422,8 +1290,6 @@ CLEAN_DIRS  += $(MODVERDIR) \
 CLEAN_FILES += include/bmp_logo.h include/bmp_logo_data.h \
 	       u-boot* MLO* SPL System.map
 
-MARVELL_CLEAN_DIRS  += uart-images $(WTMIPATH)/build
-MARVELL_CLEAN_FILES += uart-images.tgz TIM_UBOOT* $(WTMIPATH)/*.o
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include/generated spl tpl \
@@ -1433,8 +1299,8 @@ MRPROPER_FILES += .config .config.old include/autoconf.mk* include/config.h \
 
 # clean - Delete most, but leave enough to build external modules
 #
-clean: rm-dirs  := $(CLEAN_DIRS) $(MARVELL_CLEAN_DIRS)
-clean: rm-files := $(CLEAN_FILES) $(MARVELL_CLEAN_FILES)
+clean: rm-dirs  := $(CLEAN_DIRS)
+clean: rm-files := $(CLEAN_FILES)
 
 clean-dirs	:= $(foreach f,$(u-boot-alldirs),$(if $(wildcard $(srctree)/$f/Makefile),$f))
 

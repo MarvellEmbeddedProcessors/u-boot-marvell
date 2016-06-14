@@ -1,8 +1,0 @@
-Image ID:                       0x4F534C4F		; OSLO
-Next Image ID:                  0xFFFFFFFF		; NONE
-Flash Entry Address:            0x00026000		; OSLO flash addr
-Load Address:                   0x60000000		; OSLO RAM addr
-Image Size To CRC in bytes:     0xFFFFFFFF
-Hash Algorithm ID:              32			; SHA-256
-Partition Number:               0x00000000
-Image Filename: u-boot.bin

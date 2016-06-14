@@ -440,6 +440,10 @@ int mmc_send_op_cond(struct mmc *mmc)
 		/* exit if not busy (flag seems to be inverted) and it is not the first command*/
 		if (i && mmc->op_cond_response & OCR_BUSY) {
 			mmc->op_cond_pending = 0; /* op_cond compilted */
+			mmc->version = MMC_VERSION_UNKNOWN;
+			mmc->ocr = cmd.response[0];
+			mmc->high_capacity = ((mmc->ocr & OCR_HCS) == OCR_HCS);
+			mmc->rca = 0;
 			return 0;
 		}
 		udelay(1000);

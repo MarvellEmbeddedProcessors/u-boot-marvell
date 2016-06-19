@@ -116,7 +116,7 @@ static char *h_devid = "Device_ID\n",
 			 "\t1 - For configuring CPU port to rear panel SFP\n"
 			 "\t    connectors\n",
 	    *h_boardid = "BoardID\n"
-			 "\t0 - Board is DB-ALD-32XG (AldrinZ0)\n"
+			 "\t0 - Board is DB-ALD-32XG\n"
 			 "\t1 - Board is RD-ALD-24XNG-2XLG-A\n";
 
 /* PCA9560PW	is used for all SatRs configurations (0x4c, 0x4d, 0x4f, 0x4e)
@@ -137,7 +137,7 @@ struct satr_info aldrin_satr_info[] = {
 	{"dev-init-done", 0x4f,	0,	2,	0x1,	MV_FALSE,	0x1,	&h_devinit,	MV_FALSE},
 	{"serdes1",	0x20,	2,	0,	0xFF,	MV_FALSE,	0x0,	&h_serdes1,	MV_TRUE},
 	{"serdes2",	0x20,	3,	0,	0x1,	MV_FALSE,	0x0,	&h_serdes2,	MV_TRUE},
-	{"boardid",	0x50,	7,	0,	0x7,	MV_FALSE,	0x0,	&h_boardid,	MV_FALSE},
+	{"boardid",	0x50,	7,	0,	0x7,	MV_TRUE,	0x0,	&h_boardid,	MV_FALSE},
 	/* the "LAST entry should be always last - it is used for SatR max options calculation */
 	{"LAST",	0x0,	0,	0,	0x0,	MV_FALSE,	0x0,	NULL,		MV_FALSE},
 };

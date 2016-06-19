@@ -132,7 +132,7 @@ struct satr_info aldrin_satr_info[] = {
 	{"refclk",	0x4e,	0,	2,	0x1,	MV_FALSE,	0x1,	&h_refclk,	MV_FALSE},
 	{"pciemode",	0x4e,	0,	3,	0x1,	MV_FALSE,	0x0,	&h_pcimod,	MV_FALSE},
 	{"pcieclk",	0x4e,	0,	4,	0x1,	MV_FALSE,	0x1,	&h_pciclk,	MV_FALSE},
-	{"cpui2caddr",	0x4f,	0,	0,	0x1,	MV_FALSE,	0x1,	&h_i2caddr,	MV_FALSE},
+	{"cpui2caddr",	0x4f,	0,	0,	0x1,	MV_FALSE,	0x0,	&h_i2caddr,	MV_FALSE},
 	{"pcie-self-init", 0x4f,0,	1,	0x1,	MV_FALSE,	0x1,	&h_pciself,	MV_FALSE},
 	{"dev-init-done", 0x4f,	0,	2,	0x1,	MV_FALSE,	0x1,	&h_devinit,	MV_FALSE},
 	{"serdes1",	0x20,	2,	0,	0xFF,	MV_FALSE,	0x0,	&h_serdes1,	MV_TRUE},

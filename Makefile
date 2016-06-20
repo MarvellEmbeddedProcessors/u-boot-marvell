@@ -838,7 +838,6 @@ u-boot.ldr.hex u-boot.ldr.srec: u-boot.ldr FORCE
 ifdef CONFIG_MVEBU
 ifeq ($(CONFIG_TARGET_ARMADA_3700), y)
 
-SPLIMAGE	:= $(srctree)/spl/u-boot-spl.bin
 BIN2PHEX	:= $(srctree)/scripts/bin2phex.pl
 
 endif # CONFIG_TARGET_ARMADA_3700

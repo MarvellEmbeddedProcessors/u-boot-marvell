@@ -1522,11 +1522,7 @@ static int mvneta_init_u_boot(struct eth_device *dev, bd_t *bis)
 {
 	struct mvneta_port *pp = dev->priv;
 	unsigned long val;
-#ifdef CONFIG_PALLADIUM
-	unsigned long auto_neg_value;
-#else
 	struct phy_device *phydev;
-#endif /* CONFIG_PALLADIUM */
 
 	mvneta_port_power_up(pp, pp->phy_interface);
 
@@ -1555,14 +1551,6 @@ static int mvneta_init_u_boot(struct eth_device *dev, bd_t *bis)
 		} else {
 			/* Set phy address of the port */
 			mvreg_write(pp, MVNETA_PHY_ADDR, pp->phyaddr);
-#ifdef CONFIG_PALLADIUM
-			/* on Palladium, there is no PHY, need to hardcode Link configuration */
-			pp->init = 1;
-			pp->link = 1;
-			mvneta_probe(dev);
-			mvneta_port_up(pp);
-			mvneta_port_enable(pp);
-#else
 			phydev = phy_connect(pp->bus, pp->phyaddr, dev,
 					     pp->phy_interface);
 
@@ -1583,22 +1571,12 @@ static int mvneta_init_u_boot(struct eth_device *dev, bd_t *bis)
 			 * and address decode configuration.
 			 */
 			pp->init = 1;
-#endif
 		}
 	} else {
 		/* Upon all following calls, this is enough */
 		mvneta_port_up(pp);
 		mvneta_port_enable(pp);
 	}
-
-#ifdef CONFIG_PALLADIUM
-	/* on Palladium, there is no PHY, need to hardcode speed to 1G */
-	auto_neg_value = MVNETA_AUTONEG_CFG_FORCE_LINK_UP | MVNETA_AUTONEG_CFG_BYPASS_AUTO_NEG
-			| MVNETA_AUTONEG_CFG_FORCE_LINK_1G | MVNETA_AUTONEG_CFG_FLOW_CTRL_EN
-			| MVNETA_AUTONEG_CFG_FLOW_CTRL_ADVERTIZE | MVNETA_AUTONEG_CFG_FORCE_FULL_DPLX
-			| MVNETA_AUTONEG_CFG_RESERVED;
-	mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG, auto_neg_value);
-#endif
 
 	return 0;
 }
@@ -1744,12 +1722,6 @@ int mvneta_initialize_dev(bd_t *bis, unsigned long base_addr, int devnum, int ph
 	dev->send = mvneta_send;
 	dev->recv = mvneta_recv;
 	dev->write_hwaddr = NULL;
-#ifdef CONFIG_PALLADIUM
-	/* on Palladium, there is no mac address in env, so put a value to skip the validation
-	 * otherwise u-boot would fail at common net driver validation.
-	 */
-	dev->enetaddr[1] = 51;
-#endif
 	/*
 	 * The PHY interface type is configured via the
 	 * board specific CONFIG_SYS_NETA_INTERFACE_TYPE

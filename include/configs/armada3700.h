@@ -48,17 +48,12 @@
 /* Plaform */
 #define CONFIG_MARVELL
 
-/* Clock Definitions */
-#ifdef CONFIG_PALLADIUM
-#define COUNTER_FREQUENCY	(6000)
-#else
 /*
  * The counter on A3700 always fed from reference clock (XTAL)
  * However minimal CPU counter prescaler is 2, so the counter
  * frequency will be divided by 2
  */
 #define COUNTER_FREQUENCY	(12500000)
-#endif
 
 /* DRAM detection stuff */
 #define MV_DRAM_AUTO_SIZE
@@ -99,10 +94,6 @@ extern char __end_of_spl[];
 
 #define CONFIG_MVEBU_SPI_A3700
 
-#ifdef CONFIG_PALLADIUM
-#define CONFIG_SPI_FLASH_SPANSION
-#endif /* CONFIG_PALLADIUM */
-
 #endif /* CONFIG_MVEBU_SPI */
 
 /* The MAX_PAYLOAD_SIZE of A3700 should be aligned with the capability
@@ -124,34 +115,5 @@ extern char __end_of_spl[];
 #define CONFIG_BOARD_EARLY_INIT_F
 
 #define CONFIG_SYS_PCI_64BIT	/* enable 64-bit PCI resources */
-
-/*
- * SOC specific overrides
- * Add here all config values that differ
- * from the generic value in mvebu-common.h
- */
-#ifdef CONFIG_PALLADIUM
-
-/* Disable I-CACHE for palladium */
-#define CONFIG_SYS_ICACHE_OFF
-
-#undef CONFIG_BOOTDELAY
-#define CONFIG_BOOTDELAY                -1
-
-#undef CONFIG_BAUDRATE
-#ifdef CONFIG_PALLADIUM
-#define CONFIG_BAUDRATE                 300
-#else
-#define CONFIG_BAUDRATE                 4000
-#endif
-
-#undef CONFIG_BOOTARGS
-#define CONFIG_BOOTARGS			"console=ttyS0,300 earlycon=ar3700_uart,0xd0012000 swiotlb=4096"
-
-#undef  CONFIG_EXTRA_ENV_SETTINGS
-#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x107ffc0\0"	\
-					"fdt_addr=0x1000000\0"		\
-					"fdt_high=0xa0000000\0"
-#endif /*CONFIG_PALLADIUM*/
 
 #endif /* __ARMADA_3700_H */

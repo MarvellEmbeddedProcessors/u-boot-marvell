@@ -66,21 +66,6 @@ int soc_get_id(void)
 void soc_init(void)
 {
 	/* Do early SOC specific init here */
-
-	/* now there is no timer/MPP driver,
-	  * currently we put all this kind of
-	  * configuration here, and will remove
-	  * this after official driver is ready
-	  */
-#ifdef CONFIG_PALLADIUM
-
-#ifdef CONFIG_I2C_MV
-	/* 0xD0013830[10] = 1'b0 (select GPIO pins to use for I2C_1) */
-	writel((readl(0xd0013830) & ~(1 << 10)), 0xd0013830);
-#endif /* CONFIG_I2C_MV */
-
-#endif /* CONFIG_PALLADIUM */
-
 #ifdef CONFIG_MVEBU_A3700_IO_ADDR_DEC
 	init_io_addr_dec();
 #endif
@@ -141,10 +126,6 @@ void i2c_clk_enable(void)
 
 int dram_init(void)
 {
-#ifdef CONFIG_PALLADIUM
-	/* NO DRAM init sequence in Pallaidum, so set static DRAM size of 256MB */
-	gd->ram_size = 0x20000000;
-#else
 	gd->ram_size = 0;
 
 	/* DDR size has been read from dts DDR node in SPL
@@ -155,7 +136,6 @@ int dram_init(void)
 		error("No DRAM banks detected");
 		return 1;
 	}
-#endif
 
 	return 0;
 }

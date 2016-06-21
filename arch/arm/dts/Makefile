@@ -61,7 +61,6 @@ endif #CONFIG_DEVEL_BOARD
 dtb-$(CONFIG_DEVEL_BOARD) += armada-3700-db.dtb \
 			     armada-3700-db-sgmii1.dtb \
 			     armada-3700-db-sfp2_5g.dtb
-dtb-$(CONFIG_PALLADIUM) += armada-3700-palladium.dtb
 endif #CONFIG_TARGET_ARMADA_3700
 
 ifdef CONFIG_TARGET_ARMADA_8K

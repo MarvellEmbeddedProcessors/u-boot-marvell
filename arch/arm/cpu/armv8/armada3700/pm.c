@@ -74,15 +74,27 @@ enum dvfs_load_index {
 #define PM_MAX_DT_NUM	1
 struct pm_config __attribute__((section(".data"))) g_pm_config;
 
-/* CPU clock TBG divider array
+/*
+ * CPU clock TBG divider array
  * TBG divider 0 and 7 mean active-high for clock output,
- * thus default divider 2 are kept for them for all the four levels.
+ * thus they are not listed below.
  * For other divider values from 1 to 6, proper divider values should be set
  * for each level from small to big.
+ * Recommended divider values for real deployment:
+ * original divider   1st divider    2nd divider   3rd divider   4th divider
+ *   1                  1              2             4             6
+ *   2                  2              4             5             6
+ * CPU frequency mapping:
+ * original CPU freq    1st CPU freq     2nd CPU freq    3rd CPU freq    4th CPU freq
+ *   1200M                1200M             600M             300M            200M
+ *   1000M                1000M             500M             250M            166M
+ *   800M                 800M              400M             200M            133M
+ *   600M                 600M              300M             240M            200M
+ *   400M                 400M              200M             160M            133M
  */
 enum a3700_tbg_divider tbg_div_arr[TBG_DIVIDER_NUM][DVFS_LOAD_MAX_NUM] = {
 	{TBG_DIVIDER_1, TBG_DIVIDER_2, TBG_DIVIDER_4, TBG_DIVIDER_6},
-	{TBG_DIVIDER_2, TBG_DIVIDER_3, TBG_DIVIDER_4, TBG_DIVIDER_6},
+	{TBG_DIVIDER_2, TBG_DIVIDER_4, TBG_DIVIDER_5, TBG_DIVIDER_6},
 	{TBG_DIVIDER_3, TBG_DIVIDER_4, TBG_DIVIDER_5, TBG_DIVIDER_6},
 	{TBG_DIVIDER_4, TBG_DIVIDER_4, TBG_DIVIDER_5, TBG_DIVIDER_6},
 	{TBG_DIVIDER_5, TBG_DIVIDER_5, TBG_DIVIDER_6, TBG_DIVIDER_6},

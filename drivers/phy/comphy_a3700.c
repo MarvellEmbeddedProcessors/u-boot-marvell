@@ -306,7 +306,7 @@ static int comphy_sata_power_up(void)
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_usb3_power_up(u32 speed, u32 invert)
+static int comphy_usb3_power_up(u32 type, u32 speed, u32 invert)
 {
 	int	ret;
 
@@ -410,13 +410,16 @@ static int comphy_usb3_power_up(u32 speed, u32 invert)
 	if (ret == 0)
 		error("Failed to lock USB3 PLL\n");
 
-	/* set   BIT0: set ID_MODE of Host/Device = "Soft ID" (BIT1)
-	 * clear BIT1: set SOFT_ID = Host
-	 * set   BIT4: set INT_MODE = ID. Interrupt Mode: enable interrupt by ID
-	 *             instead of using both interrupts of HOST and Device ORed simultaneously
-	 *             INT_MODE=ID in order to avoid unexpected behaviour or both interrupts together */
-	reg_set((void __iomem *)USB32_CTRL_BASE, usb32_ctrl_id_mode | usb32_ctrl_int_mode,
-			usb32_ctrl_id_mode | usb32_ctrl_soft_id | usb32_ctrl_int_mode);
+	/* Set Soft ID for Host mode (Device mode works with Hard ID detection) */
+	if (type == PHY_TYPE_USB3_HOST0) {
+		/* set   BIT0: set ID_MODE of Host/Device = "Soft ID" (BIT1)
+		 * clear BIT1: set SOFT_ID = Host
+		 * set   BIT4: set INT_MODE = ID. Interrupt Mode: enable interrupt by ID
+		 *             instead of using both interrupts of HOST and Device ORed simultaneously
+		 *             INT_MODE=ID in order to avoid unexpected behaviour or both interrupts together */
+		reg_set((void __iomem *)USB32_CTRL_BASE, usb32_ctrl_id_mode | usb32_ctrl_int_mode,
+				usb32_ctrl_id_mode | usb32_ctrl_soft_id | usb32_ctrl_int_mode);
+	}
 
 	debug_exit();
 
@@ -848,7 +851,7 @@ int comphy_a3700_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 
 		case PHY_TYPE_USB3_HOST0:
 		case PHY_TYPE_USB3_DEVICE:
-			ret = comphy_usb3_power_up(ptr_comphy_map->speed, ptr_comphy_map->invert);
+			ret = comphy_usb3_power_up(ptr_comphy_map->type, ptr_comphy_map->speed, ptr_comphy_map->invert);
 			break;
 
 		case PHY_TYPE_SGMII0:

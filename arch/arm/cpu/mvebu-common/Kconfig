@@ -1,34 +1,5 @@
 
 
-config MVEBU_SECURE_BOOT
-	bool "Trusted Boot Image format"
-	depends on MVEBU
-	default n
-	help
-	  Instructs the u-boot to create a trusted
-	  boot image for MVEBU device. The trusted
-	  boot image will boot normally on devices
-	  that have secure mode option turned OFF
-	  in their eFUSE. Once the secure boot mode
-	  is selected by eFuse, the trusted boot
-	  image will be verified according to secure
-	  boot flow algorithm described in details
-	  in appropriate device specification.
-
-config MVEBU_IMAGE_ENCRYPT
-	bool "Encrypt Boot Image in Trusted Boot mode"
-	depends on MVEBU_SECURE_BOOT
-	default n
-	help
-	  Instructs the u-boot to use AES-256 encryption
-	  when building image for the trusted boot mode on
-	  MVEBU device.
-	  The AES-256 symmetric key should be burned in
-	  the device eFuse for allowing BootROM to decrypt
-	  the boot image upon startup.
-	  Refer to the appropriate device specification
-	  and eFuse module help for detailes about this feature
-
 config MVEBU_SPL_DIFFRENT_BASE_ADDR
 	bool "Use SPL different registers base address"
 	depends on MVEBU && TARGET_ARMADA_38X

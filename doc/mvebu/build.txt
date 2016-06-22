@@ -36,8 +36,7 @@ Build Instruction:
 	For the Armada-8040-RZ board use "make mvebu_armada70x0_rz_defconfig"
 	For the Armada-70x0 board use "make mvebu_armada70x0_defconfig"
 	For the Armada-3700 board use "make mvebu_armada3700_defconfig"
-7. Build the U-Boot (Armada-3700 builds required WTP tools installation -
-   Refer to the section "Tools installation for Armada-3700 builds"):
+7. Build the U-Boot:
 	# make
 	The U-Boot compilation generate:
 	u-boot.bin - U-Boot image
@@ -120,36 +119,4 @@ Boot device selection note for Armada-3700 builds:
 	Future A3700 revisions will include a special eFuse fields for instructing the BootROM
 	to swap polarity on SATA RX and/or TX lines.
 
-
-Tools installation for Armada-3700 builds:
-------------------------------------------
-1. Extract the tools/wtp/WTPTP_TOOLS_x_x_xx.zip into a temporary directory
-
-   # cd tools/wtp
-   # 7z x WTPTP_TOOLS_x_x_xx.zip
-
-2. If required, add executable permissions to files in the extracted
-   WTPTP_TOOLS_x_x_xx/Linux_Tools folder:
-
-   # sudo chmod a+x WTPTP_TOOLS_x_x_xx/Linux_Tools/*.exe
-
-3. Copy executable files from WTPTP_TOOLS_x_x_xx/Linux_Tools
-   to location pointed to $PATH environment variable.
-   For instance:
-
-   # sudo cp WTPTP_TOOLS_x_x_xx/Linux_Tools/*.exe /usr/local/bin
-
-4. Make sure the "ntbb_linux.exe" can be executed from any
-   location and the U-Boot "make" passes without error.
-
-5. Install a cross GNU ARM tool chain for building the WTMI binary.
-   Any cross GNU ARM tool chain able to build ARM Cortex M3 binaries
-   is suitable.
-   On Debian/Uboot hosts the default GNU ARM tool chain can be installed
-   using the following command:
-   # sudo apt-get install gcc-arm-linux-gnueabi
-   If required, the default tool chain prefix "arm-linux-gnueabi-" can be
-   overwritten using environment variable CROSS_CM3.
-   Example for BASH shell:
-   # export CROSS_CM3=/opt/arm-cross/bin/arm-linux-gnueabi
 

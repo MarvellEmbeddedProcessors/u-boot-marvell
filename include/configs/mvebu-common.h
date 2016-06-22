@@ -22,7 +22,7 @@
 #include <asm/arch/regs-base.h>
 
 /* Version */
-#define CONFIG_IDENT_STRING             "  Marvell version: devel-16.05.0"
+#define CONFIG_IDENT_STRING             "  Marvell version: devel-16.06.0"
 
 /* Temp */
 #define CONFIG_ADEC

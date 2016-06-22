@@ -33,6 +33,7 @@
 #include <asm/arch/boot_mode.h>
 #include <fdt_support.h>
 #include <asm/arch/pm.h>
+#include <asm/arch/avs.h>
 
 /* NB warm reset */
 #define MVEBU_NB_WARM_RST_REG	(MVEBU_GPIO_NB_REG_BASE + 0x40)
@@ -73,6 +74,14 @@ void soc_init(void)
 #ifdef CONFIG_MVEBU_COMPHY_SUPPORT
 	if (comphy_init(gd->fdt_blob))
 		error("COMPHY initialization failed\n");
+#endif
+
+/*
+ * The AVS should be initialized before PM since the PM will decide
+ * to invoke DVS either by AVS, I2C or GPIO.
+ */
+#ifdef CONFIG_MVEBU_A3700_AVS
+	init_avs();
 #endif
 
 #ifdef CONFIG_MVEBU_A3700_PM

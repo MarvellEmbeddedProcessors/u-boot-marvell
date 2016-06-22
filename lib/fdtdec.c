@@ -128,6 +128,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_RTC_REG, "marvell,real-time-clock"),
 	COMPAT(MVEBU_GPIO, "marvell,mvebu-gpio"),
 	COMPAT(MVEBU_A3700_PM, "marvell,armada-3700-pm"),
+	COMPAT(MVEBU_A3700_AVS, "marvell,armada-3700-avs"),
 };
 
 const char *fdtdec_get_compatible(enum fdt_compat_id id)

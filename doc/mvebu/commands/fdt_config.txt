@@ -61,13 +61,12 @@ Example:
 	 Marvell>> fdt_config load 2
 	 To save the changes, please run the command fdt_config save.
       c) Run "fdt print" command to see the entire dtb file in DRAM.
-      d) Edit any property, for example, the preset value in the A3700 dts file.
-         Following are all the valid values for the property "preset":
-	 PRESET_CPU_600_DDR_600:  0
-	 PRESET_CPU_400_DDR_600:  1
-	 PRESET_CPU_1000_DDR_800: 2
-	 PRESET_CPU_800_DDR_800:  3
-	 Marvell>> fdt set /soc/freq preset "<1>"
+      d) Edit any property, for example, the comphy 0 type value in the A3700 dts file.
+         Following are two valid values for the property "phy-type":
+	 PHY_TYPE_SGMII0:	9
+	 PHY_TYPE_SGMII1:	10
+	 The following command sets comphy 0 type to SGMII1:
+	 Marvell>> fdt set /soc/internal-regs/comphy phy0 "<10>"
       e) Save the dtb file into EEPROM.
 	 Marvell>> fdt_config save
 	 FDT is saved in EEPROM, to boot from customized FDT please select it from list

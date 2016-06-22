@@ -30,6 +30,9 @@
 
 	soc {
 		internal-regs {
+			avs@11500 {
+				status = "okay";
+			};
 			serial: serial@12000 {
 				status = "okay";
 			};

@@ -22,12 +22,16 @@
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch/clock.h>
+#include <asm/arch/avs.h>
 #include <asm/io.h>
 #include <asm/errno.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
 /* North bridge PM configuration registers */
+#define PM_POWER_DOWN_REG	(0x8)
+#define  PM_AVS_VDD2_MODE	(BIT13)
+#define  PM_AVS_DISABLE_MODE	(BIT14)
 #define PM_NB_L0_L1_CONFIG_REG	(0x18)
 #define PM_NB_L2_L3_CONFIG_REG	(0x1C)
 #define  PM_NB_TBG_DIV_LX_OFF	(13)
@@ -105,6 +109,29 @@ enum a3700_tbg_divider tbg_div_arr[TBG_DIVIDER_NUM][DVFS_LOAD_MAX_NUM] = {
 enum vdd_select vdd_sel_arr[DVFS_LOAD_MAX_NUM] = {
 	VDD_SEL_HIGH, VDD_SEL_MEDIUM, VDD_SEL_LOW, VDD_SEL_LOWEST
 };
+
+/******************************************************************************
+* Name: pm_en_avs
+*
+* Description: Enable AVS in DVFS
+*
+* Input:	None
+* Output:	None
+* Return:	Non-zero if the requested settings are not supported
+******************************************************************************/
+static int pm_en_avs(void)
+{
+	u32 reg_val;
+
+	reg_val = readl(g_pm_config.reg_base + PM_POWER_DOWN_REG);
+	/* Clear the AVS disable mode bit */
+	reg_val &= ~(PM_AVS_DISABLE_MODE);
+	/* Set AVS VDD2 mode bit */
+	reg_val |= PM_AVS_VDD2_MODE;
+	writel(reg_val, g_pm_config.reg_base + PM_POWER_DOWN_REG);
+
+	return 0;
+}
 
 /******************************************************************************
 * Name: set_dvfs_param
@@ -231,6 +258,7 @@ int init_pm(void)
 	u32 count;
 	u32 clk_sel;
 	u32 clk_prscl;
+	const char *vdd_control;
 
 	debug_enter();
 
@@ -262,6 +290,24 @@ int init_pm(void)
 	if (ret) {
 		error("Failed to set DVFS parameters\n");
 		return -EINVAL;
+	}
+
+	/* Set VDD control method, currently only support AVS */
+	fdt_get_string(gd->fdt_blob, node, "vdd_control", &vdd_control);
+	if (!strcmp(vdd_control, "avs")) {
+		/* Enale AVS in PM */
+		pm_en_avs();
+		if (ret) {
+			error("Failed to enable AVS in PM\n");
+			return -EINVAL;
+		}
+
+		/* Set AVS VDD load values */
+		ret = set_avs_vdd_loads();
+		if (ret) {
+			error("Failed to set AVS VDD load values\n");
+			return -EINVAL;
+		}
 	}
 
 	debug_exit();

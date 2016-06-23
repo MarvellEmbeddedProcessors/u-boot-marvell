@@ -41,6 +41,7 @@
 				status = "okay";
 			};
 			pm@14000 {
+				vdd_control = "avs";
 				status = "okay";
 			};
 			neta0: neta@30000 {

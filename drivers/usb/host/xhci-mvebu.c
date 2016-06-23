@@ -48,14 +48,20 @@ static void usb_vbus_init(int node)
 }
 
 /* Device tree global data scanned at 1st init for usb3 nodes */
-int node_list[CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS], count = 0;
+int node_list[CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS];
 
+#ifdef CONFIG_OF_CONTROL
 /* Parse and save enabled device tree usb3 nodes, and return enabled node count */
-int usb_device_tree_init(void)
+int board_usb_get_enabled_port_count(void)
 {
-	/* - Scan device tree usb3 nodes once, and save relevant nodes in static node_list */
-	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "usb3",
-			COMPAT_MVEBU_USB3, node_list, CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS);
+	static int count = -1;
+
+	/* Scan the device tree once only */
+	if (count < 0) {
+		/* Scan device tree usb3 nodes once, and save relevant nodes in static node_list */
+		count = fdtdec_find_aliases_for_id(gd->fdt_blob, "usb3",
+				COMPAT_MVEBU_USB3, node_list, CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS);
+	}
 
 	if (count == 0)
 		printf("%s: 'usb3' is disabled in Device Tree\n", __func__);
@@ -63,6 +69,7 @@ int usb_device_tree_init(void)
 	/* Return enabled port count */
 	return count;
 }
+#endif
 
 bool vbus_initialized = 0;
 int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)

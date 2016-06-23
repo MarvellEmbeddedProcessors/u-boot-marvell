@@ -51,6 +51,16 @@ char usb_started; /* flag for the started/stopped USB status */
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 1
 #endif
 
+/* board_usb_get_enabled_port_count() is defined only when
+   device tree is enabled. To be backward compatible to the
+   none device-tree support platforms, it returns maximum
+   usb port number of the device. */
+int usb_get_max_controller_count(void)
+{
+	return CONFIG_USB_MAX_CONTROLLER_COUNT;
+}
+int board_usb_get_enabled_port_count(void) __attribute__((weak, alias("usb_get_max_controller_count")));
+
 /***************************************************************************
  * Init USB Device
  */
@@ -71,11 +81,12 @@ int usb_init(void)
 		usb_dev[i].devnum = -1;
 	}
 
-	/* Parse device tree mapping for usb nodes, and initialize only enabled ports */
-	enable_port_count = usb_device_tree_init();
+	/* if device tree is supported, start only the ports enabled in fdt.
+	   if not, try to start all the usb ports supported by the device. */
+	enable_port_count = board_usb_get_enabled_port_count();
 
 	/* init low_level USB */
-	for (i = 0; i < enable_port_count ; i++) {
+	for (i = 0; i < enable_port_count; i++) {
 		/* init low_level USB */
 		printf("USB%d:   ", i);
 		ret = usb_lowlevel_init(i, USB_INIT_HOST, &ctrl);

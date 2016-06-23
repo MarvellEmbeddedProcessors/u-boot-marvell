@@ -442,7 +442,7 @@ static int advk_pcie_init(int host_id,
 	/* start link training */
 	ret = advk_pcie_link_init(reg_base);
 	if (ret) {
-		debug("%s(%d): ignore PCIe register since there is no link\n", __func__, __LINE__);
+		printf("PCIE-%d: Link down\n", host_id);
 		return hose->last_busno;
 	}
 
@@ -503,7 +503,8 @@ static int advk_pcie_init(int host_id,
 	speed = (state >> PCIE_CORE_LINK_SPEED_SHIFT) & PCIE_CORE_LINK_SPEED_MASK;
 	width = (state >> PCIE_CORE_LINK_WIDTH_SHIFT) & PCIE_CORE_LINK_WIDTH_MASK;
 
-	printf("PCIE-%d: Bus(%d) Link width(%s) Speed(%s)\n", host_id, first_busno, width_str[width], speed_str[speed]);
+	printf("PCIE-%d: Link up (Gen%d-%s %s, Bus%d)\n",
+	       host_id, speed, width_str[width], speed_str[speed], first_busno);
 
 	debug_exit();
 

@@ -146,7 +146,7 @@ static int mmc_burn_image(size_t image_size)
 						start_lba, blk_count, (void *)get_load_addr());
 	if (blk_written != blk_count) {
 		printf("Error - written %#lx blocks\n", blk_written);
-		return 0;
+		return 1;
 	} else {
 		printf("Done!\n");
 	}
@@ -161,7 +161,8 @@ static int mmc_burn_image(size_t image_size)
 
 static size_t mmc_read_file(const char *file_name)
 {
-	loff_t		act_read;
+	loff_t act_read = 0;
+	int rc;
 	struct mmc	*mmc;
 #ifdef CONFIG_SYS_MMC_ENV_DEV
 	const u8	mmc_dev_num = CONFIG_SYS_MMC_ENV_DEV;
@@ -172,12 +173,12 @@ static size_t mmc_read_file(const char *file_name)
 	mmc = find_mmc_device(mmc_dev_num);
 	if (!mmc) {
 		printf("No SD/MMC/eMMC card found\n");
-		return 1;
+		return 0;
 	}
 
 	if (mmc_init(mmc)) {
 		printf("%s(%d) init failed\n", IS_SD(mmc) ? "SD" : "MMC", mmc_dev_num);
-		return 1;
+		return 0;
 	}
 
 	/* Load from data partition (0) */
@@ -187,7 +188,11 @@ static size_t mmc_read_file(const char *file_name)
 	}
 
 	/* Perfrom file read */
-	return fs_read(file_name, get_load_addr(), 0, 0, &act_read);
+	rc = fs_read(file_name, get_load_addr(), 0, 0, &act_read);
+	if (rc)
+		return 0;
+
+	return act_read;
 }
 
 int is_mmc_active(void)
@@ -320,7 +325,8 @@ int is_nor_active(void)
 #ifdef CONFIG_USB_STORAGE
 static size_t usb_read_file(const char *file_name)
 {
-	loff_t act_read;
+	loff_t act_read = 0;
+	int rc;
 
 	usb_stop();
 
@@ -342,7 +348,11 @@ static size_t usb_read_file(const char *file_name)
 	}
 
 	/* Perfrom file read */
-	return fs_read(file_name, get_load_addr(), 0, 0, &act_read);
+	rc = fs_read(file_name, get_load_addr(), 0, 0, &act_read);
+	if (rc)
+		return 0;
+
+	return act_read;
 }
 
 int is_usb_active(void)
@@ -529,7 +539,7 @@ static int bubt_read_file(struct bubt_dev *src)
 
 	if (!src->read) {
 		printf("Error: Read not supported on device \"%s\"\n", src->name);
-		return 1;
+		return 0;
 	}
 
 	image_size = src->read(BootFile);

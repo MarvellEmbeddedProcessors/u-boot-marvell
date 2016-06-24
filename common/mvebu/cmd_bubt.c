@@ -181,7 +181,7 @@ static size_t mmc_read_file(const char *file_name)
 	}
 
 	/* Load from data partition (0) */
-	if (fs_set_blk_dev("usb", "0", FS_TYPE_ANY)) {
+	if (fs_set_blk_dev("mmc", "0", FS_TYPE_ANY)) {
 		printf("Error: MMC 0 not found\n");
 		return 0;
 	}

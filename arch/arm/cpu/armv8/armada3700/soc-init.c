@@ -137,8 +137,7 @@ int dram_init(void)
 {
 	gd->ram_size = 0;
 
-	/* DDR size has been read from dts DDR node in SPL
-	 * ddr driver and pass to u-boot. */
+	/* DDR size has been passed to u-boot from ATF. */
 	gd->ram_size = (get_info(DRAM_CS0_SIZE) << 20);
 
 	if (gd->ram_size == 0) {

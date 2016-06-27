@@ -1,15 +1,5 @@
 menu "Misc drivers"
 
-config MVEBU_MBUS_SPL_ONLY
-	bool "MBUS address decoding driver in SPL only"
-	depends on MVEBU_MBUS
-	default n
-	help
-	  Choose this option to do MBUS windows
-	  modifications in SPL executable only
-	  In regular u-boot image MBUS driver will
-	  only read memory windows information from DT
-
 config MVEBU_MBUS_SKIP_DRAM_WIN
 	bool "skip DRAM window configuration in MBUS driver"
 	depends on MVEBU_MBUS

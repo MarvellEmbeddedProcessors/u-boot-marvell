@@ -23,7 +23,7 @@
 
 /*
  * switch to uart boot mode, this routine will be invoked
- * 1. in early stage of SPL to switch boot mode to UART
+ * 1. in early stage of ATF to switch boot mode to UART
  * 2. in the latest stage of u-boot switch back to original mode
  */
 void mvebu_boot_mode_set(uchar boot_mode)

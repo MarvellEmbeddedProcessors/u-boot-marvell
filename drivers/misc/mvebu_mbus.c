@@ -31,9 +31,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define MBUS_REMAP_SIZE_64		64
 #define MBUS_TARGET_DRAM_NUM		0
-#ifdef CONFIG_MVEBU_MBUS_SPL_ONLY
-#define MBUS_TARGET_RWTM_RAM_NUM	7
-#endif
 
 struct mbus_configuration {
 	void __iomem *mbus_base;
@@ -51,20 +48,9 @@ struct mbus_fdt_info {
 	u32 flags;
 };
 
-
 struct mbus_fdt_info __attribute__((section(".data")))fdt_inf_arr[MBUS_WIN_MAP_NUM_MAX];
 struct mbus_win __attribute__((section(".data")))memory_map_arr[MBUS_WIN_MAP_NUM_MAX];
 
-/* The MBUS driver can be called twice - from SPL and from u-boot itself
-   In order to prevent double configuration of memory windows, do the following:
-   1. If CONFIG_MVEBU_MBUS_SPL_ONLY is not defined, do the full memory configuration.
-      This case intended to cover cases when SPL is not used.
-   2. If CONFIG_MVEBU_MBUS_SPL_ONLY is defined, make sure that the memory windows
-      only configured when called from inside the SPL (CONFIG_SPL_BUILD is defined)
-      Otherwise only read the windows information from DT in u-boot content and
-      assume that all windows parameters were already set by SPL
-*/
-#if (defined(CONFIG_MVEBU_MBUS_SPL_ONLY) && defined(CONFIG_SPL_BUILD)) || !defined(CONFIG_MVEBU_MBUS_SPL_ONLY)
 static void mbus_win_check(struct mbus_win *win, u32 win_num)
 {
 	/* check if address is aligned to the size */
@@ -108,7 +94,6 @@ static void mbus_win_set(struct mbus_win *win, u32 win_num)
 	}
 	return;
 }
-#endif /* (defined(CONFIG_MVEBU_MBUS_SPL_ONLY) && defined(CONFIG_SPL_BUILD)) || !defined(CONFIG_MVEBU_MBUS_SPL_ONLY) */
 
 /*
  * mbus_win_get
@@ -235,10 +220,7 @@ int remap_mbus(phys_addr_t input, phys_addr_t output)
 
 int init_mbus(void)
 {
-/* Se detailed case description on next IF occurance */
-#if (defined(CONFIG_MVEBU_MBUS_SPL_ONLY) && defined(CONFIG_SPL_BUILD)) || !defined(CONFIG_MVEBU_MBUS_SPL_ONLY)
 	u32	win_id, mbus_win, start_win_id = 0;
-#endif
 	u32	node, count, index;
 	struct mbus_fdt_info *fdt_info = fdt_inf_arr;
 	struct mbus_win *memory_map = memory_map_arr, *win;
@@ -298,16 +280,6 @@ int init_mbus(void)
 	}
 	win->enabled = -1;
 
-/* The MBUS driver can be called twice - from SPL and from u-boot itself
-   In order to prevent double configuration of memory windows, do the following:
-   1. If CONFIG_MVEBU_MBUS_SPL_ONLY is not defined, do the full memory configuration.
-      This case intended to cover cases when SPL is not used.
-   2. If CONFIG_MVEBU_MBUS_SPL_ONLY is defined, make sure that the memory windows
-      only configured when called from inside the SPL (CONFIG_SPL_BUILD is defined)
-      Otherwise only read the windows information from DT in u-boot content and
-      assume that all windows parameters were already set by SPL
-*/
-#if (defined(CONFIG_MVEBU_MBUS_SPL_ONLY) && defined(CONFIG_SPL_BUILD)) || !defined(CONFIG_MVEBU_MBUS_SPL_ONLY)
 #ifdef CONFIG_MVEBU_MBUS_SKIP_DRAM_WIN
 	/* for some Soc, like Armada3700, DRAM window has to be at the beginning,
 	     and could not be configured by anyway (keep the default value),
@@ -318,11 +290,6 @@ int init_mbus(void)
 #endif
 	/* disable all windows */
 	for (win_id = start_win_id; win_id < mbus_info->max_win; win_id++) {
-#ifdef CONFIG_MVEBU_MBUS_SPL_ONLY
-		/* Skip rWTM RAM window in SPL since the SPL runs from rWTM RAM */
-		if (MBUS_TARGET_RWTM_RAM_NUM == memory_map[win_id].target)
-			continue;
-#endif
 		mbus_win = readl(mbus_info->mbus_base + MBUS_WIN_CTRL_REG(win_id));
 		mbus_win &= ~MBUS_CR_WIN_ENABLE;
 		writel(mbus_win, mbus_info->mbus_base + MBUS_WIN_CTRL_REG(win_id));
@@ -332,11 +299,7 @@ int init_mbus(void)
 	for (win_id = start_win_id, win = &memory_map[start_win_id]; win_id < mbus_info->max_win; win_id++, win++) {
 		if ((win->win_size == 0) || (win->enabled == 0) || (win->remapped == 0))
 			continue;
-#ifdef CONFIG_MVEBU_MBUS_SPL_ONLY
-		/* Skip rWTM RAM window in SPL since the SPL runs from rWTM RAM */
-		if (MBUS_TARGET_RWTM_RAM_NUM == win->target)
-			continue;
-#endif
+
 		mbus_win_check(win, win_id);
 		debug("set window %d: target %d, base = 0x%lx, size = 0x%lx, attribute = 0x%x, remapped\n",
 			win_id, win->target, win->base_addr, win->win_size, win->attribute);
@@ -348,18 +311,13 @@ int init_mbus(void)
 	for (win_id = start_win_id, win = memory_map; win_id < mbus_info->max_win; win_id++, win++) {
 		if ((win->win_size == 0) || (win->enabled == 0) || (win->remapped))
 			continue;
-#ifdef CONFIG_MVEBU_MBUS_SPL_ONLY
-		/* Skip rWTM RAM window in SPL since the SPL runs from rWTM RAM */
-		if (MBUS_TARGET_RWTM_RAM_NUM == win->target)
-			continue;
-#endif
+
 		mbus_win_check(win, win_id);
 		debug("set window %d: target = %d, base = 0x%lx, size = 0x%lx, attribute = 0x%x\n",
 			win_id, win->target, win->base_addr, win->win_size, win->attribute);
 
 		mbus_win_set(win, win_id);
 	}
-#endif /* (defined(CONFIG_MVEBU_MBUS_SPL_ONLY) && defined(CONFIG_SPL_BUILD)) || !defined(CONFIG_MVEBU_MBUS_SPL_ONLY) */
 
 	debug("Done MBUS address decoding initializing\n");
 	debug_exit();

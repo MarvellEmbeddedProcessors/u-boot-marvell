@@ -238,17 +238,24 @@ static int comphy_pcie_power_up(u32 speed, u32 invert)
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_sata_power_up(void)
+static int comphy_sata_power_up(u32 invert)
 {
 	int	ret;
+	u32 dat = 0;
 
 	debug_enter();
 
 	/*
-	 * 0. Swap SATA TX lines
+	 * 0. Check the Polarity invert bits
 	 */
+	if (invert & PHY_POLARITY_TXD_INVERT)
+		dat |= bs_txd_inv;
+
+	if (invert & PHY_POLARITY_RXD_INVERT)
+		dat |= bs_rxd_inv;
+
 	reg_set((void __iomem *)rh_vsreg_addr, vphy_sync_pattern_reg, 0xFFFFFFFF);
-	reg_set((void __iomem *)rh_vsreg_data, bs_txd_inv, bs_txd_inv);
+	reg_set((void __iomem *)rh_vsreg_data, dat, bs_txd_inv | bs_rxd_inv);
 
 	/*
 	 * 1. Select 40-bit data width width
@@ -753,7 +760,7 @@ static int comphy_sgmii_power_up(u32 lane, u32 speed, u32 invert)
  ***************************************************************************************************/
 void comphy_dedicated_phys_init(void)
 {
-	int node, count, usb32, ret = 1;
+	int node, count, usb32, invert, ret = 1;
 	const void *blob = gd->fdt_blob;
 
 	debug_enter();
@@ -784,7 +791,8 @@ void comphy_dedicated_phys_init(void)
 
 	if (count > 0) {
 		if (fdtdec_get_is_enabled(blob, node)) {
-			ret = comphy_sata_power_up();
+			invert = fdtdec_get_int(blob, node, "phy-invert", PHY_POLARITY_NO_INVERT);
+			ret = comphy_sata_power_up(invert);
 			if (ret == 0)
 				error("Failed to initialize SATA PHY\n");
 			else

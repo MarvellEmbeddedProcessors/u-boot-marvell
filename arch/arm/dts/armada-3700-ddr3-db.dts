@@ -88,6 +88,7 @@
 				status = "okay";
 			};
 			sataphy@e0000 {
+				phy-invert = <PHY_POLARITY_TXD_INVERT>;
 				status = "okay";
 			};
 		};

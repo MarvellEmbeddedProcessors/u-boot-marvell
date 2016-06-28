@@ -27,24 +27,6 @@
 #undef CONFIG_GICV2
 #define CONFIG_GICV3
 
-/*
-#define MV_INCLUDE_SDIO
-#define MV_INCLUDE_INTEG_SATA
-#define MV_INCLUDE_CLK_PWR_CNTRL
-
-#define MV_INCLUDE_RCVR
-#define MV_INCLUDE_NAND
-#define MV_INCLUDE_SPI
-#define MV_INCLUDE_XOR
-#define MV_INCLUDE_SATA
-#define MV_INCLUDE_USB
-#define CONFIG_MV_ETH_NETA
-#define MV_INCLUDE_GPIO
-#define MV_INCLUDE_I2C
-#define MV_INCLUDE_RTC
-#define MV_INCLUDE_PEX
-*/
-
 /* Plaform */
 #define CONFIG_MARVELL
 
@@ -55,11 +37,7 @@
  */
 #define COUNTER_FREQUENCY	(12500000)
 
-/* DRAM detection stuff */
-#define MV_DRAM_AUTO_SIZE
-#define CONFIG_SYS_DRAM_BANKS		1
-
-/* SPI flash for Palladium */
+/* SPI driver support */
 #ifdef CONFIG_MVEBU_SPI
 
 #define CONFIG_MVEBU_SPI_A3700
@@ -80,10 +58,5 @@
  * The generic file is affected by the defines above.
  */
 #include "mvebu-common.h"
-
-/* need board_early_init_f to invoke init_mbus, before dram_init */
-#define CONFIG_BOARD_EARLY_INIT_F
-
-#define CONFIG_SYS_PCI_64BIT	/* enable 64-bit PCI resources */
 
 #endif /* __ARMADA_3700_H */

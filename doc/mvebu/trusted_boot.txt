@@ -33,12 +33,7 @@ TBD
 A3700 platforms
 ///////////////
 
-Please note that on the A3700 platform the eFuses are not directly accessible by the application CPU.
-Therefore an appropriate WTMI module that provides the eFuse RW through the mailbox interface
-is required.
-The example WTMI code is located inside the "tools/wtp/wtmi" folder and allows RW access to all
-secure eFuses of A3700 SoC. Such full access is good for initial debugging, but for security
-reasons should block read access at least to the image encryption key on a real systems.
+TBD
 
 ====================
 2. Boot image format
@@ -48,13 +43,6 @@ the required information from the image headers and uses it for authentication a
 values and digital signatures and for image decryption.
 Various platforms use different BootROMs and boot image formats. For a specific details please refer
 to the SoC functional specification, BootROM manual and to the section related to a selected platform below.
-In order to create boot image for the trusted boot mode, the following configuration parameter
-should be set:
-	CONFIG_MVEBU_SECURE_BOOT=y
-The same parameter can be selected using "make menuconfig":
--> Support MVEBU devices
-	-> Marvell Platform
-		-> Trusted Boot Image format
 
 /////////////
 A8K platforms
@@ -66,35 +54,8 @@ TBD
 A3700 platforms
 ///////////////
 
-TIM/NTIM descriptors
---------------------
-The A3700 image format is defined by a text file called TIM/TIMN descriptor.
-This descriptor defines boot image components, their locations on the boot device and in system memory,
-type of authentication (digital signature) to be used by BootROM in trusted boot mode and type
-of encryption algorithm in case the image should be encrypted.
-All details regarding the TIM/TIMN descriptor format are provided in the A3700 BootROM manual.
-The TIM/TIMN descriptor is created from multiple components located in the tools/wtp folders.
-The components for trusted boot mode are located in the "trusted" sub-folder and for non-trusted
-boot mode in the "untrusted" sub-folder.
-The final descriptors to be used with the TIM tool are crested using the Bash script "buildtim.sh" located
-in the "scripts" directory.
-The "keys" sub-folder contains test keys generated for building the sample trusted boot image.
-These keys are used for the creation of authentication keys TIM/TIMN components located in the "trusted" folder.
-The method used for new keys generation is described in the WTPTP tools manual and is out of scope of
-this document.
-When TIM/TIMN descriptors are processed by the TBB tool, a binary versions of TIM/TIMN headers are
-created. A special script "tim2img.pl", located in "scripts" folder is used for parsing the TIM/TIMN
-descriptors and building a single boot image from all binaries stated there suitable for usage with
-u-boot "bubt" command.
+TBD
 
-Image Encryption
-----------------
-Since the WTPTP tools do not support image encryption, external tools should be used for
-encrypting image components. Please refer to the main Makefile for an example of image encryption
-using OpenSSL tools ("encrypt" recipe).
-The OpenSSL library is usually installed by default on a basic Linux system.
-In case the installation is missing, the following command will install it on the Ubuntu/Debian machine:
-# apt-get install openssl
 
 ==================================
 3. Work order - target preparation

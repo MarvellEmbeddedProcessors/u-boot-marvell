@@ -27,7 +27,13 @@ is not required.
 A8K platforms
 /////////////
 
-TBD
+The AES-256 key is visible only during the efuse burn session. It will be hidden after
+reset and accessible only on early boot stages by the internal BootROM procedures.
+Trying to read efuse values of AES-256 key will return zeros.
+Please note that if the JTAG is permanently enabled in A8K efuse, the AES-256 key
+becomes hidden for everyone, including the BootROM. Therefore when JTAG is enabled permanently
+by eFuse, the boot image should not be encrypted, since BootROM decryption will always
+fail unless zero-key was used for image encryption.
 
 ///////////////
 A3700 platforms
@@ -48,7 +54,54 @@ to the SoC functional specification, BootROM manual and to the section related t
 A8K platforms
 /////////////
 
-TBD
+Please refer to A8K functional specification for details about trusted boot image components.
+The secure image configuration is defined by a single file sec_img.cfg located in tools/secure folder.
+This file, which has standard INI file format, defines the following configuration options:
+
+- kak_key_file - the string containing path to the Keys Authentication Key file in PEM format.
+		This parameter is mandatory.
+
+- csk_key_file	- array of string containing paths to Code Signing Key files in PEM format.
+		This array has to include at least a single key used for signing the boot image and prolog.
+		The key index is defined by the file location in this array.
+		Empty key paths should be coded as "*" strings to make the entire array size of 16 strings.
+		This parameter is mandatory.
+
+- csk_key_index - the integer value in range of 0 to 15 defining the CSK file from the above array to be used
+		for creating image and prolog signatures.
+		This parameter is optional and if omitted defaults to 0.
+
+- aes_key_file	- the string containing path to AES-256 symmetric key file in ASCII text format.
+ 		The boot image will be encrypted if this parameter is included in the configuration or
+		left unencrypted if the parameter is omitted.
+		This parameter is optional.
+
+- efuse_disable - boolean parameter defining whenever to disable access to efuses in secure boot mode or not.
+		Can be either "true" or "false". The efuse access policy is enforced by the BootROM.
+		This parameter is optional and if omitted defaults to "true".
+
+- jtag		- parameters defining the JTAG behavior in trusted boot mode. There are two parameters enclosed in
+		curly brackets - "enable" and "delay". The "jtag.enable" boolean parameter allows to enable
+		the JTAG support in trusted boot mode (valid values "true" and "false").
+		The second parameter - "jtag.delay" (integer) defines delay in milliseconds the BootROM waits
+		before enabling the JTAG connection in the HW.
+		These parameters are optional and if omitted default to "false" and 0 respectfully.
+
+- box_id	- 4 byte hexadecimal number to be used as box ID. This value will be part of the secure extension
+		in trusted boot image and should match the value burned in the appropriate efuse field.
+		This parameter is optional and if omitted defaults to 0.
+
+- flash_id	- 4 byte hexadecimal number to be used as flash ID. This value will be part of the secure extension
+		in trusted boot image and should match the value burned in the appropriate efuse field.
+		This parameter is optional and if omitted defaults to 0.
+
+- control	- Array of hexadecimal addresses to be set on each CP connected to AP in trusted mode.
+		It is required to add two addresses for each connected CP. The first address points to
+		the CP SecureBootControl register and second address points to the CP EfuseBurnControl register.
+		Please refer to your SoC documentation for details. For instance, Armada-7040 SoC has
+		a single CP connected to AP, so this array has to list 2 register addresses. The Armada-8040
+		has two CPS connected to AP, so this array has to include 4 register addresses.
+		This parameter is optional.
 
 ///////////////
 A3700 platforms
@@ -68,7 +121,17 @@ the system from self-locking.
 A8K platforms
 /////////////
 
-TBD
+1. Build an image for trusted boot mode using configuration file explained above and any additional settings
+   required by ATF. The image encryption option should not be used in this build, since the resulting image
+   should be compatible with non-trusted systems.
+2. Burn the image on the target board and boot it. The secure header will be bypassed in non-trusted boot mode
+   and the system will start as usual.
+3. Burn all required efuses using "efuse write" commands. The trusted boot enable efuse should be burned
+   last since any further modifications to SoC efuses will not be possible afterwards.
+4. Verify the efuse values using "efuse dump" and/or "efuse raw" commands.
+5. Restart the system and ensure the secure boot authentication stage has been passed.
+6. If the image encryption option is required, build a new image with image encryption enabled and burn it
+   to the system boot device using the regular "bubt" command.
 
 ///////////////
 A3700 platforms
@@ -77,8 +140,8 @@ A3700 platforms
 1. Create an UNTRUSTED boot image with eFuse command module support (as stated in "eFuses" chapter above)
    and burn it on target flash device using the regular "bubt" command.
 2. Create a TRUSTED boot image (as stated in "Boot image format" chapter above) and save it for later use.
-   When the trusted boot image is created, the the TBB tool saves the Key Authentication Key digest in file
-   named OtpHash.txt. This digest value will be used for eFuse programming so save this file.
+   When the trusted boot image is created, the the TBB tool saves the Key Authentication Key digest in the
+   file named OtpHash.txt. This digest value will be used for eFuse programming so save this file.
    The OtpHash.txt file lists the KAK digest in groups of 4-bytes values, organized in the following
    order:
        LSB

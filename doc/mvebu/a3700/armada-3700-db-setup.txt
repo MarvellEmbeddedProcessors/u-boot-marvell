@@ -1,9 +1,13 @@
 Armada3700-DB development board setup:
 --------------------------------------
 
-The Armada3700-DB Development Board (DB) is a configurable board designed to test several
+The Armada3700 Development Board (DB) is a configurable board designed to test several
 combinations of SOC configurations. U-BOOT supports a predefined set of those configurations
 via different device tree files.
+
+There are two kinds of DB, DB-88F3720-DDR3-Modular and DB-88F3720-DDR4-Modular, the only
+difference is DDR type: one is DDR3, the other is DDR4. They are identical concerning the
+following Board Physical Setups.
 
 This document describes the board modifications required to setup each configuration and the
 interfaces supported (or disabled in each one).

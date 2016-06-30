@@ -54,8 +54,31 @@ Customer board porting procedure
 			o Save and exit
 		>> make savedefconfnig
 		>> cp defconfig configs/my_board_defconfig
-
-	2.2. Compilation sanity
+	2.2. Select USB2.0 or USB3.0 host controller (Armada-3700 only)
+	-----------------------
+	Currently there is no concurrent support for both EHCI and XHCI in u-boot, so only one of them can be compiled
+	into u-boot image. By default XHCI is enabled, to enable EHCI instead:
+		>> make my_board_defconfig
+		>> make menuconfig
+			o Disable CONFIG_USB_XHCI_HCD.
+				-> Device Drivers -> Support for Host-side USB -> Unselect "xHCI HCD (USB 3.0) support"
+			o Enable CONFIG_USB_EHCI_HCD:
+				-> Device Drivers -> Support for Host-side USB -> Select "EHCI HCD (USB 2.0) support"
+			o Enable CONFIG_USB_EHCI_MARVELL_BYPASS_BRG_ADDR_DEC:
+				-> Device Drivers -> Support for Host-side USB -> EHCI HCD (USB 2.0) support
+					-> Select "Bypass MARVELL USB 2.0 bridge address decode setting"
+			o Enable CONFIG_USB_EHCI_MARVELL_SBUSCFG:
+				-> Device Drivers -> Support for Host-side USB -> EHCI HCD (USB 2.0) support
+					-> Select "MARVELL USB 2.0 sbuscfg setting"
+			o Save and exit
+	To switch back to XHCI:
+		>> make menuconfig
+			o Disable CONFIG_USB_EHCI_HCD:
+				-> Device Drivers -> Support for Host-side USB -> Unselect "EHCI HCD (USB 2.0) support"
+			o Enable CONFIG_USB_XHCI_HCD.
+				-> Device Drivers -> Support for Host-side USB -> Select "xHCI HCD (USB 3.0) support"
+			o Save and exit
+	2.3. Compilation sanity
 	-----------------------
 	Now, compile U-Boot to make sure that everything was set properly.
 	(Refer to doc/mvebu/build.txt for detailed build instructions).

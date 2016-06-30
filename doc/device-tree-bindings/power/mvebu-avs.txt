@@ -5,7 +5,7 @@ Required Properties:
 -reg: AVS internal register offset and size
 
 Example:
-	pm@11500 {
+	avs@11500 {
 		compatible = "marvell,armada-3700-avs";
 		reg = <0x11500 0x40>;
 	};

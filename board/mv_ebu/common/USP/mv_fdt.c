@@ -29,6 +29,9 @@ disclaimer.
 #include "mvBoardEnvLib.h"
 #include "ethSwitch/mvSwitchRegs.h"
 #include "ethSwitch/mvSwitch.h"
+#ifdef CONFIG_SWITCHING_SERVICES
+#include "switchingServices/switchingServices.h"
+#endif
 
 /*******************************************************************************
 * fdt_env_setup
@@ -135,6 +138,7 @@ static int mv_fdt_update_sd(void *fdt);
 #endif
 #ifdef CONFIG_SWITCHING_SERVICES
 static int mv_fdt_update_prestera(void *fdt);
+static int mv_fdt_update_eeprom_addr(void *fdt);
 #endif
 #ifdef MV_INCLUDE_TDM
 static int mv_fdt_update_tdm(void *fdt);
@@ -301,6 +305,12 @@ void ft_board_setup(void *blob, bd_t *bd)
 	/* Update memory node */
 	fixup_memory_node(blob);
 	mv_fdt_dprintf("Memory node updated\n");
+
+#ifdef CONFIG_SWITCHING_SERVICES
+	/*Update eeprom register address from 0x50 to 0x53 to support Aldrin*/
+	if (mvBoardisAmc() && (get_attached_silicon_type() == SILT_ALDR))
+                           mv_fdt_update_eeprom_addr(blob);
+#endif
 
 	if (!skip) {
 		/* Make updates of functions in update_sequence */
@@ -2276,6 +2286,49 @@ static int mv_fdt_update_switch(void *fdt)
 	}
 
 	return 0;
+}
+#endif
+
+#ifdef CONFIG_SWITCHING_SERVICES
+/*******************************************************************************
+* mv_fdt_update_eeprom_addr
+*
+* DESCRIPTION:
+*   This routines updates eeprom (node:eeprom@50) register address:
+*   from 0x50 to 0x53 to support Aldrin
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	0 on error os 1 otherwise.
+*
+*******************************************************************************/
+static int mv_fdt_update_eeprom_addr(void *fdt)
+{
+	u32 propval_u32 = 0x00000053;		/* property value */
+	char prop[50];			/* property name */
+	char node[64];			/* node name */
+	int nodeoffset;			/* node offset from libfdt */
+	int err;
+
+	sprintf(node, "eeprom@50");
+	sprintf(prop, "reg");
+
+    propval_u32 = htonl(propval_u32);
+	nodeoffset = mv_fdt_find_node(fdt, node);
+	/* This value is HEX number, not a string */
+	mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, &propval_u32, sizeof(propval_u32)));
+	if (err < 0)
+	{
+		mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
+		return 0;
+	}
+
+	return 1;
 }
 #endif
 #endif

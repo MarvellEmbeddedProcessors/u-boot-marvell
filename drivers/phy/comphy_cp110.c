@@ -1201,18 +1201,21 @@ static void comphy_utmi_power_down(u32 utmi_index, void __iomem *utmi_base_addr,
 	debug("stage:  UTMI %d - Power down transceiver (power down Phy), Power down PLL, and SuspendDM\n", utmi_index);
 	/* Power down UTMI PHY */
 	reg_set(utmi_cfg_addr, 0x0 << UTMI_PHY_CFG_PU_OFFSET, UTMI_PHY_CFG_PU_MASK);
-	/* Config USB3 Device UTMI enable */
-	mask = UTMI_USB_CFG_DEVICE_EN_MASK;
-	/* Prior to PHY init, configure mux for Device
-	(Device can be connected to UTMI0 or to UTMI1) */
+
+	/* If UTMI connected to USB Device, configure mux prior to PHY init
+	 * (Device can be connected to UTMI0 or to UTMI1)
+	 */
 	if (utmi_phy_port == UTMI_PHY_TO_USB_DEVICE0) {
+		debug("stage:  UTMI %d - Enable Device mode and configure UTMI mux\n", utmi_index);
+		/* USB3 Device UTMI enable */
+		mask = UTMI_USB_CFG_DEVICE_EN_MASK;
 		data = 0x1 << UTMI_USB_CFG_DEVICE_EN_OFFSET;
-		/* Config USB3 Device UTMI MUX */
+		/* USB3 Device UTMI MUX */
 		mask |= UTMI_USB_CFG_DEVICE_MUX_MASK;
 		data |= utmi_index << UTMI_USB_CFG_DEVICE_MUX_OFFSET;
-	} else {
-		data = 0x0 << UTMI_USB_CFG_DEVICE_EN_OFFSET;
+		reg_set(usb_cfg_addr,  data, mask);
 	}
+
 	/* Set Test suspendm mode */
 	mask = UTMI_CTRL_STATUS0_SUSPENDM_MASK;
 	data = 0x1 << UTMI_CTRL_STATUS0_SUSPENDM_OFFSET;

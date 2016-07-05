@@ -1526,6 +1526,7 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 			break;
 		case PHY_TYPE_USB3_HOST0:
 		case PHY_TYPE_USB3_HOST1:
+		case PHY_TYPE_USB3_DEVICE:
 			ret = comphy_usb3_power_up(lane, hpipe_base_addr, comphy_base_addr);
 			break;
 		case PHY_TYPE_SGMII0:

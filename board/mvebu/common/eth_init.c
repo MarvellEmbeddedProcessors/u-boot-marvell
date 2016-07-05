@@ -36,7 +36,7 @@ int board_eth_init(bd_t *bis)
 /* Initialize MDIO driver, for NETA ETH interface */
 #ifdef CONFIG_MVEBU_MDIO
 	mvebu_mdio_initialize(gd->fdt_blob);
-	miiphy_set_current_dev("mvebu_mdio");
+	miiphy_set_current_dev("mvebu_mdio0");
 #endif
 
 /* initalize ETH interfaces */

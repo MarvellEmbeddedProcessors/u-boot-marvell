@@ -70,12 +70,15 @@
 #define MVEBU_XSMI_CFG_DIV_OFFS			0
 #define MVEBU_XSMI_CFG_DIV_MASK			(0x3 << MVEBU_XSMI_CFG_DIV_OFFS)
 
+/* Maximum number of MDIO controllers */
+#define MVEBUG_NUM_OF_MDIO_CTRLS		2
+
 struct mvebu_mdio_base {
 	void __iomem *xsmi_base;
 	void __iomem *smi_base;
 };
 
-struct mvebu_mdio_base mdio_base_addr;
+struct mvebu_mdio_base mdio_base_addr[MVEBUG_NUM_OF_MDIO_CTRLS];
 
 /* SMI functions */
 static int mvebu_smi_check_param(int phy_adr, int reg_ofs)
@@ -325,40 +328,69 @@ int mvebu_mdio_write(struct mii_dev *bus, int phy_adr, int dev_adr, int reg_ofs,
 int mvebu_mdio_initialize(const void *blob)
 {
 	struct mii_dev *bus;
+	struct mvebu_mdio_base *mdio_base;
 	u32 node;
-	struct mvebu_mdio_base *mdio_base = &mdio_base_addr;
+	int id, ret = 0, i = 0;
 
-	/* Get the MDIO node from the FDT blob */
+	/* Reading all MDIO nodes from the device tree.
+	 * NOTE:
+	 * - MDIO will be initialized even if node is disabled,
+	 *   fdt_node_offset_by_compatible ignores node 'status' property.
+	 * - If there are more nodes than MVEBUG_NUM_OF_MDIO_CTRLS, only nodes
+	 *   smaller than MVEBUG_NUM_OF_MDIO_CTRLS will be initialized.
+	 * - In a case of an error during MDIO initialization, the driver will
+	 *   continue to the next controller and propagate an error to the
+	 *   caller (even if part of the controllers were initialized).
+	 */
 	node = fdt_node_offset_by_compatible(blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_MDIO));
-	if (node < 0) {
-		error("No MDIO node found in FDT blob\n");
-		return -1;
+	while (node != -FDT_ERR_NOTFOUND) {
+		if (i >= MVEBUG_NUM_OF_MDIO_CTRLS) {
+			error("MDIO controllers count in DT exceeded maximum supported %d\n",
+			      MVEBUG_NUM_OF_MDIO_CTRLS);
+			return -1;
+		}
+
+		mdio_base = &mdio_base_addr[i];
+
+		/* Get the MDIO controller ID for device-tree */
+		id = fdtdec_get_int(blob, node, "id", -1);
+		if (id == -1) {
+			error("No id property was found for MDIO node");
+			ret = -1;
+			continue;
+		}
+
+		/* Get the base address of the address MDIO */
+		mdio_base->xsmi_base = (void *)fdt_get_regs_offs(blob, node, "reg_xsmi");
+		if (mdio_base->xsmi_base == NULL)
+			debug("No XSMI base address found for MDIO %d\n", id);
+
+		mdio_base->smi_base = (void *)fdt_get_regs_offs(blob, node, "reg_smi");
+		if (mdio_base->smi_base == NULL)
+			debug("No SMI base address found for MDIO %d\n", id);
+
+		bus = mdio_alloc();
+		if (!bus) {
+			error("Failed to allocate MVEBU MDIO %d bus", id);
+			ret = -1;
+			continue;
+		}
+
+		bus->read = mvebu_mdio_read;
+		bus->write = mvebu_mdio_write;
+		bus->reset = NULL;
+		/* use given name or generate its own unique name */
+		snprintf(bus->name, MDIO_NAME_LEN, "mvebu_mdio%d", id);
+		bus->priv = mdio_base;
+		if (mdio_register(bus) < 0) {
+			error("failed to register MDIO %d bus\n", id);
+			ret = -1;
+			continue;
+		}
+
+		node = fdt_node_offset_by_compatible(blob, node, fdtdec_get_compatible(COMPAT_MVEBU_MDIO));
+		i++;
 	}
-	/* Get the base address of the address MDIO */
-	mdio_base->xsmi_base = (void *)fdt_get_regs_offs(blob, node, "reg_xsmi");
-	if (mdio_base->xsmi_base == NULL)
-		debug("No XSMI base address found\n");
 
-	mdio_base->smi_base = (void *)fdt_get_regs_offs(blob, node, "reg_smi");
-	if (mdio_base->smi_base == NULL)
-		debug("No SMI base address found\n");
-
-	bus = mdio_alloc();
-	if (!bus) {
-		error("Failed to allocate MVEBU MDIO bus");
-		return -1;
-	}
-
-	bus->read = mvebu_mdio_read;
-	bus->write = mvebu_mdio_write;
-	bus->reset = NULL;
-	/* use given name or generate its own unique name */
-	snprintf(bus->name, MDIO_NAME_LEN, "mvebu_mdio");
-	bus->priv = mdio_base;
-	if (mdio_register(bus) < 0) {
-		error("failed to register MDIO bus\n");
-		return -1;
-	}
-
-	return 0;
+	return ret;
 }

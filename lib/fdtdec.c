@@ -97,6 +97,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_SDIO, "marvell,mvebu-sdio"),
 	COMPAT(MVEBU_SAR, "marvell,sample-at-reset"),
 	COMPAT(MVEBU_PINCTL, "marvell,mvebu-pinctl"),
+	COMPAT(MVEBU_PINCTL, "marvell,armada-3700-pinctl"),
 	COMPAT(MVEBU_MPP_BUS, "marvell,mvebu-mpp-bus"),
 	COMPAT(MVEBU_MBUS, "marvell,mvebu-mbus"),
 	COMPAT(MVEBU_MBUS_IO_DEC, "marvell,mvebu-io-decode"),

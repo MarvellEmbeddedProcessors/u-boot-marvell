@@ -38,4 +38,5 @@ obj-$(CONFIG_TCA642X)		+= tca642x.o
 oby-$(CONFIG_SX151X)		+= sx151x.o
 obj-$(CONFIG_SUNXI_GPIO)	+= sunxi_gpio.o
 obj-$(CONFIG_MVEBU_PINCTL)	+= mvebu_pinctl.o
+obj-$(CONFIG_MVEBU_A3700_PINCTL)+= mvebu_pinctl_a3700.o
 obj-$(CONFIG_MVEBU_GPIO)	+= mvebu_gpio.o

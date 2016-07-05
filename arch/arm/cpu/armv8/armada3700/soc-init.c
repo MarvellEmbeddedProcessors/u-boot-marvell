@@ -42,7 +42,7 @@
 
 int soc_early_init_f(void)
 {
-#ifdef CONFIG_MVEBU_PINCTL
+#ifdef CONFIG_MVEBU_A3700_PINCTL
 	mvebu_pinctl_probe();
 #endif
 

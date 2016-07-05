@@ -82,11 +82,10 @@
 			};
 
 			pinctl0: pinctl@13830 { /* north bridge */
-				compatible = "marvell,mvebu-pinctl";
-				bank-name ="armada-3700-nb";
+				compatible = "marvell,armada-3700-pinctl";
+				bank-name = "armada-3700-nb";
 				reg = <0x13830 0x4>;
-				pin-count = <24>;
-				max-func = <1>;
+				pin-count = <36>;
 			};
 
 			pm@14000 {
@@ -118,11 +117,10 @@
 				status = "okay";
 			};
 			pinctl1: pinctl@18830 { /* south bridge */
-				compatible = "marvell,mvebu-pinctl";
-				bank-name ="armada-3700-sb";
+				compatible = "marvell,armada-3700-pinctl";
+				bank-name = "armada-3700-sb";
 				reg = <0x18830 0x4>;
-				pin-count = <9>;
-				max-func = <1>;
+				pin-count = <30>;
 			};
 
 			neta0: neta@30000 {

@@ -24,6 +24,9 @@
 #include "../common/devel-board.h"
 #include "../common/sar.h"
 #include "../common/cfg_eeprom.h"
+#ifdef CONFIG_MVEBU_GPIO
+#include <asm/gpio.h>
+#endif
 
 /* IO expander I2C device */
 #define I2C_IO_EXP_ADDR	0x22
@@ -32,28 +35,29 @@
 #define I2C_IO_REG_0_SATA_OFF	2
 #define I2C_IO_REG_0_USB_H_OFF	1
 
-#ifdef CONFIG_SCSI_AHCI_PLAT
+#if defined(CONFIG_SCSI_AHCI_PLAT) && defined(CONFIG_MVEBU_GPIO)
 void board_ahci_power_on(void)
 {
-/* This I2C IO expander configuration is board specific,
- * and adequate only to Marvell A3700 DB board
- */
-	int ret;
-	unsigned char buffer[1];
+	struct fdt_gpio_state gpio;
+	int count;
+	int node;
 
-	/* Enable power of SATA by set IO expander via I2C,
-	 * to set corresponding bit to output mode to enable the power for SATA.
-	 */
-	ret = i2c_read(I2C_IO_EXP_ADDR, I2C_IO_CFG_REG_0, sizeof(unsigned char), buffer, sizeof(buffer));
-	if (ret)
-		error("failed to read IO expander value via I2C\n");
+	/* Scan device tree sata node */
+	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "sata",
+			COMPAT_MVEBU_SATA, &node, 1);
+	if (count == 0) {
+		printf("%s: 'sata' is disabled in Device Tree\n", __func__);
+		return;
+	}
 
-	buffer[0] &= ~(1 << I2C_IO_REG_0_SATA_OFF);
-	ret = i2c_write(I2C_IO_EXP_ADDR, I2C_IO_CFG_REG_0, sizeof(unsigned char), buffer, sizeof(buffer));
-	if (ret)
-		error("failed to set IO expander via I2C\n");
+	fdtdec_decode_gpio(gd->fdt_blob, node, "sata-power", &gpio);
+	fdtdec_setup_gpio(&gpio);
+	if (fdt_gpio_isvalid(&gpio))
+		gpio_direction_output(gpio.gpio, (gpio.flags & FDT_GPIO_ACTIVE_LOW ? 0 : 1));
+
+	return;
 }
-#endif /* CONFIG_SCSI_AHCI_PLAT */
+#endif
 
 #ifdef CONFIG_USB_XHCI
 /* Set USB VBUS signals (via I2C IO expander/GPIO) as output and set output value as enabled */

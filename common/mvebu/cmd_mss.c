@@ -25,6 +25,7 @@
 #define MSS_DMA_CTRLR(base)	(base + 0xC8)
 #define MSS_M3_RSTCR(base)	(base + 0xFC)
 #define MSS_AEBR(base)		(base + 0x160)
+#define MSS_AIBR(base)		(base + 0x164)
 
 #define MSS_DMA_CTRLR_SIZE_OFFSET		(0)
 #define MSS_DMA_CTRLR_SIZE_MASK		    (0xFF)
@@ -38,32 +39,41 @@
 #define MSS_M3_RSTCR_RST_ON         (0)
 #define MSS_M3_RSTCR_RST_OFF        (1)
 #define MSS_AEBR_MASK				0xFFF
+#define MSS_AIBR_MASK				0xFFF
 
 #define MSS_DMA_TIMEOUT             1000
 #define MSS_EXTERNAL_SPACE          0x50000000
 #define MSS_EXTERNAL_ACCESS_BIT     28
+#define MSS_EXTERNAL_ADDR_MASK      0xfffffff
+#define MSS_INTERNAL_SPACE          0x40000000
+#define MSS_INTERNAL_ACCESS_BIT     28
+
+#define DMA_SIZE		128
+
+
 
 int mss_boot(u32 size, u32 srcAddr, uintptr_t  mss_regs)
 {
 	u32 i, loop_num, timeout;
 
-	printf("Loading MSS image from address 0x%08X size 0x%x to MSS at 0x%lx...",
-		(u32)srcAddr, size, mss_regs);
+	printf("\nLoading MSS image from address 0x%08X size 0x%x to MSS at 0x%lx...", (u32)srcAddr, size, mss_regs);
 
 	/* load image to MSS RAM using DMA */
-	loop_num = (size / 128) + (((size & 127) == 0) ? 0 : 1);
+	loop_num = (size / DMA_SIZE) + (((size & (DMA_SIZE - 1)) == 0) ? 0 : 1);
 
-	/* set AXI External Address Bus extension */
+	/* set AXI External and Internal Address Bus extension */
 	writel(((srcAddr >> MSS_EXTERNAL_ACCESS_BIT) & MSS_AEBR_MASK), MSS_AEBR(mss_regs));
+	writel(((mss_regs >> MSS_INTERNAL_ACCESS_BIT) & MSS_AIBR_MASK), MSS_AIBR(mss_regs));
 
 	for (i = 0; i < loop_num; i++) {
 		/* write destination and source addresses */
-		writel(MSS_EXTERNAL_SPACE | (srcAddr + (i * 128)), MSS_DMA_SRCBR(mss_regs));
-		writel((i * 128), MSS_DMA_DSTBR(mss_regs));
+		writel(MSS_EXTERNAL_SPACE | ((srcAddr & MSS_EXTERNAL_ADDR_MASK)
+					+ (i * DMA_SIZE)), MSS_DMA_SRCBR(mss_regs));
+		writel((i * DMA_SIZE), MSS_DMA_DSTBR(mss_regs));
 
 		/* set the DMA control register */
 		writel(((MSS_DMA_CTRLR_REQ_SET << MSS_DMA_CTRLR_REQ_OFFSET) |
-				(128 << MSS_DMA_CTRLR_SIZE_OFFSET)), MSS_DMA_CTRLR(mss_regs));
+				(DMA_SIZE << MSS_DMA_CTRLR_SIZE_OFFSET)), MSS_DMA_CTRLR(mss_regs));
 
 		/* Poll DMA_ACK at MSS_DMACTLR until it is ready */
 		timeout = MSS_DMA_TIMEOUT;
@@ -83,6 +93,8 @@ int mss_boot(u32 size, u32 srcAddr, uintptr_t  mss_regs)
 
 	/* Release M3 from reset */
 	writel((MSS_M3_RSTCR_RST_OFF << MSS_M3_RSTCR_RST_OFFSET), MSS_M3_RSTCR(mss_regs));
+
+	printf("Done\n");
 
 	return 0;
 }

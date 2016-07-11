@@ -779,8 +779,8 @@ void comphy_dedicated_phys_init(void)
 			debug("No USB%d node in DT\n", usb32 == 0 ? 2 : 3);
 	}
 
-	count = fdtdec_find_aliases_for_id(blob, "sata",
-			COMPAT_MVEBU_SATA, &node, 1);
+	count = fdtdec_find_aliases_for_id(blob, "sataphy",
+			COMPAT_MVEBU_A3700_SATA_PHY, &node, 1);
 
 	if (count > 0) {
 		if (fdtdec_get_is_enabled(blob, node)) {

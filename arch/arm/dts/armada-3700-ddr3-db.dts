@@ -87,6 +87,9 @@
 			sata: sata@e0000 {
 				status = "okay";
 			};
+			sataphy@e0000 {
+				status = "okay";
+			};
 		};
 	};
 };

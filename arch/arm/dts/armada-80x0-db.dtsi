@@ -287,15 +287,13 @@
 					status = "okay";
 				};
 				mac2 {
-					phy-mode = "sgmii"; /* lane-0 */
+					phy-mode = "rgmii"; /* lane-0 */
 					phy = <&phy4>;
-					phy-speed = <2500>;
-					status = "disabled";
+					status = "okay";
 				};
 				mac3 {
-					phy-mode = "rgmii"; /* rgmii-1 */
-					phy = <&phy5>;
-					status = "okay";
+					phy-mode = "sgmii"; /* rgmii-1 */
+					status = "disabled";
 				};
 			};
 			ppv22@000000 {
@@ -304,10 +302,10 @@
 					status = "okay";
 				};
 				eth1@020000 {
-					status = "disabled";
+					status = "okay";
 				};
 				eth2@030000 {
-					status = "okay";
+					status = "disabled";
 				};
 			};
 		};

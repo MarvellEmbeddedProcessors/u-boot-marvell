@@ -162,8 +162,8 @@
 					"fdt_name=fdt.dtb\0"		\
 					"netdev=eth0\0"			\
 					"image_name=Image\0"		\
-					"get_ramfs=if test \"${ramfs_name}\" != \"-\"; then tftp $ramfs_addr "	\
-					"$ramfs_name; else setenv ramfs_addr -;fi\0"				\
+					"get_ramfs=if test \"${ramfs_name}\" != \"-\"; then setenv ramfs_addr "	\
+					"0x3000000; tftp $ramfs_addr $ramfs_name; else setenv ramfs_addr -;fi\0"\
 					"get_images=tftp $kernel_addr $image_name; tftp $fdt_addr $fdt_name; "	\
 						"run get_ramfs\0"						\
 					"console=" CONFIG_DEFAULT_CONSOLE "\0"					\

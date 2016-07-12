@@ -113,6 +113,7 @@
 #define OUTPUT_QSN_PHASE_SELECT			(1 << 17)
 #define SAMPL_INV_QSP_PHASE_SELECT		(1 << 18)
 #define SAMPL_INV_QSP_PHASE_SELECT_SHIFT	18
+#define EMMC_PHY_SLOW_MODE			(1 << 29)
 #define PHY_INITIALIZAION			(1 << 31)
 #define WAIT_CYCLE_BEFORE_USING_MASK		0xf
 #define WAIT_CYCLE_BEFORE_USING_SHIFT		12
@@ -189,6 +190,7 @@ struct xenon_mmc_cfg {
 	u32 clk;
 	u32 bus_width;
 	u32 mmc_mode;
+	u8 timing;
 	void *aligned_buffer;
 	struct mmc_config cfg;
 	struct mmc *mmc;

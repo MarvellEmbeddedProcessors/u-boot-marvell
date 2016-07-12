@@ -117,6 +117,12 @@ int xenon_mmc_phy_init(struct xenon_mmc_cfg *mmc_cfg)
 	/* Enable QSP PHASE SELECT */
 	var = xenon_mmc_readl(mmc_cfg, EMMC_PHY_TIMING_ADJUST);
 	var |= SAMPL_INV_QSP_PHASE_SELECT;
+	if ((mmc_cfg->timing == MMC_TIMING_UHS_SDR50) ||
+	    (mmc_cfg->timing == MMC_TIMING_UHS_SDR25) ||
+	    (mmc_cfg->timing == MMC_TIMING_UHS_SDR12) ||
+	    (mmc_cfg->timing == MMC_TIMING_SD_HS) ||
+	    (mmc_cfg->timing == MMC_TIMING_LEGACY))
+		var |= EMMC_PHY_SLOW_MODE;
 	xenon_mmc_writel(mmc_cfg, EMMC_PHY_TIMING_ADJUST, var);
 
 	/* Enable internal clock */
@@ -195,7 +201,7 @@ int xenon_mmc_phy_init(struct xenon_mmc_cfg *mmc_cfg)
 	return 0;
 }
 
-void xenon_mmc_phy_set(struct xenon_mmc_cfg *mmc_cfg, u8 timing)
+static void xenon_mmc_phy_set(struct xenon_mmc_cfg *mmc_cfg)
 {
 	u32 var;
 
@@ -210,12 +216,12 @@ void xenon_mmc_phy_set(struct xenon_mmc_cfg *mmc_cfg, u8 timing)
 	 * If timing belongs to high speed, set bit[17] of
 	 * EMMC_PHY_TIMING_ADJUST register
 	 */
-	if ((timing == MMC_TIMING_MMC_HS400) ||
-	    (timing == MMC_TIMING_MMC_HS200) ||
-	    (timing == MMC_TIMING_UHS_SDR50) ||
-	    (timing == MMC_TIMING_UHS_SDR104) ||
-	    (timing == MMC_TIMING_UHS_DDR50) ||
-	    (timing == MMC_TIMING_UHS_SDR25)) {
+	if ((mmc_cfg->timing == MMC_TIMING_MMC_HS400) ||
+	    (mmc_cfg->timing == MMC_TIMING_MMC_HS200) ||
+	    (mmc_cfg->timing == MMC_TIMING_UHS_SDR50) ||
+	    (mmc_cfg->timing == MMC_TIMING_UHS_SDR104) ||
+	    (mmc_cfg->timing == MMC_TIMING_UHS_DDR50) ||
+	    (mmc_cfg->timing == MMC_TIMING_UHS_SDR25)) {
 		var = xenon_mmc_readl(mmc_cfg, EMMC_PHY_TIMING_ADJUST);
 
 #ifdef CONFIG_PALLADIUM
@@ -240,15 +246,15 @@ void xenon_mmc_phy_set(struct xenon_mmc_cfg *mmc_cfg, u8 timing)
 	var |= (DQ_DDR_MODE_MASK << DQ_DDR_MODE_SHIFT) | CMD_DDR_MODE;
 	xenon_mmc_writel(mmc_cfg, EMMC_PHY_FUNC_CONTROL, var);
 #else
-	if ((timing == MMC_TIMING_UHS_DDR50) ||
-	    (timing == MMC_TIMING_MMC_HS400)) {
+	if ((mmc_cfg->timing == MMC_TIMING_UHS_DDR50) ||
+	    (mmc_cfg->timing == MMC_TIMING_MMC_HS400)) {
 		var = xenon_mmc_readl(mmc_cfg, EMMC_PHY_FUNC_CONTROL);
 		var |= (DQ_DDR_MODE_MASK << DQ_DDR_MODE_SHIFT) | CMD_DDR_MODE;
 		xenon_mmc_writel(mmc_cfg, EMMC_PHY_FUNC_CONTROL, var);
 	}
 #endif
 
-	if (timing == MMC_TIMING_MMC_HS400) {
+	if (mmc_cfg->timing == MMC_TIMING_MMC_HS400) {
 		var = xenon_mmc_readl(mmc_cfg, EMMC_PHY_FUNC_CONTROL);
 		var &= ~DQ_ASYNC_MODE;
 		xenon_mmc_writel(mmc_cfg, EMMC_PHY_FUNC_CONTROL, var);
@@ -812,7 +818,7 @@ static int xenon_mmc_init(struct mmc *mmc)
 	xenon_mmc_set_clk(mmc, mmc_cfg->clk);
 
 	/* Init PHY and set default timing */
-	xenon_mmc_phy_set(mmc_cfg, MMC_TIMING_UHS_SDR50);
+	xenon_mmc_phy_set(mmc_cfg);
 
 	/* Clear interrupt status */
 	xenon_mmc_writel(mmc_cfg, SDHCI_INT_STATUS, 0xFFFFFFFF);
@@ -861,6 +867,9 @@ int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk,
 	/* Set quirks */
 	mmc_cfg->quirks = SDHCI_QUIRK_NO_CD | SDHCI_QUIRK_WAIT_SEND_CMD |
 			  SDHCI_QUIRK_32BIT_DMA_ADDR;
+
+	/* Set default timing */
+	mmc_cfg->timing = MMC_TIMING_UHS_SDR50;
 
 	/* Set reg base, mode and name */
 	mmc_cfg->reg_base = (u64)reg_base;

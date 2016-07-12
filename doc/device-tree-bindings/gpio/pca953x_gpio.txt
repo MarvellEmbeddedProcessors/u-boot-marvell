@@ -1,0 +1,26 @@
+pca953x io-expander DT bindings
+-----------------------
+IO-Expander node must be placed under the i2c node.
+
+Required properties:
+- compatible:           Should be set to:
+                            "nxp,pca9534", "nxp,pca9535", "nxp,pca9536", "nxp,pca9537", "nxp,pca9538",
+                            "nxp,pca9539", "nxp,pca9554", "nxp,pca9555", "nxp,pca9556", "nxp,pca9557",
+                            "nxp,pca9574", "nxp,pca9575", "nxp,pca9698", "maxim,max7310", "maxim,max7312",
+                            "maxim,max7313", "maxim,max7315", "ti,pca6107", "ti,tca6408", "ti,tca6416",
+                            "ti,tca6424", "onsemi,pca9654", "exar,xra1202"
+- reg:                  IO-Expander's i2c address
+
+Examples:
+Armada3700 has one pca9555 IO-Expander.
+
+	i2c: i2c@11000 {
+		compatible = "marvell,armada-3700-i2c";
+		reg = <0x11000 0x100>;
+		status = "disabled";
+		expander0: pca953x@22 {
+			compatible = "nxp,pca9555";
+			reg = <0x22>;
+			status = "disabled";
+		};
+	};

@@ -2865,6 +2865,7 @@ struct mv_pp2x_dev_param {
 	int phy_speed;
 	int interface;
 	bool force_link;
+	int cp_index;
 };
 
 struct pp21_specific_tx_desc {

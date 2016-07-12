@@ -3143,18 +3143,23 @@ static void mv_pp2x_mac_str_to_hex(const char *mac_str, unsigned char *mac_hex)
 	}
 }
 
-static int mv_pp2x_phylib_init(struct eth_device *dev, int phyid, int gop_index)
+static int mv_pp2x_phylib_init(struct eth_device *dev, int phyid, int gop_index, int cp_index)
 {
 	struct mii_dev *bus;
 	struct phy_device *phydev;
 	struct mv_pp2x_port *pp = dev->priv;
+	char name[MDIO_NAME_LEN];
 
-	bus = mdio_get_current_dev();
+	snprintf(name, MDIO_NAME_LEN, "mvebu_mdio%d", cp_index);
+
+	/* Choose bus accordingly to the cp index. CP0 connected to the mvebu_mdio0 bus and
+	 * CP1 connected to the mvebu_mdio1
+	 */
+	bus = miiphy_get_dev_by_name(name);
 	if (!bus) {
 		printf("mdio_alloc failed\n");
 		return -ENOMEM;
 	}
-	sprintf(bus->name, dev->name);
 
 	/* Set phy address of the port */
 	mv_gop110_smi_phy_addr_cfg(&pp->pp2->gop, gop_index, phyid);
@@ -3819,7 +3824,7 @@ static int mv_pp2x_initialize_dev(bd_t *bis, struct mv_pp2x *pp2,
 	eth_register(dev);
 
 	if (param->phy_handle)
-		mv_pp2x_phylib_init(dev, param->phy_addr, param->gop_port);
+		mv_pp2x_phylib_init(dev, param->phy_addr, param->gop_port, param->cp_index);
 
 	return 1;
 }
@@ -3911,6 +3916,7 @@ int mv_pp2x_initialize(bd_t *bis)
 			}
 
 			dev_param[port_id].base = pp2[i]->base;
+			dev_param[port_id].cp_index = i;
 			dev_param[port_id].dev_num = port_id;
 			dev_param[port_id].interface = interface;
 			net_comp_config |=

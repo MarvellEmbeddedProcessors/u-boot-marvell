@@ -10,13 +10,12 @@ SoC specific:
 		should be "marvell,mvebu-mdio".
 	- reg_xsmi: the base address and size XSMI bus.
 	- reg_smi: the base address and size SMI bus.
-	- status
-		Set to okay/disabled if the MDIO interface is enabled/disabled.
+	- id: contoller id.
 
 Example for MDIO node:
 	mdio0@30000 {
 		compatible = "marvell,mvebu-mdio";
 		reg_xsmi = <0x30000 0x20>;
 		reg_smi = <0x2004 0x4>;
-		status = "disabled";
+		id = <0>;
 	};

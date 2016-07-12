@@ -69,6 +69,9 @@
 			sar-reg {
 				status = "disabled";
 			};
+			mdio0@12A200 {
+				id = <1>;
+			};
 			gop {
 				emac4: mac0 {
 					mac-address = [00 00 00 00 00 04];

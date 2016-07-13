@@ -223,6 +223,45 @@ static int mvebu_gpio_probe(struct udevice *bank)
 	return 0;
 }
 
+/**
+ * mvebu_gpio_bind - Reorder the gpio bank in gpio uclass devices list by its request sequence number
+ *                   after device binding. The post-binding function adjusts the place of the device
+ *                   node in uclass device list, which makes sure the SoC gpio banks always be present
+ *                   at first. When doing the gpio renumbering in probe stage, the gpio global id will
+ *                   start from these banks other than the onboard gpio devices, such as io-expander.
+ *
+ * @param bank       gpio bank device
+ * @return 0 if ok, others on failure
+ */
+int mvebu_gpio_bind(struct udevice *bank)
+{
+	struct udevice *dev;
+	struct uclass *uc;
+	int ret;
+
+	/* Get gpio uclass */
+	ret = uclass_get(UCLASS_GPIO, &uc);
+	if (ret)
+		return ret;
+
+	/* Get the first gpio device in gpio uclass devices list */
+	dev = list_first_entry(&uc->dev_head, struct udevice, uclass_node);
+
+	/* If the bank is just the first gpio device, no need to reorder it */
+	if (dev == bank)
+		return 0;
+
+	/* Reorder the gpio bank device in gpio uclass devices list by its request sequence number */
+	uclass_foreach_dev(dev, uc) {
+		if (dev->req_seq > bank->req_seq) {
+			list_move(&bank->uclass_node, dev->uclass_node.prev);
+			break;
+		}
+	}
+
+	return 0;
+}
+
 U_BOOT_DRIVER(mvebu_gpio) = {
 	.name	= "mvebu_gpio",
 	.id	= UCLASS_GPIO,
@@ -231,6 +270,7 @@ U_BOOT_DRIVER(mvebu_gpio) = {
 	.ofdata_to_platdata = mvebu_gpio_ofdata_to_platdata,
 	.platdata_auto_alloc_size = sizeof(struct mvebu_gpio_platdata),
 	.probe = mvebu_gpio_probe,
+	.bind = mvebu_gpio_bind,
 };
 
 

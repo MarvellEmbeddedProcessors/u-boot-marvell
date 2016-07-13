@@ -9,6 +9,11 @@
 	#address-cells = <2>;
 	#size-cells = <2>;
 
+	aliases {
+		gpio_0 = &gpio0;
+		gpio_1 = &gpio1;
+	};
+
 	soc {
 		compatible = "simple-bus";
 		#address-cells = <1>;

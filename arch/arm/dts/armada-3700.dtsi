@@ -161,17 +161,6 @@
 				reg = <0x5e000 0x450>;
 				status = "disabled";
 			};
-			ddr-mac {
-				compatible = "marvell,mvebu-ddr-mac";
-				reg = <0x0000 0x1000>;
-				status = "okay";
-			};
-
-			ddr-phy {
-				compatible = "marvell,mvebu-ddr-phy";
-				reg = <0x1000 0x1000>;
-				status = "okay";
-			};
 			gpio0: gpio@13800 {
 				compatible = "marvell,mvebu-gpio";
 				reg = <0x13800 0x800>;

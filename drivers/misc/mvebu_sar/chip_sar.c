@@ -174,7 +174,8 @@ void mvebu_sar_dump(void)
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(sar_chip_info)-1; i++)
-		sar_chip_info[i].sar_dump_func();
+		if (sar_chip_info[i].sar_dump_func)
+			sar_chip_info[i].sar_dump_func();
 
 	return;
 }

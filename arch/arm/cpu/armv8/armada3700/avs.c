@@ -40,6 +40,10 @@
 #include <asm/arch/pm.h>
 #include <asm/errno.h>
 #include <asm/io.h>
+#ifdef CONFIG_DEVEL_BOARD
+#include <asm/arch/board-info.h>
+#include "../board/mvebu/common/board.h"
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -67,7 +71,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define AVS_VDD_HIGH		39 /* 1202mV */
 #define AVS_VDD_MEDIUM		35 /* 1155mV */
 #define AVS_VDD_LOW		31 /* 1108mV */
-#define AVS_VDD_LOWEST		31 /* 1108mV */
+#define AVS_VDD_LOWEST		26 /* 1050mV */
 
 /* There is only one AVS node for Armada-3700 */
 #define AVS_DT_NUM_MAX		1
@@ -95,11 +99,41 @@ static int reset_avs(void)
 	return 0;
 }
 
+/* Get the lowest VDD values */
+static unsigned int get_avs_lowest_voltage(void)
+{
+#ifdef CONFIG_DEVEL_BOARD
+	int board_id;
+
+	/*
+	 * Current DDR3 DB board has the limitation,
+	 * AVS voltage should more or equal than setting
+	 * voltage DC/DC converter at the board.
+	 * Since the default setting voltage at DDR3 boards is 1.1V,
+	 * the lowest voltage should not be lower than 1.1V.
+	 */
+	board_id = board_get_id();
+	if (board_id  == ARMAMA3700_DDR3_DB)
+		return AVS_VDD_LOW;
+	else
+		return AVS_VDD_LOWEST;
+
+#else
+	/*
+	 * The customer should define the low VDD value
+	 * according to the lowest voltage supported by
+	 * DC/DC coverter
+	 */
+	return AVS_VDD_LOWEST;
+#endif
+}
+
 /* Set the VDD values for the four VSET loads */
 int set_avs_vdd_loads(void)
 {
 	u32 reg_val;
 	u32 vdd;
+	u32 vdd_low;
 	u32 cpu_clk;
 	int i;
 
@@ -118,6 +152,8 @@ int set_avs_vdd_loads(void)
 			(AVS_VDD_MASK << AVS_LOW_VDD_LIMIT_OFFS));
 	cpu_clk =  get_cpu_clk();
 
+	vdd_low = get_avs_lowest_voltage();
+
 	if (cpu_clk == 1200)
 		vdd = AVS_VDD_HIGH;
 	else if (cpu_clk == 1000)
@@ -125,7 +161,7 @@ int set_avs_vdd_loads(void)
 	else if (cpu_clk == 800)
 		vdd = AVS_VDD_LOW;
 	else
-		vdd = AVS_VDD_LOWEST;
+		vdd = vdd_low;
 
 	reg_val |= ((vdd << AVS_HIGH_VDD_LIMIT_OFFS) |
 			(vdd << AVS_LOW_VDD_LIMIT_OFFS));
@@ -136,8 +172,8 @@ int set_avs_vdd_loads(void)
 		reg_val = readl(reg_base + MVEBU_AVS_VSET(i));
 		reg_val &= ~((AVS_VDD_MASK << AVS_HIGH_VDD_LIMIT_OFFS) |
 				(AVS_VDD_MASK << AVS_LOW_VDD_LIMIT_OFFS));
-		reg_val |= ((AVS_VDD_LOWEST << AVS_HIGH_VDD_LIMIT_OFFS) |
-				(AVS_VDD_LOWEST << AVS_LOW_VDD_LIMIT_OFFS));
+		reg_val |= ((vdd_low << AVS_HIGH_VDD_LIMIT_OFFS) |
+				(vdd_low << AVS_LOW_VDD_LIMIT_OFFS));
 		writel(reg_val, reg_base + MVEBU_AVS_VSET(i));
 	}
 

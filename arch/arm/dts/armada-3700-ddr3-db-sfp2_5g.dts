@@ -27,6 +27,12 @@
 
 	soc {
 		internal-regs {
+			comphy {
+				phy1 {
+					phy-type = <PHY_TYPE_SGMII1>;
+					phy-speed = <PHY_SPEED_3_125G>;
+				};
+			};
 			neta1: neta@40000 {
 				status = "okay";
 				phy_mode = "sgmii";
@@ -38,12 +44,6 @@
 					 * if SERDES speed is set to 1.25G, it implies sgmii 1 Gbps. */
 					speed = <1000>;
 					full-duplex;
-				};
-			};
-			comphy {
-				phy1 {
-					phy-type = <PHY_TYPE_SGMII1>;
-					phy-speed = <PHY_SPEED_3_125G>;
 				};
 			};
 		};

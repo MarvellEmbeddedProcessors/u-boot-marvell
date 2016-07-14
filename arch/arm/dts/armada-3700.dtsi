@@ -20,49 +20,15 @@
 			#size-cells = <1>;
 			ranges = <0x0000 0xd0000000 0x2000000>;
 
-			avs@11500 {
-				compatible = "marvell,armada-3700-avs";
-				reg = <0x11500 0x40>;
-				status = "disabled";
-			};
+			io-decode {
+				compatible = "marvell,mvebu-io-decode";
+				#address-cells = <1>;
+				#size-cells = <1>;
 
-			serial: serial@12000 {
-				compatible = "marvell,armada-3700-uart";
-				reg = <0x12000 0x20>;
-				clock_frequency = <25804800>;
-				baudrate = <115200>;
-				status = "disabled";
-			};
-
-			spi0: spi@10600 {
-				compatible = "marvell,armada-3700-spi";
-				reg = <0x10600 0x50>;
-				#clock-cells = <0>;
-				clock-frequency = <160000>;
-				spi-max-frequency = <40000>;
-				status = "disabled";
-			};
-
-			pinctl0: pinctl@13830 { /* north bridge */
-				compatible = "marvell,mvebu-pinctl";
-				bank-name ="armada-3700-nb";
-				reg = <0x13830 0x4>;
-				pin-count = <24>;
-				max-func = <1>;
-			};
-
-			pm@14000 {
-				compatible = "marvell,armada-3700-pm";
-				reg = <0x14000 0x100>;
-				status = "disabled";
-			};
-
-			pinctl1: pinctl@18830 { /* south bridge */
-				compatible = "marvell,mvebu-pinctl";
-				bank-name ="armada-3700-sb";
-				reg = <0x18830 0x4>;
-				pin-count = <9>;
-				max-func = <1>;
+				unit_io_decode_info =
+					/* reg_base, range, IO_ATTR(max_win, max_remap, remap_size, win_offset) */
+					<0xcb00 0x30 IO_ATTR(3, 0, 32, 0x10) /* eMMC */
+					0xc800 0x30 IO_ATTR(3, 0, 32, 0x10)> /* SATA */;
 			};
 
 			mbus {
@@ -79,30 +45,53 @@
 					0x80000000 0x10000000 ATTR(0x1, 0x3, 0x0)>;
 			};
 
-			io-decode {
-				compatible = "marvell,mvebu-io-decode";
-				#address-cells = <1>;
-				#size-cells = <1>;
-
-				unit_io_decode_info =
-					/* reg_base, range, IO_ATTR(max_win, max_remap, remap_size, win_offset) */
-					<0xcb00 0x30 IO_ATTR(3, 0, 32, 0x10) /* eMMC */
-					0xc800 0x30 IO_ATTR(3, 0, 32, 0x10)> /* SATA */;
-			};
-
-			neta0: neta@30000 {
-				compatible = "marvell,armada-3700-neta";
-				reg = <0x30000 0x20>;
+			spi0: spi@10600 {
+				compatible = "marvell,armada-3700-spi";
+				reg = <0x10600 0x50>;
+				#clock-cells = <0>;
+				clock-frequency = <160000>;
+				spi-max-frequency = <40000>;
 				status = "disabled";
 			};
-			neta1: neta@40000 {
-				compatible = "marvell,armada-3700-neta";
-				reg = <0x40000 0x20>;
-				status = "disabled";
-			};
+
 			i2c: i2c@11000 {
 				compatible = "marvell,armada-3700-i2c";
 				reg = <0x11000 0x100>;
+				status = "disabled";
+			};
+
+			avs@11500 {
+				compatible = "marvell,armada-3700-avs";
+				reg = <0x11500 0x40>;
+				status = "disabled";
+			};
+
+			serial: serial@12000 {
+				compatible = "marvell,armada-3700-uart";
+				reg = <0x12000 0x20>;
+				clock_frequency = <25804800>;
+				baudrate = <115200>;
+				status = "disabled";
+			};
+			gpio0: gpio@13800 {
+				compatible = "marvell,mvebu-gpio";
+				reg = <0x13800 0x800>;
+				bank-name = "armada-3700-north-bridge";
+				ngpios = <ARMADA_3700_BANK_0_GPIO_COUNT>;
+				status = "okay";
+			};
+
+			pinctl0: pinctl@13830 { /* north bridge */
+				compatible = "marvell,mvebu-pinctl";
+				bank-name ="armada-3700-nb";
+				reg = <0x13830 0x4>;
+				pin-count = <24>;
+				max-func = <1>;
+			};
+
+			pm@14000 {
+				compatible = "marvell,armada-3700-pm";
+				reg = <0x14000 0x100>;
 				status = "disabled";
 			};
 			comphy {
@@ -121,30 +110,29 @@
 					phy-speed = <PHY_SPEED_1_25G>;
 				};
 			};
-			pcie-controller {
-				#address-cells = <1>;
-				#size-cells = <1>;
-				compatible = "marvell,advk-pcie";
+			gpio1: gpio@18800 {
+				compatible = "marvell,mvebu-gpio";
+				reg = <0x18800 0x800>;
+				bank-name = "armada-3700-south-bridge";
+				ngpios = <ARMADA_3700_BANK_1_GPIO_COUNT>;
+				status = "okay";
+			};
+			pinctl1: pinctl@18830 { /* south bridge */
+				compatible = "marvell,mvebu-pinctl";
+				bank-name ="armada-3700-sb";
+				reg = <0x18830 0x4>;
+				pin-count = <9>;
+				max-func = <1>;
+			};
 
-				pcie@1,0 {
-					reg = <0x70000 0x20000>;
-					mem = <0xE8000000 0x8000000>;
-					status = "disabled";
-				};
-			};
-			sata: sata@e0000 {
-				compatible = "marvell,mvebu-sata";
-				reg = <0xe0000 0x200>;
+			neta0: neta@30000 {
+				compatible = "marvell,armada-3700-neta";
+				reg = <0x30000 0x20>;
 				status = "disabled";
 			};
-			mmc0: mmc@D8000 {
-				compatible = "marvell,xenon-sdhci";
-				reg = <0xD8000 0x300>;
-				status = "disabled";
-			};
-			mmc1: mmc@D0000 {
-				compatible = "marvell,xenon-sdhci";
-				reg = <0xD0000 0x300>;
+			neta1: neta@40000 {
+				compatible = "marvell,armada-3700-neta";
+				reg = <0x40000 0x20>;
 				status = "disabled";
 			};
 			usb3: usb3@58000 {
@@ -161,19 +149,31 @@
 				reg = <0x5e000 0x450>;
 				status = "disabled";
 			};
-			gpio0: gpio@13800 {
-				compatible = "marvell,mvebu-gpio";
-				reg = <0x13800 0x800>;
-				bank-name = "armada-3700-north-bridge";
-				ngpios = <ARMADA_3700_BANK_0_GPIO_COUNT>;
-				status = "okay";
+			pcie-controller {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "marvell,advk-pcie";
+
+				pcie@1,0 {
+					reg = <0x70000 0x20000>;
+					mem = <0xE8000000 0x8000000>;
+					status = "disabled";
+				};
 			};
-			gpio1: gpio@18800 {
-				compatible = "marvell,mvebu-gpio";
-				reg = <0x18800 0x800>;
-				bank-name = "armada-3700-south-bridge";
-				ngpios = <ARMADA_3700_BANK_1_GPIO_COUNT>;
-				status = "okay";
+			mmc1: mmc@D0000 {
+				compatible = "marvell,xenon-sdhci";
+				reg = <0xD0000 0x300>;
+				status = "disabled";
+			};
+			mmc0: mmc@D8000 {
+				compatible = "marvell,xenon-sdhci";
+				reg = <0xD8000 0x300>;
+				status = "disabled";
+			};
+			sata: sata@e0000 {
+				compatible = "marvell,mvebu-sata";
+				reg = <0xe0000 0x200>;
+				status = "disabled";
 			};
 		};
 	};

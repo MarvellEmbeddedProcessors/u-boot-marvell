@@ -30,26 +30,21 @@
 
 	soc {
 		internal-regs {
+			spi0: spi@10600 {
+				output-enable-gpio = <&gpio0 ARMADA_3700_GPIO(BANK_0, 60) GPIO_ACTIVE_HIGH>;
+				status = "okay";
+			};
+			i2c: i2c@11000 {
+				status = "okay";
+			};
 			avs@11500 {
 				status = "okay";
 			};
 			serial: serial@12000 {
 				status = "okay";
 			};
-			spi0: spi@10600 {
-				output-enable-gpio = <&gpio0 ARMADA_3700_GPIO(BANK_0, 60) GPIO_ACTIVE_HIGH>;
-				status = "okay";
-			};
 			pm@14000 {
 				vdd_control = "avs";
-				status = "okay";
-			};
-			neta0: neta@30000 {
-				status = "okay";
-				phy_addr = <0x0>;
-				phy_mode = "rgmii";
-			};
-			i2c: i2c@11000 {
 				status = "okay";
 			};
 			comphy {
@@ -62,13 +57,26 @@
 					phy-speed = <PHY_SPEED_5G>;
 				};
 			};
+			neta0: neta@30000 {
+				status = "okay";
+				phy_addr = <0x0>;
+				phy_mode = "rgmii";
+			};
+			usb3: usb3@58000 {
+				status = "okay";
+			};
+			usb: usb@5e000 {
+				status = "okay";
+			};
 			pcie-controller {
 				pcie@1,0 {
 					reset-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 3) GPIO_ACTIVE_HIGH>;
 					status = "okay";
 				};
 			};
-			sata: sata@e0000 {
+			mmc1: mmc@D0000 {
+				sdio-vcc-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 22) GPIO_ACTIVE_HIGH>;
+				bus-width = <4>;
 				status = "okay";
 			};
 			mmc0: mmc@D8000 {
@@ -76,15 +84,7 @@
 				bus-width = <8>;
 				status = "okay";
 			};
-			mmc1: mmc@D0000 {
-				sdio-vcc-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 22) GPIO_ACTIVE_HIGH>;
-				bus-width = <4>;
-				status = "okay";
-			};
-			usb3: usb3@58000 {
-				status = "okay";
-			};
-			usb: usb@5e000 {
+			sata: sata@e0000 {
 				status = "okay";
 			};
 		};

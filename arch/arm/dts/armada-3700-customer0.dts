@@ -10,24 +10,19 @@
 
 	soc {
 		internal-regs {
+			spi0: spi@10600 {
+				status = "okay";
+			};
+			i2c: i2c@11000 {
+				status = "okay";
+			};
 			avs@11500 {
 				status = "okay";
 			};
 			serial: serial@12000 {
 				status = "okay";
 			};
-			spi0: spi@10600 {
-				status = "okay";
-			};
 			pm@14000 {
-				status = "okay";
-			};
-			neta0: neta@30000 {
-				status = "okay";
-				phy_addr = <0x0>;
-				phy_mode = "sgmii";
-			};
-			i2c: i2c@11000 {
 				status = "okay";
 			};
 			comphy {
@@ -40,22 +35,27 @@
 					phy-speed = <PHY_SPEED_1_25G>;
 				};
 			};
+			neta0: neta@30000 {
+				status = "okay";
+				phy_addr = <0x0>;
+				phy_mode = "sgmii";
+			};
+			usb3: usb3@58000 {
+				status = "disabled";
+			};
 			pcie-controller {
 				pcie@1,0 {
 					status = "disabled";
 				};
 			};
-			sata: sata@e0000 {
-				status = "okay";
+			mmc1: mmc@D0000 {
+				status = "disabled";
 			};
 			mmc0: mmc@D8000 {
 				status = "disabled";
 			};
-			mmc1: mmc@D0000 {
-				status = "disabled";
-			};
-			usb3: usb3@58000 {
-				status = "disabled";
+			sata: sata@e0000 {
+				status = "okay";
 			};
 		};
 	};

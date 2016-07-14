@@ -27,16 +27,16 @@
 
 	soc {
 		internal-regs {
-			neta1: neta@40000 {
-				status = "okay";
-				phy_addr = <0x1>;
-				phy_mode = "sgmii";
-			};
 			comphy {
 				phy1 {
 					phy-type = <PHY_TYPE_SGMII1>;
 					phy-speed = <PHY_SPEED_1_25G>;
 				};
+			};
+			neta1: neta@40000 {
+				status = "okay";
+				phy_addr = <0x1>;
+				phy_mode = "sgmii";
 			};
 		};
 	};

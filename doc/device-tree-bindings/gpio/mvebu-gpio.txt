@@ -9,23 +9,34 @@ Required properties:
 Optional properties:
 None
 
+Notes:
+The sequence number of a GPIO bank is taken from the suffix of the bank's
+alias name. The sequence number will be used to determine the base ID of the
+GPIO pins in this bank. It gurantees the banks of SoCs GPIO pins are always
+numbered before the other devices in GPIO Class, such as IO expanders.
+
 Examples:
 Armada3700 example:
 Armada3700 has two GPIO banks, one is the Northbridge GPIO bank and the other is the Southbridge GPIO bank..
+
+	aliases {
+		gpio_0 = &gpio0;
+		gpio_1 = &gpio1;
+	};
 
 	gpio0: gpio@13800 {
 		compatible = "marvell,mvebu-gpio";
 		reg = <0x13800 0x800>;
 		bank-name = "armada-3700-north-bridge";
 		status = "disabled";
-		ngpios = <64>;
+		ngpios = <ARMADA_3700_BANK_0_GPIO_COUNT>;
 	};
 	gpio1: gpio@18800 {
 		compatible = "marvell,mvebu-gpio";
 		reg = <0x18800 0x800>;
 		bank-name = "armada-3700-south-bridge";
 		status = "disabled";
-		ngpios = <32>;
+		ngpios = <ARMADA_3700_BANK_1_GPIO_COUNT>;
 	};
 
 When other nodes want to use a GPIO pin, they can call the marco ARMADA_3700_GPIO
@@ -40,6 +51,12 @@ mmc1: mmc@D0000 {
 Armada-70x0e example:
 Armada-70x0 include AP-806, CP-110: AP-806 have 20 pins, and CP-110 have 63 pins
 AP-806 has 1 bank with 20 pins, CP-110 has 2 banks (1st bank: 0-31, 2nd bank: 32-62)
+Armada-70x0 GPIO alias names:
+	aliases {
+		gpio_0 = &gpio0;
+		gpio_1 = &gpio1;
+		gpio_2 = &gpio2;
+	};
 AP-806 GPIO example node:
 	gpio0: gpio@6F5040 {
 		compatible = "marvell,mvebu-gpio";
@@ -54,6 +71,13 @@ CP-110 GPIO example node:
 		reg = <0x440100 0x40>;
 		bank-name = "armada-cp0";
 		ngpios = <ARMADA_CP0_B0_GPIO_COUNT>;
+		status = "okay";
+	};
+	gpio2: gpio@440140 {
+		compatible = "marvell,mvebu-gpio";
+		reg = <0x440140 0x40>;
+		bank-name = "armada-cp1";
+		ngpios = <ARMADA_CP0_B1_GPIO_COUNT>;
 		status = "okay";
 	};
 

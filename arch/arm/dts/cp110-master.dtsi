@@ -20,6 +20,11 @@
 
 	model = "Marvell Armada CPN-110 Master";
 
+	aliases {
+		gpio_1 = &gpio1;
+		gpio_2 = &gpio2;
+	};
+
 	cp110-master {
 		compatible = "marvell,armada-cpn110-master", "simple-bus";
 		#address-cells = <1>;

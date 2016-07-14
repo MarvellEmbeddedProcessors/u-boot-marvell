@@ -21,6 +21,10 @@
 	#address-cells = <2>;
 	#size-cells = <2>;
 
+	aliases {
+		gpio_0 = &gpio0;
+	};
+
 	cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;

@@ -23,6 +23,7 @@
 #include <asm/arch-mvebu/soc.h>
 #include "../common/devel-board.h"
 #include "../common/sar.h"
+#include "../common/cfg_eeprom.h"
 
 /* IO expander I2C device */
 #define I2C_IO_EXP_ADDR	0x22
@@ -107,6 +108,19 @@ void board_usb_vbus_init(void)
 
 }
 #endif /* CONFIG_USB_XHCI */
+
+/*
+ * HW_INFO command is used to set board ID to EEPROM,
+ * there will be no EEPROM Board ID if HW_INFO is disabled.
+ * And CONFIG_BOARD_CONFIG_EEPROM is selected once CMD_MVEBU_HW_INFO is enabled
+ */
+#ifdef CMD_MVEBU_HW_INFO
+int board_get_id(void)
+{
+	/* Return board ID in EEPROM for Marvell DB board */
+	return cfg_eeprom_get_board_id();
+}
+#endif
 
 int mvebu_devel_board_init(void)
 {

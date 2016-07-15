@@ -1,0 +1,15 @@
+Marvell Armada-3700 SoC SATA PHY bindings
+=====================================
+
+The SATA PHY node includes description about the SATA PHY unit.
+The driver initializes the SATA PHY, according to the FDT blob configurations.
+
+Mandatory properties:
+	- compatible:
+		"marvell,armada-3700-sata-phy"
+
+Example:
+sataphy {
+	compatible = "marvell,armada-3700-sata-phy";
+	status = "okay";
+};

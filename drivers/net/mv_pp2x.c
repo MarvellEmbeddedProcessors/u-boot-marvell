@@ -3906,7 +3906,6 @@ int mv_pp2x_initialize(bd_t *bis)
 					port_node, "port-id", 0);
 			if (!fdtdec_get_is_enabled(gd->fdt_blob, port_node)) {
 				printf("Skipping disabled port egiga%d\n", port_id);
-				interface++;
 				continue;
 			}
 			err = mv_pp2x_dts_port_param_set(port_node, &dev_param[port_id]);

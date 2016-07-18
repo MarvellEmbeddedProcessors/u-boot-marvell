@@ -16,7 +16,6 @@
  * ***************************************************************************
  */
 
-#include <dt-bindings/ddr/ddr_data.h>
 #include <dt-bindings/comphy/comphy_data.h>
 #include <dt-bindings/gpio/armada-8k-gpio.h>
 #include "apn-806-a0.dtsi"

@@ -16,7 +16,6 @@
  * ***************************************************************************
  */
 
-#include <dt-bindings/ddr/ddr_data.h>
 
 / {
 	/* This should go only into devel boards */

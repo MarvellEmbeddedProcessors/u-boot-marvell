@@ -1,6 +1,5 @@
 
 /dts-v1/;
-#include <dt-bindings/ddr/ddr_data.h>
 #include "armada-3700.dtsi"
 
 /* detail board setup:

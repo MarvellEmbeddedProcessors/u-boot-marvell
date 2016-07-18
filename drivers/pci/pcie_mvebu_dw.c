@@ -75,16 +75,19 @@ static int mvebu_pcie_link_up(uintptr_t regs_base)
 	return 0;
 }
 
-int dw_pcie_link_up(uintptr_t regs_base, u32 cap_speed)
+int dw_pcie_link_up(uintptr_t regs_base, u32 cap_speed, int is_end_point)
 {
 	u32 reg;
 
-	/* Disable LTSSM state machine to enable configuration
-	 * ans set the device to root complex mode */
+	/* Disable LTSSM state machine to enable configuration */
 	reg = readl(regs_base + PCIE_GLOBAL_CONTROL);
 	reg &= ~(PCIE_APP_LTSSM_EN);
 	reg &= ~(PCIE_DEVICE_TYPE_MASK << PCIE_DEVICE_TYPE_OFFSET);
-	reg |= PCIE_DEVICE_TYPE_RC << PCIE_DEVICE_TYPE_OFFSET;
+	if (!is_end_point)
+		/* set the device to root complex mode (otherwise,
+		 * leave it in end point mode)
+		 */
+		reg |= (PCIE_DEVICE_TYPE_RC << PCIE_DEVICE_TYPE_OFFSET);
 	writel(reg, regs_base + PCIE_GLOBAL_CONTROL);
 
 	/* Set the PCIe master AXI attributes */
@@ -120,6 +123,7 @@ void pci_init_board(void)
 	const void *blob = gd->fdt_blob;
 	struct pcie_win mem_win, cfg_win;
 	uintptr_t regs_base;
+	int is_end_point;
 	int err, i;
 
 	count = fdtdec_find_aliases_for_id(blob, "pcie-controller",
@@ -143,10 +147,10 @@ void pci_init_board(void)
 				continue;
 			}
 
-			if (fdtdec_get_bool(blob, port_node, "endpoint")) {
-				dw_pcie_set_endpoint(host_id, regs_base);
-				continue;
-			}
+			is_end_point = fdtdec_get_bool(blob, port_node, "endpoint");
+			/* configure mac to EP mode */
+			if (is_end_point)
+				dw_pcie_set_endpoint(regs_base, host_id);
 
 			cap_speed = fdtdec_get_int(blob, port_node, "force_cap_speed", LINK_SPEED_GEN_3);
 
@@ -156,7 +160,7 @@ void pci_init_board(void)
 			}
 
 			/* Don't register host if link is down */
-			if (!dw_pcie_link_up(regs_base, cap_speed)) {
+			if (!dw_pcie_link_up(regs_base, cap_speed, is_end_point)) {
 				printf("PCIE-%d: Link down\n", host_id);
 				continue;
 			}

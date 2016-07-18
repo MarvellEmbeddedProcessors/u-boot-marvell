@@ -85,6 +85,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define PCIE_GEN3_EQU_CTRL		0x8A8
 #define GEN3_EQU_EVAL_2MS_DISABLE	(1 << 5)
 
+#define PCIE_ROOT_COMPLEX_MODE_MASK	(0xF << 4)
+
 int dw_pcie_get_link_speed(uintptr_t regs_base)
 {
 	return ((readl(regs_base + PCIE_LINK_STATUS_REG)) >> PCIE_LINK_STATUS_SPEED_OFF) & PCIE_LINK_STATUS_SPEED_MASK;
@@ -329,9 +331,15 @@ int dw_pcie_init(int host_id, uintptr_t regs_base, struct pcie_win *mem_win,
 }
 
 
-int dw_pcie_set_endpoint(u32 hid, u32 regs_base)
+int dw_pcie_set_endpoint(uintptr_t regs_base, u32 hid)
 {
-	printf("PCIE-%d: End point mode not supported yet.\n", hid);
+	u32 reg;
+
+	debug("PCIE-%d: Set pcie to End point mode\n", hid);
+	reg = readl(regs_base + PCI_STATUS_DETECTED_PARITY);
+	reg &= ~PCIE_ROOT_COMPLEX_MODE_MASK; /* set EP mode by clearing RC configuration */
+	writel(reg, regs_base + PCI_STATUS_DETECTED_PARITY);
+
 	return 0;
 }
 

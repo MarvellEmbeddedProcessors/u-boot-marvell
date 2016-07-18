@@ -33,10 +33,10 @@ struct dw_host_params {
 	int is_endpoint;
 };
 
-int dw_pcie_link_up(uintptr_t regs_base, u32 cap_speed);
+int dw_pcie_link_up(uintptr_t regs_base, u32 cap_speed, int is_end_point);
 int dw_pcie_init(int host_id, uintptr_t regs_base, struct pcie_win *mem_win,
 		struct pcie_win *cfg_win, int first_busno);
-int dw_pcie_set_endpoint(u32 hid, u32 regs_base);
+int dw_pcie_set_endpoint(uintptr_t regs_base, u32 hid);
 void dw_pcie_configure(uintptr_t regs_base, u32 cap_speed);
 int dw_pcie_get_link_speed(uintptr_t regs_base);
 int dw_pcie_get_link_width(uintptr_t regs_base);

@@ -40,6 +40,10 @@
 /* NB warm reset magic number, write it to MVEBU_GPIO_NB_RST_REG triggers warm reset */
 #define MVEBU_NB_WARM_RST_MAGIC_NUM	(0x1d1e)
 
+#define MVEBU_GPIO_NB_OUTPUT_EN_REG		(MVEBU_GPIO_NB_REG_BASE)
+#define MVEBU_GPIO_NB_OUTPUT_EN_HIGH_REG	(MVEBU_GPIO_NB_REG_BASE + 0x4)
+#define MVEBU_GPIO_NB_OUTPUT_SPI_EN_OFF		(28)/* This is hidden bit which is reserved in function spec */
+
 int soc_early_init_f(void)
 {
 #ifdef CONFIG_MVEBU_A3700_PINCTL
@@ -62,6 +66,28 @@ int soc_get_id(void)
 	    it needs to be got from PCIe register, like A370 and AXP */
 	u32 id = 0x9991;
 	return id;
+}
+
+static void enable_spi_cs_clk_pins_output(void)
+{
+	u32 reg_val;
+
+	/* Set hiden GPIO setting for SPI.
+	 * In north_bridge_pin_out_en_high register 13804,
+	 * bit 28 is the one which enables CS, CLK pins to be
+	 * output, need to set it to 1.
+	 * The initial value of this bit is 1, but in UART boot mode
+	 * initialization, this bit is disabled and the SPI CS and CLK pins
+	 * are used for downloading image purpose; so after downloading,
+	 * we should set this bit to 1 again to enable SPI CS and CLK pins.
+	 * And anyway, this bit value sould be 1 in all modes,
+	 * so here we does not judge boot mode and set this bit to 1 always.
+	 */
+	reg_val = readl(MVEBU_GPIO_NB_OUTPUT_EN_HIGH_REG);
+	reg_val = reg_val | (1 << MVEBU_GPIO_NB_OUTPUT_SPI_EN_OFF);
+	writel(reg_val, MVEBU_GPIO_NB_OUTPUT_EN_HIGH_REG);
+
+	return;
 }
 
 void soc_init(void)
@@ -87,6 +113,8 @@ void soc_init(void)
 #ifdef CONFIG_MVEBU_A3700_PM
 	init_pm();
 #endif
+
+	enable_spi_cs_clk_pins_output();
 	return;
 }
 

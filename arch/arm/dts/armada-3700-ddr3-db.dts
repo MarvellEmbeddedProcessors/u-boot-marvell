@@ -31,7 +31,6 @@
 	soc {
 		internal-regs {
 			spi0: spi@10600 {
-				output-enable-gpio = <&gpio0 ARMADA_3700_GPIO(BANK_0, 60) GPIO_ACTIVE_HIGH>;
 				status = "okay";
 			};
 			i2c: i2c@11000 {

@@ -24,7 +24,6 @@
 #include <fdtdec.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/mvebu.h>
-#include <asm/gpio.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -243,9 +242,6 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 	struct spi_slave *slave;
 	u32 timeout = SPI_TIMEOUT;
 	u32 data;
-#ifdef CONFIG_MVEBU_GPIO
-	struct fdt_gpio_state output_enable_gpio;
-#endif
 	int node_list[CONFIG_MAX_SPI_NUM], node;
 	u32 i, count;
 
@@ -265,31 +261,6 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 		mvebu_spi_max_freq = fdtdec_get_int(gd->fdt_blob, node, "spi-max-frequency", 0);
 		mvebu_spi_input_clock = fdtdec_get_int(gd->fdt_blob, node, "clock-frequency", 0);
 
-#ifdef CONFIG_MVEBU_GPIO
-		/* set hiden GPIO setting for SPI
-		 * in north_bridge_test_pin_out_en register 13804(high GPIO register),
-		 * bit 28(since it's in high regsiter, so the local pin number in bank is 60)
-		 * which is hidden bit which is reserved in function spec
-		 * (the corresponding gpio is ARMADA_3700_GPIO(BANK_0, 60) in a3700 spi dts node)
-		 * is the one which enables CS, CLK pin to be
-		 * output, need to set it to 1.
-		 * normally, it is needed only in UART boot mode,
-		 * but after trying all other modes, it is OK to set it.
-		 * later, we could read the SAR register, and do not
-		 * set it in other boot mode.
-		 */
-		fdtdec_decode_gpio(gd->fdt_blob, node, "output-enable-gpio", &output_enable_gpio);
-		fdtdec_setup_gpio(&output_enable_gpio);
-		if (fdt_gpio_isvalid(&output_enable_gpio)) {
-			int val;
-
-			/* Set to output enbale GPIO in output mode with low level by default */
-			val = output_enable_gpio.flags & FDT_GPIO_ACTIVE_LOW ? 1 : 0;
-			gpio_direction_output(output_enable_gpio.gpio, val);
-		}
-#else
-		printf("ERROR: CS, CLK pins are not enabled in output mode, need to implement gpio in SOC code\n");
-#endif
 		break;
 	}
 

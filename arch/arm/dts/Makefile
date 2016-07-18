@@ -86,6 +86,9 @@ dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-db_router.dtb 	\
 			     armada-70x0-db_kr.dtb	\
 			     armada-70x0-db_all_pcie.dtb
 
+# A7040 PCAC device tree files
+dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-pcac_kr.dtb
+
 # A8040 DB device tree files
 dtb-$(CONFIG_DEVEL_BOARD) += armada-80x0-db-10G.dtb \
 			     armada-80x0-db-SGMII.dtb

@@ -15,10 +15,10 @@
 #include <dt-bindings/gpio/gpio.h>
 
 /* armada3700 has 2 gpio banks */
-/* bank0 is north bridge gpio, it has 61 gpio pins, its global gpio base number is 0 */
-/* bank0 is south bridge gpio, it has 30 gpio pins, its global gpio base number is 61 */
+/* bank0 is north bridge gpio, it has 36 gpio pins, its global gpio base number is 0 */
+/* bank1 is south bridge gpio, it has 30 gpio pins, its global gpio base number is 36 */
 #define ARMADA_3700_BANK_0_GPIO_BASE 0
-#define ARMADA_3700_BANK_0_GPIO_COUNT 61
+#define ARMADA_3700_BANK_0_GPIO_COUNT 36
 #define ARMADA_3700_BANK_1_GPIO_BASE (ARMADA_3700_BANK_0_GPIO_BASE + ARMADA_3700_BANK_0_GPIO_COUNT)
 #define ARMADA_3700_BANK_1_GPIO_COUNT 30
 

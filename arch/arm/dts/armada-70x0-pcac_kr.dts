@@ -93,7 +93,7 @@
 			};
 			pcie-controller {
 				pcie@0,0 {
-					endpoint = <1>;
+					endpoint;
 					status = "okay";
 				};
 			};

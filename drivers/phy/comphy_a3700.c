@@ -521,52 +521,6 @@ static int comphy_usb2_power_up(u8 usb32)
 }
 
 /***************************************************************************************************
-  * comphy_emmc_power_up
-  *
-  * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
- ***************************************************************************************************/
-static int comphy_emmc_power_up(void)
-{
-	debug_enter();
-
-	/*
-	 * 1. Bus power ON, Bus voltage 1.8V
-	 */
-	reg_set((void __iomem *)SDIO_HOST_CTRL1_ADDR, 0xB00, 0xF00);
-
-	/*
-	 * 2. Set FIFO parameters
-	 */
-	reg_set((void __iomem *)SDIO_SDHC_FIFO_ADDR, 0x315, 0xFFFFFFFF);
-
-	/*
-	 * 3. Set Capabilities 1_2
-	 */
-	reg_set((void __iomem *)SDIO_CAP_12_ADDR, 0x25FAC8B2, 0xFFFFFFFF);
-
-	/*
-	 * 4. Set Endian
-	 */
-	reg_set((void __iomem *)SDIO_ENDIAN_ADDR, 0x00c00000, 0);
-
-	/*
-	 * 4. Init PHY
-	 */
-	reg_set((void __iomem *)SDIO_PHY_TIMING_ADDR, 0x80000000, 0x80000000);
-	reg_set((void __iomem *)SDIO_PHY_PAD_CTRL0_ADDR, 0x50000000, 0xF0000000);
-
-	/*
-	 * 5. DLL reset
-	 */
-	reg_set((void __iomem *)SDIO_DLL_RST_ADDR, 0xFFFEFFFF, 0);
-	reg_set((void __iomem *)SDIO_DLL_RST_ADDR, 0x00010000, 0);
-
-	debug_exit();
-
-	return 1;
-}
-
-/***************************************************************************************************
   * comphy_sgmii_power_up
   *
   * return:
@@ -801,29 +755,6 @@ void comphy_dedicated_phys_init(void)
 			debug("SATA node is disabled\n");
 	}  else
 		debug("No SATA node in DT\n");
-
-
-	count = fdtdec_find_aliases_for_id(blob, "sdio",
-		 COMPAT_MVEBU_SDIO, &node, 1);
-
-	if (count <= 0) {
-		debug("No SDIO node in DT, looking for MMC one\n");
-		count = fdtdec_find_aliases_for_id(blob, "mmc0",
-			COMPAT_MVEBU_XENON_MMC, &node, 1);
-	}
-
-	if (count > 0) {
-		if (fdtdec_get_is_enabled(blob, node)) {
-			ret = comphy_emmc_power_up();
-			if (ret == 0)
-				error("Failed to initialize SDIO/eMMC PHY\n");
-			else
-				debug("SDIO/eMMC PHY init succeed\n");
-		} else
-			debug("SDIO/eMMC node is disabled\n");
-	}  else
-		debug("No SDIO/eMMC node in DT\n");
-
 
 	debug_exit();
 }

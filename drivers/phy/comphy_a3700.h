@@ -247,17 +247,4 @@
 #define vsata_ctrl_reg			0x00
 #define bs_phy_pu_pll			BIT6
 
-/*************************/
-/* SDIO/eMMC definitions */
-/*************************/
-#define SDIO_BASE			(MVEBU_REGS_BASE + 0xD8000)
-
-#define SDIO_HOST_CTRL1_ADDR		(SDIO_BASE + 0x28)
-#define SDIO_SDHC_FIFO_ADDR		(SDIO_BASE + 0x12C)
-#define SDIO_CAP_12_ADDR		(SDIO_BASE + 0x40)
-#define SDIO_ENDIAN_ADDR		(SDIO_BASE + 0x1A4)
-#define SDIO_PHY_TIMING_ADDR		(SDIO_BASE + 0x170)
-#define SDIO_PHY_PAD_CTRL0_ADDR		(SDIO_BASE + 0x178)
-#define SDIO_DLL_RST_ADDR		(SDIO_BASE + 0x148)
-
 #endif /* _COMPHY_A3700_H_ */

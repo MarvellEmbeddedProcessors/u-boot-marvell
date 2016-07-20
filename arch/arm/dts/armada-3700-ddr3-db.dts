@@ -35,6 +35,11 @@
 			};
 			i2c: i2c@11000 {
 				status = "okay";
+				expander0: pca953x@22 {
+					compatible = "nxp,pca9555";
+					reg = <0x22>;
+					status = "okay";
+				};
 			};
 			avs@11500 {
 				status = "okay";

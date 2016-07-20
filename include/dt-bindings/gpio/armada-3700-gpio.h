@@ -22,6 +22,9 @@
 #define ARMADA_3700_BANK_1_GPIO_BASE (ARMADA_3700_BANK_0_GPIO_BASE + ARMADA_3700_BANK_0_GPIO_COUNT)
 #define ARMADA_3700_BANK_1_GPIO_COUNT 30
 
+/* For boards with peripheral GPIOs (like io_expander), define its global gpio base below */
+#define ARMADA_3700_PERIPHERAL_0_GPIO_BASE (ARMADA_3700_BANK_1_GPIO_BASE + ARMADA_3700_BANK_1_GPIO_COUNT)
+
 #define ARMADA_3700_GPIO(bank, offset) \
 	(ARMADA_3700_##bank##_GPIO_BASE + offset)
 

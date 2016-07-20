@@ -73,8 +73,8 @@ struct comphy_mux_data cp110_comphy_pipe_mux_data[] = {
 /* Lane 5 */ {2, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX2, 0x4} } },
 };
 
-static int comphy_pcie_power_up(u32 lane, u32 pcie_width, bool clk_src, void __iomem *hpipe_base,
-				void __iomem *comphy_base)
+static int comphy_pcie_power_up(u32 lane, u32 pcie_width, bool clk_src, int is_end_point,
+				void __iomem *hpipe_base, void __iomem *comphy_base)
 {
 	u32 mask, data, ret = 1;
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
@@ -94,7 +94,7 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_width, bool clk_src, void __i
 
 	pcie_clk = sar.clk_direction;
 	debug("PCIe clock = %x\n", pcie_clk);
-
+	debug("PCIe RC    = %d\n", !is_end_point);
 	debug("PCIe Width = %d\n", pcie_width);
 	/* enable PCIe by4 and by2 */
 	if (lane == 0) {
@@ -353,10 +353,12 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_width, bool clk_src, void __i
 	data |= 0x1 << HPIPE_G3_FFE_LOAD_RES_LEVEL_OFFSET;
 	reg_set(hpipe_addr + HPIPE_G3_SETTING_3_REG, data, mask);
 
-	/* Set phy in root complex mode */
-	mask = HPIPE_CFG_PHY_RC_EP_MASK;
-	data = 0x1 << HPIPE_CFG_PHY_RC_EP_OFFSET;
-	reg_set(hpipe_addr + HPIPE_LANE_EQU_CONFIG_0_REG, data, mask);
+	if (!is_end_point) {
+		/* Set phy in root complex mode */
+		mask = HPIPE_CFG_PHY_RC_EP_MASK;
+		data = 0x1 << HPIPE_CFG_PHY_RC_EP_OFFSET;
+		reg_set(hpipe_addr + HPIPE_LANE_EQU_CONFIG_0_REG, data, mask);
+	}
 
 	debug("stage: Comphy power up\n");
 
@@ -1515,7 +1517,7 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		case PHY_TYPE_PEX2:
 		case PHY_TYPE_PEX3:
 			ret = comphy_pcie_power_up(lane, pcie_width, ptr_comphy_map->clk_src,
-						   hpipe_base_addr, comphy_base_addr);
+						   serdes_map->end_point, hpipe_base_addr, comphy_base_addr);
 			break;
 		case PHY_TYPE_SATA0:
 		case PHY_TYPE_SATA1:

@@ -132,15 +132,19 @@
 				*/
 				phy0 {
 					phy-type = <PHY_TYPE_PEX0>;
+					endpoint;
 				};
 				phy1 {
 					phy-type = <PHY_TYPE_PEX0>;
+					endpoint;
 				};
 				phy2 {
 					phy-type = <PHY_TYPE_PEX0>;
+					endpoint;
 				};
 				phy3 {
 					phy-type = <PHY_TYPE_PEX0>;
+					endpoint;
 				};
 				phy4 {
 					phy-type = <PHY_TYPE_KR>;

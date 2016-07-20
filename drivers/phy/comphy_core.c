@@ -189,6 +189,7 @@ u32 comphy_init(const void *blob)
 			comphy_map_data[lane].invert = fdtdec_get_int(blob, sub_node, "phy-invert",
 												PHY_POLARITY_NO_INVERT);
 			comphy_map_data[lane].clk_src = fdtdec_get_bool(blob, sub_node, "clk-src");
+			comphy_map_data[lane].end_point = fdtdec_get_bool(blob, sub_node, "end_point");
 			if (comphy_map_data[lane].type == PHY_TYPE_INVALID)
 				printf("no phy type for lane %d, setting lane as unconnedted\n", lane + 1);
 			sub_node = fdt_next_subnode(blob, sub_node);

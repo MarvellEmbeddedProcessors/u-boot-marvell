@@ -714,30 +714,39 @@ static int comphy_sgmii_power_up(u32 lane, u32 speed, u32 invert)
  ***************************************************************************************************/
 void comphy_dedicated_phys_init(void)
 {
-	int node, count, usb32, invert, ret = 1;
+	int i, node, node_list[MAX_UTMI_PHY_COUNT], invert;
+	int utmi_port, count, usb32 = -1, ret = 1;
 	const void *blob = gd->fdt_blob;
 
 	debug_enter();
 
-	for (usb32 = 0; usb32 <= 1; usb32++) {
-		/* There are 2 UTMI PHYs in this SOC.
-		   One is independendent and one is paired with USB3 port (OTG) */
-		if (usb32 == 0)
-			count = fdtdec_find_aliases_for_id(blob, "usb", COMPAT_MVEBU_USB, &node, 1);
-		else
-			count = fdtdec_find_aliases_for_id(blob, "usb3", COMPAT_MVEBU_USB3, &node, 1);
+	/* Find the UTMI phy node in device tree and go over them */
+	count = fdtdec_find_aliases_for_id(blob, "utmi", COMPAT_MVEBU_A3700_UTMI_PHY,
+					   node_list, MAX_UTMI_PHY_COUNT);
 
-		if (count > 0) {
+	if (count > 0) {
+		for (i = 0 ; i < count ; i++) {
+			node = node_list[i];
 			if (fdtdec_get_is_enabled(blob, node)) {
+				utmi_port = fdtdec_get_int(blob, node, "utmi-port", -1);
+				/* There are 2 UTMI PHYs in this SOC. One is independendent
+				 * and one is paired with USB3 port (OTG) */
+				if (utmi_port == UTMI_PHY_TO_USB3_HOST0)
+					usb32 = 1;
+				else if (utmi_port == UTMI_PHY_TO_USB2_HOST0)
+					usb32 = 0;
+				else
+					error("Invalid UTMI PHY connection setting\n");
 				ret = comphy_usb2_power_up(usb32);
 				if (ret == 0)
 					error("Failed to initialize UTMI PHY\n");
 				else
 					debug("UTMI PHY init succeed\n");
 			} else
-				debug("USB%d node is disabled\n", usb32 == 0 ? 2 : 3);
-		} else
-			debug("No USB%d node in DT\n", usb32 == 0 ? 2 : 3);
+				debug("UTMI node is disabled\n");
+		}
+	} else {
+		debug("No UTMI phy node in DT\n");
 	}
 
 	count = fdtdec_find_aliases_for_id(blob, "sataphy",

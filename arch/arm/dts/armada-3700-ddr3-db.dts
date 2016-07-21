@@ -69,7 +69,13 @@
 			usb3: usb3@58000 {
 				status = "okay";
 			};
+			utmi@5d000 {
+				status = "okay";
+			};
 			usb: usb@5e000 {
+				status = "okay";
+			};
+			utmi@5f000 {
 				status = "okay";
 			};
 			pcie-controller {

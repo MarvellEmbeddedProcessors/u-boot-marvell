@@ -51,7 +51,7 @@
 #define CONFIG_BOOTP_ID_CACHE_SIZE 4
 #endif
 
-ulong		bootp_ids[CONFIG_BOOTP_ID_CACHE_SIZE];
+u32		bootp_ids[CONFIG_BOOTP_ID_CACHE_SIZE];
 unsigned int	bootp_num_ids;
 int		BootpTry;
 ulong		bootp_start;
@@ -59,7 +59,7 @@ ulong		bootp_timeout;
 
 #if defined(CONFIG_CMD_DHCP)
 static dhcp_state_t dhcp_state = INIT;
-static unsigned long dhcp_leasetime;
+static u32 dhcp_leasetime;
 static IPaddr_t NetDHCPServerIP;
 static void DhcpHandler(uchar *pkt, unsigned dest, IPaddr_t sip, unsigned src,
 			unsigned len);
@@ -125,7 +125,7 @@ static int BootpCheckPkt(uchar *pkt, unsigned dest, unsigned src, unsigned len)
 		retval = -4;
 	else if (bp->bp_hlen != HWL_ETHER)
 		retval = -5;
-	else if (!bootp_match_id(NetReadLong((ulong *)&bp->bp_id)))
+	else if (!bootp_match_id(net_read_u32(&bp->bp_id)))
 		retval = -6;
 
 	debug("Filtering pkt = %d\n", retval);
@@ -350,7 +350,7 @@ BootpHandler(uchar *pkt, unsigned dest, IPaddr_t sip, unsigned src,
 	BootpCopyNetParams(bp);		/* Store net parameters from reply */
 
 	/* Retrieve extended information (we must parse the vendor area) */
-	if (NetReadLong((ulong *)&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
+	if (net_read_u32((u32 *)&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
 		BootpVendorProcess((uchar *)&bp->bp_vend[4], len);
 
 	NetSetTimeout(0, (thand_f *)0);
@@ -661,7 +661,7 @@ BootpRequest(void)
 #ifdef CONFIG_BOOTP_RANDOM_DELAY
 	ulong rand_ms;
 #endif
-	ulong BootpID;
+	u32 bootp_id;
 
 	bootstage_mark_name(BOOTSTAGE_ID_BOOTP_START, "bootp_start");
 #if defined(CONFIG_CMD_DHCP)
@@ -725,14 +725,14 @@ BootpRequest(void)
 	 *	Bootp ID is the lower 4 bytes of our ethernet address
 	 *	plus the current time in ms.
 	 */
-	BootpID = ((ulong)NetOurEther[2] << 24)
-		| ((ulong)NetOurEther[3] << 16)
-		| ((ulong)NetOurEther[4] << 8)
-		| (ulong)NetOurEther[5];
-	BootpID += get_timer(0);
-	BootpID = htonl(BootpID);
-	bootp_add_id(BootpID);
-	NetCopyLong(&bp->bp_id, &BootpID);
+	bootp_id = ((u32)NetOurEther[2] << 24)
+		| ((u32)NetOurEther[3] << 16)
+		| ((u32)NetOurEther[4] << 8)
+		| (u32)NetOurEther[5];
+	bootp_id += get_timer(0);
+	bootp_id = htonl(bootp_id);
+	bootp_add_id(bootp_id);
+	net_copy_u32(&bp->bp_id, &bootp_id);
 
 	/*
 	 * Calculate proper packet lengths taking into account the
@@ -770,7 +770,7 @@ static void DhcpOptionsProcess(uchar *popt, struct Bootp_t *bp)
 #if defined(CONFIG_CMD_SNTP) && defined(CONFIG_BOOTP_TIMEOFFSET)
 		case 2:		/* Time offset	*/
 			to_ptr = &NetTimeOffset;
-			NetCopyLong((ulong *)to_ptr, (ulong *)(popt + 2));
+			net_copy_u32((u32 *)to_ptr, (u32 *)(popt + 2));
 			NetTimeOffset = ntohl(NetTimeOffset);
 			break;
 #endif
@@ -806,7 +806,7 @@ static void DhcpOptionsProcess(uchar *popt, struct Bootp_t *bp)
 			break;
 #endif
 		case 51:
-			NetCopyLong(&dhcp_leasetime, (ulong *) (popt + 2));
+			net_copy_u32(&dhcp_leasetime, (u32 *)(popt + 2));
 			break;
 		case 53:	/* Ignore Message Type Option */
 			break;
@@ -860,7 +860,7 @@ static void DhcpOptionsProcess(uchar *popt, struct Bootp_t *bp)
 
 static int DhcpMessageType(unsigned char *popt)
 {
-	if (NetReadLong((ulong *)popt) != htonl(BOOTP_VENDOR_MAGIC))
+	if (net_read_u32((u32 *)popt) != htonl(BOOTP_VENDOR_MAGIC))
 		return -1;
 
 	popt += 4;
@@ -911,7 +911,7 @@ static void DhcpSendRequestPkt(struct Bootp_t *bp_offer)
 	 * ID is the id of the OFFER packet
 	 */
 
-	NetCopyLong(&bp->bp_id, &bp_offer->bp_id);
+	net_copy_u32(&bp->bp_id, &bp_offer->bp_id);
 
 	/*
 	 * Copy options from OFFER packet if present
@@ -970,7 +970,7 @@ DhcpHandler(uchar *pkt, unsigned dest, IPaddr_t sip, unsigned src,
 			debug("TRANSITIONING TO REQUESTING STATE\n");
 			dhcp_state = REQUESTING;
 
-			if (NetReadLong((ulong *)&bp->bp_vend[0]) ==
+			if (net_read_u32((u32 *)&bp->bp_vend[0]) ==
 						htonl(BOOTP_VENDOR_MAGIC))
 				DhcpOptionsProcess((u8 *)&bp->bp_vend[4], bp);
 
@@ -986,7 +986,7 @@ DhcpHandler(uchar *pkt, unsigned dest, IPaddr_t sip, unsigned src,
 		debug("DHCP State: REQUESTING\n");
 
 		if (DhcpMessageType((u8 *)bp->bp_vend) == DHCP_ACK) {
-			if (NetReadLong((ulong *)&bp->bp_vend[0]) ==
+			if (net_read_u32((u32 *)&bp->bp_vend[0]) ==
 						htonl(BOOTP_VENDOR_MAGIC))
 				DhcpOptionsProcess((u8 *)&bp->bp_vend[4], bp);
 			/* Store net params from reply */

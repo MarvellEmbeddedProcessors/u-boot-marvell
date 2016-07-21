@@ -34,6 +34,7 @@
 #include <fdt_support.h>
 #include <asm/arch/pm.h>
 #include <asm/arch/avs.h>
+#include <usb/mvebu_usb.h>
 
 /* NB warm reset */
 #define MVEBU_NB_WARM_RST_REG	(MVEBU_GPIO_NB_REG_BASE + 0x40)
@@ -96,6 +97,13 @@ void soc_init(void)
 #ifdef CONFIG_MVEBU_A3700_IO_ADDR_DEC
 	init_io_addr_dec();
 #endif
+
+	/* Some devices get their link indication prior to SerDes being configured,
+	 * and when PHY is configured, the device loose link with the PHY, and
+	 * drops down to some safe-unrecoverable-mode. In order to avoid such case,
+	 * all USB VBUS power must be lowered prior to SerDes initialization.
+	 */
+	usb_vbus_toggle(-1, 0);
 
 #ifdef CONFIG_MVEBU_COMPHY_SUPPORT
 	if (comphy_init(gd->fdt_blob))

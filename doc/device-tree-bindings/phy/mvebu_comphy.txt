@@ -27,6 +27,7 @@ Board specific:
 	  - clk-src: Set the clock source of PCIe, if configured to PCIe clock output
 		This relevant for SerDes lane 5 only (by default, lane 4 is the clock source)
 		for Armada-7040 boards.
+	  - endpoint: Optional boolean specifying this SerDes should be configured as PCIe endpoint.
 
 Example:
 	comphy {

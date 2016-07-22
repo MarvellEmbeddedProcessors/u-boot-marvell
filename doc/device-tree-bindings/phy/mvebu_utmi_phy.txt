@@ -14,9 +14,9 @@ Mandatory properties:
 	posible options under: include/dt-bindings/comphy/comphy_data.h
 
 Note:
-For Armada-8k - there is 2 UTMI units in the SoC, the limitation of the UTMI PHY:
-	UTMI 0 can be connected to USB HOST 0 or USB DEVICE
-	UTMI 1 can be connected to USB HOST 1 or USB DEVICE
+For Armada-8k - there are 2 UTMI units in the SoC, the limitation of the UTMI PHY:
+	UTMI 0 can be connected to USB3 HOST 0 or USB3 DEVICE
+	UTMI 1 can be connected to USB3 HOST 1 or USB3 DEVICE
 
 Example:
 utmi0@580000 {
@@ -24,7 +24,7 @@ utmi0@580000 {
 	reg-utmi-unit = <0x580000 0x1000>;
 	reg-usb-cfg = <0x440420 0x4>;
 	reg-utmi-cfg = <0x440440 0x4>;
-	utmi-port = <UTMI_PHY_TO_USB_HOST0>;
+	utmi-port = <UTMI_PHY_TO_USB3_HOST0>;
 	status = "okay";
 };
 

@@ -90,7 +90,7 @@ utmi0@580000 {
 	reg-utmi-unit = <0x580000 0x1000>;
 	reg-usb-cfg = <0x440420 0x4>;
 	reg-utmi-cfg = <0x440440 0x4>;
-	utmi-port = <UTMI_PHY_TO_USB_HOST0>;
+	utmi-port = <UTMI_PHY_TO_USB3_HOST0>;
 	status = "disabled";
 };
 utmi1@581000 {
@@ -98,7 +98,7 @@ utmi1@581000 {
 	reg-utmi-unit = <0x581000 0x1000>;
 	reg-usb-cfg = <0x440420 0x4>;
 	reg-utmi-cfg = <0x440444 0x4>;
-	utmi-port = <UTMI_PHY_TO_USB_HOST1>;
+	utmi-port = <UTMI_PHY_TO_USB3_HOST1>;
 	status = "disabled";
 };
 usb3@500000 { /* USB3_H0 */

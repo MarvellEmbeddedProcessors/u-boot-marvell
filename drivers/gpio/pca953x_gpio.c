@@ -29,6 +29,7 @@
 #include <asm/gpio.h>
 #include <asm/io.h>
 #include <dt-bindings/gpio/gpio.h>
+#include <linux/compat.h>
 
 #define PCA953X_INPUT           0
 #define PCA953X_OUTPUT          1
@@ -49,6 +50,23 @@ enum {
 
 #define MAX_BANK 5
 #define BANK_SZ 8
+
+/*
+ * The dm_i2c_read/write definitions adapts the I2C implementation
+ * of both non-DM and DM supports in current u-boot (v2015.01).
+ * It should be removed once -
+ *     a. The dm_i2c_read/write APIs will be introduced in a newer
+ *        version of u-boot.
+ *     b. The DM I2C will be supported by both MVEBU_I2C (MV64XXX)
+ *        and MV_I2C (PXA) drivers.
+ */
+#ifdef CONFIG_DM_I2C
+#define dm_i2c_read(dev, x, y, z) i2c_read(dev, x, y, z)
+#define dm_i2c_write(dev, x, y, z) i2c_write(dev, x, y, z)
+#else
+#define dm_i2c_read(dev, x, y, z) i2c_read(((struct pca953x_info *)dev_get_platdata(dev))->addr, x, 1, y, z)
+#define dm_i2c_write(dev, x, y, z) i2c_write(((struct pca953x_info *)dev_get_platdata(dev))->addr, x, 1, y, z)
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -227,29 +245,21 @@ static int pca953x_get_function(struct udevice *dev, unsigned offset)
 		return GPIOF_INPUT;
 }
 
-static int pca953x_xlate(struct udevice *dev, struct gpio_desc *desc,
-			 struct fdtdec_phandle_args *args)
-{
-	desc->offset = args->args[0];
-	desc->flags = args->args[1] & GPIO_ACTIVE_LOW ? GPIOD_ACTIVE_LOW : 0;
-
-	return 0;
-}
-
 static const struct dm_gpio_ops pca953x_ops = {
 	.direction_input	= pca953x_direction_input,
 	.direction_output	= pca953x_direction_output,
 	.get_value		= pca953x_get_value,
 	.set_value		= pca953x_set_value,
 	.get_function		= pca953x_get_function,
-	.xlate			= pca953x_xlate,
 };
 
 static int pca953x_probe(struct udevice *dev)
 {
 	struct pca953x_info *info = dev_get_platdata(dev);
-	struct gpio_dev_priv *uc_priv = dev_get_uclass_priv(dev);
-	struct dm_i2c_chip *chip = dev_get_parent_platdata(dev);
+	struct gpio_dev_priv *uc_priv = (struct gpio_dev_priv *)dev->uclass_priv;
+#ifdef CONFIG_DM_I2C
+	struct dm_i2c_chip *chip = dev_get_parentdata(dev);
+#endif
 	char name[32], *str;
 	int addr;
 	ulong driver_data;
@@ -260,10 +270,13 @@ static int pca953x_probe(struct udevice *dev)
 		return -ENOMEM;
 	}
 
+/* Assume I2C interface is ready for non DM I2C */
+#ifdef CONFIG_DM_I2C
 	if (!chip) {
 		dev_err(dev, "i2c not ready\n");
 		return -ENODEV;
 	}
+#endif
 
 	addr = fdtdec_get_int(gd->fdt_blob, dev->of_offset, "reg", 0);
 	if (addr == 0)
@@ -271,7 +284,7 @@ static int pca953x_probe(struct udevice *dev)
 
 	info->addr = addr;
 
-	driver_data = dev_get_driver_data(dev);
+	driver_data = dev_get_of_data(dev);
 
 	info->gpio_count = driver_data & PCA_GPIO_MASK;
 	if (info->gpio_count > MAX_BANK * BANK_SZ) {

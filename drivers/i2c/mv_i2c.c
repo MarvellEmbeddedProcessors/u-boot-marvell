@@ -60,7 +60,9 @@ struct mv_i2c {
 	u32 isar;
 };
 #endif
-static struct mv_i2c *base;
+
+/* Put "base" in data section, in case it is initialized before u-boot relocation */
+static struct mv_i2c *__attribute__((section(".data")))base;
 static void i2c_board_init(struct mv_i2c *base)
 {
 #ifdef CONFIG_SYS_I2C_INIT_BOARD

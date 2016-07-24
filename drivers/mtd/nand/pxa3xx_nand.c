@@ -1489,10 +1489,18 @@ static int alloc_nand_resource(struct pxa3xx_nand_info *info)
 
 	info->variant = pxa3xx_nand_get_variant();
 	for (cs = 0; cs < pdata->num_cs; cs++) {
+		/*
+		 * If CONFIG_SYS_NAND_SELF_INIT is defined, each driver is responsible
+		 * for instantiating struct nand_chip, while drivers/mtd/nand/nand.c
+		 * still provides a "struct mtd_info nand_info" instance.
+		 */
 		mtd = &nand_info[cs];
-		chip = (struct nand_chip *)info +
-			sizeof(struct pxa3xx_nand_host);
-		host = (struct pxa3xx_nand_host *)chip;
+
+		host = kzalloc(sizeof(*host), GFP_KERNEL);
+		if (!host)
+			return -ENOMEM;
+
+		chip = &host->chip;
 		info->host[cs] = host;
 		host->mtd = mtd;
 		host->cs = cs;
@@ -1633,21 +1641,15 @@ static int pxa3xx_nand_probe(struct pxa3xx_nand_info *info)
 void board_nand_init(void)
 {
 	struct pxa3xx_nand_info *info;
-	struct pxa3xx_nand_host *host;
 	int ret;
 
-	info = kzalloc(sizeof(*info) + (sizeof(struct mtd_info) +
-					sizeof(*host)) *
-		       CONFIG_SYS_MAX_NAND_DEVICE, GFP_KERNEL);
+#ifndef CONFIG_SYS_NAND_SELF_INIT
+	#error("nand driver was not tested without CONFIG_SYS_NAND_SELF_INIT enabled\n");
+#endif
+
+	info = kzalloc(sizeof(*info), GFP_KERNEL);
 	if (!info)
 		return;
-
-	/*
-	 * If CONFIG_SYS_NAND_SELF_INIT is defined, each driver is responsible
-	 * for instantiating struct nand_chip, while drivers/mtd/nand/nand.c
-	 * still provides a "struct mtd_info nand_info" instance.
-	 */
-	info->host[0]->mtd = &nand_info[0];
 
 	ret = pxa3xx_nand_probe(info);
 	if (ret)

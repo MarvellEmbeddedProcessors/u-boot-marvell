@@ -176,12 +176,12 @@
 					status = "disabled";
 				};
 			};
-			mmc1: mmc@D0000 {
+			mmc0: mmc@D0000 {
 				compatible = "marvell,xenon-sdhci";
 				reg = <0xD0000 0x300>;
 				status = "disabled";
 			};
-			mmc0: mmc@D8000 {
+			mmc1: mmc@D8000 {
 				compatible = "marvell,xenon-sdhci";
 				reg = <0xD8000 0x300>;
 				status = "disabled";

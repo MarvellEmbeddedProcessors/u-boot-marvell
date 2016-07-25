@@ -138,8 +138,7 @@ MV_VOID mvRtcConfig()
 
 }
 
-#ifdef CONFIG_ARMADA_38X
-
+#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ARMADA_39X)
 /*******************************************************************************
 * isSkippingAVSFromEfuse
 *
@@ -209,7 +208,7 @@ MV_BOOL mvGetAvsValFromEfuse(MV_U32 satrFreq, MV_U32 *avsVal)
 {
 	MV_U32 versionVal, binVal, avsRegControlVal;
 	MV_BOARD_AVS_EFUSE_MAP efuse_freq_val[] = EFUSE_FREQ_VAL_INFO;
-	int i;
+	int i = 0;
 
 #ifndef CONFIG_AVS_FROM_EFUSE
 	mvPrintf("AVS selection from EFUSE disabled (Skip reading EFUSE values)\n");
@@ -271,8 +270,7 @@ MV_BOOL mvGetAvsValFromEfuse(MV_U32 satrFreq, MV_U32 *avsVal)
 							| (MV_AVS_DEFAULT_VALUE << AVS_HIGH_VDD_LIMIT_OFFS));
 				MV_REG_WRITE(AVS_ENABLED_CONTROL, avsRegControlVal);
 				/* halt the CPU */
-				while (1)
-					;
+				while (1);
 			}
 			/* if Bin value permits selected frequency mode,
 			 * read it's corresponding AVS value from EFUSE */
@@ -298,7 +296,7 @@ MV_BOOL mvGetAvsValFromEfuse(MV_U32 satrFreq, MV_U32 *avsVal)
 MV_STATUS mvGeneralInit(void)
 {
 	MV_U32 regData;
-#ifdef CONFIG_ARMADA_38X
+#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ARMADA_39X)
 	MV_U32 avsVal;
 #endif
 	mvMppConfig(); /* MPP must be configured prior to UART/I2C access */
@@ -322,7 +320,7 @@ MV_STATUS mvGeneralInit(void)
 	regData = MV_REG_READ(AVS_ENABLED_CONTROL);
 	regData &= ~(AVS_LOW_VDD_LIMIT_MASK | AVS_HIGH_VDD_LIMIT_MASK);
 
-#ifdef CONFIG_ARMADA_38X
+#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ARMADA_39X)
 	/* 1. Armada38x was signed off for 1600/800 at 1.15V (AVS)
 	 * 2. Based on ATE/system correlation, in order to achieve higher speeds (1866MHz, 2000MHz),
 	 *    we need to overdrive the chip to 1.25V (AVS)

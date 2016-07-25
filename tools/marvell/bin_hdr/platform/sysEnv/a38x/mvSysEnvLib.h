@@ -222,7 +222,7 @@
 #define AVS_DEBUG_CNTR_REG              0xE4124
 #define AVS_DEBUG_CNTR_DEFAULT_VALUE    0x08008073
 
-#ifdef CONFIG_ARMADA_38X
+#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ARMADA_39X)
 	#define AVS_LIMIT_VAL_SLOW		0x23	/*1.15V*/
 	#define EFUSE_WIN_CTRL_VAL		((0xF << 16) | (0x0A << 8) | (0xE << 4) | 0x1)
 	#define EFUSE_WIN_BASE_VAL		0xB0000000
@@ -246,16 +246,29 @@
 		MV_32 cpu_freq;
 		MV_32 avs_bin_value;
 	} MV_BOARD_AVS_EFUSE_MAP;
-	/* predefined values for FUNCTION_ENABLE_CONTROL per flavour */
-	#define EFUSE_FREQ_VAL_SIZE		3
+
 	#define EFUSE_AVS_VAL_OFFSET_AT_IND(index) (EFUSE_AVS_VAL_BASE + \
 						   (EFUSE_FREQ_VAL_SIZE - (index+1))*EFUSE_AVS_VAL_OFFSET)
+
+#ifdef CONFIG_ARMADA_39X
+	#define CONFIG_AVS_FROM_EFUSE /* Read pre-burnt EFUSE values */
+	/* predefined values for FUNCTION_ENABLE_CONTROL per flavour */
+	#define EFUSE_FREQ_VAL_SIZE		1
+	#define EFUSE_FREQ_VAL_INFO {\
+	/*		CPU frequency mode,	CPU Frequecny,	AVS_BIN_VALUE */\
+	/* 1800MHZ */	{0x12,			1800,		0x1},\
+    };
+#else
+	/* predefined values for FUNCTION_ENABLE_CONTROL per flavour */
+	#define EFUSE_FREQ_VAL_SIZE		3
 	#define EFUSE_FREQ_VAL_INFO {\
 	/*		CPU frequency mode,	CPU Frequecny,	AVS_BIN_VALUE */\
 	/* 1600MHz */	{0xC,			1600,		0x3},\
 	/* 1866MHZ */	{0x10,			1866,		0x2},\
 	/* 2000MHZ */	{0x13,			2000,		0x1},\
-	};
+    };
+#endif
+
 #else
 	#define AVS_LIMIT_VAL			0x27
 #endif

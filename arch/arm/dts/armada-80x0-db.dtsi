@@ -159,18 +159,15 @@
 			gop {
 				mac0 {
 					phy-mode = "kr"; /* lane-2 */
-					status = "okay";
 				};
 				mac2 {
 					phy-mode = "sgmii"; /* lane-0 */
 					phy = <&phy2>;
 					phy-speed = <2500>;
-					status = "disabled";
 				};
 				mac3 {
 					phy-mode = "rgmii"; /* rgmii-1 */
 					phy = <&phy3>;
-					status = "okay";
 				};
 			};
 			ppv22@000000 {
@@ -287,16 +284,13 @@
 			gop {
 				mac0 {
 					phy-mode = "kr"; /* lane-2 */
-					status = "okay";
 				};
 				mac2 {
 					phy-mode = "rgmii"; /* lane-0 */
 					phy = <&phy4>;
-					status = "okay";
 				};
 				mac3 {
 					phy-mode = "sgmii"; /* rgmii-1 */
-					status = "disabled";
 				};
 			};
 			ppv22@000000 {

@@ -163,12 +163,10 @@
 			gop {
 				mac0 {
 					phy-mode = "kr"; /* lane-4 */
-					status = "okay";
 				};
 				mac2 {
 					phy-mode = "rgmii"; /* rgmii-0 */
 					phy = <&phy3>;
-					status = "okay";
 				};
 			};
 			ppv22@000000 {

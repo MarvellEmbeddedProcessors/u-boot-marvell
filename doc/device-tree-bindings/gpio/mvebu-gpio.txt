@@ -41,9 +41,9 @@ Armada3700 has two GPIO banks, one is the Northbridge GPIO bank and the other is
 
 When other nodes want to use a GPIO pin, they can call the marco ARMADA_3700_GPIO
 which is defined in <dt-bindings/gpio/armada-3700-gpio.h>
-For example, mmc1 can use the gpio1's 22nd pin for SDIO VCC setting as below.
+For example, mmc0 can use the gpio1's 22nd pin for SDIO VCC setting as below.
 
-mmc1: mmc@D0000 {
+mmc0: mmc@D0000 {
 	sdio-vcc-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 22) GPIO_ACTIVE_HIGH>;
 	status = "okay";
 };

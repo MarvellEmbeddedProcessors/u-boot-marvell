@@ -148,7 +148,7 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 
 void xhci_hcd_stop(int index)
 {
-	return;
+	usb_vbus_toggle(index, 0);
 }
 #endif
 

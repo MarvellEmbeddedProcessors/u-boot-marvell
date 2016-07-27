@@ -32,7 +32,8 @@
 #ifdef CONFIG_USB_XHCI
 void __board_usb_vbus_init(void)
 {
-	printf("%s is weak function, need to implement it if need to change VBUS\n", __func__);
+	/* this function is not a must, if have the definition of "gpio-vbus" node,
+	   can get the same functionality in usb_vbus_toggle() */
 }
 void board_usb_vbus_init(void) __attribute__((weak, alias("__board_usb_vbus_init")));
 

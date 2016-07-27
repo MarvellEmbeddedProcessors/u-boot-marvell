@@ -11,6 +11,10 @@ SoC specific:
 Board specific:
 	- gpio-vbus: Should specify the GPIO for VBUS change
 		for more information check: check doc/device-tree-bindings/gpio/mvebu-gpio.txt
+	- vbus-enable-delay:
+	    optional property, delay time in ms when enable gpio-vbus.
+	- vbus-disable-delay:
+	    optional property, delay time in ms when disable gpio-vbus.
 	- status
 		The USB3 port status can be "okay" or "disabled".
 

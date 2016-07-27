@@ -24,6 +24,7 @@
 #ifdef CONFIG_USB_XHCI
 #include "usb.h"
 #include "xhci.h"
+#include <usb/mvebu_usb.h>
 #endif
 
 /* board_usb_vbus_init: to be implemented for special usage of VBUS (i.e. marvell
@@ -34,18 +35,6 @@ void __board_usb_vbus_init(void)
 	printf("%s is weak function, need to implement it if need to change VBUS\n", __func__);
 }
 void board_usb_vbus_init(void) __attribute__((weak, alias("__board_usb_vbus_init")));
-
-/* usb_vbus_init: generic device tree dependent routine for VBUS handling */
-static void usb_vbus_init(int node)
-{
-#ifdef CONFIG_MVEBU_GPIO
-	struct fdt_gpio_state gpio;
-	fdtdec_decode_gpio(gd->fdt_blob, node, "gpio-vbus", &gpio);
-	fdtdec_setup_gpio(&gpio);
-	if (fdt_gpio_isvalid(&gpio))
-		gpio_direction_output(gpio.gpio, (gpio.flags & FDT_GPIO_ACTIVE_LOW ? 0 : 1));
-#endif
-}
 
 /* Device tree global data scanned at 1st init for usb3 nodes */
 int node_list[CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS];
@@ -70,6 +59,47 @@ int board_usb_get_enabled_port_count(void)
 	return count;
 }
 #endif
+
+/* usb_vbus_gpio_toggle: toggle GPIO VBUS in USB node to the status we want.
+	node: the usb node which the VBUS belongs to.
+	status: 0 - set VBUS to low;  1 - set VBUS to high. */
+static void usb_vbus_gpio_toggle(int node, bool status)
+{
+	struct fdt_gpio_state gpio;
+	int delay = 0;
+
+	if (!fdtdec_decode_gpio(gd->fdt_blob, node, "gpio-vbus", &gpio)) {
+		fdtdec_setup_gpio(&gpio);
+		if (fdt_gpio_isvalid(&gpio))
+			gpio_direction_output(gpio.gpio, status ? (gpio.flags & FDT_GPIO_ACTIVE_LOW ? 0 : 1) :
+									(gpio.flags & FDT_GPIO_ACTIVE_LOW ? 1 : 0));
+
+		delay = fdtdec_get_int(gd->fdt_blob, node, status ? "vbus-enable-delay" : "vbus-disable-delay", 0);
+		if (delay)
+			mdelay(delay);
+	}
+}
+
+/* usb_vbus_toggle: toggle VBUS to the status we want
+	index: the usb index which this VBUS belongs to, if index = -1, toggle all the usb3 VBUS in Device Tree.
+	status: 0 - set VBUS to low;  1 - set VBUS to high. */
+int usb_vbus_toggle(int index, bool status)
+{
+	int i;
+	int count = board_usb_get_enabled_port_count();
+
+	if (count <= 0 || index < -1 || index >= count)
+		return -1;
+
+	if (index == -1) {
+		for (i = 0; i < count; i++)
+			usb_vbus_gpio_toggle(node_list[i], status);
+	} else {
+		usb_vbus_gpio_toggle(node_list[index], status);
+	}
+
+	return 0;
+}
 
 bool vbus_initialized = 0;
 int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
@@ -103,7 +133,10 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 	/* Enable USB VBUS per port (only via GPIO):
 	** enable VBUS using GPIO, and got information from USB node in
 	** device tree */
-	usb_vbus_init(node);
+	if (usb_vbus_toggle(index, 1)) {
+		error("could not enable VBUS for usb index %d!\n", index);
+		return -ENODEV;
+	}
 
 	debug("mvebu-xhci: init hccr %lx and hcor %lx hc_length %ld\n",
 	      (uintptr_t)*hccr, (uintptr_t)*hcor,

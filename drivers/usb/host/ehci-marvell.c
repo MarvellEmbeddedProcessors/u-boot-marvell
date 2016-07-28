@@ -25,6 +25,8 @@
 #include <asm/arch/orion5x.h>
 #endif
 
+#include <usb/mvebu_usb.h>
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef CONFIG_OF_CONTROL
@@ -128,6 +130,47 @@ int board_usb_get_enabled_port_count(void)
 	return count;
 }
 #endif
+
+/* usb_vbus_gpio_toggle: toggle GPIO VBUS in USB node to the status we want.
+	node: the usb node which the VBUS belongs to.
+	status: 0 - set VBUS to low;  1 - set VBUS to high. */
+static void usb_vbus_gpio_toggle(int node, bool status)
+{
+	struct fdt_gpio_state gpio;
+	int delay = 0;
+
+	if (!fdtdec_decode_gpio(gd->fdt_blob, node, "gpio-vbus", &gpio)) {
+		fdtdec_setup_gpio(&gpio);
+		if (fdt_gpio_isvalid(&gpio))
+			gpio_direction_output(gpio.gpio, status ? (gpio.flags & FDT_GPIO_ACTIVE_LOW ? 0 : 1) :
+									(gpio.flags & FDT_GPIO_ACTIVE_LOW ? 1 : 0));
+
+		delay = fdtdec_get_int(gd->fdt_blob, node, status ? "vbus-enable-delay" : "vbus-disable-delay", 0);
+		if (delay)
+			mdelay(delay);
+	}
+}
+
+/* usb_vbus_toggle: toggle VBUS to the status we want
+	index: the usb index which this VBUS belongs to, if index = -1, toggle all the usb3 VBUS in Device Tree.
+	status: 0 - set VBUS to low;  1 - set VBUS to high. */
+int usb_vbus_toggle(int index, bool status)
+{
+	int i;
+	int count = board_usb_get_enabled_port_count();
+
+	if (count <= 0 || index < -1 || index >= count)
+		return -1;
+
+	if (index == -1) {
+		for (i = 0; i < count; i++)
+			usb_vbus_gpio_toggle(node_list[i], status);
+	} else {
+		usb_vbus_gpio_toggle(node_list[index], status);
+	}
+
+	return 0;
+}
 
 #ifdef CONFIG_USB_EHCI_MARVELL_SBUSCFG
 /* For SoC without hlock, need to program sbuscfg value to guarantee

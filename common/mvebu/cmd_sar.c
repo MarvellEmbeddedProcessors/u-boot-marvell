@@ -37,7 +37,7 @@ int do_sar_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 		return 1;
 	}
 
-	if ((strcmp(cmd, "read") == 0) && (argc < 3)) {
+	if ((strcmp(cmd, "read") == 0) && (argc < 2)) {
 		printf("Error: Please specify SAR key\n");
 		return 1;
 	}
@@ -67,8 +67,11 @@ int do_sar_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 				return -EINVAL;
 		}
 	} else if (strcmp(cmd, "read") == 0) {
-		if (sar_print_key(key))
-			return -EINVAL;
+		if (!key)
+			sar_read_all();
+		else
+			if (sar_print_key(key))
+				return -EINVAL;
 	} else if (strcmp(cmd, "write") == 0) {
 		if (sar_write_key(key, value))
 			return -EINVAL;
@@ -90,7 +93,8 @@ U_BOOT_CMD(
 	"\tdefault	- Set all SAR variable to default value\n"
 	"\tdefault <x>	- Set SAR variable x default value\n"
 	"\twrite x y	- Write y to SAR variable x\n"
-	"\tread x	- Read SAR variable x\n"
+	"\tread		- Read all SAR variables\n"
+	"\tread <x>	- Read SAR variable x\n"
 );
 
 #ifdef CONFIG_MVEBU_CHIP_SAR

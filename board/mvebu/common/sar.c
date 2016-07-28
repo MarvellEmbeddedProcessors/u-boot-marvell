@@ -238,6 +238,19 @@ void sar_print_var(int id, bool print_opts)
 	}
 }
 
+int sar_read_all(void)
+{
+	struct sar_var *var;
+	int id;
+
+	for (id = 0; id < MAX_SAR; id++)
+		if (sar_is_var_active(id)) {
+			var = sar_id_to_var(id);
+			sar_print_key(var->key);
+		}
+
+	return 0;
+}
 
 void sar_list_keys(void)
 {

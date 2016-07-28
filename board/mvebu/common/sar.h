@@ -59,6 +59,7 @@ struct sar_data {
 	struct sar_var sar_lookup[MAX_SAR];
 };
 
+int  sar_read_all(void);
 int  sar_default_key(const char *key);
 int  sar_defualt_all(void);
 int  sar_write_key(const char *key, int val);

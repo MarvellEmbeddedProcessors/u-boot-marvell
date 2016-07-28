@@ -25,9 +25,14 @@
 			};
 			i2c: i2c@11000 {
 				status = "okay";
+				expander0: pca953x@22 {
+					compatible = "nxp,pca9555";
+					reg = <0x22>;
+					status = "okay";
+				};
 			};
 			avs@11500 {
-				vdd-min = <26>;
+				vdd-min = <31>;
 				status = "okay";
 			};
 			serial: serial@12000 {
@@ -53,9 +58,18 @@
 				phy_mode = "rgmii";
 			};
 			usb3: usb3@58000 {
+				gpio-vbus = <&expander0 ARMADA_3700_GPIO(PERIPHERAL_0, 1) GPIO_ACTIVE_HIGH>;
+				vbus-enable-delay = <1000>;
+				vbus-disable-delay = <1000>;
+				status = "okay";
+			};
+			utmi@5d000 {
 				status = "okay";
 			};
 			usb: usb@5e000 {
+				status = "okay";
+			};
+			utmi@5f000 {
 				status = "okay";
 			};
 			pcie-controller {
@@ -64,17 +78,18 @@
 					status = "okay";
 				};
 			};
-			mmc1: mmc@D0000 {
+			mmc0: mmc@D0000 {
 				sdio-vcc-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 22) GPIO_ACTIVE_HIGH>;
 				bus-width = <4>;
 				status = "okay";
 			};
-			mmc0: mmc@D8000 {
+			mmc1: mmc@D8000 {
 				xenon,emmc;
 				bus-width = <8>;
 				status = "okay";
 			};
 			sata: sata@e0000 {
+				sata-power = <&expander0 ARMADA_3700_GPIO(PERIPHERAL_0, 2) GPIO_ACTIVE_HIGH>;
 				status = "okay";
 			};
 			sataphy@e0000 {

@@ -77,7 +77,7 @@ int do_sar_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			return -EINVAL;
 	} else {
 		printf("ERROR: unknown command to SatR: \"%s\"\n", cmd);
-		return -EINVAL;
+		return CMD_RET_USAGE;
 	}
 
 	return 0;

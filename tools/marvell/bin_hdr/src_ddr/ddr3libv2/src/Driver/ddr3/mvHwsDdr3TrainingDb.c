@@ -558,7 +558,7 @@ INLINE static GT_U32 patternTableGetStaticPbsWord(GT_U8 index)
 	return temp | (temp << 8) | (temp << 16) | (temp << 24);
 }
 
-INLINE GT_U32 patternTableGetWord
+GT_U32 patternTableGetWord
 (
     GT_U32  devNum,
     MV_HWS_PATTERN type,

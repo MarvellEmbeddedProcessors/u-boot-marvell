@@ -215,7 +215,7 @@ GT_U32 speedBinTable
     speedBinTableElements element
 );
 
-INLINE GT_U32 patternTableGetWord
+GT_U32 patternTableGetWord
 (
     GT_U32  devNum,
     MV_HWS_PATTERN type,

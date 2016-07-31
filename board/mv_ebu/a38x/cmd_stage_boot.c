@@ -104,7 +104,7 @@ int fsload (cmd_tbl_t *cmdtp, int flag, int argc, char * argv[]);
 int do_stage_boot(cmd_tbl_t * cmdtb, int flag, int argc, char * const argv[])
 {
 	char *path_to_image, *path_to_scr, *path_to_initrd;
-        ulong addr;
+        ulong addr = 0;
 	int j,i=1,step=0,device,initrd=0,devnum,partnum,dev_count,max_dev_count;
 	char * kernel_addr, *bootargs;
 	char dev_part[6], *dev_part_ptr;

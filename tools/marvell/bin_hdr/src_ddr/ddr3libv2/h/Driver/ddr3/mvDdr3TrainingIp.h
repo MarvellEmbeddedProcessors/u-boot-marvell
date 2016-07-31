@@ -354,22 +354,6 @@ GT_STATUS    mvHwsDdr3TipModeRead
     Mode              *modeInfo
 );
 
-/******************************************************************************
-* Name:     mvHwsDdr3TipReadTrainingResult.
-* Desc:     read training result
-* Args:     devNum
-*           result
-*
-* Notes:
-* Returns:  OK if success, other error code if fail.
-*/
-
-GT_STATUS    mvHwsDdr3TipReadTrainingResult
-(
-    GT_U32          devNum,
-    MV_HWS_RESULT   result[MAX_STAGE_LIMIT][MAX_INTERFACE_NUM]
-);
-
 /*****************************************************************************
 Check if pup search is locked
 ******************************************************************************/

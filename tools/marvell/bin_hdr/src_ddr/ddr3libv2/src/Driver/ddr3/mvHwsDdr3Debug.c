@@ -231,26 +231,6 @@ GT_STATUS mvHwsDdr3TipInitConfigFunc
 }
 
 /*****************************************************************************
-Read training result table
-******************************************************************************/
-GT_STATUS    mvHwsDdr3TipReadTrainingResult
-(
-    GT_U32          devNum,
-    MV_HWS_RESULT   result[MAX_STAGE_LIMIT][MAX_INTERFACE_NUM]
-)
-{
-   devNum = devNum;
-
-   if (result == NULL)
-   {
-       return GT_BAD_PARAM;
-   }
-   osMemCpy(result, trainingResult, sizeof(result));
-   return GT_OK;
-}
-
-
-/*****************************************************************************
 Get training result info pointer
 ******************************************************************************/
 MV_HWS_RESULT* ddr3TipGetResultPtr

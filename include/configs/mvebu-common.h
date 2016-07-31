@@ -63,7 +63,11 @@
 #define CONFIG_SYS_INIT_SP_ADDR         (CONFIG_SYS_TEXT_BASE + 0xFF0000)   /* End of 16M scrubbed by training in bootrom */
 #define CONFIG_SYS_GBL_DATA_SIZE        128	/* Size in bytes reserved for init data */
 #define CONFIG_SYS_MAXARGS		32	/* Max number of command argg */
-#define CONFIG_UBOOT_SIZE		0x200000 /* 2MB */
+/* The U-Boot size should be aligned with NAND page-size,
+ * the environment variable of the u-boot start at CONFIG_UBOOT_SIZE (and it
+ * should be aligned with NAND page size)
+ */
+#define CONFIG_UBOOT_SIZE		0x180000 /* 1.5MB */
 #undef  CONFIG_USE_IRQ
 
 /* Memory reserve */

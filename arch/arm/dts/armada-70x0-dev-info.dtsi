@@ -43,7 +43,7 @@
 				  "0x5", "600/800 Mhz",
 				  "0x6", "800/800 Mhz",
 				  "0x7", "1000/800 Mhz";
-			default = <0x6>;
+			default = <0x3>;
 			status = "okay";
 		};
 		boot_mode {

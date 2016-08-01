@@ -233,6 +233,7 @@ static int comphy_pcie_power_up(u32 speed, u32 invert)
 	return ret;
 }
 
+#ifdef CONFIG_A3700_Z_SUPPORT
 /***************************************************************************************************
   * comphy_sata_power_up
   *
@@ -307,6 +308,7 @@ static int comphy_sata_power_up(u32 invert)
 
 	return ret;
 }
+#endif
 
 /***************************************************************************************************
   * comphy_usb3_power_up
@@ -714,9 +716,12 @@ static int comphy_sgmii_power_up(u32 lane, u32 speed, u32 invert)
  ***************************************************************************************************/
 void comphy_dedicated_phys_init(void)
 {
-	int i, node, node_list[MAX_UTMI_PHY_COUNT], invert;
+	int i, node, node_list[MAX_UTMI_PHY_COUNT];
 	int utmi_port, count, usb32 = -1, ret = 1;
 	const void *blob = gd->fdt_blob;
+#ifdef CONFIG_A3700_Z_SUPPORT
+	int invert;
+#endif
 
 	debug_enter();
 
@@ -749,6 +754,7 @@ void comphy_dedicated_phys_init(void)
 		debug("No UTMI phy node in DT\n");
 	}
 
+#ifdef CONFIG_A3700_Z_SUPPORT
 	count = fdtdec_find_aliases_for_id(blob, "sataphy",
 			COMPAT_MVEBU_A3700_SATA_PHY, &node, 1);
 
@@ -764,7 +770,7 @@ void comphy_dedicated_phys_init(void)
 			debug("SATA node is disabled\n");
 	}  else
 		debug("No SATA node in DT\n");
-
+#endif
 	debug_exit();
 }
 

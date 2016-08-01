@@ -1,0 +1,34 @@
+
+#include "armada-3700-rz-ddr3-db.dts"
+
+/* detail board setup:
+ * Pcie Jumper slot	:	DB-88F3720-PCIe-mPCIe-Jumper
+ * SGMII module slot	:	DB-88F3720-SerDes-Jumper
+ * RGMII module slot	:	DB-88F3720-PHY module
+ * eMMC slot		:	DB-88F3720-eMMC_NAND module
+ * SDIO slot		:	DB-88F3720-SDcard module
+ *
+ * PHY0 (USB3/SGMII1)	:	USB3
+ * PHY1 (PCIe/SGMII0)	:	PCIe (WiFi via mini_PCIe module)
+ * PHY2 (SATA)		:	SATA
+ * RGMII-0		:	Ethernet via PHY (1 Lane)
+ * USB2 Port 0		:	USB2 as part USB3
+ * USB2 Port 1		:	USB2 Host
+ * eMMC*		:	eMMC NAND
+ * SDIO*		:	SD card
+ * BOOT device*		:	SPI Flash
+*/
+
+/ {
+	model = "DB-88F3720-DDR4-Modular-Z1";
+	compatible = "marvell,armada-3700-db0", "marvell,armada-3700";
+	fdt_config_id = <A3700_DDR4_DB_CONFIG_ID_DEFAULT>;
+	board_id = <A3700_DDR4_DB_ID>;
+	soc {
+		internal-regs {
+			sataphy@e0000 {
+				phy-invert = <PHY_POLARITY_NO_INVERT>;
+			};
+		};
+	};
+};

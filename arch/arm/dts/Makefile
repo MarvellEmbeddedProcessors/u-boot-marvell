@@ -55,6 +55,12 @@ dtb-$(CONFIG_SOCFPGA) += socfpga_cyclone5_socrates.dtb
 # will be linked into SPL, the dtb size increase the SPL size.
 dtb-$(CONFIG_TARGET_ARMADA_38X) += armada-385-db.dtb
 ifdef CONFIG_TARGET_ARMADA_3700
+ifdef CONFIG_A3700_Z_SUPPORT
+dtb-$(CONFIG_DEVEL_BOARD) += armada-3700-rz-ddr3-db.dtb \
+			     armada-3700-rz-ddr4-db.dtb \
+			     armada-3700-rz-ddr3-db-sgmii1.dtb \
+			     armada-3700-rz-ddr3-db-sfp2_5g.dtb
+else
 ifndef CONFIG_DEVEL_BOARD
 dtb-y += armada-3700-customer0.dtb
 endif #CONFIG_DEVEL_BOARD
@@ -63,6 +69,7 @@ dtb-$(CONFIG_DEVEL_BOARD) += armada-3700-ddr3-db.dtb \
 			     armada-3700-ddr4-db.dtb \
 			     armada-3700-ddr3-db-sgmii1.dtb \
 			     armada-3700-ddr3-db-sfp2_5g.dtb
+endif #CONFIG_A3700_Z_SUPPORT
 endif #CONFIG_TARGET_ARMADA_3700
 
 ifdef CONFIG_TARGET_ARMADA_8K

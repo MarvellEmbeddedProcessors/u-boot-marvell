@@ -52,7 +52,7 @@ void board_usb_current_limit_init(void)
 
 	/* Make sure board is supported (currently only Armada-70x0-DB is supported) */
 	if (fdt_node_check_compatible(blob, 0, "marvell,armada-70x0-db") != 0) {
-		debug("Missing USB VBUS power configuration for current board.\n");
+		debug("USB VBUS configuration is not supported for this board.\n");
 		return;
 	}
 
@@ -100,7 +100,7 @@ void board_usb_vbus_early_init(void)
 
 	/* Make sure board is supported (currently only Armada-70x0-DB is supported) */
 	if (fdt_node_check_compatible(blob, 0, "marvell,armada-70x0-db") != 0) {
-		debug("Missing USB VBUS power configuration for current board.\n");
+		debug("USB VBUS configuration is not supported for this board.\n");
 		return;
 	}
 
@@ -145,6 +145,13 @@ void board_usb_vbus_init(void)
  * (USB3_Host0 Vbus: I2C device at address 0x21, Register 0, BIT 1) */
 	int ret_write , both_vbus_pins;
 	unsigned char out_val[1];
+	const void *blob = gd->fdt_blob;
+
+	/* Make sure board is supported (currently only Armada-70x0-DB is supported) */
+	if (fdt_node_check_compatible(blob, 0, "marvell,armada-70x0-db") != 0) {
+		debug("USB VBUS configuration is not supported for this board.\n");
+		return;
+	}
 
 	both_vbus_pins = (1 << I2C_IO_REG_0_USB_H0_OFF) | (1 << I2C_IO_REG_0_USB_H1_OFF);
 	/* Read VBUS output value, and disable it */

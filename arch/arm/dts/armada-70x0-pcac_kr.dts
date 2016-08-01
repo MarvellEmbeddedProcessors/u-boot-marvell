@@ -39,7 +39,7 @@
 
 / {
 	model = "PCAC-ARMADA-70x0 (SPI-KR)";
-	compatible = "marvell,armada-70x0-db", "marvell,armada-70x0";
+	compatible = "marvell,armada-70x0-pcac", "marvell,armada-70x0";
 	fdt_config_id = <1>;
 	board_id = <0x14>;
 

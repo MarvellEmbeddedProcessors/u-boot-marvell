@@ -18,6 +18,7 @@
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/errno.h>
 #endif
+#include <asm/gpio.h>
 
 #if defined(CONFIG_KIRKWOOD)
 #include <asm/arch/soc.h>

@@ -116,7 +116,14 @@ U_BOOT_CMD(
 #ifdef CONFIG_CMD_MVEBU_TSEN
 int thermal_sensor_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	printf("Temperature = %d\n", mvebu_thermal_sensor_read());
+	int i, temperature;
+
+	for (i = 0; i <  mvebu_get_thermal_count(); i++) {
+		if (mvebu_thermal_read(i, &temperature))
+			continue;
+		printf("Thermal.%lx = %d\n", mvebu_get_thermal_reg_base(i), temperature);
+	}
+
 	return 1;
 }
 

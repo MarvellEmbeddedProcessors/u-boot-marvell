@@ -17,17 +17,18 @@
  */
 
 
+/* #define DEBUG */
 #include <common.h>
 #include <asm/io.h>
-#include <fdtdec.h>
 #include <asm/arch-mvebu/mvebu.h>
-#include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/thermal.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
-void __iomem __attribute__((section(".data")))*thermal_base;
-u32 __attribute__((section(".data")))tsen_ready;
+#define THERMAL_SEN_CTRL				0x0
+#define THERMAL_SEN_TC_TRIM_OFFSET			0
+#define THERMAL_SEN_TC_TRIM_MASK			(0x7 << THERMAL_SEN_TC_TRIM_OFFSET)
+
 
 #define THERMAL_SEN_CTRL_MSB				0x4
 #define THERMAL_SEN_CTRL_MSB_RST_OFFSET			8
@@ -39,60 +40,53 @@ u32 __attribute__((section(".data")))tsen_ready;
 #define THERMAL_SEN_CTRL_STATS_TEMP_OUT_OFFSET		0
 #define THERMAL_SEN_CTRL_STATS_TEMP_OUT_MASK		(0x3FF << THERMAL_SEN_CTRL_STATS_TEMP_OUT_OFFSET)
 
-u32 mvebu_thermal_sensor_read(void)
+s32 mvebu_thermal_sensor_read(struct thermal_unit_config *tsen)
 {
 	u32 reg;
 
-	if (!tsen_ready)
+	if (!tsen->tsen_ready) {
+		printf("Thermal Sensor was not initialized\n");
 		return 0;
+	}
 
-	reg = readl(thermal_base + THERMAL_SEN_CTRL_STATS);
+	reg = readl(tsen->regs_base + THERMAL_SEN_CTRL_STATS);
 	reg = ((reg & THERMAL_SEN_CTRL_STATS_TEMP_OUT_MASK) >> THERMAL_SEN_CTRL_STATS_TEMP_OUT_OFFSET);
 
-	return ((4761 * reg) - 2791000) / 10000;
+	return ((tsen->tsen_gain * reg) - tsen->tsen_offset) / tsen->tsen_divisor;
 }
 
-u32 mvebu_thermal_sensor_probe(void)
+u32 mvebu_thermal_sensor_probe(struct thermal_unit_config *tsen)
 {
-	const void *blob = gd->fdt_blob;
-	u32 node, reg, timeout = 0;
+	u32 reg, timeout = 0;
 
 	debug_enter();
-	debug("Initializing thermal sensor unit\n");
-	/* flag to indicate that TSEN is not ready */
-	tsen_ready = 0;
-
-	/* Get thermal sensor node from the FDT blob */
-	node = fdt_node_offset_by_compatible(blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_THERMAL_SENSOR));
-	if (node == -1) {
-		debug("No thermal sensor node found in FDT blob\n");
-		return -1;
-	}
-	/* Get the base address */
-	thermal_base = (void *)fdt_get_regs_offs(blob, node, "reg");
+	debug("thermal.%lx Initializing sensor unit\n", (uintptr_t)tsen->regs_base);
 
 	/* Initialize thermal sensor hardware reset once */
-	reg = readl(thermal_base + THERMAL_SEN_CTRL_MSB);
+	reg = readl(tsen->regs_base + THERMAL_SEN_CTRL_MSB);
 	reg |= THERMAL_SEN_CTRL_MSB_RST_MASK;
-	writel(reg, thermal_base + THERMAL_SEN_CTRL_MSB);
+	writel(reg, tsen->regs_base + THERMAL_SEN_CTRL_MSB);
 
-	reg = readl(thermal_base + THERMAL_SEN_CTRL_STATS);
+	/* set Tsen Tc Trim to correct default value (errata #132698) */
+	reg = readl(tsen->regs_base + THERMAL_SEN_CTRL);
+	reg &= ~THERMAL_SEN_TC_TRIM_MASK;
+	reg |= 0x3;
+	writel(reg, tsen->regs_base + THERMAL_SEN_CTRL);
+
+	/* Check that Sensor is ready */
+	reg = readl(tsen->regs_base + THERMAL_SEN_CTRL_STATS);
 	while ((reg & THERMAL_SEN_CTRL_STATS_VALID_MASK) == 0 && timeout < 300) {
 		udelay(1);
-		reg = readl(thermal_base + THERMAL_SEN_CTRL_STATS);
+		reg = readl(tsen->regs_base + THERMAL_SEN_CTRL_STATS);
 		timeout++;
 	}
 
 	if ((reg & THERMAL_SEN_CTRL_STATS_VALID_MASK) == 0) {
-		error("%s: thermal sensor is not ready\n", __func__);
+		error("%s: thermal.%lx: sensor is not ready\n", __func__, (uintptr_t)tsen->regs_base);
 		return -1;
 	}
 
-	/* TSEN is ready to use */
-	tsen_ready = 1;
-
-
-	debug("Done thermal sensor initializing unit\n");
+	debug("thermal.%lx: Initialization done\n", (uintptr_t)tsen->regs_base);
 	debug_exit();
 
 	return 0;

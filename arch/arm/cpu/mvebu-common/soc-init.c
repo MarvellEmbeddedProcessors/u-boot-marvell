@@ -16,7 +16,6 @@
  * ***************************************************************************
  */
 
-#include <config.h>
 #include <common.h>
 #include <errno.h>
 #include <i2c.h>
@@ -69,13 +68,6 @@ void board_ahci_init(void)
 }
 #endif
 
-/* Weak function for SoC who need specific thermal sensor */
-u32 __mvebu_thermal_sensor_probe(void)
-{
-	return 0;
-}
-u32 mvebu_thermal_sensor_probe(void) __attribute__((weak, alias("__mvebu_thermal_sensor_probe")));
-
 /* Weak function for boards who need specific init seqeunce */
 int __soc_late_init(void)
 {
@@ -94,7 +86,12 @@ int mvebu_soc_init()
 	mvebu_sar_init(gd->fdt_blob);
 #endif
 
-	mvebu_thermal_sensor_probe();
+#ifdef CONFIG_MVEBU_THERMAL_SENSOR
+	/* Thermal Sensor init */
+	ret = mvebu_thermal_init(gd->fdt_blob);
+	if (ret)
+		error("Thermal Sensor init failed");
+#endif
 
 	/* Soc specific init */
 	ret = soc_late_init();

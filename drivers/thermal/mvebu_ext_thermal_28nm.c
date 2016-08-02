@@ -85,7 +85,7 @@ u32 mvebu_thermal_sensor_probe(void)
 	tsen->tsen_ready = 0;
 
 	/* Get thermal sensor node from the FDT blob */
-	node = fdt_node_offset_by_compatible(blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_THERMAL_SENSOR_V2));
+	node = fdt_node_offset_by_compatible(blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_THERMAL_EXT_SENSOR));
 	if (node == -1) {
 		debug("No thermal sensor node found in FDT blob\n");
 		return -1;

@@ -114,7 +114,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(COMPAT_COMPHY_CP110, "marvell,comphy-cp110"),
 	COMPAT(COMPAT_COMPHY_ARMADA_3700, "marvell,comphy-armada-3700"),
 	COMPAT(MVEBU_THERMAL_SENSOR, "marvell,thermal-sensor"),
-	COMPAT(MVEBU_THERMAL_SENSOR_V2, "marvell,thermal-sensor-v2"),
+	COMPAT(MVEBU_THERMAL_EXT_SENSOR, "marvell,thermal-ext-sensor"),
 	COMPAT(MVEBU_FLC, "marvell,mvebu-flc"),
 	COMPAT(MVEBU_ADVK_PCIE, "marvell,advk-pcie"),
 	COMPAT(MVEBU_XENON_MMC, "marvell,xenon-sdhci"),

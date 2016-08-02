@@ -98,11 +98,11 @@
 			};
 
 			thermal: thermal@6f8084 {
-				compatible = "marvell,thermal-sensor-v2";
+				compatible = "marvell,thermal-ext-sensor";
+				reg = <0x6f8084 0x12>;
 				gain = <425>;
 				offset = <153400>;
 				divisor = <1000>;
-				reg = <0x6f8084 0x12>;
 				status = "okay";
 			};
 

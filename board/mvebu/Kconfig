@@ -46,6 +46,15 @@ config AP806_Z_SUPPORT
 	  This configurations controlls all sorts of fixes
 	  relevant only for the Z1 & Z2 stepping of AP-806
 
+config A3700_Z_SUPPORT
+	bool "Enable support for Armada-3700 Z1"
+	default n
+	help
+	  Choose this option to add support
+	  for Marvell's Armada-3700 Z1 devices.
+	  This configurations controlls all sorts of fixes
+	  relevant only for the Z1 stepping of Armada-3700.
+
 config MVEBU_A3700_CLOCK
 	bool "Armada-3700  clock support"
 	depends on TARGET_ARMADA_3700

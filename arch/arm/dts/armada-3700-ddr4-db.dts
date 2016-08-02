@@ -24,4 +24,11 @@
 	compatible = "marvell,armada-3700-db0", "marvell,armada-3700";
 	fdt_config_id = <A3700_DDR4_DB_CONFIG_ID_DEFAULT>;
 	board_id = <A3700_DDR4_DB_ID>;
+	soc {
+		internal-regs {
+			sataphy@e0000 {
+				phy-invert = <PHY_POLARITY_NO_INVERT>;
+			};
+		};
+	};
 };

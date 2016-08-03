@@ -134,6 +134,7 @@ USP_OBJS +=	$(USP_DIR)/switchingServices/switchingServices.o
 ifeq ($(BOARD),a38x)
 USP_OBJS +=	$(USP_DIR)/switchingServices/sar_msys.o
 USP_OBJS +=	$(USP_DIR)/switchingServices/sar_aldr.o
+USP_OBJS +=	$(USP_DIR)/switchingServices/sar_bc3.o
 USP_OBJS +=	$(USP_DIR)/switchingServices/sar_sw_lib.o
 USP_OBJS +=	$(USP_DIR)/switchingServices/sar_external_i2c.o
 endif

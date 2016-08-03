@@ -159,6 +159,7 @@ typedef enum {	// special device enum
 		SILT_XCAT2,
 		SILT_NP5,
 		SILT_BC2,
+		SILT_BC3,
 		SILT_BOBK,
 		SILT_AC3,
 		SILT_ALDR,
@@ -190,4 +191,5 @@ int do_sar_msys(cmd_tbl_t * cmdtp, int flag, int silt, int argc, char * const ar
 int do_sar_switch(int argc, char * const argv[], struct satr_info *sar_info);
 void hwServicesLateInit(void);
 extern struct satr_info aldrin_satr_info[];
+extern struct satr_info bc3_satr_info[];
 #endif

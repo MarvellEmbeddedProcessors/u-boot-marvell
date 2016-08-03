@@ -605,12 +605,12 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 		if (silt == SILT_BC2 || silt == SILT_BOBK || silt == SILT_AC3)
 			return do_sar_msys(cmdtp, flag, silt, argc, argv);
 
-		/* Because the Aldrin has no MSYS the SatR are not similar to
-		 * Switches that contains MSYS (AC3, BOBK, BC2), therefore
-		 * handle them in different manner
-		 */
+		/* Use new SatR framework for handling new switches */
 		if (silt == SILT_ALDR)
 			return do_sar_switch(argc, argv, aldrin_satr_info);
+
+		if (silt == SILT_BC3)
+			return do_sar_switch(argc, argv, bc3_satr_info);
 	}
 
 	/* is requested 'SatR read' --> Dump all */

@@ -450,6 +450,9 @@ extern "C" {
 	MV_BOBCAT2_A0_NAME,\
 	MV_BOBCAT2_B0_NAME,\
 }
+/* BobCat3  Family */
+#define MV_BOBCAT3_DEV_ID		0xD400
+
 
 /* BobK  Family */
 #define MV_BOBK_DEV_ID		0xBC00

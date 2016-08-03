@@ -994,6 +994,10 @@ SILICON_TYPE get_attached_silicon_type(void)
 								else if ((VendorID == MARVELL_VENDOR_ID) && ((DeviceID & (~DEVICE_FLAVOR_MASK)) == MV_BOBCAT2_DEV_ID))
 										silt = SILT_BC2;
 
+				else if ((VendorID == MARVELL_VENDOR_ID)
+					&& ((DeviceID & (~DEVICE_FLAVOR_MASK)) == MV_BOBCAT3_DEV_ID))
+					silt = SILT_BC3;
+
 								else if ((VendorID == MARVELL_VENDOR_ID) && ((DeviceID & (~DEVICE_FLAVOR_MASK)) == MV_BOBK_DEV_ID))
 										silt = SILT_BOBK;
 

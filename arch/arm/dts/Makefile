@@ -92,7 +92,8 @@ else
 dtb-y += armada-70x0-customer0.dtb
 dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-db_router.dtb 	\
 			     armada-70x0-db_kr.dtb	\
-			     armada-70x0-db_all_pcie.dtb
+			     armada-70x0-db_all_pcie.dtb \
+			     armada-70x0-db_nand.dtb
 
 # A7040 PCAC device tree files
 dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-pcac_kr.dtb

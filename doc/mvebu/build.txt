@@ -35,7 +35,7 @@ Build Instruction:
 	For AP806 stand-alone board use "make mvebu_apn806_defconfig"
 	For the Armada-8040-RZ board use "make mvebu_armada70x0_rz_defconfig"
 	For the Armada-70x0 board use "make mvebu_armada70x0_defconfig"
-	For the Armada-3700 board use "make mvebu_armada3700_defconfig"
+	For the Armada-3700-RZ board use "make mvebu_armada3700_rz_defconfig"
 7. Build the U-Boot:
 	# make
 	The U-Boot compilation generate:
@@ -113,7 +113,7 @@ Boot device selection note for Armada-3700 builds:
 
 	Special note:
 	-------------
-	A3700 Z0 BootROM does not support SATA SERDES lines polarity swap. Therefore the A3700 DB
+	A3700 Z1 BootROM does not support SATA SERDES lines polarity swap. Therefore the A3700 DB
 	equipped with this SoC cannot be used for directly booting from SATA device without
 	board modification (the board has reverse polarity on SATA TX line).
 	Future A3700 revisions will include a special eFuse fields for instructing the BootROM

@@ -88,14 +88,6 @@ static int reset_avs(void)
 	reg_val |= AVS_LOW_VDD_EN;
 	writel(reg_val, reg_base + MVEBU_AVS_CTRL_2);
 
-	/* Reset and release reset */
-	reg_val = readl(reg_base + MVEBU_AVS_CTRL_0);
-	reg_val |= AVS_SOFT_RESET;
-	writel(reg_val, reg_base + MVEBU_AVS_CTRL_0);
-	reg_val = readl(reg_base + MVEBU_AVS_CTRL_0);
-	reg_val &= ~(AVS_SOFT_RESET);
-	writel(reg_val, reg_base + MVEBU_AVS_CTRL_0);
-
 	return 0;
 }
 

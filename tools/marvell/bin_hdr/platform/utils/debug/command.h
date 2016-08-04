@@ -66,7 +66,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvUart.h"
 
 #define CONFIG_SYS_MAXARGS 8
-#define CMD_FLAG_REPEAT 0x0001
 
 struct cmd_tbl_s {
 	char		*name;		/* Command Name			*/

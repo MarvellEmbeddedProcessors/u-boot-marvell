@@ -68,19 +68,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvUart.h"
 #include "printf.h"
 #include "mvSysEnvLib.h"
-#include "command.h"
-#include "lib_utils.h"
 
 MV_STATUS mvBinHeaderDebugPrompt(void)
 {
-	putstring("\nPrompt mode\n");
-	while (1) {
-		readline("Marvell_Debug>> ");
-		if (strcmp(console_buffer, "q") == 0)
-			break;
-
-		run_command(console_buffer, 0);
-	}
 	return MV_OK;
 }
 

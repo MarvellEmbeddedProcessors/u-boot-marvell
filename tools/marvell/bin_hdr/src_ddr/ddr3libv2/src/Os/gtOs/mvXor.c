@@ -71,53 +71,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 static GT_U32 uiXorRegsCtrlBackup;
-static GT_U32 uiXorRegsBaseBackup[MAX_CS + 1];
-static GT_U32 uiXorRegsMaskBackup[MAX_CS + 1];
+static GT_U32 uiXorRegsBaseBackup[MAX_CS];
+static GT_U32 uiXorRegsMaskBackup[MAX_CS];
 
 extern GT_U32 mvHwsDdr3TipMaxCSGet(GT_U32 devNum);
 
-/*******************************************************************************
-* mvSysXorInit
-*
-* DESCRIPTION:
-*               This function initialize the XOR unit's windows.
-* INPUT:
-*       uiNumOfCS	- number of enabled chip select
-*	uiCsEna		- bitmap of enabled chip selects:
-*				bit[i] = 1 if chip select i is enabled (for 1 <= i <= 3)
-*				bit[4] = if SRAM window is enabled
-*	csSize		- size of DRAM chip select
-*	baseDelta	- base start of the DRAM windows
-*
-*
-*******************************************************************************/
 GT_VOID mvSysXorInit(GT_U32 uiNumOfCS, GT_U32 uiCsEna, GT_U32 csSize, GT_U32 baseDelta)
 {
-	GT_U32 uiReg, ui, uiBase, uiCsCount, sizeMask;
+	GT_U32 uiReg,ui,uiBase,uiCsCount;
 
 	uiXorRegsCtrlBackup = MV_REG_READ(XOR_WINDOW_CTRL_REG(0, 0));
-	for(ui = 0; ui < MAX_CS + 1; ui++)
+	for(ui=0;ui<MAX_CS;ui++)
 		uiXorRegsBaseBackup[ui] = MV_REG_READ(XOR_BASE_ADDR_REG(0, ui));
-	for(ui = 0; ui < MAX_CS + 1; ui++)
+	for(ui=0;ui<MAX_CS;ui++)
 		uiXorRegsMaskBackup[ui] = MV_REG_READ(XOR_SIZE_MASK_REG(0, ui));
 
 	uiReg = 0;
-	for (uiCsCount = 0, ui = 0; uiCsCount < uiNumOfCS && ui < 8; ui++) {
-		if(uiCsEna & (1 << ui)) {
-			uiReg |= (0x1 << (ui));			/* Enable Window x for each CS */
-			uiReg |= (0x3 << ((ui*2)+16)); 		/* Enable Window x for each CS */
-			uiCsCount++;
-		}
+	for(ui=0;ui<(uiNumOfCS);ui++) {
+		uiReg |= (0x1 << (ui)); 					/* 	Enable Window x for each CS */
+		uiReg |= (0x3 << ((ui*2)+16)); 				/* 	Enable Window x for each CS */
 	}
 
 	MV_REG_WRITE(XOR_WINDOW_CTRL_REG(0, 0), uiReg);
 
-	for (uiCsCount = 0, ui = 0; uiCsCount < uiNumOfCS && ui < 8; ui++) {
+	uiCsCount = 0;
+	for(ui=0;ui<uiNumOfCS;ui++) {
 		if(uiCsEna & (1<<ui)) {
 			/* window x - Base - 0x00000000, Attribute 0x0E - DRAM */
 			uiBase = csSize*ui + baseDelta;
-			/* fixed size 2GB for each CS */
-			sizeMask = 0x7FFF0000;
 			switch(ui) {
 				case 0:
 					uiBase |= 0xE00;
@@ -131,16 +112,12 @@ GT_VOID mvSysXorInit(GT_U32 uiNumOfCS, GT_U32 uiCsEna, GT_U32 csSize, GT_U32 bas
 				case 3:
 					uiBase |= 0x700;
 					break;
-				case 4: /* SRAM */
-					uiBase = 0x40000000;
-					uiBase |= 0x1F00; /* configure as shared transaction */
-					sizeMask = 0xF0000;
 			}
 
-			MV_REG_WRITE(XOR_BASE_ADDR_REG(0, ui), uiBase);
+			MV_REG_WRITE(XOR_BASE_ADDR_REG(0, uiCsCount), uiBase);
 
 			/* window x - Size*/
-			MV_REG_WRITE(XOR_SIZE_MASK_REG(0, ui), sizeMask);
+			MV_REG_WRITE(XOR_SIZE_MASK_REG(0, uiCsCount), 0x7FFF0000);
 			uiCsCount++;
 		}
 	}
@@ -154,9 +131,9 @@ GT_VOID mvSysXorFinish(void)
 	GT_U32 ui;
 
 	MV_REG_WRITE(XOR_WINDOW_CTRL_REG(0, 0), uiXorRegsCtrlBackup);
-	for(ui = 0; ui < MAX_CS + 1; ui++)
+	for(ui=0;ui<MAX_CS;ui++)
 		MV_REG_WRITE(XOR_BASE_ADDR_REG(0, ui), uiXorRegsBaseBackup[ui]);
-	for(ui = 0; ui < MAX_CS + 1; ui++)
+	for(ui=0;ui<MAX_CS;ui++)
 		MV_REG_WRITE(XOR_SIZE_MASK_REG(0, ui), uiXorRegsMaskBackup[ui]);
 
 	MV_REG_WRITE(XOR_ADDR_OVRD_REG(0, 0), 0);
@@ -437,103 +414,4 @@ MV_VOID	ddr3NewTipEccScrub()
     mvPrintf("DDR Training Sequence - End scrubbing \n");
 }
 
-/*******************************************************************************
-* mvXorTransfer - Transfer data from source to destination on one of
-*                 three modes (XOR,CRC32,DMA)
-*
-* DESCRIPTION:
-*       This function initiates XOR channel, according to function parameters,
-*       in order to perform XOR or CRC32 or DMA transaction.
-*       To gain maximum performance the user is asked to keep the following
-*       restrictions:
-*       1) Selected engine is available (not busy).
-*       1) This module does not take into consideration CPU MMU issues.
-*          In order for the XOR engine to access the appropreate source
-*          and destination, address parameters must be given in system
-*          physical mode.
-*       2) This API does not take care of cache coherency issues. The source,
-*          destination and in case of chain the descriptor list are assumed
-*          to be cache coherent.
-*       4) Parameters validity. For example, does size parameter exceeds
-*          maximum byte count of descriptor mode (16M or 64K).
-*
-* INPUT:
-*       chan          - XOR channel number. See GT_XOR_CHANNEL enumerator.
-*       xorType       - One of three: XOR, CRC32 and DMA operations.
-*       xorChainPtr   - address of chain pointer
-*
-* OUTPUT:
-*       None.
-*
-* RETURS:
-*       GT_BAD_PARAM if parameters to function invalid, GT_OK otherwise.
-*
-*******************************************************************************/
-GT_STATUS mvXorTransfer(GT_U32 chan, MV_XOR_TYPE xorType, GT_U32 xorChainPtr)
-{
-	GT_U32 temp;
 
-	/* Parameter checking */
-	if (chan >= MV_XOR_MAX_CHAN) {
-		DB(mvPrintf("%s: ERR. Invalid chan num %d\n", __func__, chan));
-		return GT_BAD_PARAM;
-	}
-	if (MV_ACTIVE == mvXorStateGet(chan)) {
-		DB(mvPrintf("%s: ERR. Channel is already active\n", __func__));
-		return GT_BUSY;
-	}
-	if (0x0 == xorChainPtr) {
-		DB(mvPrintf("%s: ERR. xorChainPtr is NULL pointer\n", __func__));
-		return GT_BAD_PARAM;
-	}
-
-	/* read configuration register and mask the operation mode field */
-	temp = MV_REG_READ(XOR_CONFIG_REG(XOR_UNIT(chan), XOR_CHAN(chan)));
-	temp &= ~XEXCR_OPERATION_MODE_MASK;
-
-	switch (xorType) {
-	case MV_XOR:
-		if (0 != (xorChainPtr & XEXDPR_DST_PTR_XOR_MASK)) {
-			DB(mvPrintf("%s: ERR. Invalid chain pointer (bits [5:0] must "
-				      "be cleared)\n", __func__));
-			return GT_BAD_PARAM;
-		}
-		/* set the operation mode to XOR */
-		temp |= XEXCR_OPERATION_MODE_XOR;
-		break;
-
-	case MV_DMA:
-		if (0 != (xorChainPtr & XEXDPR_DST_PTR_DMA_MASK)) {
-			DB(mvPrintf("%s: ERR. Invalid chain pointer (bits [4:0] must "
-				      "be cleared)\n", __func__));
-			return GT_BAD_PARAM;
-		}
-		/* set the operation mode to DMA */
-		temp |= XEXCR_OPERATION_MODE_DMA;
-		break;
-
-	case MV_CRC32:
-		if (0 != (xorChainPtr & XEXDPR_DST_PTR_CRC_MASK)) {
-			DB(mvPrintf("%s: ERR. Invalid chain pointer (bits [4:0] must "
-				      "be cleared)\n", __func__));
-			return GT_BAD_PARAM;
-		}
-		/* set the operation mode to CRC32 */
-		temp |= XEXCR_OPERATION_MODE_CRC;
-		break;
-
-	default:
-		return GT_BAD_PARAM;
-	}
-
-	/* write the operation mode to the register */
-	MV_REG_WRITE(XOR_CONFIG_REG(XOR_UNIT(chan), XOR_CHAN(chan)), temp);
-	/* update the NextDescPtr field in the XOR Engine [0..1] Next Descriptor
-	   Pointer Register (XExNDPR) */
-	MV_REG_WRITE(XOR_NEXT_DESC_PTR_REG(XOR_UNIT(chan), XOR_CHAN(chan)), xorChainPtr);
-
-	/* start transfer */
-	MV_REG_BIT_SET(XOR_ACTIVATION_REG(XOR_UNIT(chan), XOR_CHAN(chan)), XEXACTR_XESTART_MASK);
-
-	return GT_OK;
-}

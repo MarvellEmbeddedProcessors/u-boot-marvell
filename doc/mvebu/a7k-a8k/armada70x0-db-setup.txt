@@ -18,8 +18,94 @@ Board Setup
 ## setup 1: Router ###
 
   Serdes site
-   - module: SLM1524
-   - Module DIP switch
+   - module: SLM1521
+   - jumper-module: SLM1524 (in con36 & con37)
+   - Module DIP switch:
+	- DPR 2,3,4,5 = 1-2
+	- SW1 = ON
+	- SW2 = OFF
+	- SW3 = NA
+	- SW4 = OFF
+	- SW5 = OFF
+	- SW6 - NA
+	- SW7 - NA
+	- SW8 - OFF
+
+
+## setup 2: CUSTOMER ###
+  **reference from setup 1 (router).
+
+
+## setup 3: KR ###
+
+  Serdes site
+   - module: SLM1521
+   - jumper-module: SLM1547 (in con 37)
+	- DPR 148,149,150,151 = 1-2 (default is 2-3).
+   - Module DIP switch:
+	- DPR 2,3,4,5 = 1-2
+	- SW1 = OFF
+	- SW2 = OFF
+	- SW3 = NA
+	- SW4 = OFF
+	- SW5 = ON
+	- SW6 - NA
+	- SW7 - NA
+	- SW8 - OFF
+
+
+## setup 4: all-pci ###
+
+  Serdes site
+   - module: SLM1521
+   - jumper-module: SLM1547 (in con 37)
+	- DPR 148,149,150,151 = 1-2 (default is 2-3).
+   - Module DIP switch:
+	- DPR 2,3,4,5 = 2-3
+	- SW1 = OFF
+	- SW2 = ON
+	- SW3 = ON
+	- SW4 = ON
+	- SW5 = ON
+	- SW6 - NA
+	- SW7 - NA
+	- SW8 - OFF
+
+
+## setup 5: NAND ###
+
+  Serdes site
+   - module: SLM1521
+   - jumper-module: SLM1547 (in con 37)
+	- DPR 148,149,150,151 = 1-2 (default is 2-3).
+   - Module DIP switch:
+	- DPR 2,3,4,5 = 1-2
+	- SW1 = ON
+	- SW2 = OFF
+	- SW3 = NA
+	- SW4 = OFF
+	- SW5 = OFF
+	- SW6 - NA
+	- SW7 - NA
+	- SW8 - OFF
+
+
+## setup 6: rgmii-only ###
+
+  Serdes site
+   - module: SLM1521
+   - jumper-module: SLM1547 (in con 37)
+	- DPR 148,149,150,151 = 1-2 (default is 2-3).
+   - Module DIP switch:
+	- DPR 2,3,4,5 = 2-3
+	- SW1 = ON
+	- SW2 = OFF
+	- SW3 = OFF
+	- SW4 = OFF
+	- SW5 = OFF
+	- SW6 - NA
+	- SW7 - NA
+	- SW8 - OFF
 
 
 The tables below summarizes the interface configuration of each setup
@@ -27,37 +113,37 @@ The tables below summarizes the interface configuration of each setup
 Serdes PHY configuration
 ------------------------
 
-setup  #	|	1	|
-name   #	|     router 	|
----------------------------------
-SerDes:	lane0	| sgmii2	|
-	lane1	| usb3h0	|
-	lane2	| sgmii0	|
-	lane3	| sata1		|
-	lane4	| usb3h1	|
-	lane5	| pex_x1_2	|
----------------------------------
+setup  #	|	1	|	3	|	4	|	5	|	6	|
+name   #	|     router 	|	KR	|    all pci	|     NAND	|   rmgii only	|
+-------------------------------------------------------------------------------------------------
+SerDes:	lane0	| sgmii2	| pex_x4_0	| pex_x4_0	| pex_x4_0	| pex_x4_0	|
+	lane1	| usb3h0	| sata0		| pex_x4_0	| usb3h0	| usb3h0	|
+	lane2	| sgmii0	| kr		| pex_x4_0	| kr		| sata0		|
+	lane3	| sata1		| sata1		| pex_x4_0	| sata1		| sata1		|
+	lane4	| usb3h1	| pex_x1_1	| pex_x1_1	| usb3h1	| usb3h1	|
+	lane5	| pex_x1_2	| pex_x1_2	| pex_x1_2	| pex_x1_2	| pex_x1_2	|
+-------------------------------------------------------------------------------------------------
 
 
 Multi purpose pin configurations
 --------------------------------
 
-setup  #	|	1	|
-name   #	|     router 	|
----------------------------------
+setup  #	|	1	|	3	|	4	|	5	|	6	|
+name   #	|     router 	|	KR	|    all pci	|     NAND	|   rmgii only	|
+-------------------------------------------------------------------------------------------------
+ MPPs: 	CP-SPI0	| N/C		| N/C		| N/C		| N/C		| N/C		|
+	CP-SPI1	| [13-16]	| [13-16]	| [13-16]	| N/C		| [13-16]	|
+	NAND	| N/C		| N/C		| N/C		| [13,15-27]	| N/C		|
+	RGMII0	| N/C		| [0-11]	| [0-11]	| [0-11]	| [0-11]	|
+	RGMII1	| [44-55]	| [44-55]	| [44-55]	| [44-55]	| [44-55]	|
+	CP-UART0| [29-30]	| [29-30]	| [29-30]	| [29-30]	| [29-30]	|
+	CP-UART1| N/C		| N/C		| N/C		| N/C		| N/C		|
+	SD	| [56-62]	| [56-62]	| [56-62]	| [56-62]	| [56-62]	|
+	TDM	| [0-11]	| N/C		| N/C		| N/C		| N/C		|
+	TWSI	| [37-38]	| [37-38]	| [37-38]	| [37-38]	| [37-38]	|
+	SATA0	| N/C		| [36]		| N/C		| N/C		| [36]		|
+	SATA1	| [28]		| [28]		| N/C		| [28]		| [28]		|
+	SMI	| [32,34]	| [32,34]	| [32,24]	| [32,34]	| [32,34]	|
+	XSMI	| [35-36]	| N/C		| [35-36]	| [35-36]	| N/C		|
+-------------------------------------------------------------------------------------------------
 
-MPPs: 	CP-SPI0	| N/C		|
-	CP-SPI1	| [13-16]	|
-	NAND	| N/C		|
-	RGMII0	| [0-11]	|
-	RGMII1	| [44-55]	|
-	CP-UART0| [29-30]	|
-	CP-UART1| [40-41]	|
-	SD	| [56-62]	|
-	TDM	| N/C		|
-	TWSI	| [37-38]	|
-	SATA0	| N/C		|
-	SATA1	| [28]		|
-	SMI	| [32-34]	|
-	XSMI	| [35-36]	|
----------------------------------

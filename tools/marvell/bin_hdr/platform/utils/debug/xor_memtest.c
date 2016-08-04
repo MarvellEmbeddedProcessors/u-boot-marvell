@@ -250,10 +250,10 @@ int do_xorMemTest(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	MV_U32 iterations = 1;
 
 	if (argc > 1)
-		sourceBase = simple_strtoul(argv[1], NULL, 16);
+		nSourceAddr = simple_strtoul(argv[1], NULL, 16);
 
 	if (argc > 2)
-		destBase = simple_strtoul(argv[2], NULL, 16);
+		nDestAddr = simple_strtoul(argv[2], NULL, 16);
 
 	if (argc > 3)
 		destSize = simple_strtoul(argv[3], NULL, 16);

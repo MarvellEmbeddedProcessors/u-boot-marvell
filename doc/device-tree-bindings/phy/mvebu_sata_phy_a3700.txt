@@ -1,7 +1,8 @@
 Marvell Armada-3700 SoC SATA PHY bindings
 =====================================
 
-The SATA PHY node includes a description of the SATA PHY unit.
+The SATA PHY node includes a description of the SATA PHY unit. In Armada-3700 Z1,
+SATA PHY has a dedicated serdes lane. This dts node is only relevant to Z1 revision.
 The driver initializes the SATA PHY, according to the FDT blob configurations.
 
 Mandatory properties:

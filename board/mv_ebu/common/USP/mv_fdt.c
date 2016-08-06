@@ -256,6 +256,9 @@ void ft_board_setup(void *blob, bd_t *bd)
 	int err, skip = 1;		/* error number */
 	char *env;			/* env value */
 	update_fnc_t **update_fnc_ptr;
+#ifdef CONFIG_SWITCHING_SERVICES
+	SILICON_TYPE silt = get_attached_silicon_type();
+#endif
 
 	/* Debug information will be printed if variable enaFDTdebug=yes */
 	env = getenv("enaFDTdebug");
@@ -307,9 +310,11 @@ void ft_board_setup(void *blob, bd_t *bd)
 	mv_fdt_dprintf("Memory node updated\n");
 
 #ifdef CONFIG_SWITCHING_SERVICES
-	/*Update eeprom register address from 0x50 to 0x53 to support Aldrin*/
-	if (mvBoardisAmc() && (get_attached_silicon_type() == SILT_ALDR))
-                           mv_fdt_update_eeprom_addr(blob);
+	/* Update eeprom register address from 0x50 to 0x53 to
+	 * support Aldrin and BC3
+	 */
+	if (mvBoardisAmc() && (silt == SILT_ALDR || silt == SILT_BC3))
+		mv_fdt_update_eeprom_addr(blob);
 #endif
 
 	if (!skip) {

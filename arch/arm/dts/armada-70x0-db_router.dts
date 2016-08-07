@@ -95,14 +95,13 @@
 
 			pinctl@440000 {
 					/* MPP Bus:
-					   TDM	 [0-12]
+					   TDM	 [0-11]
 					   SPI   [13-16]
 					   SATA1 [28]
 					   UART0 [29-30]
 					   SMI	 [32,34]
 					   XSMI  [35-36]
 					   I2C	 [37-38]
-					   UART1 [40-41]
 					   RGMII1[44-55]
 					   SD	 [56-62]
 					*/
@@ -117,6 +116,15 @@
 			};
 
 			comphy {
+				/* Serdes Configuration:
+					Lane 0: SGMII2
+					Lane 1: USB3-HOST0
+					Lane 2: SGMII0
+					Lane 3: SATA1
+					Lane 4: USB3-HOST1
+					Lane 5: PEX2x1
+				*/
+
 				phy0 {
 					phy-type = <PHY_TYPE_SGMII2>;
 					phy-speed = <PHY_SPEED_3_125G>;
@@ -126,7 +134,6 @@
 				};
 				phy2 {
 					phy-type = <PHY_TYPE_SGMII0>;
-					phy-speed = <PHY_SPEED_1_25G>;
 				};
 				phy3 {
 					phy-type = <PHY_TYPE_SATA1>;

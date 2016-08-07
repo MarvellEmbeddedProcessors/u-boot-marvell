@@ -30,17 +30,19 @@
 	ap-806 {
 		internal-regs {
 			spi0: spi@510600 {
-				status = "disabled";
+				status = "okay";
 			};
 			i2c0: i2c@511000 {
 				status = "disabled";
 			};
 			pinctl: pinctl@6F4000 {
 					/* MPP Bus:
+						SPI0 [0-3]
+						I2C0 [4-5]
 						UART0 [11,19]
 					*/
 					  /* 0 1 2 3 4 5 6 7 8 9 */
-				pin-func = < 0 0 0 0 0 0 0 0 0 0
+				pin-func = < 3 3 3 3 3 3 0 0 0 0
 					     0 3 0 0 0 0 0 0 0 3>;
 			};
 		};
@@ -186,7 +188,7 @@
 				status = "disabled";
 			};
 			spi1@700680 {
-				status = "okay";
+				status = "disabled";
 			};
 			i2c@701000 {
 				status = "disabled";
@@ -223,13 +225,12 @@
 			pinctl@440000 {
 					/* MPP Bus:
 					  [0-11]  RGMII0
-					  [12-16] SPI1
 					  [27,31] GE_MDIO/MDC
 					  [32-62] = 0xff: Keep default CP1_shared_pins:
 					*/
 					/*   0    1    2    3    4    5    6    7    8    9 */
 				pin-func = < 0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3
-					     0x3  0x3  0x3  0x3  0x3  0x3  0x3  0xff 0xff 0xff
+					     0x3  0x3  0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
 					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0x8  0xff 0xff
 					     0xff 0x8  0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
 					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff

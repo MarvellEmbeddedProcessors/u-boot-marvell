@@ -20,7 +20,7 @@ Board specific:
 	- pin-func
 		Array specifying the function per pin, from left to right.
 
-MPP functinos for Armada3700:
+MPP functinos for Armada3700_Z1:
 	North Bridge:
 		mpp-pin0:
 		   func0: i2c1-sck,
@@ -210,6 +210,218 @@ MPP functinos for Armada3700:
 		   func2: mii-carrier-sense,
 		mpp-pin23:
 		   func0: rgmii/mii/smi-mii-collision,
+		   func1: gpio,
+		   func2: mii-tx-err,
+		mpp-pin24:
+		   func0: sdio-sd0-d2,
+		   func1: gpio,
+		mpp-pin25:
+		   func0: sdio-sd0-d3,
+		   func1: gpio,
+		mpp-pin26:
+		   func0: sdio-sd0-d1,
+		   func1: gpio,
+		mpp-pin27:
+		   func0: sdio-sd0-d0,
+		   func1: gpio,
+		mpp-pin28:
+		   func0: sdio-sd0-cmd,
+		   func1: gpio,
+		mpp-pin29:
+		   func0: sdio-sd0-clk,
+		   func1: gpio,
+
+MPP functinos for Armada3700_A0:
+	North Bridge:
+		mpp-pin0:
+		   func0: i2c1-sck,
+		   func1: gpio,
+		mpp-pin1:
+		   func0: i2c1-sda,
+		   func1: gpio,
+		mpp-pin2:
+		   func0: i2c2-sck,
+		   func1: gpio,
+		mpp-pin3:
+		   func0: i2c2-sda,
+		   func1: gpio,
+		mpp-pin4:
+		   func0: 1wire,
+		   func1: gpio,
+		mpp-pin5:
+		   func0: gpio,
+		mpp-pin6:
+		   func0: pmic0-slp-out,
+		   func1: gpio,
+		mpp-pin7:
+		   func0: pmic1-slp-out,
+		   func1: gpio,
+		mpp-pin8:
+		   func0: sdio,
+		   func1: gpio,
+		mpp-pin9:
+		   func0: sdio,
+		   func1: gpio,
+		   func2: uart2-rts,
+		mpp-pin10:
+		   func0: sdio,
+		   func1: gpio,
+		   func2: uart2-cts,
+		mpp-pin11:
+		   func0: pwm0,
+		   func1: gpio,
+		   func2: led0-od,
+		mpp-pin12:
+		   func0: pwm1,
+		   func1: gpio,
+		   func2: led1-od,
+		mpp-pin13:
+		   func0: pwm2,
+		   func1: gpio,
+		   func2: led2-od,
+		mpp-pin14:
+		   func0: pwm3,
+		   func1: gpio,
+		   func2: led3-od,
+		mpp-pin15:
+		   func0: spi-quad,
+		   func1: gpio,
+		mpp-pin16:
+		   func0: spi-quad,
+		   func1: gpio,
+		mpp-pin17:
+		   func0: spi-cs1,
+		   func1: gpio,
+		mpp-pin18:
+		   func0: spi-cs2,
+		   func1: gpio,
+		   func2: uart2-tx,
+		mpp-pin19:
+		   func0: spi-cs3,
+		   func1: gpio,
+		   func2: uart2-rx,
+		mpp-pin20:
+		   func0: jtag,
+		   func1: gpio,
+		mpp-pin21:
+		   func0: jtag,
+		   func1: gpio,
+		mpp-pin22:
+		   func0: jtag,
+		   func1: gpio,
+		mpp-pin23:
+		   func0: jtag,
+		   func1: gpio,
+		mpp-pin24:
+		   func0: jtag,
+		   func1: gpio,
+		mpp-pin25:
+		   func0: uart1,
+		   func1: gpio,
+		mpp-pin26:
+		   func0: uart1,
+		   func1: gpio,
+		mpp-pin27:
+		   func0: mmc,
+		   func1: gpio,
+		mpp-pin28:
+		   func0: mmc,
+		   func1: gpio,
+		mpp-pin29:
+		   func0: mmc,
+		   func1: gpio,
+		mpp-pin30:
+		   func0: mmc,
+		   func1: gpio,
+		mpp-pin31:
+		   func0: mmc,
+		   func1: gpio,
+		mpp-pin32:
+		   func0: mmc,
+		   func1: gpio,
+		mpp-pin33:
+		   func0: mmc,
+		   func1: gpio,
+		mpp-pin34:
+		   func0: mmc,
+		   func1: gpio,
+		mpp-pin35:
+		   func0: mmc,
+		   func1: gpio,
+
+	South Bridge:
+		mpp-pin0:
+		   func0: usb32-drvvbus0,
+		   func1: gpio,
+		mpp-pin1:
+		   func0: usb2-drvvbus1,
+		   func1: gpio,
+		mpp-pin2:
+		   func0: gpio,
+		mpp-pin3:
+		   func0: pcie1-resetn,
+		   func1: gpio,
+		mpp-pin4:
+		   func0: pcie1-clkreq,
+		   func1: gpio,
+		mpp-pin5:
+		   func0: pcie1_wakeup,
+		   func1: gpio,
+		mpp-pin6:
+		   func0: rgmii,
+		   func1: gpio,
+		mpp-pin7:
+		   func0: rgmii,
+		   func1: gpio,
+		mpp-pin8:
+		   func0: rgmii,
+		   func1: gpio,
+		mpp-pin9:
+		   func0: rgmii,
+		   func1: gpio,
+		mpp-pin10:
+		   func0: rgmii,
+		   func1: gpio,
+		mpp-pin11:
+		   func0: rgmii,
+		   func1: gpio,
+		mpp-pin12:
+		   func0: rgmii,
+		   func1: gpio,
+		mpp-pin13:
+		   func0: rgmii,
+		   func1: gpio,
+		mpp-pin14:
+		   func0: rgmii,
+		   func1: gpio,
+		mpp-pin15:
+		   func0: rgmii,
+		   func1: gpio,
+		mpp-pin16:
+		   func0: rgmii,
+		   func1: gpio,
+		mpp-pin17:
+		   func0: rgmii,
+		   func1: gpio,
+		mpp-pin18:
+		   func0: smi,
+		   func1: gpio,
+		mpp-pin19:
+		   func0: smi,
+		   func1: gpio,
+		mpp-pin20:
+		   func0: ptp-event-req,
+		   func1: gpio,
+		mpp-pin21:
+		   func0: ptp-clk-req,
+		   func1: gpio,
+		   func2: mii-tx-err,
+		mpp-pin22:
+		   func0: ptp-trig-gen,
+		   func1: gpio,
+		   func2: mii-carrier-sense,
+		mpp-pin23:
+		   func0: mii-collision,
 		   func1: gpio,
 		   func2: mii-tx-err,
 		mpp-pin24:

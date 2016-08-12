@@ -1,5 +1,5 @@
 #define ATTR(remapped, target, attributes) (((remapped) << 12) | ((target) << 8) | (attributes))
-#define IO_ATTR(max_win, max_remap, remap_size, win_offset) (((max_win) << 24) | ((max_remap) << 16) | ((remap_size) << 8) | (win_offset))
+#define IO_ATTR(win_attr, max_win, max_remap, remap_size, win_offset) (((win_attr) << 24) | ((max_win) << 20) | ((max_remap) << 16) | ((remap_size) << 8) | (win_offset))
 
 #include <dt-bindings/comphy/comphy_data.h>
 #include <dt-bindings/gpio/armada-3700-gpio.h>
@@ -31,9 +31,9 @@
 				#size-cells = <1>;
 
 				unit_io_decode_info =
-					/* reg_base, range, IO_ATTR(max_win, max_remap, remap_size, win_offset) */
-					<0xcb00 0x30 IO_ATTR(3, 0, 32, 0x10) /* eMMC */
-					0xc800 0x30 IO_ATTR(3, 0, 32, 0x10)> /* SATA */;
+					/* reg_base, range, IO_ATTR(win_attr, max_win, max_remap, remap_size, win_offset) */
+					<0xcb00 0x30 IO_ATTR(0, 3, 0, 32, 0x10) /* eMMC */
+					0xc800 0x30 IO_ATTR(0, 3, 0, 32, 0x10)> /* SATA */;
 			};
 
 			mbus {

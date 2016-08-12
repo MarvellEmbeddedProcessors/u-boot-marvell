@@ -28,6 +28,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 struct dec_win_config {
 	void __iomem *dec_win_base;
+	u32 win_attr;
 	u32 max_win;
 	u32 max_remap;
 	u32 remap_size;
@@ -66,14 +67,14 @@ int set_io_addr_dec(struct mbus_win_map *win_map, struct dec_win_config *dec_win
 	for (id = 0; id < dec_win->max_win; id++)
 		writel(0, MVEBU_DEC_WIN_CTRL_REG(dec_win->dec_win_base, id, dec_win->win_offset));
 
-	/* configure eMMC decode windows for DRAM, according to CPU-DRAM
-	 * decode window configurations
+	/* configure IO decode windows for DRAM, inheritate DRAM size, base and target from CPU-DRAM
+	 * decode window, and others from IO decode window settings in fdt file.
 	 */
 	for (id = 0, win = &win_map->mbus_windows[id]; id < win_map->mbus_win_num; id++, win++) {
 		/* set size */
 		ctrl = win->win_size << MVEBU_DEC_WIN_CTRL_SIZE_OFF;
-		/* set attr */
-		ctrl |= win->attribute << MVEBU_DEC_WIN_CTRL_ATTR_OFF;
+		/* set attr according to IO decode window */
+		ctrl |= dec_win->win_attr << MVEBU_DEC_WIN_CTRL_ATTR_OFF;
 		/* set target */
 		ctrl |= win->target << MVEBU_DEC_WIN_CTRL_TARGET_OFF;
 		/* set base */
@@ -143,20 +144,22 @@ int init_io_addr_dec(void)
 	 * base: base address of IO decode window
 	 * size: size of IO decode window register in unit of byte
 	 * flags: information about this IO decode window which is combined by IO_ATTR
-	 *     IO_ATTR(max_win, max_remap, remap_size, win_offset) (((max_win) << 24) | ((max_remap) << 16) |
-	 *            ((remap_size) << 8) | (win_offset))
+	 *     IO_ATTR(win_attr, max_win, max_remap, remap_size, win_offset) (((win_attr) << 24) | (max_win) << 20) |
+	 *            ((max_remap) << 16) | ((remap_size) << 8) | (win_offset))
+	 *            win_attr: windows attribute
 	 *            max_win: how many decode window that this unit has
 	 *            max_remap: the decode window number including remapping that this unit has
 	 *            remap_size: remap window size in unit of bits, normally should be 32 or 64
 	 *            win_offset: the offset between continuous decode windows with the same unit, typically 0x10
 	 *
-	 * Example in FDT: <0xcb00 0x30 IO_ATTR(3, 0, 32, 0x10)>
+	 * Example in FDT: <0xcb00 0x30 IO_ATTR(0, 3, 0, 32, 0x10)>
 	 */
 	count = count / 3;
 	for (index = 0; index < count; index++, fdt_info++) {
 		dec_win.dec_win_base = (void *)((u64)fdt_info->base);
-		dec_win.max_win = (fdt_info->flags >> 24) & 0xFF;
-		dec_win.max_remap = (fdt_info->flags >> 16) & 0xFF;
+		dec_win.win_attr = (fdt_info->flags >> 24) & 0xFF;
+		dec_win.max_win = (fdt_info->flags >> 20) & 0xF;
+		dec_win.max_remap = (fdt_info->flags >> 16) & 0xF;
 		dec_win.remap_size = (fdt_info->flags >> 8) & 0xFF;
 		dec_win.win_offset = fdt_info->flags & 0xFF;
 
@@ -168,8 +171,8 @@ int init_io_addr_dec(void)
 		}
 		debug("set io decode window successfully, base(0x%x) size(0x%x)",
 		      fdt_info->base, fdt_info->size);
-		debug(" max_win(%d) max_remap(%d) remap_size(%d) win_offset(%d)\n",
-		      dec_win.max_win, dec_win.max_remap, dec_win.remap_size, dec_win.win_offset);
+		debug(" win_attr(%x) max_win(%d) max_remap(%d) remap_size(%d) win_offset(%d)\n",
+		      dec_win.win_attr, dec_win.max_win, dec_win.max_remap, dec_win.remap_size, dec_win.win_offset);
 	}
 
 	debug_exit();

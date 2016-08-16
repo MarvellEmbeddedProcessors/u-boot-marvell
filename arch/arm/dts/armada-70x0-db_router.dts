@@ -20,12 +20,13 @@
 
 #include "armada-70x0.dtsi" /* include SoC device tree */
 #include "armada-70x0-dev-info.dtsi" /* include Marvell specific info (S@R, MPP cmd) */
+#include <dt-bindings/multi-fdt/a8k/multi-fdt.h>
 
 / {
 	model = "DB-ARMADA-70x0 (SPI-ROUTER)";
 	compatible = "marvell,armada-70x0-db", "marvell,armada-70x0";
-	fdt_config_id = <1>;
-	board_id = <0x12>;
+	fdt_config_id = <A70X0_ROUTER>;
+	board_id = <A8K_7040_DB>;
 
 	ap-806 {
 		internal-regs {

@@ -19,12 +19,13 @@
 /dts-v1/;
 
 #include "armada-70x0.dtsi" /* include SoC device tree */
+#include <dt-bindings/multi-fdt/a8k/multi-fdt.h>
 
 / {
 	model = "DB-ARMADA-70x0 (SPI-Customer)";
 	compatible = "marvell,armada-70x0";
-	fdt_config_id = <2>;
-	board_id = <0x12>;
+	fdt_config_id = <A70X0_CUSTOMER>;
+	board_id = <A8K_7040_DB>;
 
 	ap-806 {
 		internal-regs {

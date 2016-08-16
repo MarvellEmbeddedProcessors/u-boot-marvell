@@ -1,0 +1,172 @@
+/*
+ * ***************************************************************************
+ * Copyright (C) 2016 Marvell International Ltd.
+ * ***************************************************************************
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ***************************************************************************
+ */
+
+/dts-v1/;
+
+#include "armada-70x0.dtsi" /* include SoC device tree */
+#include "armada-70x0-dev-info.dtsi" /* include Marvell specific info (S@R, MPP cmd) */
+#include <dt-bindings/multi-fdt/a8k/multi-fdt.h>
+/ {
+	model = "DB-ARMADA-A8K(default)";
+	compatible = "marvell,armada-8k-7k";
+	fdt_config_id = <A8K_A7K_default>;
+	board_id = <A8K_A7K_DEFAULT_BOARD_ID>;
+
+	ap-806 {
+		internal-regs {
+			spi0: spi@510600 {
+				status = "disabled";
+			};
+			i2c0: i2c@511000 {
+				status = "disabled";
+			};
+			pinctl: pinctl@6F4000 {
+					/* MPP Bus:
+						UART0 [11,19]
+					*/
+					  /* 0 1 2 3 4 5 6 7 8 9 */
+				pin-func = < 0 0 0 0 0 0 0 0 0 0
+					     0 3 0 0 0 0 0 0 0 3>;
+			};
+			mmc0: mmc@6E0000 {
+				status = "disabled";
+			};
+		};
+	};
+	cp110-master {
+		internal-regs {
+			spi0@700600 {
+				status = "disabled";
+			};
+			spi1@700680 {
+				status = "okay";
+			};
+			i2c@701000 {
+				status = "okay";
+			};
+			i2c@211000 { /* MSS_i2c0 */
+				status = "disabled";
+			};
+			i2c@211100 { /* MSS_i2c1 */
+				status = "disabled";
+			};
+			usb3@500000 {
+				status = "disabled";
+			};
+			usb3@510000 {
+				status = "disabled";
+			};
+			sata@540000 {
+				status = "disabled";
+			};
+			mmc@780000 {
+				status = "disabled";
+			};
+			pcie-controller {
+				pcie@0,0 {
+					status = "disabled";
+				};
+				pcie@1,0 {
+					status = "disabled";
+				};
+				pcie@2,0 {
+					status = "disabled";
+				};
+			};
+			nand@720000 {
+				status = "disabled";
+			};
+
+			pinctl@440000 {
+					/* PP Bus:
+					   SPI   [13-16]
+					   UART0 [29-30]
+					   I2C	 [37-38]
+					   RGMII1[44-55]
+					*/
+					/*   0   1   2   3   4   5   6   7   8   9 */
+				pin-func = < 0   0   0   0   0   0   0   0   0   0
+					     0   0   0   3   3   3   3   0   0   0
+					     0   0   0   0   0   0   0   0   0   0xA
+					     0xA 0   0   0   0   0   0   2   2   0
+					     0   0   0   0   1   1   1   1   1   1
+					     1   1   1   1   1   1   0   0   0   0
+					     0   0   0>;
+			};
+
+			comphy {
+				/* Serdes Configuration:
+					Lanes 0-5: UNCONNECTED
+				*/
+
+				phy0 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+				};
+				phy2 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+				};
+				phy3 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+				};
+				phy4 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+				};
+				phy5 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+				};
+			};
+			mdio {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				phy2: ethernet-phy@2 {
+					reg = <0>;
+				};
+				phy3: ethernet-phy@3 {
+					reg = <1>;
+				};
+			};
+			gop {
+				mac0 {
+					phy-mode = "NONE"; /* lane-2 */
+				};
+				mac2 {
+					phy-mode = "NONE"; /* lane-0 */
+					phy = <&phy2>;
+				};
+				mac3 {
+					phy-mode = "rgmii"; /* rgmii-1 */
+					phy = <&phy3>;
+				};
+			};
+			ppv22@000000 {
+				eth0@010000 {
+					status = "disabled";
+				};
+				eth1@020000 {
+					status = "disabled";
+				};
+				eth2@030000 {
+					status = "okay";
+				};
+			};
+		};
+	};
+};

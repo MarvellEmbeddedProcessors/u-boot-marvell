@@ -489,6 +489,8 @@ int cfg_eeprom_get_board_id(void)
 		if ((strcmp("board_id", hw_info_point_array[idx].name) == 0) ||
 		    (strcmp("boardid", hw_info_point_array[idx].name) == 0)) {
 			board_id = cfg_eeprom_string_to_hex(hw_info_point_array[idx].value);
+			if (!boardid_is_valid(board_id))
+				goto default_id;
 			g_board_id = board_id;
 			return board_id;
 		}
@@ -636,13 +638,11 @@ int cfg_eeprom_init(void)
 	/* if checksum is invalid or if select active fdt is invalid or
 	 * validation_counter >= AUTO_RECOVERY_RETRY_TIMES, need to load default FDT
 	 */
-	if (boardid_is_valid(cfg_eeprom_get_board_id())) {
-		cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(cfg_eeprom_get_board_id()));
+	cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(cfg_eeprom_get_board_id()));
+	if (boardid_is_valid(cfg_eeprom_get_board_id()))
 		printf("read board default FDT\n");
-	} else {
-		cfg_eeprom_upload_fdt_from_flash(get_default_fdt_config_id(MV_DEFAULT_BOARD_ID));
+	else
 		printf("read SoC default FDT\n");
-	}
 
 init_done:
 	eeprom_initialized = 1;

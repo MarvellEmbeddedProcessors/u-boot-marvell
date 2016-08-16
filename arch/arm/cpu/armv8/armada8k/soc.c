@@ -32,6 +32,8 @@
 #include <mvebu_chip_sar.h>
 #include <fdt_support.h>
 #include <asm/arch-mvebu/mvebu.h>
+#include <dt-bindings/multi-fdt/a8k/multi-fdt.h>
+#include "../../../../../board/mvebu/common/cfg_eeprom.h"
 
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
@@ -239,8 +241,37 @@ int last_stage_init(void)
 	debug_enter();
 #ifdef CONFIG_MULTI_DT_FILE
 	uint8_t *fdt_blob;
+	int board_id;
+	char *compatible_string;
+
 	fdt_blob = cfg_eeprom_get_fdt();
 	set_working_fdt_addr(fdt_blob);
+	/* If board id is not initialize, notifying the user that we boot with a minimal fdt to a7k and a8k.
+	 * And print also instructions how to set the desired board id
+	 */
+	if (cfg_eeprom_get_board_id() == A8K_A7K_DEFAULT_BOARD_ID) {
+		printf("\t************************************************************\n"
+			"\t Warning: Board ID is not initialized in EEPROM\n"
+			"\t Set board ID by running:\n"
+			"\n\t  1. 'setenv board_id <VALUE>'\n"
+			"\t\tValue		Board name\n"
+			"\t\t------------------------------\n");
+		for (board_id = FIRST_SUPPORT_BOARD_ID; board_id < A8K_MARVELL_MAX_BOARD_ID; board_id++) {
+			fdt_blob = __dtb_dt_begin;
+			while (fdt_check_header(fdt_blob) == 0) {
+				if ((u8)fdtdec_get_int(fdt_blob, 0, "board_id", -1) == board_id) {
+					fdt_get_string(fdt_blob, 0, "compatible", (const char **)&compatible_string);
+					break;
+				}
+				fdt_blob += CONFIG_FDT_SIZE;
+			}
+
+			printf("\t\t0x%x		%s\n", board_id, compatible_string);
+		}
+		printf("\n\t  2. 'hw_info store' and select yes.\n"
+			"\t************************************************************\n");
+	}
+
 #endif
 	debug_exit();
 	return 0;

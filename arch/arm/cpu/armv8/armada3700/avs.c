@@ -78,19 +78,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static void __iomem *reg_base;
 
-/* Reset the AVS */
-static int reset_avs(void)
-{
-	u32 reg_val;
-
-	/* Enable low voltage mode */
-	reg_val = readl(reg_base + MVEBU_AVS_CTRL_2);
-	reg_val |= AVS_LOW_VDD_EN;
-	writel(reg_val, reg_base + MVEBU_AVS_CTRL_2);
-
-	return 0;
-}
-
 /* Get the lowest VDD values */
 static unsigned int get_avs_lowest_voltage(void)
 {
@@ -128,6 +115,11 @@ int set_avs_vdd_loads(void)
 	u32 vdd_low;
 	u32 cpu_clk;
 	int i;
+
+	/* Enable low voltage mode */
+	reg_val = readl(reg_base + MVEBU_AVS_CTRL_2);
+	reg_val |= AVS_LOW_VDD_EN;
+	writel(reg_val, reg_base + MVEBU_AVS_CTRL_2);
 
 	/* Disable AVS before the configuration */
 	reg_val = readl(reg_base + MVEBU_AVS_CTRL_0);
@@ -198,13 +190,6 @@ int init_avs(void)
 
 	/* Get register base from FDT */
 	reg_base = (u8 *)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
-
-	/* Reset AVS */
-	ret = reset_avs();
-	if (ret) {
-		error("Failed to reset AVS\n");
-		return -EINVAL;
-	}
 
 	debug_exit();
 	return ret;

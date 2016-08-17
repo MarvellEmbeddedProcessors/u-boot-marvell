@@ -543,8 +543,9 @@ int cfg_eeprom_init(void)
 	struct config_types_info config_info;
 	uint32_t calculate_checksum;
 	unsigned long decompressed_size;
+#ifdef CONFIG_TARGET_ARMADA_3700
 	u32 load_default = 0;
-
+#endif
 	/* It is possible that this init will be called by several modules during init,
 	 * however only need to initialize it for one time
 	 */
@@ -615,10 +616,10 @@ int cfg_eeprom_init(void)
 #ifdef CONFIG_TARGET_ARMADA_3700
 		/* load default FDT if validation_counter >= AUTO_RECOVERY_RETRY_TIMES */
 		load_default = cfg_eeprom_check_validation_counter();
-#endif
 	}
 
 	if (!load_default) {
+#endif
 		/* if fdt_config is enabled, return - FDT already read in the struct from EEPROM */
 		if (cfg_eeprom_fdt_config_is_enable()) {
 			printf("read FDT from EEPROM\n");

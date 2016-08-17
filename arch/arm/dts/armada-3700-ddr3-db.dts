@@ -41,6 +41,7 @@
 				};
 			};
 			avs@11500 {
+				vdd-min = <26>;
 				status = "okay";
 			};
 			serial: serial@12000 {

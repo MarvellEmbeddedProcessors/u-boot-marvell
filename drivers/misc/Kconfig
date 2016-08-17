@@ -49,14 +49,6 @@ config MVEBU_SPL_CHIP_SAR_DUMP
 	  Choose this option to dump sample at
 	  reset registers
 
-config MVEBU_A3700_MISC_INIT
-	bool "Armada-3700 miscellaneous initialization procedures support"
-	depends on TARGET_ARMADA_3700
-	default n
-	help
-	  Choose this option to add support
-	  for Marvell Armada-3700 miscellaneous init procedures
-
 endmenu
 
 menu "Address Decoding"

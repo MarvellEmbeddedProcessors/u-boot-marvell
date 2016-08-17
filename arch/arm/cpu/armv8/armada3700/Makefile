@@ -21,7 +21,6 @@ obj-y += clock.o
 obj-$(CONFIG_ARMV8_PSCI)	+= psci.o
 obj-$(CONFIG_MVEBU_A3700_IO_ADDR_DEC) += mvebu_io_addr_dec.o
 obj-$(CONFIG_MVEBU_GPIO) += gpio.o
-obj-$(CONFIG_MVEBU_A3700_MISC_INIT) += mvebu_misc_init.o
 obj-$(CONFIG_MVEBU_A3700_CLOCK) += mvebu_clock.o
 obj-$(CONFIG_MVEBU_BOOTMODE_SWITCH_SUPPORT) += mvebu_bootmode.o
 obj-$(CONFIG_MVEBU_EFUSE_SUPPORT) += a3700_mbox.o

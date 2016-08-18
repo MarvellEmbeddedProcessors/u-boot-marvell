@@ -111,7 +111,7 @@
 			comphy {
 				compatible = "marvell,mvebu-comphy", "marvell,comphy-armada-3700";
 				mux-bitcount = <1>;
-				max-lanes = <2>;
+				max-lanes = <3>;
 				reg-comphy = <0x18300 0x28>;
 				reg-hpipe3 = <0x1F300 0x3D000>;
 				/* phy-type & phy-speed selection should be done in board level device tree */
@@ -120,6 +120,10 @@
 					phy-speed = <PHY_SPEED_1_25G>;
 				};
 				phy1 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-speed = <PHY_SPEED_1_25G>;
+				};
+				phy2 {
 					phy-type = <PHY_TYPE_UNCONNECTED>;
 					phy-speed = <PHY_SPEED_1_25G>;
 				};

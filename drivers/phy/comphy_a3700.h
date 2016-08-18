@@ -31,7 +31,7 @@
 /* COMPHY SB definitions */
 /************************/
 #define COMPHY_SEL_ADDR			(MVEBU_REGS_BASE + 0x0183FC)
-#define rf_compy_select(lane)		(0x1 << (((lane) == 1) ? 4 : 0))
+#define rf_compy_select(lane)		(0x1 << ((lane) * 4))
 
 #define COMPHY_PHY_CFG1_ADDR(lane)	(MVEBU_REGS_BASE + 0x018300 + (lane) * 0x28)
 #define rb_pin_pu_iveref		BIT1
@@ -144,31 +144,39 @@
 #define MISC_REG1_ADDR(unit)		(0x73 * PHY_SHFT(unit) + PHY_BASE(unit))
 #define bf_sel_bits_pcie_force		BIT15
 
-#define LANE_CFG0_ADDR(unit)		(0x180 * PHY_SHFT(unit) + PHY_BASE(unit))
+#define PHY_REG_LANE_CFG0_ADDR		0x180
+#define LANE_CFG0_ADDR(unit)		(PHY_REG_LANE_CFG0_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define bf_use_max_pll_rate		BIT9
-#define LANE_CFG1_ADDR(unit)		(0x181 * PHY_SHFT(unit) + PHY_BASE(unit))
+
+#define PHY_REG_LANE_CFG1_ADDR		0x181
+#define LANE_CFG1_ADDR(unit)		(PHY_REG_LANE_CFG1_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define bf_use_max_pll_rate		BIT9
-#define LANE_CFG4_ADDR(unit)		(0x188 * PHY_SHFT(unit) + PHY_BASE(unit)) /* 0x5c310 = 0x93 (set BIT7) */
+
+#define PHY_REG_LANE_CFG4_ADDR		0x188
+#define LANE_CFG4_ADDR(unit)		(PHY_REG_LANE_CFG4_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define bf_spread_spectrum_clock_en	BIT7
 
-
-#define LANE_STAT1_ADDR(unit)		(0x183 * PHY_SHFT(unit) + PHY_BASE(unit))
+#define PHY_REG_LANE_STAT1_ADDR		0x183
+#define LANE_STAT1_ADDR(unit)		(PHY_REG_LANE_STAT1_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define rb_txdclk_pclk_en		BIT0
 
-
-#define GLOB_PHY_CTRL0_ADDR(unit)	(0x1C1 * PHY_SHFT(unit) + PHY_BASE(unit))
+#define PHY_REG_GLOB_PHY_CTRL0_ADDR	0x1C1
+#define GLOB_PHY_CTRL0_ADDR(unit)	(PHY_REG_GLOB_PHY_CTRL0_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define bf_soft_rst			BIT0
 #define bf_mode_refdiv			0x30
 #define rb_mode_core_clk_freq_sel	BIT9
 #define rb_mode_pipe_width_32		BIT3
 
-#define TEST_MODE_CTRL_ADDR(unit)	(0x1C2 * PHY_SHFT(unit) + PHY_BASE(unit))
+#define PHY_REG_TEST_MODE_CTRL_ADDR	0x1C2
+#define TEST_MODE_CTRL_ADDR(unit)	(PHY_REG_TEST_MODE_CTRL_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 #define rb_mode_margin_override		BIT2
 
+#define PHY_REG_GLOB_CLK_SRC_LO_ADDR	0x1C3
 #define GLOB_CLK_SRC_LO_ADDR(unit)	(0x1C3 * PHY_SHFT(unit) + PHY_BASE(unit))
 #define bf_cfg_sel_20b			BIT15
 
-#define PWR_MGM_TIM1_ADDR(unit)		(0x1D0 * PHY_SHFT(unit) + PHY_BASE(unit))
+#define PHY_REG_PWR_MGM_TIM1_ADDR	0x1D0
+#define PWR_MGM_TIM1_ADDR(unit)		(PHY_REG_PWR_MGM_TIM1_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
 
 #define PHY_REF_CLK_ADDR		(0x4814 + PCIE_BASE)
 

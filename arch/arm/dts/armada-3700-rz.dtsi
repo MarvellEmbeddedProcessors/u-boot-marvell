@@ -103,7 +103,7 @@
 			};
 			comphy {
 				compatible = "marvell,mvebu-comphy", "marvell,comphy-armada-3700";
-				mux-bitcount = <1>;
+				mux-bitcount = <4>;
 				max-lanes = <2>;
 				reg-comphy = <0x18300 0x28>;
 				reg-hpipe3 = <0x1F300 0x3D000>;

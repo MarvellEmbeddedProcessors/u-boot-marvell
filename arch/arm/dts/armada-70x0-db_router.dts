@@ -128,7 +128,6 @@
 
 				phy0 {
 					phy-type = <PHY_TYPE_SGMII2>;
-					phy-speed = <PHY_SPEED_3_125G>;
 				};
 				phy1 {
 					phy-type = <PHY_TYPE_USB3_HOST0>;
@@ -163,7 +162,6 @@
 				mac2 {
 					phy-mode = "sgmii"; /* lane-0 */
 					phy = <&phy2>;
-					phy-speed = <2500>;
 				};
 				mac3 {
 					phy-mode = "rgmii"; /* rgmii-1 */

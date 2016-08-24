@@ -19,7 +19,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch-mvebu/clock.h>
-#include <mvebu_chip_sar.h>
+#include <mvebu/mvebu_chip_sar.h>
 
 #define MSS_CLOCK_DIV	6
 

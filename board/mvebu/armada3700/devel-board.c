@@ -21,9 +21,9 @@
 #include <common.h>
 #include <i2c.h>
 #include <asm/arch-mvebu/soc.h>
-#include "../common/devel-board.h"
-#include "../common/sar.h"
-#include "../common/cfg_eeprom.h"
+#include <mvebu/devel-board.h>
+#include <mvebu/sar.h>
+#include <mvebu/cfg_eeprom.h>
 #ifdef CONFIG_MVEBU_GPIO
 #include <asm/gpio.h>
 #endif

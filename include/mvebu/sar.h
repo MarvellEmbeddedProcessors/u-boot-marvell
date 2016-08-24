@@ -22,7 +22,7 @@
 #include <common.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <linux/compiler.h>
-#include "var.h"
+#include <mvebu/var.h>
 
 #define MAX_SAR_CHIPS	4
 #define MAX_SAR 8

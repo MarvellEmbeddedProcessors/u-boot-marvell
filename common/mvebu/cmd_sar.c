@@ -22,8 +22,8 @@
 #include <vsprintf.h>
 #include <errno.h>
 
-#include "../../board/mvebu/common/sar.h"
-#include "mvebu_chip_sar.h"
+#include <mvebu/sar.h>
+#include <mvebu/mvebu_chip_sar.h>
 
 int do_sar_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])

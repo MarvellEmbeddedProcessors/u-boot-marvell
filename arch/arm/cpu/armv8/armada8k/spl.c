@@ -23,7 +23,7 @@
 #include <asm/arch-mvebu/ccu.h>
 #include <asm/arch-mvebu/flc.h>
 #include <asm/arch-mvebu/fdt.h>
-#include <mvebu_chip_sar.h>
+#include <mvebu/mvebu_chip_sar.h>
 #include <spl.h>
 
 DECLARE_GLOBAL_DATA_PTR;

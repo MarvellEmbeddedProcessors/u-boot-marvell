@@ -21,8 +21,8 @@
 #include <asm/io.h>
 #include <i2c.h>
 #include <fdtdec.h>
-#include "devel-board.h"
-#include "sar.h"
+#include <mvebu/devel-board.h>
+#include <mvebu/sar.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

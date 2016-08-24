@@ -23,9 +23,9 @@
 #include <i2c.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/mpp.h>
-#include <mvebu_chip_sar.h>
-#include "../common/devel-board.h"
-#include "../common/sar.h"
+#include <mvebu/mvebu_chip_sar.h>
+#include <mvebu/devel-board.h>
+#include <mvebu/sar.h>
 
 /* IO expander I2C device - to be relocated to IO expander code */
 #define I2C_IO_EXP_ADDR	0x21

@@ -17,7 +17,7 @@
  */
 #ifndef _FDT_CONFIG_H_
 #define _FDT_CONFIG_H_
-#include "cfg_eeprom.h"
+#include <mvebu/cfg_eeprom.h>
 
 int fdt_cfg_load(const char *selected_index);
 void fdt_cfg_print_select(void);

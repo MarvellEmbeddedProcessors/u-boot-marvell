@@ -20,8 +20,8 @@
 
 #include <common.h>
 #include <asm/arch-mvebu/soc.h>
-#include "../common/devel-board.h"
-#include "../common/sar.h"
+#include <mvebu/devel-board.h>
+#include <mvebu/sar.h>
 
 int mvebu_devel_board_init(void)
 {

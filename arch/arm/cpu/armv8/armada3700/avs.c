@@ -42,7 +42,7 @@
 #include <asm/io.h>
 #ifdef CONFIG_DEVEL_BOARD
 #include <asm/arch/board-info.h>
-#include "../board/mvebu/common/board.h"
+#include <mvebu/board.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;

@@ -29,11 +29,11 @@
 #include <asm/arch-armada8k/cache_llc.h>
 #include <linux/sizes.h>
 #include <netdev.h>
-#include <mvebu_chip_sar.h>
+#include <mvebu/mvebu_chip_sar.h>
 #include <fdt_support.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <dt-bindings/multi-fdt/a8k/multi-fdt.h>
-#include "../../../../../board/mvebu/common/cfg_eeprom.h"
+#include <mvebu/cfg_eeprom.h>
 
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0

@@ -27,7 +27,7 @@
 #include <asm/arch-mvebu/mvebu_phy_indirect.h>
 #include <ahci.h>
 #include <scsi.h>
-#include <mvebu_chip_sar.h>
+#include <mvebu/mvebu_chip_sar.h>
 
 #ifdef CONFIG_MVEBU_CCU
 #include <asm/arch-mvebu/ccu.h>

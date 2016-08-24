@@ -20,7 +20,7 @@
 #include <asm/arch-mvebu/soc.h>
 #include <fdtdec.h>
 #include <fdt_support.h>
-#include "cfg_eeprom.h"
+#include <mvebu/cfg_eeprom.h>
 
 #define AUTO_RECOVERY_RETRY_TIMES 10
 

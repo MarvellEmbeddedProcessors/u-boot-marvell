@@ -19,7 +19,7 @@
 /* #define DEBUG */
 #include <common.h>
 #include <asm/io.h>
-#include <mvebu_chip_sar.h>
+#include <mvebu/mvebu_chip_sar.h>
 #include <asm/arch-mvebu/sata.h>
 #include <asm/arch-mvebu/comphy.h>
 #include <asm/arch-mvebu/comphy_hpipe.h>

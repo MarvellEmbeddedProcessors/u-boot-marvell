@@ -18,7 +18,7 @@
 /* #define DEBUG */
 #include <common.h>
 #include <environment.h>
-#include <mvebu_chip_sar.h>
+#include <mvebu/mvebu_chip_sar.h>
 #include <asm/arch-mvebu/mvebu.h>
 
 DECLARE_GLOBAL_DATA_PTR;

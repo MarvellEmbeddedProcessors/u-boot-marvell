@@ -22,8 +22,8 @@
 #include <vsprintf.h>
 #include <errno.h>
 #include <asm/arch-mvebu/fdt.h>
-#include "../../board/mvebu/common/cfg_eeprom.h"
-#include "../../board/mvebu/common/fdt_config.h"
+#include <mvebu/cfg_eeprom.h>
+#include <mvebu/fdt_config.h>
 
 int do_fdt_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])

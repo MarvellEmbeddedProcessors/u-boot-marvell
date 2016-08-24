@@ -20,8 +20,8 @@
 #include <libfdt.h>
 #include <asm/u-boot.h>
 #include <fdt_support.h>
-#include "devel-board.h"
-#include "fdt_config.h"
+#include <mvebu/devel-board.h>
+#include <mvebu/fdt_config.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

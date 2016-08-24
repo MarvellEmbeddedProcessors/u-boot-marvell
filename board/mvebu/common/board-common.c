@@ -25,7 +25,7 @@
 #include <asm/io.h>
 #include <linux/compiler.h>
 #include <asm/arch-mvebu/soc.h>
-#include "board.h"
+#include <mvebu/board.h>
 
 /* Generic board id function. Each board family can make his own */
 int __board_get_id(void)

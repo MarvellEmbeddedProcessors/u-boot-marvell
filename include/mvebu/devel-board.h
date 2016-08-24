@@ -20,7 +20,7 @@
 #define _DEVEL_BOARD_H_
 
 #include <common.h>
-#include "board.h"
+#include <mvebu/board.h>
 
 int mvebu_devel_board_init(void);
 

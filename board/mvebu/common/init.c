@@ -29,12 +29,12 @@
 #include <asm/arch-mvebu/system_info.h>
 #include <asm/arch-mvebu/mbus.h>
 #include <asm/arch-mvebu/fdt.h>
-#include "board.h"
+#include <mvebu/board.h>
 #ifdef CONFIG_DEVEL_BOARD
-#include "devel-board.h"
+#include <mvebu/devel-board.h>
 #endif
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
-#include "cfg_eeprom.h"
+#include <mvebu/cfg_eeprom.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;

@@ -27,7 +27,7 @@
 
 #include <nand.h>
 
-#include <mvebu_chip_sar.h>
+#include <mvebu/mvebu_chip_sar.h>
 
 #include <usb.h>
 #include <fs.h>

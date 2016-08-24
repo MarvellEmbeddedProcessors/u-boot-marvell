@@ -19,7 +19,7 @@
 #include <common.h>
 #include <libfdt.h>
 #include <asm/arch-mvebu/fdt.h>
-#include <mvebu_chip_sar.h>
+#include <mvebu/mvebu_chip_sar.h>
 
 struct sar_chip_info {
 	enum fdt_compat_id compat;

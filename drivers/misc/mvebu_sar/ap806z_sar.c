@@ -23,7 +23,7 @@
 #include <libfdt.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/clock.h>
-#include <mvebu_chip_sar.h>
+#include <mvebu/mvebu_chip_sar.h>
 
 #include "chip_sar.h"
 

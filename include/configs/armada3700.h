@@ -59,4 +59,13 @@
  */
 #include "mvebu-common.h"
 
+#ifdef CONFIG_SYS_MMC_ENV_DEV
+#undef CONFIG_SYS_MMC_ENV_DEV
+#endif
+/* A3700 has two SD host controllers, the one in north bridge
+ * can be the boot device. It is registered as the secondary
+ * mmc device in the u-boot.
+ */
+#define CONFIG_SYS_MMC_ENV_DEV	1
+
 #endif /* __ARMADA_3700_H */

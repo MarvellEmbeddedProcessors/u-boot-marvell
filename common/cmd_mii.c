@@ -446,7 +446,7 @@ int phy_fw_down_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 U_BOOT_CMD(
-	phy_fw_down,      1,     1,      phy_fw_down_cmd,
+	phy_fw_down,      6,     0,      phy_fw_down_cmd,
 	"phy_fw_down - Downloads x3220/3310 Ethernet transceiver PHY firmware.\n",
 	"\t<FW Image Addr, Hex> <FW Image Size, Bytes> <Slave Image Addr, Hex> <Slave Image Size, Bytes> <XSMI Port Number>\n"
 	"\t(Marvell>> phy_fw_down 0x2010000 167972 0x2000000 9948 8\n"

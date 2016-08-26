@@ -283,7 +283,7 @@ static int mvebu_xsmi_write(struct mii_dev *bus, int phy_adr, int dev_adr, int r
 	/* fill the phy address and device address and write opcode */
 	xsmi_reg = (data << MVEBU_XSMI_DATA_OFFS);
 	xsmi_reg |= (phy_adr << MVEBU_XSMI_PHY_ADDR_OFFS) | (dev_adr << MVEBU_XSMI_DEV_ADDR_OFFS);
-	xsmi_reg &= ~MVEBU_XSMI_OPCODE_ADDR_WRITE;
+	xsmi_reg |= MVEBU_XSMI_OPCODE_ADDR_WRITE;
 
 	/* write the xsmi register */
 	writel(xsmi_reg, base);

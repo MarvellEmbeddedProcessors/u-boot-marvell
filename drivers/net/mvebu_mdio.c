@@ -190,10 +190,10 @@ static int mvebu_xsmi_wait_ready(void *base)
 
 	/* wait till the xSMI is not busy */
 	do {
-		/* read smi register */
+		/* read xSMI register */
 		xsmi_reg = readl(base);
 		if (timeout-- == 0) {
-			error("SMI busy time-out\n");
+			error("xSMI busy time-out\n");
 			return -EFAULT;
 		}
 	} while (xsmi_reg & MVEBU_XSMI_BUSY);
@@ -230,7 +230,7 @@ static int mvebu_xsmi_read(struct mii_dev *bus, int phy_adr, int dev_adr, int re
 		return -EFAULT;
 	}
 
-	/* wait till the SMI is not busy */
+	/* wait till the xSMI is not busy */
 	if (mvebu_xsmi_wait_ready(base) < 0)
 		return -EFAULT;
 
@@ -243,16 +243,16 @@ static int mvebu_xsmi_read(struct mii_dev *bus, int phy_adr, int dev_adr, int re
 		| (dev_adr << MVEBU_XSMI_DEV_ADDR_OFFS)
 		| MVEBU_XSMI_OPCODE_ADDR_READ;
 
-	/* write the smi register */
+	/* write the xSMI register */
 	writel(xsmi_reg, base);
 
 	/*wait till read value is ready */
 	timeout = MVEBU_SMI_TIMEOUT;
 	do {
-		/* read smi register */
+		/* read xSMI register */
 		xsmi_reg = readl(base);
 		if (timeout-- == 0) {
-			error("SMI read ready time-out\n");
+			error("xSMI read ready time-out\n");
 			return -EFAULT;
 		}
 	} while (!(xsmi_reg & MVEBU_XSMI_READ_VALID));
@@ -288,7 +288,7 @@ static int mvebu_xsmi_write(struct mii_dev *bus, int phy_adr, int dev_adr, int r
 	/* write the xsmi register */
 	writel(xsmi_reg, base);
 
-	/* wait till the SMI is not busy */
+	/* wait till the xSMI is not busy */
 	if (mvebu_xsmi_wait_ready(base) < 0)
 		return -EFAULT;
 

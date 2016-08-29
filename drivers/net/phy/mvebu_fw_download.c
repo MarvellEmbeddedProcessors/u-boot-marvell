@@ -32,6 +32,7 @@ struct device_para {
 };
 
 enum device_errors {
+	MVEBU_FLASH_UPDATE_OK			=  0,
 	MVEBU_SLAVE_CODE_DID_NOT_START		= -1, /* Slave code did not start */
 	MVEBU_VERIFY_ERR			= -2, /* Flash verified FAILED */
 	MVEBU_UNKNOWN_DOWNLOAD_TO_FLASH_FAIL	= -3, /* Unknown error */
@@ -379,7 +380,7 @@ u32 mvebu_update_flash_image(struct mii_dev *bus, u16 port, u8 app_data[], u32 a
 	switch (data) {
 	case MDIO_CMD_SLV_OK:
 		printf("Flash image verified. Reset F_CFG1 to 0 and reboot to execute new code\n");
-		return 0;
+		return MVEBU_FLASH_UPDATE_OK;
 	case MDIO_CMD_SLV_VERIFY_ERR:
 		return MVEBU_VERIFY_ERR;
 	default:
@@ -414,6 +415,9 @@ u32 mvebu_phy_firmware_download(u16 port, u8 app_data[], u32 app_size, u8 salve_
 
 	error = mvebu_update_flash_image(bus, port, app_data, app_size, salve_data, slave_size);
 	switch (error) {
+	case MVEBU_FLASH_UPDATE_OK:
+		printf("mvebu_update_flash_image succeeded\n");
+		break;
 	case MVEBU_ERR_GET_DEVICE:
 		printf("failed to read device id\n");
 		break;

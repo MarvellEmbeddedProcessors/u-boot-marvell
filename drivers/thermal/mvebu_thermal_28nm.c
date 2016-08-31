@@ -52,7 +52,7 @@ s32 mvebu_thermal_sensor_read(struct thermal_unit_config *tsen)
 	reg = readl(tsen->regs_base + THERMAL_SEN_CTRL_STATS);
 	reg = ((reg & THERMAL_SEN_CTRL_STATS_TEMP_OUT_MASK) >> THERMAL_SEN_CTRL_STATS_TEMP_OUT_OFFSET);
 
-	return ((tsen->tsen_gain * reg) - tsen->tsen_offset) / tsen->tsen_divisor;
+	return ((tsen->tsen_gain * ((s32)reg)) - tsen->tsen_offset) / tsen->tsen_divisor;
 }
 
 u32 mvebu_thermal_sensor_probe(struct thermal_unit_config *tsen)

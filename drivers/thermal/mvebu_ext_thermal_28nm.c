@@ -62,7 +62,7 @@ s32 mvebu_thermal_ext_sensor_read(struct thermal_unit_config *tsen)
 	if (reg >= THERMAL_SEN_OUTPUT_MSB)
 		reg -= THERMAL_SEN_OUTPUT_COMP;
 
-	return ((tsen->tsen_gain * reg) + tsen->tsen_offset) / tsen->tsen_divisor;
+	return ((tsen->tsen_gain * ((s32)reg)) + tsen->tsen_offset) / tsen->tsen_divisor;
 }
 
 u32 mvebu_thermal_ext_sensor_probe(struct thermal_unit_config *tsen)

@@ -101,7 +101,8 @@ dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-pcac_kr.dtb
 
 # A8040 DB device tree files
 dtb-$(CONFIG_DEVEL_BOARD) += armada-80x0-db-10G.dtb \
-			     armada-80x0-db-SGMII.dtb
+			     armada-80x0-db-SGMII.dtb \
+			     armada-80x0-db-cp1-serdes-b.dtb
 endif
 endif #CONFIG_TARGET_ARMADA_8K
 

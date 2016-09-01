@@ -1,0 +1,83 @@
+/*
+* ***************************************************************************
+* Copyright (C) 2016 Marvell International Ltd.
+* ***************************************************************************
+* This program is free software: you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the Free
+* Software Foundation, either version 2 of the License, or any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+* ***************************************************************************
+*/
+
+/dts-v1/;
+
+#include "armada-80x0-db.dtsi"
+#include <dt-bindings/multi-fdt/a8k/multi-fdt.h>
+/ {
+	model = "DB-ARMADA-80x0 (SPI-CP1-SERDESB)";
+	compatible = "marvell,armada-80x0-db", "marvell,armada-80x0";
+	fdt_config_id = <A80X0_CP1_SERDESB>;
+	board_id = <A8K_8040_DB>;
+
+	cp110-master {
+		internal-regs {
+				pinctl@440000 {
+					/* MPP Bus:
+					   [0-31] = 0xff: Keep default CP0_shared_pins:
+						[11] CLKOUT_MPP_11 (out)
+						[23] LINK_RD_IN_CP2CP (in)
+						[25] CLKOUT_MPP_25 (out)
+						[29] AVS_FB_IN_CP2CP (in)
+					   [32,34] SMI
+					   [31]    GPIO: push button/Wake
+					   [35-36] GPIO
+					   [37-38] I2C
+					   [40-41] SATA[0/1]_PRESENT_ACTIVEn
+					   [42-43] XSMI
+					   [44-55] RGMII1
+					   [56-62] SD
+					*/
+					/*   0    1    2    3    4    5    6    7    8    9 */
+				pin-func = < 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0    7    0    7    0    0    2    2    0
+					     0    0    8    8    1    1    1    1    1    1
+					     1    1    1    1    1    1    0xE  0xE  0xE  0xE
+					     0xE  0xE  0xE>;
+				};
+			};
+	};
+	cp110-slave {
+		internal-regs {
+			comphy {
+				phy0 {
+					phy-type = <PHY_TYPE_UNCONNECTED>;
+				};
+				phy2 {
+					phy-type = <PHY_TYPE_SGMII0>;
+					phy-speed = <PHY_SPEED_1_25G>;
+				};
+				phy4 {
+					phy-type = <PHY_TYPE_SGMII2>;
+					phy-speed = <PHY_SPEED_1_25G>;
+				};
+			};
+			gop {
+				mac0 {
+					phy-mode = "sgmii";
+				};
+				mac2 {
+					phy-mode = "sgmii";
+				};
+			};
+		};
+	};
+};

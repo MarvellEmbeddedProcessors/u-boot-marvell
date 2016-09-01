@@ -54,6 +54,7 @@
  */
 #define A80X0_10G		1
 #define A80X0_SGMII		2
+#define A80X0_CP1_SERDESB	3
 
 /*
  * There are main presets for Armada70x0 PCAC:

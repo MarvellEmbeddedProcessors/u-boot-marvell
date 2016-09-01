@@ -363,11 +363,6 @@ static int advk_pcie_link_init(void __iomem *reg_base)
 	state &= ~STRICT_ORDER_ENABLE;
 	writel(state, PCIE_CORE_CTRL_REG_ADDR(reg_base, PCIE_CORE_CTRL2_REG));
 
-	/* Start link training */
-	state = readl(PCIE_CORE_CONFIG_REG_ADDR(reg_base, PCIE_CORE_LINK_CTRL_STAT_REG));
-	state |= (1 << PCIE_CORE_LINK_TRAINING_SHIFT);
-	writel(state, PCIE_CORE_CONFIG_REG_ADDR(reg_base, PCIE_CORE_LINK_CTRL_STAT_REG));
-
 	/* Poll the link state */
 	for (i = 0; i < PCIE_LINK_TIMEOUT_NUM; i++) {
 		state = readl(PCIE_CORE_LMI_REG_ADDR(reg_base, PHY_CONF_REG0));
@@ -379,6 +374,11 @@ static int advk_pcie_link_init(void __iomem *reg_base)
 		debug("%s(%d): time out to get PCIe link\n", __func__, __LINE__);
 		return 1;
 	}
+
+	/* Start link training */
+	state = readl(PCIE_CORE_CONFIG_REG_ADDR(reg_base, PCIE_CORE_LINK_CTRL_STAT_REG));
+	state |= (1 << PCIE_CORE_LINK_TRAINING_SHIFT);
+	writel(state, PCIE_CORE_CONFIG_REG_ADDR(reg_base, PCIE_CORE_LINK_CTRL_STAT_REG));
 
 	/* Set PCIe Control 2 register
 	 * bit[1:0] ASPM Control, set to 0 to disable L0S entry

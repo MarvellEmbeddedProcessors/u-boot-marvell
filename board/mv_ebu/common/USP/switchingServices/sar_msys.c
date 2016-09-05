@@ -218,8 +218,8 @@ static int do_sar_list_msys(int silt, int argc, char *const argv[])
 		if (silt == SILT_BC2 || silt == SILT_BOBK) {
 			printf("forcegen1 (0x57.3 2:2): Determines if whether to force PCI-e");
 			printf(" connection to GEN1 or not:\n");
-			printf("\t0x0 = Do not force BC2 PCI-e connection to GEN1\n");
-			printf("\t0x1 = Force BC2 PCI-e connection to GEN1\n");
+			printf("\t0x0 = Force MSYS PCI-e connection to GEN1\n");
+			printf("\t0x1 = Do not force MSYS PCI-e connection to GEN1\n");
 			printf("\n");
 		}
 	}

@@ -56,7 +56,10 @@ static char *h_devid = "Device_ID\n",
 			"\t3 = PLL bypass. Reserved.\n",
 	    *h_boardid = "BoardID\n"
 			 "\t0 - BC3 DB Board\n"
-			 "\t1 - BC3 ETP Board\n";
+			 "\t1 - BC3 ETP Board\n",
+	    *h_forcegen1 = "forcegen1(0x57.3 2:2): Determines if whether to force PCI-e connection to GEN1 or not:\n"
+			 "\t0x0 = Force BC3 PCI-e connection to GEN1\n"
+			 "\t0x1 = Do not force BC3 PCI-e connection to GEN1\n";
 
 /* PCA9560PW	is used for all SatRs configurations (0x4c, 0x4d, 0x4f, 0x4e)
  * PCA9555	is used for all Serdes configurations (0x20)
@@ -69,6 +72,7 @@ struct satr_info bc3_satr_info[] = {
 	{"ptp-pll-frq", 0x4e,	0,	3,	0x1,	MV_FALSE,	0x0,	&h_pllclk,	MV_FALSE},
 	{"port-CG-frq",	0x4f,	0,	0,	0x3,	MV_FALSE,	0x0,	&h_port_cg_clk,	MV_FALSE},
 	{"boardid",	0x53,	7,	0,	0x7,	MV_TRUE,	0x0,	&h_boardid,	MV_FALSE},
+	{"forcegen1",	0x57,	3,	2,	0x1,	MV_TRUE,	0x1,	&h_forcegen1,	MV_FALSE},
 	/* the "LAST entry should be always last - it is used for SatR max options calculation */
 	{"LAST",	0x0,	0,	0,	0x0,	MV_FALSE,	0x0,	NULL,		MV_FALSE},
 };

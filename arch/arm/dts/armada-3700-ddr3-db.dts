@@ -71,7 +71,7 @@
 				phy_mode = "rgmii";
 			};
 			usb3: usb3@58000 {
-				gpio-vbus = <&expander0 ARMADA_3700_GPIO(PERIPHERAL_0, 1) GPIO_ACTIVE_HIGH>;
+				gpio-vbus = <&gpio1 ARMADA_3700_GPIO(BANK_1, 0) GPIO_ACTIVE_HIGH>;
 				vbus-enable-delay = <1000>;
 				vbus-disable-delay = <1000>;
 				status = "okay";

@@ -420,19 +420,19 @@ static int comphy_usb3_power_up(u32 type, u32 speed, u32 invert, bool indirect_r
 	/* unset G3 Spread Spectrum Clock Amplitude & set G3 TX and RX Register Master Current Select */
 	fp_usb3_phy_reg_set(PHY_REG_GEN2_SETTINGS_3, 0x0, 0xFFFF);
 
-
 	/*
 	 * 3. Check crystal jumper setting and program the Power and PLL Control accordingly
-	 */
-	if (get_ref_clk() == 40)
-		fp_usb3_phy_reg_set(PHY_PWR_PLL_CTRL_ADDR, 0xFCA3, 0xFFFF); /* 40 MHz */
-	else
-		fp_usb3_phy_reg_set(PHY_PWR_PLL_CTRL_ADDR, 0xFCA2, 0xFFFF); /* 25 MHz */
-
-	/*
 	 * 4. Change RX wait
 	 */
-	fp_usb3_phy_reg_set(PHY_REG_PWR_MGM_TIM1_ADDR, 0x10c, 0xFFFF);
+	if (get_ref_clk() == 40) {
+		/* 40 MHz */
+		fp_usb3_phy_reg_set(PHY_PWR_PLL_CTRL_ADDR, 0xFCA3, 0xFFFF);
+		fp_usb3_phy_reg_set(PHY_REG_PWR_MGM_TIM1_ADDR, 0x10c, 0xFFFF);
+	} else {
+		/* 25 MHz */
+		fp_usb3_phy_reg_set(PHY_PWR_PLL_CTRL_ADDR, 0xFCA2, 0xFFFF);
+		fp_usb3_phy_reg_set(PHY_REG_PWR_MGM_TIM1_ADDR, 0x107, 0xFFFF);
+	}
 
 	/*
 	 * 5. Enable idle sync

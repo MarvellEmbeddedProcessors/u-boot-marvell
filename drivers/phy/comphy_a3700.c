@@ -140,6 +140,35 @@ static u32 comphy_poll_reg(void *addr, u32 val, u32 mask, u32 timeout, u8 op_typ
 }
 
 /***************************************************************************************************
+  * comphy2_reg_set_indirect
+  *
+  * return: void
+ ***************************************************************************************************/
+static void comphy2_reg_set_indirect(u32 phy_type, u32 reg_offset, u16 data, u16 mask)
+{
+	/*
+	 * When Lane 2 PHY is for USB3, access the PHY registers
+	 * through indirect Address and Data registers INDIR_ACC_PHY_ADDR (RD00E0178h [31:0]) and
+	 * INDIR_ACC_PHY_DATA (RD00E017Ch [31:0]) within the SATA Host Controller registers, Lane 2
+	 * base register offset is 0x200
+	 */
+	if (phy_type == PHY_TYPE_SATA0)
+		reg_set((void __iomem *)rh_vsreg_addr, reg_offset, 0xFFFFFFFF);
+	else
+		reg_set((void __iomem *)rh_vsreg_addr, reg_offset + USB3PHY_LANE2_REG_BASE_OFFSET, 0xFFFFFFFF);
+
+	reg_set((void __iomem *)rh_vsreg_data, data, mask);
+
+	return;
+}
+
+static inline void sata_reg_set_indirect(u32 reg_offset, u16 data, u16 mask)
+{
+	comphy2_reg_set_indirect(PHY_TYPE_SATA0, reg_offset, data, mask);
+	return;
+}
+
+/***************************************************************************************************
   * comphy_pcie_power_up
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
@@ -255,35 +284,30 @@ static int comphy_sata_power_up(u32 invert)
 	if (invert & PHY_POLARITY_RXD_INVERT)
 		dat |= bs_rxd_inv;
 
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_sync_pattern_reg, 0xFFFFFFFF);
-	reg_set((void __iomem *)rh_vsreg_data, dat, bs_txd_inv | bs_rxd_inv);
+	sata_reg_set_indirect(vphy_sync_pattern_reg, dat, bs_txd_inv | bs_rxd_inv);
 
 	/*
 	 * 1. Select 40-bit data width width
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_loopback_reg0, 0xFFFFFFFF);
-	reg_set((void __iomem *)rh_vsreg_data, 0x800, bs_phyintf_40bit);
+	sata_reg_set_indirect(vphy_loopback_reg0, 0x800, bs_phyintf_40bit);
 
 	/*
 	 * 2. Select reference clock and PHY mode (SATA)
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_power_reg0, 0xFFFFFFFF);
 	if (get_ref_clk() == 40)
-		reg_set((void __iomem *)rh_vsreg_data, 0x3, 0x00FF); /* 40 MHz */
+		sata_reg_set_indirect(vphy_power_reg0, 0x3, 0x00FF); /* 40 MHz */
 	else
-		reg_set((void __iomem *)rh_vsreg_data, 0x1, 0x00FF); /* 25 MHz */
+		sata_reg_set_indirect(vphy_power_reg0, 0x1, 0x00FF); /* 25 MHz */
 
 	/*
 	 * 3. Use maximum PLL rate (no power save)
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_calctl_reg, 0xFFFFFFFF);
-	reg_set((void __iomem *)rh_vsreg_data, bs_max_pll_rate, bs_max_pll_rate);
+	sata_reg_set_indirect(vphy_calctl_reg, bs_max_pll_rate, bs_max_pll_rate);
 
 	/*
 	 * 4. Reset reserved bit (??)
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_reserve_reg, 0xFFFFFFFF);
-	reg_set((void __iomem *)rh_vsreg_data, 0, bs_phyctrl_frm_pin);
+	sata_reg_set_indirect(vphy_reserve_reg, 0, bs_phyctrl_frm_pin);
 
 	/*
 	 * 5. Set vendor-specific configuration (??)

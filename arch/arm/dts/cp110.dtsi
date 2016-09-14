@@ -124,22 +124,6 @@ pinctl@440000 {
 	max-func = <0xf>;
 };
 
-gpio@440100 {
-	compatible = "marvell,mvebu-gpio";
-	reg = <0x440100 0x40>;
-	bank-name = "armada-cp0";
-	ngpios = <ARMADA_CP0_B0_GPIO_COUNT>;
-	status = "okay";
-};
-
-gpio@440140 {
-	compatible = "marvell,mvebu-gpio";
-	reg = <0x440140 0x40>;
-	bank-name = "armada-cp1";
-	ngpios = <ARMADA_CP0_B1_GPIO_COUNT>;
-	status = "okay";
-};
-
 nand@720000 {
 	compatible = "marvell,mvebu-pxa3xx-nand";
 	reg = <0x720000 0x100>;

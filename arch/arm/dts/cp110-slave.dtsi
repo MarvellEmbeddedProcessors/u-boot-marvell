@@ -77,9 +77,20 @@
 			mdio0@12A200 {
 				id = <1>;
 			};
-			gpio3: gpio@440100 {
+			gpio3: cps_gpio@440100 {
+				compatible = "marvell,mvebu-gpio";
+				reg = <0x440100 0x40>;
+				bank-name = "armada-cp0";
+				ngpios = <ARMADA_CP0_B0_GPIO_COUNT>;
+				status = "okay";
 			};
-			gpio4: gpio@440140 {
+
+			gpio4: cps_gpios@440140 {
+				compatible = "marvell,mvebu-gpio";
+				reg = <0x440140 0x40>;
+				bank-name = "armada-cp1";
+				ngpios = <ARMADA_CP0_B1_GPIO_COUNT>;
+				status = "okay";
 			};
 			thermal@400070 {
 				compatible = "marvell,mvebu-thermal", "marvell,thermal-sensor";

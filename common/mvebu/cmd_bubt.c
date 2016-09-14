@@ -26,6 +26,10 @@
 #include <spi.h>
 
 #include <nand.h>
+#ifdef CONFIG_SPI_NAND
+#include <spi-nand.h>
+#endif
+
 
 #include <mvebu/mvebu_chip_sar.h>
 
@@ -418,6 +422,59 @@ int is_tftp_active(void)
 #define is_tftp_active 0
 #endif /* CONFIG_CMD_NET */
 
+/********************************************************************
+ *     SPI NAND services
+ ********************************************************************/
+#ifdef CONFIG_SPI_NAND
+static int spi_nand_burn_image(size_t image_size)
+{
+	int ret;
+	struct spi_nand_chip *chip;
+
+	chip = spi_nand_flash_probe(CONFIG_ENV_SPI_BUS,
+				    CONFIG_ENV_SPI_CS,
+				    CONFIG_SF_DEFAULT_SPEED,
+				    CONFIG_SF_DEFAULT_MODE);
+	if (!chip) {
+		printf("Failed to initialize SPI NAND flash at %u:%u\n", CONFIG_SF_DEFAULT_BUS, CONFIG_SF_DEFAULT_CS);
+		return 1;
+	}
+
+	/* Align U-Boot size to currently used blocksize */
+	image_size = ((image_size + (chip->block_size - 1)) & (~(chip->block_size-1)));
+
+	/* Erase the U-BOOT image space */
+	printf("Erasing 0x%x - 0x%x:...", 0, (int)image_size);
+	ret = spi_nand_cmd_erase_ops(chip, 0, image_size, true);
+	if (ret) {
+		printf("Error!\n");
+		goto error;
+	}
+	printf("Done!\n");
+
+	/* Write the image to flash */
+	printf("Writing image:...");
+	printf("image_size = 0x%lx\n", image_size);
+	ret = spi_nand_cmd_write_ops(chip, 0, image_size, (void *)get_load_addr());
+	if (ret)
+		printf("Error!\n");
+	else
+		printf("Done!\n");
+
+error:
+	return ret;
+}
+
+
+int is_spi_nand_active(void)
+{
+	return 1;
+}
+#else
+#define spi_nand_burn_image 0
+#define is_spi_nand_active 0
+#endif /* CONFIG_SPI_NAND */
+
 enum bubt_devices {
 	BUBT_DEV_NET = 0,
 	BUBT_DEV_USB,
@@ -425,6 +482,7 @@ enum bubt_devices {
 	BUBT_DEV_SPI,
 	BUBT_DEV_NAND,
 	BUBT_DEV_NOR,
+	BUBT_DEV_SPI_NAND,
 
 	BUBT_MAX_DEV
 };
@@ -435,7 +493,8 @@ struct bubt_dev bubt_devs[BUBT_MAX_DEV] = {
 	{"mmc",  mmc_read_file,  mmc_burn_image, is_mmc_active},
 	{"spi",  NULL, spi_burn_image,  is_spi_active},
 	{"nand", NULL, nand_burn_image, is_nand_active},
-	{"nor",  NULL, nor_burn_image,  is_nor_active}
+	{"nor",  NULL, nor_burn_image,  is_nor_active},
+	{"spinand",  NULL, spi_nand_burn_image,  is_spi_nand_active}
 };
 
 static int bubt_write_file(struct bubt_dev *dst, size_t image_size)
@@ -693,6 +752,8 @@ struct bubt_dev *find_bubt_dev(char *dev_name)
 #define DEFAULT_BUBT_DST "nor"
 #elif defined(CONFIG_MVEBU_MMC_BOOT)
 #define DEFAULT_BUBT_DST "mmc"
+#elif defined(CONFIG_MVEBU_SPINAND_BOOT)
+#define DEFAULT_BUBT_DST "spinand"
 #else
 #define DEFAULT_BUBT_DST "error"
 #endif
@@ -772,7 +833,7 @@ U_BOOT_CMD(
 	"Burn a u-boot image to flash",
 	"[file-name] [destination [source]]\n"
 	"\t-file-name     The image file name to burn. Default = u-boot.bin\n"
-	"\t-destination   Flash to burn to [spi, nor, nand, mmc]. Defualt = active boot device\n"
+	"\t-destination   Flash to burn to [spi, nor, nand, mmc, spinand]. Default = active boot device\n"
 	"\t-source        The source to load image from [tftp, usb, mmc]. Default = tftp\n"
 	"Examples:\n"
 	"\tbubt - Burn u-boot.bin from tftp to active boot device\n"

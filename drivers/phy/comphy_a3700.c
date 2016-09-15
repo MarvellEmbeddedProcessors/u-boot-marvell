@@ -501,7 +501,11 @@ static int comphy_usb3_power_up(u32 type, u32 speed, u32 invert, bool indirect_r
 		 *             instead of using both interrupts of HOST and Device ORed simultaneously
 		 *             INT_MODE=ID in order to avoid unexpected behaviour or both interrupts together */
 		reg_set((void __iomem *)USB32_CTRL_BASE, usb32_ctrl_id_mode | usb32_ctrl_int_mode,
-				usb32_ctrl_id_mode | usb32_ctrl_soft_id | usb32_ctrl_int_mode);
+			usb32_ctrl_id_mode | usb32_ctrl_soft_id | usb32_ctrl_int_mode);
+	} else if (type == PHY_TYPE_USB3_DEVICE) {
+		/* unset DP and DM pulldown for USB2 Device mode */
+		reg_set((void __iomem *)USB2_OTG_PHY_CTRL_ADDR, 0x0,
+			rb_usb2_dp_pulldn_dev_mode | rb_usb2_dm_pulldn_dev_mode);
 	}
 
 	debug_exit();

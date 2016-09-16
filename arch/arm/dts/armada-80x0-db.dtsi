@@ -57,6 +57,16 @@
 			};
 			i2c@701000 {
 				status = "okay";
+				expander0: pca953x@21 {
+					compatible = "nxp,pca9555";
+					reg = <0x21>;
+					status = "okay";
+				};
+				expander1: pca953x@25 {
+					compatible = "nxp,pca9555";
+					reg = <0x25>;
+					status = "okay";
+				};
 			};
 			i2c@211000 { /* MSS_i2c0 */
 				status = "disabled";

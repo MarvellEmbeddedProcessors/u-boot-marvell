@@ -52,14 +52,18 @@ spi1@700680 {
 	status = "disabled";
 };
 i2c@701000 { /* i2c0 */
-	compatible = "marvell,mvebu-i2c";
+	compatible = "marvell,mvebu-i2c", "simple-bus";
 	reg = <0x701000 0x100>;
+	#address-cells = <1>;
+	#size-cells = <0>;
 	clock = <&refclk>;
 	status = "disabled";
 };
 i2c@701100 { /* i2c1 */
-	compatible = "marvell,mvebu-i2c";
+	compatible = "marvell,mvebu-i2c", "simple-bus";
 	reg = <0x701100 0x100>;
+	#address-cells = <1>;
+	#size-cells = <0>;
 	clock = <&refclk>;
 	status = "disabled";
 };

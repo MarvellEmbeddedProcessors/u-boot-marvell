@@ -26,11 +26,22 @@
 #define ARMADA_CP1_B1_GPIO_BASE		(ARMADA_CP1_B0_GPIO_BASE + ARMADA_CP1_B0_GPIO_COUNT)
 #define ARMADA_CP1_B1_GPIO_COUNT	31
 
+/* Armada-8k has 2 IO-expanders:
+ * expander0 under 0x21 i2c address, it has 16 gpio pins it controls e.g. usb vbus from CP0
+ * expander1 under 0x25 i2c address, it has 16 gpio pins it controls e.g. usb vbus from CP1
+ */
+#define ARMADA_CP0_EXPANDER0_GPIO_BASE	(ARMADA_CP1_B1_GPIO_BASE + ARMADA_CP1_B1_GPIO_COUNT)
+#define ARMADA_CP0_EXPANDER0_GPIO_SIZE	16
+#define ARMADA_CP0_EXPANDER1_GPIO_BASE	(ARMADA_CP0_EXPANDER0_GPIO_BASE + ARMADA_CP0_EXPANDER0_GPIO_SIZE)
+
 /* The driver module of the U-Boot append all the GPIOs,
 ** example: if need to get GPIO #12 at CP0, need to call GPIO functions with 20+12=32
 ** The below macros will help the user to define the GPIO number without any base */
 #define AP_GPIO(offset)			(offset)
 #define CP0_GPIO(offset)		(ARMADA_CP0_B0_GPIO_BASE + offset)
 #define CP1_GPIO(offset)		(ARMADA_CP1_B0_GPIO_BASE + offset)
+
+#define EXPANDER0_GPIO(offset)		(ARMADA_CP0_EXPANDER0_GPIO_BASE + offset)
+#define EXPANDER1_GPIO(offset)		(ARMADA_CP0_EXPANDER1_GPIO_BASE + offset)
 
 #endif /* _DT_BINDINGS_GPIO_ARMADA_8K_GPIO_H */

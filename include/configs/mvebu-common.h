@@ -206,9 +206,10 @@
 
 
 /* Flash env setup */
-#if !defined(MV_INCLUDE_NOR) && !defined(CONFIG_MVEBU_NAND_BOOT) &&		\
-	!defined(CONFIG_MVEBU_SPI_BOOT) && !defined(CONFIG_MVEBU_MMC_BOOT) &&	\
-	!defined(CONFIG_MVEBU_SATA_BOOT) && !defined(CONFIG_ENV_IS_IN_BOOTDEV)
+#if !defined(MV_INCLUDE_NOR) && !defined(CONFIG_MVEBU_NAND_BOOT) &&			\
+	!defined(CONFIG_MVEBU_SPI_BOOT) && !defined(CONFIG_MVEBU_MMC_BOOT) &&		\
+	!defined(CONFIG_MVEBU_SATA_BOOT) && !defined(CONFIG_MVEBU_SPINAND_BOOT) &&	\
+	!defined(CONFIG_ENV_IS_IN_BOOTDEV)
 	#undef CONFIG_CMD_FLASH
 	#undef CONFIG_CMD_IMLS
 	#define CONFIG_ENV_IS_NOWHERE
@@ -259,6 +260,15 @@
 	#define CONFIG_FAT_WRITE
 	#define CONFIG_DOIMAGE_SUFFIX	"sata"
 #endif /* CONFIG_MVEBU_SATA_BOOT */
+
+/* Boot from SPI NAND settings */
+#if defined(CONFIG_MVEBU_SPINAND_BOOT) && !defined(CONFIG_ENV_IS_IN_BOOTDEV)
+	#define CONFIG_ENV_IS_IN_SPI_NAND
+	#undef CONFIG_ENV_SECT_SIZE
+	#define CONFIG_ENV_SECT_SIZE	0x20000
+	#undef CONFIG_ENV_SIZE
+	#define CONFIG_ENV_SIZE		0x10000
+#endif
 
 /* Generic Interrupt Controller Definitions */
 #define GICD_BASE                       MVEBU_GICD_BASE

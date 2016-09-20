@@ -1,7 +1,5 @@
 
-/dts-v1/;
-#include "armada-3700.dtsi"
-#include <dt-bindings/multi-fdt/multi-fdt.h>
+#include "armada-3700-ddr3-db.dts"
 
 /* detail board setup:
  * Pcie Jumper slot	:	DB-88F3720-PCIe-mPCIe-Jumper
@@ -29,101 +27,14 @@
 
 	soc {
 		internal-regs {
-			spi0: spi@10600 {
-				status = "okay";
-			};
-			i2c: i2c@11000 {
-				status = "okay";
-				expander0: pca953x@22 {
-					compatible = "nxp,pca9555";
-					reg = <0x22>;
-					status = "okay";
-				};
-			};
 			avs@11500 {
 				vdd-min = <26>;
-				status = "okay";
-			};
-			serial: serial@12000 {
-				status = "okay";
-			};
-			pm@14000 {
-				vdd_control = "avs";
-				status = "okay";
 			};
 			comphy {
-				phy0 {
-					phy-type = <PHY_TYPE_PEX0>;
-					phy-speed = <PHY_SPEED_2_5G>;
-				};
-				phy1 {
-					phy-type = <PHY_TYPE_USB3_HOST0>;
-					phy-speed = <PHY_SPEED_5G>;
-				};
 				phy2 {
-					phy-type = <PHY_TYPE_SATA0>;
-					phy-speed = <PHY_SPEED_5G>;
+					phy-invert = <PHY_POLARITY_NO_INVERT>;
 				};
-			};
-			neta0: neta@30000 {
-				status = "okay";
-				phy_addr = <0x0>;
-				phy_mode = "rgmii";
-			};
-			usb3: usb3@58000 {
-				gpio-vbus = <&gpio1 ARMADA_3700_GPIO(BANK_1, 0) GPIO_ACTIVE_HIGH>;
-				vbus-enable-delay = <1000>;
-				vbus-disable-delay = <1000>;
-				status = "okay";
-			};
-			utmi@5d000 {
-				status = "okay";
-			};
-			usb: usb@5e000 {
-				status = "okay";
-			};
-			utmi@5f000 {
-				status = "okay";
-			};
-			pcie-controller {
-				pcie@1,0 {
-					reset-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 3) GPIO_ACTIVE_HIGH>;
-					status = "okay";
-				};
-			};
-			mmc0: mmc@D0000 {
-				sdio-vcc-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 23) GPIO_ACTIVE_HIGH>;
-				bus-width = <4>;
-				status = "okay";
-			};
-			mmc1: mmc@D8000 {
-				xenon,emmc;
-				bus-width = <8>;
-				status = "okay";
-			};
-			sata: sata@e0000 {
-				sata-power = <&expander0 ARMADA_3700_GPIO(PERIPHERAL_0, 2) GPIO_ACTIVE_HIGH>;
-				status = "okay";
 			};
 		};
 	};
-};
-
-&pinctl0 { /* north bridge */
-		  /* 0 1 2 3 4 5 6 7 */
-	pin-func = < 0 0 1 1 1 0 1 1	/* 0 - 7 */
-		     1 1 1 1 1 1 1 0	/* 8 - 15 */
-		     0 1 1 1 0 0 0 0	/* 16 - 23 */
-		     0 0 0 0 0 0 0 0	/* 24 - 31 */
-		     0 0 0 0 >;		/* 32 - 35 */
-
-};
-
-&pinctl1 { /* south bridge */
-		  /* 0 1 2 3 4 5 6 7 */
-	pin-func = < 1 1 0 1 1 0 0 0	/* 0 - 7 */
-		     0 0 0 0 0 0 0 0	/* 8 - 15 */
-		     0 0 0 0 1 1 1 0	/* 16 - 23 */
-		     0 0 0 0 0 0 >;	/* 24 - 29 */
-
 };

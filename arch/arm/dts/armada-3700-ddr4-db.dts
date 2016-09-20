@@ -1,5 +1,5 @@
 
-#include "armada-3700-rz-ddr3-db.dts"
+#include "armada-3700-ddr3-db.dts"
 
 /* detail board setup:
  * Pcie Jumper slot	:	DB-88F3720-PCIe-mPCIe-Jumper
@@ -20,8 +20,8 @@
 */
 
 / {
-	model = "DB-88F3720-DDR4-Modular-Z1";
-	compatible = "marvell,armada-3700-db0", "marvell,armada-3700";
+	model = "DB-88F3720-DDR4-Modular";
+	compatible = "marvell,armada-3700-db", "marvell,armada-3700";
 	fdt_config_id = <A3700_DDR4_DB_CONFIG_ID_DEFAULT>;
 	board_id = <A3700_DDR4_DB_ID>;
 	soc {

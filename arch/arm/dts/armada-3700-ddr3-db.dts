@@ -1,6 +1,6 @@
 
 /dts-v1/;
-#include "armada-3700-rz.dtsi"
+#include "armada-3700.dtsi"
 #include <dt-bindings/multi-fdt/multi-fdt.h>
 
 /* detail board setup:
@@ -22,8 +22,8 @@
 */
 
 / {
-	model = "DB-88F3720-DDR3-Modular-Z1";
-	compatible = "marvell,armada-3700-db0", "marvell,armada-3700";
+	model = "DB-88F3720-DDR3-Modular";
+	compatible = "marvell,armada-3700-db", "marvell,armada-3700";
 	fdt_config_id = <A3700_DDR3_DB_CONFIG_ID_DEFAULT>;
 	board_id = <A3700_DDR3_DB_ID>;
 
@@ -59,6 +59,11 @@
 				phy1 {
 					phy-type = <PHY_TYPE_USB3_HOST0>;
 					phy-speed = <PHY_SPEED_5G>;
+				};
+				phy2 {
+					phy-type = <PHY_TYPE_SATA0>;
+					phy-speed = <PHY_SPEED_5G>;
+					phy-invert = <PHY_POLARITY_TXD_INVERT>;
 				};
 			};
 			neta0: neta@30000 {
@@ -99,10 +104,6 @@
 			};
 			sata: sata@e0000 {
 				sata-power = <&expander0 ARMADA_3700_GPIO(PERIPHERAL_0, 2) GPIO_ACTIVE_HIGH>;
-				status = "okay";
-			};
-			sataphy@e0000 {
-				phy-invert = <PHY_POLARITY_TXD_INVERT>;
 				status = "okay";
 			};
 		};

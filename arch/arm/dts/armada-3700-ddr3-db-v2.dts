@@ -22,8 +22,8 @@
 */
 
 / {
-	model = "DB-88F3720-DDR3-Modular";
-	compatible = "marvell,armada-3700-db0", "marvell,armada-3700";
+	model = "DB-88F3720-DDR3-Modular-V2";
+	compatible = "marvell,armada-3700-db-v2", "marvell,armada-3700";
 	fdt_config_id = <A3700_DDR3_DB_CONFIG_ID_DEFAULT>;
 	board_id = <A3700_DDR3_DB_ID>;
 

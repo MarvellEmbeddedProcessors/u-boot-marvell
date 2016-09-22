@@ -369,63 +369,57 @@ static int mv_ddr_init_ddr_freq_get(int dev_num, enum hws_ddr_freq *freq)
 		RST2_CLOCK_FREQ_MODE_MASK;
 
 	switch (ddr_clk_config) {
-#ifdef NO_EFUSE
-#ifdef CONFIG_DDR4
-	case SAR_CPU1800_0X2:
-			*freq = DDR_FREQ_1200;
-			break;
-		case SAR_CPU1800_0X3:
-			*freq = DDR_FREQ_1050;
-			break;
-		case SAR_CPU1600_0X4:
-			*freq = DDR_FREQ_1050;
-			break;
-#endif
-		case SAR_CPU1600_0X5:
-			*freq = DDR_FREQ_900;
-			break;
-		case SAR_CPU1300_0X6:
-			*freq = DDR_FREQ_800;
-			break;
-#ifdef CONFIG_DDR4
-		case SAR_CPU1300_0X7:
-			*freq = DDR_FREQ_650;
-			break;
-#endif
-		case SAR_CPU1200_TBD:
-			*freq = DDR_FREQ_800;
-			break;
-#else /* EFUSE */
-		case SAR_CPU1600_0X0:
-			*freq = DDR_FREQ_800;
-			break;
-		case SAR_CPU1600_0X1:
-			*freq = DDR_FREQ_900;
-			break;
-#ifdef CONFIG_DDR4
-		case SAR_CPU1000_0X2:
-			*freq = DDR_FREQ_650;
-			break;
-#endif
-		case SAR_CPU1200_0X3:
-			*freq = DDR_FREQ_800;
-			break;
-		case SAR_CPU1400_0X4:
-			*freq = DDR_FREQ_800;
-			break;
-		case SAR_CPU600_0X5:
-			*freq = DDR_FREQ_800;
-			break;
-		case SAR_CPU800_0X6:
-			*freq = DDR_FREQ_800;
-			break;
-		case SAR_CPU1000_0X7:
-			*freq = DDR_FREQ_800;
-			break;
-#endif /* NO_EFUSE */
-		default:
-			*freq = 0;
-			return MV_NOT_SUPPORTED;
+	case CPU_2000_DDR_1200_RCLK_1200:
+		*freq = DDR_FREQ_1200;
+		break;
+	case CPU_2000_DDR_1050_RCLK_1050:
+		*freq = DDR_FREQ_1050;
+		break;
+	case CPU_1600_DDR_800_RCLK_800:
+		*freq = DDR_FREQ_800;
+		break;
+	case CPU_1800_DDR_1200_RCLK_1200:
+		*freq = DDR_FREQ_1200;
+		break;
+	case CPU_1800_DDR_1050_RCLK_1050:
+		*freq = DDR_FREQ_1050;
+		break;
+	case CPU_1600_DDR_900_RCLK_900:
+		*freq = DDR_FREQ_900;
+		break;
+	case CPU_1600_DDR_1050_RCLK_1050:
+		*freq = DDR_FREQ_1050;
+		break;
+	case CPU_1600_DDR_900_RCLK_900_2:
+		*freq = DDR_FREQ_900;
+		break;
+	case CPU_1000_DDR_650_RCLK_650:
+		*freq = DDR_FREQ_650;
+		break;
+	case CPU_1300_DDR_800_RCLK_800:
+		*freq = DDR_FREQ_800;
+		break;
+	case CPU_1300_DDR_650_RCLK_650:
+		*freq = DDR_FREQ_650;
+		break;
+	case CPU_1200_DDR_800_RCLK_800:
+		*freq = DDR_FREQ_800;
+		break;
+	case CPU_1400_DDR_800_RCLK_800:
+		*freq = DDR_FREQ_800;
+		break;
+	case CPU_600_DDR_800_RCLK_800:
+		*freq = DDR_FREQ_800;
+		break;
+	case CPU_800_DDR_800_RCLK_800:
+		*freq = DDR_FREQ_800;
+		break;
+	case CPU_1000_DDR_800_RCLK_800:
+		*freq = DDR_FREQ_800;
+		break;
+	default:
+		*freq = 0;
+		return MV_NOT_SUPPORTED;
 	}
 
 	return MV_OK;
@@ -468,9 +462,12 @@ static u32 mv_ddr_target_div_calc(u32 curr_div, u32 curr_freq, u32 target_freq)
  */
 static int mv_ddr_clk_dividers_set(u8 dev_num, u32 if_id, enum hws_ddr_freq target_ddr_freq)
 {
-	u32 mc_div, ddr_div;
+	static u32 mc_div = 0xffffffff;
+	static u32 ddr_div = 0xffffffff;
 	u32 mc_target_div, ddr_target_div;
-	u32 init_ddr_freq_val, target_ddr_freq_val;
+	static u32 init_ddr_freq_val;
+	u32 target_ddr_freq_val;
+	static int mv_ddr_first_time_setting = 1;
 	u32 reg;
 	enum hws_ddr_freq init_ddr_freq;
 
@@ -481,29 +478,25 @@ static int mv_ddr_clk_dividers_set(u8 dev_num, u32 if_id, enum hws_ddr_freq targ
 		return MV_BAD_PARAM;
 	}
 
-	/* get ddr freq from sar */
-	mv_ddr_init_ddr_freq_get(DEV_NUM_0, &init_ddr_freq);
+	if (mv_ddr_first_time_setting) {
+		/* get ddr freq from sar */
+		mv_ddr_init_ddr_freq_get(DEV_NUM_0, &init_ddr_freq);
 
-	/* get mc & ddr clk dividers values */
-	reg = reg_read(DEV_GEN_CTRL1_REG_ADDR);
-	ddr_div = (reg >> MISC_CLKDIV_RATIO_1_OFFS) & MISC_CLKDIV_RATIO_1_MASK;
-	mc_div = (reg >> MISC_CLKDIV_RATIO_2_OFFS) & MISC_CLKDIV_RATIO_2_MASK;
+		init_ddr_freq_val = freq_val[init_ddr_freq];
 
-	init_ddr_freq_val = freq_val[init_ddr_freq];
+		/* get mc & ddr clk dividers values */
+		reg = reg_read(DEV_GEN_CTRL1_REG_ADDR);
+		mc_div = (reg >> MISC_CLKDIV_RATIO_2_OFFS) & MISC_CLKDIV_RATIO_2_MASK;
+		ddr_div = (reg >> MISC_CLKDIV_RATIO_1_OFFS) & MISC_CLKDIV_RATIO_1_MASK;
+
+		mv_ddr_first_time_setting = 0;
+	}
+
 	target_ddr_freq_val = freq_val[target_ddr_freq];
 
 	/* calc mc & ddr target clk divider value */
 	mc_target_div = mv_ddr_target_div_calc(mc_div, init_ddr_freq_val, target_ddr_freq_val);
 	ddr_target_div = mv_ddr_target_div_calc(ddr_div, init_ddr_freq_val, target_ddr_freq_val);
-
-	/* FIXME: temporary solution bypassing previously calculated values */
-	if (target_ddr_freq == DDR_FREQ_LOW_FREQ) { /* 100MHz; clk src / 16 for mc, / 8 for ddr */
-		mc_target_div = 16;
-		ddr_target_div = 8;
-	} else { /* 800MHz; clk src / 2 for mc, / 1 for ddr */
-		mc_target_div = 2;
-		ddr_target_div = 1;
-	}
 
 	reg = reg_read(DEV_GEN_CTRL1_REG_ADDR);
 	reg &= ~(MISC_CLKDIV_RATIO_2_MASK << MISC_CLKDIV_RATIO_2_OFFS | MISC_CLKDIV_RATIO_1_MASK << MISC_CLKDIV_RATIO_1_OFFS);

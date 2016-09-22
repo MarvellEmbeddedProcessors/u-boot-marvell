@@ -108,7 +108,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define APN806_REV_ID_A0		0
 #define APN806_REV_ID_A1		1
 
-#define NO_EFUSE
 #define IF_ID_0				0
 
 #define MAX_INTERFACE_NUM		1
@@ -194,24 +193,22 @@ enum{
 #define MC6_USER_CS_OFFS		24
 #define MC6_USER_CS_MASK		0xf
 
-#ifdef NO_EFUSE
-#define	SAR_CPU1800_0X2	0x2
-#define	SAR_CPU1800_0X3	0x3
-#define	SAR_CPU1600_0X4	0x4
-#define	SAR_CPU1600_0X5	0x5
-#define	SAR_CPU1300_0X6	0x6
-#define	SAR_CPU1300_0X7	0x7
-#define	SAR_CPU1200_TBD	0xff /* TODO: find correct value */
-#else/*EFUSE*/
-#define	SAR_CPU1600_0X0	0x0
-#define	SAR_CPU1600_0X1	0x1
-#define	SAR_CPU1000_0X2	0x2
-#define	SAR_CPU1200_0X3	0x3
-#define	SAR_CPU1400_0X4	0x4
-#define	SAR_CPU600_0X5	0x5
-#define	SAR_CPU800_0X6	0x6
-#define	SAR_CPU1000_0X7	0x7
-#endif
+#define CPU_2000_DDR_1200_RCLK_1200	0x0
+#define CPU_2000_DDR_1050_RCLK_1050	0x1
+#define CPU_1600_DDR_800_RCLK_800	0x4
+#define CPU_1800_DDR_1200_RCLK_1200	0x6
+#define CPU_1800_DDR_1050_RCLK_1050	0x7
+#define CPU_1600_DDR_900_RCLK_900	0x0b
+#define CPU_1600_DDR_1050_RCLK_1050	0x0d
+#define CPU_1600_DDR_900_RCLK_900_2	0x0e
+#define CPU_1000_DDR_650_RCLK_650	0x13
+#define CPU_1300_DDR_800_RCLK_800	0x14
+#define CPU_1300_DDR_650_RCLK_650	0x17
+#define CPU_1200_DDR_800_RCLK_800	0x19
+#define CPU_1400_DDR_800_RCLK_800	0x1a
+#define CPU_600_DDR_800_RCLK_800	0x1b
+#define CPU_800_DDR_800_RCLK_800	0x1c
+#define CPU_1000_DDR_800_RCLK_800	0x1d
 
 #define DFS_LOW_FREQ_VALUE		100
 #define SDRAM_CS_SIZE			0x7fffffffUL	/* FIXME: implement a function for cs size for each platform */

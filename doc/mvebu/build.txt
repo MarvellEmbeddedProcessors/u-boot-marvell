@@ -81,6 +81,24 @@ Boot device selection note for Armada-3700 builds:
 	The selected partition will be used by U-Boot "bubt" and "savenv" commands
 	for flashing the boot image and saving U-Boot configuration.
 
+	SPI NAND boot device:
+	-----------------
+	The Armada-3700 supports SPI NAND flash as the boot device on the target.
+	In order to burn image and save enviroment variables to SPI NAND flash,
+	please enable SPI NAND driver at first by set the following parameter to <Y>:
+	CONFIG_SPI_NAND=y
+	If "menuconfig" is used, navigate to the following location:
+	-> Device Drivers
+	  -> SPI NAND Support
+	and set <Y> for the option.
+
+	In order to change the boot device to SPI NAND, set the following parameter
+	the default configuration:
+	CONFIG_MVEBU_SPINAND_BOOT=y
+	If "menuconfig" is used, navigate to the following location:
+	-> Marvell Platform Options
+	  -> Flash for image
+	and select "SPINAND flash boot".
 
 	SATA boot device:
 	-----------------

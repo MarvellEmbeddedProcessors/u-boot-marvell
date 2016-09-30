@@ -33,6 +33,7 @@ unsigned long mvebu_spi_reg_base = 100;
 
 unsigned int mvebu_spi_input_clock;
 unsigned int mvebu_spi_max_freq;
+static bool mvebu_spi_fifo_enabled;
 
 #define CONFIG_MAX_SPI_NUM	8
 #define CONFIG_MAX_SPI_CS_NUM	4
@@ -43,11 +44,23 @@ unsigned int mvebu_spi_max_freq;
 #define MVEBU_SPI_A3700_CONF_OFFSET         0x04
 #define MVEBU_SPI_A3700_DOUT_OFFSET         0x08
 #define MVEBU_SPI_A3700_DIN_OFFSET          0x0c
+#define MVEBU_SPI_A3700_IF_INST_REG         0x10
+#define MVEBU_SPI_A3700_IF_ADDR_REG         0x14
+#define MVEBU_SPI_A3700_IF_RMODE_REG        0x18
+#define MVEBU_SPI_A3700_IF_HDR_CNT_REG      0x1C
+#define MVEBU_SPI_A3700_IF_DIN_CNT_REG      0x20
+#define MVEBU_SPI_A3700_IF_TIME_REG         0x24
 
 #define MVEBU_SPI_A3700_CTRL_ADDR           (MVEBU_SPI_BASE + MVEBU_SPI_A3700_CTRL_OFFSET)
 #define MVEBU_SPI_A3700_CONF_ADDR           (MVEBU_SPI_BASE + MVEBU_SPI_A3700_CONF_OFFSET)
 #define MVEBU_SPI_A3700_DOUT_ADDR           (MVEBU_SPI_BASE + MVEBU_SPI_A3700_DOUT_OFFSET)
 #define MVEBU_SPI_A3700_DIN_ADDR            (MVEBU_SPI_BASE + MVEBU_SPI_A3700_DIN_OFFSET)
+#define MVEBU_SPI_A3700_IF_INST_ADDR        (MVEBU_SPI_BASE + MVEBU_SPI_A3700_IF_INST_REG)
+#define MVEBU_SPI_A3700_IF_ADDR	            (MVEBU_SPI_BASE + MVEBU_SPI_A3700_IF_ADDR_REG)
+#define MVEBU_SPI_A3700_IF_RMODE            (MVEBU_SPI_BASE + MVEBU_SPI_A3700_IF_RMODE_REG)
+#define MVEBU_SPI_A3700_IF_HDR_CNT_ADDR     (MVEBU_SPI_BASE + MVEBU_SPI_A3700_IF_HDR_CNT_REG)
+#define MVEBU_SPI_A3700_IF_DIN_CNT_ADDR     (MVEBU_SPI_BASE + MVEBU_SPI_A3700_IF_DIN_CNT_REG)
+#define MVEBU_SPI_A3700_IF_TIME_ADDR        (MVEBU_SPI_BASE + MVEBU_SPI_A3700_IF_TIME_REG)
 
 #define MVEBU_SPI_A3700_XFER_RDY				BIT1
 #define MVEBU_SPI_A3700_FIFO_FLUSH			BIT9
@@ -58,6 +71,29 @@ unsigned int mvebu_spi_max_freq;
 #define MVEBU_SPI_A3700_SPI_EN_0				BIT16
 #define MVEBU_SPI_A3700_CLK_PRESCALE_BIT			0
 #define MVEBU_SPI_A3700_CLK_PRESCALE_MASK		(0x1F << MVEBU_SPI_A3700_CLK_PRESCALE_BIT)
+
+#define MVEBU_SPI_A3700_WFIFO_FULL		BIT7
+#define MVEBU_SPI_A3700_WFIFO_EMPTY		BIT6
+#define MVEBU_SPI_A3700_RFIFO_EMPTY		BIT4
+#define MVEBU_SPI_A3700_WFIFO_RDY		BIT3
+#define MVEBU_SPI_A3700_RFIFO_RDY		BIT2
+
+#define MVEBU_SPI_A3700_SRST			BIT16
+#define MVEBU_SPI_A3700_XFER_START		BIT15
+#define MVEBU_SPI_A3700_XFER_STOP		BIT14
+#define MVEBU_SPI_A3700_RW_EN			BIT8
+
+#define MVEBU_SPI_A3700_WFIFO_THRS_BIT		28
+#define MVEBU_SPI_A3700_RFIFO_THRS_BIT		24
+#define MVEBU_SPI_A3700_FIFO_THRS_MASK		0x7
+
+#define MVEBU_SPI_A3700_DUMMY_CNT_BIT		12
+#define MVEBU_SPI_A3700_DUMMY_CNT_MASK		0x7
+#define MVEBU_SPI_A3700_ADDR_CNT_BIT		4
+#define MVEBU_SPI_A3700_ADDR_CNT_MASK		0x7
+#define MVEBU_SPI_A3700_INSTR_CNT_BIT		0
+#define MVEBU_SPI_A3700_INSTR_CNT_MASK		0x3
+
 
 /**
  * if_spi_flags_is_set() - poll a register to check if certain flags is set
@@ -98,11 +134,32 @@ int if_spi_flags_is_set(unsigned long reg, u16 flags, u32 timeout)
  * Return:	0 - xfer flags is not set
  *		1 - xfer flags is set
  */
-static inline int poll_spi_xfer_ready(void)
+static inline int spi_poll_xfer_ready(void)
 {
 	unsigned int timeout = SPI_TIMEOUT;
 
 	return if_spi_flags_is_set(MVEBU_SPI_A3700_CTRL_ADDR, MVEBU_SPI_A3700_XFER_RDY, timeout);
+}
+
+static inline int spi_poll_fifo_write_ready(void)
+{
+	unsigned int timeout = SPI_TIMEOUT;
+
+	return if_spi_flags_is_set(MVEBU_SPI_A3700_CTRL_ADDR, MVEBU_SPI_A3700_WFIFO_RDY, timeout);
+}
+
+static inline int spi_poll_fifo_read_ready(void)
+{
+	unsigned int timeout = SPI_TIMEOUT;
+
+	return if_spi_flags_is_set(MVEBU_SPI_A3700_CTRL_ADDR, MVEBU_SPI_A3700_RFIFO_RDY, timeout);
+}
+
+static inline int spi_poll_fifo_write_empty(void)
+{
+	unsigned int timeout = SPI_TIMEOUT;
+
+	return if_spi_flags_is_set(MVEBU_SPI_A3700_CTRL_ADDR, MVEBU_SPI_A3700_WFIFO_EMPTY, timeout);
 }
 
 /**
@@ -124,17 +181,13 @@ int spi_set_legacy(void)
 	val_conf = readl(MVEBU_SPI_A3700_CONF_ADDR);
 	val_conf = val_conf & (~MVEBU_SPI_A3700_BYTE_LEN);
 
-	/* Set legacy mode */
+	/* Set legacy mode - mode 0: CPHA = 0 and  CPOL = 0 */
 	val_conf = val_conf & (~MVEBU_SPI_A3700_BYTE_CLK_PHA);
 
-	/* Set CPOL = 0 */
 	val_conf = val_conf & (~MVEBU_SPI_A3700_CLK_POL);
 
-	/* Set Prescaler */
-	val_conf = val_conf & (~MVEBU_SPI_A3700_CLK_PRESCALE_MASK);
-
-	/* calculate Prescaler = (spi_input_freq / spi_max_freq) */
-	val_conf = val_conf | (mvebu_spi_input_clock / mvebu_spi_max_freq);
+	/* Disable FIFO mode */
+	val_conf &= ~MVEBU_SPI_A3700_FIFO_EN;
 
 	writel(val_conf, MVEBU_SPI_A3700_CONF_ADDR);
 
@@ -184,7 +237,7 @@ int spi_legacy_shift_byte(unsigned int bytelen, const void *dout, void *din)
 	din_8 = din;
 
 	while (bytelen) {
-		if (!poll_spi_xfer_ready())
+		if (!spi_poll_xfer_ready())
 			return -ETIMEDOUT;
 
 		if (dout)
@@ -196,7 +249,7 @@ int spi_legacy_shift_byte(unsigned int bytelen, const void *dout, void *din)
 		writel(pending_dout, MVEBU_SPI_A3700_DOUT_ADDR);
 
 		if (din) {
-			if (!poll_spi_xfer_ready())
+			if (!spi_poll_xfer_ready())
 				return -ETIMEDOUT;
 
 			/* Read what is transferred in */
@@ -213,6 +266,356 @@ int spi_legacy_shift_byte(unsigned int bytelen, const void *dout, void *din)
 	}
 
 	return 0;
+}
+
+static int spi_xfer_non_fifo(struct spi_slave *slave, unsigned int bitlen, const void *dout,
+	     void *din, unsigned long flags)
+{
+	register unsigned int bytelen;
+	int ret;
+
+	/* bytelen = bitlen / 8 */
+	bytelen = bitlen >> 3;
+
+	if (dout && din)
+		debug("This is a duplex transfer.\n");
+
+	/* Activate CS */
+	if (flags & SPI_XFER_BEGIN) {
+		debug("SPI: activate cs.\n");
+		spi_cs_activate(slave);
+	}
+
+	/* Send and/or receive */
+	if (dout || din) {
+		ret = spi_legacy_shift_byte(bytelen, dout, din);
+		if (ret)
+			return ret;
+	}
+
+	/* Deactivate CS */
+	if (flags & SPI_XFER_END) {
+		if (!spi_poll_xfer_ready())
+			return -ETIMEDOUT;
+
+		debug("SPI: deactivate cs.\n");
+		spi_cs_deactivate(slave);
+	}
+
+	return 0;
+}
+
+static void spi_set_fifo(void)
+{
+	unsigned int val_conf;
+
+	val_conf = readl(MVEBU_SPI_A3700_CONF_ADDR);
+
+	/* Always shift 1 byte at a time */
+	val_conf = val_conf & (~MVEBU_SPI_A3700_BYTE_LEN);
+
+	/* Set fifo mode -mode 3: CPHA = 1 and  CPOL = 1 */
+	val_conf = val_conf | MVEBU_SPI_A3700_BYTE_CLK_PHA;
+
+	val_conf = val_conf | MVEBU_SPI_A3700_CLK_POL;
+
+	/* Enabel FIFO mode */
+	val_conf |= MVEBU_SPI_A3700_FIFO_EN;
+
+	/*
+	 * Set FIFO threshold
+	 * For read FIFO threshold, value 0 presents 1 data entry, which means
+	 * when data in the read FIFO is equal to or greater than 1 entry,
+	 * flag RFIFO_RDY_IS will be set;
+	 * For write FIFO threshold, value 7 presents 7 data entry, which means
+	 * when data in the write FIFO is less than or equal to 7 entry,
+	 * flag WFIFO_RDY_IS will be set;
+	 */
+	val_conf |= 0 << MVEBU_SPI_A3700_RFIFO_THRS_BIT;
+	val_conf |= 7 << MVEBU_SPI_A3700_WFIFO_THRS_BIT;
+
+	writel(val_conf, MVEBU_SPI_A3700_CONF_ADDR);
+}
+
+static int spi_fifo_flush(void)
+{
+	int timeout = SPI_TIMEOUT;
+	unsigned int val;
+
+	val = readl(MVEBU_SPI_A3700_CONF_ADDR);
+	val |= MVEBU_SPI_A3700_FIFO_FLUSH;
+	writel(val, MVEBU_SPI_A3700_CONF_ADDR);
+
+	while (--timeout) {
+		val = readl(MVEBU_SPI_A3700_CONF_ADDR);
+		if (!(val & MVEBU_SPI_A3700_FIFO_FLUSH))
+			return 0;
+		udelay(1);
+	}
+	error("spi_fifo_flush timeout\n");
+	return 1;
+}
+
+static unsigned int spi_fifo_header_set(unsigned int bytelen, const void *dout, unsigned long flags)
+{
+	unsigned int max_instr_cnt = 1, max_addr_cnt = 3, max_dummy_cnt = 1;
+	unsigned int instr_cnt = 0, addr_cnt = 0, dummy_cnt = 0, val = 0, done_len;
+	unsigned char *dout_ptr = (unsigned char *)dout;
+
+	writel(0, MVEBU_SPI_A3700_IF_INST_ADDR);
+	writel(0, MVEBU_SPI_A3700_IF_ADDR);
+	writel(0, MVEBU_SPI_A3700_IF_RMODE);
+
+	if (flags & SPI_XFER_BEGIN) {
+		if (bytelen <= max_instr_cnt) {
+			instr_cnt = 1;
+			addr_cnt = 0;
+			dummy_cnt = 0;
+		} else if (bytelen <= max_instr_cnt + max_addr_cnt) {
+			instr_cnt = 1;
+			addr_cnt = bytelen - instr_cnt;
+			dummy_cnt = 0;
+		} else if (bytelen <= max_instr_cnt + max_addr_cnt + max_dummy_cnt) {
+			instr_cnt = 1;
+			addr_cnt = 3;
+			dummy_cnt = bytelen - instr_cnt - addr_cnt;
+		}
+		val = 0;
+		val |= ((instr_cnt & MVEBU_SPI_A3700_INSTR_CNT_MASK)
+			<< MVEBU_SPI_A3700_INSTR_CNT_BIT);
+		val |= ((addr_cnt & MVEBU_SPI_A3700_ADDR_CNT_MASK)
+			<< MVEBU_SPI_A3700_ADDR_CNT_BIT);
+		val |= ((dummy_cnt & MVEBU_SPI_A3700_DUMMY_CNT_MASK)
+			<< MVEBU_SPI_A3700_DUMMY_CNT_BIT);
+	}
+
+	writel(val, MVEBU_SPI_A3700_IF_HDR_CNT_ADDR);
+	done_len = instr_cnt + addr_cnt + dummy_cnt;
+
+	/* Set Instruction */
+	val = 0;
+	while (instr_cnt--) {
+		val = (val << 8) | dout_ptr[0];
+		dout_ptr++;
+	}
+	writel(val, MVEBU_SPI_A3700_IF_INST_ADDR);
+
+	/* Set Address */
+	val = 0;
+	while (addr_cnt--) {
+		val = (val << 8) | dout_ptr[0];
+		dout_ptr++;
+	}
+	writel(val, MVEBU_SPI_A3700_IF_ADDR);
+
+	return done_len;
+}
+
+static inline int spi_is_wfifo_full(void)
+{
+	u32 val;
+
+	val = readl(MVEBU_SPI_A3700_CTRL_ADDR);
+	return val & MVEBU_SPI_A3700_WFIFO_FULL;
+}
+
+static int spi_fifo_write(unsigned int buf_len, unsigned char *tx_buf)
+{
+	while (!spi_is_wfifo_full() && buf_len) {
+		/* Write bytes to data out register */
+		writel(*tx_buf, MVEBU_SPI_A3700_DOUT_ADDR);
+		buf_len--;
+		tx_buf++;
+	}
+
+	return buf_len;
+}
+
+static inline int spi_is_rfifo_empty(void)
+{
+	u32 val;
+
+	val = readl(MVEBU_SPI_A3700_CTRL_ADDR);
+	return val & MVEBU_SPI_A3700_RFIFO_EMPTY;
+}
+
+static int spi_fifo_read(unsigned int buf_len, unsigned char *rx_buf)
+{
+	unsigned int val;
+
+	while (!spi_is_rfifo_empty() && buf_len) {
+		/* Read bytes from data in register */
+		val = readl(MVEBU_SPI_A3700_DIN_ADDR);
+		*rx_buf = val & 0xff;
+		buf_len--;
+		rx_buf++;
+	}
+
+	return buf_len;
+}
+
+static int spi_fifo_abort_xfer(bool force_stop)
+{
+	int timeout = SPI_TIMEOUT;
+	unsigned int val;
+	int ret = 0;
+
+	val = readl(MVEBU_SPI_A3700_CONF_ADDR);
+	if (force_stop) {
+		val |= MVEBU_SPI_A3700_XFER_STOP;
+		writel(val, MVEBU_SPI_A3700_CONF_ADDR);
+	}
+
+	while (--timeout) {
+		val = readl(MVEBU_SPI_A3700_CONF_ADDR);
+		if (!(val & MVEBU_SPI_A3700_XFER_START))
+			break;
+		udelay(1);
+	}
+	if (timeout == 0) {
+		printf("spi_fifo_abort_xfer timeout\n");
+		ret = 1;
+	}
+
+	spi_fifo_flush();
+
+	if (force_stop) {
+		val &= ~MVEBU_SPI_A3700_XFER_STOP;
+		writel(val, MVEBU_SPI_A3700_CONF_ADDR);
+	}
+
+	return ret;
+}
+
+
+static int spi_xfer_fifo_read(struct spi_slave *slave, unsigned int bytelen, void *din, unsigned long flags)
+{
+	unsigned int val;
+	int ret = 0;
+	unsigned char *char_p;
+	int remain_len;
+
+	/* Clean number of bytes for instruction, address, dummy field and read mode */
+	writel(0, MVEBU_SPI_A3700_IF_INST_ADDR);
+	writel(0, MVEBU_SPI_A3700_IF_ADDR);
+	writel(0, MVEBU_SPI_A3700_IF_RMODE);
+	writel(0, MVEBU_SPI_A3700_IF_HDR_CNT_ADDR);
+
+	/* Set read data length */
+	writel(bytelen, MVEBU_SPI_A3700_IF_DIN_CNT_ADDR);
+	/* Start READ transfer */
+	val = readl(MVEBU_SPI_A3700_CONF_ADDR);
+	val &= ~MVEBU_SPI_A3700_RW_EN;
+	val |= MVEBU_SPI_A3700_XFER_START;
+	writel(val, MVEBU_SPI_A3700_CONF_ADDR);
+
+	/* Read data from spi */
+	char_p = (unsigned char *)din;
+	while (bytelen) {
+		if (!spi_poll_fifo_read_ready()) {
+			printf("spi_poll_fifo_read_ready timeout\n");
+			spi_fifo_abort_xfer(true);
+			return 1;
+		}
+		remain_len = spi_fifo_read(bytelen, char_p);
+		char_p += bytelen - remain_len;
+		bytelen = remain_len;
+	}
+
+	/* When read xfer finishes, force stop is not needed */
+	ret = spi_fifo_abort_xfer(false);
+	return ret;
+}
+
+static int spi_xfer_fifo_write(struct spi_slave *slave, unsigned int bytelen, const void *dout, unsigned long flags)
+{
+	unsigned int val;
+	int ret = 0;
+	unsigned char *char_p;
+	int remain_len;
+	unsigned int len_done;
+	bool write_data;
+
+	/* Set number of bytes for instruction, address, dummy field and read mode */
+	len_done = spi_fifo_header_set(bytelen, dout, flags);
+	bytelen -= len_done;
+	write_data = (bytelen != 0);
+
+	/* Start Write transfer */
+	val = readl(MVEBU_SPI_A3700_CONF_ADDR);
+	val |= (MVEBU_SPI_A3700_XFER_START | MVEBU_SPI_A3700_RW_EN);
+	writel(val, MVEBU_SPI_A3700_CONF_ADDR);
+
+	/* Write data to spi */
+	char_p = (unsigned char *)dout;
+	while (bytelen) {
+		if (!spi_poll_fifo_write_ready()) {
+			printf("spi_poll_fifo_write_ready timeout\n");
+			ret = 1;
+			goto error;
+		}
+
+		remain_len = spi_fifo_write(bytelen, char_p);
+		char_p += bytelen - remain_len;
+		bytelen = remain_len;
+	}
+
+	if (write_data) {
+		/*
+		 * If there are data written to the SPI device, wait until SPI_WFIFO_EMPTY is 1
+		 * to wait for all data to transfer out of write FIFO.
+		 */
+		if (!spi_poll_fifo_write_empty()) {
+			printf("spi_poll_fifo_write_empty timeout\n");
+			ret = 1;
+			goto error;
+		}
+	} else {
+		/*
+		 * If the instruction in SPI_INSTR does not require data to be
+		 * written to the SPI device, wait until SPI_RDY is 1 for the
+		 * SPI interface to be in idle.
+		 */
+		if (!spi_poll_xfer_ready()) {
+			printf("spi_poll_xfer_ready timeout\n");
+			ret = 1;
+			goto error;
+		}
+	}
+
+	/* When read xfer finishes, force stop is needed */
+	ret = spi_fifo_abort_xfer(true);
+
+out:
+	return ret;
+
+error:
+	spi_fifo_abort_xfer(true);
+	goto out;
+}
+
+static int spi_xfer_fifo(struct spi_slave *slave, unsigned int bitlen, const void *dout,
+	     void *din, unsigned long flags)
+{
+	int ret = 0;
+	unsigned int bytelen = bitlen >> 3;
+
+	/* Activate CS */
+	if (flags & SPI_XFER_BEGIN)
+		spi_cs_activate(slave);
+
+	spi_fifo_flush();
+
+	if (dout)
+		ret = spi_xfer_fifo_write(slave, bytelen, dout, flags);
+	else if (din)
+		ret = spi_xfer_fifo_read(slave, bytelen, din, flags);
+
+		/* Deactivate CS */
+	if (flags & SPI_XFER_END)
+		spi_cs_deactivate(slave);
+
+	return ret;
 }
 
 /**
@@ -240,7 +643,6 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 				  unsigned int max_hz, unsigned int mode)
 {
 	struct spi_slave *slave;
-	u32 timeout = SPI_TIMEOUT;
 	u32 data;
 	int node_list[CONFIG_MAX_SPI_NUM], node;
 	u32 i, count;
@@ -260,6 +662,10 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 		mvebu_spi_reg_base = (unsigned long)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
 		mvebu_spi_max_freq = fdtdec_get_int(gd->fdt_blob, node, "spi-max-frequency", 0);
 		mvebu_spi_input_clock = fdtdec_get_int(gd->fdt_blob, node, "clock-frequency", 0);
+		if (fdtdec_get_bool(gd->fdt_blob, node, "fifo-mode"))
+			mvebu_spi_fifo_enabled = true;
+		else
+			mvebu_spi_fifo_enabled = false;
 
 		break;
 	}
@@ -287,26 +693,34 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 	slave->bus = bus;
 	slave->cs = cs;
 
-	/* flush read/write FIFO */
+	/* Reset SPI unit */
 	data = readl(MVEBU_SPI_A3700_CONF_ADDR);
-	writel((data | MVEBU_SPI_A3700_FIFO_FLUSH), MVEBU_SPI_A3700_CONF_ADDR);
-
-	do {
-		data = readl(MVEBU_SPI_A3700_CONF_ADDR);
-		if (timeout-- == 0)
-			return NULL;
-	} while (data & MVEBU_SPI_A3700_FIFO_FLUSH);
-
-	/* set SPI polarity
-	 * 0: Serial interface clock is low when inactive
-	 * 1: Serial interface clock is high when inactive
-	 */
-	if (mode & SPI_CPOL)
-		data |= MVEBU_SPI_A3700_CLK_POL;
-
-	/* disable FIFO mode */
-	data &= ~MVEBU_SPI_A3700_FIFO_EN;
+	data |= MVEBU_SPI_A3700_SRST;
 	writel(data, MVEBU_SPI_A3700_CONF_ADDR);
+
+	udelay(SPI_TIMEOUT);
+
+	data = readl(MVEBU_SPI_A3700_CONF_ADDR);
+	data &= ~MVEBU_SPI_A3700_SRST;
+	writel(data, MVEBU_SPI_A3700_CONF_ADDR);
+
+	/* flush read/write FIFO */
+	if (spi_fifo_flush())
+		return NULL;
+
+	data = readl(MVEBU_SPI_A3700_CONF_ADDR);
+
+	/* Set Prescaler */
+	data = data & (~MVEBU_SPI_A3700_CLK_PRESCALE_MASK);
+	/* calculate Prescaler = (spi_input_freq / spi_max_freq) */
+	data = data | (mvebu_spi_input_clock / mvebu_spi_max_freq);
+
+	writel(data, MVEBU_SPI_A3700_CONF_ADDR);
+
+	if (!mvebu_spi_fifo_enabled)
+		spi_set_legacy();
+	else
+		spi_set_fifo();
 
 	return slave;
 }
@@ -442,42 +856,9 @@ void spi_cs_deactivate(struct spi_slave *slave)
 int spi_xfer(struct spi_slave *slave, unsigned int bitlen, const void *dout,
 	     void *din, unsigned long flags)
 {
-	register unsigned int bytelen;
-	int ret;
-
-	/* bytelen = bitlen / 8 */
-	bytelen = bitlen >> 3;
-
-	if (dout && din)
-		debug("This is a duplex transfer.\n");
-
-	/* Activate CS */
-	if (flags & SPI_XFER_BEGIN) {
-		debug("SPI: activate cs.\n");
-		spi_cs_activate(slave);
-	}
-
-	/* Settings SPI controller to be working in legacy mode, which
-	  * means use only DO pin (I/O 1) for Data Out, and DI pin (I/O 0) for Data In.
-	  */
-	spi_set_legacy();
-
-	/* Send and/or receive */
-	if (dout || din) {
-		ret = spi_legacy_shift_byte(bytelen, dout, din);
-		if (ret)
-			return ret;
-	}
-
-	/* Deactivate CS */
-	if (flags & SPI_XFER_END) {
-		if (!poll_spi_xfer_ready())
-			return -ETIMEDOUT;
-
-		debug("SPI: deactivate cs.\n");
-		spi_cs_deactivate(slave);
-	}
-
-	return 0;
+	if (mvebu_spi_fifo_enabled)
+		return spi_xfer_fifo(slave, bitlen, dout, din, flags);
+	else
+		return spi_xfer_non_fifo(slave, bitlen, dout, din, flags);
 }
 

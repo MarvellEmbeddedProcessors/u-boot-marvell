@@ -19,22 +19,25 @@
 #ifndef __MVEBU_PHY_INDIRECT_H__
 #define __MVEBU_PHY_INDIRECT_H__
 
-enum phy_indirect_unit {
-	INDIRECT_IHB,
-	INDIRECT_MAX
+enum mci_unit {
+	AP_PHY,
+	AP_CTRL,
+	CP_PHY,
+	CP_CTRL,
+	MCI_MAX
 };
 
-enum ihb_region {
-	IHB_CTRL_REGION     = 0,
-	IHB_PHY_REG_REGION  = 3,
+enum mci_region {
+	MCI_CTRL_REGION     = 0,
+	MCI_PHY_REG_REGION  = 3,
 };
 /*
  * Functions prototypes
  */
 
-int mvebu_phy_indirect_init(void);
-int mvebu_phy_indirect_read(enum ihb_region region, enum phy_indirect_unit unit, int unit_id, int reg_ofs, u32 *val);
-int mvebu_phy_indirect_write(enum ihb_region region, enum phy_indirect_unit unit, int unit_id, int reg_ofs, u32 val);
+int mvebu_mci_phy_init(void);
+int mvebu_mci_phy_read(enum mci_region region, enum mci_unit unit, int unit_id, int reg_ofs, u32 *val);
+int mvebu_mci_phy_write(enum mci_region region, enum mci_unit unit, int unit_id, int reg_ofs, u32 val);
 
 
 #endif /* __MVEBU_MMC_H__ */

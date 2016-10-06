@@ -21,82 +21,87 @@
 #include <command.h>
 #include <asm/arch-mvebu/mvebu_mci.h>
 
-static enum phy_indirect_unit parse_unit(const char *unit)
+static enum mci_unit parse_unit(const char *unit)
 {
-	if ((strcmp(unit, "ihb") == 0))
-		return INDIRECT_IHB;
+	if ((strcmp(unit, "ap_phy") == 0))
+		return AP_PHY;
+	else if ((strcmp(unit, "ap_ctrl") == 0))
+		return AP_CTRL;
+	else if ((strcmp(unit, "cp_phy") == 0))
+		return CP_PHY;
+	else if ((strcmp(unit, "cp_ctrl") == 0))
+		return CP_CTRL;
 	else
-		return INDIRECT_MAX;
+		return MCI_MAX;
 }
 
-int do_indirect_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
+int do_mci_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])
 {
-	const char *unit = argv[1];
-	const char *cmd = argv[3];
-	enum phy_indirect_unit phy_unit;
+	const char *unit = argv[2];
+	enum mci_unit phy_unit;
 	u32 reg_ofs;
 	u32 value;
-	int unit_id = simple_strtoul(argv[2], NULL, 10);
-
+	int unit_id = simple_strtoul(argv[3], NULL, 10);
 	phy_unit = parse_unit(unit);
-	if (phy_unit == INDIRECT_MAX) {
+	if (phy_unit == MCI_MAX) {
 		error("Error: unit %s is not supported\n", unit);
 		return 1;
 	}
 
-	if ((strcmp(cmd, "write") == 0 || strcmp(cmd, "ctrl_write") == 0) && (argc < 6)) {
-		error("missing parameters for 'write'/'ctrl_write' command\n");
-		printf("make sure you specify both offset and value\n");
-		return 1;
-	}
-	if ((strcmp(cmd, "read") == 0 || strcmp(cmd, "ctrl_read") == 0) && (argc < 5)) {
-		error("missing parameters for 'read'/'ctrl_read' command\n");
-		printf("make sure you specify register offset\n");
-		return 1;
-	}
 
 	/* Get Offset */
 	reg_ofs = simple_strtoul(argv[4], NULL, 16);
 
 	/* read commnad */
-	if (strcmp(cmd, "read") == 0) {
-		if (mvebu_phy_indirect_read(IHB_PHY_REG_REGION, phy_unit, unit_id, reg_ofs, &value))
+	if (strcmp(argv[1], "read") == 0) {
+		if (phy_unit == AP_PHY || phy_unit == CP_PHY) {
+			if (mvebu_mci_phy_read(MCI_PHY_REG_REGION, phy_unit, unit_id, reg_ofs, &value))
+				return 1;
+			printf("0x%x: 0x%x\n", reg_ofs, value);
+		} else if (phy_unit == AP_CTRL || phy_unit == CP_CTRL) {
+			if (mvebu_mci_phy_read(MCI_CTRL_REGION, phy_unit, unit_id, reg_ofs, &value))
+				return 1;
+			printf("0x%x: 0x%x\n", reg_ofs, value);
+		} else {
+			error("unknown unit\n");
 			return 1;
-		printf("0x%x: 0x%x\n", reg_ofs, value);
-	} else if (strcmp(cmd, "write") == 0) {
-		value = simple_strtoul(argv[5], NULL, 16);
+		}
+	/* write commnad */
+	} else if (strcmp(argv[1], "write") == 0) {
+		if (phy_unit == AP_PHY || phy_unit == CP_PHY) {
+			value = simple_strtoul(argv[5], NULL, 16);
 
-		if (mvebu_phy_indirect_write(IHB_PHY_REG_REGION, phy_unit, unit_id, reg_ofs, value))
-			return 1;
-	} else if (strcmp(cmd, "ctrl_read") == 0) {
-		if (mvebu_phy_indirect_read(IHB_CTRL_REGION, phy_unit, unit_id, reg_ofs, &value))
-			return 1;
-		printf("0x%x: 0x%x\n", reg_ofs, value);
-	} else if (strcmp(cmd, "ctrl_write") == 0) {
-		value = simple_strtoul(argv[5], NULL, 16);
+			if (mvebu_mci_phy_write(MCI_PHY_REG_REGION, phy_unit, unit_id, reg_ofs, value))
+				return 1;
+		} else if (phy_unit == AP_CTRL || phy_unit == CP_CTRL) {
+			value = simple_strtoul(argv[5], NULL, 16);
 
-		if (mvebu_phy_indirect_write(IHB_CTRL_REGION, phy_unit, unit_id, reg_ofs, value))
+			if (mvebu_mci_phy_write(MCI_CTRL_REGION, phy_unit, unit_id, reg_ofs, value))
+				return 1;
+		} else {
+			error("unknown unit\n");
 			return 1;
+		}
 	} else {
-		error("unknown command \"%s\"\n", cmd);
+		error("unknown command: %s\n", argv[1]);
 		return 1;
 	}
-
 	return 0;
 }
 
 U_BOOT_CMD(
-	indirect,      6,     0,      do_indirect_cmd,
-	"Access to PHY indirect registers\n",
-	"<unit> <unit id> <command> <offset> <value>\n"
-	"	- Read/Write from/to indirect registers\n"
+	mci,      6,     0,      do_mci_cmd,
+	"Access to MCI indirect registers\n",
+	"<cmd> <mci_type> <mci_num> <offset> <value>\n"
+	"	- read/write from/to mci registers\n"
 	"\n"
 	"Parameters:\n"
-	"\tunit		ihb\n"
-	"\tunit id		0/1\n"
-	"\tcommand		read/write/ctrl_read/ctrl_write\n"
+	"\tcmd			read/write\n"
+	"\tmci type		ap_phy,ap_ctrl,cp_phy,cp_ctrl-only ap supported\n"
+	"\tmci num		0/1\n"
 	"\toffset		register address\n"
-	"\tvalue		register data to write\n"
-	"Example: indirect ihb 0 read 0x20\n"
+	"\tvalue                register data to write\n"
+	"Example: mci read ap_phy 0 0xa\n"
+	"	 mci write ap_phy 0 0xa 5\n"
 );

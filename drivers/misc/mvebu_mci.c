@@ -18,7 +18,7 @@
 
 #include <common.h>
 #include <asm/io.h>
-#include <asm/arch-mvebu/mvebu_phy_indirect.h>
+#include <asm/arch-mvebu/mvebu_mci.h>
 
 
 /* IHB registers */

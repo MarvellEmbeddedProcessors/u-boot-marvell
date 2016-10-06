@@ -29,6 +29,6 @@ obj-$(CONFIG_STATUS_LED) += status_led.o
 obj-$(CONFIG_TWL4030_LED) += twl4030_led.o
 obj-$(CONFIG_FSL_IFC) += fsl_ifc.o
 obj-$(CONFIG_MVEBU_MBUS) += mvebu_mbus.o
-obj-$(CONFIG_MVEBU_PHY_INDIRECT) += mvebu_phy_indirect.o
+obj-$(CONFIG_MVEBU_PHY_INDIRECT) += mvebu_mci.o
 obj-$(CONFIG_MVEBU_CHIP_SAR) += mvebu_sar/
 obj-$(CONFIG_MVEBU_IHB_INIT) = mvebu_ihb.o

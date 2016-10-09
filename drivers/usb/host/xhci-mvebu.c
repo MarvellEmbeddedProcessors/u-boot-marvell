@@ -61,9 +61,11 @@ int board_usb_get_enabled_port_count(void)
 }
 #endif
 
-/* usb_vbus_gpio_toggle: toggle GPIO VBUS in USB node to the status we want.
-	node: the usb node which the VBUS belongs to.
-	status: 0 - set VBUS to low;  1 - set VBUS to high. */
+/*
+ * usb_vbus_gpio_toggle: toggle GPIO VBUS in USB node to the status we want.
+ * - node: the usb node which the VBUS belongs to.
+ * - status: 0 - set VBUS to low;  1 - set VBUS to high.
+ */
 static void usb_vbus_gpio_toggle(int node, bool status)
 {
 	struct fdt_gpio_state gpio;
@@ -81,9 +83,45 @@ static void usb_vbus_gpio_toggle(int node, bool status)
 	}
 }
 
-/* usb_vbus_toggle: toggle VBUS to the status we want
-	index: the usb index which this VBUS belongs to, if index = -1, toggle all the usb3 VBUS in Device Tree.
-	status: 0 - set VBUS to low;  1 - set VBUS to high. */
+/*
+ * Set current limit for VBUS regulator:
+ * - Hi-Z if 'vbus-cur-lim-2-0' is present (500mA - USB2.0)
+ * - output-active (900mA - USB3.0)
+ * - don't change anything if 'gpio-vbus-cur-lim' gpio is not defined or invalid
+ */
+static void usb_vbus_gpio_cur_lim_set(int node)
+{
+	struct fdt_gpio_state gpio;
+
+	if (!fdtdec_decode_gpio(gd->fdt_blob, node,
+				"gpio-vbus-cur-lim", &gpio)) {
+		fdtdec_setup_gpio(&gpio);
+		if (!fdt_gpio_isvalid(&gpio))
+			return;
+	} else {
+		return;
+	}
+
+
+	/* Set VBUS current limit to 500mA (USB2.0) */
+	if (fdtdec_get_bool(gd->fdt_blob, node, "vbus-cur-lim-2-0")) {
+		gpio_direction_output(gpio.gpio,
+				      gpio.flags & FDT_GPIO_ACTIVE_LOW ? 1 : 0);
+		return;
+	}
+
+	/* Set VBUS current limit to 900mA (USB3.0) */
+	gpio_direction_output(gpio.gpio,
+			      gpio.flags & FDT_GPIO_ACTIVE_LOW ? 0 : 1);
+}
+
+/*
+ * usb_vbus_toggle: toggle VBUS to the status we want. Also handle
+ * current limit according to the device tree settings. Parameters:
+ * - index: the usb index which this VBUS belongs to, if index = -1,
+ *   toggle all the usb3 VBUS in Device Tree.
+ * - status: 0 - set VBUS to low;  1 - set VBUS to high.
+ */
 int usb_vbus_toggle(int index, bool status)
 {
 	int i;
@@ -93,10 +131,13 @@ int usb_vbus_toggle(int index, bool status)
 		return -1;
 
 	if (index == -1) {
-		for (i = 0; i < count; i++)
+		for (i = 0; i < count; i++) {
 			usb_vbus_gpio_toggle(node_list[i], status);
+			usb_vbus_gpio_cur_lim_set(node_list[i]);
+		}
 	} else {
 		usb_vbus_gpio_toggle(node_list[index], status);
+		usb_vbus_gpio_cur_lim_set(node_list[index]);
 	}
 
 	return 0;
@@ -151,4 +192,3 @@ void xhci_hcd_stop(int index)
 	usb_vbus_toggle(index, 0);
 }
 #endif
-

@@ -138,14 +138,14 @@ MV_VOID mvSysEnvUsbVbusGppReset(int gppNo)
 
 	if (gppNo < 32) {
 		/* GPIO Data Out Enable Control Register - set to output */
-		MV_REG_WRITE(GPP_DATA_OUT_EN_REG(0), 0);
+		MV_REG_BIT_RESET(GPP_DATA_OUT_EN_REG(0), (1 << gppNo));
 		/* GPIO output Data Value Register - set as low */
-		MV_REG_WRITE(GPP_DATA_OUT_REG(0), 0);
+		MV_REG_BIT_RESET(GPP_DATA_OUT_REG(0), (1 << gppNo));
 	} else {
 		/* GPIO Data Out Enable Control Register - set to output */
-		MV_REG_WRITE(GPP_DATA_OUT_EN_REG(1), 0);
+		MV_REG_BIT_RESET(GPP_DATA_OUT_EN_REG(1), (1 << gppNo));
 		/* GPIO output Data Value Register - set as low */
-		MV_REG_WRITE(GPP_DATA_OUT_REG(1), 0);
+		MV_REG_BIT_RESET(GPP_DATA_OUT_REG(1), (1 << gppNo));
 	}
 }
 /*******************************************************************************

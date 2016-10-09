@@ -37,11 +37,13 @@
 			};
 			usb3@500000 {
 				gpio-vbus = <&expander0 A7K_EXPANDER0_GPIO(0) GPIO_ACTIVE_HIGH>;
+				gpio-vbus-cur-lim = <&expander0 A7K_EXPANDER0_GPIO(4) GPIO_ACTIVE_HIGH>;
 				vbus-enable-delay = <1000>;
 				vbus-disable-delay = <1000>;
 			};
 			usb3@510000 {
 				gpio-vbus = <&expander0 A7K_EXPANDER0_GPIO(1) GPIO_ACTIVE_HIGH>;
+				gpio-vbus-cur-lim = <&expander0 A7K_EXPANDER0_GPIO(5) GPIO_ACTIVE_HIGH>;
 				vbus-enable-delay = <1000>;
 				vbus-disable-delay = <1000>;
 			};

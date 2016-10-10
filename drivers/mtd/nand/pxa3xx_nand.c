@@ -6,7 +6,6 @@
  *
  * SPDX-License-Identifier:	GPL-2.0
  */
-
 #include <common.h>
 #include <malloc.h>
 #include <fdtdec.h>
@@ -1544,50 +1543,55 @@ static int pxa3xx_nand_probe_dt(struct pxa3xx_nand_info *info)
 {
 	struct pxa3xx_nand_platform_data *pdata;
 	const void *blob = gd->fdt_blob;
-	int node;
+	int node = -1;
 
 	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
 	if (!pdata)
 		return -ENOMEM;
 
+	/* Get address decoding nodes from the FDT blob */
+	do {
+		node = fdt_node_offset_by_compatible(blob, node,
+					fdtdec_get_compatible(COMPAT_MVEBU_PXA3XX_NAND));
+		if (node < 0)
+			break;
 
-	/* Get address decoding node from the FDT blob */
-	node = fdt_node_offset_by_compatible(blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_PXA3XX_NAND));
-	if (node < 0) {
-		error("No Nand node found in FDT blob\n");
-		return -1;
-	}
+		/* Bypass disabeld nodes */
+		if (!fdtdec_get_is_enabled(blob, node))
+			continue;
 
-	/* Check if the Node is enabled, if not retun -EINVAL */
-	if (!fdtdec_get_is_enabled(blob, node))
-		return -EINVAL;
+		/* Get the first enabled NAND controler base address */
+		info->mmio_base = (void *)fdt_get_regs_offs(blob, node, "reg");
 
-	/* Get the NAND controler base address */
-	info->mmio_base = (void *)fdt_get_regs_offs(blob, node, "reg");
+		pdata->num_cs = fdtdec_get_int(blob, node, "num-cs", 1);
+		if (pdata->num_cs != 1) {
+			error("Current pxa3xx driver supports only a single CS.\n");
+			break;
+		}
 
-	pdata->num_cs = fdtdec_get_int(blob, node, "num-cs", 1);
-	if (pdata->num_cs != 1) {
-		error("Current pxa3xx driver supports only a single CS.\n");
-		return -EINVAL;
-	}
+		if (fdtdec_get_bool(blob, node, "nand-enable-arbiter"))
+			pdata->enable_arbiter = 1;
 
-	if (fdtdec_get_bool(blob, node, "nand-enable-arbiter"))
-		pdata->enable_arbiter = 1;
+		if (fdtdec_get_bool(blob, node, "nand-keep-config"))
+			pdata->keep_config = 1;
 
-	if (fdtdec_get_bool(blob, node, "nand-keep-config"))
-		pdata->keep_config = 1;
+		/* ECC parameters, If these are not set, they will be selected according
+		 * to the detected flash type.
+		 */
+		/* ECC strength */
+		pdata->ecc_strength = fdtdec_get_int(blob, node, "nand-ecc-strength", 0);
 
-	/* ECC parameters, If these are not set, they will be selected according
-	** to the detected flash type. */
-	/* ECC strength */
-	pdata->ecc_strength = fdtdec_get_int(blob, node, "nand-ecc-strength", 0);
+		/* ECC step size */
+		pdata->ecc_step_size = fdtdec_get_int(blob, node, "nand-ecc-step-size", 0);
 
-	/* ECC step size */
-	pdata->ecc_step_size = fdtdec_get_int(blob, node, "nand-ecc-step-size", 0);
+		info->pdata = pdata;
 
-	info->pdata = pdata;
+		/* Currently support only a single NAND controller */
+		return 0;
 
-	return 0;
+	} while (node >= 0);
+
+	return -EINVAL;
 }
 
 static int pxa3xx_nand_probe(struct pxa3xx_nand_info *info)

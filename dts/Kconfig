@@ -46,7 +46,7 @@ endchoice
 
 config FDT_SIZE
 	hex "Device Tree size and alignment size (hex)"
-	default 0x4000
+	default 0x4800
 	help
 	  This field limit the maximum size for a single device tree.
 	  value is also the alignment size for smaller files.

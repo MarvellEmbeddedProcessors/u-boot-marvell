@@ -25,17 +25,6 @@
 #include "usb.h"
 #include "xhci.h"
 #include <usb/mvebu_usb.h>
-#endif
-
-/* board_usb_vbus_init: to be implemented for special usage of VBUS (i.e. marvell
-** IO-Expander) */
-#ifdef CONFIG_USB_XHCI
-void __board_usb_vbus_init(void)
-{
-	/* this function is not a must, if have the definition of "gpio-vbus" node,
-	   can get the same functionality in usb_vbus_toggle() */
-}
-void board_usb_vbus_init(void) __attribute__((weak, alias("__board_usb_vbus_init")));
 
 /* Device tree global data scanned at 1st init for usb3 nodes */
 int node_list[CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS];
@@ -143,24 +132,19 @@ int usb_vbus_toggle(int index, bool status)
 	return 0;
 }
 
-bool vbus_initialized = 0;
 int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 {
 	int node;
 	unsigned long usb3_reg_base;
 
-	/* Enable USB VBUS for all ports at once, using I2C io-expander */
-	if (!vbus_initialized) {
-		/* TODO: need to be updated according to Device tree */
-		board_usb_vbus_init();
-		vbus_initialized = 1; /* mark I2C USB VBUS cycle completed */
-	}
-
-	/* node_list: Enabled DT nodes were initialized in usb_device_tree_init(),
-	 * so it's valid to use node_list[index] to fetch its registers */
+	/*
+	 * node_list: Enabled DT nodes were initialized in
+	 * usb_device_tree_init(), so it's valid to use node_list[index]
+	 * to fetch its registers
+	 */
 	node = node_list[index];
 
-	/* fetch 'reg' property from 'usb3' node */
+	/* Fetch 'reg' property from 'usb3' node */
 	usb3_reg_base = (unsigned long)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
 
 	if (usb3_reg_base == FDT_ADDR_T_NONE) {
@@ -172,9 +156,10 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 	*hcor = (struct xhci_hcor *)((unsigned long) *hccr
 					+ HC_LENGTH(xhci_readl(&(*hccr)->cr_capbase)));
 
-	/* Enable USB VBUS per port (only via GPIO):
-	** enable VBUS using GPIO, and got information from USB node in
-	** device tree */
+	/*
+	 * Enable USB VBUS per port and configure current
+	 * limit according to device tree information
+	 */
 	if (usb_vbus_toggle(index, 1)) {
 		error("could not enable VBUS for usb index %d!\n", index);
 		return -ENODEV;

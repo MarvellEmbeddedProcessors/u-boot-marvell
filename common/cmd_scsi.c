@@ -300,9 +300,11 @@ int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 							print_part(&scsi_dev_desc[dev]);
 					}
 				}
-				if (!ok)
+				if (!ok) {
 					printf("\nno SCSI devices available\n");
-				return 1;
+					return 1;
+				}
+				return 0;
 			}
 			return CMD_RET_USAGE;
 	case 3:
@@ -329,8 +331,9 @@ int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				}
 				else {
 					printf ("\nSCSI device %d not available\n", dev);
+					return 1;
 				}
-				return 1;
+				return 0;
 			}
 			return CMD_RET_USAGE;
     default:

@@ -117,8 +117,11 @@ int dram_init(void)
 
 	gd->ram_size *= SZ_1M;
 	/* if DRAM size == 0, print error message */
-	if (gd->ram_size == 0)
-		error("DRAM size equal 0, check DRAM configuration\n");
+	if (gd->ram_size == 0) {
+		error("DRAM size not initialized - check DRAM configuration\n");
+		printf("\n Using temporary DRAM size of 256MB.\n\n");
+		gd->ram_size = SZ_256M;
+	}
 #endif
 	debug_exit();
 	return 0;

@@ -63,6 +63,7 @@
 				#clock-cells = <0>;
 				clock-frequency = <160000>;
 				spi-max-frequency = <40000>;
+				fifo-mode;
 				status = "disabled";
 			};
 

@@ -1,15 +1,21 @@
 Armada70x0 development board setup:
 -----------------------------------
 
-The Armada70x0 Development Board (DB) is a configurable board designed to test several
-combinations of SOC configurations. U-BOOT supports a defined set of those configurations
-via different device tree files.
+The Armada 7040 Development Board (PCB: DB-88F7040-Modular) is a configurable board,
+designed to test several combinations of SoC configurations.
+U-Boot supports a defined set of those configurations via different device tree files.
 
 This document describes the board modifications required to setup each configuration and the
 interfaces supported (or disabled in each one).
 
-To switch to a different configuration, follow the instructions in the "board setup" section.
-Once completed change the FDT file used by U-BOOT by running the U-BOOT command "fdt_config".
+To switch board configuration:
+1. Modify HW board settings according to the instructions in the "Board Setup" section below.
+2. Modify the Device tree file used by U-BOOT, by running the U-BOOT command "fdt_config",
+   and select the appropriate configuration entry.
+
+Note:
+Booting Linux requires using the same Device Tree configuration as used in U-Boot.
+(for more details check Linux documentation at Documentation/mvebu/a7k-a8k/)
 
 
 Board Setup
@@ -112,7 +118,6 @@ The tables below summarizes the interface configuration of each setup
 
 Serdes PHY configuration
 ------------------------
-
 setup  #	|	1	|	3	|	4	|	5	|	6	|
 name   #	|     router 	|	KR	|    all pci	|     NAND	|   rmgii only	|
 -------------------------------------------------------------------------------------------------
@@ -127,11 +132,18 @@ SerDes:	lane0	| sgmii2	| pex_x4_0	| pex_x4_0	| pex_x4_0	| pex_x4_0	|
 
 Multi purpose pin configurations
 --------------------------------
-
 setup  #	|	1	|	3	|	4	|	5	|	6	|
 name   #	|     router 	|	KR	|    all pci	|     NAND	|   rmgii only	|
--------------------------------------------------------------------------------------------------
- MPPs: 	CP-SPI0	| N/C		| N/C		| N/C		| N/C		| N/C		|
+------------------------------------------------------------------------------------------------|
+AP806:												|
+------------------------------------------------------------------------------------------------|
+	AP-SDIO | [0-10]	| [0-10]	| [0-10]	| [0-10]	| [0-10]	|
+	AP-SPI0 | N/C		| N/C		| N/C		| N/C		| N/C		|
+	AP-UART0| [11,19]	| 11,19]	| [11,19]	| [11,19]	| [11,19]	|
+------------------------------------------------------------------------------------------------|
+CP:												|
+------------------------------------------------------------------------------------------------|
+	CP-SPI0	| N/C		| N/C		| N/C		| N/C		| N/C		|
 	CP-SPI1	| [13-16]	| [13-16]	| [13-16]	| N/C		| [13-16]	|
 	NAND	| N/C		| N/C		| N/C		| [13,15-27]	| N/C		|
 	RGMII0	| N/C		| [0-11]	| [0-11]	| [0-11]	| [0-11]	|

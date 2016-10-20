@@ -10,6 +10,7 @@ SoC specific:
 	- reg: The base address of the SPI unit.
 	- spi-max-frequency: SPI max bus frequency.
 	- clock-frequency: The input clock for the SPI interface.
+	- fifo-mode  : indicate if SPI controller is working in legacy mode or fifo mode.
 
 Example for SPI-0 node:
 	spi0: spi@10600 {
@@ -18,5 +19,6 @@ Example for SPI-0 node:
 		#clock-cells = <0>;
 		clock-frequency = <160000>;
 		spi-max-frequency = <40000>;
+		fifo-mode;
 		status = "disabled";
 	};

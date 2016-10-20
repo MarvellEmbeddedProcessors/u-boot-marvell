@@ -331,25 +331,35 @@ static void xenon_mmc_set_tuning(struct xenon_mmc_cfg *mmc_cfg, u8 slot, bool en
 	xenon_mmc_writel(mmc_cfg, SDHCI_SIGNAL_ENABLE, var);
 }
 
+static void soc_pad_voltage_set(u64 pad_ctrl_addr, int voltage)
+{
+	if (pad_ctrl_addr)
+		writel(voltage, pad_ctrl_addr);
+}
+
 static void xenon_mmc_set_sdio_voltage(struct xenon_mmc_cfg *mmc_cfg, int voltage)
 {
+	if (mmc_cfg->fixed_1_8v_pad_ctrl) {
 #ifdef CONFIG_MVEBU_GPIO
-	if (!fdt_gpio_isvalid(&mmc_cfg->sdio_vcc_gpio)) {
-		printf("ERROR: SDID vcc gpio is not set!\n");
-		return;
-	}
-
-	if (MVEBU_GPIO_SDIO_VOLTAGE_1_8V == voltage)
-		/* Set SDIO gpio to 1 which is 1.8v */
-		fdtdec_set_gpio(&mmc_cfg->sdio_vcc_gpio, 1);
-	else
-		/* Set SDIO gpio to 0 which is 3.3v */
-		fdtdec_set_gpio(&mmc_cfg->sdio_vcc_gpio, 0);
-#else
-	printf("ERROR: voltage not changed to %x, need to implement gpio in SOC code\n", voltage);
+		if (fdt_gpio_isvalid(&mmc_cfg->sdio_vcc_gpio)) {
+			/* Set SDIO gpio to 1 which is 1.8v */
+			fdtdec_set_gpio(&mmc_cfg->sdio_vcc_gpio, 1);
+		}
 #endif
-
-	return;
+		soc_pad_voltage_set(mmc_cfg->pad_ctrl_addr, MVEBU_GPIO_SDIO_VOLTAGE_1_8V);
+	} else {
+#ifdef CONFIG_MVEBU_GPIO
+		if (fdt_gpio_isvalid(&mmc_cfg->sdio_vcc_gpio)) {
+			if (MVEBU_GPIO_SDIO_VOLTAGE_1_8V == voltage)
+				/* Set SDIO gpio to 1 which is 1.8v */
+				fdtdec_set_gpio(&mmc_cfg->sdio_vcc_gpio, 1);
+			else
+				/* Set SDIO gpio to 0 which is 3.3v */
+				fdtdec_set_gpio(&mmc_cfg->sdio_vcc_gpio, 0);
+		}
+#endif
+		soc_pad_voltage_set(mmc_cfg->pad_ctrl_addr, voltage);
+	}
 }
 
 static void xenon_mmc_set_power(struct xenon_mmc_cfg *mmc_cfg, u32 vcc, u32 vccq)
@@ -785,8 +795,9 @@ static int xenon_mmc_init(struct mmc *mmc)
 	struct xenon_mmc_cfg *mmc_cfg = mmc->priv;
 
 	debug_enter();
-	debug("reg_base(%llx) version(%d) quirks(%x) clk(%d) bus_width(%d)\n",
-	      mmc_cfg->reg_base, mmc_cfg->version, mmc_cfg->quirks, mmc_cfg->clk, mmc_cfg->bus_width);
+	debug("reg_base(%llx) pad_ctrl_addr(%llx) version(%d) quirks(%x) clk(%d) bus_width(%d)\n",
+	      mmc_cfg->reg_base, mmc_cfg->pad_ctrl_addr, mmc_cfg->version, mmc_cfg->quirks,
+	      mmc_cfg->clk, mmc_cfg->bus_width);
 
 	/* Set FIFO */
 	xenon_mmc_writel(mmc_cfg, SDHC_SLOT_FIFO_CTRL, 0x315);
@@ -852,17 +863,9 @@ static const struct mmc_ops xenon_mmc_ops = {
 	.init		= xenon_mmc_init,
 };
 
-int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk,
-				u32 mmc_mode, u32 dt_mmc_host_cap, struct fdt_gpio_state *gpio)
+int xenon_mmc_create(int dev_idx, struct xenon_mmc_cfg *mmc_cfg)
 {
 	u32 caps;
-	struct xenon_mmc_cfg *mmc_cfg = NULL;
-
-	mmc_cfg = (struct xenon_mmc_cfg *)calloc(1, sizeof(struct xenon_mmc_cfg));
-	if (!mmc_cfg) {
-		error("xenon_mmc_cfg malloc fail\n");
-		return 1;
-	}
 
 	/* Set quirks */
 	mmc_cfg->quirks = SDHCI_QUIRK_NO_CD | SDHCI_QUIRK_WAIT_SEND_CMD |
@@ -871,26 +874,18 @@ int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk,
 	/* Set default timing */
 	mmc_cfg->timing = MMC_TIMING_UHS_SDR50;
 
-	/* Set reg base, mode and name */
-	mmc_cfg->reg_base = (u64)reg_base;
-	mmc_cfg->mmc_mode = mmc_mode;
+	/* Set name */
 	mmc_cfg->cfg.name = driver_name;
 
 	/* Set version and ops */
 	mmc_cfg->version = xenon_mmc_readw(mmc_cfg, SDHCI_HOST_VERSION);
 	mmc_cfg->cfg.ops = &xenon_mmc_ops;
 
-#ifdef CONFIG_MVEBU_GPIO
-	/*Set sdio vcc gpio*/
-	memcpy(&mmc_cfg->sdio_vcc_gpio, gpio, sizeof(mmc_cfg->sdio_vcc_gpio));
-#endif
-
 	caps = xenon_mmc_readl(mmc_cfg, SDHCI_CAPABILITIES);
 
 #ifdef CONFIG_MMC_SDMA
 	if (!(caps & SDHCI_CAN_DO_SDMA)) {
 		error("SDIO controller doesn't support SDMA\n");
-		free(mmc_cfg);
 		return -1;
 	}
 #endif
@@ -898,15 +893,12 @@ int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk,
 #ifdef CONFIG_MMC_ADMA
 	if (!(caps & SDHCI_CAN_DO_ADMA2)) {
 		error("SDIO controller doesn't support ADMA2\n");
-		free(mmc_cfg);
 		return -1;
 	}
 #endif
 
 	/* Set max and min clk */
-	if (max_clk) {
-		mmc_cfg->cfg.f_max = max_clk;
-	} else {
+	if (!mmc_cfg->cfg.f_max) {
 		if (SDHCI_GET_VERSION(mmc_cfg) >= SDHCI_SPEC_300)
 			mmc_cfg->cfg.f_max = (caps & SDHCI_CLOCK_V3_BASE_MASK)
 				>> SDHCI_CLOCK_BASE_SHIFT;
@@ -918,7 +910,6 @@ int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk,
 
 	if (mmc_cfg->cfg.f_max == 0) {
 		error("Hardware doesn't specify base clock frequency\n");
-		free(mmc_cfg);
 		return -1;
 	}
 
@@ -950,9 +941,6 @@ int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk,
 		if (caps & SDHCI_CAN_DO_8BIT)
 			mmc_cfg->cfg.host_caps |= MMC_MODE_8BIT;
 	}
-	/* Update the capability of the host, by the capability of the system/board that
-	** got from device-tree */
-	mmc_cfg->cfg.host_caps &= dt_mmc_host_cap;
 
 	/* Set max block size in byte and part type */
 	mmc_cfg->cfg.b_max = block_size[(caps & SDHCI_MAX_BLOCK_MASK) >> SDHCI_MAX_BLOCK_SHIFT];
@@ -963,7 +951,6 @@ int xenon_mmc_create(int dev_idx, void __iomem *reg_base, u32 max_clk,
 	mmc_cfg->mmc = mmc_create(&mmc_cfg->cfg, mmc_cfg);
 	if (mmc_cfg->mmc == NULL) {
 		error("mmc create failed\n");
-		free(mmc_cfg);
 		return -1;
 	}
 
@@ -984,7 +971,7 @@ int board_mmc_init(bd_t *bis)
 	int count, err = 0;
 	int port_count;
 	u32 mmc_mode, dt_mmc_host_cap, bus_width;
-	void __iomem *reg_base;
+	void __iomem *reg_base, *pad_ctrl_reg_base;
 	const void *blob = gd->fdt_blob;
 	struct fdt_gpio_state sdio_vcc_gpio;
 
@@ -994,6 +981,8 @@ int board_mmc_init(bd_t *bis)
 		mmc_soc_init();
 
 	for (port_count = 0; port_count < count; port_count++) {
+		struct xenon_mmc_cfg *mmc_cfg = NULL;
+
 		if (port_count == XENON_MMC_PORTS_MAX) {
 			printf("XENON: Cannot register more than %d ports\n", XENON_MMC_PORTS_MAX);
 			return -1;
@@ -1008,6 +997,8 @@ int board_mmc_init(bd_t *bis)
 			error("Missing registers in XENON SDHCI node\n");
 			continue;
 		}
+
+		pad_ctrl_reg_base = fdt_get_regs_offs(blob, node_list[port_count], "pad_ctrl_reg");
 
 		/* Xenon emmc: this is a emmc slot.
 		 * Actually, whether current slot is for emmc can be
@@ -1058,7 +1049,38 @@ int board_mmc_init(bd_t *bis)
 			printf("ERROR: vcc gpio is not initialized, need to implement gpio in SOC code\n");
 #endif
 		}
-		xenon_mmc_create(port_count, reg_base, XENON_MMC_MAX_CLK, mmc_mode, dt_mmc_host_cap, &sdio_vcc_gpio);
+
+		mmc_cfg = (struct xenon_mmc_cfg *)calloc(1, sizeof(struct xenon_mmc_cfg));
+		if (!mmc_cfg) {
+			error("xenon_mmc_cfg malloc fail\n");
+			return -1;
+		}
+
+		/* Init cfg info for create xenon-mmc */
+		mmc_cfg->reg_base = (u64)reg_base;
+		mmc_cfg->pad_ctrl_addr = (u64)pad_ctrl_reg_base;
+		mmc_cfg->cfg.f_max = XENON_MMC_MAX_CLK;
+		mmc_cfg->mmc_mode = mmc_mode;
+		/* Update the capability of the host, by the capability of the system/board that
+		** got from device-tree */
+		mmc_cfg->cfg.host_caps = dt_mmc_host_cap;
+
+		/* Only SDIO to allow both 1.8V and 3.3V */
+		if (fdtdec_get_bool(blob, node_list[port_count], "xenon,fixed-1-8v-pad-ctrl"))
+			mmc_cfg->fixed_1_8v_pad_ctrl = true;
+		else
+			mmc_cfg->fixed_1_8v_pad_ctrl = false;
+
+#ifdef CONFIG_MVEBU_GPIO
+		/*Set sdio vcc gpio*/
+		memcpy(&mmc_cfg->sdio_vcc_gpio, &sdio_vcc_gpio, sizeof(mmc_cfg->sdio_vcc_gpio));
+#endif
+		err = xenon_mmc_create(port_count, mmc_cfg);
+		if (err) {
+			error("Failed to create mmc\n");
+			free(mmc_cfg);
+			break;
+		}
 	}
 
 	return err;

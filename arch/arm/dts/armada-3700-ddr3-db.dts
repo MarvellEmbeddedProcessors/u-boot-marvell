@@ -98,6 +98,7 @@
 				status = "okay";
 			};
 			mmc1: mmc@D8000 {
+				xenon,fixed-1-8v-pad-ctrl;
 				xenon,emmc;
 				bus-width = <8>;
 				status = "okay";

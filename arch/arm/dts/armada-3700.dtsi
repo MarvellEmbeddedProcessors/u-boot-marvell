@@ -191,11 +191,13 @@
 			mmc0: mmc@D0000 {
 				compatible = "marvell,xenon-sdhci";
 				reg = <0xD0000 0x300>;
+				pad_ctrl_reg = <0x17808 0x4>;
 				status = "disabled";
 			};
 			mmc1: mmc@D8000 {
 				compatible = "marvell,xenon-sdhci";
 				reg = <0xD8000 0x300>;
+				pad_ctrl_reg = <0x1e808 0x4>;
 				status = "disabled";
 			};
 			sata: sata@e0000 {

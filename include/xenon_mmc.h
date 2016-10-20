@@ -185,6 +185,7 @@
 
 struct xenon_mmc_cfg {
 	u64 reg_base;
+	u64 pad_ctrl_addr;
 	u32 version;
 	u32 quirks;
 	u32 clk;
@@ -192,6 +193,8 @@ struct xenon_mmc_cfg {
 	u32 mmc_mode;
 	u8 timing;
 	void *aligned_buffer;
+	/* Set SOC PHY PAD ctrl to fixed 1.8V */
+	bool fixed_1_8v_pad_ctrl;
 	struct mmc_config cfg;
 	struct mmc *mmc;
 	struct fdt_gpio_state sdio_vcc_gpio;

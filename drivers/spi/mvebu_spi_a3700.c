@@ -311,8 +311,8 @@ static void spi_set_fifo(void)
 
 	val_conf = readl(MVEBU_SPI_A3700_CONF_ADDR);
 
-	/* Always shift 1 byte at a time */
-	val_conf = val_conf & (~MVEBU_SPI_A3700_BYTE_LEN);
+	/* Always shift 4 byte at a time */
+	val_conf = val_conf | MVEBU_SPI_A3700_BYTE_LEN;
 
 	/* Set fifo mode -mode 3: CPHA = 1 and  CPOL = 1 */
 	val_conf = val_conf | MVEBU_SPI_A3700_BYTE_CLK_PHA;
@@ -421,13 +421,41 @@ static inline int spi_is_wfifo_full(void)
 
 static int spi_fifo_write(unsigned int buf_len, unsigned char *tx_buf)
 {
-	while (!spi_is_wfifo_full() && buf_len) {
-		/* Write bytes to data out register */
-		writel(*tx_buf, MVEBU_SPI_A3700_DOUT_ADDR);
-		buf_len--;
-		tx_buf++;
+	unsigned int val = 0;
+
+	while (!spi_is_wfifo_full()) {
+		/*
+		 * In FIFO mode, the SPI controller is forced to work in 4-bytes mode.
+		 * It always shifts 4-bytes on each write.
+		 */
+		if (buf_len > 4) {
+			val = (tx_buf[3] << 24) | (tx_buf[2] << 16) | (tx_buf[1] << 8) | tx_buf[0];
+			buf_len -= 4;
+			tx_buf += 4;
+		} else {
+			/*
+			 * If the remained buffer length is less than 4-bytes, we should pad the write buffer with
+			 * all ones. So that it avoids overwrite the unexpected bytes following the last one;
+			 */
+			int i = 0;
+
+			val = 0xffffffff;
+			while (buf_len) {
+				val &= ~(0xff << (8 * i));
+				val |= *tx_buf++ << (8 * i);
+				i++;
+				buf_len--;
+			}
+
+			break;
+		}
+
+		writel(val, MVEBU_SPI_A3700_DOUT_ADDR);
 	}
 
+	writel(val, MVEBU_SPI_A3700_DOUT_ADDR);
+
+	/* Return the unwritten bytes number */
 	return buf_len;
 }
 
@@ -443,14 +471,34 @@ static int spi_fifo_read(unsigned int buf_len, unsigned char *rx_buf)
 {
 	unsigned int val;
 
-	while (!spi_is_rfifo_empty() && buf_len) {
-		/* Read bytes from data in register */
+	while (!spi_is_rfifo_empty()) {
+		/*
+		 * In FIFO mode, the SPI controller is forced to work in 4-bytes mode.
+		 * It always shifts 4-bytes on each read.
+		 */
 		val = readl(MVEBU_SPI_A3700_DIN_ADDR);
-		*rx_buf = val & 0xff;
-		buf_len--;
-		rx_buf++;
+		if (buf_len > 4) {
+			rx_buf[0] = val & 0xff;
+			rx_buf[1] = (val >> 8) & 0xff;
+			rx_buf[2] = (val >> 16) & 0xff;
+			rx_buf[3] = (val >> 24) & 0xff;
+			buf_len -= 4;
+			rx_buf += 4;
+		} else {
+			/*
+			 * When remain bytes is not larger than 4, we should avoid memory overwriting
+			 * and and just write the left rx buffer bytes.
+			 */
+			while (buf_len) {
+				*rx_buf++ = val & 0xff;
+				val >>= 8;
+				buf_len--;
+			}
+			break;
+		}
 	}
 
+	/* Return the unread bytes number */
 	return buf_len;
 }
 

@@ -19,13 +19,17 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch-mvebu/mvebu_mci.h>
-
+#include <fdtdec.h>
+#include <asm/arch-mvebu/soc.h>
 
 /* MCI registers */
 #define MVEBU_MCI_PHY_BASE(unit_id)			(0xfB000000 + ((uintptr_t)unit_id) * 0x2000000)
 #define MVEBU_MCI_PHY_DATA_REG_OFF			0x0
 #define MVEBU_MCI_PHY_CMD_REG_OFF			0x4
-#define MVEBU_MCI_MAX_UNIT_ID				2
+
+#define MVEBU_MCI_MAX_UNIT_TO_INIT			3
+#define MVEBU_MCI_AXI2HB_REGAXI				0x1c3000
+#define MVEBU_MCI_CP_PHY_X2_BASE			MVEBU_CP1_REGS_BASE | MVEBU_MCI_AXI2HB_REGAXI
 
 /* MCI Address */
 #define MVEBU_MCI_PHY_ADDR_LSB_OFF			0
@@ -47,12 +51,7 @@
 #define	MVEBU_MCI_CMD_ADDR_LSB_MASK			(0x3F << MVEBU_MCI_CMD_ADDR_LSB_OFFS)
 #define	MVEBU_MCI_CMD_REGION_OFFS			22	/* MCI access space */
 #define	MVEBU_MCI_CMD_REGION_MASK			(0x3 << MVEBU_MCI_CMD_REGION_OFFS)
-
-#define MVEBU_MCI_CMD_GET(cmd, region, reg_ofs) \
-				(((cmd << MVEBU_MCI_CMD_OP_OFFS) & MVEBU_MCI_CMD_OP_MASK) | \
-				(1 << MVEBU_MCI_CMD_PACKET_LOCAL_OFFS) | \
-				((region << MVEBU_MCI_CMD_REGION_OFFS) & MVEBU_MCI_CMD_REGION_MASK) | \
-				(MVEBU_MCI_PHY_ADDR_LSB_GET(reg_ofs) << MVEBU_MCI_CMD_ADDR_LSB_OFFS))
+#define MVEBU_MCI_CMD_CP_PHY_X4_OFFS			9
 
 /* MCI PHY CTRL register fields */
 #define MVEBU_MCI_PHY_CTRL_REG_OFF			0x7
@@ -78,15 +77,27 @@ enum mci_access_type {
 	MCI_READ  = 1
 };
 
+enum mci_cmd_type {
+	MCI_CMD_DEFAULT = 0,
+	MCI_CMD_CP1_X4  = 1
+};
 
+static unsigned long mvebu_mci_get_base(enum mci_unit phy_unit, int unit_id)
+{
+	if ((phy_unit == CP_PHY || phy_unit == CP_CTRL) && unit_id == 1)
+		return MVEBU_MCI_CP_PHY_X2_BASE;
 
-static int mvebu_mci_poll_read_done(int reg_ofs, int unit_id)
+	return MVEBU_MCI_PHY_BASE(unit_id);
+}
+
+static int mvebu_mci_poll_read_done(int reg_ofs, enum mci_unit phy_unit, int unit_id)
 {
 	u32 mci_cmd_reg = 0;
 	u32 timeout = 100;
+	unsigned long mci_base = mvebu_mci_get_base(phy_unit, unit_id);
 
 	do {
-		mci_cmd_reg = readl(MVEBU_MCI_PHY_BASE(unit_id) | MVEBU_MCI_PHY_CMD_REG_OFF);
+		mci_cmd_reg = readl(mci_base | MVEBU_MCI_PHY_CMD_REG_OFF);
 	} while (((mci_cmd_reg & MVEBU_MCI_CMD_DONE_MASK) != MVEBU_MCI_CMD_DONE_MASK) &&
 			 (timeout-- > 0));
 
@@ -96,6 +107,33 @@ static int mvebu_mci_poll_read_done(int reg_ofs, int unit_id)
 	}
 
 	return 0;
+}
+
+static unsigned long mvebu_mci_get_cmd(enum mci_cmd_type cmd_type, enum mci_access_type access_type,
+				       enum mci_region region, int reg_ofs)
+{
+	unsigned long cmd;
+
+	/* Build mci indirect cmd */
+	cmd = (((access_type << MVEBU_MCI_CMD_OP_OFFS) & MVEBU_MCI_CMD_OP_MASK) |
+	      ((region << MVEBU_MCI_CMD_REGION_OFFS) & MVEBU_MCI_CMD_REGION_MASK) |
+	      (MVEBU_MCI_PHY_ADDR_LSB_GET(reg_ofs) << MVEBU_MCI_CMD_ADDR_LSB_OFFS));
+
+	/* bit 9 at CP1 MCIx4 cmd should be enabled, otherwise bit 5 */
+	if (cmd_type == MCI_CMD_CP1_X4)
+		return cmd | (1 << MVEBU_MCI_CMD_CP_PHY_X4_OFFS);
+	else
+		return cmd | (1 << MVEBU_MCI_CMD_PACKET_LOCAL_OFFS);
+}
+
+
+static unsigned long mvebu_mci_get_cmd_reg(enum mci_unit phy_unit, int unit_id, enum mci_access_type access_type,
+					   enum mci_region region, int reg_ofs)
+{
+	if ((phy_unit == CP_PHY || phy_unit == CP_CTRL) && unit_id == 0)
+		return mvebu_mci_get_cmd(MCI_CMD_CP1_X4, access_type, region, reg_ofs);
+	else
+		return mvebu_mci_get_cmd(MCI_CMD_DEFAULT, access_type, region, reg_ofs);
 }
 
 /*  MCI Indirect Access decription:
@@ -110,21 +148,23 @@ static int mvebu_mci_poll_read_done(int reg_ofs, int unit_id)
  *
  *      (MSB are set to MCI_PHY_CTRL register (0x7) bit [28:27]
  */
-static int mvebu_mci_command_set(enum mci_access_type access_type, int reg_ofs,
-				 u32 data, int unit_id, enum mci_region region)
+static int mvebu_mci_command_set(enum mci_access_type access_type, int reg_ofs, u32 data,
+				 enum mci_unit phy_unit, int unit_id, enum mci_region region)
 {
 	u32 mci_cmd_reg = 0;
 	u32 mci_phy_ctrl_reg = 0;
+	unsigned long mci_base = mvebu_mci_get_base(phy_unit, unit_id);
 
 	/* Step 1 - set address MSB in MCI_PHY_CTRL (using RMW) */
 	/* read MCI_PHY_CTRL */
-	mci_cmd_reg = MVEBU_MCI_CMD_GET(MCI_READ, MCI_CTRL_REGION, MVEBU_MCI_PHY_CTRL_REG_OFF);
-	writel(mci_cmd_reg, MVEBU_MCI_PHY_BASE(unit_id) | MVEBU_MCI_PHY_CMD_REG_OFF);
+	mci_cmd_reg = mvebu_mci_get_cmd_reg(phy_unit, unit_id, MCI_READ, MCI_CTRL_REGION, MVEBU_MCI_PHY_CTRL_REG_OFF);
+
+	writel(mci_cmd_reg, mci_base | MVEBU_MCI_PHY_CMD_REG_OFF);
 	/* poll for read completion */
-	if (mvebu_mci_poll_read_done(reg_ofs, unit_id))
+	if (mvebu_mci_poll_read_done(reg_ofs, phy_unit, unit_id))
 		return 1;
 
-	mci_phy_ctrl_reg = readl(MVEBU_MCI_PHY_BASE(unit_id) | MVEBU_MCI_PHY_DATA_REG_OFF);
+	mci_phy_ctrl_reg = readl(mci_base | MVEBU_MCI_PHY_DATA_REG_OFF);
 
 	/* update msb in MVEBU_MCI_PHY_CTRL */
 	mci_phy_ctrl_reg &= ~MVEBU_MCI_PHY_CTRL_ADDR_MSB_MASK; /* clear msb data */
@@ -132,51 +172,56 @@ static int mvebu_mci_command_set(enum mci_access_type access_type, int reg_ofs,
 						 MVEBU_MCI_PHY_CTRL_ADDR_MSB_MASK);/* set msb data */
 
 	/* write MCI_PHY_CTRL */
-	writel(mci_phy_ctrl_reg, MVEBU_MCI_PHY_BASE(unit_id) | MVEBU_MCI_PHY_DATA_REG_OFF);	/* set data */
-	mci_cmd_reg = (mci_cmd_reg & ~MVEBU_MCI_CMD_OP_MASK) | MCI_WRITE;			/* set write command */
-	writel(mci_cmd_reg, MVEBU_MCI_PHY_BASE(unit_id) | MVEBU_MCI_PHY_CMD_REG_OFF);		/* set commnd */
+	writel(mci_phy_ctrl_reg, mci_base | MVEBU_MCI_PHY_DATA_REG_OFF);	/* set data */
+	mci_cmd_reg = (mci_cmd_reg & ~MVEBU_MCI_CMD_OP_MASK) | MCI_WRITE;	/* set write command */
+	writel(mci_cmd_reg, mci_base | MVEBU_MCI_PHY_CMD_REG_OFF);		/* set commnd */
 
 	/* Step 2 - set MCI command with LSB */
 	if (access_type == MCI_WRITE) {
 		/* set data in mci data reg */
-		writel(data, MVEBU_MCI_PHY_BASE(unit_id) | MVEBU_MCI_PHY_DATA_REG_OFF);
+		writel(data, mci_base | MVEBU_MCI_PHY_DATA_REG_OFF);
 	}
 
-	mci_cmd_reg = MVEBU_MCI_CMD_GET(access_type, region, reg_ofs);
-	writel(mci_cmd_reg, MVEBU_MCI_PHY_BASE(unit_id) | MVEBU_MCI_PHY_CMD_REG_OFF);		/* set commnd */
+	mci_cmd_reg = mvebu_mci_get_cmd_reg(phy_unit, unit_id, access_type, region, reg_ofs);
+
+	writel(mci_cmd_reg, mci_base | MVEBU_MCI_PHY_CMD_REG_OFF);		/* set commnd */
 
 	return 0;
 }
 
-static int mvebu_mci_read(int reg_ofs, u32 *val, int unit_id, enum mci_region region)
+static int mvebu_mci_read(int reg_ofs, u32 *val, enum mci_unit phy_unit, int unit_id, enum mci_region region)
 {
+	unsigned long mci_base;
+
 	/* initialize access to mci phy (incase it wasn't already) */
 	if (!mci_init_done)
 		mvebu_mci_phy_init();
 
+	mci_base = mvebu_mci_get_base(phy_unit, unit_id);
+
 	/* set read command */
-	if (mvebu_mci_command_set(MCI_READ, reg_ofs, 0 /* dummy */, unit_id, region)) {
+	if (mvebu_mci_command_set(MCI_READ, reg_ofs, 0 /* dummy */, phy_unit, unit_id, region)) {
 		error("MCI read: set command failed\n");
 		return 1;
 	}
 
 	/* poll for read completion */
-	if (mvebu_mci_poll_read_done(reg_ofs, unit_id))
+	if (mvebu_mci_poll_read_done(reg_ofs, phy_unit, unit_id))
 		return 1;
 
-	*val = readl(MVEBU_MCI_PHY_BASE(unit_id) | MVEBU_MCI_PHY_DATA_REG_OFF);
+	*val = readl(mci_base | MVEBU_MCI_PHY_DATA_REG_OFF);
 
 	return 0;
 }
 
-static int mvebu_mci_write(int reg_ofs, u32 data, int unit_id, enum mci_region region)
+static int mvebu_mci_write(int reg_ofs, u32 data, enum mci_unit phy_unit, int unit_id, enum mci_region region)
 {
 	/* initialize access to mci phy (incase it wasn't already) */
 	if (!mci_init_done)
 		mvebu_mci_phy_init();
 
 	/* set write command */
-	if (mvebu_mci_command_set(MCI_WRITE, reg_ofs, data, unit_id, region)) {
+	if (mvebu_mci_command_set(MCI_WRITE, reg_ofs, data, phy_unit, unit_id, region)) {
 		error("MCI write: set command failed\n");
 		return 1;
 	}
@@ -191,7 +236,7 @@ int mvebu_mci_phy_read(enum mci_region region, enum mci_unit phy_unit, int unit_
 	case AP_CTRL:
 	case CP_PHY:
 	case CP_CTRL:
-		return mvebu_mci_read(reg_ofs, val, unit_id, region);
+		return mvebu_mci_read(reg_ofs, val, phy_unit, unit_id, region);
 	default:
 		error("unit %d is not supported\n", phy_unit);
 		return 1;
@@ -205,7 +250,7 @@ int mvebu_mci_phy_write(enum mci_region region, enum mci_unit phy_unit, int unit
 	case AP_CTRL:
 	case CP_PHY:
 	case CP_CTRL:
-		return mvebu_mci_write(reg_ofs, val, unit_id, region);
+		return mvebu_mci_write(reg_ofs, val, phy_unit, unit_id, region);
 	default:
 		error("unit %d is not supported\n", phy_unit);
 		return 1;
@@ -218,15 +263,27 @@ int mvebu_mci_phy_init(void)
 	u32 reg_data, i;
 	u32 mci_base_high_byte;
 	u32 mci_cmd_reg = 0, val;
+	unsigned long mci_base;
+	const void *blob = gd->fdt_blob;
 
-	for (i = 0; i < MVEBU_MCI_MAX_UNIT_ID; ++i) {
-		mci_base_high_byte = MVEBU_MCI_PHY_BASE(i) >> MVEBU_MCI_BASE_HIGH_BYTE_OFF;
+	for (i = 0; i < MVEBU_MCI_MAX_UNIT_TO_INIT; ++i) {
+		/* Make sure board is supported (currently only Armada-80x0-DB is supported) */
+		if (i == MVEBU_MCI_MAX_UNIT_TO_INIT - 1) {
+			if (fdt_node_check_compatible(blob, 0, "marvell,armada-80x0") == 0)
+				mci_base = MVEBU_MCI_CP_PHY_X2_BASE;
+			else
+				break;
+		} else {
+			mci_base = MVEBU_MCI_PHY_BASE(i);
+		}
+		mci_base_high_byte = mci_base >> MVEBU_MCI_BASE_HIGH_BYTE_OFF;
+
 		reg_data = readl(regs_base + MVEBU_MCI_RFU_REG_OFF);
 
 		/* set configuration data */
 		reg_data &= ~MVEBU_MCI_RFU_RESET_MASK; /* un-reset MCI PHY */
 		reg_data |= (1 << MVEBU_MCI_RFU_TCELL_BYPASS_OFFS); /* enable TCELL bypass since
-											this bridge is not functional */
+									this bridge is not functional */
 		reg_data = (mci_base_high_byte << MVEBU_MCI_RFU_BASE_OFFS) |
 					(reg_data & ~MVEBU_MCI_RFU_BASE_MASK); /* set MCI base address */
 
@@ -234,15 +291,17 @@ int mvebu_mci_phy_init(void)
 		writel(reg_data, regs_base + MVEBU_MCI_RFU_REG_OFF);
 
 		/* Set IF mode in phy control register */
-		mci_cmd_reg = MVEBU_MCI_CMD_GET(MCI_READ, MCI_CTRL_REGION, MVEBU_MCI_PHY_CTRL_REG_OFF);
-		writel(mci_cmd_reg, MVEBU_MCI_PHY_BASE(i) | MVEBU_MCI_PHY_CMD_REG_OFF);
+		mci_cmd_reg = mvebu_mci_get_cmd(MCI_CMD_DEFAULT, MCI_READ, MCI_CTRL_REGION,
+						MVEBU_MCI_PHY_CTRL_REG_OFF);
+		writel(mci_cmd_reg, mci_base | MVEBU_MCI_PHY_CMD_REG_OFF);
 
-		val = readl(MVEBU_MCI_PHY_BASE(i) | MVEBU_MCI_PHY_DATA_REG_OFF);
+		val = readl(mci_base | MVEBU_MCI_PHY_DATA_REG_OFF);
 		val = val | MVEBU_MCI_PHY_IF_MODE_MASK;
-		writel(val, MVEBU_MCI_PHY_BASE(i) | MVEBU_MCI_PHY_DATA_REG_OFF);
+		writel(val, mci_base | MVEBU_MCI_PHY_DATA_REG_OFF);
 
-		mci_cmd_reg = MVEBU_MCI_CMD_GET(MCI_WRITE, MCI_CTRL_REGION, MVEBU_MCI_PHY_CTRL_REG_OFF);
-		writel(mci_cmd_reg, MVEBU_MCI_PHY_BASE(i) | MVEBU_MCI_PHY_CMD_REG_OFF);
+		mci_cmd_reg = mvebu_mci_get_cmd(MCI_CMD_DEFAULT, MCI_WRITE, MCI_CTRL_REGION,
+						MVEBU_MCI_PHY_CTRL_REG_OFF);
+		writel(mci_cmd_reg, mci_base | MVEBU_MCI_PHY_CMD_REG_OFF);
 	}
 
 	mci_init_done = 1; /* inidcate that MCI PHY access was initialized */

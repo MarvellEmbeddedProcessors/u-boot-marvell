@@ -329,7 +329,7 @@ int mvebu_mdio_initialize(const void *blob)
 {
 	struct mii_dev *bus;
 	struct mvebu_mdio_base *mdio_base;
-	u32 node;
+	int node;
 	int id, ret = 0, i = 0;
 
 	/* Reading all MDIO nodes from the device tree.
@@ -357,7 +357,7 @@ int mvebu_mdio_initialize(const void *blob)
 		if (id == -1) {
 			error("No id property was found for MDIO node");
 			ret = -1;
-			continue;
+			goto next_node;
 		}
 
 		/* Get the base address of the address MDIO */
@@ -373,7 +373,7 @@ int mvebu_mdio_initialize(const void *blob)
 		if (!bus) {
 			error("Failed to allocate MVEBU MDIO %d bus", id);
 			ret = -1;
-			continue;
+			goto next_node;
 		}
 
 		bus->read = mvebu_mdio_read;
@@ -385,9 +385,8 @@ int mvebu_mdio_initialize(const void *blob)
 		if (mdio_register(bus) < 0) {
 			error("failed to register MDIO %d bus\n", id);
 			ret = -1;
-			continue;
 		}
-
+next_node:
 		node = fdt_node_offset_by_compatible(blob, node, fdtdec_get_compatible(COMPAT_MVEBU_MDIO));
 		i++;
 	}

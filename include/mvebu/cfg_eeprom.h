@@ -26,6 +26,7 @@
 #include <asm/arch-mvebu/mvebu.h>
 
 enum mv_config_type_id {
+	MV_CONFIG_CHECKSUM,
 	MV_CONFIG_VERIFICATION_PATTERN,
 	MV_CONFIG_LENGTH,
 	MV_CONFIG_HW_INFO,
@@ -90,6 +91,8 @@ struct hw_info_data_struct {
 
 /* {{MV_CONFIG_TYPE_ID configId,	name,			byte_num,				byte_cnt}} */
 #define MV_EEPROM_CONFIG_INFO { \
+{ MV_CONFIG_CHECKSUM,			"Checksum",		offset_in_eeprom(checksum),			  \
+									sizeof(board_config_val.checksum)},	  \
 { MV_CONFIG_VERIFICATION_PATTERN,	"EEPROM Pattern",	offset_in_eeprom(pattern),			  \
 									sizeof(board_config_val.pattern)},	  \
 { MV_CONFIG_LENGTH,			"Data length",		offset_in_eeprom(length),			  \

@@ -249,6 +249,8 @@ int last_stage_init(void)
 
 	fdt_blob = cfg_eeprom_get_fdt();
 	set_working_fdt_addr(fdt_blob);
+	/* reset the validation_counter in EEPROM, this is the last stage in 'multiple reset auto-recovery' mechanism */
+	cfg_eeprom_finish();
 	/* If board id is not initialize, notifying the user that we boot with a minimal fdt to a7k and a8k.
 	 * And print also instructions how to set the desired board id
 	 */

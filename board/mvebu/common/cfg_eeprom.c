@@ -197,7 +197,53 @@ bool cfg_eeprom_upload_fdt_from_eeprom(uint8_t *fdt_blob)
 	return true;
 }
 
-/* cfg_eeprom_write_to_eeprom - write the local struct to EEPROM */
+/* cfg_eeprom_write_only_counter_to_eeprom - write only validation counter and update checksum in EEPROM */
+void cfg_eeprom_write_only_counter_to_eeprom(void)
+{
+	u8 old_validation_counter;
+	struct config_types_info config_info;
+
+	/* update checksum after the counter validation change (update checksum according to counter diff).
+	   this checksum is calculated on the entire EEPROM struct.
+	 */
+	if (board_cfg->validation_counter == 0) {
+		/* reduce the old counter from the checksum, after the counter was reset to zero */
+		if (!cfg_eeprom_get_config_type(MV_CONFIG_FDTCFG_VALID, &config_info)) {
+			error("Could not find MV_CONFIG_FDTCFG_VALID\n");
+			return;
+		}
+		i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
+			 (uint8_t *)&old_validation_counter, config_info.byte_cnt);
+		board_config_val.checksum -= old_validation_counter;
+	} else {
+		/* increase the checksum by 1 after the valid counter was increase by 1 */
+		board_config_val.checksum++;
+	}
+
+	/* write validation_counter to EEPROM */
+	if (!cfg_eeprom_get_config_type(MV_CONFIG_FDTCFG_VALID, &config_info)) {
+		error("Could not find MV_CONFIG_FDTCFG_VALID\n");
+		return;
+	}
+	i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
+		  (uint8_t *)&board_config_val.board_config.validation_counter, config_info.byte_cnt);
+
+	/* write checksum to EEPROM */
+	if (!cfg_eeprom_get_config_type(MV_CONFIG_CHECKSUM, &config_info)) {
+		error("Could not find MV_CONFIG_CHECKSUM\n");
+		return;
+	}
+
+	i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
+		  (uint8_t *)&board_config_val.checksum, config_info.byte_cnt);
+
+	return;
+}
+
+/* cfg_eeprom_write_to_eeprom - write the global struct to EEPROM.
+ * @write_fdt: true when custom FDT on EEPROM is selected, in order to calulate it's checksum
+ *		NOTE: (ISSUE): currently checksum of fdt is calculated only when custom fdt is selected
+ */
 void cfg_eeprom_write_to_eeprom(int length, bool write_fdt)
 {
 	int reserve_length, size_of_loop, i;
@@ -234,8 +280,8 @@ void cfg_eeprom_save(uint8_t *fdt_blob, int write_forced_fdt)
 	unsigned long compressed_size;
 	unsigned long decompressed_size;
 
-	/* if fdt_config is enable write also fdt to EEPROM
-	   or if fdt_config in disable but we want to force write of FDT without selecting the customized FDT */
+	/* if fdt_config is enabled write also fdt to EEPROM
+	   or if fdt_config is disabled but we want to force write of FDT without selecting the customized FDT */
 	if (board_config_val.board_config.fdt_cfg_en == 1 || write_forced_fdt) {
 		/* back up the fdt that is in the local struct, and restore it at the end of this function */
 		if (fdt_blob != board_config_val.fdt_blob) {
@@ -501,7 +547,6 @@ default_id:
 	return MV_DEFAULT_BOARD_ID;
 }
 
-#ifdef CONFIG_TARGET_ARMADA_3700
 static u32 cfg_eeprom_check_validation_counter(void)
 {
 	u32 load_default = 0;
@@ -510,7 +555,7 @@ static u32 cfg_eeprom_check_validation_counter(void)
 	if (board_cfg->fdt_cfg_en ||
 	    board_cfg->active_fdt_selection != get_default_fdt_config_id(cfg_eeprom_get_board_id())) {
 		board_cfg->validation_counter++;
-		cfg_eeprom_save(board_config_val.fdt_blob, 0);
+		cfg_eeprom_write_only_counter_to_eeprom();
 	}
 
 	/* Add hints here if validation_counter != 0 when the system starts */
@@ -526,12 +571,11 @@ static u32 cfg_eeprom_check_validation_counter(void)
 		 * otherwise the eeprom will be overrided by the default FDT
 		 */
 		board_cfg->validation_counter = 0;
-		cfg_eeprom_save(board_config_val.fdt_blob, 0);
+		cfg_eeprom_write_only_counter_to_eeprom();
 	}
 
 	return load_default;
 }
-#endif
 
 
 /* cfg_eeprom_init - initialize FDT configuration struct
@@ -545,9 +589,7 @@ int cfg_eeprom_init(void)
 	struct config_types_info config_info;
 	uint32_t calculate_checksum;
 	unsigned long decompressed_size;
-#ifdef CONFIG_TARGET_ARMADA_3700
-	u32 load_default = 0;
-#endif
+
 	/* It is possible that this init will be called by several modules during init,
 	 * however only need to initialize it for one time
 	 */
@@ -615,23 +657,21 @@ int cfg_eeprom_init(void)
 		/* update board_config_val struct with the read values from EEPROM */
 		board_config_val = eeprom_buffer;
 
-#ifdef CONFIG_TARGET_ARMADA_3700
 		/* load default FDT if validation_counter >= AUTO_RECOVERY_RETRY_TIMES */
-		load_default = cfg_eeprom_check_validation_counter();
-	}
+		if (!cfg_eeprom_check_validation_counter()) {
+			/* if fdt_config is enabled, fdt is already stored in the structure
+			 * representing the eeprom so there's no need to read it again
+			 */
+			if (cfg_eeprom_fdt_config_is_enable()) {
+				printf("read FDT from EEPROM\n");
+				goto init_done;
+			}
 
-	if (!load_default) {
-#endif
-		/* if fdt_config is enabled, return - FDT already read in the struct from EEPROM */
-		if (cfg_eeprom_fdt_config_is_enable()) {
-			printf("read FDT from EEPROM\n");
-			goto init_done;
-		}
-
-		/* read FDT from flash according to select active fdt */
-		if (cfg_eeprom_upload_fdt_from_flash(board_cfg->active_fdt_selection)) {
-			printf("read selected FDT by USER\n");
-			goto init_done;
+			/* read FDT from flash according to select active fdt */
+			if (cfg_eeprom_upload_fdt_from_flash(board_cfg->active_fdt_selection)) {
+				printf("read selected FDT by USER\n");
+				goto init_done;
+			}
 		}
 	}
 
@@ -654,9 +694,8 @@ int cfg_eeprom_finish(void)
 {
 	if (board_cfg->validation_counter != 0) {
 		board_cfg->validation_counter = 0;
-		cfg_eeprom_save(board_config_val.fdt_blob, 0);
+		cfg_eeprom_write_only_counter_to_eeprom();
 	}
 
 	return 0;
 }
-

@@ -92,12 +92,6 @@
 			mmc@780000 {
 				status = "disabled";
 			};
-			pcie-controller {
-				pcie@0,0 {
-					endpoint;
-					status = "okay";
-				};
-			};
 			nand@720000 {
 				status = "disabled";
 			};
@@ -132,20 +126,16 @@
 					Lane 5:   SATA0
 				*/
 				phy0 {
-					phy-type = <PHY_TYPE_PEX0>;
-					endpoint;
+					phy-type = <PHY_TYPE_IGNORE>;
 				};
 				phy1 {
-					phy-type = <PHY_TYPE_PEX0>;
-					endpoint;
+					phy-type = <PHY_TYPE_IGNORE>;
 				};
 				phy2 {
-					phy-type = <PHY_TYPE_PEX0>;
-					endpoint;
+					phy-type = <PHY_TYPE_IGNORE>;
 				};
 				phy3 {
-					phy-type = <PHY_TYPE_PEX0>;
-					endpoint;
+					phy-type = <PHY_TYPE_IGNORE>;
 				};
 				phy4 {
 					phy-type = <PHY_TYPE_KR>;

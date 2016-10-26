@@ -35,6 +35,11 @@ static void comphy_mux_check_config(struct comphy_mux_data *mux_data,
 	debug_enter();
 
 	for (lane = 0; lane < comphy_max_lanes; lane++, comphy_map_data++, mux_data++) {
+
+		/* Don't check ignored COMPHYs */
+		if (comphy_map_data->type == PHY_TYPE_IGNORE)
+			continue;
+
 		ptr_mux_opt = mux_data->mux_values;
 		for (opt = 0, valid = 0; opt < mux_data->max_lane_values; opt++, ptr_mux_opt++) {
 			if (ptr_mux_opt->type == comphy_map_data->type) {
@@ -78,6 +83,9 @@ static void comphy_mux_reg_write(struct comphy_mux_data *mux_data,
 
 	debug_enter();
 	for (lane = 0; lane < comphy_max_lanes; lane++, comphy_map_data++, mux_data++) {
+		if (comphy_map_data->type == PHY_TYPE_IGNORE)
+			continue;
+
 		offset = lane * bitcount;
 		mask = (((1 << bitcount) - 1) << offset);
 		value = (comphy_mux_get_mux_value(mux_data, comphy_map_data->type, lane) << offset);

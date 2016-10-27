@@ -17,4 +17,5 @@
 #
 
 obj-y	+= armada8k.o
-obj-$(CONFIG_DEVEL_BOARD)	+= devel-board.o
+obj-$(CONFIG_DEVEL_BOARD)		+= devel-board.o
+obj-$(CONFIG_A80X0_CUSTOMER0_MCBIN)	+= customer0-mcbin-board.o

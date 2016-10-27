@@ -22,6 +22,14 @@ config DEVEL_BOARD
 	  You need this only if you work on a Marvell board.
 	  If not, keep this off to reduce code size
 
+config A80X0_CUSTOMER0_MCBIN
+	bool "Support Marvell MACHIATOBin board (by SolidRun)"
+	depends on MVEBU
+	default n
+	---help---
+	  Say Y here to add support for Marvell MVEBU
+	  MACHIATOBin board.
+
 source "board/mvebu/common/Kconfig"
 endmenu
 

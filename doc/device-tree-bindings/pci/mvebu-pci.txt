@@ -7,8 +7,10 @@ that make up PCIe bus.
 Mandatory proprties:
 SoC specific:
 	- compatible
-		Should be "marvell,mvebu-pcie" for legacy Marvell EBU PCIe IP,
-		and "marvell,advk-pcie" for Marvell Ardvark PCIe IP.
+		Should be one of the following:
+			"marvell,mvebu-pcie" for legacy Marvell EBU PCIe IP,
+			"marvell,advk-pcie" for Marvell Ardvark PCIe IP
+			"marvell,mvebu-dw-pcie" for Marvell DesignWare PCIe IP
 	- pcie
 		Node describing a single PCIe port.
 		Each pcie node contains the following properties.
@@ -26,17 +28,21 @@ Board specific:
 			Optional int which specifies the PCIe generation
 			capability. Valid values are 1 to 3.
 			If not specified, Gen 3 is set.
+		- reset-gpio
+			Specify the optinal GPIO port for using as reset
+			signal for add-on card
 
 Example of a PCIe node:
 	pcie-controller {
 		#address-cells = <1>;
 		#size-cells = <1>;
-		compatible = "marvell,mvebu-pcie";
+		compatible = "marvell,mvebu-dw-pcie";
 
 		pcie@1,0 {
 			reg = <0x80000 0x2000>;
 			mem = <0xe0000000 0x2000000>;
 			force_cap_speed = <2>
+			reset-gpio = <&gpio1 CP0_GPIO(52) GPIO_ACTIVE_HIGH>;
 			status = "okay";
 		};
 

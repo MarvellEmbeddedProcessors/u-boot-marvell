@@ -25,6 +25,7 @@
 #include <pci.h>
 #include <fdtdec.h>
 #include <asm/io.h>
+#include <asm-generic/gpio.h>
 #include <linux/sizes.h>
 #include <errno.h>
 #include <asm/arch-mvebu/fdt.h>
@@ -125,6 +126,7 @@ void pci_init_board(void)
 	uintptr_t regs_base;
 	int is_end_point;
 	int err, i;
+	struct fdt_gpio_state reset_gpio;
 
 	count = fdtdec_find_aliases_for_id(blob, "pcie-controller",
 			COMPAT_MVEBU_DW_PCIE, bus_node_list, MAX_PCIE_BUSES);
@@ -157,6 +159,19 @@ void pci_init_board(void)
 			if (cap_speed < LINK_SPEED_GEN_1 || cap_speed > LINK_SPEED_GEN_3) {
 				debug("invalid PCIe Gen %d. Forcing to Gen 3\n", cap_speed);
 				cap_speed = LINK_SPEED_GEN_3;
+			}
+			fdtdec_decode_gpio(blob, port_node, "reset-gpio", &reset_gpio);
+			/* Issue reset to add-in card trough the dedicated GPIO.
+			 * Some boards are connecting the card reset pin to common system reset wire
+			 * and others are using separate GPIO port. In the last case we have to reset
+			 * the addon card using this GPIO
+			 */
+			if (fdt_gpio_isvalid(&reset_gpio)) {
+				fdtdec_setup_gpio(&reset_gpio);
+				gpio_direction_output(reset_gpio.gpio, 0);
+				mdelay(10);
+				gpio_set_value(reset_gpio.gpio, 1);
+				mdelay(20);
 			}
 
 			/* Don't register host if link is down */

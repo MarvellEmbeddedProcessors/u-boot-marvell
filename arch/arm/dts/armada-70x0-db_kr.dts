@@ -83,7 +83,7 @@
 				status = "okay";
 			};
 			mmc@780000 {
-				status = "disabled";
+				status = "okay";
 			};
 			pcie-controller {
 				pcie@0,0 {

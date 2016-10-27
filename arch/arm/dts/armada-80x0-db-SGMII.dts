@@ -94,6 +94,9 @@
 					status = "okay";
 				};
 			};
+			mmc@780000 {
+				status = "okay";
+			};
 			pinctl@440000 {
 					/* MPP Bus:
 					   [0-31] = 0xff: Keep default CP0_shared_pins:

@@ -23,6 +23,8 @@
 #include <miiphy.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+static void __mvebu_board_post_eth_init(void) {}
+void mvebu_board_post_eth_init(void) __attribute__((weak, alias("__mvebu_board_post_eth_init")));
 
 /* This routine must 1st register NETA units, prior to
  * external ETH interfaces (i.e PCIe USB2ETH, etc).
@@ -64,5 +66,8 @@ int board_eth_init(bd_t *bis)
 #ifdef CONFIG_EEPRO100
 	eepro100_initialize(bis);
 #endif
+	/* Custom board post ethernet initializations */
+	if (mvebu_board_post_eth_init != __mvebu_board_post_eth_init)
+		mvebu_board_post_eth_init();
 	return 0;
 }

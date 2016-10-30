@@ -30,13 +30,16 @@
 
 	ap-806 {
 		internal-regs {
+			mmc0: mmc@6E0000 {
+				status = "okay";
+			};
 			pinctl: pinctl@6F4000 {
 					/* MPP Bus:
-						I2C0 [4-5]
+						SDIO  [0-10] - dependant on 'mmc' status entry in DT
 						UART0 [11,19]
 					*/
 					  /* 0 1 2 3 4 5 6 7 8 9 */
-				pin-func = < 0 0 0 0 3 3 0 0 0 0
+				pin-func = < 0 0 0 0 0 0 0 0 0 0
 					     0 3 0 0 0 0 0 0 0 3>;
 			};
 		};

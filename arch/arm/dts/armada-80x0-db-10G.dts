@@ -76,7 +76,7 @@
 			};
 			pcie-controller {
 				pcie@0,0 {
-					status = "disabled";
+					status = "okay";
 				};
 				pcie@1,0 {
 					status = "disabled";
@@ -87,16 +87,18 @@
 			};
 			pinctl@440000 {
 					/* MPP Bus:
-					   [0-31] = 0xff: Keep default CP0_shared_pins:
+					   [0-31] = 0xff: Keep default CP0_shared_pins
 						[11] CLKOUT_MPP_11 (out)
 						[23] LINK_RD_IN_CP2CP (in)
 						[25] CLKOUT_MPP_25 (out)
 						[29] AVS_FB_IN_CP2CP (in)
-					   [32,34] SMI
-					   [31]    GPIO: push button/Wake
-					   [35-36] XSMI
-					   [37-38] I2C
+					   [32,34] GE_MDIO/MDC
+					   [33]    GPIO: GE_INT#/push button/Wake
+					   [35]    MSS_GPIO[3]: MSS_PWDN
+					   [36]    MSS_GPIO[5]: MSS_VTT_EN
+					   [37-38] I2C0
 					   [40-41] SATA[0/1]_PRESENT_ACTIVEn
+					   [42-43] XG_MDC/XG_MDIO (XSMI)
 					   [44-55] RGMII1
 					   [56-62] SD
 					*/
@@ -104,27 +106,26 @@
 				pin-func = < 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
 					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
 					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
-					     0xff 0    7    0    7    7    7    2    2    0
-					     0    0    0    0    1    1    1    1    1    1
+					     0xff 0xff 7    0    7    0xA  0xA  2    2    0
+					     9    9    8    8    1    1    1    1    1    1
 					     1    1    1    1    1    1    0xE  0xE  0xE  0xE
 					     0xE  0xE  0xE>;
 			};
 
 			comphy {
 				/* Serdes Configuration:
-					Lane 0: SGMII2
-					Lane 1: USB3_HOST0
+					Lane 0: PCIe0 (x1)
+					Lane 1: SATA0
 					Lane 2: KR (10G)
 					Lane 3: SATA1
 					Lane 4: USB3_HOST1
-					Lane 5: PEX2x1
+					Lane 5: PCIe2 (x1)
 				*/
 				phy0 {
-					phy-type = <PHY_TYPE_SGMII2>;
-					phy-speed = <PHY_SPEED_3_125G>;
+					phy-type = <PHY_TYPE_PEX0>;
 				};
 				phy1 {
-					phy-type = <PHY_TYPE_USB3_HOST0>;
+					phy-type = <PHY_TYPE_SATA0>;
 				};
 				phy2 {
 					phy-type = <PHY_TYPE_KR>;
@@ -193,10 +194,10 @@
 			};
 			pcie-controller {
 				pcie@0,0 {
-					status = "disabled";
+					status = "okay";
 				};
 				pcie@1,0 {
-					status = "disabled";
+					status = "okay";
 				};
 				pcie@2,0 {
 					status = "okay";
@@ -205,15 +206,16 @@
 			pinctl@440000 {
 					/* MPP Bus:
 					  [0-11]  RGMII0
-					  [12-16] SPI1
+					  [13-16] SPI1
 					  [27,31] GE_MDIO/MDC
-					  [32-62] = 0xff: Keep default CP1_shared_pins:
+					  [29-30] UART0
+					  [32-62] = 0xff: Keep default CP1_shared_pins
 					*/
 					/*   0    1    2    3    4    5    6    7    8    9 */
 				pin-func = < 0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3
-					     0x3  0x3  0x3  0x3  0x3  0x3  0x3  0xff 0xff 0xff
-					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0x8  0xff 0xff
-					     0xff 0x8  0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0x3  0x3  0x0  0x3  0x3  0x3  0x3  0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0x8  0xff 0xA
+					     0xA  0x8  0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
 					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
 					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
 					     0xff 0xff 0xff>;
@@ -222,19 +224,18 @@
 
 			comphy {
 				/* Serdes Configuration:
-					Lane 0: SGMII2
-					Lane 1: USB3_HOST0
+					Lane 0: PCIe0 (x1)
+					Lane 1: SATA0
 					Lane 2: KR (10G)
 					Lane 3: SATA1
-					Lane 4: Unconnected
-					Lane 5: PEX2x1
+					Lane 4: PCIe1 (x1)
+					Lane 5: PCIe2 (x1)
 				*/
 				phy0 {
-					phy-type = <PHY_TYPE_SGMII2>;
-					phy-speed = <PHY_SPEED_3_125G>;
+					phy-type = <PHY_TYPE_PEX0>;
 				};
 				phy1 {
-					phy-type = <PHY_TYPE_USB3_HOST0>;
+					phy-type = <PHY_TYPE_SATA0>;
 				};
 				phy2 {
 					phy-type = <PHY_TYPE_KR>;
@@ -243,7 +244,7 @@
 					phy-type = <PHY_TYPE_SATA1>;
 				};
 				phy4 {
-					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-type = <PHY_TYPE_PEX1>;
 				};
 				phy5 {
 					phy-type = <PHY_TYPE_PEX2>;

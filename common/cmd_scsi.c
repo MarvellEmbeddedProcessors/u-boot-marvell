@@ -200,6 +200,7 @@ void scsi_init(void)
 			break;
 	}
 
+#ifdef DEBUG
 	if (busdevfunc == -1) {
 		printf("Error: SCSI Controller(s) ");
 		for (i = 0; i < ARRAY_SIZE(scsi_device_list); i++) {
@@ -210,7 +211,6 @@ void scsi_init(void)
 		printf("not found\n");
 		return;
 	}
-#ifdef DEBUG
 	else {
 		printf("SCSI Controller (%04X,%04X) found (%d:%d:%d)\n",
 		       scsi_device_list[i].vendor,

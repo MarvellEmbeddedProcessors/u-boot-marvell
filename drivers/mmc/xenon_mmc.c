@@ -1042,8 +1042,8 @@ int board_mmc_init(bd_t *bis)
 				/* Set to SDIO GPIO output mode */
 				gpio_direction_output(sdio_vcc_gpio.gpio, val);
 			} else {
-				printf("ERROR: missing SDIO vcc gpio in XENON SDHCI node!\n");
-				continue;
+				/* Some board designs are using fixed voltage for the SD */
+				sdio_vcc_gpio.gpio = FDT_GPIO_NONE;
 			}
 #else
 			printf("ERROR: vcc gpio is not initialized, need to implement gpio in SOC code\n");

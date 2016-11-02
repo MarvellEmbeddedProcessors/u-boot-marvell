@@ -89,6 +89,37 @@ static bool cfg_eeprom_get_config_type(enum mv_config_type_id config_class, stru
 
 	return false;
 }
+
+/* write specific field to EEPROM */
+static void write_field_to_eeprom(enum mv_config_type_id config_class, uint8_t *data)
+{
+	struct config_types_info config_info;
+
+	if (!cfg_eeprom_get_config_type(config_class, &config_info)) {
+		error("Could not find field %x in EEPROM struct\n", config_class);
+		return;
+	}
+	i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
+		  data, config_info.byte_cnt);
+}
+
+/* read specific field from EEPROM
+ * @data_length: if equal to -1 read number of bytes as the length of the field.
+ */
+static void read_field_from_eeprom(enum mv_config_type_id config_class, uint8_t *data, int data_length)
+{
+	struct config_types_info config_info;
+
+	if (!cfg_eeprom_get_config_type(config_class, &config_info)) {
+		error("Could not find field %x in EEPROM struct\n", config_class);
+		return;
+	}
+	if (data_length == READ_SPECIFIC_FIELD)
+		data_length = config_info.byte_cnt;
+
+	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
+		 data, data_length);
+}
 #ifdef CONFIG_TARGET_ARMADA_8K
 int cfg_eeprom_zip_and_unzip(unsigned long size, void *source_fdt, bool zip_flag)
 {
@@ -167,16 +198,12 @@ bool cfg_eeprom_upload_fdt_from_flash(u8 fdt_config_id)
 /* cfg_eeprom_upload_fdt_from_eeprom - write FDT from EEPROM to local struct */
 bool cfg_eeprom_upload_fdt_from_eeprom(uint8_t *fdt_blob)
 {
-	struct config_types_info config_info;
 	unsigned long decompressed_size;
 	u32 fdt_blob_size = board_config_val.length - EEPROM_STRUCT_SIZE;
 
 	/* read the compressed file from EEPROM to buffer */
 	if (fdt_blob_size) {
-		if (!cfg_eeprom_get_config_type(MV_CONFIG_FDT_FILE, &config_info))
-			error("Could not find MV_CONFIG_FDT_FILE\n");
-		i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
-			 fdt_blob_temp, fdt_blob_size);
+		read_field_from_eeprom(MV_CONFIG_FDT_FILE, fdt_blob_temp, fdt_blob_size);
 
 		/* decompress fdt */
 		decompressed_size = cfg_eeprom_unzip_fdt(CONFIG_FDT_SIZE, (void *)fdt_blob_temp);
@@ -201,19 +228,14 @@ bool cfg_eeprom_upload_fdt_from_eeprom(uint8_t *fdt_blob)
 void cfg_eeprom_write_only_counter_to_eeprom(void)
 {
 	u8 old_validation_counter;
-	struct config_types_info config_info;
 
 	/* update checksum after the counter validation change (update checksum according to counter diff).
 	   this checksum is calculated on the entire EEPROM struct.
 	 */
 	if (board_cfg->validation_counter == 0) {
 		/* reduce the old counter from the checksum, after the counter was reset to zero */
-		if (!cfg_eeprom_get_config_type(MV_CONFIG_FDTCFG_VALID, &config_info)) {
-			error("Could not find MV_CONFIG_FDTCFG_VALID\n");
-			return;
-		}
-		i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
-			 (uint8_t *)&old_validation_counter, config_info.byte_cnt);
+		read_field_from_eeprom(MV_CONFIG_FDTCFG_VALID, (uint8_t *)&old_validation_counter,
+				       READ_SPECIFIC_FIELD);
 		board_config_val.checksum -= old_validation_counter;
 	} else {
 		/* increase the checksum by 1 after the valid counter was increase by 1 */
@@ -221,21 +243,10 @@ void cfg_eeprom_write_only_counter_to_eeprom(void)
 	}
 
 	/* write validation_counter to EEPROM */
-	if (!cfg_eeprom_get_config_type(MV_CONFIG_FDTCFG_VALID, &config_info)) {
-		error("Could not find MV_CONFIG_FDTCFG_VALID\n");
-		return;
-	}
-	i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
-		  (uint8_t *)&board_config_val.board_config.validation_counter, config_info.byte_cnt);
+	write_field_to_eeprom(MV_CONFIG_FDTCFG_VALID, (uint8_t *)&board_config_val.board_config.validation_counter);
 
 	/* write checksum to EEPROM */
-	if (!cfg_eeprom_get_config_type(MV_CONFIG_CHECKSUM, &config_info)) {
-		error("Could not find MV_CONFIG_CHECKSUM\n");
-		return;
-	}
-
-	i2c_write(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
-		  (uint8_t *)&board_config_val.checksum, config_info.byte_cnt);
+	write_field_to_eeprom(MV_CONFIG_CHECKSUM, (uint8_t *)&board_config_val.checksum);
 
 	return;
 }
@@ -349,17 +360,12 @@ uint8_t *cfg_eeprom_get_fdt(void)
 void cfg_eeprom_get_hw_info_str(uchar *hw_info_str)
 {
 	int len;
-	struct config_types_info config_info;
 
 	/* if board_id isn't initialized, need to read hw_info and board_id from EEPROM */
 	if (g_board_id == -1) {
 		/* read hw_info config from EEPROM */
-		if (!cfg_eeprom_get_config_type(MV_CONFIG_HW_INFO, &config_info)) {
-			error("Could not find MV_CONFIG_hw_info\n");
-			return;
-		}
-		i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
-			 (uint8_t *)board_config_val.man_info.hw_info, config_info.byte_cnt);
+		read_field_from_eeprom(MV_CONFIG_HW_INFO, (uint8_t *)board_config_val.man_info.hw_info,
+				       READ_SPECIFIC_FIELD);
 	}
 	len = strlen((const char *)board_config_val.man_info.hw_info);
 	if (len >= MVEBU_HW_INFO_LEN)
@@ -586,7 +592,6 @@ static u32 cfg_eeprom_check_validation_counter(void)
 int cfg_eeprom_init(void)
 {
 	struct eeprom_struct eeprom_buffer;
-	struct config_types_info config_info;
 	uint32_t calculate_checksum;
 	unsigned long decompressed_size;
 
@@ -604,12 +609,8 @@ int cfg_eeprom_init(void)
 	board_cfg->active_fdt_selection = get_default_fdt_config_id(cfg_eeprom_get_board_id());
 
 	/* read pattern from EEPROM */
-	if (!cfg_eeprom_get_config_type(MV_CONFIG_VERIFICATION_PATTERN, &config_info)) {
-		error("Could not find MV_CONFIG_VERIFICATION_PATTERN\n");
-		return -1;
-	}
-	i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
-		 (uint8_t *)&eeprom_buffer.pattern, config_info.byte_cnt);
+	read_field_from_eeprom(MV_CONFIG_VERIFICATION_PATTERN, (uint8_t *)&eeprom_buffer.pattern,
+			       READ_SPECIFIC_FIELD);
 
 	/* check if pattern in EEPROM is invalid */
 	if (eeprom_buffer.pattern != board_config_val.pattern) {
@@ -625,11 +626,8 @@ int cfg_eeprom_init(void)
 	/* examination if it's necessary to read fdt from EEPROM */
 	if (eeprom_buffer.board_config.fdt_cfg_en == 1) {
 		/* read the compressed file from EEPROM to buffer */
-		if (!cfg_eeprom_get_config_type(MV_CONFIG_FDT_FILE, &config_info))
-			error("Could not find MV_CONFIG_FDT_FILE\n");
-
-		i2c_read(BOARD_DEV_TWSI_INIT_EEPROM, config_info.byte_num, MULTI_FDT_EEPROM_ADDR_LEN,
-			 (uint8_t *)eeprom_buffer.fdt_blob, eeprom_buffer.length - EEPROM_STRUCT_SIZE);
+		read_field_from_eeprom(MV_CONFIG_FDT_FILE, (uint8_t *)eeprom_buffer.fdt_blob,
+				       eeprom_buffer.length - EEPROM_STRUCT_SIZE);
 
 		/* calculate checksum */
 		calculate_checksum = cfg_eeprom_checksum8((uint8_t *)&eeprom_buffer.pattern,

@@ -77,6 +77,7 @@ struct hw_info_point_struct {
 	char *value;
 };
 
+#define READ_SPECIFIC_FIELD		-1
 #define HW_INFO_MAX_NAME_LEN		32
 #define HW_INFO_MAX_VALUE_LEN		32
 struct hw_info_data_struct {

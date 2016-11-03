@@ -1,0 +1,62 @@
+/*
+ * ***************************************************************************
+ * Copyright (C) 2016 Marvell International Ltd.
+ * ***************************************************************************
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ***************************************************************************
+ */
+
+#include "cp110-mpp-bus-info.dtsi" /* include MPP bus info */
+/ {
+	/* This should go only into devel boards */
+	compatible = "marvell,cp110";
+
+	sar {
+		compatible = "marvell,sample-at-reset";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x4c 0x4e>;
+		chip_count = <2>;
+		bit_width = <5>;
+
+		freq {
+			key = "freq";
+			description = "CPU/DDR frequencies";
+			start-bit = <0>;
+			bit-length = <3>;
+			option-cnt = <8>;
+			/* The * means that the freq isn't supported by the devel boards */
+			options = "0x0", "2000/1200 Mhz*",
+				  "0x1", "2000/1050 Mhz*",
+				  "0x2", "1800/1200 Mhz*",
+				  "0x3", "1800/1050 Mhz*",
+				  "0x4", "1600/1050 Mhz*",
+				  "0x5", "1600/900 Mhz*",
+				  "0x6", "1300/800 Mhz",
+				  "0x7", "1300/650 Mhz";
+			default = <0x6>;
+			status = "okay";
+		};
+		boot_mode {
+			key = "boot_mode";
+			description = "Boot mode options";
+			start-bit = <4>;
+			bit-length = <6>;
+			option-cnt = <2>;
+			options = "0x30", "AP_SPI 24bits",
+				  "0x32", "CP1_SPI_1 24bits";
+				  default = <0x32>;
+			status = "okay";
+		};
+	};
+};

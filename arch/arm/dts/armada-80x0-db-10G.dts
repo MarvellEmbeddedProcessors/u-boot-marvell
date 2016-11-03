@@ -18,7 +18,6 @@
 /dts-v1/;
 
 #include "armada-80x0.dtsi" /* include SoC device tree */
-/* TODO:
 #include "armada-80x0-dev-info.dtsi" /* include Marvell specific info (S@R, MPP cmd) */
 #include "cp110-mpp-bus-info.dtsi" /* include MPP bus info */
 #include <dt-bindings/multi-fdt/a8k/multi-fdt.h>

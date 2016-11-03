@@ -15,6 +15,12 @@ Board specific:
 	    optional property, delay time in ms when enable gpio-vbus.
 	- vbus-disable-delay:
 	    optional property, delay time in ms when disable gpio-vbus.
+	- gpio-vbus-cur-lim: Should specify the GPIO for current limit
+		configuration. Active state means USB3.0 limit.
+		for more information check: check doc/device-tree-bindings/gpio/mvebu-gpio.txt
+	- vbus-cur-lim-2-0:
+		optional property, set current limit to meet USB2.0 constraints,
+		otherwise use limit for USB3.0
 	- status
 		The USB3 port status can be "okay" or "disabled".
 

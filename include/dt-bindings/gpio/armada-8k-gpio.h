@@ -44,4 +44,11 @@
 #define EXPANDER0_GPIO(offset)		(ARMADA_CP0_EXPANDER0_GPIO_BASE + offset)
 #define EXPANDER1_GPIO(offset)		(ARMADA_CP0_EXPANDER1_GPIO_BASE + offset)
 
+
+/* Armada-7k has one IO-expander:
+ * expander0 under 0x21 i2c address, it has 16 gpio pins it controls e.g. usb vbus from CP0
+ */
+#define A7K_CP0_EXPANDER0_GPIO_BASE	(ARMADA_CP0_B1_GPIO_BASE + ARMADA_CP0_B1_GPIO_COUNT)
+#define A7K_EXPANDER0_GPIO(offset)	(A7K_CP0_EXPANDER0_GPIO_BASE + offset)
+
 #endif /* _DT_BINDINGS_GPIO_ARMADA_8K_GPIO_H */

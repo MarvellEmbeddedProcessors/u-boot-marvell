@@ -1,0 +1,50 @@
+/*
+ * ***************************************************************************
+ * Copyright (C) 2016 Marvell International Ltd.
+ * ***************************************************************************
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ***************************************************************************
+ */
+
+#include "armada-70x0.dtsi" /* include SoC device tree */
+#include "armada-70x0-dev-info.dtsi" /* include Marvell specific info (S@R, MPP cmd) */
+#include <dt-bindings/multi-fdt/a8k/multi-fdt.h>
+
+/ {
+	model = "DB-ARMADA-70x0";
+	compatible = "marvell,armada-70x0-db", "marvell,armada-70x0";
+	fdt_config_id = <A70X0_ROUTER>;
+	board_id = <A8K_7040_DB>;
+
+	cp110-master {
+		internal-regs {
+			i2c@701000 {
+				expander0: pca953x@21 {
+					compatible = "nxp,pca9555";
+					reg = <0x21>;
+					status = "okay";
+				};
+			};
+			usb3@500000 {
+				gpio-vbus = <&expander0 A7K_EXPANDER0_GPIO(0) GPIO_ACTIVE_HIGH>;
+				vbus-enable-delay = <1000>;
+				vbus-disable-delay = <1000>;
+			};
+			usb3@510000 {
+				gpio-vbus = <&expander0 A7K_EXPANDER0_GPIO(1) GPIO_ACTIVE_HIGH>;
+				vbus-enable-delay = <1000>;
+				vbus-disable-delay = <1000>;
+			};
+		};
+	};
+};

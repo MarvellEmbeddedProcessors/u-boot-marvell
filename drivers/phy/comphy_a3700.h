@@ -182,6 +182,10 @@
 
 
 #define USB3_CTRPUL_VAL_REG		(0x20 + USB32_BASE)
+#define USB3_TOP_INT_STATUS_REG		(0xd8 + USB32_BASE)
+#define vbus_int_state			BIT5
+#define USB3_TOP_INT_ENABLE_REG		(0xdc + USB32_BASE)
+#define vbus_int_enable			BIT5
 #define USB3H_CTRPUL_VAL_REG		(0x3454 + USB32H_BASE)
 #define rb_usb3_ctr_100ns		0xff000000
 

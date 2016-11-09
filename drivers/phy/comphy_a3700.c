@@ -35,8 +35,9 @@ struct sgmii_phy_init_data_fix {
 struct comphy_mux_data a3700_comphy_mux_data[] = {
 /* Lane 0 */ {3, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII0, 0x0},
 			{PHY_TYPE_PEX0, 0x1} } },
-/* Lane 1 */ {4, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII1, 0x0},
-			{PHY_TYPE_USB3_HOST0, 0x1}, {PHY_TYPE_USB3_DEVICE, 0x1} } },
+/* Lane 1 */ {5, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII1, 0x0},
+			{PHY_TYPE_USB3, 0x1}, {PHY_TYPE_USB3_HOST0, 0x1},
+			{PHY_TYPE_USB3_DEVICE, 0x1} } },
 /* Lane 2 */ {4, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SATA0, 0x0},
 			{PHY_TYPE_USB3_HOST0, 0x1}, {PHY_TYPE_USB3_DEVICE, 0x1} } },
 };
@@ -367,7 +368,7 @@ static void usb_phy_reg_set_direct(u32 reg_offset, u16 data, u16 mask)
   *
   * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  ***************************************************************************************************/
-static int comphy_usb3_power_up(u32 type, u32 speed, u32 invert, bool indirect_reg_access)
+static int comphy_usb3_power_up(u32 speed, u32 invert, bool indirect_reg_access)
 {
 	int	ret;
 	void	(*fp_usb3_phy_reg_set)(u32, u16, u16) = usb_phy_reg_set_direct;
@@ -493,20 +494,11 @@ static int comphy_usb3_power_up(u32 type, u32 speed, u32 invert, bool indirect_r
 	if (ret == 0)
 		error("Failed to lock USB3 PLL\n");
 
-	/* Set Soft ID for Host mode (Device mode works with Hard ID detection) */
-	if (type == PHY_TYPE_USB3_HOST0) {
-		/* set   BIT0: set ID_MODE of Host/Device = "Soft ID" (BIT1)
-		 * clear BIT1: set SOFT_ID = Host
-		 * set   BIT4: set INT_MODE = ID. Interrupt Mode: enable interrupt by ID
-		 *             instead of using both interrupts of HOST and Device ORed simultaneously
-		 *             INT_MODE=ID in order to avoid unexpected behaviour or both interrupts together */
-		reg_set((void __iomem *)USB32_CTRL_BASE, usb32_ctrl_id_mode | usb32_ctrl_int_mode,
-			usb32_ctrl_id_mode | usb32_ctrl_soft_id | usb32_ctrl_int_mode);
-	} else if (type == PHY_TYPE_USB3_DEVICE) {
-		/* unset DP and DM pulldown for USB2 Device mode */
-		reg_set((void __iomem *)USB2_OTG_PHY_CTRL_ADDR, 0x0,
-			rb_usb2_dp_pulldn_dev_mode | rb_usb2_dm_pulldn_dev_mode);
-	}
+	/* No matter host mode and device mode, it works with Hard ID detection.
+	 * Unset DP and DM pulldown for USB2 Device mode
+	 */
+	reg_set((void __iomem *)USB2_OTG_PHY_CTRL_ADDR, 0x0,
+		rb_usb2_dp_pulldn_dev_mode | rb_usb2_dm_pulldn_dev_mode);
 
 	/* Disbale VBus interrupt which will be enable again in kernel */
 	reg_set((void __iomem *)USB3_TOP_INT_ENABLE_REG, 0x0, vbus_int_enable);
@@ -893,10 +885,11 @@ int comphy_a3700_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 			ret = comphy_pcie_power_up(ptr_comphy_map->speed, ptr_comphy_map->invert);
 			break;
 
+		case PHY_TYPE_USB3:
 		case PHY_TYPE_USB3_HOST0:
 		case PHY_TYPE_USB3_DEVICE:
-			ret = comphy_usb3_power_up(ptr_comphy_map->type, ptr_comphy_map->speed,
-						   ptr_comphy_map->invert, (lane == 2) ? true : false);
+			ret = comphy_usb3_power_up(ptr_comphy_map->speed, ptr_comphy_map->invert,
+						   (lane == 2) ? true : false);
 			break;
 
 		case PHY_TYPE_SGMII0:

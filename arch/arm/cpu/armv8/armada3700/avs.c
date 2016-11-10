@@ -60,17 +60,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define MVEBU_AVS_VSET(x)			(0x1C + 4 * (x - 1))
 
 /*
- * The AVS voltage
- * As recommeded by SW architect, following voltage should be used
- * with specific different CPU frequency.
- * 1200MHZ: 1.2V
- * 1000MHZ: 1.15V
- * 800MHZ: 1.10V
- * 600MHZ and below: 1.05V
+ * The lowest AVS voltage as default
  */
-#define AVS_VDD_HIGH		39 /* 1202mV */
-#define AVS_VDD_MEDIUM		35 /* 1155mV */
-#define AVS_VDD_LOW		31 /* 1108mV */
 #define AVS_VDD_LOWEST		26 /* 1050mV */
 
 /* There is only one AVS node for Armada-3700 */
@@ -82,14 +73,14 @@ struct mvebu_avs_config {
 };
 struct mvebu_avs_config avs_config;
 
-/* Set the VDD values for the four VSET loads */
+/* Set the VDD values for the VSET loads except VDD0,
+ * VDD0 is set in TIM header and will be overwritten by avs
+ */
 int set_avs_vdd_loads(void)
 {
 	void __iomem *reg_base;
 	u32 reg_val;
-	u32 vdd;
 	u32 vdd_min;
-	u32 cpu_clk;
 	int i;
 
 	reg_base = avs_config.reg_base;
@@ -105,28 +96,10 @@ int set_avs_vdd_loads(void)
 	reg_val &= ~(AVS_ENABLE);
 	writel(reg_val, reg_base + MVEBU_AVS_CTRL_0);
 
-	/*
-	 * Set VDD for VSET 0
-	 * The VSET 0 VDD should be set according to frequency,
-	 * Other VSET VDD could use lowest VDD.
-	 */
+	/* Set VDD for VSET 1,2 and 3 with lowest VDD */
 	reg_val = readl(reg_base + MVEBU_AVS_CTRL_0);
 	reg_val &= ~((AVS_VDD_MASK << AVS_HIGH_VDD_LIMIT_OFFS) |
 			(AVS_VDD_MASK << AVS_LOW_VDD_LIMIT_OFFS));
-	cpu_clk =  get_cpu_clk();
-
-	if (cpu_clk == 1200)
-		vdd = AVS_VDD_HIGH;
-	else if (cpu_clk == 1000)
-		vdd = AVS_VDD_MEDIUM;
-	else if (cpu_clk == 800)
-		vdd = AVS_VDD_LOW;
-	else
-		vdd = vdd_min;
-
-	reg_val |= ((vdd << AVS_HIGH_VDD_LIMIT_OFFS) |
-			(vdd << AVS_LOW_VDD_LIMIT_OFFS));
-	writel(reg_val, reg_base + MVEBU_AVS_CTRL_0);
 
 	/* Set VDD for VSET 1, VSET 2 and VSET 3 */
 	for (i = 1; i <= 3; i++) {

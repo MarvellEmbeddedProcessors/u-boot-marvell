@@ -67,6 +67,12 @@
 			i2c@211100 { /* MSS_i2c1 */
 				status = "disabled";
 			};
+			utmi0@580000 {
+				utmi-port = <UTMI_PHY_TO_USB3_HOST0>;
+			};
+			utmi1@581000 {
+				utmi-port = <UTMI_PHY_TO_USB3_HOST1>;
+			};
 			usb3@500000 {
 				status = "disabled";
 			};

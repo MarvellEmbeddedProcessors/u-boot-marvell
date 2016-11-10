@@ -60,6 +60,12 @@
 					status = "okay";
 				};
 			};
+			utmi0@580000 {
+				utmi-port = <UTMI_PHY_TO_USB3_HOST0>;
+			};
+			utmi1@581000 {
+				utmi-port = <UTMI_PHY_TO_USB3_HOST1>;
+			};
 			usb3@500000 {
 				gpio-vbus = <&expander0 EXPANDER0_GPIO(0) GPIO_ACTIVE_HIGH>;
 				vbus-enable-delay = <1000>;
@@ -183,6 +189,9 @@
 
 	cp110-slave {
 		internal-regs {
+			utmi0@580000 {
+				utmi-port = <UTMI_PHY_TO_USB3_HOST0>;
+			};
 			usb3@500000 {
 				gpio-vbus = <&expander1 EXPANDER1_GPIO(0) GPIO_ACTIVE_HIGH>;
 				vbus-enable-delay = <1000>;

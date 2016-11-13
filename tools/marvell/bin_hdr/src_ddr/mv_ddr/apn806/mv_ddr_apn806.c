@@ -96,6 +96,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 #include "ddr3_init.h"
+#include "mv_ddr_xor_v2.h"
 
 #if defined(CONFIG_PHY_STATIC) || defined(CONFIG_MC_STATIC)
 #include "mv_ddr_apn806_static.h"
@@ -261,24 +262,22 @@ void mmio_write2_32(u32 val, u32 addr)
 
 void mv_ddr_mem_scrubbing(void)
 {
-	uintptr_t p = 0;
-	uint64_t val = 0xdeadbeefdeadbeef;
+	uint64_t val = 0;
 	uint64_t tot_mem_sz;
 
 	tot_mem_sz = mv_ddr_get_total_memory_size_in_bits() / BITS_IN_BYTE;
 
 	printf("mv_ddr: scrubbing memory...\n");
 
+	/* scrub memory up to non-dram memory region */
 	if (tot_mem_sz < NON_DRAM_MEM_RGN_START_ADDR)
-		for (p = 0; p < tot_mem_sz; p += 8)
-			mmio_write_64(p, val);
+		mv_ddr_xor_mem_scrubbing(0, tot_mem_sz, val);
 	else
-		for (p = 0; p < NON_DRAM_MEM_RGN_START_ADDR; p += 8)
-			mmio_write_64(p, val);
+		mv_ddr_xor_mem_scrubbing(0, NON_DRAM_MEM_RGN_START_ADDR, val);
 
+	/* scrub memory up to the end */
 	if (tot_mem_sz > NON_DRAM_MEM_RGN_END_ADDR)
-		for (p = NON_DRAM_MEM_RGN_END_ADDR; p < tot_mem_sz; p += 8)
-			mmio_write_64(p, val);
+		mv_ddr_xor_mem_scrubbing(NON_DRAM_MEM_RGN_END_ADDR, tot_mem_sz - NON_DRAM_MEM_RGN_END_ADDR, val);
 }
 
 static u8 mv_ddr_tip_clk_ratio_get(u32 freq)

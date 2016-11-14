@@ -957,14 +957,6 @@ int xenon_mmc_create(int dev_idx, struct xenon_mmc_cfg *mmc_cfg)
 	return 0;
 }
 
-/* weak implementation: dependant on SoC requirements.
- * will be overrun in soc.c, in case a platforms requires special
- * SoC configuration prior to XENON usage */
-void __weak mmc_soc_init(void)
-{
-	return;
-}
-
 int board_mmc_init(bd_t *bis)
 {
 	int node_list[XENON_MMC_PORTS_MAX];
@@ -977,8 +969,6 @@ int board_mmc_init(bd_t *bis)
 
 	count = fdtdec_find_aliases_for_id(blob, "xenon-sdhci",
 			COMPAT_MVEBU_XENON_MMC, &node_list[0], XENON_MMC_PORTS_MAX);
-	if (count > 0)
-		mmc_soc_init();
 
 	for (port_count = 0; port_count < count; port_count++) {
 		struct xenon_mmc_cfg *mmc_cfg = NULL;

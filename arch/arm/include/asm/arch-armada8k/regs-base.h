@@ -44,6 +44,4 @@
 
 #define MVEBU_LLC_BASE			(MVEBU_REGS_BASE + 0x8000)
 
-#define MVEBU_IP_CONFIG_REG		(MVEBU_REGS_BASE + 0x6F4100)
-
 #endif	/* _REGS_BASE_H_ */

@@ -38,9 +38,6 @@
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
 
-#define EMMC_PHY_IO_CTRL		(MVEBU_IP_CONFIG_REG)
-#define EMMC_PHY_CTRL_SDPHY_EN		(1 << 0)
-
 int soc_early_init_f(void)
 {
 	debug_enter();
@@ -174,18 +171,6 @@ void print_soc_specific_info(void)
 	printf("\tLLC %s%s\n", llc_en ? "Enabled" : "Disabled",
 	       llc_excl_mode ? " (Exclusive Mode)" : "");
 }
-
-#ifdef CONFIG_XENON_MMC
-void mmc_soc_init(void)
-{
-	u32 reg;
-
-	/* set eMMC/SD PHY output instead of MPPs */
-	reg = readl(EMMC_PHY_IO_CTRL);
-	reg &= ~EMMC_PHY_CTRL_SDPHY_EN;
-	writel(reg, EMMC_PHY_IO_CTRL);
-}
-#endif
 
 /************************************************************************
    Function:  mvebu_is_in_recovery_mode

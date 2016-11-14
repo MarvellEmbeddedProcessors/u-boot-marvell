@@ -31,6 +31,15 @@
 #define CONFIG_MAX_PINS_PER_BANK	100
 #define CONFIG_MAX_FUNC			0xF
 
+#define AP_EMMC_PHY_CTRL_REG		0x100
+#define CP_EMMC_PHY_CTRL_REG		0x424
+#define EMMC_PHY_CTRL_SDPHY_EN		(1 << 0)
+
+#define AP806_EMMC_CLK_PIN_ID		0
+#define AP806_EMMC_CLK_FUNC		0x1
+#define CP110_EMMC_CLK_PIN_ID		56
+#define CP110_EMMC_CLK_FUNC		0xe
+
 DECLARE_GLOBAL_DATA_PTR;
 
 struct pinctl_data {
@@ -42,6 +51,35 @@ struct pinctl_data {
 };
 struct pinctl_data __attribute__((section(".data"))) bank_data[CONFIG_MAX_PINCTL_BANKS];
 u32 __attribute__((section(".data"))) pin_func_buf[CONFIG_MAX_PINS_PER_BANK];
+
+void pinctl_emmc_set_mux_func(u32 compat, int bank, u32 *pin_func)
+{
+	struct pinctl_data *pinctl =  &bank_data[bank];
+	u32 reg;
+
+	/* To enable SDIO/eMMC in Armada-CP110, need to configure PHY mux.
+	** eMMC/SD PHY register responsible for muxing between MPPs and SD/eMMC
+	** controller:
+	** - Bit0 enabled SDIO/eMMC PHY is used as a MPP muxltiplexer,
+	** - Bit0 disabled SDIO/eMMC PHY is connected to SDIO/eMMC controller
+	** If pin function is set to eMMC/SD, then configure the eMMC/SD PHY
+	** muxltiplexer register to be on SDIO/eMMC controller
+	*/
+	if (compat == COMPAT_MVEBU_PINCTL_AP806) {
+		if (pin_func[AP806_EMMC_CLK_PIN_ID] == AP806_EMMC_CLK_FUNC) {
+			reg = readl(pinctl->base_reg + AP_EMMC_PHY_CTRL_REG);
+			reg &= ~EMMC_PHY_CTRL_SDPHY_EN;
+			writel(reg, pinctl->base_reg + AP_EMMC_PHY_CTRL_REG);
+		}
+	}
+	if (compat == COMPAT_MVEBU_PINCTL_CP110) {
+		if (pin_func[CP110_EMMC_CLK_PIN_ID] == CP110_EMMC_CLK_FUNC) {
+			reg = readl(pinctl->base_reg + CP_EMMC_PHY_CTRL_REG);
+			reg &= ~EMMC_PHY_CTRL_SDPHY_EN;
+			writel(reg, pinctl->base_reg + CP_EMMC_PHY_CTRL_REG);
+		}
+	}
+}
 
 int pinctl_set_pin_func(int bank, int pin_id, int func)
 {
@@ -132,7 +170,7 @@ int mvebu_pinctl_probe(void)
 	const void *blob = gd->fdt_blob;
 	int node_list[CONFIG_MAX_PINCTL_BANKS], node;
 	int count, i, err, pin;
-	u32 *pin_func;
+	u32 *pin_func, soc_compat;
 
 	debug_enter();
 
@@ -152,6 +190,8 @@ int mvebu_pinctl_probe(void)
 
 		if (node <= 0)
 			continue;
+		/* Get SoC compatible extension */
+		soc_compat = fdtdec_next_lookup(blob, node, COMPAT_MVEBU_PINCTL);
 
 		pinctl = &bank_data[i];
 		pinctl->base_reg = fdt_get_regs_offs(blob, node, "reg");
@@ -181,8 +221,11 @@ int mvebu_pinctl_probe(void)
 				if (err)
 					printf("Warning: pin %d is not set for bank %d\n", pin, i);
 			} else
-				debug("Warning: pin %d value is not modified (kept as default\n", pin);
+				debug("Warning: pin %d value is not modified (kept as default)\n", pin);
 		}
+
+		if (soc_compat != COMPAT_UNKNOWN)
+			pinctl_emmc_set_mux_func(soc_compat, i, pin_func);
 	}
 	debug_exit();
 	return 0;

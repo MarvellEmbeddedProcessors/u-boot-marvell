@@ -131,6 +131,9 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_A3700_AVS, "marvell,armada-3700-avs"),
 	COMPAT(MVEBU_A3700_SATA_PHY, "marvell,armada-3700-sata-phy"),
 	COMPAT(MVEBU_A3700_UTMI_PHY, "marvell,armada-3700-utmi"),
+	COMPAT(MVEBU_PINCTL_AP806, "marvell,pinctl-ap806"),
+	COMPAT(MVEBU_PINCTL_CP110, "marvell,pinctl-cp110"),
+
 };
 
 const char *fdtdec_get_compatible(enum fdt_compat_id id)

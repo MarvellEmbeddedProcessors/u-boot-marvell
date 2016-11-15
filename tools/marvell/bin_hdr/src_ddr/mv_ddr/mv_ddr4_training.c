@@ -95,6 +95,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#if defined(CONFIG_DDR4)
+
 /* DDR4 training service API and data structures */
 
 #include "ddr3_init.h"
@@ -643,3 +645,4 @@ int mv_ddr4_training_main_flow(u32 dev_num)
 
 	return status;
 }
+#endif /* CONFIG_DDR4 */

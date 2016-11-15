@@ -95,6 +95,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#if defined(CONFIG_DDR4)
+
 /* DDR4 Training Database */
 
 #include "ddr3_init.h"
@@ -445,3 +447,4 @@ u32 speed_bin_table(u8 index, enum speed_bin_table_elements element)
 
 	return result;
 }
+#endif /* CONFIG_DDR4 */

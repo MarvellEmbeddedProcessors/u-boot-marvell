@@ -95,8 +95,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-/* DDR4 MPR/PDA Interface */
+#if defined(CONFIG_DDR4)
 
+/* DDR4 MPR/PDA Interface */
 #include "ddr3_init.h"
 #include "mv_ddr4_mpr_pda_if.h"
 #include "mv_ddr4_training.h"
@@ -802,3 +803,4 @@ int mv_ddr4_pda_ctrl(u8 dev_num, u8 if_id, u8 cs_num, int enable)
 
 	return MV_OK;
 }
+#endif /* CONFIG_DDR4 */

@@ -95,6 +95,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#if defined(CONFIG_DDR4)
+
 /* DESCRIPTION: DDR4 Receiver and DQVref Calibration */
 
 #include "ddr3_init.h"
@@ -1784,3 +1786,4 @@ int mv_ddr4_receiver_calibration(u8 dev_num)
 
     return MV_OK;
 }
+#endif /* CONFIG_DDR4 */

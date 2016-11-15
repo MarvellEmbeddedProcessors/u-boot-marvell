@@ -200,5 +200,6 @@ unsigned int mv_ddr_cwl_calc(unsigned int tclk);
 struct mv_ddr_topology_map *mv_ddr_topology_map_update(void);
 struct dram_config *mv_ddr_dram_config_update(void);
 unsigned short mv_ddr_bus_bit_mask_get(void);
+unsigned int mv_ddr_if_bus_width_get(void);
 
 #endif /* _MV_DDR_TOPOLOGY_H */

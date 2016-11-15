@@ -116,6 +116,9 @@ struct dram_config *mv_ddr_dram_config_update(void)
 	/* set total memory size in megabytes in dram configuration */
 	dc->iface[0].size_mbytes = size;
 
+	/* set bus width in dram configuration */
+	dc->iface[0].bus_width = mv_ddr_if_bus_width_get();
+
 	return dc;
 }
 #endif /* MV_DDR_ATF */
@@ -268,4 +271,32 @@ unsigned short mv_ddr_bus_bit_mask_get(void)
 	}
 
 	return pri_and_ext_bus_width;
+}
+
+unsigned int mv_ddr_if_bus_width_get(void)
+{
+	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
+	unsigned int bus_width;
+
+	switch (tm->bus_act_mask) {
+	case BUS_MASK_16BIT:
+	case BUS_MASK_16BIT_ECC:
+	case BUS_MASK_16BIT_ECC_PUP3:
+		bus_width = 16;
+		break;
+	case BUS_MASK_32BIT:
+	case BUS_MASK_32BIT_ECC:
+	case MV_DDR_32BIT_ECC_PUP8_BUS_MASK:
+		bus_width = 32;
+		break;
+	case MV_DDR_64BIT_BUS_MASK:
+	case MV_DDR_64BIT_ECC_PUP8_BUS_MASK:
+		bus_width = 64;
+		break;
+	default:
+		printf("mv_ddr: unsupported bus active mask parameter found\n");
+		bus_width = 0;
+	}
+
+	return bus_width;
 }

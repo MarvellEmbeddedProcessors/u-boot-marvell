@@ -115,7 +115,7 @@ usb3@510000 { /* USB3_H1 */
 };
 
 pinctl@440000 {
-	compatible = "marvell,mvebu-pinctl";
+	compatible = "marvell,mvebu-pinctl", "marvell,pinctl-cp110";
 	bank-name ="cp110";
 	reg = <0x440000 0x10>;
 	pin-count = <63>;

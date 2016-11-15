@@ -9,7 +9,10 @@ have several pinctl banks.
 Mandatory proprties:
 SoC specific:
 	- compatible
-	  	should be "marvell, mvebu-pinctl".
+		Should be "marvell,mvebu-pinctl"
+		For AP806 & CP110 (Armada8K), must add another specific compatible
+		AP806: "marvell,mvebu-pinctl", "marvell,pinctl-ap806"
+		CP110: "marvell,mvebu-pinctl", "marvell,pinctl-cp110"
 	- bank-name
 	  	Unique name identifying the bank.
 	- reg

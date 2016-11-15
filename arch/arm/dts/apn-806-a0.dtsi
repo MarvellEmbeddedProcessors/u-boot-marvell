@@ -71,7 +71,7 @@
 			};
 
 			pinctl: pinctl@6F4000 {
-				compatible = "marvell,mvebu-pinctl";
+				compatible = "marvell,mvebu-pinctl", "marvell,pinctl-ap806";
 				bank-name ="apn-806";
 				reg = <0x6F4000 0x10>;
 				pin-count = <20>;

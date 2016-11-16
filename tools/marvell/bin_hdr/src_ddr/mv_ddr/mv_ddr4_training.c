@@ -124,11 +124,6 @@ static u16 vref_val[] = {
 
 static u32 mv_ddr4_config_phy_vref_tap;
 
-const char* mv_ddr4_version_get(void)
-{
-	return MV_DDR4_VERSION;
-}
-
 /* configure DDR4 SDRAM */
 int mv_ddr4_sdram_config(u32 dev_num)
 {

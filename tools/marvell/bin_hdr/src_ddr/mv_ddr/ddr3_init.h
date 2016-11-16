@@ -275,7 +275,6 @@ int ddr3_silicon_get_ddr_target_freq(u32 *ddr_freq);
 #if defined(CONFIG_DDR4)
 int mv_ddr4_mode_regs_init(u8 dev_num);
 int mv_ddr4_sdram_config(u32 dev_num);
-const char* mv_ddr4_version_get(void);
 int mv_ddr4_phy_config(u32 dev_num);
 int mv_ddr4_calibration_adjust(u32 dev_num, u8 vref_en, u8 pod_only);
 int mv_ddr4_training_main_flow(u32 dev_num);

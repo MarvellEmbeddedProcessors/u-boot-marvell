@@ -100,8 +100,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ddr3_training_ip.h"
 
-#define MV_DDR4_VERSION ".9"
-
 /* configure DDR4 SDRAM */
 int mv_ddr4_sdram_config(u32 dev_num);
 

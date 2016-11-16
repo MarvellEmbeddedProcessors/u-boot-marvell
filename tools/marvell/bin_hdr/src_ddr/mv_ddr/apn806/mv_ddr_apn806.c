@@ -797,10 +797,10 @@ static void mv_ddr_convert_read_params_from_tip2mc6(void)
 			rd_smp_dly_tip &= (REG_READ_DATA_SAMPLE_DELAYS_MASK <<
 				(REG_READ_DATA_SAMPLE_DELAYS_OFFS * cs));
 
-			phy_rl_cycle_dly_mc6 = 2 * (rd_smp_dly_tip - cl_val) + 1;
-
 			rd_smp_dly_tip = (rd_smp_dly_tip >> (REG_READ_DATA_SAMPLE_DELAYS_OFFS * cs) &
 					  REG_READ_DATA_SAMPLE_DELAYS_MASK);
+
+			phy_rl_cycle_dly_mc6 = 2 * (rd_smp_dly_tip - cl_val) + 1;
 
 			/* if cl is odd value add 2 else decrease 2 */
 			if (cl_val & 0x1)

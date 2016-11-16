@@ -377,13 +377,6 @@ if($opt_d eq 4)
 	$opt_d = 2;
 }
 
-# -d 5 option will build DDR4 sublib and set itself to 3 for mv_ddr
-if ($opt_d eq 5) {
-	system("echo \"DDR4SUBLIB = yes\" >> include/config.mk");
-	print "** Rebuild DDR4 sublib **\n";
-	$opt_d = 3;
-}
-
 # -d 2 option (ddr3libv2) set as a default, when not set explicitly
 if ($ddr3LibBuild eq "yes") {
 	if (!defined $opt_d) {
@@ -403,9 +396,8 @@ if ($ddr3LibBuild eq "yes") {
 # 	"-d 2 -m 3" will compile ddr3libv2 and ddr3
 # 	"-d 2 -m 4" will compile ddr3libv2 and ddr4
 # 	"-d 4" will compile as "-d 2" above plus rebuilds DDR4 sub-lib
-# 	"-d 3 -m 3" will compile mv_ddr and ddr3
-# 	"-d 3 -m 4" will compile mv_ddr and ddr4
-# 	"-d 5" will compile as "-d 3" above plus rebuilds DDR4 sub-lib
+# 	"-d 3 -m 3" will compile mv_ddr for ddr3
+# 	"-d 3 -m 4" will compile mv_ddr for ddr4
 
 if (defined $opt_d) {
 	system("echo \"DDR3LIB = $opt_d\" >> include/config.mk");

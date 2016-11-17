@@ -36,15 +36,9 @@
 #define _DRAM_IF_H_
 
 #define MAX_DRAM_IFACE		4
-#define MAX_DRAM_BUS		5
 
 typedef void (*udelay_func_t)(int usecs);
 typedef int  (*printf_func_t)(const char * __restrict, ...);
-
-struct dram_bus_cfg {
-	uint64_t size_mb;
-	uint32_t bus_width;
-};
 
 struct dram_iface_cfg {
 	void *mac_base;
@@ -54,7 +48,8 @@ struct dram_iface_cfg {
 	uint32_t cs_count;
 	uint32_t freq_mhz;
 
-	struct dram_bus_cfg bus[MAX_DRAM_BUS];
+	uint64_t size_mbytes;
+	uint32_t bus_width;
 };
 
 struct dram_config {

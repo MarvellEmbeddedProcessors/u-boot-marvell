@@ -108,13 +108,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 struct dram_config *mv_ddr_dram_config_update(void)
 {
 	struct dram_config *dc = mv_ddr_dram_config_get();
-	uint64_t size_mb = mv_ddr_get_total_memory_size_in_bits();
+	uint64_t size = mv_ddr_get_total_memory_size_in_bits();
 
 	/* convert total memory size from bits to megabytes */
-	size_mb /= (8 * 1024 * 1024);
+	size /= (8 * 1024 * 1024);
 
 	/* set total memory size in megabytes in dram configuration */
-	dc->iface[0].bus[0].size_mb = size_mb;
+	dc->iface[0].size_mbytes = size;
 
 	return dc;
 }

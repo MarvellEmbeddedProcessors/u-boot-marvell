@@ -380,10 +380,8 @@
 	#endif
 	/*#define CONFIG_MVEBU_PCI_EP*/ /* Set PCI host as end point */
 
-	/* Enable PCIE NIC for devel boards */
-	#ifdef CONFIG_DEVEL_BOARD
-		#define CONFIG_E1000
-	#endif
+	/* Enable PCIE NIC for all boards */
+	#define CONFIG_E1000
 
 #endif /* CONFIG_MVEBU_PCI */
 

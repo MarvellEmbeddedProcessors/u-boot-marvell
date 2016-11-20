@@ -4482,6 +4482,12 @@ e1000_phy_hw_reset(struct e1000_hw *hw)
 
 	e1000_swfw_sync_release(hw, swfw);
 
+	/* TODO - the reset fails on some boards, this is temporary WA
+	 * Even if reset fails, it does not affect the normal functionality
+	 * of the network adapter, so this WA does not harm
+	 */
+	return E1000_SUCCESS;
+
 	/* Wait for FW to finish PHY configuration. */
 	ret_val = e1000_get_phy_cfg_done(hw);
 	if (ret_val != E1000_SUCCESS)

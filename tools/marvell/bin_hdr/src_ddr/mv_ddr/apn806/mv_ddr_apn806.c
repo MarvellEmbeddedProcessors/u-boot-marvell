@@ -714,6 +714,7 @@ int ddr3_silicon_pre_init(void)
 	int subphy_num;
 	static int init_done;
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
+	int status;
 
 	/* in case of calibration adjust
 	 * this flag checks if to run a workaround where v pod and v sstl are wired
@@ -726,7 +727,11 @@ int ddr3_silicon_pre_init(void)
 	if (tm == NULL)
 		return MV_FAIL;
 
-	hws_ddr3_tip_load_topology_map(dev_num, tm);
+	status = hws_ddr3_tip_load_topology_map(dev_num, tm);
+
+	if (status != MV_OK)
+		return status;
+
 	ddr3_tip_init_apn806_silicon(dev_num, board_id);
 
 	/*

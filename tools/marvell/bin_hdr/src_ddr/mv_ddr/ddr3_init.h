@@ -187,7 +187,6 @@ extern u32 g_rtt_park;
 
 extern u8 debug_training_access;
 extern u32 first_active_if;
-extern enum hws_ddr_freq init_freq;
 extern u32 delay_enable, ck_delay, ca_delay;
 extern u32 mask_tune_func;
 extern u32 rl_version;

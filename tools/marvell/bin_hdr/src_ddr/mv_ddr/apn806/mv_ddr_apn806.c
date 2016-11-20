@@ -624,8 +624,6 @@ static int ddr3_tip_init_apn806_silicon(u32 dev_num, u32 board_id)
 #if !defined(CONFIG_DDR4)
 	enum hws_ddr_freq ddr_freq = DDR_FREQ_LOW_FREQ;
 #endif
-	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
-
 	/* new read leveling version */
 	config_func.tip_dunit_read_func = ddr3_tip_apn806_if_read;
 	config_func.tip_dunit_write_func = ddr3_tip_apn806_if_write;
@@ -705,8 +703,6 @@ static int ddr3_tip_init_apn806_silicon(u32 dev_num, u32 board_id)
 	delay_enable = 1;
 	dfs_low_freq = DFS_LOW_FREQ_VALUE;
 	calibration_update_control = 1;
-
-	init_freq = tm->interface_params[first_active_if].memory_freq;
 
 	return MV_OK;
 }

@@ -1212,7 +1212,6 @@ static int ddr3_tip_access_atr(u32 dev_num, u32 flag_id, u32 value, u32 **ptr)
 		break;
 
 	case 0x35:
-		init_freq = (enum hws_ddr_freq)value;
 		break;
 
 	case 0x36:

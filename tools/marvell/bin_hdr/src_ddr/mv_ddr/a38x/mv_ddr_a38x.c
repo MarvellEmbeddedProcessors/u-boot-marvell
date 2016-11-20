@@ -764,7 +764,6 @@ static int ddr3_tip_init_a38x_silicon(u32 dev_num, u32 board_id)
 	struct hws_tip_config_func_db config_func;
 	enum hws_ddr_freq ddr_freq;
 	int status;
-	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
 
 	/* new read leveling version */
 	config_func.tip_dunit_read_func = ddr3_tip_a38x_if_read;
@@ -883,9 +882,6 @@ static int ddr3_tip_init_a38x_silicon(u32 dev_num, u32 board_id)
 	/* For a38x only, change to 2T mode to resolve low freq instability */
 	mode_2t = 1;
 #endif
-
-	init_freq = tm->interface_params[first_active_if].memory_freq;
-
 #if !defined(CONFIG_DDR4)
 	ddr3_tip_a38x_get_medium_freq(dev_num, &medium_freq);
 #endif /* CONFIG_DDR4 */

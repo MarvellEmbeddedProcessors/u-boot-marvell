@@ -106,7 +106,6 @@ u32 phy_reg0_val = 0;
 u32 phy_reg1_val = 8;
 u32 phy_reg2_val = 0;
 u32 phy_reg3_val = PARAM_UNDEFINED;
-enum hws_ddr_freq init_freq = DDR_FREQ_667;
 enum hws_ddr_freq low_freq = DDR_FREQ_LOW_FREQ;
 enum hws_ddr_freq medium_freq;
 u32 debug_dunit = 0;
@@ -484,7 +483,7 @@ int hws_ddr3_tip_init_controller(u32 dev_num, struct init_cntr_param *init_cntr_
 	u32 data_value = 0, cs_cnt = 0,
 		mem_mask = 0, bus_index = 0;
 	enum hws_speed_bin speed_bin_index = SPEED_BIN_DDR_2133N;
-	enum hws_ddr_freq freq = init_freq;
+	enum hws_ddr_freq freq = ddr3_tip_get_init_freq();
 	u32 cs_mask = 0;
 	u32 cl_value = 0, cwl_val = 0;
 	u32 bus_cnt = 0, adll_tap = 0;
@@ -527,7 +526,6 @@ int hws_ddr3_tip_init_controller(u32 dev_num, struct init_cntr_param *init_cntr_
 			speed_bin_index =
 				tm->interface_params[if_id].
 				speed_bin_index;
-			freq = init_freq;
 
 			/* t_ckclk is external clock */
 			t_ckclk = (MEGA / freq_val[freq]);
@@ -1164,7 +1162,7 @@ int hws_ddr3_tip_run_alg(u32 dev_num, enum hws_algo_type algo_type)
 #ifdef STATIC_ALGO_SUPPORT
 		{
 			enum hws_ddr_freq freq;
-			freq = init_freq;
+			freq = ddr3_tip_get_init_freq();
 
 			/* add to mask */
 			if (is_adll_calib_before_init != 0) {
@@ -1231,7 +1229,7 @@ static int odt_test(u32 dev_num, enum hws_algo_type algo_type)
 				 * only interface 0
 				 */
 				ret = ddr3_tip_run_static_alg(dev_num,
-							      init_freq);
+							      ddr3_tip_get_init_freq());
 			}
 		}
 	}
@@ -2547,7 +2545,7 @@ int ddr3_tip_adll_regs_bypass(u32 dev_num, u32 reg_val1, u32 reg_val2)
  */
 static int ddr3_tip_ddr3_training_main_flow(u32 dev_num)
 {
-	enum hws_ddr_freq freq = init_freq;
+	enum hws_ddr_freq freq = ddr3_tip_get_init_freq();
 /* TODO: enable this functionality for other platforms */
 #if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ARMADA_39X)
 	struct init_cntr_param init_cntr_prm;
@@ -2572,7 +2570,6 @@ static int ddr3_tip_ddr3_training_main_flow(u32 dev_num)
 	/* Set to 0 after each loop to avoid illegal value may be used */
 	effective_cs = 0;
 
-	freq = init_freq;
 	freq_val[DDR_FREQ_LOW_FREQ] = dfs_low_freq;
 
 	if (is_pll_before_init != 0) {

@@ -903,10 +903,13 @@ int mv_ddr_post_training_soc_config(const char *ddr_type)
 	return MV_OK;
 }
 
-/* FIXME: this is a stub function required by DDR4 code */
 u32 ddr3_tip_get_init_freq(void)
 {
-	return 0;
+	enum hws_ddr_freq freq;
+
+	mv_ddr_init_ddr_freq_get(DEV_NUM_0, &freq);
+
+	return freq;
 }
 
 void mv_ddr_mc_config(void)

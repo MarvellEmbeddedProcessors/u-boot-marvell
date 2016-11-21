@@ -316,8 +316,11 @@ static u32 mvebu_get_device(struct mii_dev *bus, u16 port, struct device_para *d
 	rev_num = mvebu_get_reg_field_from_wrod(reg3, 0, 4);
 	rev_num = mvebu_get_reg_field_from_wrod(reg3, 0, 4);
 
+	debug("%s: OUI model oui1 0x%x, oui2 0x%x, model_num 0x%x, rev_num 0x%x\n",
+		__func__, oui1, oui2, model_num, rev_num);
 	/* Marvell OUI is 0x05043, 0x3240 model num is 0x18 */
-	if (!(oui1 == 0x141 && oui2 == 3 && (model_num == 0x18 || model_num == 0x1A)))
+	if (!(oui1 == 0x141 && oui2 == 3 && (model_num == 0x18 || model_num == 0x1A)) &&
+	    !(oui1 == 0x2b && oui2 == 2 && model_num == 0x1a)) /* 3310 A0 ver */
 		return MVEBU_ERR_GET_DEVICE;
 
 	dev_param->dev_id = model_num;

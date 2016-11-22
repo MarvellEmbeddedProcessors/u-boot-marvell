@@ -126,6 +126,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DMA_DESQ_CTRL_32B		1
 #define DMA_DESQ_CTRL_128B		7
 #define DMA_DESQ_STOP_OFF		0x800
+#define DMA_DESQ_STOP_QUEUE_RESET_OFFS	1
+#define DMA_DESQ_STOP_QUEUE_RESET_ENA	1
+#define DMA_DESQ_STOP_QUEUE_DIS_OFFS	0
+#define DMA_DESQ_STOP_QUEUE_DIS_ENA	0
 #define DMA_DESQ_DEALLOC_OFF		0x804
 #define DMA_DESQ_ADD_OFF		0x808
 
@@ -259,7 +263,7 @@ static void mv_xor_v2_init(u32 base, u32 qmem)
 	reg_write(base + GLOB_PAUSE, reg_val);
 
 	/* enable dma engine */
-	reg_write(base + DMA_DESQ_STOP_OFF, 0);
+	reg_write(base + DMA_DESQ_STOP_OFF, DMA_DESQ_STOP_QUEUE_DIS_ENA << DMA_DESQ_STOP_QUEUE_DIS_OFFS);
 }
 
 static void mv_xor_v2_desc_create(uint64_t qmem, int desc_id, uint64_t start, uint64_t size, uint64_t data)
@@ -294,7 +298,7 @@ static u32 mv_xor_v2_done(u32 base)
 static void mv_xor_v2_finish(u32 base)
 {
 	/* reset dma engine */
-	reg_write(base + DMA_DESQ_STOP_OFF, 2);
+	reg_write(base + DMA_DESQ_STOP_OFF, DMA_DESQ_STOP_QUEUE_RESET_ENA << DMA_DESQ_STOP_QUEUE_RESET_OFFS);
 }
 
 /* mv_ddr xor api */

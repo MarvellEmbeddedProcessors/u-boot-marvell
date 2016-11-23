@@ -97,7 +97,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ddr3_init.h"
 
-#define WL_ITERATION_NUM		10
+#define WL_ITERATION_NUM	10
 
 static u32 pup_mask_table[] = {
 	0x000000ff,
@@ -1902,6 +1902,304 @@ int ddr3_tip_print_wl_supp_result(u32 dev_num)
 					[bus_id].stage));
 		}
 	}
+
+	return MV_OK;
+}
+
+#define RD_FIFO_PTR_LOW_STAT_INDIR_ADDR		0x9a
+#define RD_FIFO_PTR_HIGH_STAT_INDIR_ADDR	0x9b
+/* position of falling dqs edge in fifo; walking 1 */
+#define RD_FIFO_DQS_FALL_EDGE_POS_0		0x1
+#define RD_FIFO_DQS_FALL_EDGE_POS_1		0x2
+#define RD_FIFO_DQS_FALL_EDGE_POS_2		0x4
+#define RD_FIFO_DQS_FALL_EDGE_POS_3		0x8
+#define RD_FIFO_DQS_FALL_EDGE_POS_4		0x10 /* lock */
+/* position of rising dqs edge in fifo; walking 0 */
+#define RD_FIFO_DQS_RISE_EDGE_POS_0		0x1fff
+#define RD_FIFO_DQS_RISE_EDGE_POS_1		0x3ffe
+#define RD_FIFO_DQS_RISE_EDGE_POS_2		0x3ffd
+#define RD_FIFO_DQS_RISE_EDGE_POS_3		0x3ffb
+#define RD_FIFO_DQS_RISE_EDGE_POS_4		0x3ff7 /* lock */
+#define TEST_ADDR		0x8
+#define TAPS_PER_UI		32
+#define UI_PER_RD_SAMPLE	4
+#define TAPS_PER_RD_SAMPLE	((UI_PER_RD_SAMPLE) * (TAPS_PER_UI))
+#define MAX_RD_SAMPLES		32
+#define MAX_RL_VALUE		((MAX_RD_SAMPLES) * (TAPS_PER_RD_SAMPLE))
+#define RD_FIFO_DLY		8
+#define STEP_SIZE		64
+#define RL_JITTER_WIDTH_LMT	20
+enum rl_dqs_burst_state {
+	RL_AHEAD = 0,
+	RL_INSIDE,
+	RL_BEHIND
+};
+int mv_ddr_rl_dqs_burst(u32 dev_num, u32 if_id, u32 freq)
+{
+	enum rl_dqs_burst_state rl_state[NUM_OF_CS][MAX_BUS_NUM][MAX_INTERFACE_NUM] = { { {0} } };
+	enum hws_ddr_phy subphy_type = DDR_PHY_DATA;
+	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
+	int cl_val = tm->interface_params[0].cas_l;
+	int rl_adll_val, rl_phase_val, sdr_cycle_incr, rd_sample, rd_ready;
+	int final_rd_sample, final_rd_ready;
+	int i, subphy_id, step;
+	int pass_lock_num = 0;
+	int init_pass_lock_num;
+	int phase_delta;
+	int min_phase, max_phase;
+	u32 max_cs = ddr3_tip_max_cs_get(dev_num);
+	u32 rl_values[NUM_OF_CS][MAX_BUS_NUM][MAX_INTERFACE_NUM] = { { {0} } };
+	u32 rl_val, rl_min_val[NUM_OF_CS], rl_max_val[NUM_OF_CS];
+	u32 reg_val_low, reg_val_high;
+	u32 reg_val,  reg_mask;
+	uintptr_t test_addr = TEST_ADDR;
+
+	/* initialization */
+	if (ddr3_if_ecc_enabled()) {
+		ddr3_tip_if_read(dev_num, ACCESS_TYPE_UNICAST, if_id, TRAINING_SW_2_REG,
+				 &reg_val, MASK_ALL_BITS);
+		reg_mask = (TRAINING_SW_2_TRN_ECC_MUX_MASK << TRAINING_SW_2_TRN_ECC_MUX_OFFS) |
+			   (TRAINING_SW_2_TRN_SW_OVRD_MASK << TRAINING_SW_2_TRN_SW_OVRD_OFFS);
+		reg_val &= ~reg_mask;
+		reg_val |= (TRAINING_SW_2_TRN_ECC_MUX_DIS << TRAINING_SW_2_TRN_ECC_MUX_OFFS) |
+			   (TRAINING_SW_2_TRN_SW_OVRD_ENA << TRAINING_SW_2_TRN_SW_OVRD_OFFS);
+		ddr3_tip_if_write(0, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_SW_2_REG,
+				  reg_val, MASK_ALL_BITS);
+		ddr3_tip_if_read(dev_num, ACCESS_TYPE_UNICAST, if_id, TRAINING_REG,
+				 &reg_val, MASK_ALL_BITS);
+		reg_mask = (TRAINING_TRN_START_MASK << TRAINING_TRN_START_OFFS);
+		reg_val &= ~reg_mask;
+		reg_val |= TRAINING_TRN_START_ENA << TRAINING_TRN_START_OFFS;
+		ddr3_tip_if_write(0, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_REG,
+				  reg_val, MASK_ALL_BITS);
+	}
+
+	for (effective_cs = 0; effective_cs < max_cs; effective_cs++)
+		for (subphy_id = 0; subphy_id < MAX_BUS_NUM; subphy_id++)
+			for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++)
+				if (IS_BUS_ACTIVE(tm->bus_act_mask, subphy_id) == 0)
+					pass_lock_num++; /* increment on inactive subphys */
+
+	init_pass_lock_num = pass_lock_num / max_cs;
+	for (effective_cs = 0; effective_cs < max_cs; effective_cs++) {
+		for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
+			VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
+			training_result[training_stage][if_id] = TEST_SUCCESS;
+		}
+	}
+
+	/* search for dqs edges per subphy */
+	if_id = 0;
+	for (effective_cs = 0; effective_cs < max_cs; effective_cs++) {
+		pass_lock_num = init_pass_lock_num;
+		ddr3_tip_if_write(0, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_DATA_CONTROL_REG,
+				  effective_cs << ODPG_DATA_CS_OFFS,
+				  ODPG_DATA_CS_MASK << ODPG_DATA_CS_OFFS);
+		rl_min_val[effective_cs] = MAX_RL_VALUE;
+		rl_max_val[effective_cs] = 0;
+		step = STEP_SIZE;
+		for (i = 0; i < MAX_RL_VALUE; i += step) {
+			rl_val = 0;
+			sdr_cycle_incr = i / TAPS_PER_RD_SAMPLE; /* sdr cycle increment */
+			rd_sample = cl_val + 2 * sdr_cycle_incr;
+			/* fifo out to in delay in search is constant */
+			rd_ready = rd_sample + RD_FIFO_DLY;
+
+			ddr3_tip_if_write(0, ACCESS_TYPE_UNICAST, 0, REG_READ_DATA_SAMPLE_DELAYS_ADDR,
+					  rd_sample << (REG_READ_DATA_SAMPLE_DELAYS_OFFS * effective_cs),
+					  REG_READ_DATA_SAMPLE_DELAYS_MASK <<
+					  (REG_READ_DATA_SAMPLE_DELAYS_OFFS * effective_cs));
+			ddr3_tip_if_write(0, ACCESS_TYPE_UNICAST, 0, REG_READ_DATA_READY_DELAYS_ADDR,
+					  rd_ready << (REG_READ_DATA_READY_DELAYS_OFFS * effective_cs),
+					  REG_READ_DATA_READY_DELAYS_MASK <<
+					  (REG_READ_DATA_READY_DELAYS_OFFS * effective_cs));
+
+			/* one sdr (single data rate) cycle incremented on every four phases of ddr clock */
+			sdr_cycle_incr = i % TAPS_PER_RD_SAMPLE;
+			rl_adll_val = sdr_cycle_incr % MAX_RD_SAMPLES;
+			rl_phase_val = sdr_cycle_incr / MAX_RD_SAMPLES;
+			rl_val = ((rl_adll_val & RL_REF_DLY_MASK) << RL_REF_DLY_OFFS) |
+				 ((rl_phase_val & RL_PH_SEL_MASK) << RL_PH_SEL_OFFS);
+
+			/* write to all subphys (even to not connected or locked) */
+			ddr3_tip_bus_write(dev_num, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST,
+					   0, DDR_PHY_DATA, RL_PHY_REG(effective_cs), rl_val);
+
+			/* reset read fifo assertion */
+			ddr3_tip_if_write(dev_num, ACCESS_TYPE_MULTICAST, if_id, SDRAM_CONFIGURATION_REG,
+					  MV_DDR_DATA_PUP_RD_RESET_ENA << MV_DDR_DATA_PUP_RD_RESET_OFFS,
+					  MV_DDR_DATA_PUP_RD_RESET_MASK << MV_DDR_DATA_PUP_RD_RESET_OFFS);
+
+			/* reset read fifo deassertion */
+			ddr3_tip_if_write(dev_num, ACCESS_TYPE_MULTICAST, if_id, SDRAM_CONFIGURATION_REG,
+					  MV_DDR_DATA_PUP_RD_RESET_DIS << MV_DDR_DATA_PUP_RD_RESET_OFFS,
+					  MV_DDR_DATA_PUP_RD_RESET_MASK << MV_DDR_DATA_PUP_RD_RESET_OFFS);
+
+			/* perform one read burst */
+			if (MV_DDR_IS_64BIT_DRAM_MODE(tm->bus_act_mask))
+				readq(test_addr);
+			else
+				readl(test_addr);
+
+			/* progress read ptr; decide on rl state per byte */
+			for (subphy_id = 0; subphy_id < MAX_BUS_NUM; subphy_id++) {
+				if (rl_state[effective_cs][subphy_id][if_id] == RL_BEHIND)
+					continue; /* skip locked subphys */
+				ddr3_tip_bus_read(dev_num, if_id, ACCESS_TYPE_UNICAST, subphy_id, DDR_PHY_DATA,
+						  RD_FIFO_PTR_LOW_STAT_INDIR_ADDR, &reg_val_low);
+				ddr3_tip_bus_read(dev_num, if_id, ACCESS_TYPE_UNICAST, subphy_id, DDR_PHY_DATA,
+						  RD_FIFO_PTR_HIGH_STAT_INDIR_ADDR, &reg_val_high);
+				DEBUG_LEVELING(DEBUG_LEVEL_TRACE,
+					       ("%s: cs %d, step %d, subphy %d, state %d, low 0x%04x, high 0x%04x; move to ",
+						__func__, effective_cs, i, subphy_id,
+						rl_state[effective_cs][subphy_id][if_id],
+						reg_val_low, reg_val_high));
+
+				switch (rl_state[effective_cs][subphy_id][if_id]) {
+				case RL_AHEAD:
+					/* improve search resolution getting closer to the window */
+					if (reg_val_low == RD_FIFO_DQS_FALL_EDGE_POS_4 &&
+					    reg_val_high == RD_FIFO_DQS_RISE_EDGE_POS_4) {
+						rl_state[effective_cs][subphy_id][if_id] = RL_INSIDE;
+						rl_values[effective_cs][subphy_id][if_id] = i;
+						DEBUG_LEVELING(DEBUG_LEVEL_TRACE,
+							       ("new state %d\n",
+								rl_state[effective_cs][subphy_id][if_id]));
+					} else if (reg_val_low == RD_FIFO_DQS_FALL_EDGE_POS_3 &&
+						   reg_val_high == RD_FIFO_DQS_RISE_EDGE_POS_3) {
+						step = (step < 2) ? step : 2;
+					} else if (reg_val_low == RD_FIFO_DQS_FALL_EDGE_POS_2 &&
+						   reg_val_high == RD_FIFO_DQS_RISE_EDGE_POS_2) {
+						step = (step < 16) ? step : 16;
+					} else if (reg_val_low == RD_FIFO_DQS_FALL_EDGE_POS_1 &&
+						   reg_val_high == RD_FIFO_DQS_RISE_EDGE_POS_1) {
+						step = (step < 32) ? step : 32;
+					} else if (reg_val_low == RD_FIFO_DQS_FALL_EDGE_POS_0 &&
+						   reg_val_high == RD_FIFO_DQS_RISE_EDGE_POS_0) {
+						step = (step < 64) ? step : 64;
+					} else {
+						/* otherwise, step is unchanged */
+					}
+					break;
+				case RL_INSIDE:
+					if (reg_val_low != RD_FIFO_DQS_FALL_EDGE_POS_4 ||
+					    reg_val_high != RD_FIFO_DQS_RISE_EDGE_POS_4) {
+						if ((i - rl_values[effective_cs][subphy_id][if_id]) <
+						    RL_JITTER_WIDTH_LMT) {
+							/* inside the jitter; not valid segment */
+							rl_state[effective_cs][subphy_id][if_id] = RL_AHEAD;
+							DEBUG_LEVELING(DEBUG_LEVEL_TRACE,
+								       ("new state %d; jitter on mask\n",
+									rl_state[effective_cs][subphy_id][if_id]));
+						} else { /* finished valid segment */
+							rl_state[effective_cs][subphy_id][if_id] = RL_BEHIND;
+							rl_values[effective_cs][subphy_id][if_id] =
+								(i + rl_values[effective_cs][subphy_id][if_id]) / 2;
+							DEBUG_LEVELING(DEBUG_LEVEL_TRACE,
+								       ("new state %d, solution %d\n",
+									rl_state[effective_cs][subphy_id][if_id],
+									rl_values[effective_cs][subphy_id][if_id]));
+							pass_lock_num++;
+							DEBUG_LEVELING(DEBUG_LEVEL_TRACE,
+								       ("new lock %d\n", pass_lock_num));
+							if (rl_min_val[effective_cs] >
+							    rl_values[effective_cs][subphy_id][if_id])
+								rl_min_val[effective_cs] =
+									rl_values[effective_cs][subphy_id][if_id];
+							if (rl_max_val[effective_cs] <
+							    rl_values[effective_cs][subphy_id][if_id])
+								rl_max_val[effective_cs] =
+									rl_values[effective_cs][subphy_id][if_id];
+							step = 2;
+						}
+					}
+					break;
+				case RL_BEHIND: /* do nothing */
+					break;
+				}
+				DEBUG_LEVELING(DEBUG_LEVEL_TRACE, ("\n"));
+			}
+
+			DEBUG_LEVELING(DEBUG_LEVEL_TRACE, ("pass_lock_num %d\n", pass_lock_num));
+			/* exit condition */
+			if (pass_lock_num == MAX_BUS_NUM)
+				break;
+		} /* for-loop on i */
+
+		if (pass_lock_num != MAX_BUS_NUM) {
+			DEBUG_LEVELING(DEBUG_LEVEL_ERROR,
+				       ("%s: cs %d, pass_lock_num %d, max_bus_num %d, init_pass_lock_num %d\n",
+				       __func__, effective_cs, pass_lock_num, MAX_BUS_NUM, init_pass_lock_num));
+			for (subphy_id = 0; subphy_id < MAX_BUS_NUM; subphy_id++) {
+				VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy_id);
+				DEBUG_LEVELING(DEBUG_LEVEL_ERROR,
+					       ("%s: subphy %d %s\n",
+						__func__, subphy_id,
+						(rl_state[effective_cs][subphy_id][if_id] == RL_BEHIND) ?
+						"locked" : "not locked"));
+			}
+		}
+	} /* for-loop on effective_cs */
+
+	/* post-processing read leveling results */
+	if_id = 0;
+	for (effective_cs = 0; effective_cs < max_cs; effective_cs++) {
+		phase_delta = 0;
+		i = rl_min_val[effective_cs];
+		sdr_cycle_incr = i / TAPS_PER_RD_SAMPLE; /* sdr cycle increment */
+		rd_sample = cl_val + 2 * sdr_cycle_incr;
+		rd_ready = rd_sample + RD_FIFO_DLY;
+		min_phase = (rl_min_val[effective_cs] - (sdr_cycle_incr * TAPS_PER_RD_SAMPLE)) % MAX_RD_SAMPLES;
+		max_phase = (rl_max_val[effective_cs] - (sdr_cycle_incr * TAPS_PER_RD_SAMPLE)) % MAX_RD_SAMPLES;
+		final_rd_sample = rd_sample;
+		final_rd_ready = rd_ready;
+
+		ddr3_tip_if_write(0, ACCESS_TYPE_UNICAST, 0, REG_READ_DATA_SAMPLE_DELAYS_ADDR,
+				  rd_sample << (REG_READ_DATA_SAMPLE_DELAYS_OFFS * effective_cs),
+				  REG_READ_DATA_SAMPLE_DELAYS_MASK <<
+				  (REG_READ_DATA_SAMPLE_DELAYS_OFFS * effective_cs));
+		ddr3_tip_if_write(0, ACCESS_TYPE_UNICAST, 0, REG_READ_DATA_READY_DELAYS_ADDR,
+				  rd_ready << (REG_READ_DATA_READY_DELAYS_OFFS * effective_cs),
+				  REG_READ_DATA_READY_DELAYS_MASK <<
+				  (REG_READ_DATA_READY_DELAYS_OFFS * effective_cs));
+		DEBUG_LEVELING(DEBUG_LEVEL_INFO,
+			       ("%s: cs %d, min phase %d, max phase %d, read sample %d\n",
+				__func__, effective_cs, min_phase, max_phase, rd_sample));
+
+		for (subphy_id = 0; subphy_id < MAX_BUS_NUM; subphy_id++) {
+			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy_id);
+			/* reduce sdr cycle per cs; extract rl adll and phase values */
+			i = rl_values[effective_cs][subphy_id][if_id] - (sdr_cycle_incr * TAPS_PER_RD_SAMPLE);
+			rl_adll_val = i % MAX_RD_SAMPLES;
+			rl_phase_val = i / MAX_RD_SAMPLES;
+			rl_phase_val -= phase_delta;
+			DEBUG_LEVELING(DEBUG_LEVEL_INFO,
+				       ("%s: final results: cs %d, subphy %d, read sample %d read ready %d, rl_phase_val %d, rl_adll_val %d\n",
+					__func__, effective_cs, subphy_id, final_rd_sample,
+					final_rd_ready, rl_phase_val, rl_adll_val));
+
+			rl_val = ((rl_adll_val & RL_REF_DLY_MASK) << RL_REF_DLY_OFFS) |
+				 ((rl_phase_val & RL_PH_SEL_MASK) << RL_PH_SEL_OFFS);
+			ddr3_tip_bus_write(dev_num, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_UNICAST,
+					   subphy_id, subphy_type, RL_PHY_REG(effective_cs), rl_val);
+		}
+	} /* for-loop on effective cs */
+
+	for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
+		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
+		if (odt_config != 0)
+			CHECK_STATUS(ddr3_tip_write_additional_odt_setting(dev_num, if_id));
+	}
+
+	/* reset read fifo assertion */
+	ddr3_tip_if_write(dev_num, ACCESS_TYPE_MULTICAST, if_id, SDRAM_CONFIGURATION_REG,
+			  MV_DDR_DATA_PUP_RD_RESET_ENA << MV_DDR_DATA_PUP_RD_RESET_OFFS,
+			  MV_DDR_DATA_PUP_RD_RESET_MASK << MV_DDR_DATA_PUP_RD_RESET_OFFS);
+
+	/* reset read fifo deassertion */
+	ddr3_tip_if_write(dev_num, ACCESS_TYPE_MULTICAST, if_id, SDRAM_CONFIGURATION_REG,
+			  MV_DDR_DATA_PUP_RD_RESET_DIS << MV_DDR_DATA_PUP_RD_RESET_OFFS,
+			  MV_DDR_DATA_PUP_RD_RESET_MASK << MV_DDR_DATA_PUP_RD_RESET_OFFS);
 
 	return MV_OK;
 }

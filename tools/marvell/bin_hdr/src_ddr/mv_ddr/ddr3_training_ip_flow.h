@@ -258,6 +258,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_DDR_DATA_PUP_WR_RESET_MASK		0x1
 #define MV_DDR_DATA_PUP_RD_RESET_OFFS		30
 #define MV_DDR_DATA_PUP_RD_RESET_MASK		0x1
+#define MV_DDR_DATA_PUP_RD_RESET_ENA		0x0
+#define MV_DDR_DATA_PUP_RD_RESET_DIS		0x1
 #define MV_DDR_IO_BIST_OFFS			31
 #define MV_DDR_DATA_PUP_RD_RESET_MASK		0x1
 
@@ -374,8 +376,20 @@ enum {
 #define READ_DATA_SAMPLE_DELAY			0x1538
 #define READ_DATA_READY_DELAY			0x153c
 #define TRAINING_REG				0x15b0
+#define TRAINING_TRN_START_OFFS			31
+#define TRAINING_TRN_START_MASK			0x1
+#define TRAINING_TRN_START_ENA			0x1
+#define TRAINING_TRN_START_DIS			0x0
 #define TRAINING_SW_1_REG			0x15b4
 #define TRAINING_SW_2_REG			0x15b8
+#define TRAINING_SW_2_TRN_ECC_MUX_OFFS		1
+#define TRAINING_SW_2_TRN_ECC_MUX_MASK		0x1
+#define TRAINING_SW_2_TRN_ECC_MUX_ENA		0x1
+#define TRAINING_SW_2_TRN_ECC_MUX_DIS		0x0
+#define TRAINING_SW_2_TRN_SW_OVRD_OFFS		0
+#define TRAINING_SW_2_TRN_SW_OVRD_MASK		0x1
+#define TRAINING_SW_2_TRN_SW_OVRD_ENA		0x1
+#define TRAINING_SW_2_TRN_SW_OVRD_DIS		0x0
 #define TRAINING_PATTERN_BASE_ADDRESS_REG	0x15bc
 #define TRAINING_DBG_1_REG			0x15c0
 #define TRAINING_DBG_2_REG			0x15c4
@@ -452,6 +466,11 @@ enum {
 
 #define WRITE_CENTRALIZATION_PHY_REG		0x1
 #define RL_PHY_BASE				0x2
+#define RL_PHY_REG(cs)				(RL_PHY_BASE + (cs) * 0x4)
+#define RL_REF_DLY_OFFS				0
+#define RL_REF_DLY_MASK				0x1f
+#define RL_PH_SEL_OFFS				6
+#define RL_PH_SEL_MASK				0x7
 #define READ_CENTRALIZATION_PHY_REG		0x3
 #define PBS_RX_PHY_REG				0x50
 #define PBS_TX_PHY_REG				0x10
@@ -600,6 +619,7 @@ int ddr3_tip_ext_read(u32 dev_num, u32 if_id, u32 reg_addr,
 int ddr3_tip_ext_write(u32 dev_num, u32 if_id, u32 reg_addr,
 		       u32 num_of_bursts, u32 *addr);
 int ddr3_tip_dynamic_read_leveling(u32 dev_num, u32 ui_freq);
+int mv_ddr_rl_dqs_burst(u32 dev_num, u32 if_id, u32 freq);
 int ddr3_tip_legacy_dynamic_read_leveling(u32 dev_num);
 int ddr3_tip_dynamic_per_bit_read_leveling(u32 dev_num, u32 ui_freq);
 int ddr3_tip_legacy_dynamic_write_leveling(u32 dev_num);

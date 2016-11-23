@@ -2866,6 +2866,21 @@ static int ddr3_tip_ddr3_training_main_flow(u32 dev_num)
 		}
 	}
 
+	if (mask_tune_func & RL_DQS_BURST_MASK_BIT) {
+		training_stage = READ_LEVELING_TF;
+		DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO,
+				  ("RL_DQS_BURST_MASK_BIT\n"));
+		ret = mv_ddr_rl_dqs_burst(0, 0, tm->interface_params[0].memory_freq);
+		if (is_reg_dump != 0)
+			ddr3_tip_reg_dump(dev_num);
+		if (ret != MV_OK) {
+			DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR,
+					  ("mv_ddr_rl_dqs_burst TF failure\n"));
+			if (debug_mode == 0)
+				return MV_FAIL;
+		}
+	}
+
 #if !defined(CONFIG_DDR4)
 	if (mask_tune_func & DM_PBS_TX_MASK_BIT) {
 		DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("DM_PBS_TX_MASK_BIT\n"));

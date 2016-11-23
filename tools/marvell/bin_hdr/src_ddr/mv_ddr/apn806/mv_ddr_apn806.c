@@ -654,7 +654,7 @@ static int mv_ddr_training_mask_set(void)
 			  SET_TARGET_FREQ_MASK_BIT |
 			  WRITE_LEVELING_TF_MASK_BIT |
 			  WL_PHASE_CORRECTION_MASK_BIT |
-			  READ_LEVELING_TF_MASK_BIT |
+			  RL_DQS_BURST_MASK_BIT |
 			  RECEIVER_CALIBRATION_MASK_BIT |
 			  DQ_VREF_CALIBRATION_MASK_BIT);
 	rl_mid_freq_wa = 0;

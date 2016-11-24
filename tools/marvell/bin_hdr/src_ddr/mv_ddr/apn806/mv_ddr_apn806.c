@@ -964,7 +964,6 @@ int mv_ddr_mc6_init_controller(void)
 	reg_write(0x20308, 0x1);	/* DRAM_Config_3 DLL_reset */
 #if defined(a80x0) || defined(a80x0_cust)
 	reg_write(0x20314, 0x0);	/* DRAM_Config_5 CS1: RTT_Park, RTT_WR - Diff1 */
-	reg_write(0x20224, 0x0);	/* MC_CONFIG CS1:  mapping - diff3 size */
 #if defined(CONFIG_64BIT)
 	reg_write(0x20044, 0x30400);	/* MC_Control_0 - bust length, data width need to configure - diff4 - config */
 #else

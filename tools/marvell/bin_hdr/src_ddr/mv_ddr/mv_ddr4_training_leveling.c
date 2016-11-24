@@ -104,8 +104,6 @@ static int mv_ddr4_dynamic_pb_wl_supp(u32 dev_num, enum mv_wl_supp_mode ecc_mode
 /* compare test for ddr4 write leveling supplementary */
 #define MV_DDR4_COMP_TEST_NO_RESULT	0
 #define MV_DDR4_COMP_TEST_RESULT_0	1
-#define MV_DDR4_COMP_TEST_RESULT_PLUS	2
-#define MV_DDR4_COMP_TEST_RESULT_MINUS	3
 #define MV_DDR4_XSB_COMP_PATTERNS_NUM	8
 
 static u8 mv_ddr4_xsb_comp_test(u32 dev_num, u32 subphy_num, u32 if_id,
@@ -136,12 +134,12 @@ static u8 mv_ddr4_xsb_comp_test(u32 dev_num, u32 subphy_num, u32 if_id,
 		0x00000000,
 		0xffffffff,
 		0xffffffff}; /* TODO: use pattern_table_get_word */
-	u8 final_result = MV_DDR4_COMP_TEST_NO_RESULT;
 	int i, status;
 	uint64_t data64;
 	uintptr_t addr64;
 	int ecc_running = 0;
 	u32 ecc_read_subphy_num = 0; /* FIXME: change ecc read subphy num to be configurable */
+	u8 bit_counter = 0;
 
 	/* write and read data */
 	if (MV_DDR_IS_64BIT_DRAM_MODE(tm->bus_act_mask)) {
@@ -284,94 +282,28 @@ static u8 mv_ddr4_xsb_comp_test(u32 dev_num, u32 subphy_num, u32 if_id,
 		/* find the key value and make decision */
 		switch (pb_key) {
 		/* case(s) for 0 */
-		case 0b11000011:
-		case 0b11000111:
-		case 0b10000011:
-		case 0b11000001:
-		case 0b11100011:
-			if (final_result == MV_DDR4_COMP_TEST_NO_RESULT) {
-				final_result = MV_DDR4_COMP_TEST_RESULT_0;
-			} else {
-				if (final_result != MV_DDR4_COMP_TEST_RESULT_0)
-					DEBUG_LEVELING(DEBUG_LEVEL_INFO,
-						       ("different supplementary results (%d -> %d)\n",
-							final_result, MV_DDR4_COMP_TEST_RESULT_0));
-			}
-			break;
-		/* case(s) for -1 */
-		case 0b00001111:
-		case 0b00011111:
-		case 0b00000111:
-		case 0b10001111:
-			if (final_result == MV_DDR4_COMP_TEST_NO_RESULT) {
-				final_result = MV_DDR4_COMP_TEST_RESULT_MINUS;
-			} else {
-				if (final_result != MV_DDR4_COMP_TEST_RESULT_MINUS)
-					DEBUG_LEVELING(DEBUG_LEVEL_INFO,
-						       ("different supplementary results (%d -> %d)\n",
-							final_result, MV_DDR4_COMP_TEST_RESULT_MINUS));
-			}
-			break;
-		/* case(s) for +1 */
-		case 0b11110000:
-		case 0b11110001:
-		case 0b11100000:
-		case 0b11111000:
-			if (final_result == MV_DDR4_COMP_TEST_NO_RESULT) {
-				final_result = MV_DDR4_COMP_TEST_RESULT_PLUS;
-			} else {
-				if (final_result != MV_DDR4_COMP_TEST_RESULT_PLUS)
-					DEBUG_LEVELING(DEBUG_LEVEL_INFO,
-						       ("different supplementary results (%d -> %d)\n",
-							final_result, MV_DDR4_COMP_TEST_RESULT_PLUS));
-				}
-			break;
-		/* case(s) for 0 or -1 */
-		case 0b10000111:
-			if (final_result == MV_DDR4_COMP_TEST_NO_RESULT) {
-				if (wl_invert == 0)
-					final_result = MV_DDR4_COMP_TEST_RESULT_MINUS;
-				else
-					final_result = MV_DDR4_COMP_TEST_RESULT_0;
-			} else {
-				if (wl_invert == 0) {
-					if (final_result != MV_DDR4_COMP_TEST_RESULT_MINUS)
-						DEBUG_LEVELING(DEBUG_LEVEL_INFO,
-							       ("different supplementary results (%d -> +)\n",
-								final_result));
-				} else {
-					if (final_result != MV_DDR4_COMP_TEST_RESULT_0)
-						DEBUG_LEVELING(DEBUG_LEVEL_INFO,
-							       ("different supplementary results (%d -> +)\n",
-								final_result));
-				}
-			}
-			break;
-		/* case(s) for 0 or +1 */
-		case 0b11100001:
-			if (final_result == MV_DDR4_COMP_TEST_NO_RESULT) {
-				if (wl_invert == 0)
-					final_result = MV_DDR4_COMP_TEST_RESULT_0;
-				else
-					final_result = MV_DDR4_COMP_TEST_RESULT_PLUS;
-			} else {
-				if (wl_invert == 0) {
-					if (final_result != MV_DDR4_COMP_TEST_RESULT_0)
-						DEBUG_LEVELING(DEBUG_LEVEL_INFO,
-							       ("different supplementary results (%d -> +)\n",
-								final_result));
-				} else {
-					if (final_result != MV_DDR4_COMP_TEST_RESULT_PLUS)
-						DEBUG_LEVELING(DEBUG_LEVEL_INFO,
-							       ("different supplementary results (%d -> +)\n",
-								final_result));
-				}
-			}
+		case 0b11000011:	/* nominal */
+		case 0b10000011:	/* sample at start of UI sample at the dqvref TH */
+		case 0b10000111:	/* sample at start of UI sample at the dqvref TH */
+		case 0b11000001:	/* sample at start of UI sample at the dqvref TH */
+		case 0b11100001:	/* sample at start of UI sample at the dqvref TH */
+		case 0b11100011:	/* sample at start of UI sample at the dqvref TH */
+		case 0b11000111:	/* sample at start of UI sample at the dqvref TH */
+			bit_counter++;
 			break;
 		} /* end of switch */
 	} /* end of per bit loop */
 
-	return final_result;
+	/* check all bits in the current subphy has met the switch condition above */
+	if (bit_counter == BUS_WIDTH_IN_BITS)
+		return MV_DDR4_COMP_TEST_RESULT_0;
+	else {
+		DEBUG_LEVELING(
+			       DEBUG_LEVEL_INFO,
+			       ("different supplementary results (%d -> %d)\n",
+			       MV_DDR4_COMP_TEST_NO_RESULT, MV_DDR4_COMP_TEST_RESULT_0));
+		return MV_DDR4_COMP_TEST_NO_RESULT;
+	}
 }
 
 int mv_ddr4_dynamic_wl_supp(u32 dev_num)

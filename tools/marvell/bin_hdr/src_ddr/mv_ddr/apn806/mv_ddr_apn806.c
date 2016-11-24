@@ -951,7 +951,6 @@ int mv_ddr_mc6_init_controller(void)
 #endif	/* #if defined(a80x0) || defined(a80x0_cust) */
 #if defined(a70x0) || defined(a70x0_cust) || defined(a7040_pcac)
 	reg_write(0x20314, 0x21010000);
-	reg_write(0x20224, 0x5010539);
 	reg_write(0x20044, 0x30300);
 #endif	/* #if defined(a70x0) || defined(a70x0_cust) || defined (a7040_pcac) */
 	reg_write(0x202c0, 0x6000);	/* MC_Control_1 - tw2r_dis? , acs_exit_dly timing???, config?? */

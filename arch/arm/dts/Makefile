@@ -77,15 +77,7 @@ dtb-$(CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT) += apn-806-db-dop.dtb \
 						armada-7040-rz-db_dop.dtb
 dtb-$(CONFIG_DEVEL_BOARD) += apn-806-db.dtb \
 			     armada-8k-default.dtb
-ifdef CONFIG_AP806_Z_SUPPORT
-dtb-$(CONFIG_DEVEL_BOARD) += armada-7040-rz-db_nand.dtb \
-			     armada-7040-rz-db_router.dtb \
-			     armada-7040-rz-db_all_pci.dtb \
-			     armada-7040-rz-db_rgmii_only.dtb \
-			     armada-7040-rz-db_kr.dtb \
-			     armada-7040-rz-db_rxaui_pci.dtb \
-			     armada-7040-rz-db_rxaui.dtb
-else
+
 dtb-y += armada-70x0-customer0.dtb
 dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-db_router.dtb 	\
 			     armada-70x0-db_kr.dtb	\
@@ -101,7 +93,7 @@ dtb-$(CONFIG_DEVEL_BOARD) += armada-80x0-db-10G.dtb \
 			     armada-80x0-db-SGMII.dtb \
 			     armada-80x0-db-cp1-serdes-b.dtb
 dtb-$(CONFIG_A80X0_CUSTOMER0_MCBIN) += armada-80x0-customer0-mcbin.dtb
-endif
+
 endif #CONFIG_TARGET_ARMADA_8K
 
 targets += $(dtb-y)

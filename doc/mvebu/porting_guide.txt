@@ -43,7 +43,7 @@ Customer board porting procedure
 		- Some pre-defined "customer" DT files already exist in U-Boot, it's possible to use them as-is or
 		  rename to match your system's name.
 
-					>> cp arch/arm/dts/armada-7040-rz1-customer0.dts arch/arm/dts/armada-7040-rz1-my_board.dts
+					>> cp arch/arm/dts/armada-70x0-customer0.dts arch/arm/dts/armada-70x0-my_board.dts
 
 	2. Basic defconfig setup
 	------------------------
@@ -56,7 +56,7 @@ Customer board porting procedure
 	unneeded code).
 		-> Marvell Platform Options -> Board Options -> Unselect "Support MVEBU development boards"
 	- Update device tree file name:
-		-> Device Tree Control -> Default Device Tree for DT control -> "armada-7040-rz1-my_board"
+		-> Device Tree Control -> Default Device Tree for DT control -> "armada-70x0-my_board"
 	- Save and exit
 
 					>> make savedefconfig

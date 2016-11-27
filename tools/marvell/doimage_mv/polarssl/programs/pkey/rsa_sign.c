@@ -42,6 +42,7 @@
 
 #include "polarssl/rsa.h"
 #include "polarssl/sha1.h"
+#include "polarssl/sha4.h"
 
 int main( int argc, char *argv[] )
 {

@@ -56,6 +56,7 @@
 #include "polarssl/rsa.h"
 #include "polarssl/x509.h"
 #include "polarssl/xtea.h"
+#include "polarssl/camellia.h"
 
 int main( int argc, char *argv[] )
 {

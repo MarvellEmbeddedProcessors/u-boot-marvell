@@ -68,7 +68,15 @@ ELF	:= $(addprefix $(obj),$(ELF))
 BIN	:= $(addprefix $(obj),$(BIN))
 SREC	:= $(addprefix $(obj),$(SREC))
 
+ifdef USE_PRIVATE_LIBGCC
+ifeq ("$(USE_PRIVATE_LIBGCC)", "yes")
+gcclibdir = $(OBJTREE)/arch/$(ARCH)/lib/
+else
+gcclibdir = $(USE_PRIVATE_LIBGCC)
+endif
+else
 gcclibdir := $(shell dirname `$(CC) -print-libgcc-file-name`)
+endif
 
 CPPFLAGS += -I..
 

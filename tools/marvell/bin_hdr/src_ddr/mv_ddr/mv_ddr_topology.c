@@ -153,6 +153,8 @@ struct mv_ddr_topology_map *mv_ddr_topology_map_update(void)
 {
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
 	unsigned int octets_per_if_num = ddr3_tip_dev_attr_get(0, MV_ATTR_OCTET_PER_INTERFACE);
+	enum hws_speed_bin speed_bin_index;
+	enum hws_ddr_freq freq = DDR_FREQ_LAST;
 	unsigned int tclk;
 	unsigned char val = 0;
 	int i;
@@ -237,6 +239,18 @@ struct mv_ddr_topology_map *mv_ddr_topology_map_update(void)
 			return NULL;
 		}
 		tm->interface_params[0].cas_l = val;
+	} else if (tm->cfg_src == MV_DDR_CFG_DEFAULT) {
+		/* set cas and cas-write latencies per speed bin, if they unset */
+		speed_bin_index = tm->interface_params[0].speed_bin_index;
+		freq = tm->interface_params[0].memory_freq;
+
+		if (tm->interface_params[0].cas_l == 0)
+			tm->interface_params[0].cas_l =
+				cas_latency_table[speed_bin_index].cl_val[freq];
+
+		if (tm->interface_params[0].cas_wl == 0)
+			tm->interface_params[0].cas_wl =
+				cas_write_latency_table[speed_bin_index].cl_val[freq];
 	}
 
 	return tm;

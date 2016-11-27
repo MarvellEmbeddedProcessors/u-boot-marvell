@@ -558,7 +558,7 @@ static u8 ddr3_tip_clock_mode(u32 frequency)
 	return 2;
 }
 
-static int ddr3_tip_a38x_get_init_freq(int dev_num, enum hws_ddr_freq *freq)
+static int mv_ddr_sar_freq_get(int dev_num, enum hws_ddr_freq *freq)
 {
 	u32 reg, ref_clk_satr;
 
@@ -752,18 +752,9 @@ static int ddr3_tip_a38x_get_device_info(u8 dev_num, struct ddr3_device_info *in
 	return MV_OK;
 }
 
-/*
- * Name:     ddr3_tip_init_a38x_silicon.
- * Desc:     init Training SW DB.
- * Args:
- * Notes:
- * Returns:  MV_OK if success, other error code if fail.
- */
-static int ddr3_tip_init_a38x_silicon(u32 dev_num, u32 board_id)
+static int mv_ddr_sw_db_init(u32 dev_num, u32 board_id)
 {
 	struct hws_tip_config_func_db config_func;
-	enum hws_ddr_freq ddr_freq;
-	int status;
 
 	/* new read leveling version */
 	config_func.tip_dunit_read_func = ddr3_tip_a38x_if_read;
@@ -810,14 +801,26 @@ static int ddr3_tip_init_a38x_silicon(u32 dev_num, u32 board_id)
 		ddr3_tip_init_static_config_db(dev_num, &static_config);
 	}
 #endif
-	status = ddr3_tip_a38x_get_init_freq(dev_num, &ddr_freq);
-	if (MV_OK != status) {
-		DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR,
-				      ("DDR3 silicon get target frequency - FAILED 0x%x\n",
-				       status));
-		return status;
-	}
 
+	ca_delay = 0;
+	delay_enable = 1;
+	dfs_low_freq = DFS_LOW_FREQ_VALUE;
+	calibration_update_control = 1;
+
+#ifdef CONFIG_ARMADA_38X
+	/* For a38x only, change to 2T mode to resolve low freq instability */
+	mode_2t = 1;
+#endif
+
+#if !defined(CONFIG_DDR4)
+	ddr3_tip_a38x_get_medium_freq(dev_num, &medium_freq);
+#endif /* CONFIG_DDR4 */
+
+	return MV_OK;
+}
+
+static int mv_ddr_training_mask_set(void)
+{
 #if defined(CONFIG_DDR4)
 	mask_tune_func = (SET_LOW_FREQ_MASK_BIT |
 			  LOAD_PATTERN_MASK_BIT |
@@ -837,6 +840,9 @@ static int ddr3_tip_init_a38x_silicon(u32 dev_num, u32 board_id)
 		vref_calibration_wa = 0;
 	}
 #else /* CONFIG_DDR4 */
+	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
+	enum hws_ddr_freq ddr_freq = tm->interface_params[0].memory_freq;
+
 	mask_tune_func = (SET_LOW_FREQ_MASK_BIT |
 			  LOAD_PATTERN_MASK_BIT |
 			  SET_MEDIUM_FREQ_MASK_BIT | WRITE_LEVELING_MASK_BIT |
@@ -873,19 +879,6 @@ static int ddr3_tip_init_a38x_silicon(u32 dev_num, u32 board_id)
 	}
 #endif /* CONFIG_DDR4 */
 
-	ca_delay = 0;
-	delay_enable = 1;
-	dfs_low_freq = DFS_LOW_FREQ_VALUE;
-	calibration_update_control = 1;
-
-#ifdef CONFIG_ARMADA_38X
-	/* For a38x only, change to 2T mode to resolve low freq instability */
-	mode_2t = 1;
-#endif
-#if !defined(CONFIG_DDR4)
-	ddr3_tip_a38x_get_medium_freq(dev_num, &medium_freq);
-#endif /* CONFIG_DDR4 */
-
 	return MV_OK;
 }
 
@@ -898,36 +891,6 @@ static int ddr3_tip_init_a38x_silicon(u32 dev_num, u32 board_id)
 void mv_ddr_set_calib_controller(void)
 {
 	calibration_update_control = CALIB_MACHINE_INT_CTRL;
-}
-
-static int ddr3_a38x_update_topology_map(u32 dev_num, struct mv_ddr_topology_map *tm)
-{
-	u32 if_id = 0;
-	enum hws_ddr_freq freq;
-
-	ddr3_tip_a38x_get_init_freq(dev_num, &freq);
-	tm->interface_params[if_id].memory_freq = freq;
-
-	/*
-	 * re-calc topology parameters according to topology updates
-	 * (if needed)
-	 */
-	CHECK_STATUS(hws_ddr3_tip_load_topology_map(dev_num, tm));
-
-	return MV_OK;
-}
-
-static int ddr3_tip_init_a38x(u32 dev_num, u32 board_id)
-{
-	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
-
-	if (NULL == tm)
-		return MV_FAIL;
-
-	ddr3_a38x_update_topology_map(dev_num, tm);
-	ddr3_tip_init_a38x_silicon(dev_num, board_id);
-
-	return MV_OK;
 }
 
 static int ddr3_tip_a38x_set_divider(u8 dev_num, u32 if_id,
@@ -1068,35 +1031,9 @@ int ddr3_tip_ext_write(u32 dev_num, u32 if_id, u32 reg_addr,
 	return MV_OK;
 }
 
-/*
- * Name:     ddr3_tip_init_silicon
- * Desc:     initiate silicon parameters
- * Args:
- * Notes:
- * Returns:  required value
- */
-int ddr3_silicon_init(void)
-{
-	int status;
-	static int init_done;
-
-	if (init_done == 1)
-		return MV_OK;
-
-	status = ddr3_tip_init_a38x(0, 0);
-	if (MV_OK != status) {
-		printf("DDR3 A38x silicon init - FAILED 0x%x\n", status);
-		return status;
-	}
-
-	init_done = 1;
-
-	return MV_OK;
-}
-
 int ddr3_silicon_pre_init(void)
 {
-	int result;
+	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
 
 	/* FIXME: change this configuration per ddr type
 	 * configure a380 and a390 to work with receiver odt timing
@@ -1107,9 +1044,16 @@ int ddr3_silicon_pre_init(void)
 	 * to configure the odt to work with timing restrictions
 	 */
 	odt_config = 1;
-	result = ddr3_silicon_init();
 
-	return result;
+	mv_ddr_sw_db_init(0, 0);
+
+	/* TODO: move to mv_ddr_topology_update() after sar freq source implemented */
+	tm->interface_params[0].memory_freq = mv_ddr_init_freq_get();
+
+	/* TODO: call this a38x specific function after mv_ddr_topology_update() */
+	mv_ddr_training_mask_set();
+
+	return MV_OK;
 }
 
 int ddr3_post_run_alg(void)
@@ -1131,28 +1075,16 @@ int ddr3_silicon_post_init(void)
 	return MV_OK;
 }
 
-u32 ddr3_tip_get_init_freq(void)
+u32 mv_ddr_init_freq_get(void)
 {
 	enum hws_ddr_freq freq;
 
-	ddr3_tip_a38x_get_init_freq(0, &freq);
+	mv_ddr_sar_freq_get(0, &freq);
 
 	return freq;
 }
 
 #if defined(CONFIG_PHY_STATIC) || defined(CONFIG_MC_STATIC)
-/*
- * Name:     ddr3_get_cpu_freq
- * Desc:     read S@R and return CPU frequency
- * Args:
- * Notes:
- * Returns:  required value
- */
-static u32 ddr3_get_cpu_freq(void)
-{
-	return ddr3_tip_get_init_freq();
-}
-
 /*
  * Name:     ddr3_get_static_ddr_mode - Init Memory controller with
  *           static parameters
@@ -1169,7 +1101,7 @@ u32 ddr3_get_static_ddr_mode(void)
 	u32 i;
 
 	for (i = 0; ddr_modes[i].mc_regs != NULL; i++) {
-		if (ddr3_get_cpu_freq() == ddr_modes[i].cpu_freq)
+		if (mv_ddr_init_freq_get() == ddr_modes[i].cpu_freq)
 			return i;
 	}
 

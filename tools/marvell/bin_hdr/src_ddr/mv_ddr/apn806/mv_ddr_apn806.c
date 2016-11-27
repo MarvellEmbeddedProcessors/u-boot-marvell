@@ -352,14 +352,8 @@ static int ddr3_tip_apn806_if_write(u8 dev_num, enum hws_access_type interface_a
 
 	return MV_OK;
 }
-/*
- * Name:	mv_ddr_init_ddr_freq_get
- * Desc:	gets ddr freq per ddr3 or ddr4 arrays
- * Args:
- * Notes:
- * Returns:	MV_OK if success, other error code if fail.
- */
-static int mv_ddr_init_ddr_freq_get(int dev_num, enum hws_ddr_freq *freq)
+/* return ddr frequency from sar */
+static int mv_ddr_sar_freq_get(int dev_num, enum hws_ddr_freq *freq)
 {
 	u32 ddr_clk_config;
 
@@ -480,7 +474,7 @@ static int mv_ddr_clk_dividers_set(u8 dev_num, u32 if_id, enum hws_ddr_freq targ
 
 	if (mv_ddr_first_time_setting) {
 		/* get ddr freq from sar */
-		mv_ddr_init_ddr_freq_get(DEV_NUM_0, &init_ddr_freq);
+		mv_ddr_sar_freq_get(DEV_NUM_0, &init_ddr_freq);
 
 		init_ddr_freq_val = freq_val[init_ddr_freq];
 
@@ -611,19 +605,13 @@ int ddr3_tip_ext_write(u32 dev_num, u32 if_id, u32 reg_addr,
 	return MV_OK;
 }
 
-/*
- * Name:     ddr3_tip_init_apn806_silicon.
- * Desc:     init Training SW DB.
- * Args:
- * Notes:
- * Returns:  MV_OK if success, other error code if fail.
- */
-static int ddr3_tip_init_apn806_silicon(u32 dev_num, u32 board_id)
+static int mv_ddr_sw_db_init(u32 dev_num, u32 board_id)
 {
 	struct hws_tip_config_func_db config_func;
 #if !defined(CONFIG_DDR4)
 	enum hws_ddr_freq ddr_freq = DDR_FREQ_LOW_FREQ;
 #endif
+
 	/* new read leveling version */
 	config_func.tip_dunit_read_func = ddr3_tip_apn806_if_read;
 	config_func.tip_dunit_write_func = ddr3_tip_apn806_if_write;
@@ -651,6 +639,16 @@ static int ddr3_tip_init_apn806_silicon(u32 dev_num, u32 board_id)
 	ddr3_tip_dev_attr_set(dev_num, MV_ATTR_OCTET_PER_INTERFACE, DDR_INTERFACE_OCTETS_NUM);
 	ddr3_tip_dev_attr_set(dev_num, MV_ATTR_INTERLEAVE_WA, 0);
 
+	ca_delay = 0;
+	delay_enable = 1;
+	dfs_low_freq = DFS_LOW_FREQ_VALUE;
+	calibration_update_control = 1;
+
+	return MV_OK;
+}
+
+static int mv_ddr_training_mask_set(void)
+{
 #if defined(CONFIG_DDR4)
 	mask_tune_func = (SET_LOW_FREQ_MASK_BIT |
 			  WRITE_LEVELING_LF_MASK_BIT |
@@ -663,6 +661,9 @@ static int ddr3_tip_init_apn806_silicon(u32 dev_num, u32 board_id)
 			  DQ_VREF_CALIBRATION_MASK_BIT);
 	rl_mid_freq_wa = 0;
 #else /* CONFIG_DDR4 */
+	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
+	enum hws_ddr_freq ddr_freq = tm->interface_params[0].memory_freq;
+
 	mask_tune_func = (SET_LOW_FREQ_MASK_BIT |
 			  LOAD_PATTERN_MASK_BIT |
 			  SET_MEDIUM_FREQ_MASK_BIT | WRITE_LEVELING_MASK_BIT |
@@ -699,46 +700,23 @@ static int ddr3_tip_init_apn806_silicon(u32 dev_num, u32 board_id)
 	}
 #endif /* CONFIG_DDR4 */
 
-	ca_delay = 0;
-	delay_enable = 1;
-	dfs_low_freq = DFS_LOW_FREQ_VALUE;
-	calibration_update_control = 1;
-
 	return MV_OK;
 }
 
 int ddr3_silicon_pre_init(void)
 {
-	int dev_num = 0;
-	int board_id = 0;
-	int subphy_num;
-	static int init_done;
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
-	int status;
+	int rev_id = apn806_rev_id_get();
+	int subphy_num;
 
 	/* in case of calibration adjust
 	 * this flag checks if to run a workaround where v pod and v sstl are wired
 	 */
 	vref_calibration_wa = 0;
 
-	if (init_done == 1)
-		return MV_OK;
+	mv_ddr_sw_db_init(0, 0);
 
-	if (tm == NULL)
-		return MV_FAIL;
-
-	status = hws_ddr3_tip_load_topology_map(dev_num, tm);
-
-	if (status != MV_OK)
-		return status;
-
-	ddr3_tip_init_apn806_silicon(dev_num, board_id);
-
-	/*
-	 * this patch ensures command/address will be sent properly to the memory
-	 * when triggering init controller according to the revision id (A0 or A1).
-	 */
-	int rev_id = apn806_rev_id_get();
+	/* TODO: consider to move this platform specific code into mv_ddr_topology_update() */
 	if (rev_id == APN806_REV_ID_A0) {
 		/* update the number of cs to be 'single cs in case of A0 */
 		for (subphy_num = 0; subphy_num < MAX_BUS_NUM; subphy_num++) {
@@ -752,7 +730,9 @@ int ddr3_silicon_pre_init(void)
 		reg_write(0x11ec8, 0x28a0008);
 	}
 
-	init_done = 1;
+	/* TODO: call this apn806 specific function after mv_ddr_topology_update() */
+	mv_ddr_training_mask_set();
+
 	return MV_OK;
 }
 
@@ -904,11 +884,11 @@ int mv_ddr_post_training_soc_config(const char *ddr_type)
 	return MV_OK;
 }
 
-u32 ddr3_tip_get_init_freq(void)
+u32 mv_ddr_init_freq_get(void)
 {
 	enum hws_ddr_freq freq;
 
-	mv_ddr_init_ddr_freq_get(DEV_NUM_0, &freq);
+	mv_ddr_sar_freq_get(DEV_NUM_0, &freq);
 
 	return freq;
 }

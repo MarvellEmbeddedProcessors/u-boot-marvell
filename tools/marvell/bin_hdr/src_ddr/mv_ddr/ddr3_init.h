@@ -311,7 +311,7 @@ int ddr3_tip_static_round_trip_arr_build(u32 dev_num,
 					 struct trip_delay_element *table_ptr,
 					 int is_wl, u32 *round_trip_delay_arr);
 
-u32 ddr3_tip_get_init_freq(void);
+u32 mv_ddr_init_freq_get(void);
 void mv_ddr_mc_config(void);
 int mv_ddr_mc_init(void);
 void mv_ddr_set_calib_controller(void);

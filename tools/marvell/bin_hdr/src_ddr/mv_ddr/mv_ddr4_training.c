@@ -310,7 +310,7 @@ int mv_ddr4_phy_config(u32 dev_num)
 	mv_ddr4_config_phy_vref_tap = mv_ddr4_vcommon_to_vref(vcommon);
 
 	/* change calculation for 1GHz frequency */
-	if (ddr3_tip_get_init_freq() == DDR_FREQ_1000)
+	if (tm->interface_params[0].memory_freq == DDR_FREQ_1000)
 		mv_ddr4_config_phy_vref_tap += 2;
 
 	vref_idx = (mv_ddr4_config_phy_vref_tap < 8) ? mv_ddr4_config_phy_vref_tap : 0;

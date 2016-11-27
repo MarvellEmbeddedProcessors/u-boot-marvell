@@ -483,7 +483,6 @@ int hws_ddr3_tip_init_controller(u32 dev_num, struct init_cntr_param *init_cntr_
 	u32 data_value = 0, cs_cnt = 0,
 		mem_mask = 0, bus_index = 0;
 	enum hws_speed_bin speed_bin_index = SPEED_BIN_DDR_2133N;
-	enum hws_ddr_freq freq = ddr3_tip_get_init_freq();
 	u32 cs_mask = 0;
 	u32 cl_value = 0, cwl_val = 0;
 	u32 bus_cnt = 0, adll_tap = 0;
@@ -491,6 +490,7 @@ int hws_ddr3_tip_init_controller(u32 dev_num, struct init_cntr_param *init_cntr_
 	u32 data_read[MAX_INTERFACE_NUM];
 	u32 octets_per_if_num = ddr3_tip_dev_attr_get(dev_num, MV_ATTR_OCTET_PER_INTERFACE);
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
+	enum hws_ddr_freq freq = tm->interface_params[0].memory_freq;
 
 	DEBUG_TRAINING_IP(DEBUG_LEVEL_TRACE,
 			  ("Init_controller, do_mrs_phy=%d, is_ctrl64_bit=%d\n",
@@ -821,58 +821,6 @@ int hws_ddr3_tip_init_controller(u32 dev_num, struct init_cntr_param *init_cntr_
 }
 
 /*
- * Load Topology map
- */
-int hws_ddr3_tip_load_topology_map(u32 dev_num, struct mv_ddr_topology_map *tm)
-{
-	enum hws_speed_bin speed_bin_index;
-	enum hws_ddr_freq freq = DDR_FREQ_LAST;
-	u32 if_id;
-	u32 octets_per_if_num = ddr3_tip_dev_attr_get(dev_num, MV_ATTR_OCTET_PER_INTERFACE);
-
-	tm = mv_ddr_topology_map_get();
-	CHECK_STATUS(ddr3_tip_get_first_active_if
-		     ((u8)dev_num, tm->if_act_mask,
-		      &first_active_if));
-	DEBUG_TRAINING_IP(DEBUG_LEVEL_TRACE,
-			  ("board IF_Mask=0x%x octets_per_if_num=0x%x\n",
-			   tm->if_act_mask,
-			   octets_per_if_num));
-
-	/*
-	 * if CL, CWL values are missing in topology map, then fill them
-	 * according to speedbin tables
-	 */
-	for (if_id = 0; if_id <= MAX_INTERFACE_NUM - 1; if_id++) {
-		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
-		speed_bin_index =
-			tm->interface_params[if_id].speed_bin_index;
-		/* TBD memory frequency of interface 0 only is used ! */
-		freq = tm->interface_params[first_active_if].memory_freq;
-
-		DEBUG_TRAINING_IP(DEBUG_LEVEL_TRACE,
-				  ("speed_bin_index =%d freq=%d cl=%d cwl=%d\n",
-				   speed_bin_index, freq_val[freq],
-				   tm->interface_params[if_id].
-				   cas_l,
-				   tm->interface_params[if_id].
-				   cas_wl));
-
-		if (tm->interface_params[if_id].cas_l == 0) {
-			tm->interface_params[if_id].cas_l =
-				cas_latency_table[speed_bin_index].cl_val[freq];
-		}
-
-		if (tm->interface_params[if_id].cas_wl == 0) {
-			tm->interface_params[if_id].cas_wl =
-				cas_write_latency_table[speed_bin_index].cl_val[freq];
-		}
-	}
-
-	return MV_OK;
-}
-
-/*
  * Rank Control Flow
  */
 static int ddr3_tip_rev2_rank_control(u32 dev_num, u32 if_id)
@@ -1162,7 +1110,7 @@ int hws_ddr3_tip_run_alg(u32 dev_num, enum hws_algo_type algo_type)
 #ifdef STATIC_ALGO_SUPPORT
 		{
 			enum hws_ddr_freq freq;
-			freq = ddr3_tip_get_init_freq();
+			freq = tm->interface_params[0].memory_freq;
 
 			/* add to mask */
 			if (is_adll_calib_before_init != 0) {
@@ -1229,7 +1177,7 @@ static int odt_test(u32 dev_num, enum hws_algo_type algo_type)
 				 * only interface 0
 				 */
 				ret = ddr3_tip_run_static_alg(dev_num,
-							      ddr3_tip_get_init_freq());
+							      tm->interface_params[0].memory_freq);
 			}
 		}
 	}
@@ -2545,7 +2493,6 @@ int ddr3_tip_adll_regs_bypass(u32 dev_num, u32 reg_val1, u32 reg_val2)
  */
 static int ddr3_tip_ddr3_training_main_flow(u32 dev_num)
 {
-	enum hws_ddr_freq freq = ddr3_tip_get_init_freq();
 /* TODO: enable this functionality for other platforms */
 #if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ARMADA_39X)
 	struct init_cntr_param init_cntr_prm;
@@ -2555,6 +2502,7 @@ static int ddr3_tip_ddr3_training_main_flow(u32 dev_num)
 	u32 if_id;
 	u32 max_cs = ddr3_tip_max_cs_get(dev_num);
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
+	enum hws_ddr_freq freq = tm->interface_params[0].memory_freq;
 
 #ifdef DDR_VIEWER_TOOL
 	if (debug_training == DEBUG_LEVEL_TRACE) {

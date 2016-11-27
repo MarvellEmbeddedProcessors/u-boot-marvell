@@ -134,6 +134,8 @@ static int mv_ddr_training_params_set(u8 dev_num);
  */
 int ddr3_init(void)
 {
+	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
+	u32 octets_per_if_num;
 	int status;
 
 	/* Print mv_ddr version */
@@ -151,15 +153,15 @@ int ddr3_init(void)
 		return status;
 	}
 
-	/* Set training algorithm's parameters */
-	status = mv_ddr_training_params_set(0);
-	if (MV_OK != status)
-		return status;
-
 	if (mv_ddr_topology_map_update() == NULL) {
 		printf("mv_ddr: failed to update topology\n");
 		return MV_FAIL;
 	}
+
+	/* Set training algorithm's parameters */
+	status = mv_ddr_training_params_set(0);
+	if (MV_OK != status)
+		return status;
 
 #ifdef MV_DDR_ATF
 	mv_ddr_dram_config_update();
@@ -197,9 +199,7 @@ int ddr3_init(void)
 	/* Post MC/PHY initializations */
 	mv_ddr_post_training_soc_config(ddr_type);
 
-	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
-	u32 octets_per_if_num = ddr3_tip_dev_attr_get(0, MV_ATTR_OCTET_PER_INTERFACE);
-
+	octets_per_if_num = ddr3_tip_dev_attr_get(0, MV_ATTR_OCTET_PER_INTERFACE);
 	if (ddr3_if_ecc_enabled()) {
 		if (MV_DDR_IS_64BIT_DRAM_MODE(tm->bus_act_mask) ||
 		    MV_DDR_IS_32BIT_IN_64BIT_DRAM_MODE(tm->bus_act_mask, octets_per_if_num))

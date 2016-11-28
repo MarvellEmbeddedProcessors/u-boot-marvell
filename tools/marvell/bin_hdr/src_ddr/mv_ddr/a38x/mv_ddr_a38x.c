@@ -1031,10 +1031,8 @@ int ddr3_tip_ext_write(u32 dev_num, u32 if_id, u32 reg_addr,
 	return MV_OK;
 }
 
-int ddr3_silicon_pre_init(void)
+int mv_ddr_early_init(void)
 {
-	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
-
 	/* FIXME: change this configuration per ddr type
 	 * configure a380 and a390 to work with receiver odt timing
 	 * the odt_config is defined:
@@ -1047,10 +1045,11 @@ int ddr3_silicon_pre_init(void)
 
 	mv_ddr_sw_db_init(0, 0);
 
-	/* TODO: move to mv_ddr_topology_update() after sar freq source implemented */
-	tm->interface_params[0].memory_freq = mv_ddr_init_freq_get();
+	return MV_OK;
+}
 
-	/* TODO: call this a38x specific function after mv_ddr_topology_update() */
+int mv_ddr_early_init2(void)
+{
 	mv_ddr_training_mask_set();
 
 	return MV_OK;

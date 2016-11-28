@@ -147,16 +147,14 @@ int ddr3_init(void)
 	/* Set log level for training library */
 	ddr3_hws_set_log_level(DEBUG_BLOCK_ALL, DEBUG_LEVEL_ERROR);
 
-	status = ddr3_silicon_pre_init();
-	if (MV_OK != status) {
-		printf("DDR3 Pre silicon Config - FAILED 0x%x\n", status);
-		return status;
-	}
+	mv_ddr_early_init();
 
 	if (mv_ddr_topology_map_update() == NULL) {
 		printf("mv_ddr: failed to update topology\n");
 		return MV_FAIL;
 	}
+
+	mv_ddr_early_init2();
 
 	/* Set training algorithm's parameters */
 	status = mv_ddr_training_params_set(0);

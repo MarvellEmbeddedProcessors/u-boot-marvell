@@ -159,6 +159,9 @@ struct mv_ddr_topology_map *mv_ddr_topology_map_update(void)
 	unsigned char val = 0;
 	int i;
 
+	if (tm->interface_params[0].memory_freq == DDR_FREQ_SAR)
+		tm->interface_params[0].memory_freq = mv_ddr_init_freq_get();
+
 	if (tm->cfg_src == MV_DDR_CFG_SPD) {
 		/* check dram device type */
 		val = mv_ddr_spd_dev_type_get(&tm->spd_data);

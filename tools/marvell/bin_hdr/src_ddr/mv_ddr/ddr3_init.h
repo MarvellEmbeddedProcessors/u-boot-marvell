@@ -258,7 +258,8 @@ int ddr3_init(void);
 int ddr3_tip_enable_init_sequence(u32 dev_num);
 
 int ddr3_hws_hw_training(enum hws_algo_type algo_mode);
-int ddr3_silicon_pre_init(void);
+int mv_ddr_early_init(void);
+int mv_ddr_early_init2(void);
 int ddr3_silicon_post_init(void);
 int ddr3_post_run_alg(void);
 int ddr3_if_ecc_enabled(void);

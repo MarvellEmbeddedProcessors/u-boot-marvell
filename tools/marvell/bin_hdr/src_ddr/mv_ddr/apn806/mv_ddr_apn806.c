@@ -703,7 +703,7 @@ static int mv_ddr_training_mask_set(void)
 	return MV_OK;
 }
 
-int ddr3_silicon_pre_init(void)
+int mv_ddr_early_init(void)
 {
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
 	int rev_id = apn806_rev_id_get();
@@ -730,7 +730,11 @@ int ddr3_silicon_pre_init(void)
 		reg_write(0x11ec8, 0x28a0008);
 	}
 
-	/* TODO: call this apn806 specific function after mv_ddr_topology_update() */
+	return MV_OK;
+}
+
+int mv_ddr_early_init2(void)
+{
 	mv_ddr_training_mask_set();
 
 	return MV_OK;

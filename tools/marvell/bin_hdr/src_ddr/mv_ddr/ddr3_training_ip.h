@@ -104,6 +104,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MAX_CS_NUM		4
 #define MAX_TOTAL_BUS_NUM	(MAX_INTERFACE_NUM * MAX_BUS_NUM)
+#define TIP_ENG_LOCK	0x02000000
+#define TIP_TX_DLL_RANGE_MAX	64
 
 #define GET_MIN(arg1, arg2)	((arg1) < (arg2)) ? (arg1) : (arg2)
 #define GET_MAX(arg1, arg2)	((arg1) < (arg2)) ? (arg2) : (arg1)

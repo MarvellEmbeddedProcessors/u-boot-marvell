@@ -254,6 +254,24 @@ enum hws_wl_supp {
 	ALIGN_SHIFT
 };
 
+enum  mv_ddr_tip_bit_state {
+	BIT_LOW_UI,
+	BIT_HIGH_UI,
+	BIT_SPLIT_IN,
+	BIT_SPLIT_OUT,
+	BIT_STATE_LAST
+};
+
+enum  mv_ddr_tip_byte_state{
+	BYTE_NOT_DEFINED,
+	BYTE_HOMOGENEOUS_LOW = 0x1,
+	BYTE_HOMOGENEOUS_HIGH = 0x2,
+	BYTE_HOMOGENEOUS_SPLIT_IN = 0x4,
+	BYTE_HOMOGENEOUS_SPLIT_OUT = 0x8,
+	BYTE_SPLIT_OUT_MIX = 0x10,
+	BYTE_STATE_LAST
+};
+
 struct reg_data {
 	u32 reg_addr;
 	u32 reg_data;

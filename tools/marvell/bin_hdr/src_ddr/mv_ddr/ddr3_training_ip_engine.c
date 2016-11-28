@@ -107,6 +107,7 @@ u32 phy_reg_bk[MAX_INTERFACE_NUM][MAX_BUS_NUM][BUS_WIDTH_IN_BITS];
 
 u32 training_res[MAX_INTERFACE_NUM * MAX_BUS_NUM * BUS_WIDTH_IN_BITS *
 		 HWS_SEARCH_DIR_LIMIT];
+u8 byte_status[MAX_INTERFACE_NUM][MAX_BUS_NUM];	/* holds the bit status in the byte in wrapper function*/
 
 u16 mask_results_dq_reg_map[] = {
 	RESULT_CONTROL_PUP_0_BIT_0_REG, RESULT_CONTROL_PUP_0_BIT_1_REG,
@@ -1087,11 +1088,11 @@ int ddr3_tip_read_training_result(u32 dev_num, u32 if_id,
 						      MASK_ALL_BITS));
 					if (is_check_result_validity == 1) {
 						if ((read_data[if_id] &
-						     0x02000000) == 0) {
+						     TIP_ENG_LOCK) == 0) {
 							interface_train_res
 								[reg_offset] =
-								0x02000000 +
-								64 + cons_tap;
+								TIP_ENG_LOCK +
+								TIP_TX_DLL_RANGE_MAX;
 						} else {
 							interface_train_res
 								[reg_offset] =
@@ -1304,7 +1305,7 @@ int ddr3_tip_ip_training_wrapper_int(u32 dev_num,
 	u32 interface_num = 0, start_if, end_if, init_value_used;
 	enum hws_search_dir search_dir_id, start_search, end_search;
 	enum hws_edge_compare edge_comp_used;
-	u8 cons_tap = (direction == OPER_WRITE) ? (64) : (0);
+	u8 cons_tap = 0;
 	u32 octets_per_if_num = ddr3_tip_dev_attr_get(dev_num, MV_ATTR_OCTET_PER_INTERFACE);
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
 
@@ -1385,49 +1386,99 @@ int ddr3_tip_ip_training_wrapper_int(u32 dev_num,
 
 	return MV_OK;
 }
-
 /*
  * Training search & read result routine
+ * This function implements the search algorithm
+ * first it calls the function ddr3_tip_ip_training_wrapper_int which triggers the search from l2h and h2l
+ * this function handles rx and tx search cases
+ * in case of rx it only triggers the search (l2h and h2l)
+ * in case of tx there are 3 optional algorithm phases:
+ * phase 1:
+ * it first triggers the search and handles the results as following (phase 1):
+ * each bit, which defined by the search two edges (e1 or VW_L and e2 or VW_H), match on of cases:
+ *  1.	BIT_LOW_UI	0 =< VW =< 31 in case of jitter use: VW_L <= 31, VW_H <= 31
+ *  2.	BIT_HIGH_UI	32 =< VW =< 63 in case of jitter use: VW_L >= 32, VW_H >= 32
+ *  3.	BIT_SPLIT_IN	VW_L <= 31 & VW_H >= 32
+ *  4.	BIT_SPLIT_OUT*	VW_H < 32 &  VW_L > 32
+ * note: the VW units is adll taps
+ * phase 2:
+ * only bit case BIT_SPLIT_OUT requires another search (phase 2) from the middle range in two directions h2l and l2h
+ * because only this case is not locked by the search engine in the first search trigger (phase 1).
+ * phase 3:
+ * each subphy is categorized according to its bits definition.
+ * the sub-phy cases are as follows:
+ *  1.BYTE_NOT_DEFINED			the byte has not yet been categorized
+ *  2.BYTE_HOMOGENEOUS_LOW		0 =< VW =< 31
+ *  3.BYTE_HOMOGENEOUS_HIGH		32 =< VW =< 63
+ *  4.BYTE_HOMOGENEOUS_SPLIT_IN		VW_L <= 31 & VW_H >= 32
+ *					or the center of all bits in the byte  =< 31
+ *  5.BYTE_HOMOGENEOUS_SPLIT_OUT	VW_H < 32 &  VW_L > 32
+ *  6.BYTE_SPLIT_OUT_MIX		at least one bits is in split out state and one bit is in other
+ *					or the center of all bits in the byte => 32
+ * after the two phases above a center valid window for each subphy is calculated accordingly:
+ * center valid window = maximum center of all bits in the subphy - minimum center of all bits in the subphy.
+ * now decisions are made in each subphy as following:
+ * all subphys which are homogeneous remains as is
+ * all subphys which are homogeneous low | homogeneous high and the subphy center valid window is less than 32
+ *	mark this subphy as homogeneous split in.
+ * now the bits in the bytes which are BYTE_SPLIT_OUT_MIX needed to be reorganized and handles as following
+ * all bits which are BIT_LOW_UI will be added with 64 adll,
+ * this will hopefully ensures that all the bits in the sub phy can be sampled by the dqs
  */
 int ddr3_tip_ip_training_wrapper(u32 dev_num, enum hws_access_type access_type,
-				 u32 if_id,
-				 enum hws_access_type pup_access_type,
-				 u32 pup_num,
-				 enum hws_training_result result_type,
-				 enum hws_control_element control_element,
-				 enum hws_search_dir search_dir,
-				 enum hws_dir direction, u32 interface_mask,
-				 u32 init_value_l2h, u32 init_value_h2l,
-				 u32 num_iter, enum hws_pattern pattern,
-				 enum hws_edge_compare edge_comp,
-				 enum hws_ddr_cs train_cs_type, u32 cs_num,
-				 enum hws_training_ip_stat *train_status)
+	u32 if_id,
+	enum hws_access_type pup_access_type,
+	u32 pup_num,
+	enum hws_training_result result_type,
+	enum hws_control_element control_element,
+	enum hws_search_dir search_dir,
+	enum hws_dir direction, u32 interface_mask,
+	u32 init_value_l2h, u32 init_value_h2l,
+	u32 num_iter, enum hws_pattern pattern,
+	enum hws_edge_compare edge_comp,
+	enum hws_ddr_cs train_cs_type, u32 cs_num,
+	enum hws_training_ip_stat *train_status)
 {
 	u8 e1, e2;
-	u32 interface_cnt, bit_id, start_if, end_if, bit_end = 0;
+	u32 bit_id, start_if, end_if, bit_end = 0;
 	u32 *result[HWS_SEARCH_DIR_LIMIT] = { 0 };
 	u8 cons_tap = (direction == OPER_WRITE) ? (64) : (0);
 	u8 bit_bit_mask[MAX_BUS_NUM] = { 0 }, bit_bit_mask_active = 0;
-	u8 pup_id;
+	u8 bit_state[MAX_BUS_NUM * BUS_WIDTH_IN_BITS] = {0};
+	u8 h2l_adll_value[MAX_BUS_NUM][BUS_WIDTH_IN_BITS];
+	u8 l2h_adll_value[MAX_BUS_NUM][BUS_WIDTH_IN_BITS];
+	u8 center_subphy_adll_window[MAX_BUS_NUM];
+	u8 min_center_subphy_adll[MAX_BUS_NUM];
+	u8 max_center_subphy_adll[MAX_BUS_NUM];
+	u32 *l2h_if_train_res = NULL;
+	u32 *h2l_if_train_res = NULL;
+	enum hws_search_dir search_dir_id;
+	int status;
+	u32 bit_lock_result;
+
+	u8 sybphy_id;
 	u32 octets_per_if_num = ddr3_tip_dev_attr_get(dev_num, MV_ATTR_OCTET_PER_INTERFACE);
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
 
 	if (pup_num >= octets_per_if_num) {
 		DEBUG_TRAINING_IP_ENGINE(DEBUG_LEVEL_ERROR,
-					 ("pup_num %d not valid\n", pup_num));
+			("pup_num %d not valid\n", pup_num));
 	}
 
 	if (if_id >= MAX_INTERFACE_NUM) {
 		DEBUG_TRAINING_IP_ENGINE(DEBUG_LEVEL_ERROR,
-					 ("if_id %d not valid\n", if_id));
+			("if_id %d not valid\n", if_id));
 	}
 
-	CHECK_STATUS(ddr3_tip_ip_training_wrapper_int
-		     (dev_num, access_type, if_id, pup_access_type, pup_num,
-		      ALL_BITS_PER_PUP, result_type, control_element,
-		      search_dir, direction, interface_mask, init_value_l2h,
-		      init_value_h2l, num_iter, pattern, edge_comp,
-		      train_cs_type, cs_num, train_status));
+	status = ddr3_tip_ip_training_wrapper_int
+		(dev_num, access_type, if_id, pup_access_type, pup_num,
+		ALL_BITS_PER_PUP, result_type, control_element,
+		search_dir, direction, interface_mask, init_value_l2h,
+		init_value_h2l, num_iter, pattern, edge_comp,
+		train_cs_type, cs_num, train_status);
+
+	if (MV_OK != status)
+		return status;
 
 	if (access_type == ACCESS_TYPE_MULTICAST) {
 		start_if = 0;
@@ -1437,140 +1488,302 @@ int ddr3_tip_ip_training_wrapper(u32 dev_num, enum hws_access_type access_type,
 		end_if = if_id;
 	}
 
-	for (interface_cnt = start_if; interface_cnt <= end_if;
-	     interface_cnt++) {
-		VALIDATE_IF_ACTIVE(tm->if_act_mask, interface_cnt);
-		for (pup_id = 0;
-		     pup_id <= (octets_per_if_num - 1); pup_id++) {
-			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, pup_id);
+	for (if_id = start_if; if_id <= end_if; if_id++) {
+		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
+		/* zero the database */
+		bit_bit_mask_active = 0;	/* clean the flag for level2 search */
+		memset(bit_state, 0, sizeof(bit_state));
+		/* phase 1 */
+		for (sybphy_id = 0; sybphy_id < octets_per_if_num; sybphy_id++) {
+			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, sybphy_id);
 			if (result_type == RESULT_PER_BIT)
-				bit_end = BUS_WIDTH_IN_BITS - 1;
+				bit_end = BUS_WIDTH_IN_BITS;
 			else
 				bit_end = 0;
 
-			bit_bit_mask[pup_id] = 0;
-			for (bit_id = 0; bit_id <= bit_end; bit_id++) {
-				enum hws_search_dir search_dir_id;
-				for (search_dir_id = HWS_LOW2HIGH;
-				     search_dir_id <= HWS_HIGH2LOW;
-				     search_dir_id++) {
-					CHECK_STATUS
-						(ddr3_tip_read_training_result
-						 (dev_num, interface_cnt,
-						  ACCESS_TYPE_UNICAST, pup_id,
-						  bit_id, search_dir_id,
-						  direction, result_type,
-						  TRAINING_LOAD_OPERATION_UNLOAD,
-						  CS_SINGLE,
-						  &result[search_dir_id],
-						  1, 0, 0));
+			/* zero the data base */
+			bit_bit_mask[sybphy_id] = 0;
+			byte_status[if_id][sybphy_id] = BYTE_NOT_DEFINED;
+			for (bit_id = 0; bit_id < bit_end; bit_id++) {
+				h2l_adll_value[sybphy_id][bit_id] = 64;
+				l2h_adll_value[sybphy_id][bit_id] = 0;
+				for (search_dir_id = HWS_LOW2HIGH; search_dir_id <= HWS_HIGH2LOW;
+					search_dir_id++) {
+					status = ddr3_tip_read_training_result
+						(dev_num, if_id,
+							ACCESS_TYPE_UNICAST, sybphy_id, bit_id,
+							search_dir_id, direction, result_type,
+							TRAINING_LOAD_OPERATION_UNLOAD, CS_SINGLE,
+							&result[search_dir_id], MV_TRUE, 0, MV_FALSE);
+
+					if (MV_OK != status)
+						return status;
 				}
-				e1 = GET_TAP_RESULT(result[HWS_LOW2HIGH][0],
-						    EDGE_1);
-				e2 = GET_TAP_RESULT(result[HWS_HIGH2LOW][0],
-						    EDGE_1);
-				DEBUG_TRAINING_IP_ENGINE(
-					DEBUG_LEVEL_INFO,
-					("wrapper if_id %d pup_id %d bit %d l2h 0x%x (e1 0x%x) h2l 0x%x (e2 0x%x)\n",
-					 interface_cnt, pup_id, bit_id,
-					 result[HWS_LOW2HIGH][0], e1,
+
+				e1 = GET_TAP_RESULT(result[HWS_LOW2HIGH][0], EDGE_1);
+				e2 = GET_TAP_RESULT(result[HWS_HIGH2LOW][0], EDGE_1);
+				DEBUG_TRAINING_IP_ENGINE
+					(DEBUG_LEVEL_INFO,
+					 ("if_id %d sybphy_id %d bit %d l2h 0x%x (e1 0x%x) h2l 0x%x (e2 0x%x)\n",
+					 if_id, sybphy_id, bit_id, result[HWS_LOW2HIGH][0], e1,
 					 result[HWS_HIGH2LOW][0], e2));
-				/* TBD validate is valid only for tx */
-				if (VALIDATE_TRAINING_LIMIT(e1, e2) == 1 &&
-				    GET_LOCK_RESULT(result[HWS_LOW2HIGH][0]) &&
-				    GET_LOCK_RESULT(result[HWS_LOW2HIGH][0])) {
-					/* Mark problem bits */
-					bit_bit_mask[pup_id] |= 1 << bit_id;
-					bit_bit_mask_active = 1;
-				}
-			}	/* For all bits */
-		}		/* For all PUPs */
+				bit_lock_result =
+					(GET_LOCK_RESULT(result[HWS_LOW2HIGH][0]) &&
+						GET_LOCK_RESULT(result[HWS_HIGH2LOW][0]));
 
-		/* Fix problem bits */
+				if (bit_lock_result) {
+					/* in case of read operation set the byte status as homogeneous low */
+					if (direction == OPER_READ) {
+						byte_status[if_id][sybphy_id] |= BYTE_HOMOGENEOUS_LOW;
+					} else if ((e2 - e1) > 32) { /* oper_write */
+						/* split out */
+						bit_state[sybphy_id * BUS_WIDTH_IN_BITS + bit_id] =
+							BIT_SPLIT_OUT;
+						byte_status[if_id][sybphy_id] |= BYTE_HOMOGENEOUS_SPLIT_OUT;
+						/* mark problem bits */
+						bit_bit_mask[sybphy_id] |= (1 << bit_id);
+						bit_bit_mask_active = 1;
+						DEBUG_TRAINING_IP_ENGINE
+							(DEBUG_LEVEL_TRACE,
+							 ("if_id %d sybphy_id %d bit %d BIT_SPLIT_OUT\n",
+							 if_id, sybphy_id, bit_id));
+					} else {
+						/* low ui */
+						if (e1 <= 31 && e2 <= 31) {
+							bit_state[sybphy_id * BUS_WIDTH_IN_BITS + bit_id] =
+								BIT_LOW_UI;
+							byte_status[if_id][sybphy_id] |= BYTE_HOMOGENEOUS_LOW;
+							l2h_adll_value[sybphy_id][bit_id] = e1;
+							h2l_adll_value[sybphy_id][bit_id] = e2;
+							DEBUG_TRAINING_IP_ENGINE
+								(DEBUG_LEVEL_TRACE,
+								 ("if_id %d sybphy_id %d bit %d BIT_LOW_UI\n",
+								 if_id, sybphy_id, bit_id));
+						}
+							/* high ui */
+						if (e1 >= 32 && e2 >= 32) {
+							bit_state[sybphy_id * BUS_WIDTH_IN_BITS + bit_id] =
+								BIT_HIGH_UI;
+							byte_status[if_id][sybphy_id] |= BYTE_HOMOGENEOUS_HIGH;
+							l2h_adll_value[sybphy_id][bit_id] = e1;
+							h2l_adll_value[sybphy_id][bit_id] = e2;
+							DEBUG_TRAINING_IP_ENGINE
+								(DEBUG_LEVEL_TRACE,
+								 ("if_id %d sybphy_id %d bit %d BIT_HIGH_UI\n",
+								 if_id, sybphy_id, bit_id));
+						}
+						/* split in */
+						if (e1 <= 31 && e2 >= 32) {
+							bit_state[sybphy_id * BUS_WIDTH_IN_BITS + bit_id] =
+								BIT_SPLIT_IN;
+							byte_status[if_id][sybphy_id] |=
+								BYTE_HOMOGENEOUS_SPLIT_IN;
+							l2h_adll_value[sybphy_id][bit_id] = e1;
+							h2l_adll_value[sybphy_id][bit_id] = e2;
+							DEBUG_TRAINING_IP_ENGINE
+								(DEBUG_LEVEL_TRACE,
+								 ("if_id %d sybphy_id %d bit %d BIT_SPLIT_IN\n",
+								 if_id, sybphy_id, bit_id));
+						}
+					}
+				} else {
+					DEBUG_TRAINING_IP_ENGINE
+						(DEBUG_LEVEL_INFO,
+						 ("if_id %d sybphy_id %d bit %d l2h 0x%x (e1 0x%x)"
+						 "h2l 0x%x (e2 0x%x): bit cannot be categorized\n",
+						 if_id, sybphy_id, bit_id, result[HWS_LOW2HIGH][0], e1,
+						 result[HWS_HIGH2LOW][0], e2));
+					/* mark the byte as not defined */
+					byte_status[if_id][sybphy_id] = BYTE_NOT_DEFINED;
+					break; /* continue to next pup - no reason to analyze this byte */
+				}
+			} /* for all bits */
+		} /* for all PUPs */
+
+		/* phase 2 will occur only in write operation */
 		if (bit_bit_mask_active != 0) {
-			u32 *l2h_if_train_res = NULL;
-			u32 *h2l_if_train_res = NULL;
-			l2h_if_train_res =
-				ddr3_tip_get_buf_ptr(dev_num, HWS_LOW2HIGH,
-						     result_type,
-						     interface_cnt);
-			h2l_if_train_res =
-				ddr3_tip_get_buf_ptr(dev_num, HWS_HIGH2LOW,
-						     result_type,
-						     interface_cnt);
+			l2h_if_train_res = ddr3_tip_get_buf_ptr(dev_num, HWS_LOW2HIGH, result_type, if_id);
+			h2l_if_train_res = ddr3_tip_get_buf_ptr(dev_num, HWS_HIGH2LOW, result_type, if_id);
+			/* search from middle to end */
+			ddr3_tip_ip_training
+				(dev_num, ACCESS_TYPE_UNICAST,
+				 if_id, ACCESS_TYPE_MULTICAST,
+				 PARAM_NOT_CARE, result_type,
+				 control_element, HWS_LOW2HIGH,
+				 direction, interface_mask,
+				 num_iter / 2, num_iter / 2,
+				 pattern, EDGE_FP, train_cs_type,
+				 cs_num, train_status);
 
-			ddr3_tip_ip_training(dev_num, ACCESS_TYPE_UNICAST,
-					     interface_cnt,
-					     ACCESS_TYPE_MULTICAST,
-					     PARAM_NOT_CARE, result_type,
-					     control_element, HWS_LOW2HIGH,
-					     direction, interface_mask,
-					     num_iter / 2, num_iter / 2,
-					     pattern, EDGE_FP, train_cs_type,
-					     cs_num, train_status);
+			for (sybphy_id = 0; sybphy_id < octets_per_if_num; sybphy_id++) {
+				VALIDATE_BUS_ACTIVE(tm->bus_act_mask, sybphy_id);
+				if (byte_status[if_id][sybphy_id] != BYTE_NOT_DEFINED) {
+					if (bit_bit_mask[sybphy_id] == 0)
+						continue; /* this byte bits have no split out state */
 
-			for (pup_id = 0;
-			     pup_id <= (octets_per_if_num - 1);
-			     pup_id++) {
-				VALIDATE_BUS_ACTIVE(tm->bus_act_mask, pup_id);
+					for (bit_id = 0; bit_id < bit_end; bit_id++) {
+						if ((bit_bit_mask[sybphy_id] & (1 << bit_id)) == 0)
+							continue; /* this bit is non split goto next bit */
 
-				if (bit_bit_mask[pup_id] == 0)
-					continue;
+						/* enter the result to the data base */
+						status = ddr3_tip_read_training_result
+							(dev_num, if_id, ACCESS_TYPE_UNICAST, sybphy_id,
+							 bit_id, HWS_LOW2HIGH, direction, result_type,
+							 TRAINING_LOAD_OPERATION_UNLOAD, CS_SINGLE,
+							 &l2h_if_train_res, MV_FALSE, 0, MV_TRUE);
 
-				for (bit_id = 0; bit_id <= bit_end; bit_id++) {
-					if ((bit_bit_mask[pup_id] &
-					     (1 << bit_id)) == 0)
-						continue;
-					CHECK_STATUS
-						(ddr3_tip_read_training_result
-						 (dev_num, interface_cnt,
-						  ACCESS_TYPE_UNICAST, pup_id,
-						  bit_id, HWS_LOW2HIGH,
-						  direction,
-						  result_type,
-						  TRAINING_LOAD_OPERATION_UNLOAD,
-						  CS_SINGLE, &l2h_if_train_res,
-						  0, 0, 1));
+						if (MV_OK != status)
+							return status;
+
+						l2h_adll_value[sybphy_id][bit_id] =
+							l2h_if_train_res[sybphy_id *
+							BUS_WIDTH_IN_BITS + bit_id] & PUP_RESULT_EDGE_1_MASK;
+					}
 				}
 			}
+			/* Search from middle to start */
+			ddr3_tip_ip_training
+				(dev_num, ACCESS_TYPE_UNICAST,
+				 if_id, ACCESS_TYPE_MULTICAST,
+				 PARAM_NOT_CARE, result_type,
+				 control_element, HWS_HIGH2LOW,
+				 direction, interface_mask,
+				 num_iter / 2, num_iter / 2,
+				 pattern, EDGE_FP, train_cs_type,
+				 cs_num, train_status);
 
-			ddr3_tip_ip_training(dev_num, ACCESS_TYPE_UNICAST,
-					     interface_cnt,
-					     ACCESS_TYPE_MULTICAST,
-					     PARAM_NOT_CARE, result_type,
-					     control_element, HWS_HIGH2LOW,
-					     direction, interface_mask,
-					     num_iter / 2, num_iter / 2,
-					     pattern, EDGE_FP, train_cs_type,
-					     cs_num, train_status);
-
-			for (pup_id = 0;
-			     pup_id <= (octets_per_if_num - 1);
-			     pup_id++) {
-				VALIDATE_BUS_ACTIVE(tm->bus_act_mask, pup_id);
-
-				if (bit_bit_mask[pup_id] == 0)
-					continue;
-
-				for (bit_id = 0; bit_id <= bit_end; bit_id++) {
-					if ((bit_bit_mask[pup_id] &
-					     (1 << bit_id)) == 0)
+			for (sybphy_id = 0; sybphy_id < octets_per_if_num; sybphy_id++) {
+				VALIDATE_BUS_ACTIVE(tm->bus_act_mask, sybphy_id);
+				if (byte_status[if_id][sybphy_id] != BYTE_NOT_DEFINED) {
+					if (bit_bit_mask[sybphy_id] == 0)
 						continue;
-					CHECK_STATUS
-						(ddr3_tip_read_training_result
-						 (dev_num, interface_cnt,
-						  ACCESS_TYPE_UNICAST, pup_id,
-						  bit_id, HWS_HIGH2LOW, direction,
-						  result_type,
-						  TRAINING_LOAD_OPERATION_UNLOAD,
-						  CS_SINGLE, &h2l_if_train_res,
-						  0, cons_tap, 1));
+
+					for (bit_id = 0; bit_id < bit_end; bit_id++) {
+						if ((bit_bit_mask[sybphy_id] & (1 << bit_id)) == 0)
+							continue;
+
+						status = ddr3_tip_read_training_result
+							(dev_num, if_id, ACCESS_TYPE_UNICAST, sybphy_id,
+							 bit_id, HWS_HIGH2LOW, direction, result_type,
+							 TRAINING_LOAD_OPERATION_UNLOAD, CS_SINGLE,
+							 &h2l_if_train_res, 0, cons_tap, 1);
+
+						if (MV_OK != status)
+							return status;
+
+						h2l_adll_value[sybphy_id][bit_id] =
+							h2l_if_train_res[sybphy_id *
+							BUS_WIDTH_IN_BITS + bit_id] & PUP_RESULT_EDGE_1_MASK;
+					}
 				}
 			}
-		}		/* if bit_bit_mask_active */
-	}			/* For all Interfacess */
+		} /* end if bit_bit_mask_active */
+		/*
+			* phase 3 will occur only in write operation
+			* find the maximum and the minimum center of each subphy
+			*/
+		for (sybphy_id = 0; sybphy_id < octets_per_if_num; sybphy_id++) {
+			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, sybphy_id);
+
+			if ((byte_status[if_id][sybphy_id] != BYTE_NOT_DEFINED) && (direction == OPER_WRITE)) {
+				/* clear the arrays and parameters */
+				center_subphy_adll_window[sybphy_id] = 0;
+				max_center_subphy_adll[sybphy_id] = 0;
+				min_center_subphy_adll[sybphy_id] = 64;
+				/* find the max and min center adll value in the current subphy */
+				for (bit_id = 0; bit_id < bit_end; bit_id++) {
+					/* debug print all the bit edges after alignment */
+					DEBUG_TRAINING_IP_ENGINE
+						(DEBUG_LEVEL_TRACE,
+						 ("if_id %d sybphy_id %d bit %d l2h %d h2l %d\n",
+						 if_id, sybphy_id, bit_id, l2h_adll_value[sybphy_id][bit_id],
+						 h2l_adll_value[sybphy_id][bit_id]));
+
+					if (((l2h_adll_value[sybphy_id][bit_id] +
+					      h2l_adll_value[sybphy_id][bit_id]) / 2) >
+					      max_center_subphy_adll[sybphy_id])
+						max_center_subphy_adll[sybphy_id] =
+						(l2h_adll_value[sybphy_id][bit_id] +
+						 h2l_adll_value[sybphy_id][bit_id]) / 2;
+					if (((l2h_adll_value[sybphy_id][bit_id] +
+					      h2l_adll_value[sybphy_id][bit_id]) / 2) <
+					      min_center_subphy_adll[sybphy_id])
+						min_center_subphy_adll[sybphy_id] =
+						(l2h_adll_value[sybphy_id][bit_id] +
+						 h2l_adll_value[sybphy_id][bit_id]) / 2;
+				}
+
+				/* calculate the center of the current subphy */
+				center_subphy_adll_window[sybphy_id] =
+					max_center_subphy_adll[sybphy_id] -
+					min_center_subphy_adll[sybphy_id];
+				DEBUG_TRAINING_IP_ENGINE
+					(DEBUG_LEVEL_TRACE,
+					 ("if_id %d sybphy_id %d min center %d max center %d center %d\n",
+					 if_id, sybphy_id, min_center_subphy_adll[sybphy_id],
+					 max_center_subphy_adll[sybphy_id],
+					 center_subphy_adll_window[sybphy_id]));
+			}
+		}
+		/*
+			* check byte state and fix bits state if needed
+			* in case the level 1 and 2 above subphy results are
+			* homogeneous continue to the next subphy
+			*/
+		for (sybphy_id = 0; sybphy_id < octets_per_if_num; sybphy_id++) {
+			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, sybphy_id);
+			if ((byte_status[if_id][sybphy_id] == BYTE_HOMOGENEOUS_LOW) ||
+			    (byte_status[if_id][sybphy_id] == BYTE_HOMOGENEOUS_HIGH) ||
+			    (byte_status[if_id][sybphy_id] == BYTE_HOMOGENEOUS_SPLIT_IN) ||
+			    (byte_status[if_id][sybphy_id] == BYTE_HOMOGENEOUS_SPLIT_OUT) ||
+			    (byte_status[if_id][sybphy_id] == BYTE_NOT_DEFINED))
+			continue;
+
+			/*
+			 * in case all of the bits in the current subphy are
+			 * less than 32 which will find alignment in the subphy bits
+			 * mark this subphy as homogeneous split in
+			*/
+			if (center_subphy_adll_window[sybphy_id] <= 31)
+				byte_status[if_id][sybphy_id] = BYTE_HOMOGENEOUS_SPLIT_IN;
+
+			/*
+				* in case the current byte is split_out and the center is bigger than 31
+				* the byte can be aligned. in this case add 64 to the the low ui bits aligning it
+				* to the other ui bits
+				*/
+			if (center_subphy_adll_window[sybphy_id] >= 32) {
+				byte_status[if_id][sybphy_id] = BYTE_SPLIT_OUT_MIX;
+
+				DEBUG_TRAINING_IP_ENGINE
+					(DEBUG_LEVEL_TRACE,
+					 ("if_id %d sybphy_id %d byte state 0x%x\n",
+					 if_id, sybphy_id, byte_status[if_id][sybphy_id]));
+				for (bit_id = 0; bit_id < bit_end; bit_id++) {
+					if (bit_state[sybphy_id * BUS_WIDTH_IN_BITS + bit_id] == BIT_LOW_UI) {
+						l2h_if_train_res[sybphy_id * BUS_WIDTH_IN_BITS + bit_id] += 64;
+						h2l_if_train_res[sybphy_id * BUS_WIDTH_IN_BITS + bit_id] += 64;
+					}
+					DEBUG_TRAINING_IP_ENGINE
+						(DEBUG_LEVEL_TRACE,
+						 ("if_id %d sybphy_id %d bit_id %d added 64 adlls\n",
+						 if_id, sybphy_id, bit_id));
+				}
+			}
+		}
+	} /* for all interfaces */
 
 	return MV_OK;
+}
+
+u8 mv_ddr_tip_sub_phy_byte_status_get(u32 if_id, u32 subphy_id)
+{
+	return byte_status[if_id][subphy_id];
+}
+
+void mv_ddr_tip_sub_phy_byte_status_set(u32 if_id, u32 subphy_id, u8 byte_status_data)
+{
+	byte_status[if_id][subphy_id] = byte_status_data;
 }
 
 /*

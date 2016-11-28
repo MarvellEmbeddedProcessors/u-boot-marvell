@@ -165,6 +165,8 @@ int ddr3_tip_ip_training_wrapper(u32 dev_num, enum hws_access_type access_type,
 				 enum hws_edge_compare edge_comp,
 				 enum hws_ddr_cs train_cs_type, u32 cs_num,
 				 enum hws_training_ip_stat *train_status);
+u8 mv_ddr_tip_sub_phy_byte_status_get(u32 if_id, u32 subphy_id);
+void mv_ddr_tip_sub_phy_byte_status_set(u32 if_id, u32 subphy_id, u8 byte_status_data);
 int is_odpg_access_done(u32 dev_num, u32 if_id);
 void ddr3_tip_print_bist_res(void);
 struct pattern_info *ddr3_tip_get_pattern_table(void);

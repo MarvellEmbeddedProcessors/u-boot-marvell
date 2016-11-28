@@ -114,11 +114,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define RECEIVER_DC_MAX_COUNT	(((RECEIVER_DC_MAX_RANGE - RECEIVER_DC_MIN_RANGE) / RECEIVER_DC_STEP_SIZE) + 1)
 
 #define PBS_VAL_FACTOR		1000
+#define MV_DDR_VW_TX_NOISE_FILTER	8	/* adlls */
 
 static u8 pbs_max = 31;
 static u8 vdq_tv; /* vref value for dq vref calibration */
 static u8 duty_cycle; /* duty cycle value for receiver calibration */
 static u8 rx_vw_pos[MAX_INTERFACE_NUM][MAX_BUS_NUM];
+static u8 patterns_byte_status[MAX_INTERFACE_NUM][MAX_BUS_NUM];
+static const char *str_dir[MAX_DIR_TYPES] = {"read", "write"};
 
 static u8 center_low_element_get(u8 dir, u8 pbs_element, u16 lambda, u8 pbs_max_val)
 {
@@ -160,7 +163,6 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 	u32 vref_idx, dq_idx, pad_num = 0;
 	u8 dq_vref_start_win[MAX_INTERFACE_NUM][MAX_BUS_NUM][MV_DDR4_VREF_MAX_COUNT];
 	u8 dq_vref_end_win[MAX_INTERFACE_NUM][MAX_BUS_NUM][MV_DDR4_VREF_MAX_COUNT];
-	u8 c_vref[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 	u8 valid_win_size[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 	u8 c_opt_per_bus[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 	u8 valid_vref_cnt[MAX_INTERFACE_NUM][MAX_BUS_NUM];
@@ -170,7 +172,8 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 	u8 pbs_res_per_bus[MAX_INTERFACE_NUM][MAX_BUS_NUM][BUS_WIDTH_IN_BITS];
 	u16 lambda_per_dq[MAX_INTERFACE_NUM][MAX_BUS_NUM][BUS_WIDTH_IN_BITS];
 	u16 vref_avg, vref_subphy_num;
-	u16 vref_tap_idx;
+	int vref_tap_idx;
+	int vref_range_min;
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
 	enum mv_ddr4_vref_subphy_cal_state all_subphys_state = MV_DDR4_VREF_SUBPHY_CAL_ABOVE;
 	int tap_tune_passed = MV_FALSE;
@@ -179,6 +182,7 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 	u8 subphy_max = ddr3_tip_dev_attr_get(dev_num, MV_ATTR_OCTET_PER_INTERFACE);
 	enum mv_ddr4_vref_subphy_cal_state vref_state_per_subphy[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 	int status;
+	static u8 vref_byte_status[MAX_INTERFACE_NUM][MAX_BUS_NUM][MV_DDR4_VREF_MAX_RANGE];
 
 	DEBUG_CALIBRATION(DEBUG_LEVEL_INFO, ("Starting ddr4 dq vref calibration training stage\n"));
 
@@ -201,21 +205,25 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 
 	/* main loop for 2d scan (low_to_high voltage scan) */
 	vref_tap_idx = MV_DDR4_VREF_MAX_RANGE;
-	do {
+	vref_range_min = MV_DDR4_VREF_MIN_RANGE;
+
+	if (vref_range_min < MV_DDR4_VREF_STEP_SIZE)
+		vref_range_min = MV_DDR4_VREF_STEP_SIZE;
+
+	/* clean vref status array */
+	memset(vref_byte_status, BYTE_NOT_DEFINED, sizeof(vref_byte_status));
+
+	for (vref_tap_idx = MV_DDR4_VREF_MAX_RANGE; (vref_tap_idx >= vref_range_min) &&
+	     (all_subphys_state != MV_DDR4_VREF_SUBPHY_CAL_UNDER);
+	     vref_tap_idx -= MV_DDR4_VREF_STEP_SIZE) {
 		/* set new vref training value in dram */
 		mv_ddr4_vref_tap_set(dev_num, 0, ACCESS_TYPE_MULTICAST, vref_tap_idx, vref_tap_set_state);
 
 		if (tap_tune_passed == MV_FALSE) {
-			if (mv_ddr4_tap_tuning(dev_num, lambda_per_dq, TX_DIR) == MV_OK) {
+			if (mv_ddr4_tap_tuning(dev_num, lambda_per_dq, TX_DIR) == MV_OK)
 				tap_tune_passed = MV_TRUE;
-			} else {
-				if ((vref_tap_idx < MV_DDR4_VREF_STEP_SIZE) ||
-				    (all_subphys_state == MV_DDR4_VREF_SUBPHY_CAL_UNDER) ||
-				    (vref_tap_idx < MV_DDR4_VREF_MIN_RANGE))
-						break;
-				vref_tap_idx -= MV_DDR4_VREF_STEP_SIZE;
+			else
 				continue;
-			}
 		}
 
 		if (mv_ddr4_centralization(dev_num, lambda_per_dq, c_opt_per_bus, pbs_res_per_bus,
@@ -223,21 +231,15 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 			DEBUG_CALIBRATION(DEBUG_LEVEL_ERROR,
 					  ("error: %s: ddr4 centralization failed (dq vref tap index %d)!!!\n",
 					   __func__, vref_tap_idx));
-
-			if ((vref_tap_idx < MV_DDR4_VREF_STEP_SIZE) ||
-			    (all_subphys_state == MV_DDR4_VREF_SUBPHY_CAL_UNDER) ||
-			    (vref_tap_idx < MV_DDR4_VREF_MIN_RANGE))
-				break;
-
-			vref_tap_idx -= MV_DDR4_VREF_STEP_SIZE;
 			continue;
 		}
 
+		/* go over all results and find out the vref start and end window */
 		for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
 			VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
 			for (subphy_num = 0; subphy_num < subphy_max; subphy_num++) {
 				VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy_num);
-				if (valid_win_size[if_id][subphy_num] > 0) {
+				if (valid_win_size[if_id][subphy_num] > MV_DDR_VW_TX_NOISE_FILTER) {
 					if (vref_state_per_subphy[if_id][subphy_num] == MV_DDR4_VREF_SUBPHY_CAL_UNDER)
 						DEBUG_CALIBRATION(DEBUG_LEVEL_ERROR,
 								  ("warning: %s: ddr4 vref voltage noise\n",
@@ -246,17 +248,20 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 					vref_idx = valid_vref_cnt[if_id][subphy_num];
 					valid_vref_ptr[if_id][subphy_num][vref_idx] = vref_tap_idx;
 					valid_vref_cnt[if_id][subphy_num]++;
-					c_vref[if_id][subphy_num] = c_opt_per_bus[if_id][subphy_num];
+
 					/* set 0 for possible negative values */
+					vref_byte_status[if_id][subphy_num][vref_idx] |=
+						patterns_byte_status[if_id][subphy_num];
 					dq_vref_start_win[if_id][subphy_num][vref_idx] =
-						c_vref[if_id][subphy_num] + 1 -
+						c_opt_per_bus[if_id][subphy_num] + 1 -
 						valid_win_size[if_id][subphy_num] / 2;
 					dq_vref_start_win[if_id][subphy_num][vref_idx] =
 						(valid_win_size[if_id][subphy_num] % 2 == 0) ?
 						dq_vref_start_win[if_id][subphy_num][vref_idx] :
 						dq_vref_start_win[if_id][subphy_num][vref_idx] - 1;
 					dq_vref_end_win[if_id][subphy_num][vref_idx] =
-						c_vref[if_id][subphy_num] + valid_win_size[if_id][subphy_num] / 2;
+						c_opt_per_bus[if_id][subphy_num] +
+						valid_win_size[if_id][subphy_num] / 2;
 					vref_state_per_subphy[if_id][subphy_num] = MV_DDR4_VREF_SUBPHY_CAL_INSIDE;
 				} else if (vref_state_per_subphy[if_id][subphy_num] == MV_DDR4_VREF_SUBPHY_CAL_INSIDE) {
 					vref_state_per_subphy[if_id][subphy_num] = MV_DDR4_VREF_SUBPHY_CAL_UNDER;
@@ -274,19 +279,11 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 					all_subphys_state = MV_DDR4_VREF_SUBPHY_CAL_INSIDE;
 			}
 		}
-
-		/* check condition to break do-while loop */
-		if ((vref_tap_idx < MV_DDR4_VREF_STEP_SIZE) ||
-		    (all_subphys_state == MV_DDR4_VREF_SUBPHY_CAL_UNDER) ||
-		    (vref_tap_idx < MV_DDR4_VREF_MIN_RANGE))
-			break;
-
-		vref_tap_idx -= MV_DDR4_VREF_STEP_SIZE;
-	} while (1);
+	}
 
 	if (tap_tune_passed == MV_FALSE) {
 		DEBUG_CALIBRATION(DEBUG_LEVEL_INFO,
-				  ("%s: tap tune not passed on any duty_cycle value\n", __func__));
+				  ("%s: tap tune not passed on any dq_vref value\n", __func__));
 		for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
 			VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
 			/* report fail for all active interfaces; multi-interface support - tbd */
@@ -298,6 +295,29 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 
 	/* close vref range */
 	mv_ddr4_vref_tap_set(dev_num, 0, ACCESS_TYPE_MULTICAST, vref_tap_idx, MV_DDR4_VREF_TAP_END);
+
+	/* find out the results with the mixed and low states and move the low state 64 adlls */
+	for (vref_idx = 0; vref_idx < MV_DDR4_VREF_MAX_RANGE; vref_idx++) {
+		for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
+			VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
+			for (subphy_num = 0; subphy_num < subphy_max; subphy_num++) {
+				VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy_num);
+				if ((vref_byte_status[if_id][subphy_num][vref_idx]) &
+				    (BYTE_HOMOGENEOUS_LOW | BYTE_SPLIT_OUT_MIX)) {
+					if (dq_vref_start_win[if_id][subphy_num][vref_idx] <= 31 &&
+					    dq_vref_end_win[if_id][subphy_num][vref_idx] <= 31) {
+						dq_vref_start_win[if_id][subphy_num][vref_idx] += 64;
+						dq_vref_end_win[if_id][subphy_num][vref_idx] += 64;
+						DEBUG_CALIBRATION
+							(DEBUG_LEVEL_TRACE,
+							 ("%s vref_idx %d if %d subphy %d added 64 adlls to window\n",
+							  __func__, valid_vref_ptr[if_id][subphy_num][vref_idx],
+							  if_id, subphy_num));
+					}
+				}
+			}
+		}
+	}
 
 	for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
 		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
@@ -388,15 +408,22 @@ static int mv_ddr4_centralization(u8 dev_num, u16 (*lambda)[MAX_BUS_NUM][BUS_WID
 				  u8 (*pbs_result)[MAX_BUS_NUM][BUS_WIDTH_IN_BITS], u8 (*vw_size)[MAX_BUS_NUM],
 				  u8 mode, u16 param0, u8 param1)
 {
+/* FIXME:  remove the dependency in 64bit */
+#if defined(CONFIG_64BIT)
+#define MV_DDR_NUM_OF_CENTRAL_PATTERNS	(PATTERN_KILLER_DQ7_64 - PATTERN_KILLER_DQ0 + 1)
+#else
+#define MV_DDR_NUM_OF_CENTRAL_PATTERNS	(PATTERN_KILLER_DQ7 - PATTERN_KILLER_DQ0 + 1)
+#endif
 	static u8 subphy_end_win[MAX_DIR_TYPES][MAX_INTERFACE_NUM][MAX_BUS_NUM];
 	static u8 subphy_start_win[MAX_DIR_TYPES][MAX_INTERFACE_NUM][MAX_BUS_NUM];
-	static u8 centralization_state[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 	static u8 final_start_win[MAX_INTERFACE_NUM][MAX_BUS_NUM][BUS_WIDTH_IN_BITS];
 	static u8 final_end_win[MAX_INTERFACE_NUM][MAX_BUS_NUM][BUS_WIDTH_IN_BITS];
 	enum hws_training_ip_stat training_result[MAX_INTERFACE_NUM];
-	u32 if_id, subphy_num, pattern_id, bit_num;
+	u32 if_id, subphy_num, pattern_id, pattern_loop_idx, bit_num;
 	u8  curr_start_win[BUS_WIDTH_IN_BITS];
 	u8  curr_end_win[BUS_WIDTH_IN_BITS];
+	static u8 start_win_db[MV_DDR_NUM_OF_CENTRAL_PATTERNS][MAX_INTERFACE_NUM][MAX_BUS_NUM][BUS_WIDTH_IN_BITS];
+	static u8 end_win_db[MV_DDR_NUM_OF_CENTRAL_PATTERNS][MAX_INTERFACE_NUM][MAX_BUS_NUM][BUS_WIDTH_IN_BITS];
 	u8  curr_win[BUS_WIDTH_IN_BITS];
 	u8  opt_win, waste_win, start_win_skew, end_win_skew;
 	u8  final_subphy_win[MAX_INTERFACE_NUM][BUS_WIDTH_IN_BITS];
@@ -407,6 +434,7 @@ static int mv_ddr4_centralization(u8 dev_num, u16 (*lambda)[MAX_BUS_NUM][BUS_WID
 	u32 max_win_size;
 	u8 curr_end_win_min, curr_start_win_max;
 	u32 cs_ena_reg_val[MAX_INTERFACE_NUM];
+	u8 current_byte_status;
 	int status;
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
 	u8 subphy_max = ddr3_tip_dev_attr_get(dev_num, MV_ATTR_OCTET_PER_INTERFACE);
@@ -434,14 +462,12 @@ static int mv_ddr4_centralization(u8 dev_num, u16 (*lambda)[MAX_BUS_NUM][BUS_WID
 		direction = OPER_READ;
 	}
 
-	opt_win = (max_win_size - 1);
-
 	/* database initialization */
 	for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
 		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
 		for (subphy_num = 0; subphy_num < subphy_max; subphy_num++) {
 			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy_num);
-			centralization_state[if_id][subphy_num] = 0;
+			patterns_byte_status[if_id][subphy_num] = BYTE_NOT_DEFINED;
 			subphy_end_win[mode][if_id][subphy_num] = (max_win_size - 1);
 			subphy_start_win[mode][if_id][subphy_num] = 0;
 			vw_size[if_id][subphy_num] = (max_win_size - 1);
@@ -449,18 +475,20 @@ static int mv_ddr4_centralization(u8 dev_num, u16 (*lambda)[MAX_BUS_NUM][BUS_WID
 				final_start_win[if_id][subphy_num][bit_num] = 0;
 				final_end_win[if_id][subphy_num][bit_num] = (max_win_size - 1);
 				if (mode == TX_DIR)
-					final_end_win[if_id][subphy_num][bit_num] += MAX_WINDOW_SIZE_TX;
+					final_end_win[if_id][subphy_num][bit_num] = (2 * max_win_size - 1);
 			}
-			if (mode == TX_DIR)
-				subphy_end_win[mode][if_id][subphy_num] += MAX_WINDOW_SIZE_TX;
+			if (mode == TX_DIR) {
+				subphy_end_win[mode][if_id][subphy_num] = (2 * max_win_size - 1);
+				vw_size[if_id][subphy_num] = (2 * max_win_size - 1);
+			}
 		}
 	}
 
 	/* main flow */
 	/* FIXME: hard-coded "22" below for PATTERN_KILLER_DQ7_64 enum hws_pattern */
-	for (pattern_id = PATTERN_KILLER_DQ0;
+	for (pattern_id = PATTERN_KILLER_DQ0, pattern_loop_idx = 0;
 	     pattern_id <= (MV_DDR_IS_64BIT_DRAM_MODE(tm->bus_act_mask) ? 22 : PATTERN_KILLER_DQ7);
-	     pattern_id++) {
+	     pattern_id++, pattern_loop_idx++) {
 		ddr3_tip_ip_training_wrapper(dev_num, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST,
 					     PARAM_NOT_CARE, result_type, HWS_CONTROL_ELEMENT_ADLL,
 					     PARAM_NOT_CARE, direction, tm->if_act_mask,
@@ -471,7 +499,32 @@ static int mv_ddr4_centralization(u8 dev_num, u16 (*lambda)[MAX_BUS_NUM][BUS_WID
 			VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
 			for (subphy_num = 0; subphy_num < subphy_max; subphy_num++) {
 				VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy_num);
-				opt_win = (max_win_size - 1);
+				/*
+				 * in case the previous patterns found the current subphy as BYTE_NOT_DEFINED,
+				 * continue to next subphy
+				 */
+				if ((patterns_byte_status[if_id][subphy_num] == BYTE_NOT_DEFINED) &&
+				    (pattern_id != PATTERN_KILLER_DQ0))
+					continue;
+				/*
+				 * in case the result of the current subphy is BYTE_NOT_DEFINED mark the
+				 * pattern byte status as BYTE_NOT_DEFINED
+				 */
+				current_byte_status = mv_ddr_tip_sub_phy_byte_status_get(if_id, subphy_num);
+				if (current_byte_status == BYTE_NOT_DEFINED) {
+					DEBUG_DDR4_CENTRALIZATION
+						(DEBUG_LEVEL_INFO,
+						 ("%s:%s: failed to lock subphy, pat %d if %d subphy %d\n",
+						 __func__, str_dir[mode], pattern_id, if_id, subphy_num));
+					patterns_byte_status[if_id][subphy_num] = BYTE_NOT_DEFINED;
+					/* update the valid window size which is return value from this function */
+					vw_size[if_id][subphy_num] = 0;
+					/* continue to next subphy */
+					continue;
+				}
+
+				/* set the status of this byte */
+				patterns_byte_status[if_id][subphy_num] |= current_byte_status;
 				for (search_dir = HWS_LOW2HIGH; search_dir <= HWS_HIGH2LOW; search_dir++) {
 					status = ddr3_tip_read_training_result(dev_num, if_id, ACCESS_TYPE_UNICAST,
 									       subphy_num, ALL_BITS_PER_PUP,
@@ -482,64 +535,76 @@ static int mv_ddr4_centralization(u8 dev_num, u16 (*lambda)[MAX_BUS_NUM][BUS_WID
 					if (status != MV_OK)
 						return status;
 
-					DEBUG_DDR4_CENTRALIZATION(DEBUG_LEVEL_INFO,
-								  ("param0 %d param1 %d pat %d if %d subphy %d "
-								   "regs: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
-								   param0, param1, pattern_id, if_id, subphy_num,
-								   result[search_dir][0], result[search_dir][1],
-								   result[search_dir][2], result[search_dir][3],
-								   result[search_dir][4], result[search_dir][5],
-								   result[search_dir][6], result[search_dir][7]));
+					DEBUG_DDR4_CENTRALIZATION
+					(DEBUG_LEVEL_INFO,
+					 ("param0 %d param1 %d pat %d if %d subphy %d "
+					 "regs: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
+					 param0, param1, pattern_id, if_id, subphy_num,
+					 result[search_dir][0], result[search_dir][1],
+					 result[search_dir][2], result[search_dir][3],
+					 result[search_dir][4], result[search_dir][5],
+					 result[search_dir][6], result[search_dir][7]));
 				}
 
 				for (bit_num = 0; bit_num < BUS_WIDTH_IN_BITS; bit_num++) {
-					curr_start_win[bit_num] = GET_TAP_RESULT(result[HWS_LOW2HIGH][bit_num], EDGE_1);
-					curr_end_win[bit_num] = GET_TAP_RESULT(result[HWS_HIGH2LOW][bit_num], EDGE_1);
-					/* window length */
-					curr_win[bit_num] = curr_end_win[bit_num] - curr_start_win[bit_num] + 1;
-				}
-
-				if ((ddr3_tip_is_pup_lock(result[HWS_LOW2HIGH], result_type)) &&
-				    (ddr3_tip_is_pup_lock(result[HWS_HIGH2LOW], result_type))) {
 					/* read result success */
-					DEBUG_DDR4_CENTRALIZATION(DEBUG_LEVEL_INFO,
-								  ("subphy locked, pat %d if %d subphy %d\n",
-								   pattern_id, if_id, subphy_num));
-				} else {
-					/* read result failure */
-					DEBUG_DDR4_CENTRALIZATION(DEBUG_LEVEL_INFO,
-								  ("failed to lock subphy, pat %d if %d subphy %d\n",
-								   pattern_id, if_id, subphy_num));
-					if (centralization_state[if_id][subphy_num] == 1) {
-						/* continue with next subphy */
-						DEBUG_DDR4_CENTRALIZATION(DEBUG_LEVEL_TRACE,
-									  ("continue to next subphy\n"));
-						vw_size[if_id][subphy_num] = 0;
-						continue;
-					}
+					DEBUG_DDR4_CENTRALIZATION(
+								  DEBUG_LEVEL_INFO,
+								  ("%s %s subphy locked, pat %d if %d subphy %d\n",
+								  __func__, str_dir[mode], pattern_id,
+								  if_id, subphy_num));
+					start_win_db[pattern_loop_idx][if_id][subphy_num][bit_num] =
+						GET_TAP_RESULT(result[HWS_LOW2HIGH][bit_num], EDGE_1);
+					end_win_db[pattern_loop_idx][if_id][subphy_num][bit_num] =
+						GET_TAP_RESULT(result[HWS_HIGH2LOW][bit_num], EDGE_1);
+				}
+			} /* subphy */
+		} /* interface */
+	} /* pattern */
+
+	/*
+	 * check if the current patterns subphys in all interfaces has mixed and low byte states
+	 * in that case add 64 adlls to the low byte
+	 */
+	for (pattern_id = PATTERN_KILLER_DQ0, pattern_loop_idx = 0;
+		pattern_id <= (MV_DDR_IS_64BIT_DRAM_MODE(tm->bus_act_mask) ? 22 : PATTERN_KILLER_DQ7);
+		pattern_id++, pattern_loop_idx++) {
+		for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
+			VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
+			for (subphy_num = 0; subphy_num < subphy_max; subphy_num++) {
+				VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy_num);
+				if (patterns_byte_status[if_id][subphy_num] == BYTE_NOT_DEFINED)
+					continue;
+				opt_win = 2 * max_win_size;	/* initialize opt_win */
+				/* in case this byte in the pattern is homogeneous low add 64 adlls to the byte */
+				if (((patterns_byte_status[if_id][subphy_num]) &
+				    (BYTE_HOMOGENEOUS_LOW | BYTE_SPLIT_OUT_MIX)) ==
+				     (BYTE_HOMOGENEOUS_LOW | BYTE_SPLIT_OUT_MIX)) {
 					for (bit_num = 0; bit_num < BUS_WIDTH_IN_BITS; bit_num++) {
-						/* next check relevant only when using search machine 2 edges */
-						if (curr_start_win[bit_num] > 0 && curr_end_win[bit_num] == 0) {
-							curr_end_win[bit_num] = max_win_size - 1;
-							DEBUG_DDR4_CENTRALIZATION(DEBUG_LEVEL_TRACE,
-										  ("if %d subphy %d bit %d fail #1\n",
-										   if_id, subphy_num, bit_num));
-							/* next bit */
-							vw_size[if_id][subphy_num] = 0;
-							continue;
-						} else {
-							centralization_state[if_id][subphy_num] = 1;
-							DEBUG_DDR4_CENTRALIZATION(DEBUG_LEVEL_TRACE,
-										  ("if %d subphy %d bit %d fail #2\n",
-										   if_id, subphy_num, bit_num));
+						if (start_win_db[pattern_loop_idx][if_id][subphy_num][bit_num] <= 31 &&
+						    end_win_db[pattern_loop_idx][if_id][subphy_num][bit_num] <= 31) {
+							start_win_db[pattern_loop_idx][if_id][subphy_num][bit_num] +=
+								64;
+							end_win_db[pattern_loop_idx][if_id][subphy_num][bit_num] += 64;
+							DEBUG_DDR4_CENTRALIZATION
+								(DEBUG_LEVEL_TRACE,
+								 ("%s %s pattern %d if %d subphy %d bit %d added 64 "
+								 "adll\n",
+								 __func__, str_dir[mode], pattern_id, if_id,
+								 subphy_num, bit_num));
 						}
 					}
-					if (centralization_state[if_id][subphy_num] == 1) {
-						/* going to next subphy */
-						vw_size[if_id][subphy_num] = 0;
-						continue;
-					}
-				} /* bit */
+				}
+
+				/* calculations for the current pattern per subphy */
+				for (bit_num = 0; bit_num < BUS_WIDTH_IN_BITS; bit_num++) {
+					curr_win[bit_num] = end_win_db[pattern_loop_idx][if_id][subphy_num][bit_num] -
+						start_win_db[pattern_loop_idx][if_id][subphy_num][bit_num] + 1;
+					curr_start_win[bit_num] =
+						start_win_db[pattern_loop_idx][if_id][subphy_num][bit_num];
+					curr_end_win[bit_num] =
+						end_win_db[pattern_loop_idx][if_id][subphy_num][bit_num];
+				}
 
 				opt_win = GET_MIN(opt_win, ddr3_tip_get_buf_min(curr_win));
 				vw_size[if_id][subphy_num] =
@@ -547,12 +612,12 @@ static int mv_ddr4_centralization(u8 dev_num, u16 (*lambda)[MAX_BUS_NUM][BUS_WID
 
 				/* final subphy window length */
 				final_subphy_win[if_id][subphy_num] = ddr3_tip_get_buf_min(curr_end_win) -
-								      ddr3_tip_get_buf_max(curr_start_win) + 1;
+					ddr3_tip_get_buf_max(curr_start_win) + 1;
 				waste_win = opt_win - final_subphy_win[if_id][subphy_num];
 				start_win_skew = ddr3_tip_get_buf_max(curr_start_win) -
-						 ddr3_tip_get_buf_min(curr_start_win);
+					ddr3_tip_get_buf_min(curr_start_win);
 				end_win_skew = ddr3_tip_get_buf_max(curr_end_win) -
-					       ddr3_tip_get_buf_min(curr_end_win);
+					ddr3_tip_get_buf_min(curr_end_win);
 
 				/* min/max updated with pattern change */
 				curr_end_win_min = ddr3_tip_get_buf_min(curr_end_win);
@@ -561,25 +626,27 @@ static int mv_ddr4_centralization(u8 dev_num, u16 (*lambda)[MAX_BUS_NUM][BUS_WID
 					GET_MIN(subphy_end_win[mode][if_id][subphy_num], curr_end_win_min);
 				subphy_start_win[mode][if_id][subphy_num] =
 					GET_MAX(subphy_start_win[mode][if_id][subphy_num], curr_start_win_max);
+				DEBUG_DDR4_CENTRALIZATION
+					(DEBUG_LEVEL_INFO,
+					 ("%s, %s pat %d if %d subphy %d opt_win %d ",
+					 __func__, str_dir[mode], pattern_id, if_id, subphy_num, opt_win));
+				DEBUG_DDR4_CENTRALIZATION
+					(DEBUG_LEVEL_INFO,
+					 ("final_subphy_win %d waste_win %d "
+					 "start_win_skew %d end_win_skew %d ",
+					 final_subphy_win[if_id][subphy_num],
+					 waste_win, start_win_skew, end_win_skew));
 				DEBUG_DDR4_CENTRALIZATION(DEBUG_LEVEL_INFO,
-							  ("pat %d if %d subphy %d opt_win %d ",
-							   pattern_id, if_id, subphy_num, opt_win));
-				DEBUG_DDR4_CENTRALIZATION(DEBUG_LEVEL_INFO,
-							  ("final_subphy_win %d waste_win %d "
-							   "start_win_skew %d end_win_skew %d ",
-							   final_subphy_win[if_id][subphy_num],
-							   waste_win, start_win_skew, end_win_skew));
-				DEBUG_DDR4_CENTRALIZATION(DEBUG_LEVEL_INFO,
-							  ("curr_start_win_max %d curr_end_win_min %d "
-							   "subphy_start_win %d subphy_end_win %d\n",
-							   curr_start_win_max, curr_end_win_min,
-							   subphy_start_win[mode][if_id][subphy_num],
-							   subphy_end_win[mode][if_id][subphy_num]));
+					("curr_start_win_max %d curr_end_win_min %d "
+					"subphy_start_win %d subphy_end_win %d\n",
+					curr_start_win_max, curr_end_win_min,
+					subphy_start_win[mode][if_id][subphy_num],
+					subphy_end_win[mode][if_id][subphy_num]));
 
 				/* valid window */
 				DEBUG_DDR4_CENTRALIZATION(DEBUG_LEVEL_INFO,
-							  ("valid window, pat %d if %d subphy %d\n",
-							   pattern_id, if_id, subphy_num));
+					("valid window, pat %d if %d subphy %d\n",
+					pattern_id, if_id, subphy_num));
 				for (bit_num = 0; bit_num < BUS_WIDTH_IN_BITS; bit_num++) {
 					final_start_win[if_id][subphy_num][bit_num] =
 						GET_MAX(final_start_win[if_id][subphy_num][bit_num],
@@ -587,9 +654,9 @@ static int mv_ddr4_centralization(u8 dev_num, u16 (*lambda)[MAX_BUS_NUM][BUS_WID
 					final_end_win[if_id][subphy_num][bit_num] =
 						GET_MIN(final_end_win[if_id][subphy_num][bit_num],
 							curr_end_win[bit_num]);
-				}
+				} /* bit */
 			} /* subphy */
-		} /* interface */
+		} /* if_id */
 	} /* pattern */
 
 	/* calculate valid window for each subphy */
@@ -597,31 +664,43 @@ static int mv_ddr4_centralization(u8 dev_num, u16 (*lambda)[MAX_BUS_NUM][BUS_WID
 		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
 		for (subphy_num = 0; subphy_num < subphy_max; subphy_num++) {
 			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy_num);
-			if (rx_vw_pos[if_id][subphy_num] == 0)
-				pbs_max = 31 - 0xa;
-			else
-				pbs_max = 31;
+			if (patterns_byte_status[if_id][subphy_num] != BYTE_NOT_DEFINED) {
+				/*
+				 * in case of bytes status which were found as mixed and low
+				 * change the their status to be mixed only, due to the fact
+				 * that we have already dealt with this bytes by adding 64 adlls
+				 * to the low bytes
+				 */
+				if (patterns_byte_status[if_id][subphy_num] &
+				    (BYTE_HOMOGENEOUS_LOW | BYTE_SPLIT_OUT_MIX))
+					patterns_byte_status[if_id][subphy_num] = BYTE_SPLIT_OUT_MIX;
+				if (rx_vw_pos[if_id][subphy_num] == 0)	/* rx_vw_pos is initialized during tap tune */
+					pbs_max = 31 - 0xa;
+				else
+					pbs_max = 31;
 
-			/* continue if locked */
-			if (centralization_state[if_id][subphy_num] == 0) {
+				/* continue if locked */
+				/*if (centralization_state[if_id][subphy_num] == 0) {*/
 				status = mv_ddr4_copt_get(mode, lambda[if_id][subphy_num],
 							  final_start_win[if_id][subphy_num],
 							  final_end_win[if_id][subphy_num],
 							  pbs_result[if_id][subphy_num],
 							  &copt[if_id][subphy_num]);
-				DEBUG_DDR4_CENTRALIZATION(DEBUG_LEVEL_INFO,
-							  ("if %d subphy %d copt %d\n",
-							   if_id, subphy_num, copt[if_id][subphy_num]));
+				DEBUG_DDR4_CENTRALIZATION
+					(DEBUG_LEVEL_INFO,
+					 ("%s %s if %d subphy %d copt %d\n",
+					 __func__, str_dir[mode], if_id, subphy_num, copt[if_id][subphy_num]));
 
 				if (status != MV_OK) {
 					/*
 					 * TODO: print out error message(s) only when all points fail
 					 * as temporary solution, replaced ERROR to TRACE debug level
 					 */
-					DEBUG_DDR4_CENTRALIZATION(DEBUG_LEVEL_TRACE,
-								  ("copt calculation failed, "
-								   "no valid window for subphy %d\n",
-								   subphy_num));
+					DEBUG_DDR4_CENTRALIZATION
+						(DEBUG_LEVEL_TRACE,
+						 ("%s %s copt calculation failed, "
+						 "no valid window for subphy %d\n",
+						 __func__, str_dir[mode], subphy_num));
 					/* set the byte to 0 (fail) and clean the status (continue with algorithm) */
 					vw_size[if_id][subphy_num] = 0;
 					status = MV_OK;
@@ -630,24 +709,24 @@ static int mv_ddr4_centralization(u8 dev_num, u16 (*lambda)[MAX_BUS_NUM][BUS_WID
 						/*
 						 * TODO: print out error message(s) only when all points fail
 						 * as temporary solution, commented out debug level set to TRACE
+						*/
+						/*
+						 * ddr3_hws_set_log_level(DEBUG_BLOCK_CALIBRATION, DEBUG_LEVEL_TRACE);
 						 */
-						 /*
-						  * ddr3_hws_set_log_level(DEBUG_BLOCK_CALIBRATION, DEBUG_LEVEL_TRACE);
-						  */
 						/* open relevant log and run function again for debug */
 						mv_ddr4_copt_get(mode, lambda[if_id][subphy_num],
-								 final_start_win[if_id][subphy_num],
-								 final_end_win[if_id][subphy_num],
-								 pbs_result[if_id][subphy_num],
-								 &copt[if_id][subphy_num]);
+									final_start_win[if_id][subphy_num],
+									final_end_win[if_id][subphy_num],
+									pbs_result[if_id][subphy_num],
+									&copt[if_id][subphy_num]);
 						/*
 						 * ddr3_hws_set_log_level(DEBUG_BLOCK_CALIBRATION, DEBUG_LEVEL_ERROR);
 						 */
-					}
-				}
-			}
-		}
-	}
+					} /* debug mode */
+				} /* status */
+			} /* byte not defined */
+		} /* subphy */
+	} /* if_id */
 
 	/* restore cs enable value*/
 	for (if_id = 0; if_id < MAX_INTERFACE_NUM - 1; if_id++) {
@@ -699,7 +778,7 @@ static int mv_ddr4_copt_get(u8 dir, u16 *lambda, u8 *vw_l, u8 *vw_h, u8 *pbs_res
 	u8 center_high_el;
 
 	/* lambda calculated as D * PBS_VALUE_FACTOR / d */
-
+	//printf("Copt::Debug::\t");
 	for (dq_idx = 0; dq_idx < 8; dq_idx++) {
 		center_per_dq[dq_idx] = 0.5 * (vw_h[dq_idx] + vw_l[dq_idx]);
 		vw_per_dq[dq_idx] = 1 + (vw_h[dq_idx] - vw_l[dq_idx]);

@@ -129,7 +129,8 @@ enum hws_ddr_freq {
 	DDR_FREQ_1000,
 	DDR_FREQ_1050,
 	DDR_FREQ_1200,
-	DDR_FREQ_LAST
+	DDR_FREQ_LAST,
+	DDR_FREQ_SAR
 };
 
 enum speed_bin_table_elements {
@@ -202,7 +203,8 @@ enum hws_ddr_freq {
 	DDR_FREQ_900,
 	DDR_FREQ_360,
 	DDR_FREQ_1000,
-	DDR_FREQ_LAST
+	DDR_FREQ_LAST,
+	DDR_FREQ_SAR
 };
 
 enum speed_bin_table_elements {

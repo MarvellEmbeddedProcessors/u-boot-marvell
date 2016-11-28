@@ -31,20 +31,26 @@
 
 		freq {
 			key = "freq";
-			description = "CPU/DDR frequencies";
+			description = "CPU/DDR and PIDI frequencies";
 			start-bit = <0>;
-			bit-length = <3>;
+			bit-length = <4>;
 			option-cnt = <8>;
-			/* The * means that the freq isn't supported by the devel boards */
-			options = "0x0", "2000/1200 Mhz*",
-				  "0x1", "2000/1050 Mhz*",
-				  "0x2", "1800/1200 Mhz*",
-				  "0x3", "1800/1050 Mhz*",
-				  "0x4", "1600/1050 Mhz*",
-				  "0x5", "1600/900 Mhz*",
-				  "0x6", "1300/800 Mhz",
-				  "0x7", "1300/650 Mhz";
-			default = <0x6>;
+			/* The mutual dependencies between CPU/DDR and PIDI freq,
+			 * and the fact that we can concatenate the 3 CPU/DDR bits and the PIDI bit,
+			 * allows us to combine them to a nibble.
+			 * the MSB of this nibble set the PIDI freq,
+			 * and the other 3 bits set the CPU/DDR freq.
+			 * The * means that the freq isn't supported by the devel boards.
+			 */
+			options = "0x0", "CPU/DDR = 0x0: 2000/1200 Mhz, PIDI = 0: 500Mhz*",
+				  "0x1", "CPU/DDR = 0x1: 2000/1050 Mhz, PIDI = 0: 500Mhz*",
+				  "0x2", "CPU/DDR = 0x2: 1800/1200 Mhz, PIDI = 0: 500Mhz*",
+				  "0x3", "CPU/DDR = 0x3: 1800/1050 Mhz, PIDI = 0: 500Mhz*",
+				  "0x4", "CPU/DDR = 0x4: 1600/1050 Mhz, PIDI = 0: 500Mhz*",
+				  "0xd", "CPU/DDR = 0x5: 1600/900 Mhz,  PIDI = 1: 1Ghz*",
+				  "0xe", "CPU/DDR = 0x6: 1300/800 Mhz,  PIDI = 1: 1Ghz",
+				  "0xf", "CPU/DDR = 0x7: 1300/650 Mhz,  PIDI = 1: 1Ghz";
+			default = <0xe>;
 			status = "okay";
 		};
 		boot_mode {
@@ -55,7 +61,7 @@
 			option-cnt = <2>;
 			options = "0x30", "AP_SPI 24bits",
 				  "0x32", "CP1_SPI_1 24bits";
-				  default = <0x32>;
+			default = <0x32>;
 			status = "okay";
 		};
 	};

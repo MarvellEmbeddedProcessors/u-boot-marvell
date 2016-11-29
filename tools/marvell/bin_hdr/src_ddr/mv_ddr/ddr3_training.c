@@ -2105,7 +2105,7 @@ static int ddr3_tip_set_timing(u32 dev_num, enum hws_access_type access_type,
 	val = (((t_ras - 1) & SDRAM_TIMING_LOW_TRAS_MASK) << SDRAM_TIMING_LOW_TRAS_OFFS) |
 	      (((t_rcd - 1) & SDRAM_TIMING_LOW_TRCD_MASK) << SDRAM_TIMING_LOW_TRCD_OFFS) |
 	      (((t_rcd - 1) >> SDRAM_TIMING_LOW_TRCD_OFFS & SDRAM_TIMING_HIGH_TRCD_MASK)
-	      << SDRAM_TIMING_LOW_TRCD_OFFS) |
+	      << SDRAM_TIMING_HIGH_TRCD_OFFS) |
 	      (((t_rp - 1) & SDRAM_TIMING_LOW_TRP_MASK) << SDRAM_TIMING_LOW_TRP_OFFS) |
 	      (((t_rp - 1) >> SDRAM_TIMING_LOW_TRP_MASK & SDRAM_TIMING_HIGH_TRP_MASK)
 	      << SDRAM_TIMING_HIGH_TRP_OFFS) |

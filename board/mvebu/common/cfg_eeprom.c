@@ -51,6 +51,11 @@ static char hw_info_param_list[][HW_INFO_MAX_NAME_LEN] = {
 };
 static int hw_info_param_num = (sizeof(hw_info_param_list)/sizeof(hw_info_param_list[0]));
 
+bool __weak mvebu_is_in_recovery_mode(void)
+{
+	return false;
+}
+
 static uint32_t cfg_eeprom_checksum8(uint8_t *start, uint32_t len)
 {
 	uint32_t sum = 0;

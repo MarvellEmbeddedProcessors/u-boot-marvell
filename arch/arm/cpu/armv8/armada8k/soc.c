@@ -172,57 +172,6 @@ void print_soc_specific_info(void)
 	       llc_excl_mode ? " (Exclusive Mode)" : "");
 }
 
-/************************************************************************
-   Function:  mvebu_is_in_recovery_mode
-
-   The function checks if the system currently boots into recovery mode.
-   The recovery mode is intended to bring up bricked board using UART
-   port as the boot device. This mode is either trigered by escape
-   sequence or by reset sample jumpers.
-   In case of A8K the recovery boot is always running in silent mode with
-   RX pin enabled. The UART RX pin is disabled in BootROM run time in all
-   other cases.
-
-   Return - 1 if recovery mode is active or 0 otherwise
-************************************************************************/
-bool mvebu_is_in_recovery_mode(void)
-{
-	debug_enter();
-#ifdef CONFIG_SPL_BUILD
-	bool	recovery = 0;
-	/* UART RX pin numbers and their MPP functions */
-	int	uart_rx_pins[] = MPP_UART_RX_PINS;
-	int	uart_rx_func[] = MPP_UART_RX_FUNCTIONS;
-	int	i, pin, offs, func;
-
-	/* UART boot is always happen in silent mode */
-	if (gd->flags & GD_FLG_SILENT) {
-		for (i = 0; i < sizeof(uart_rx_pins)/sizeof(uart_rx_pins[0]); i++) {
-			/* Check if UART RX is enabled.
-			   This should only happen at the SPL (BIN header) stage
-			   when the system boots from UART (i.e. in recovery mode) */
-			   pin  = uart_rx_pins[i] % MPPS_PER_REG;
-			   offs = (uart_rx_pins[i] / MPPS_PER_REG) * 4;
-
-			   func = readl(MPP_REGS_BASE + offs);
-			   func >>= pin * MPP_BIT_CNT;
-			   func &= MPP_VAL_MASK;
-			if (func == uart_rx_func[i]) {
-				recovery = 1;
-				break;
-			}
-		}
-	}
-
-	set_info(RECOVERY_MODE, recovery);
-
-	return recovery;
-#else
-	return get_info(RECOVERY_MODE);
-#endif
-	debug_exit();
-}
-
 #ifdef CONFIG_LAST_STAGE_INIT
 int last_stage_init(void)
 {

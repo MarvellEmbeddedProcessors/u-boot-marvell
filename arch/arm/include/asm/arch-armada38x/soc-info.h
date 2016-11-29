@@ -24,18 +24,6 @@
 #define MAX_MBUS_REMAP_WINS		8
 #define INTERNAL_REG_WIN_NUM		20
 
-/* General MPP definitions */
-#define MAX_MPP_OPTS		7
-#define MAX_MPP_ID		59
-
-#define MPP_BIT_CNT		4
-#define MPP_FIELD_MASK		0x7
-#define MPP_FIELD_BITS		3
-#define MPP_VAL_MASK		0xF
-
-#define MPPS_PER_REG		(32 / MPP_BIT_CNT)
-#define MAX_MPP_REGS		((MAX_MPP_ID + MPPS_PER_REG) / MPPS_PER_REG)
-
 /* Pin Ctrl driver definitions */
 #define BITS_PER_PIN		4
 #define PIN_FUNC_MASK		((1 << BITS_PER_PIN) - 1)

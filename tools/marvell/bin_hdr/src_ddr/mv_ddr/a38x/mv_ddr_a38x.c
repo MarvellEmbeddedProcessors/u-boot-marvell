@@ -629,7 +629,6 @@ static int mv_ddr_sar_freq_get(int dev_num, enum hws_ddr_freq *freq)
 #else /* CONFIG_DDR4 */
 		case 0x13:
 			*freq = DDR_FREQ_933;
-			async_mode_at_tf = 1;
 			break;
 #endif /* CONFIG_DDR4 */
 		default:
@@ -898,6 +897,7 @@ static int ddr3_tip_a38x_set_divider(u8 dev_num, u32 if_id,
 {
 	u32 divider = 0;
 	u32 sar_val, ref_clk_satr;
+	u32 async_val;
 
 	if (if_id != 0) {
 		DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR,
@@ -931,11 +931,46 @@ static int ddr3_tip_a38x_set_divider(u8 dev_num, u32 if_id,
 		mdelay(5);
 
 		/* Set KNL values */
-		if (frequency == DDR_FREQ_933) {
-			CHECK_STATUS(ddr3_tip_a38x_if_write
-				     (dev_num, ACCESS_TYPE_UNICAST, if_id,
-				      0xe42f0, 0x804A002, 0xFFFFFFFF));
+		switch (frequency) {
+#ifdef CONFIG_DDR3
+		case DDR_FREQ_467:
+			async_val = 0x806f012;
+			break;
+		case DDR_FREQ_533:
+			async_val = 0x807f012;
+			break;
+		case DDR_FREQ_600:
+			async_val = 0x805f00a;
+			break;
+#endif
+		case DDR_FREQ_667:
+			async_val = 0x809f012;
+			break;
+		case DDR_FREQ_800:
+			async_val = 0x807f00a;
+			break;
+#ifdef CONFIG_DDR3
+		case DDR_FREQ_850:
+			async_val = 0x80cb012;
+			break;
+#endif
+		case DDR_FREQ_900:
+			async_val = 0x80d7012;
+			break;
+		case DDR_FREQ_933:
+			async_val = 0x80df012;
+			break;
+		case DDR_FREQ_1000:
+			async_val = 0x80ef012;
+			break;
+		case DDR_FREQ_1066:
+			async_val = 0x80ff012;
+			break;
+		default:
+			/* set DDR_FREQ_667 as default */
+			async_val = 0x809f012;
 		}
+		ddr3_tip_a38x_if_write(dev_num, ACCESS_TYPE_UNICAST, if_id, 0xe42f0, async_val, 0xffffffff);
 	} else {
 		/* Set sync mode */
 		CHECK_STATUS(ddr3_tip_a38x_if_write
@@ -1033,6 +1068,8 @@ int ddr3_tip_ext_write(u32 dev_num, u32 if_id, u32 reg_addr,
 
 int mv_ddr_early_init(void)
 {
+	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
+
 	/* FIXME: change this configuration per ddr type
 	 * configure a380 and a390 to work with receiver odt timing
 	 * the odt_config is defined:
@@ -1044,6 +1081,9 @@ int mv_ddr_early_init(void)
 	odt_config = 1;
 
 	mv_ddr_sw_db_init(0, 0);
+
+	if (tm->interface_params[0].memory_freq != DDR_FREQ_SAR)
+		async_mode_at_tf = 1;
 
 	return MV_OK;
 }

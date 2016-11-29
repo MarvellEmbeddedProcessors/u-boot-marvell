@@ -184,9 +184,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif /* CONFIG_DDR4 */
 
 /* Logging defines */
-#define DEBUG_LEVEL_TRACE	1
-#define DEBUG_LEVEL_INFO	2
-#define DEBUG_LEVEL_ERROR	3
+enum mv_ddr_debug_level {
+	DEBUG_LEVEL_TRACE = 1,
+	DEBUG_LEVEL_INFO = 2,
+	DEBUG_LEVEL_ERROR = 3,
+	DEBUG_LEVEL_LAST
+};
 
 enum ddr_lib_debug_block {
 	DEBUG_BLOCK_STATIC,

@@ -295,6 +295,7 @@ int ddr3_load_topology_map(void);
 int ddr3_tip_init_specific_reg_config(u32 dev_num,
 				      struct reg_data *reg_config_arr);
 void ddr3_hws_set_log_level(enum ddr_lib_debug_block block, u8 level);
+void mv_ddr_user_log_level_set(enum ddr_lib_debug_block block);
 int ddr3_tip_tune_training_params(u32 dev_num,
 				  struct tune_train_params *params);
 void get_target_freq(u32 freq_mode, u32 *ddr_freq, u32 *hclk_ps);

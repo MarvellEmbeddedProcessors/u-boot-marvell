@@ -109,6 +109,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mv_ddr_topology.h"
 #include "mv_ddr_spd.h"
+#include "ddr3_logging_def.h"
 
 struct bus_params {
 	/* Chip Select (CS) bitmask (bits 0-CS0, bit 1- CS1 ...) */
@@ -160,6 +161,9 @@ struct if_params {
 };
 
 struct mv_ddr_topology_map {
+	/* debug level configuration */
+	enum mv_ddr_debug_level debug_level;
+
 	/* Number of interfaces (default is 12) */
 	u8 if_act_mask;
 

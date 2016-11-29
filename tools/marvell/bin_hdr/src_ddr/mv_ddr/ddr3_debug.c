@@ -126,6 +126,12 @@ u8 debug_calibration = DEBUG_LEVEL_ERROR;
 u8 debug_ddr4_centralization = DEBUG_LEVEL_ERROR;
 #endif /* CONFIG_DDR4 */
 
+void mv_ddr_user_log_level_set(enum ddr_lib_debug_block block)
+{
+	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
+	ddr3_hws_set_log_level(block, tm->debug_level);
+};
+
 void ddr3_hws_set_log_level(enum ddr_lib_debug_block block, u8 level)
 {
 	switch (block) {

@@ -145,7 +145,7 @@ int ddr3_init(void)
 	mv_ddr_pre_training_soc_config(ddr_type);
 
 	/* Set log level for training library */
-	ddr3_hws_set_log_level(DEBUG_BLOCK_ALL, DEBUG_LEVEL_ERROR);
+	mv_ddr_user_log_level_set(DEBUG_BLOCK_ALL);
 
 	mv_ddr_early_init();
 

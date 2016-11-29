@@ -113,6 +113,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* Marvell board - Board_ID = DB_68XX_ID = 1 (DDR3/4)*/
 static struct mv_ddr_topology_map board_topology_map = {
+	DEBUG_LEVEL_ERROR,
 	0x1, /* active interfaces */
 	/* cs_mask, mirror, dqs_swap, ck_swap X PUPs */
 	{ { { {0x3, 0x2, 0, 0},
@@ -129,7 +130,7 @@ static struct mv_ddr_topology_map board_topology_map = {
 	BUS_MASK_32BIT,			/* subphys mask */
 	MV_DDR_CFG_DEFAULT,		/* ddr configuration data source */
 	{ {0} },			/* raw spd data */
-	{0},				/* timing parameters */
+	{0}				/* timing parameters */
 };
 
 #if 0

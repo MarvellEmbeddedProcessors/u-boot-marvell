@@ -2613,7 +2613,6 @@ static int ddr3_tip_ddr3_training_main_flow(u32 dev_num)
 		}
 	}
 #endif
-
 #ifdef STATIC_ALGO_SUPPORT
 	if (mask_tune_func & STATIC_LEVELING_MASK_BIT) {
 		training_stage = STATIC_LEVELING;
@@ -2630,6 +2629,14 @@ static int ddr3_tip_ddr3_training_main_flow(u32 dev_num)
 		}
 	}
 #endif
+
+	ret = adll_calibration(dev_num, ACCESS_TYPE_MULTICAST, 0, freq);
+	if (ret != MV_OK) {
+		DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR,
+			("adll_calibration failure\n"));
+		if (debug_mode == 0)
+			return MV_FAIL;
+	}
 
 	if (mask_tune_func & SET_LOW_FREQ_MASK_BIT) {
 		training_stage = SET_LOW_FREQ;

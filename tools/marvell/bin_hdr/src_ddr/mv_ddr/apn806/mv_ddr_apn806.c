@@ -473,8 +473,8 @@ static int mv_ddr_clk_dividers_set(u8 dev_num, u32 if_id, enum hws_ddr_freq targ
 	}
 
 	if (mv_ddr_first_time_setting) {
-		/* get ddr freq from sar */
-		mv_ddr_sar_freq_get(DEV_NUM_0, &init_ddr_freq);
+		/* get ddr init freq */
+		init_ddr_freq = mv_ddr_init_freq_get();
 
 		init_ddr_freq_val = freq_val[init_ddr_freq];
 

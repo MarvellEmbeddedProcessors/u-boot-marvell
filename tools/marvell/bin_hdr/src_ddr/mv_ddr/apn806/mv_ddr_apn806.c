@@ -456,7 +456,6 @@ static u32 mv_ddr_target_div_calc(u32 curr_div, u32 curr_freq, u32 target_freq)
  */
 static int mv_ddr_clk_dividers_set(u8 dev_num, u32 if_id, enum hws_ddr_freq target_ddr_freq)
 {
-	static u32 mc_div = 0xffffffff;
 	static u32 ddr_div = 0xffffffff;
 	u32 mc_target_div, ddr_target_div;
 	static u32 init_ddr_freq_val;
@@ -480,7 +479,6 @@ static int mv_ddr_clk_dividers_set(u8 dev_num, u32 if_id, enum hws_ddr_freq targ
 
 		/* get mc & ddr clk dividers values */
 		reg = reg_read(DEV_GEN_CTRL1_REG_ADDR);
-		mc_div = (reg >> MISC_CLKDIV_RATIO_2_OFFS) & MISC_CLKDIV_RATIO_2_MASK;
 		ddr_div = (reg >> MISC_CLKDIV_RATIO_1_OFFS) & MISC_CLKDIV_RATIO_1_MASK;
 
 		mv_ddr_first_time_setting = 0;
@@ -489,8 +487,8 @@ static int mv_ddr_clk_dividers_set(u8 dev_num, u32 if_id, enum hws_ddr_freq targ
 	target_ddr_freq_val = freq_val[target_ddr_freq];
 
 	/* calc mc & ddr target clk divider value */
-	mc_target_div = mv_ddr_target_div_calc(mc_div, init_ddr_freq_val, target_ddr_freq_val);
 	ddr_target_div = mv_ddr_target_div_calc(ddr_div, init_ddr_freq_val, target_ddr_freq_val);
+	mc_target_div = ddr_target_div * 2;
 
 	reg = reg_read(DEV_GEN_CTRL1_REG_ADDR);
 	reg &= ~(MISC_CLKDIV_RATIO_2_MASK << MISC_CLKDIV_RATIO_2_OFFS | MISC_CLKDIV_RATIO_1_MASK << MISC_CLKDIV_RATIO_1_OFFS);

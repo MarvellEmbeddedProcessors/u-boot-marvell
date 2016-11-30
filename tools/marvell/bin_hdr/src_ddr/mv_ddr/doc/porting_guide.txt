@@ -116,19 +116,24 @@ DDR Code Porting layer
 			  See sub-section 2.4.1 to properly choose such an index for a specific DDR module.
 			  This parameter is of enum hws_speed_bin type.
 			  Here are its supported speed bin index values:
-			  - SPEED_BIN_DDR_1600J,
-			  - SPEED_BIN_DDR_1600K,
-			  - SPEED_BIN_DDR_1600L,
-			  - SPEED_BIN_DDR_1866L,
-			  - SPEED_BIN_DDR_1866M,
-			  - SPEED_BIN_DDR_1866N,
-			  - SPEED_BIN_DDR_2133N,
-			  - SPEED_BIN_DDR_2133P,
-			  - SPEED_BIN_DDR_2133R,
-			  - SPEED_BIN_DDR_2400P,
-			  - SPEED_BIN_DDR_2400R,
-			  - SPEED_BIN_DDR_2400U.
-		2.2.3 bus_width - specifies sdram device width <TODO>
+			  - SPEED_BIN_DDR_1600J
+			  - SPEED_BIN_DDR_1600K
+			  - SPEED_BIN_DDR_1600L
+			  - SPEED_BIN_DDR_1866L
+			  - SPEED_BIN_DDR_1866M
+			  - SPEED_BIN_DDR_1866N
+			  - SPEED_BIN_DDR_2133N
+			  - SPEED_BIN_DDR_2133P
+			  - SPEED_BIN_DDR_2133R
+			  - SPEED_BIN_DDR_2400P
+			  - SPEED_BIN_DDR_2400R
+			  - SPEED_BIN_DDR_2400S
+			  - SPEED_BIN_DDR_2400U
+			  Note: No need to configure these parameters if MV_DDR_CFG_SPD is set as
+			        a source configuration.
+		2.2.3 bus_width - specifies the the ddr device module data bus width
+		      The conectivity between the ddr device memory and the controller is defined and
+		      described later in this document (see section 2.3 bus active mask)
 		2.2.3 memory_size - specifies total sdarm capacity per die in megabits <TODO>
 		2.2.4 memory_freq - specifies ddr interface frequency <TODO>
 		2.2.5 cas_wl - specifies cas write latency <TODO>
@@ -170,6 +175,7 @@ DDR Code Porting layer
 
 4. Porting example
 	static struct mv_ddr_topology_map board_topology_map = {
+		DEBUG_LEVEL_ERROR,
 		0x1, /* active interfaces */
 		/* cs_mask, mirror, dqs_swap, ck_swap X subphys */
 		{ { { {0x1, 0x0, 0, 0},
@@ -190,9 +196,16 @@ DDR Code Porting layer
 		MV_DDR_64BIT_ECC_PUP8_BUS_MASK, /* active busses */
 		MV_DDR_CFG_SPD,			/* ddr configuration data source */
 		{ {0} },			/* raw spd data */
-		{0},				/* timing parameters */
+		{0}				/* timing parameters */
 	};
 
-5. Logging options <TODO>
+5. Logging options
+	mv_ddr_debug_level - this parameter defines the ddr level options.
+	There are 3 logging option level:
+	- LOG_LEVEL_ERROR - prints only error messages during the ddr trainig
+		this is the default configuration.
+	- LOG_LEVEL_TRACE - prints training algorithm data and errors
+	- LOG_LEVEL_INFO - prints training detailed information trace and errors
+	in order to apply one of the options change to the wanted option and compile
 
 6. Compiler options <TODO>

@@ -34,6 +34,9 @@
 					phy-invert = <PHY_POLARITY_NO_INVERT>;
 				};
 			};
+			mmc0: mmc@D0000 {
+				sdio-vcc-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 22) GPIO_ACTIVE_HIGH>;
+			};
 		};
 	};
 };

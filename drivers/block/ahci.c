@@ -23,8 +23,19 @@
 #include <asm/arch-mvebu/fdt.h>
 
 static int ata_io_flush(u8 port);
+/*
+ * Holds the id of the current sata ctrl.
+ * if we work with a device that uses a different ctrl,
+ * The id will be updated according to the device ctrl.
+ */
+static int curr_ctrl;
+/* Holds the number of available sata ctrl. */
+static int num_of_sata_ctrl;
 
-struct ahci_probe_ent *probe_ent = NULL;
+/* Define probe_ent as array, to support multiple SATA controllers */
+struct ahci_probe_ent *probe_ent[CONFIG_SCSI_MAX_CONTROLLERS] = {0};
+/* Array to keep track of number of SATA controllers */
+int is_sata_initialized[CONFIG_SCSI_MAX_CONTROLLERS] = {0};
 u16 *ataid[AHCI_MAX_PORTS];
 
 #define writel_with_flush(a,b)	do { writel(a,b); readl(b); } while (0)
@@ -438,7 +449,7 @@ static int ahci_init_one(pci_dev_t pdev)
 		pci_write_config_byte(pdev, 0x41, 0xa1);
 
 	/* initialize adapter */
-	rc = ahci_host_init(probe_ent);
+	rc = ahci_host_init(probe_ent[curr_ctrl]);
 	if (rc)
 		goto err_out;
 
@@ -455,7 +466,7 @@ static int ahci_init_one(pci_dev_t pdev)
 
 static int ahci_fill_sg(u8 port, unsigned char *buf, int buf_len)
 {
-	struct ahci_ioports *pp = &(probe_ent->port[port]);
+	struct ahci_ioports *pp = &(probe_ent[curr_ctrl]->port[port]);
 	struct ahci_sg *ahci_sg = pp->cmd_tbl_sg;
 	u32 sg_count;
 	int i;
@@ -512,7 +523,7 @@ static int wait_spinup(void __iomem *port_mmio)
 #ifdef CONFIG_AHCI_SETFEATURES_XFER
 static void ahci_set_feature(u8 port)
 {
-	struct ahci_ioports *pp = &(probe_ent->port[port]);
+	struct ahci_ioports *pp = &(probe_ent[curr_ctrl]->port[port]);
 	void __iomem *port_mmio = pp->port_mmio;
 	u32 cmd_fis_len = 5;	/* five dwords */
 	u8 fis[20];
@@ -545,7 +556,7 @@ static void ahci_set_feature(u8 port)
 
 static int ahci_port_start(u8 port)
 {
-	struct ahci_ioports *pp = &(probe_ent->port[port]);
+	struct ahci_ioports *pp = &(probe_ent[curr_ctrl]->port[port]);
 	void __iomem *port_mmio = pp->port_mmio;
 	u32 port_status;
 	void __iomem *mem;
@@ -621,7 +632,7 @@ static int ahci_device_data_io(u8 port, u8 *fis, int fis_len, u8 *buf,
 				int buf_len, u8 is_write)
 {
 
-	struct ahci_ioports *pp = &(probe_ent->port[port]);
+	struct ahci_ioports *pp = &(probe_ent[curr_ctrl]->port[port]);
 	void __iomem *port_mmio = pp->port_mmio;
 	u32 opts;
 	u32 port_status;
@@ -629,8 +640,8 @@ static int ahci_device_data_io(u8 port, u8 *fis, int fis_len, u8 *buf,
 
 	debug("Enter %s: for port %d\n", __func__, port);
 
-	if (port > probe_ent->n_ports) {
-		printf("Invalid port number %d\n", port);
+	if (port > probe_ent[curr_ctrl]->n_ports) {
+		printf("Invalid port number %d\n", port + curr_ctrl * CONFIG_SYS_SCSI_MAX_DEVICE);
 		return -1;
 	}
 
@@ -935,6 +946,31 @@ int scsi_exec(ccb *pccb)
 
 }
 
+/*
+ * Allows us to change the current ctrl according to the current device.
+ */
+int scsi_set_ctrl(int id)
+{
+	if (id >= num_of_sata_ctrl) {
+		printf("SCSI controller id should be 0 - %d (requested %d)\n", num_of_sata_ctrl - 1, id);
+		return 1;
+	}
+
+	curr_ctrl = id;
+	printf("Setting SCSI to %d\n", curr_ctrl);
+
+	return 0;
+}
+
+int scsi_get_max_ctrl(void)
+{
+	return num_of_sata_ctrl;
+}
+
+int scsi_get_ctrl(void)
+{
+	return curr_ctrl;
+}
 
 void scsi_low_level_init(int busdevfunc)
 {
@@ -945,7 +981,7 @@ void scsi_low_level_init(int busdevfunc)
 	ahci_init_one(busdevfunc);
 #endif
 
-	linkmap = probe_ent->link_port_map;
+	linkmap = probe_ent[curr_ctrl]->link_port_map;
 
 	for (i = 0; i < CONFIG_SYS_SCSI_MAX_SCSI_ID; i++) {
 		if (((linkmap >> i) & 0x01)) {
@@ -961,37 +997,37 @@ void scsi_low_level_init(int busdevfunc)
 }
 
 #ifdef CONFIG_SCSI_AHCI_PLAT
-int ahci_init_dev(void __iomem *base)
+int ahci_init_dev(void __iomem *base, u32 sata_id)
 {
 	int i, rc = 0;
 	u32 linkmap;
 
-	probe_ent = malloc(sizeof(struct ahci_probe_ent));
-	if (!probe_ent) {
+	probe_ent[sata_id] = malloc(sizeof(struct ahci_probe_ent));
+	if (!probe_ent[sata_id]) {
 		printf("%s: No memory for probe_ent\n", __func__);
 		return -ENOMEM;
 	}
 
-	memset(probe_ent, 0, sizeof(struct ahci_probe_ent));
+	memset(probe_ent[sata_id], 0, sizeof(struct ahci_probe_ent));
 
-	probe_ent->host_flags = ATA_FLAG_SATA
+	probe_ent[sata_id]->host_flags = ATA_FLAG_SATA
 				| ATA_FLAG_NO_LEGACY
 				| ATA_FLAG_MMIO
 				| ATA_FLAG_PIO_DMA
 				| ATA_FLAG_NO_ATAPI;
-	probe_ent->pio_mask = 0x1f;
-	probe_ent->udma_mask = 0x7f;	/*Fixme,assume to support UDMA6 */
+	probe_ent[sata_id]->pio_mask = 0x1f;
+	probe_ent[sata_id]->udma_mask = 0x7f;	/*Fixme,assume to support UDMA6 */
 
-	probe_ent->mmio_base = base;
+	probe_ent[sata_id]->mmio_base = base;
 
 	/* initialize adapter */
-	rc = ahci_host_init(probe_ent);
+	rc = ahci_host_init(probe_ent[sata_id]);
 	if (rc)
 		goto err_out;
 
-	ahci_print_info(probe_ent);
+	ahci_print_info(probe_ent[sata_id]);
 
-	linkmap = probe_ent->link_port_map;
+	linkmap = probe_ent[sata_id]->link_port_map;
 
 	for (i = 0; i < CONFIG_SYS_SCSI_MAX_SCSI_ID; i++) {
 		if (((linkmap >> i) & 0x01)) {
@@ -1004,6 +1040,19 @@ int ahci_init_dev(void __iomem *base)
 #endif
 		}
 	}
+
+	/* Update the number of initalized SATA controllers.
+	 * Will be used for checking the requested controller id.
+	 *
+	 * Notice that ahci_init_dev is called each time the 'scsi reset'
+	 * is used so we need to make sure that we update num_of_sata_ctrl
+	 * only once for each controller.
+	 */
+	if (!is_sata_initialized[sata_id]) {
+		num_of_sata_ctrl++;
+		is_sata_initialized[sata_id] = 1;
+	}
+
 err_out:
 	return rc;
 }
@@ -1055,7 +1104,7 @@ int ahci_init(void)
 		}
 
 		/* call 'real' ahci init routine */
-		err = ahci_init_dev((void __iomem *)sata_reg_base);
+		err = ahci_init_dev((void __iomem *)sata_reg_base, i);
 		if (err) {
 			error("ahci_init_dev failed, initialization skipped!\n");
 			return err;
@@ -1087,7 +1136,7 @@ int ahci_init(void __iomem *base)
 static int ata_io_flush(u8 port)
 {
 	u8 fis[20];
-	struct ahci_ioports *pp = &(probe_ent->port[port]);
+	struct ahci_ioports *pp = &(probe_ent[curr_ctrl]->port[port]);
 	void __iomem *port_mmio = pp->port_mmio;
 	u32 cmd_fis_len = 5;	/* five dwords */
 

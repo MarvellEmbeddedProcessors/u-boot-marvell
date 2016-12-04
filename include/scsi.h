@@ -173,6 +173,9 @@ void scsi_low_level_init(int busdevfunc);
  */
 void scsi_init(void);
 void scsi_scan(int mode);
+int scsi_set_ctrl(int id);
+int scsi_get_ctrl(void);
+int scsi_get_max_ctrl(void);
 
 #ifdef CONFIG_SCSI_AHCI_PLAT
 void board_ahci_init(void);

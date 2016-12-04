@@ -37,6 +37,8 @@
 #define SCSI_DEV_LIST {SCSI_VEND_ID, SCSI_DEV_ID}
 #endif
 
+enum scsi_mode {SCAN, RESET};
+
 #ifdef CONFIG_PCI
 const struct pci_device_id scsi_device_list[] = { SCSI_DEV_LIST };
 #endif
@@ -48,7 +50,7 @@ static int scsi_max_devs; /* number of highest available scsi device */
 
 static int scsi_curr_dev; /* current device */
 
-static block_dev_desc_t scsi_dev_desc[CONFIG_SYS_SCSI_MAX_DEVICE];
+static block_dev_desc_t scsi_dev_desc[CONFIG_SCSI_MAX_CONTROLLERS * CONFIG_SYS_SCSI_MAX_DEVICE];
 
 /********************************************************************************
  *  forward declerations of some Setup Routines
@@ -61,7 +63,7 @@ static void scsi_setup_write_ext(ccb *pccb, unsigned long start,
 void scsi_setup_inquiry(ccb * pccb);
 void scsi_ident_cpy (unsigned char *dest, unsigned char *src, unsigned int len);
 
-
+static int scsi_get_controller_devices_partitions(int ctrl);
 static int scsi_read_capacity(ccb *pccb, lbaint_t *capacity,
 			      unsigned long *blksz);
 static ulong scsi_read(int device, lbaint_t blknr, lbaint_t blkcnt,
@@ -79,30 +81,37 @@ void scsi_scan(int mode)
 	lbaint_t capacity;
 	unsigned long blksz;
 	ccb* pccb=(ccb *)&tempccb;
+	/* each controller supports CONFIG_SYS_SCSI_MAX_DEVICE devices, so need to take
+	 * number of devices per controller in consideration of device_num index
+	 */
+	int device_num = scsi_get_ctrl() * CONFIG_SYS_SCSI_MAX_DEVICE;
 
 	if(mode==1) {
-		printf("scanning bus for devices...\n");
+		printf("scanning bus %d for devices...\n", scsi_get_ctrl());
 	}
-	for(i=0;i<CONFIG_SYS_SCSI_MAX_DEVICE;i++) {
-		scsi_dev_desc[i].target=0xff;
-		scsi_dev_desc[i].lun=0xff;
-		scsi_dev_desc[i].lba=0;
-		scsi_dev_desc[i].blksz=0;
-		scsi_dev_desc[i].log2blksz =
-			LOG2_INVALID(typeof(scsi_dev_desc[i].log2blksz));
-		scsi_dev_desc[i].type=DEV_TYPE_UNKNOWN;
-		scsi_dev_desc[i].vendor[0]=0;
-		scsi_dev_desc[i].product[0]=0;
-		scsi_dev_desc[i].revision[0]=0;
-		scsi_dev_desc[i].removable = false;
-		scsi_dev_desc[i].if_type=IF_TYPE_SCSI;
-		scsi_dev_desc[i].dev=i;
-		scsi_dev_desc[i].part_type=PART_TYPE_UNKNOWN;
-		scsi_dev_desc[i].block_read=scsi_read;
-		scsi_dev_desc[i].block_write = scsi_write;
+	for (i = 0; i < CONFIG_SYS_SCSI_MAX_DEVICE; i++, device_num++) {
+		scsi_dev_desc[device_num].target = 0xff;
+		scsi_dev_desc[device_num].lun = 0xff;
+		scsi_dev_desc[device_num].lba = 0;
+		scsi_dev_desc[device_num].blksz = 0;
+		scsi_dev_desc[device_num].log2blksz =
+			LOG2_INVALID(typeof(scsi_dev_desc[device_num].log2blksz));
+		scsi_dev_desc[device_num].type = DEV_TYPE_UNKNOWN;
+		scsi_dev_desc[device_num].vendor[0] = 0;
+		scsi_dev_desc[device_num].product[0] = 0;
+		scsi_dev_desc[device_num].revision[0] = 0;
+		scsi_dev_desc[device_num].removable = false;
+		scsi_dev_desc[device_num].if_type = IF_TYPE_SCSI;
+		scsi_dev_desc[device_num].dev = device_num;
+		scsi_dev_desc[device_num].part_type = PART_TYPE_UNKNOWN;
+		scsi_dev_desc[device_num].block_read = scsi_read;
+		scsi_dev_desc[device_num].block_write = scsi_write;
 	}
+
 	scsi_max_devs=0;
-	for(i=0;i<CONFIG_SYS_SCSI_MAX_SCSI_ID;i++) {
+	/* set device_num to point on 1st device in this controller */
+	device_num = scsi_get_ctrl() * CONFIG_SYS_SCSI_MAX_DEVICE;
+	for (i = 0; i < CONFIG_SYS_SCSI_MAX_SCSI_ID; i++, device_num++) {
 		pccb->target=i;
 		for(lun=0;lun<CONFIG_SYS_SCSI_MAX_LUN;lun++) {
 			pccb->lun=lun;
@@ -123,22 +132,23 @@ void scsi_scan(int mode)
 				continue; /* skip unknown devices */
 			}
 			if((modi&0x80)==0x80) /* drive is removable */
-				scsi_dev_desc[scsi_max_devs].removable=true;
+				scsi_dev_desc[device_num].removable = true;
+
 			/* get info for this device */
-			scsi_ident_cpy((unsigned char *)&scsi_dev_desc[scsi_max_devs].vendor[0],
+			scsi_ident_cpy((unsigned char *)&scsi_dev_desc[device_num].vendor[0],
 				       &tempbuff[8], 8);
-			scsi_ident_cpy((unsigned char *)&scsi_dev_desc[scsi_max_devs].product[0],
+			scsi_ident_cpy((unsigned char *)&scsi_dev_desc[device_num].product[0],
 				       &tempbuff[16], 16);
-			scsi_ident_cpy((unsigned char *)&scsi_dev_desc[scsi_max_devs].revision[0],
+			scsi_ident_cpy((unsigned char *)&scsi_dev_desc[device_num].revision[0],
 				       &tempbuff[32], 4);
-			scsi_dev_desc[scsi_max_devs].target=pccb->target;
-			scsi_dev_desc[scsi_max_devs].lun=pccb->lun;
+			scsi_dev_desc[device_num].target = pccb->target;
+			scsi_dev_desc[device_num].lun = pccb->lun;
 
 			pccb->datalen=0;
 			scsi_setup_test_unit_ready(pccb);
 			if (scsi_exec(pccb) != true) {
-				if (scsi_dev_desc[scsi_max_devs].removable == true) {
-					scsi_dev_desc[scsi_max_devs].type=perq;
+				if (scsi_dev_desc[device_num].removable) {
+					scsi_dev_desc[device_num].type = perq;
 					goto removable;
 				}
 				scsi_print_error(pccb);
@@ -148,16 +158,16 @@ void scsi_scan(int mode)
 				scsi_print_error(pccb);
 				continue;
 			}
-			scsi_dev_desc[scsi_max_devs].lba=capacity;
-			scsi_dev_desc[scsi_max_devs].blksz=blksz;
-			scsi_dev_desc[scsi_max_devs].log2blksz =
-				LOG2(scsi_dev_desc[scsi_max_devs].blksz);
-			scsi_dev_desc[scsi_max_devs].type=perq;
-			init_part(&scsi_dev_desc[scsi_max_devs]);
+			scsi_dev_desc[device_num].lba = capacity;
+			scsi_dev_desc[device_num].blksz = blksz;
+			scsi_dev_desc[device_num].log2blksz =
+				LOG2(scsi_dev_desc[device_num].blksz);
+			scsi_dev_desc[device_num].type = perq;
+			init_part(&scsi_dev_desc[device_num]);
 removable:
 			if(mode==1) {
-				printf ("  Device %d: ", scsi_max_devs);
-				dev_print(&scsi_dev_desc[scsi_max_devs]);
+				printf("  Device %d: ", device_num);
+				dev_print(&scsi_dev_desc[device_num]);
 			} /* if mode */
 			scsi_max_devs++;
 		} /* next LUN */
@@ -173,9 +183,58 @@ removable:
 #endif
 }
 
+/*********************************************************************************
+ * print all the devices partitions of a specific ctrl.
+ * return true if found at least one device, 0 otherwise.
+ */
+static int scsi_get_controller_devices_partitions(int ctrl)
+{
+	int ok, dev, device_num;
+
+	for (ok = 0, dev = 0; dev < CONFIG_SYS_SCSI_MAX_DEVICE; ++dev) {
+		device_num = ctrl * CONFIG_SYS_SCSI_MAX_DEVICE + dev;
+		if (scsi_dev_desc[device_num].type != DEV_TYPE_UNKNOWN) {
+			ok++;
+			if (dev)
+				printf("\n");
+			debug("print_part of %x\n", device_num);
+			print_part(&scsi_dev_desc[device_num]);
+		}
+	}
+	return ok;
+}
+
 int scsi_get_disk_count(void)
 {
 	return scsi_max_devs;
+}
+
+/*********************************************************************************
+ * scan the scsi bus of a specific controller.
+ * if mode = RESET then reset the scsi bus before the scan,
+ * skip the reset otherwise.
+ */
+void scsi_scan_controller(int controller, enum scsi_mode mode)
+{
+	scsi_set_ctrl(controller);
+	if (mode == RESET)
+		scsi_bus_reset();
+
+	/* always call scsi_init here to support the following case:
+	 * scsi scan is finished successfully, then replace the HDD/SDD,
+	 * the "scsi scan" will be used for detect again.
+	 */
+	scsi_init();
+	scsi_scan(1);
+}
+
+/*********************************************************************************
+ * init the scsi controller.
+ */
+void scsi_init_controller(int controller)
+{
+	scsi_set_ctrl(controller);
+	scsi_init();
 }
 
 #ifdef CONFIG_PCI
@@ -229,7 +288,12 @@ void scsi_init(void)
 #ifdef CONFIG_PARTITIONS
 block_dev_desc_t * scsi_get_dev(int dev)
 {
-	return (dev < CONFIG_SYS_SCSI_MAX_DEVICE) ? &scsi_dev_desc[dev] : NULL;
+	int ctrl = dev / CONFIG_SYS_SCSI_MAX_DEVICE;
+
+	if (scsi_get_ctrl() != ctrl)
+		scsi_init_controller(ctrl);
+
+	return (dev < CONFIG_SYS_SCSI_MAX_DEVICE * scsi_get_max_ctrl()) ? &scsi_dev_desc[dev] : NULL;
 }
 #endif
 
@@ -246,6 +310,8 @@ int do_scsiboot (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
  */
 int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
+	int device_num;
+
 	switch (argc) {
 	case 0:
 	case 1:
@@ -253,19 +319,19 @@ int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	case 2:
 			if (strncmp(argv[1],"res",3) == 0) {
+				int i;
+
 				printf("\nReset SCSI\n");
-				scsi_bus_reset();
-				/* always call scsi_init here to support the following case:
-				 * scsi scan is finished successfully, then replace the HDD/SDD,
-				 * the "scsi reset" will be used for detect again.
-				 */
-				scsi_init();
-				scsi_scan(1);
+				for (i = 0; i < scsi_get_max_ctrl(); i++)
+					scsi_scan_controller(i, RESET);
+
 				return 0;
 			}
 			if (strncmp(argv[1],"inf",3) == 0) {
 				int i;
-				for (i=0; i<CONFIG_SYS_SCSI_MAX_DEVICE; ++i) {
+				int max_devices = scsi_get_max_ctrl() * CONFIG_SYS_SCSI_MAX_DEVICE;
+
+				for (i = 0; i < max_devices; ++i) {
 					if(scsi_dev_desc[i].type==DEV_TYPE_UNKNOWN)
 						continue; /* list only known devices */
 					printf ("SCSI dev. %d:  ", i);
@@ -278,29 +344,25 @@ int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 					printf("\nno SCSI devices available\n");
 					return 1;
 				}
-				printf ("\n    Device %d: ", scsi_curr_dev);
-				dev_print(&scsi_dev_desc[scsi_curr_dev]);
+				device_num = scsi_get_ctrl() * CONFIG_SYS_SCSI_MAX_DEVICE + scsi_curr_dev;
+				printf("\n    Device %d: ", device_num);
+				dev_print(&scsi_dev_desc[device_num]);
 				return 0;
 			}
 			if (strncmp(argv[1],"scan",4) == 0) {
-				/* always call scsi_init here to support the following case:
-				 * scsi scan is finished successfully, then replace the HDD/SDD,
-				 * the "scsi scan" will be used for detect again.
-				 */
-				scsi_init();
-				scsi_scan(1);
+				int i;
+
+				for (i = 0; i < scsi_get_max_ctrl(); i++)
+					scsi_scan_controller(i, SCAN);
+
 				return 0;
 			}
 			if (strncmp(argv[1],"part",4) == 0) {
-				int dev, ok;
-				for (ok=0, dev=0; dev<CONFIG_SYS_SCSI_MAX_DEVICE; ++dev) {
-					if (scsi_dev_desc[dev].type!=DEV_TYPE_UNKNOWN) {
-						ok++;
-						if (dev)
-							printf("\n");
-						debug ("print_part of %x\n",dev);
-							print_part(&scsi_dev_desc[dev]);
-					}
+				int i, ok = 0;
+
+				for (i = 0; i < scsi_get_max_ctrl(); i++) {
+					scsi_init_controller(i);
+					ok += scsi_get_controller_devices_partitions(i);
 				}
 				if (!ok) {
 					printf("\nno SCSI devices available\n");
@@ -312,8 +374,13 @@ int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	case 3:
 			if (strncmp(argv[1],"dev",3) == 0) {
 				int dev = (int)simple_strtoul(argv[2], NULL, 10);
+				int ctrl = dev / CONFIG_SYS_SCSI_MAX_DEVICE;
+
+				if (scsi_get_ctrl() != ctrl)
+					scsi_init_controller(ctrl);
+
 				printf ("\nSCSI device %d: ", dev);
-				if (dev >= CONFIG_SYS_SCSI_MAX_DEVICE) {
+				if (dev >= CONFIG_SYS_SCSI_MAX_DEVICE * scsi_get_max_ctrl()) {
 					printf("unknown device\n");
 					return 1;
 				}
@@ -322,12 +389,16 @@ int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				if(scsi_dev_desc[dev].type == DEV_TYPE_UNKNOWN) {
 					return 1;
 				}
-				scsi_curr_dev = dev;
+				scsi_curr_dev = dev % CONFIG_SYS_SCSI_MAX_DEVICE;
 				printf("... is now current device\n");
 				return 0;
 			}
 			if (strncmp(argv[1],"part",4) == 0) {
 				int dev = (int)simple_strtoul(argv[2], NULL, 10);
+				int ctrl = dev / CONFIG_SYS_SCSI_MAX_DEVICE;
+
+				if (scsi_get_ctrl() != ctrl)
+					scsi_init_controller(ctrl);
 				if(scsi_dev_desc[dev].type != DEV_TYPE_UNKNOWN) {
 					print_part(&scsi_dev_desc[dev]);
 				}
@@ -345,8 +416,9 @@ int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				ulong blk  = simple_strtoul(argv[3], NULL, 16);
 				ulong cnt  = simple_strtoul(argv[4], NULL, 16);
 				ulong n;
+				device_num = scsi_get_ctrl() * CONFIG_SYS_SCSI_MAX_DEVICE + scsi_curr_dev;
 				printf ("\nSCSI read: device %d block # %ld, count %ld ... ",
-						scsi_curr_dev, blk, cnt);
+					device_num, blk, cnt);
 				n = scsi_read(scsi_curr_dev, blk, cnt, (ulong *)addr);
 				printf ("%ld blocks read: %s\n",n,(n==cnt) ? "OK" : "ERROR");
 				return 0;
@@ -355,9 +427,9 @@ int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				ulong blk = simple_strtoul(argv[3], NULL, 16);
 				ulong cnt = simple_strtoul(argv[4], NULL, 16);
 				ulong n;
-				printf("\nSCSI write: device %d block # %ld, "
-				       "count %ld ... ",
-				       scsi_curr_dev, blk, cnt);
+				device_num = scsi_get_ctrl() * CONFIG_SYS_SCSI_MAX_DEVICE + scsi_curr_dev;
+				printf("\nSCSI write: device %d block # %ld, count %ld ... ",
+				       device_num, blk, cnt);
 				n = scsi_write(scsi_curr_dev, blk, cnt,
 					       (ulong *)addr);
 				printf("%ld blocks written: %s\n", n,

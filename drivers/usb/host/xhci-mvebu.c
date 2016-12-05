@@ -52,10 +52,11 @@ int board_usb_get_enabled_port_count(void)
 
 /*
  * usb_vbus_gpio_toggle: toggle GPIO VBUS in USB node to the status we want.
- * - node: the usb node which the VBUS belongs to.
- * - status: 0 - set VBUS to low;  1 - set VBUS to high.
+ * @node: the usb node which the VBUS belongs to.
+ * @status: 0 - set VBUS to low;  1 - set VBUS to high.
+ * @wait: 0 - ignore DT delay values, 1 use DT delay values
  */
-static void usb_vbus_gpio_toggle(int node, bool status)
+static void usb_vbus_gpio_toggle(int node, bool status, bool wait)
 {
 	struct fdt_gpio_state gpio;
 	int delay = 0;
@@ -66,9 +67,13 @@ static void usb_vbus_gpio_toggle(int node, bool status)
 			gpio_direction_output(gpio.gpio, status ? (gpio.flags & FDT_GPIO_ACTIVE_LOW ? 0 : 1) :
 									(gpio.flags & FDT_GPIO_ACTIVE_LOW ? 1 : 0));
 
-		delay = fdtdec_get_int(gd->fdt_blob, node, status ? "vbus-enable-delay" : "vbus-disable-delay", 0);
-		if (delay)
-			mdelay(delay);
+		if (wait) {
+			delay = fdtdec_get_int(gd->fdt_blob, node,
+					       status ? "vbus-enable-delay" :
+					       "vbus-disable-delay", 0);
+			if (delay)
+				mdelay(delay);
+		}
 	}
 }
 
@@ -105,11 +110,18 @@ static void usb_vbus_gpio_cur_lim_set(int node)
 }
 
 /*
- * usb_vbus_toggle: toggle VBUS to the status we want. Also handle
- * current limit according to the device tree settings. Parameters:
- * - index: the usb index which this VBUS belongs to, if index = -1,
- *   toggle all the usb3 VBUS in Device Tree.
- * - status: 0 - set VBUS to low;  1 - set VBUS to high.
+ * usb_vbus_toggle: toggle VBUS to the status we want.
+ * Also handle the current limit according to the device tree settings.
+ *
+ * NOTE: Pay attention that the toggle delay is ignored when index=-1
+ * This is the case usually used during board startup. If this function
+ * must be called twice with index=-1 and different status values, the
+ * caller has to implement a delay between such consecutive calls
+ * (VBUS status toggled 0->1 or 1->0)
+ *
+ * @index: the usb index which this VBUS belongs to.
+ *          When the index = -1, toggle all the usb3 VBUS in Device Tree.
+ * @status: 0 - set VBUS to low;  1 - set VBUS to high.
  */
 int usb_vbus_toggle(int index, bool status)
 {
@@ -121,11 +133,12 @@ int usb_vbus_toggle(int index, bool status)
 
 	if (index == -1) {
 		for (i = 0; i < count; i++) {
-			usb_vbus_gpio_toggle(node_list[i], status);
+			/* This is called at board bringup, no wait here */
+			usb_vbus_gpio_toggle(node_list[i], status, 0);
 			usb_vbus_gpio_cur_lim_set(node_list[i]);
 		}
 	} else {
-		usb_vbus_gpio_toggle(node_list[index], status);
+		usb_vbus_gpio_toggle(node_list[index], status, 1);
 		usb_vbus_gpio_cur_lim_set(node_list[index]);
 	}
 

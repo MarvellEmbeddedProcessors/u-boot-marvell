@@ -1,16 +1,16 @@
-User Guide
-----------
+U-Boot User Guide
+=================
 
 User Guide for U-Boot 2015.01 for Marvell-specific commands and build
 
-Table of contents:
-------------------
+Table of contents
+-----------------
 1. Build instructions:
    This describes how to compile the U-Boot, and change the configuration using
    menuconfig, which includes a description of how to add config for SPL:
    doc/mvebu/build.txt
 
-2. Boot U-Boot for the first time
+2. Boot U-Boot for the first time -
    How to boot for the first time on the board using XDB and UART.
    2.1 Booting using XDB: doc/mvebu/xdb_debugger.txt
    2.2 Booting using UART: doc/mvebu/uart_boot.txt
@@ -25,13 +25,12 @@ Table of contents:
    doc/mvebu/linux_boot.txt
 
 5. Commands:
-   ir - Display and change memory values: doc/mvebu/commands/ir.txt
-   fdt_config - Select & change board configuration: doc/mvebu/commands/fdt_config.txt
-   hw_info - Load or store HW manufacturing information: doc/mvebu/commands/hw_info.txt
-   SatR - Toggle Sample at reset modes: doc/mvebu/commands/sar.txt
-   fdt - Change and edit FDT file in memory.
-   mmc, usb, sata, fdt - refer to denx mainline documentation.
+   - ir - Display and change memory values: doc/mvebu/commands/ir.txt
+   - fdt_config - Select & change board configuration: doc/mvebu/commands/fdt_config.txt
+   - hw_info - Load or store HW manufacturing information: doc/mvebu/commands/hw_info.txt
+   - SatR - Toggle Sample at reset modes: doc/mvebu/commands/sar.txt
+   - fdt - Change and edit FDT file in memory.
+   - mmc, usb, sata, fdt - refer to denx mainline documentation.
 
 6. Board options:
-   List of board options of the development board.
-   doc/mvebu/<soc_name>/<board_name>-setup.txt
+   List of board options of the development board is in: "doc/mvebu/<soc_name>/<board_name>-setup.txt"

@@ -1,24 +1,19 @@
-Notes:
-------
-- SatR commands are only relevant for Marvell boards that used the EEPROM device.
-
-SatR (Sample at Reset) commands:
---------------------------------
+SatR (Sample at Reset) commands
+===============================
 SatR commands are used to toggle the available Sample at Reset modes.
 
 Notes:
-------
-- Sample at Reset commands are only relevant for Marvell boards.
+- SatR commands are only relevant for Marvell boards that used the EEPROM device.
 - After a SatR write command, a reset is required for the changes to take effect.
 
-The following are the Sample at Reset commands:
------------------------------------
+Examples
+--------
 - "SatR list <field>" - Get the list of possible values for a specific field.
 - "SatR read <field>" - Get the current value of a specific SatR field.
 - "SatR read" - Get the current values of all available SatR fields.
 - "SatR write <field> <value>" - Set the required value for a specific field.
-	A reset is required after a SatR write command for the changes to
-	take effect.
+	- A reset is required after a SatR write command for the changes to
+	  take effect.
 - "SatR write default" - Reset all writable SatR fields back to their default values.
 
 The list of the Sample At Reset possible fields and values is defined in the device tree.

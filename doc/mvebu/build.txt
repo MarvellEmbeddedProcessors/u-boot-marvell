@@ -1,123 +1,147 @@
-Build instructions:
--------------------
+U-Boot Build Instructions
+=========================
 
 This document describes how to compile the U-Boot and how to change U-Boot configuration
 
-Note: <DVUBR> - U-Boot vanila version.
-      <MVUBR> - Marvell release.
+Acronyms:
+	- DVUBR - U-Boot vanila version.
+	- MVUBR - Marvell release.
 
-Build Instruction:
-------------------
-
+Build Procedure
+----------------
 1. Set the cross compiler:
-	# export CROSS_COMPILE=/path/to/toolchain/aarch64-marvell-linux-gnu-
-2. Clean-up old residuals:
-	# make mrproper
-3. Configure the U-Boot:
-	# make <defconfig_file>
-	For the Armada-70x0/Armada-80x0 board use "make mvebu_armada70x0_defconfig"
-	For the Armada-3700-RZ board use "make mvebu_armada3700_rz_defconfig"
-	For the Armada-3700-A0 board use "mvebu_armada3700_defconfig"
-4. Build the U-Boot:
-	# make
-	The U-Boot compilation generate:
-	u-boot.bin - U-Boot image
 
-Please Note:
-------------
+		# export CROSS_COMPILE=/path/to/toolchain/aarch64-marvell-linux-gnu-
+
+2. Clean-up old residuals:
+
+		# make mrproper
+
+3. Configure the U-Boot:
+
+		# make <defconfig_file>
+
+	- For the Armada-70x0/Armada-80x0 board use "make mvebu_armada70x0_defconfig"
+	- For the Armada-3700-RZ board use "make mvebu_armada3700_rz_defconfig"
+	- For the Armada-3700-A0 board use "mvebu_armada3700_defconfig"
+
+4. Build the U-Boot image:
+
+		# make
+
+	The U-Boot compilation generates u-boot.bin - the U-Boot image
+
+	Please Note:
 	The u-boot.bin should not be used as a stand-alone image.
 	The ARM Trusted Firmware (ATF) build process uses this image to generate the
 	flash image.
-	(For more information refer to ATF build instructions)
 
-Configuration update:
+Configuration update
 ---------------------
 	To update the U-Boot configuration, please refer to doc/README.kconfig
 
-Boot device selection note for Armada-3700 builds:
---------------------------------------------------
-	eMMC boot device:
-	-----------------
-	The Armada-3700 supports eMMC as the boot device on the target.
-	The default boot device on this platform is SPI NOR flash.
-	In order to change the boot device to eMMC, set the following parameter
-	the default configuration:
-	CONFIG_MVEBU_MMC_BOOT=y
-	If "menuconfig" is used, navigate to the following location:
-	-> Marvell Platform Options
-	  -> Flash for image
-	and select "eMMC flash boot".
-	The eMMC has 2 boot partitions (BOOT0 and BOOT1) and a user data partition (DATA).
-	The boot partitions are numbered as partition 1 and 2 in MMC driver.
-	Number 0 is used for user data partition and should not be utilized for storing
-	boot images and U-Boot environment in RAW mode since it will break file system
-	structures usually located here.
-	The default boot partition is BOOT0. It is selected by the following parameter:
-	CONFIG_SYS_MMC_ENV_PART=1
-	Valid values for this parameter are 1 for BOOT0 and 2 for BOOT1.
-	Please never use partition number 0 here!
-	It can be changed in the "menuconfig" location:
-	-> Marvell Platform Options
-	  -> eMMC Boot Partition
-	Please note that this configuration is only available when "Flash for image"
-	selects "eMMC flash boot" device as described above.
-	The selected partition will be used by U-Boot "bubt" and "savenv" commands
-	for flashing the boot image and saving U-Boot configuration.
 
-	SPI NAND boot device:
-	-----------------
-	The Armada-3700 supports SPI NAND flash as the boot device on the target.
-	In order to burn image and save enviroment variables to SPI NAND flash,
-	please enable SPI NAND driver at first by set the following parameter to <Y>:
-	CONFIG_SPI_NAND=y
-	If "menuconfig" is used, navigate to the following location:
-	-> Device Drivers
-	  -> SPI NAND Support
-	and set <Y> for the option.
+Boot Device Selection for Armada-3700 Build
+-------------------------------------------
+The following options are available for A3700 boot:
+	- Boot from eMMC boot
+	- Boot from SPI NAND
+	- Boot from SATA
 
-	In order to change the boot device to SPI NAND, set the following parameter
-	the default configuration:
-	CONFIG_MVEBU_SPINAND_BOOT=y
-	If "menuconfig" is used, navigate to the following location:
-	-> Marvell Platform Options
-	  -> Flash for image
-	and select "SPINAND flash boot".
+eMMC boot device
+-----------------
+The Armada-3700 supports eMMC as the boot device on the target.
+The default boot device on this platform is SPI NOR flash.
+In order to change the boot device to eMMC, set the following parameter
+the default configuration:
+	- CONFIG_MVEBU_MMC_BOOT=y
 
-	SATA boot device:
-	-----------------
-	The Armada-3700 supports SATA as the boot device on the target.
-	In order to change the boot device to SATA, set the following parameter
-	the default configuration:
-	CONFIG_MVEBU_SATA_BOOT=y
-	If "menuconfig" is used, navigate to the following location:
-	-> Marvell Platform Options
-	  -> Flash for image
-	and select "SATA device boot".
-	The SATA boot image uses FAT partition for storing the U-Boot environment.
-	The internal BootROM looks for a special partition in order to load U-Boot binary.
-	So normally 2 partitions are required for using the SATA boot option.
-	The boot partition has to have ID 0x4D, or ASCII "M". The environment partition can
-	be FAT32 with ID 0xB. In order to change the default environment partition location
-	and number, please change the value of FAT_ENV_DEVICE_AND_PART constant defined
-	in mvebu-common.h file. The default value of this constant assumes that environment
-	stored on SATA device 0, partition number 2 (the boot image itself is stored on
-	partition number 1).
-	Follow the BootROM manual for details about GPT boot partition selection.
-	Partitioning example for 500GB hard disk using MBR scheme:
-	Part    Start Sector    Num Sectors     UUID            Type
-	1       4096            524288          9c1661a5-01     4d
-	2       528384          524288          9c1661a5-02     0b
-	3       1052672         975720496       9c1661a5-03     83
-	Using the example above, the boot image can be placed into the boot partition using
-	the following Linux command (assuming that SATA device is /dev/sda)
-	# sudo dd if=flash-image.bin of=/dev/sda1
+If "menuconfig" is used, navigate to the following location:
+-> Marvell Platform Options
+  -> Flash for image
+and select "eMMC flash boot".
 
-	Special note:
-	-------------
-	A3700 Z1 BootROM does not support SATA SERDES lines polarity swap. Therefore the A3700 DB
-	equipped with this SoC cannot be used for directly booting from SATA device without
-	board modification (the board has reverse polarity on SATA TX line).
-	Future A3700 revisions will include a special eFuse fields for instructing the BootROM
-	to swap polarity on SATA RX and/or TX lines.
+The eMMC has 2 boot partitions (BOOT0 and BOOT1) and a user data partition (DATA).
+The boot partitions are numbered as partition 1 and 2 in MMC driver.
+Number 0 is used for user data partition and should not be utilized for storing
+boot images and U-Boot environment in RAW mode since it will break file system
+structures usually located here.
+
+The default boot partition is BOOT0. It is selected by the following parameter:
+CONFIG_SYS_MMC_ENV_PART=1
+Valid values for this parameter are 1 for BOOT0 and 2 for BOOT1.
+Please never use partition number 0 here!
+It can be changed in the "menuconfig" location:
+-> Marvell Platform Options
+  -> eMMC Boot Partition
+
+  Please note that this configuration is only available when "Flash for image"
+selects "eMMC flash boot" device as described above.
+The selected partition will be used by U-Boot "bubt" and "savenv" commands
+for flashing the boot image and saving U-Boot configuration.
+
+SPI NAND boot device
+--------------------
+The Armada-3700 supports SPI NAND flash as the boot device on the target.
+In order to burn image and save enviroment variables to SPI NAND flash,
+please enable SPI NAND driver at first by set the following parameter to <Y>:
+CONFIG_SPI_NAND=y
+If "menuconfig" is used, navigate to the following location:
+-> Device Drivers
+  -> SPI NAND Support
+and set <Y> for the option.
+
+In order to change the boot device to SPI NAND, set the following parameter
+the default configuration:
+	- CONFIG_MVEBU_SPINAND_BOOT=y
+
+If "menuconfig" is used, navigate to the following location:
+-> Marvell Platform Options
+  -> Flash for image
+and select "SPINAND flash boot".
+
+SATA boot device
+-----------------
+The Armada-3700 supports SATA as the boot device on the target.
+In order to change the boot device to SATA, set the following parameter
+the default configuration:
+	- CONFIG_MVEBU_SATA_BOOT=y
+
+If "menuconfig" is used, navigate to the following location:
+-> Marvell Platform Options
+  -> Flash for image
+and select "SATA device boot".
+
+The SATA boot image uses FAT partition for storing the U-Boot environment.
+The internal BootROM looks for a special partition in order to load U-Boot binary.
+So normally 2 partitions are required for using the SATA boot option.
+The boot partition has to have ID 0x4D, or ASCII "M". The environment partition can
+be FAT32 with ID 0xB. In order to change the default environment partition location
+and number, please change the value of FAT_ENV_DEVICE_AND_PART constant defined
+in mvebu-common.h file. The default value of this constant assumes that environment
+stored on SATA device 0, partition number 2 (the boot image itself is stored on
+partition number 1).
+
+Follow the BootROM manual for details about GPT boot partition selection.
+Partitioning example for 500GB hard disk using MBR scheme:
+
+Part    |Start Sector    |Num Sectors     |UUID            |Type
+--------|----------------|----------------|----------------|----
+1       |4096            |524288          |9c1661a5-01     |4d
+2       |528384          |524288          |9c1661a5-02     |0b
+3       |1052672         |975720496       |9c1661a5-03     |83
+
+Using the example above, the boot image can be placed into the boot partition using
+the following Linux command (assuming that SATA device is /dev/sda)
+
+		# sudo dd if=flash-image.bin of=/dev/sda1
+
+Special note
+-------------
+A3700 Z1 BootROM does not support SATA SERDES lines polarity swap. Therefore the A3700 DB
+equipped with this SoC cannot be used for directly booting from SATA device without
+board modification (the board has reverse polarity on SATA TX line).
+Future A3700 revisions will include a special eFuse fields for instructing the BootROM
+to swap polarity on SATA RX and/or TX lines.
 
 

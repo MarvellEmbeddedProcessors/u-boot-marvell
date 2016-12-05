@@ -1,12 +1,12 @@
-Porting Guide
--------------
+U-Boot Porting Guide
+====================
 
 This document provide instructions for porting the Marvell U-Boot package to a customer board.
 
 Relevant Devices
 ----------------
-	Armada-7040
-	Armada-3700
+- Armada-7040
+- Armada-3700
 
 Introduction
 ------------
@@ -23,101 +23,117 @@ Introduction
 		The majority of the porting should be done in the device-tree.
 		For more information about device-tree syntax, please refer to the various examples under arch/arm/dts/ or
 		visit http://devicetree.org/Device_Tree_Usage
+
 	For the sake of simplicity, all examples below will use the armada-70x0 board, and the new
 	board will be called "my_board".
 
 Customer board porting procedure
 --------------------------------
-
 	1. defconfig & DT file
 	----------------------
 	1.1 defconfig
-		o Find the defconfig file that matches the SoC flavor being used (e.g. armada-3700, armada-70x0...)
-		o Create a new defconfig to hold U-Boot compile time configuration.
-			>> cp configs/mvebu_armada70x0_defconfig configs/my_board_defconfig
+		- Find the defconfig file that matches the SoC flavor being used (e.g. armada-3700, armada-70x0...)
+		- Create a new defconfig to hold U-Boot compile time configuration.
+
+					>> cp configs/mvebu_armada70x0_defconfig configs/my_board_defconfig
+
 	1.2 device-tree
-		o Create a new DT file to hold U-Boot runtime configuration for your board.
-		  Some pre-defined "customer" DT files already exist in U-Boot, it's possible to use them as-is or
+		- Create a new DT file to hold U-Boot runtime configuration for your board.
+		- Some pre-defined "customer" DT files already exist in U-Boot, it's possible to use them as-is or
 		  rename to match your system's name.
-		  	>> cp arch/arm/dts/armada-7040-rz1-customer0.dts arch/arm/dts/armada-7040-rz1-my_board.dts
+
+					>> cp arch/arm/dts/armada-7040-rz1-customer0.dts arch/arm/dts/armada-7040-rz1-my_board.dts
 
 	2. Basic defconfig setup
 	------------------------
 	2.1. Update my_board defconfig
-		>> make my_board_defconfig
-		>> make menuconfig
-			o Disable CONFIG_DEVEL_BOARD to disable Marvell Development board specific features (reduces size and
-			unneeded code).
-				-> Marvell Platform Options -> Board Options -> Unselect "Support MVEBU development boards"
-			o Update device tree file name:
-				-> Device Tree Control -> Default Device Tree for DT control -> "armada-7040-rz1-my_board"
-			o Save and exit
-		>> make savedefconfnig
-		>> cp defconfig configs/my_board_defconfig
+
+					>> make my_board_defconfig
+					>> make menuconfig
+
+	- Disable CONFIG_DEVEL_BOARD to disable Marvell Development board specific features (reduces size and
+	unneeded code).
+		-> Marvell Platform Options -> Board Options -> Unselect "Support MVEBU development boards"
+	- Update device tree file name:
+		-> Device Tree Control -> Default Device Tree for DT control -> "armada-7040-rz1-my_board"
+	- Save and exit
+
+					>> make savedefconfnig
+					>> cp defconfig configs/my_board_defconfig
+
 	2.2. Select USB2.0 or USB3.0 host controller (Armada-3700 only)
 	-----------------------
 	Currently there is no concurrent support for both EHCI and XHCI in u-boot, so only one of them can be compiled
 	into u-boot image. By default XHCI is enabled, to enable EHCI instead:
-		>> make my_board_defconfig
-		>> make menuconfig
-			o Disable CONFIG_USB_XHCI_HCD.
-				-> Device Drivers -> Support for Host-side USB -> Unselect "xHCI HCD (USB 3.0) support"
-			o Enable CONFIG_USB_EHCI_HCD:
-				-> Device Drivers -> Support for Host-side USB -> Select "EHCI HCD (USB 2.0) support"
-			o Enable CONFIG_USB_EHCI_MARVELL_BYPASS_BRG_ADDR_DEC:
-				-> Device Drivers -> Support for Host-side USB -> EHCI HCD (USB 2.0) support
-					-> Select "Bypass MARVELL USB 2.0 bridge address decode setting"
-			o Enable CONFIG_USB_EHCI_MARVELL_SBUSCFG:
-				-> Device Drivers -> Support for Host-side USB -> EHCI HCD (USB 2.0) support
-					-> Select "MARVELL USB 2.0 sbuscfg setting"
-			o Save and exit
+
+					>> make my_board_defconfig
+					>> make menuconfig
+
+	- Disable CONFIG_USB_XHCI_HCD.
+		-> Device Drivers -> Support for Host-side USB -> Unselect "xHCI HCD (USB 3.0) support"
+	- Enable CONFIG_USB_EHCI_HCD:
+		-> Device Drivers -> Support for Host-side USB -> Select "EHCI HCD (USB 2.0) support"
+	- Enable CONFIG_USB_EHCI_MARVELL_BYPASS_BRG_ADDR_DEC:
+		-> Device Drivers -> Support for Host-side USB -> EHCI HCD (USB 2.0) support
+		-> Select "Bypass MARVELL USB 2.0 bridge address decode setting"
+	- Enable CONFIG_USB_EHCI_MARVELL_SBUSCFG:
+		-> Device Drivers -> Support for Host-side USB -> EHCI HCD (USB 2.0) support
+		-> Select "MARVELL USB 2.0 sbuscfg setting"
+	- Save and exit
+
 	To switch back to XHCI:
-		>> make menuconfig
-			o Disable CONFIG_USB_EHCI_HCD:
-				-> Device Drivers -> Support for Host-side USB -> Unselect "EHCI HCD (USB 2.0) support"
-			o Enable CONFIG_USB_XHCI_HCD.
-				-> Device Drivers -> Support for Host-side USB -> Select "xHCI HCD (USB 3.0) support"
-			o Save and exit
+
+					>> make menuconfig
+
+	- Disable CONFIG_USB_EHCI_HCD:
+		-> Device Drivers -> Support for Host-side USB -> Unselect "EHCI HCD (USB 2.0) support"
+	- Enable CONFIG_USB_XHCI_HCD.
+		-> Device Drivers -> Support for Host-side USB -> Select "xHCI HCD (USB 3.0) support"
+	- Save and exit
+
 	2.3. Compilation sanity
 	-----------------------
 	Now, compile U-Boot to make sure that everything was set properly.
 	(Refer to doc/mvebu/build.txt for detailed build instructions).
-		>> export CROSS_COMPILE=<path/to/compiler>
-		>> make
+
+					>> export CROSS_COMPILE=<path/to/compiler>
+					>> make
+
 	You are ready to start porting U-Boot to match "my_board" configuration.
 
 	3. Device-tree porting
 	----------------------
 	This is the actual porting of U-Boot to make it work properly on "my_board".
-		o Edit the "my_board" dts file under arch/arm/dts/<name of dts given in section 2 above>
-		o For each of the (configurable) U-Boot drivers / units, a device tree binding
+		- Edit the "my_board" dts file under arch/arm/dts/<name of dts given in section 2 above>
+		- For each of the (configurable) U-Boot drivers / units, a device tree binding
 		  description file exists, which explains the different configuration options
 		  for the relevant driver.
+
 	Below is a list of drivers / units, and their relevant DT binding description file:
 	(all file paths are relative to "doc/device-tree-bindings/")
 
 	3.1. Common for all SoCs
 	-------------------------
-		o COMPHY - phy/mvebu_comphy.txt
-		o MPPs - misc/mvebu-pinctl.txt
-		o I2C - i2c/mvebu-i2c.txt
-		o SMI / XSMI - net/mvebu-mdio.txt
-		o SATA - sata/mvebu-sata.txt
-		o USB - usb/mvebu-usb3.txt
-		o PCIe - pci/mvebu-pci.txt
+		- COMPHY - phy/mvebu_comphy.txt
+		- MPPs - misc/mvebu-pinctl.txt
+		- I2C - i2c/mvebu-i2c.txt
+		- SMI / XSMI - net/mvebu-mdio.txt
+		- SATA - sata/mvebu-sata.txt
+		- USB - usb/mvebu-usb3.txt
+		- PCIe - pci/mvebu-pci.txt
 
 	3.1. Armada-8k SoC family
 	-------------------------
-		o DDR - ddr/mvebu_ddr.txt
-		o NAND - nand/marvell-pxa3xx-nand.txt
-		o SPI - spi/mvebu-spi.txt
-		o Thermal Sensor - thermal/mvebu-thermal-v2.txt
+		- DDR - ddr/mvebu_ddr.txt
+		- NAND - nand/marvell-pxa3xx-nand.txt
+		- SPI - spi/mvebu-spi.txt
+		- Thermal Sensor - thermal/mvebu-thermal-v2.txt
 
 	3.2. Armada-3700 SoC family
-	-------------------------
-		o Serial - serial/mvebu-serial.txt
-		o Clock - clock/mvebu-clock.txt
-		o IO-Decode - misc/mvebu-io-decode.txt
-		o MBUS - misc/mvebu-mbus.txt
-		o GbE - net/mvebu-gbe.txt
-		o SPI - spi/mvebu-spi-a3700.txt
+	---------------------------
+		- Serial - serial/mvebu-serial.txt
+		- Clock - clock/mvebu-clock.txt
+		- IO-Decode - misc/mvebu-io-decode.txt
+		- MBUS - misc/mvebu-mbus.txt
+		- GbE - net/mvebu-gbe.txt
+		- SPI - spi/mvebu-spi-a3700.txt

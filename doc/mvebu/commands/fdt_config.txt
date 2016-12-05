@@ -1,77 +1,94 @@
-Notes:
-------
-- fdt_config commands are only relevant for Marvell boards that used the EEPROM device.
-
-fdt_config command:
-====================
+fdt_config command
+==================
 Dynamic board configurations are handled by using a set of pre-defined SoC/board configurations.
 This command allows the user to select which configurations to boot with.
 In addition, this command gives us the ability to edit the FDT using the FDT generic command of U-Boot,
 and save it to EEPROM.
 
-Notes:
-------
-1. The list of all the available configurations is located under "doc/mvebu/a8k/board_options"
-2. This feature reads the configuration from EEPROM, so before running it for the first time,
+Notes
+-----
+- fdt_config commands are only relevant for Marvell boards that used the EEPROM device.
+- The list of all the available configurations is located under "doc/mvebu/a8k/board_options"
+- This feature reads the configuration from EEPROM, so before running it for the first time,
    Erase EEPROM with command "i2c mw.l 0x57 0.2 0 0x200" to delete garbage data..
-   Note:
    a) In the I2C erase command, 0x57 is the EEPROM address for A3700 DB; for other boards it would be different.
       Check the board spec for details.
    b) Erasing EEPROM is a temporary workaround. When this feature is more mature, it will handle the the garbage data
       in the EEPROM and so erasing will not be necessary.
 
-"fdt_config list"
+Usage
+------
+- "fdt_config list"
 		  - Show the part of the device tree suitable for this board.
 		  - Print the list of <option_id> and fdt name for all the suitable FDTs.
 		  - Print the customized fdt status (available/not available) in <option_id> = 0.
-"fdt_config select <option_id>"
+- "fdt_config select <option_id>"
 		  - Select the device tree from the list for loading in the bootloader the next time.
 		  - To use the customized fdt from EEPROM, the customized fdt option needs to be
 		    available and then select <option_id> = 0.
 
 To create modified FDT on EEPROM, use the following:
-"fdt_config load <option_id>"
+
+- "fdt_config load <option_id>"
 		  - Load fdt <option_id> to DRAM (loaded to fdt_addr env. variable).
 		  - To read the device tree from the EEPROM and save it to DRAM select <option_id> = 0.
 
-"fdt_config save" - Write Device Tree changes from RAM to EEPROM.
+- "fdt_config save" - Write Device Tree changes from RAM to EEPROM.
 
-Example:
-------
-    i) Select one of dtb files in the U-Boot image to boot with next time.
+Example
+-------
+    1) Select one of dtb files in the U-Boot image to boot with next time.
       a) List all the dtb files in the U-Boot image.
-	 Marvell>> fdt_config list
-	 FDT config list:
-		0 - (EPPROM) not available
-		1 - DB-88F3720-DDR3-Modular  [*]
-		2 - DB-88F3720-DDR3-Modular-SGMII1
+
+			 >> fdt_config list
+			 FDT config list:
+				0 - (EPPROM) not available
+				1 - DB-88F3720-DDR3-Modular  [*]
+				2 - DB-88F3720-DDR3-Modular-SGMII1
+
       b) Select one of the dtb files to boot with next time.
-	 Marvell>> fdt_config select 2
+
+			>> fdt_config select 2
+
       c) Reset and U-Boot starts with the selected dtb file.
-	 Marvell>> reset
-   ii) Load certain dtb files from U-Boot image into DRAM and modify it.
+
+			>> reset
+
+    2) Load certain dtb files from U-Boot image into DRAM and modify it.
        Burn it into EEPROM and boot with it.
       a) List all the dtb files in the U-Boot image.
-	 Marvell>> fdt_config list
-	 FDT config list:
-		0 - (EPPROM) not available
-		1 - DB-88F3720-DDR3-Modular
-		2 - DB-88F3720-DDR3-Modular-SGMII1  [*]
+
+			>> fdt_config list
+			 FDT config list:
+				0 - (EPPROM) not available
+				1 - DB-88F3720-DDR3-Modular
+				2 - DB-88F3720-DDR3-Modular-SGMII1  [*]
+
       b) Load the dtb file into DRAM.
-	 Marvell>> fdt_config load 2
+
+			>> fdt_config load 2
+
 	 To save the changes, please run the command fdt_config save.
       c) Run "fdt print" command to see the entire dtb file in DRAM.
       d) Edit any property, for example, the comphy 0 type value in the A3700 dts file.
          Following are two valid values for the property "phy-type":
-	 PHY_TYPE_SGMII0:	9
-	 PHY_TYPE_SGMII1:	10
+	 - PHY_TYPE_SGMII0:	9
+	 - PHY_TYPE_SGMII1:	10
+
 	 The following command sets comphy 0 type to SGMII1:
-	 Marvell>> fdt set /soc/internal-regs/comphy phy0 "<10>"
+
+			>> fdt set /soc/internal-regs/comphy phy0 "<10>"
+
       e) Save the dtb file into EEPROM.
-	 Marvell>> fdt_config save
+
+			>> fdt_config save
+
 	 FDT is saved in EEPROM, to boot from customized FDT please select it from list
       f) Select customized fdt from EEPROM (option 0 in the list), to boot from.
-	 Marvell>> fdt_config select 0
+
+			>> fdt_config select 0
+
 	 Read FDT from EEPROM, please wait
       g) Reset and U-Boot starts with the dtb file in the EEPROM.
-	 Marvell>> reset
+
+			>> reset

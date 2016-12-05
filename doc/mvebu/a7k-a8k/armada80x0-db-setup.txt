@@ -1,5 +1,7 @@
-Armada80x0 development board setup:
------------------------------------
+Armada-80x0 Development Board Setup
+===================================
+
+![A80x0-DB](a80x0-db.png)
 
 The Armada 8040 Development Board (PCB: DB-88F8040-Modular) is a configurable board,
 designed to test several combinations of SoC configurations.
@@ -15,90 +17,102 @@ To switch board configuration:
 
 Note:
 Booting Linux requires using the same Device Tree configuration as used in U-Boot.
-(for more details check Linux documentation at Documentation/mvebu/a7k-a8k/)
 
 
-Board Setup
-------------
+Board Setup Options
+-------------------
 
-## setup 1: Default ###
------------------------
-
-   - Jumper-module (CON44): SLM1564
-   - Serdes CP0 site module (CON42): SLM1521:
-	- DPR 2,3,4,5 = 2-3
-	- DIP-SW-SW1:
-		- SW1, SW2, SW3, SW4, SW5, SW6, SW7, SW8 = OFF
-
-   - Serdes CP1 site module (CON41): SLM1521
-	- DPR 2,3,4,5 = 2-3
-	- DIP-SW-SW1:
-		- SW5 = ON
-		- SW1, SW2, SW3, SW4, SW6, SW7, SW8 = OFF
+|		| 1: Default		|
+|---------------|-----------------------|
+|Device tree	|armada-8040-db-router.dtb	|
+|CP0-SW1:1	| OFF			|
+|CP0-SW1:2	| OFF			|
+|CP0-SW1:3	| OFF			|
+|CP0-SW1:4	| OFF			|
+|CP0-SW1:5	| OFF			|
+|CP0-SW1:6	| OFF			|
+|CP0-SW1:7	| OFF			|
+|CP0-SW1:8	| OFF			|
+|CP1-SW1:1	| OFF			|
+|CP1-SW1:2	| OFF			|
+|CP1-SW1:3	| OFF			|
+|CP1-SW1:4	| OFF			|
+|CP1-SW1:5	| ON			|
+|CP1-SW1:6	| OFF			|
+|CP1-SW1:7	| OFF			|
+|CP1-SW1:8	| OFF			|
 
 
 The tables below summarizes the interface configuration of each setup
 
-SERDES & PHY configuration
+SerDes Configuration
 ------------------------
-Setup  #	|	1	|	TBD	| 	TBD	|
-Name   #	|     Default 	|		|		|
------------------------------------------------------------------
-CP0:								|
------------------------------------------------------------------
-	lane0	| PCIe0 (x1)	|		|		|
-	lane1	| SATA0	|	|		|
-	lane2	| KR (10G)	|		|		|
-	lane3	| SATA1		|		|		|
-	lane4	| USB3_HOST1	|		|		|
-	lane5	| PCIe2 (x1)	|		|		|
------------------------------------------------------------------
-USB2_H0 (UTMI only)
-USB2_H1 (UTMI & USB3 SerDes)
 
-CP1:								|
------------------------------------------------------------------
-	lane0	| PCIe0 (x1)	|		|		|
-	lane1	| SATA0	|	|		|
-	lane2	| KR (10G)	|		|		|
-	lane3	| SATA1		|		|		|
-	lane4	| PCIe1 (x1)	|		|		|
-	lane5	| PCIe2  x1)	|		|		|
------------------------------------------------------------------
-USB2_H0 (UTMI only)
+ CP0 Lane	| 1: Default	|
+----------------|---------------|
+ 0		| PCIe0 (x1)	|
+ 1		| SATA0		|
+ 2		| KR (10G)	|
+ 3		| SATA1		|
+ 4		| USB3_HOST1	|
+ 5		| PCIe2 (x1)	|
 
+- USB2_H0 (UTMI only)
+- USB2_H1 (UTMI & USB3 SerDes)
+
+ CP1 Lane	| 1: Default	|
+----------------|---------------|
+ 0		| PCIe0 (x1)	|
+ 1		| SATA0		|
+ 2		| KR (10G)	|
+ 3		| SATA1		|
+ 4		| PCIe1 (x1)	|
+ 5		| PCIe2 (x1)	|
+
+- USB2_H0 (UTMI only)
 
 
 Multi-purpose pin configurations
 --------------------------------
-Setup  #	|	1	|	TBD	|	TBD	|
-Name   #	|     Default 	|		|		|
------------------------------------------------------------------
-AP806:								|
------------------------------------------------------------------
-    AP-SDIO	| [0-10]	|		|		|
-    AP-SPI0	| N/C		|		|		|
-    AP-UART0	| [11,19]	|		|		|
------------------------------------------------------------------
-CP0:								|
------------------------------------------------------------------
-    CP0-SMI	| [32,34]	|		|		|
-    CP0-XSMI	| [42-43]	|		|		|
-    CP0-TWSI	| [37-38]	|		|		|
-    CP0-SATA1	| [40]		|		|		|
-    CP0-SATA0	| [41]		|		|		|
-    CP0-RGMII1	| [44-55]	|		|		|
-    CP0-SD	| [56-62]	|		|		|
-GPIOS:
-[33] - GPIO: GE_INT#/push button/Wake
-[35] - MSS_GPIO[3]: MSS_PWDN
-[36] - MSS_GPIO[5]: MSS_VTT_EN
 
------------------------------------------------------------------
-CP1:								|
------------------------------------------------------------------
-    CP1-RGMII0	| [0-11]	|		|		|
-    CP1-SMI	| [27,31]	|		|		|
-    CP1-SPI1	| [13-16]	|		|		|
-    CP1-UART0	| [29-30]	|		|		|
------------------------------------------------------------------
+ AP806 pin	| 1: Default	|
+----------------|---------------|
+    AP-SDIO	| [0-10]	|
+    AP-SPI0	| N/C		|
+    AP-UART0	| [11,19]	|
+
+ CP0 pin	| 1: Default	|
+----------------|---------------|
+    CP0-SMI	| [32,34]	|
+    CP0-XSMI	| [42-43]	|
+    CP0-TWSI	| [37-38]	|
+    CP0-SATA1	| [40]		|
+    CP0-SATA0	| [41]		|
+    CP0-RGMII1	| [44-55]	|
+    CP0-SD	| [56-62]	|
+
+GPIOS:
+	- 33: GPIO: GE_INT#/push button/Wake
+	- 35: MSS_GPIO[3]: MSS_PWDN
+	- 36: MSS_GPIO[5]: MSS_VTT_EN
+
+ CP1 pin	| 1: Default	|
+----------------|---------------|
+    CP1-RGMII0	| [0-11]	|
+    CP1-SMI	| [27,31]	|
+    CP1-SPI1	| [13-16]	|
+    CP1-UART0	| [29-30]	|
+
+
+Network configuration
+---------------------
+
+ Interface	| CPN#	| PPv2 Port	| GMAC Port	| Board Interface		|
+ ---------------|-------|---------------|---------------|-------------------------------|
+ eth0		| 0	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
+ eth1		| 0	| 2		| 3		| RGMII1			|
+ eth2		| 1	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
+ eth3		| 1	| 1		| 2		| RGMII0			|
+
+Notes:
+	- eth0/1/2/3 may in fact be higher numbers, if prior eth_x interfaces already exist.

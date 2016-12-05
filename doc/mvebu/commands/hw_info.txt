@@ -1,18 +1,18 @@
-Notes:
-------
-- hw_info commands are only relevant for Marvell boards that used the EEPROM device
-to save HW manufacturing information.
-
 hw_info command
---------------------------------
+===============
 hw_info commands are used for the following:
 - Store HW manufacturing information to EEPROM during the board manufacture in order to
 keep these parameters, regardless of the boot-loader upgrading.
 - Load HW manufacturing information from the EEPROM to the relevant U-Boot env variable in
 order to take effect.
 
-Lists the hw_info commands:
----------------------------
+Note:
+- hw_info commands are only relevant for Marvell boards that used the EEPROM device
+  to save HW manufacturing information.
+
+
+hw_info usage
+-------------
 - "hw_info dump <name>" - Dump all or specific HW parameters from the EEPROM.
 - "hw_info load <name>  - Load all or specific HW parameters from the EEPROM to env variables.
                           The hw_info load will be performed automatically with the
@@ -22,7 +22,7 @@ Lists the hw_info commands:
                           Before the store operation, the expected env varibles
                           should already be saved to env by using the command setenv or editenv.
 
-Supported HW information parameters:
+Supported HW information parameters
 ------------------------------------
 - board_id      board ID
 - pcb_slm       PCB SLM number
@@ -34,24 +34,27 @@ Supported HW information parameters:
 - eth2addr      third MAC address
 - eth3addr      fourth MAC address
 
-Examples:
+Examples
 ---------
 1. Initialize or change HW manufacturing information for the Armada-3700
-> setenv board_id 0020
-> setenv pcb_slm 1443
-> setenv pcb_rev 10
-> setenv eco_rev 12
-> setenv pcb_sn 0028
-> setenv ethaddr 00:50:43:00:00:01
-> setenv eth1addr 00:50:43:00:00:02
-> setenv eth2addr 00:50:43:00:00:03
-> setenv eth3addr 00:50:43:00:00:04
-> saveenv
-> hw_info store
+
+		> setenv board_id 0020
+		> setenv pcb_slm 1443
+		> setenv pcb_rev 10
+		> setenv eco_rev 12
+		> setenv pcb_sn 0028
+		> setenv ethaddr 00:50:43:00:00:01
+		> setenv eth1addr 00:50:43:00:00:02
+		> setenv eth2addr 00:50:43:00:00:03
+		> setenv eth3addr 00:50:43:00:00:04
+		> saveenv
+		> hw_info store
 
 2. Restore HW manufacturing information env variables after the resetenv command
-> hw_info load
-> saveenv (optional since hw_info load will ask user whether to saveenv)
+
+		> hw_info load
+		> saveenv (optional since hw_info load will ask user whether to saveenv)
 
 3. Dump HW parameters from EEPROM
-> hw_info dump
+
+		> hw_info dump

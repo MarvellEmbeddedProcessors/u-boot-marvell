@@ -1,5 +1,8 @@
-Armada3700-DB development board setup:
---------------------------------------
+Armada-3700 Development Board Setup
+===================================
+
+![A3700-DB](a3700-db.png)
+
 
 The Armada3700 Development Board (DB) is a configurable board designed to test several
 combinations of SOC configurations. U-BOOT supports a predefined set of those configurations
@@ -18,30 +21,27 @@ Once completed, change the FDT file used by U-BOOT by running the U-BOOT command
 Board Physical Setup (Connectors, Jumpers, and modules)
 -------------------------------------------------------
 
-		|	Setup-1				|	Setup-2				|	Setup-3				|
-Connector	|     Default(USB3)			|     	SGMII1 				|     	SGMII1-SFP2.5G 			|
-----------------------------------------------------------------------------------------------------------------------------------------|
+Connector	| Setup-1: Default (USB3)		| Setup-2: SGMII1			| Setup-3: SGMII1-SFP2.5G		|
+----------------|---------------------------------------|---------------------------------------|---------------------------------------|
 CON8		| eMMC_NAND module 	(SLM1506-v1)	| eMMC_NAND module 	(SLM1506-v1)	| eMMC_NAND module 	(SLM1506-v1)	|
 CON15		| SDcard module		(SLM1505-v1)	| SDcard module		(SLM1505-v1)	| SDcard module		(SLM1505-v1)	|
 CON17(PCIe)	| PCIe-mPCIe-Jumper: SLM-1496(Optional*)| PCIe-mPCIe-Jumper: SLM-1496(Optional*)| PCIe-mPCIe-Jumper: SLM-1496(Optional*)|
 CON19		| SerDes-Jumper 	(SLM1502-v1)	| 88E1512 Module 	(SLM-1496-v1)	| 88F3720-2xSFP Module 	(SLM-1504-v1)	|
 CON21		| 88E1512 Module 	(SLM-1496-v1)	| 88E1512 Module 	(SLM-1496-v1)	| 88E1512 Module 	(SLM-1496-v1)	|
-----------------------------------------------------------------------------------------------------------------------------------------|
+
 * PCIe-mPCIe-Jumper is used to enable mini PCIe0 port (CON12)
 
-The tables below summarizes the interface configuration of each setup
+The table below summarizes the interface configuration of each setup.
 
+Interface	| Setup-1: Default (USB3)	| Setup-2: SGMII1	| Setup-3: SGMII1-SFP2.5G	|
+----------------|-------------------------------|-----------------------|-------------------------------|
+SerDes PHY0	| PCIe0				| PCIe0			| PCIe0				|
+SerDes PHY1	| USB3_H0			| SGMII1		| SGMII1-SFP2.5G		|
+SerDes PHY2	| SATA				| SATA			| SATA				|
+SATA		| CON6				| CON6			| CON6				|
+PCIe		| CON12/17			| CON12/17		| CON12/17			|
+USB3		| CON13				| N/A			| N/A				|
+SGMII1		| N/A				| PHY1 (CON19)		| PHY1 (CON19)			|
+RGMII		| PHY0 (CON21)			| PHY0 (CON21)		| PHY0 (CON21)			|
 
-setup  #	|	1	|	2	|	3	|
-name   #	|     Default 	|   SGMII1	| SGMII1-SFP2.5G|
------------------------------------------------------------------
-SerDes PHY0	| PCIe0		| PCIe0		| PCIe0		|
-SerDes PHY1	| USB3_H0	| SGMII1	| SGMII1-SFP2.5G|
-SerDes PHY2	| SATA		| SATA		| SATA		|
-SATA		| CON6		| CON6		| CON6		|
-PCIe		| CON12/17	| CON12/17	| CON12/17	|
-USB3		| CON13		| N/A		| N/A		|
-SGMII1		| N/A		| PHY1 (CON19)	| PHY1 (CON19)	|
-RGMII		| PHY0 (CON21)	| PHY0 (CON21)	| PHY0 (CON21)	|
------------------------------------------------------------------
 

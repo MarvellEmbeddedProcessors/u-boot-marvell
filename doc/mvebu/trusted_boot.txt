@@ -1,21 +1,23 @@
-###########################
-Trusted (secure mode) Boot
-###########################
+Trusted Boot (Secure Mode)
+==========================
 
 The trusted boot setup requires configuration of several components:
 - eFuse module - Allows burning boot device, authentication key digest, encryption key, etc.
 - boot image format - Provides the trusted boot information to BootROM.
 
-=========
 1. eFuses
 =========
 The eFuse command module and driver provides RW access to SoC eFuses through the "efuse" command.
 In order to enable this SW component, the following configuration entry should be set:
+
 	CONFIG_MVEBU_EFUSE_SUPPORT=y
+
 The same parameter can be selected using "make menuconfig":
--> Device Drivers
-	-> eFuse support
+
+	-> Device Drivers
 		-> eFuse support
+			-> eFuse support
+
 The above configuration enables the eFuse driver and eFuse command module.
 Please refer to SoC and BootROM manuals for details about supported eFuses
 and their role in the trusted boot flow.
@@ -23,10 +25,8 @@ Since the eFuse command module and driver are only used for simplified access
 to eFuse HW values, the presence of these components in the final trusted boot image
 is not required.
 
-/////////////
 A8K platforms
-/////////////
-
+-------------
 The AES-256 key is visible only during the efuse burn session. It will be hidden after
 reset and accessible only on early boot stages by the internal BootROM procedures.
 Trying to read efuse values of AES-256 key will return zeros.
@@ -35,13 +35,11 @@ becomes hidden for everyone, including the BootROM. Therefore when JTAG is enabl
 by eFuse, the boot image should not be encrypted, since BootROM decryption will always
 fail unless zero-key was used for image encryption.
 
-///////////////
 A3700 platforms
-///////////////
-
+---------------
 TBD
 
-====================
+
 2. Boot image format
 ====================
 The boot image should be properly formatted for the trusted boot mode, so the BootROM extracts
@@ -50,10 +48,8 @@ values and digital signatures and for image decryption.
 Various platforms use different BootROMs and boot image formats. For a specific details please refer
 to the SoC functional specification, BootROM manual and to the section related to a selected platform below.
 
-/////////////
 A8K platforms
-/////////////
-
+-------------
 Please refer to A8K functional specification for details about trusted boot image components.
 The secure image configuration is defined by a single file sec_img.cfg located in tools/secure folder.
 This file, which has standard INI file format, defines the following configuration options:
@@ -103,24 +99,19 @@ This file, which has standard INI file format, defines the following configurati
 		has two CPS connected to AP, so this array has to include 4 register addresses.
 		This parameter is optional.
 
-///////////////
 A3700 platforms
-///////////////
-
+---------------
 TBD
 
 
-==================================
 3. Work order - target preparation
 ==================================
 After the trusted boot mode is selected by SoC eFuse, the BootROM enforces security checks upon
 boot image load. Therefore a right work order is essential for target preparation and preventing
 the system from self-locking.
 
-/////////////
 A8K platforms
-/////////////
-
+-------------
 1. Build an image for trusted boot mode using configuration file explained above and any additional settings
    required by ATF. The image encryption option should not be used in this build, since the resulting image
    should be compatible with non-trusted systems.
@@ -133,10 +124,8 @@ A8K platforms
 6. If the image encryption option is required, build a new image with image encryption enabled and burn it
    to the system boot device using the regular "bubt" command.
 
-///////////////
 A3700 platforms
-///////////////
-
+---------------
 1. Create an UNTRUSTED boot image with eFuse command module support (as stated in "eFuses" chapter above)
    and burn it on target flash device using the regular "bubt" command.
 2. Create a TRUSTED boot image (as stated in "Boot image format" chapter above) and save it for later use.
@@ -144,21 +133,20 @@ A3700 platforms
    file named OtpHash.txt. This digest value will be used for eFuse programming so save this file.
    The OtpHash.txt file lists the KAK digest in groups of 4-bytes values, organized in the following
    order:
-       LSB
-       ...
-       ...
-       MSB
+       LSB ... ... ... MSB
    These values should be converted to a single 32-bytes value for eFuse burning:
        MSB ... ... ... LSB.
    For instance, the following OTP hash:
-       0x1887C298
-       0x59C9AFD9
-       0x6E814E34
-       0x25CD518B
-       0x3CDB7EED
-       0x33CC58B1
-       0x2C69997A
-       0xC27B7242
+
+	   0x1887C298
+	   0x59C9AFD9
+	   0x6E814E34
+	   0x25CD518B
+	   0x3CDB7EED
+	   0x33CC58B1
+	   0x2C69997A
+	   0xC27B7242
+
    Will be used in the following form in eFuse KAK digest write command:
        C27B72422C69997A33CC58B13CDB7EED25CD518B6E814E3459C9AFD91887C298
 3. Boot the target board with the UNTRUSTED boot image.

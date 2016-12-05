@@ -1,5 +1,6 @@
 UART boot
----------
+=========
+
 For Armada-3700 see the section "UART boot for Armada-3700 platform" section.
 UART boot is used to load the ATF image using the Xmodem interface when the board boots for
 the first time or when the board fails to boot.
@@ -16,8 +17,8 @@ the first time or when the board fails to boot.
 3. Start the TTY ATF transfer using the Xmodem protocol
    (for minicom do: Ctrl/A, then S, and select the Xmodem protocol).
 4. Select the ATF image file, and start the transfer.
-5. When the transfer is done, U-Boot will start and you should hit <return> to get the U-Boot prompt.
-6. When ATF & U-Boot loads refer to doc/mvebu/commands/bubt.txt to burn the ATF image.
+5. When the transfer is done, U-Boot will start and you should hit 'return' to get the U-Boot prompt.
+6. When ATF & U-Boot loads refer to "doc/mvebu/commands/bubt.txt" to burn the ATF image.
 
 UART boot for Armada-3700 platform
 ---------------------------------
@@ -41,17 +42,17 @@ UART boot for Armada-3700 platform
 
    Linux downloader usage example:
 
-   sudo WtpDownload_linux.exe -P UART -C 0 -R 115200 \
-   -B ./uart-images/TIM_ATF.bin -I ./uart-images/boot-image_h.bin \
-   -I ./uart-images/wtmi_h.bin -E
+		sudo WtpDownload_linux.exe -P UART -C 0 -R 115200 \
+		-B ./uart-images/TIM_ATF.bin -I ./uart-images/boot-image_h.bin \
+		-I ./uart-images/wtmi_h.bin -E
 
    Windows downloader usage example:
 
    The target board is connected to COM7 and all images are located in
    the same folder:
 
-   WtpDownload.exe -P UART -C 7 -R 115200 -B TIM_ATF.bin
-   -I boot-image_h.bin -I wtmi_h.bin -E
+		WtpDownload.exe -P UART -C 7 -R 115200 -B TIM_ATF.bin
+		-I boot-image_h.bin -I wtmi_h.bin -E
 
    It is possible to add the "-V" parameter to the command line for
    enabling verbose output.

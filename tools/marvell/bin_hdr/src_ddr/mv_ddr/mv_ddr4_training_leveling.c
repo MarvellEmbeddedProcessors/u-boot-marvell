@@ -152,7 +152,7 @@ static u8 mv_ddr4_xsb_comp_test(u32 dev_num, u32 subphy_num, u32 if_id,
 		addr64 = (uintptr_t)pattern_table[PATTERN_TEST].start_addr;
 		for (i = 0; i < MV_DDR4_XSB_COMP_PATTERNS_NUM; i++) {
 			data64 = pattern_test_table_64[i];
-			mmio_write_64(addr64, data64);
+			writeq(addr64, data64);
 			addr64 +=  sizeof(uint64_t);
 		}
 	} else if (MV_DDR_IS_32BIT_IN_64BIT_DRAM_MODE(tm->bus_act_mask, subphy_max)) {
@@ -210,7 +210,7 @@ static u8 mv_ddr4_xsb_comp_test(u32 dev_num, u32 subphy_num, u32 if_id,
 
 		addr64 = (uintptr_t)pattern_table[PATTERN_TEST].start_addr;
 		for (i = 0; i < MV_DDR4_XSB_COMP_PATTERNS_NUM; i++) {
-			data64 = mmio_read_64(addr64);
+			data64 = readq(addr64);
 			addr64 +=  sizeof(uint64_t);
 			read_pattern_64[i] = data64;
 		}

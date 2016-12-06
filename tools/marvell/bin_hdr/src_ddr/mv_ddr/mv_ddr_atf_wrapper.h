@@ -248,5 +248,7 @@ void mmio_write2_32(u32 val, u32 addr);
 
 #define writel mmio_write2_32
 #define readl mmio_read_32
+#define writeq mmio_write_64
+#define readq mmio_read_64
 
 #endif /* _MV_DDR_ATF_WRAPPER_H */

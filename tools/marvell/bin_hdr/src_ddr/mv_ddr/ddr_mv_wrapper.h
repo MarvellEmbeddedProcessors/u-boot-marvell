@@ -131,5 +131,7 @@ void mdelay(unsigned long);
 		MV_MEMIO32_WRITE(addr, MV_32BIT_LE_FAST(data))
 #define writel MV_MEMIO_LE32_WRITE2
 #define readl MV_MEMIO_LE32_READ
+#define writeq mmio_write_64
+#define readq mmio_read_64
 
 #endif /* _DDR_MV_WRAPPER_H */

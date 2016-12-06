@@ -38,15 +38,21 @@ static enum mci_unit parse_unit(const char *unit)
 int do_mci_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])
 {
-	const char *unit = argv[2];
+	const char *unit;
 	enum mci_unit phy_unit;
 	u32 reg_ofs;
 	u32 value;
 	int unit_id = simple_strtoul(argv[3], NULL, 10);
+
+	/* Verify enough arguments entered by user */
+	if (argc < 5)
+		goto input_error;
+
+	unit = argv[2];
 	phy_unit = parse_unit(unit);
 	if (phy_unit == MCI_MAX) {
 		error("Error: unit %s is not supported\n", unit);
-		return 1;
+		return CMD_RET_USAGE;
 	}
 
 
@@ -55,6 +61,10 @@ int do_mci_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 
 	/* read commnad */
 	if (strcmp(argv[1], "read") == 0) {
+		/* Verify required arguments entered by user */
+		if (argc != 5)
+			goto input_error;
+
 		if (phy_unit == AP_PHY || phy_unit == CP_PHY) {
 			if (mvebu_mci_phy_read(MCI_PHY_REG_REGION, phy_unit, unit_id, reg_ofs, &value))
 				return 1;
@@ -69,6 +79,10 @@ int do_mci_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 		}
 	/* write commnad */
 	} else if (strcmp(argv[1], "write") == 0) {
+		/* Verify required arguments entered by user */
+		if (argc != 6)
+			goto input_error;
+
 		if (phy_unit == AP_PHY || phy_unit == CP_PHY) {
 			value = simple_strtoul(argv[5], NULL, 16);
 
@@ -88,11 +102,15 @@ int do_mci_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 		return 1;
 	}
 	return 0;
+
+input_error:
+	printf("\nInput error: Please go over command help:\n");
+	return CMD_RET_USAGE;
 }
 
 U_BOOT_CMD(
 	mci,      6,     0,      do_mci_cmd,
-	"Access to MCI indirect registers\n",
+	"\nAccess to MCI indirect registers\n",
 	"<cmd> <mci_type> <mci_num> <offset> <value>\n"
 	"	- read/write from/to mci registers\n"
 	"\n"

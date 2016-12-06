@@ -23,7 +23,7 @@
 #include <asm/arch-mvebu/soc.h>
 
 /* MCI registers */
-#define MVEBU_MCI_PHY_BASE(unit_id)			(0xfB000000 + ((uintptr_t)unit_id) * 0x2000000)
+#define MVEBU_MCI_PHY_BASE(unit_id)			(0xfd000000 + ((uintptr_t)unit_id) * 0x1000000)
 #define MVEBU_MCI_PHY_DATA_REG_OFF			0x0
 #define MVEBU_MCI_PHY_CMD_REG_OFF			0x4
 

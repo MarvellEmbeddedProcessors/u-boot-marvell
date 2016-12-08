@@ -711,7 +711,7 @@ int mv_ddr_early_init(void)
 	 * this flag checks if to run a workaround where v pod and v sstl are wired
 	 */
 	vref_calibration_wa = 0;
-
+	mode_2t = 1;
 	mv_ddr_sw_db_init(0, 0);
 
 	/* TODO: consider to move this platform specific code into mv_ddr_topology_update() */

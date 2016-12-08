@@ -60,22 +60,15 @@ and configuring the DDR memory controller and the PHY for reliable operation of 
 		2.2.1 as_bus_params - contains a set of parameters to be configured per DDR subphy.
 			DDR interface consists of a number of subphys.
 			MAX_BUS_NUM is currently set to 9 (see section 2.3 for bus_act_mask parameter).
-
-			<TODO: found ambiguity in the following sentence: module memory bus width
-				"each ddr module can be connected to one or two buses, depends on the ddr bus width (see
-				section 2.2.3)"
-			 Need to differentiate between DDR interface subphy and DDR module memory bus width...
-			>
-
 			DDR subphy consists of 8 data bits connected to data bits of DDR module.
 
 			Notes:
 			- No need to configure these parameters if MV_DDR_CFG_SPD is set as
 				a source configuration.
 			- a70x0 soc cpu supports 64-bit DDR module memory bus width, while
-				its memory controler is 32-bit. <TODO: what exactly do we want to say here?>
+				its memory controler is 32-bit.
 			- a80x0 soc cpu supports 64-bit DDR module memory bus width, and
-				its memory controler is 64-bit. <TODO: what exactly do we want to say here?>
+				its memory controler is 64-bit.
 			- Configure the parameters for one of the buses and copy to the rest.
 			- Specify a physical bus index for ecc bus (not sequential one).
 				For example, a70x0 ECC bus index will be 8 even if the chosen DDR module
@@ -105,10 +98,6 @@ and configuring the DDR memory controller and the PHY for reliable operation of 
 				This parameter is defined as a bitwise mask.
 				- Set 0x0 for standard.
 				- Set 0x1 for mirrored.
-
-				<TODO: need to explain 0x1 and 0x2 configuration again. what is the 1st & 2nd ddr
-				devices?>
-
 				Note: No need to configure these parameters if MV_DDR_CFG_SPD is set as
 				      a source configuration.
 			2.2.1.3 is_dqs_swap - specifies connectivity of dqs signal.
@@ -147,14 +136,14 @@ and configuring the DDR memory controller and the PHY for reliable operation of 
 		2.2.3 bus_width - specifies the the ddr device module data bus width
 		      The conectivity between the ddr device memory and the controller is defined and
 		      described later in this document (see section 2.3 bus active mask)
-		2.2.4 memory_size - specifies total sdarm capacity per die in megabits <TODO>
-		2.2.5 memory_freq - specifies ddr interface frequency <TODO>
-		2.2.6 cas_wl - specifies cas write latency <TODO>
-		2.2.7 cas_l - specifies cas latency <TODO>
-		2.2.8 interface_temp - specifies interface operation temperature <TODO>
+		2.2.4 memory_size - specifies total sdarm capacity per die in megabits
+		2.2.5 memory_freq - specifies ddr interface frequency
+		2.2.6 cas_wl - specifies cas write latency
+		2.2.7 cas_l - specifies cas latency
+		2.2.8 interface_temp - specifies interface operation temperature
 
 	2.3 bus_act_mask - specifies active buses in an interface.
-		This parameter is defined as a bitwise mask for active busses <TODO>.
+		This parameter is defined as a bitwise mask for active busses
 
 	2.4 cfg_src - specifies ddr configuration data source.
 		This parameter is of enum mv_ddr_cfg_src type.
@@ -177,9 +166,9 @@ and configuring the DDR memory controller and the PHY for reliable operation of 
 		2.4.4 MV_DDR_CFG_STATIC - as previous, but in register-value format.
 
 	2.5 spd_data - contains raw spd data read from a DDR module with spd.
-	2.6 timing_data - contains timing parameters <TODO>.
+	2.6 timing_data - contains timing parameters.
 
-3. Electrical parameters <TODO>
+3. Electrical parameters
 
 4. Porting example
 
@@ -217,4 +206,4 @@ and configuring the DDR memory controller and the PHY for reliable operation of 
 	- LOG_LEVEL_INFO - prints training detailed information trace and errors
 	in order to apply one of the options change to the wanted option and compile
 
-6. Compiler options <TODO>
+6. Compiler options

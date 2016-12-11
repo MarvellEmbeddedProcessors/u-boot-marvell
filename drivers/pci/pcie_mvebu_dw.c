@@ -47,6 +47,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define PCIE_GLB_STS_RDLH_LINK_UP	(1 << 1)
 #define PCIE_GLB_STS_PHY_LINK_UP	(1 << 9)
 
+#define PCIE_PM_STATUS			0x8014
+#define PCIE_PM_LTSSM_STAT_MASK		(0x1f << 3)
+
 #define PCIE_ARCACHE_TRC		0x8050
 #define PCIE_AWCACHE_TRC		0x8054
 #define ARCACHE_SHAREABLE_CACHEABLE	0x3511
@@ -63,6 +66,15 @@ static int mvebu_pcie_link_up(uintptr_t regs_base)
 	u32 reg;
 	int timeout = PCIE_LINK_UP_TIMEOUT_US;
 	u32 mask = PCIE_GLB_STS_RDLH_LINK_UP | PCIE_GLB_STS_PHY_LINK_UP;
+
+	/*
+	 * Check if anything is connected to this PCIe port
+	 * If the LTSSM status == 0, nothing is connected, so
+	 * there is no reason to waste time on waiting for link
+	 */
+	reg = readl(regs_base + PCIE_PM_STATUS);
+	if (!(reg & PCIE_PM_LTSSM_STAT_MASK))
+		return 0;
 
 	while (timeout > 0) {
 		reg = readl(regs_base + PCIE_GLOBAL_STATUS);

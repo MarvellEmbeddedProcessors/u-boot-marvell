@@ -1131,11 +1131,29 @@ static int mv_ddr4_center_of_mass_calc(u8 dev_num, u8 if_id, u8 subphy_num, u8 m
 }
 
 /* tap tuning flow */
-static int mv_ddr4_tap_tuning(u8 dev_num, u16 (*pbs_tap_factor)[MAX_BUS_NUM][BUS_WIDTH_IN_BITS], u8 mode)
+enum {
+	DQS_TO_DQ_LONG,
+	DQS_TO_DQ_SHORT
+};
+enum {
+	ALIGN_LEFT,
+	ALIGN_CENTER,
+	ALIGN_RIGHT
+};
+#define ONE_MHZ			1000000
+#define MAX_SKEW_DLY		200 /* in ps */
+#define NOMINAL_PBS_DLY		9 /* in ps */
+#define MIN_WL_TO_CTX_ADLL_DIFF	2 /* in taps */
+#define DQS_SHIFT_INIT_VAL	30
+#define MAX_PBS_NUM		31
+#define ADLL_TAPS_PER_PHASE	32
+#define ADLL_TAPS_PER_PERIOD	(ADLL_TAPS_PER_PHASE * 2)
+#define ADLL_TX_RES_REG_MASK	0xff
+#define VW_DESKEW_BIAS		0xa
+static int mv_ddr4_tap_tuning(u8 dev, u16 (*pbs_tap_factor)[MAX_BUS_NUM][BUS_WIDTH_IN_BITS], u8 mode)
 {
 	enum hws_training_ip_stat training_result[MAX_INTERFACE_NUM];
-	u32 if_id, subphy_num, bit_num, pattern_id;
-	u32 new_pbs_val = 15;
+	u32 iface, subphy, bit, pattern;
 	u32 limit_div;
 	u8 curr_start_win, curr_end_win;
 	u8 upd_curr_start_win, upd_curr_end_win;
@@ -1143,328 +1161,496 @@ static int mv_ddr4_tap_tuning(u8 dev_num, u16 (*pbs_tap_factor)[MAX_BUS_NUM][BUS
 	u32 max_win_size, a, b;
 	u32 cs_ena_reg_val[MAX_INTERFACE_NUM];
 	u32 reg_addr;
-	enum hws_search_dir search_dir_id;
-	enum hws_dir direction;
+	enum hws_search_dir search_dir;
+	enum hws_dir dir;
 	u32 *result[MAX_BUS_NUM][HWS_SEARCH_DIR_LIMIT];
 	u32 result1[MAX_BUS_NUM][HWS_SEARCH_DIR_LIMIT][BUS_WIDTH_IN_BITS];
-	u8 subphy_max = ddr3_tip_dev_attr_get(dev_num, MV_ATTR_OCTET_PER_INTERFACE);
+	u8 subphy_max = ddr3_tip_dev_attr_get(dev, MV_ATTR_OCTET_PER_INTERFACE);
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
 	enum hws_training_result result_type = RESULT_PER_BIT;
-	int status;
+	int status = MV_OK;
+	int i;
+	u32 reg_val;
+	u32 freq = freq_val[tm->interface_params->memory_freq];
+	/* calc adll tap in ps based on frequency */
+	int adll_tap = (ONE_MHZ / freq) / ADLL_TAPS_PER_PERIOD;
+	int dq_to_dqs_delta[MAX_BUS_NUM][BUS_WIDTH_IN_BITS]; /* skew b/w dq and dqs */
+	u32 wl_adll[MAX_BUS_NUM]; /* wl solution adll value */
+	int is_dq_dqs_short[MAX_BUS_NUM] = {0}; /* tx byte's state */
+	u32 new_pbs_per_byte[MAX_BUS_NUM]; /* dq pads' pbs value correction */
+	/* threshold to decide subphy needs dqs pbs delay */
+	int dq_to_dqs_min_delta_threshold = MIN_WL_TO_CTX_ADLL_DIFF + MAX_SKEW_DLY / adll_tap;
+	/* search init condition */
+	int dq_to_dqs_min_delta = dq_to_dqs_min_delta_threshold * 2;
+	u32 pbs_tap_factor0 = PBS_VAL_FACTOR * NOMINAL_PBS_DLY / adll_tap; /* init lambda */
+	/* adapt pbs to frequency */
+	u32 new_pbs = (18100 - (3.45 * freq)) / 1000;
+	int stage_num, loop;
+	int wl_tap, new_wl_tap;
+	int pbs_tap_factor_avg;
+	int dqs_shift[MAX_BUS_NUM]; /* dqs' pbs delay */
+
+	for (i = 0; i < MAX_BUS_NUM; i++)
+		dqs_shift[i] = DQS_SHIFT_INIT_VAL;
 
 	if (mode == TX_DIR) {
 		max_win_size = MAX_WINDOW_SIZE_TX;
-		direction = OPER_WRITE;
+		dir = OPER_WRITE;
 	} else {
 		max_win_size = MAX_WINDOW_SIZE_RX;
-		direction = OPER_READ;
+		dir = OPER_READ;
 	}
 
-	/* clean all pbs registers to allow multiple run of this flow */
-	for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
-		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
-		reg_addr = (mode == RX_DIR) ? 0x5f : 0x1f;
-		/* change pbs (0 at this stage) */
-		status = ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id, ACCESS_TYPE_MULTICAST,
-					    PARAM_NOT_CARE, DDR_PHY_DATA, reg_addr + effective_cs * 0x10, 0);
-		if (status != MV_OK)
-			return status;
+	/* init all pbs registers */
+	for (iface = 0; iface < MAX_INTERFACE_NUM; iface++) {
+		VALIDATE_IF_ACTIVE(tm->if_act_mask, iface);
+		if (mode == RX_DIR)
+			reg_addr = RD_DESKEW_BRDCAST_PHY_REG(effective_cs);
+		else
+			reg_addr = WR_DESKEW_BRDCAST_PHY_REG(effective_cs);
+		ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface, ACCESS_TYPE_MULTICAST,
+				   PARAM_NOT_CARE, DDR_PHY_DATA, reg_addr, 0);
 
-		reg_addr = (mode == RX_DIR) ? 0x54 : 0x14;
-		/* change pbs (0 at this stage) */
-		status = ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id, ACCESS_TYPE_MULTICAST,
-					    PARAM_NOT_CARE, DDR_PHY_DATA, reg_addr + effective_cs * 0x10, 0);
-		if (status != MV_OK)
-			return status;
-
-		status = ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id, ACCESS_TYPE_MULTICAST,
-					    PARAM_NOT_CARE, DDR_PHY_DATA, reg_addr + effective_cs * 0x10 + 1, 0);
-		if (status != MV_OK)
-			return status;
+		if (mode == RX_DIR)
+			reg_addr = RD_DESKEW_PHY_REG(effective_cs, DQSP_PAD);
+		else
+			reg_addr = WR_DESKEW_PHY_REG(effective_cs, DQSP_PAD);
+		ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface, ACCESS_TYPE_MULTICAST,
+				   PARAM_NOT_CARE, DDR_PHY_DATA, reg_addr, 0);
+		if (mode == RX_DIR)
+			reg_addr = RD_DESKEW_PHY_REG(effective_cs, DQSN_PAD);
+		else
+			reg_addr = WR_DESKEW_PHY_REG(effective_cs, DQSN_PAD);
+		ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface, ACCESS_TYPE_MULTICAST,
+				   PARAM_NOT_CARE, DDR_PHY_DATA, reg_addr, 0);
 	}
 
-	/* change pbs, find new window, and read current pbs value */
-	for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
-		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
+	for (iface = 0; iface < MAX_INTERFACE_NUM; iface++) {
+		VALIDATE_IF_ACTIVE(tm->if_act_mask, iface);
 		/* save current cs enable reg val */
-		status = ddr3_tip_if_read(dev_num, ACCESS_TYPE_UNICAST, if_id, CS_ENABLE_REG,
-					  cs_ena_reg_val, MASK_ALL_BITS);
-		if (status != MV_OK)
-			return status;
+		ddr3_tip_if_read(dev, ACCESS_TYPE_UNICAST, iface, CS_ENABLE_REG,
+				 cs_ena_reg_val, MASK_ALL_BITS);
 
 		/* enable single cs */
-		status = ddr3_tip_if_write(dev_num, ACCESS_TYPE_UNICAST, if_id, CS_ENABLE_REG,
-					   (1 << 3), (1 << 3));
-		if (status != MV_OK)
-			return status;
+		ddr3_tip_if_write(dev, ACCESS_TYPE_UNICAST, iface, CS_ENABLE_REG,
+				  (SINGLE_CS_ENA << SINGLE_CS_PIN_OFFS),
+				  (SINGLE_CS_PIN_MASK << SINGLE_CS_PIN_OFFS));
 	}
 
-	/* find window; run training */
 	/* FIXME: fix this hard-coded parameters due to compilation issue with patterns definitions */
-	pattern_id = MV_DDR_IS_64BIT_DRAM_MODE(tm->bus_act_mask) ? 73 : 23;
-	ddr3_tip_ip_training_wrapper(dev_num, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST,
-				     PARAM_NOT_CARE, result_type, HWS_CONTROL_ELEMENT_ADLL,
-				     PARAM_NOT_CARE, direction, tm->if_act_mask,
-				     0x0, max_win_size - 1, max_win_size - 1, pattern_id, EDGE_FPF, CS_SINGLE,
-				     PARAM_NOT_CARE, training_result);
+	pattern = MV_DDR_IS_64BIT_DRAM_MODE(tm->bus_act_mask) ? 73 : 23;
+	stage_num = (mode == RX_DIR) ? 1 : 2;
+	/* find window; run training */
+	for (loop = 0; loop < stage_num; loop++) {
+		ddr3_tip_ip_training_wrapper(dev, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST,
+					     PARAM_NOT_CARE, result_type, HWS_CONTROL_ELEMENT_ADLL, PARAM_NOT_CARE,
+					     dir, tm->if_act_mask, 0x0, max_win_size - 1, max_win_size - 1,
+					     pattern, EDGE_FPF, CS_SINGLE, PARAM_NOT_CARE, training_result);
 
-	for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
-		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
-		for (subphy_num = 0; subphy_num < subphy_max; subphy_num++) {
-			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy_num);
-			/* 0 - align to left, 1 - to center, 2 - to right */
-			rx_vw_pos[if_id][subphy_num] = 1;
-			for (search_dir_id = HWS_LOW2HIGH; search_dir_id <= HWS_HIGH2LOW; search_dir_id++) {
-				status = ddr3_tip_read_training_result(dev_num, if_id, ACCESS_TYPE_UNICAST,
-								       subphy_num, ALL_BITS_PER_PUP,
-								       search_dir_id, direction,
-								       result_type, TRAINING_LOAD_OPERATION_UNLOAD,
-								       CS_SINGLE,
-								       &(result[subphy_num][search_dir_id]),
-								       MV_TRUE, 0, MV_FALSE);
-				if (status != MV_OK)
-					return status;
+		for (iface = 0; iface < MAX_INTERFACE_NUM; iface++) {
+			VALIDATE_IF_ACTIVE(tm->if_act_mask, iface);
+			for (subphy = 0; subphy < subphy_max; subphy++) {
+				VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy);
+				rx_vw_pos[iface][subphy] = ALIGN_CENTER;
+				new_pbs_per_byte[subphy] = new_pbs; /* rx init */
+				if ((mode == TX_DIR) && (loop == 0)) {
+					/* read nominal wl */
+					ddr3_tip_bus_read(dev, iface, ACCESS_TYPE_UNICAST, subphy,
+							  DDR_PHY_DATA, WL_PHY_REG(effective_cs),
+							  &reg_val);
+					wl_adll[subphy] = reg_val;
+				}
 
-				DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
-							("cs %d if %d subphy %d mode %d result: "
-							 "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
-							 effective_cs, if_id, subphy_num, mode,
-							 result[subphy_num][search_dir_id][0],
-							 result[subphy_num][search_dir_id][1],
-							 result[subphy_num][search_dir_id][2],
-							 result[subphy_num][search_dir_id][3],
-							 result[subphy_num][search_dir_id][4],
-							 result[subphy_num][search_dir_id][5],
-							 result[subphy_num][search_dir_id][6],
-							 result[subphy_num][search_dir_id][7]));
-			}
+				for (search_dir = HWS_LOW2HIGH; search_dir <= HWS_HIGH2LOW; search_dir++) {
+					ddr3_tip_read_training_result(dev, iface, ACCESS_TYPE_UNICAST, subphy,
+								      ALL_BITS_PER_PUP, search_dir, dir,
+								      result_type, TRAINING_LOAD_OPERATION_UNLOAD,
+								      CS_SINGLE, &(result[subphy][search_dir]),
+								      MV_TRUE, 0, MV_FALSE);
 
-			for (bit_num = 0; bit_num < BUS_WIDTH_IN_BITS; bit_num++) {
-				a = result[subphy_num][HWS_LOW2HIGH][bit_num];
-				b = result[subphy_num][HWS_HIGH2LOW][bit_num];
-				result1[subphy_num][HWS_LOW2HIGH][bit_num] = a;
-				result1[subphy_num][HWS_HIGH2LOW][bit_num] = b;
+					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
+								("cs %d if %d subphy %d mode %d result: "
+								 "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
+									 effective_cs, iface, subphy, mode,
+								 result[subphy][search_dir][0],
+								 result[subphy][search_dir][1],
+								 result[subphy][search_dir][2],
+								 result[subphy][search_dir][3],
+								 result[subphy][search_dir][4],
+								 result[subphy][search_dir][5],
+								 result[subphy][search_dir][6],
+								 result[subphy][search_dir][7]));
+				}
+
+				for (bit = 0; bit < BUS_WIDTH_IN_BITS; bit++) {
+					a = result[subphy][HWS_LOW2HIGH][bit];
+					b = result[subphy][HWS_HIGH2LOW][bit];
+					result1[subphy][HWS_LOW2HIGH][bit] = a;
+					result1[subphy][HWS_HIGH2LOW][bit] = b;
+					/* measure distance between ctx and wl adlls */
+					if (mode == TX_DIR) {
+						a &= ADLL_TX_RES_REG_MASK;
+						if (a >= ADLL_TAPS_PER_PERIOD)
+							a -= ADLL_TAPS_PER_PERIOD;
+						dq_to_dqs_delta[subphy][bit] =
+							a - (wl_adll[subphy] & WR_LVL_REF_DLY_MASK);
+						if (dq_to_dqs_delta[subphy][bit] < dq_to_dqs_min_delta)
+							dq_to_dqs_min_delta = dq_to_dqs_delta[subphy][bit];
+						DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
+									("%s: dq_to_dqs_delta[%d][%d] %d\n",
+									 __func__, subphy, bit,
+									 dq_to_dqs_delta[subphy][bit]));
+					}
+				}
+
+				/* adjust wl on the first pass only */
+				if ((mode == TX_DIR) && (loop == 0)) {
+					/* dqs pbs shift if distance b/w adll is too large */
+					if (dq_to_dqs_min_delta < dq_to_dqs_min_delta_threshold) {
+						/* calc dqs pbs shift */
+						dqs_shift[subphy] =
+							dq_to_dqs_min_delta_threshold - dq_to_dqs_min_delta;
+						DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
+									("%s: tap tune tx: subphy %d, dqs shifted by %d adll taps, ",
+									 __func__, subphy, dqs_shift[subphy]));
+						dqs_shift[subphy] =
+							(dqs_shift[subphy] * PBS_VAL_FACTOR) / pbs_tap_factor0;
+						DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
+									("%d pbs taps\n", dqs_shift[subphy]));
+						if (dqs_shift[subphy] > MAX_PBS_NUM)
+							dqs_shift[subphy] = MAX_PBS_NUM;
+						reg_addr = WR_DESKEW_PHY_REG(effective_cs, DQSP_PAD);
+						ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface,
+								   ACCESS_TYPE_UNICAST, subphy, DDR_PHY_DATA,
+								   reg_addr, dqs_shift[subphy]);
+						reg_addr = WR_DESKEW_PHY_REG(effective_cs, DQSN_PAD);
+						ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface,
+								   ACCESS_TYPE_UNICAST, subphy, DDR_PHY_DATA,
+								   reg_addr, dqs_shift[subphy]);
+
+						is_dq_dqs_short[subphy] = DQS_TO_DQ_SHORT;
+
+						/* change adaptively wl solution */
+						wl_tap = ((wl_adll[subphy] >> WR_LVL_REF_DLY_OFFS) &
+							  WR_LVL_REF_DLY_MASK) +
+							 ((wl_adll[subphy] >> WR_LVL_PH_SEL_OFFS) &
+							  WR_LVL_PH_SEL_MASK) * ADLL_TAPS_PER_PHASE;
+						new_wl_tap = wl_tap -
+							     (dqs_shift[subphy] * pbs_tap_factor0) / PBS_VAL_FACTOR;
+						reg_val = (new_wl_tap & WR_LVL_REF_DLY_MASK) |
+							  ((new_wl_tap &
+							    ((WR_LVL_PH_SEL_MASK << WR_LVL_PH_SEL_OFFS) >> 1))
+							   << 1) |
+							  (wl_adll[subphy] &
+							   ((CTRL_CENTER_DLY_MASK << CTRL_CENTER_DLY_OFFS) |
+							    (CTRL_CENTER_DLY_INV_MASK << CTRL_CENTER_DLY_INV_OFFS)));
+						ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface,
+								   ACCESS_TYPE_UNICAST, subphy, DDR_PHY_DATA,
+								   WL_PHY_REG(effective_cs), reg_val);
+						DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
+									("%s: subphy %d, dq_to_dqs_min_delta %d, dqs_shift %d, old wl %d, temp wl %d 0x%08x\n",
+									 __func__, subphy, dq_to_dqs_min_delta,
+									 dqs_shift[subphy], wl_tap, new_wl_tap,
+									 reg_val));
+					}
+				}
 			}
 		}
 	}
 
-	/* change pbs, find new window, and read current pbs value */
-	for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
-		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
-		reg_addr = (mode == RX_DIR) ? 0x5f : 0x1f;
-		/* change pbs (0 at this stage) */
-		status = ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id, ACCESS_TYPE_MULTICAST,
-					    PARAM_NOT_CARE, DDR_PHY_DATA, reg_addr + effective_cs * 0x10,
-					    new_pbs_val);
-		if (status != MV_OK)
-			return status;
+	/* deskew dq */
+	for (iface = 0; iface < MAX_INTERFACE_NUM; iface++) {
+		VALIDATE_IF_ACTIVE(tm->if_act_mask, iface);
+		if (mode == RX_DIR)
+			reg_addr = RD_DESKEW_BRDCAST_PHY_REG(effective_cs);
+		else
+			reg_addr = WR_DESKEW_BRDCAST_PHY_REG(effective_cs);
+		ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,
+				   DDR_PHY_DATA, reg_addr, new_pbs_per_byte[0]);
 	 }
 
-	/* FIXME: fix this hard-coded parameters due to compilation issue with patterns definitions */
-	pattern_id = MV_DDR_IS_64BIT_DRAM_MODE(tm->bus_act_mask) ? 73 : 23;
-	ddr3_tip_ip_training_wrapper(dev_num, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST,
+	/* run training search and get results */
+	ddr3_tip_ip_training_wrapper(dev, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST,
 				     PARAM_NOT_CARE, result_type, HWS_CONTROL_ELEMENT_ADLL, PARAM_NOT_CARE,
-				     direction, tm->if_act_mask, 0x0, max_win_size - 1, max_win_size - 1,
-				     pattern_id, EDGE_FPF, CS_SINGLE, PARAM_NOT_CARE, training_result);
+				     dir, tm->if_act_mask, 0x0, max_win_size - 1, max_win_size - 1,
+				     pattern, EDGE_FPF, CS_SINGLE, PARAM_NOT_CARE, training_result);
 
-	for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
-		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
-		for (subphy_num = 0; subphy_num < subphy_max; subphy_num++) {
-			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy_num);
-			for (search_dir_id = HWS_LOW2HIGH; search_dir_id <= HWS_HIGH2LOW; search_dir_id++) {
-				status = ddr3_tip_read_training_result(dev_num, if_id, ACCESS_TYPE_UNICAST,
-								       subphy_num, ALL_BITS_PER_PUP, search_dir_id,
-								       direction, result_type,
-								       TRAINING_LOAD_OPERATION_UNLOAD, CS_SINGLE,
-								       &(result[subphy_num][search_dir_id]),
-								       MV_TRUE, 0, MV_FALSE);
-				if (status != MV_OK)
-					return status;
+	for (iface = 0; iface < MAX_INTERFACE_NUM; iface++) {
+		VALIDATE_IF_ACTIVE(tm->if_act_mask, iface);
+		for (subphy = 0; subphy < subphy_max; subphy++) {
+			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy);
+			/* read training ip results from db */
+			for (search_dir = HWS_LOW2HIGH; search_dir <= HWS_HIGH2LOW; search_dir++) {
+				ddr3_tip_read_training_result(dev, iface, ACCESS_TYPE_UNICAST,
+							      subphy, ALL_BITS_PER_PUP, search_dir,
+							      dir, result_type,
+							      TRAINING_LOAD_OPERATION_UNLOAD, CS_SINGLE,
+							      &(result[subphy][search_dir]),
+							      MV_TRUE, 0, MV_FALSE);
 
 				DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
 							("cs %d if %d subphy %d mode %d result: "
 							 "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
-							 effective_cs, if_id, subphy_num, mode,
-							 result[subphy_num][search_dir_id][0],
-							 result[subphy_num][search_dir_id][1],
-							 result[subphy_num][search_dir_id][2],
-							 result[subphy_num][search_dir_id][3],
-							 result[subphy_num][search_dir_id][4],
-							 result[subphy_num][search_dir_id][5],
-							 result[subphy_num][search_dir_id][6],
-							 result[subphy_num][search_dir_id][7]));
+							 effective_cs, iface, subphy, mode,
+							 result[subphy][search_dir][0],
+							 result[subphy][search_dir][1],
+							 result[subphy][search_dir][2],
+							 result[subphy][search_dir][3],
+							 result[subphy][search_dir][4],
+							 result[subphy][search_dir][5],
+							 result[subphy][search_dir][6],
+							 result[subphy][search_dir][7]));
 			}
 
-			for (bit_num = 0; bit_num < BUS_WIDTH_IN_BITS; bit_num++) {
+			/* calc dq skew impact on vw position */
+			for (bit = 0; bit < BUS_WIDTH_IN_BITS; bit++) {
 				start_win_diff = 0;
 				end_win_diff = 0;
 				limit_div = 0;
-				if ((GET_LOCK_RESULT(result1[subphy_num][HWS_LOW2HIGH][bit_num]) == MV_TRUE) &&
-				    (GET_LOCK_RESULT(result1[subphy_num][HWS_HIGH2LOW][bit_num]) == MV_TRUE) &&
-				    (GET_LOCK_RESULT(result[subphy_num][HWS_LOW2HIGH][bit_num]) == MV_TRUE) &&
-				    (GET_LOCK_RESULT(result[subphy_num][HWS_HIGH2LOW][bit_num]) == MV_TRUE)) {
-					curr_start_win = GET_TAP_RESULT(result1[subphy_num][HWS_LOW2HIGH][bit_num],
+				if ((GET_LOCK_RESULT(result1[subphy][HWS_LOW2HIGH][bit]) == MV_TRUE) &&
+				    (GET_LOCK_RESULT(result1[subphy][HWS_HIGH2LOW][bit]) == MV_TRUE) &&
+				    (GET_LOCK_RESULT(result[subphy][HWS_LOW2HIGH][bit]) == MV_TRUE) &&
+				    (GET_LOCK_RESULT(result[subphy][HWS_HIGH2LOW][bit]) == MV_TRUE)) {
+					curr_start_win = GET_TAP_RESULT(result1[subphy][HWS_LOW2HIGH][bit],
 									EDGE_1);
-					curr_end_win = GET_TAP_RESULT(result1[subphy_num][HWS_HIGH2LOW][bit_num],
+					curr_end_win = GET_TAP_RESULT(result1[subphy][HWS_HIGH2LOW][bit],
 								      EDGE_1);
-					upd_curr_start_win = GET_TAP_RESULT(result[subphy_num][HWS_LOW2HIGH][bit_num],
+					upd_curr_start_win = GET_TAP_RESULT(result[subphy][HWS_LOW2HIGH][bit],
 									    EDGE_1);
-					upd_curr_end_win = GET_TAP_RESULT(result[subphy_num][HWS_HIGH2LOW][bit_num],
+					upd_curr_end_win = GET_TAP_RESULT(result[subphy][HWS_HIGH2LOW][bit],
 									  EDGE_1);
 
-					if (upd_curr_start_win != 0 && curr_start_win != 0) {
-						if (upd_curr_start_win > curr_start_win)
+					/* update tx start skew; set rx vw position */
+					if ((upd_curr_start_win != 0) && (curr_start_win != 0)) {
+						if (upd_curr_start_win > curr_start_win) {
 							start_win_diff = upd_curr_start_win - curr_start_win;
-						else
+							if (mode == TX_DIR)
+								start_win_diff =
+									curr_start_win + 64 - upd_curr_start_win;
+						} else {
 							start_win_diff = curr_start_win - upd_curr_start_win;
+						}
 						limit_div++;
 					} else {
-						rx_vw_pos[if_id][subphy_num] = 0;
+						rx_vw_pos[iface][subphy] = ALIGN_LEFT;
 					}
 
-					if (upd_curr_end_win != max_win_size && curr_end_win != max_win_size) {
-						if (upd_curr_end_win  > curr_end_win)
+					/* update tx end skew; set rx vw position */
+					if (((upd_curr_end_win != max_win_size) && (curr_end_win != max_win_size)) ||
+					    (mode == TX_DIR)) {
+						if (upd_curr_end_win  > curr_end_win) {
 							end_win_diff = upd_curr_end_win - curr_end_win;
-						else
+							if (mode == TX_DIR)
+								end_win_diff =
+									curr_end_win + 64 - upd_curr_end_win;
+						} else {
 							end_win_diff = curr_end_win - upd_curr_end_win;
+						}
 						limit_div++;
 					} else {
-						rx_vw_pos[if_id][subphy_num] = 2;
+						rx_vw_pos[iface][subphy] = ALIGN_RIGHT;
 					}
+
+					/*
+					 * don't care about start in tx mode
+					 * TODO: temporary solution for instability in the start adll search
+					 */
+					if (mode == TX_DIR)
+						start_win_diff = end_win_diff;
 
 					if (limit_div != 0) {
-						pbs_tap_factor[if_id][subphy_num][bit_num] =
+						pbs_tap_factor[iface][subphy][bit] =
 							PBS_VAL_FACTOR * (start_win_diff + end_win_diff) /
-							(new_pbs_val * limit_div);
+							(new_pbs_per_byte[subphy] * limit_div);
 					}
 
 					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
 								("cs %d if %d subphy %d bit %d sw1 %d sw2 %d "
 								 "ew1 %d ew2 %d sum delta %d, align %d\n",
-								 effective_cs, if_id, subphy_num, bit_num,
+								 effective_cs, iface, subphy, bit,
 								 curr_start_win, upd_curr_start_win,
 								 curr_end_win, upd_curr_end_win,
-								 pbs_tap_factor[if_id][subphy_num][bit_num],
-								 rx_vw_pos[if_id][subphy_num]));
+								 pbs_tap_factor[iface][subphy][bit],
+								 rx_vw_pos[iface][subphy]));
 				} else {
+					status = MV_FAIL;
 					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_ERROR,
 								("tap tuning fail %s cs %d if %d subphy %d bit %d\n",
-								 (mode == RX_DIR) ? "RX" : "TX", effective_cs, if_id,
-								 subphy_num, bit_num));
-					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_ERROR,
-								("cs %d, if %d subphy %d mode %d result: "
-								 "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
-								 effective_cs, if_id, subphy_num, mode,
-								 result[subphy_num][HWS_LOW2HIGH][0],
-								 result[subphy_num][HWS_LOW2HIGH][1],
-								 result[subphy_num][HWS_LOW2HIGH][2],
-								 result[subphy_num][HWS_LOW2HIGH][3],
-								 result[subphy_num][HWS_LOW2HIGH][4],
-								 result[subphy_num][HWS_LOW2HIGH][5],
-								 result[subphy_num][HWS_LOW2HIGH][6],
-								 result[subphy_num][HWS_LOW2HIGH][7]));
+								 (mode == RX_DIR) ? "RX" : "TX", effective_cs, iface,
+								 subphy, bit));
 					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_ERROR,
 								("cs %d if %d subphy %d mode %d result: "
 								 "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
-								 effective_cs, if_id, subphy_num, mode,
-								 result[subphy_num][HWS_HIGH2LOW][0],
-								 result[subphy_num][HWS_HIGH2LOW][1],
-								 result[subphy_num][HWS_HIGH2LOW][2],
-								 result[subphy_num][HWS_HIGH2LOW][3],
-								 result[subphy_num][HWS_HIGH2LOW][4],
-								 result[subphy_num][HWS_HIGH2LOW][5],
-								 result[subphy_num][HWS_HIGH2LOW][6],
-								 result[subphy_num][HWS_HIGH2LOW][7]));
+								 effective_cs, iface, subphy, mode,
+								 result[subphy][HWS_LOW2HIGH][0],
+								 result[subphy][HWS_LOW2HIGH][1],
+								 result[subphy][HWS_LOW2HIGH][2],
+								 result[subphy][HWS_LOW2HIGH][3],
+								 result[subphy][HWS_LOW2HIGH][4],
+								 result[subphy][HWS_LOW2HIGH][5],
+								 result[subphy][HWS_LOW2HIGH][6],
+								 result[subphy][HWS_LOW2HIGH][7]));
 					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_ERROR,
 								("cs %d if %d subphy %d mode %d result: "
 								 "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
-								 effective_cs, if_id, subphy_num, mode,
-								 result1[subphy_num][HWS_LOW2HIGH][0],
-								 result1[subphy_num][HWS_LOW2HIGH][1],
-								 result1[subphy_num][HWS_LOW2HIGH][2],
-								 result1[subphy_num][HWS_LOW2HIGH][3],
-								 result1[subphy_num][HWS_LOW2HIGH][4],
-								 result1[subphy_num][HWS_LOW2HIGH][5],
-								 result1[subphy_num][HWS_LOW2HIGH][6],
-								 result1[subphy_num][HWS_LOW2HIGH][7]));
+								 effective_cs, iface, subphy, mode,
+								 result[subphy][HWS_HIGH2LOW][0],
+								 result[subphy][HWS_HIGH2LOW][1],
+								 result[subphy][HWS_HIGH2LOW][2],
+								 result[subphy][HWS_HIGH2LOW][3],
+								 result[subphy][HWS_HIGH2LOW][4],
+								 result[subphy][HWS_HIGH2LOW][5],
+								 result[subphy][HWS_HIGH2LOW][6],
+								 result[subphy][HWS_HIGH2LOW][7]));
 					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_ERROR,
 								("cs %d if %d subphy %d mode %d result: "
 								 "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
-								 effective_cs, if_id, subphy_num, mode,
-								 result1[subphy_num][HWS_HIGH2LOW][0],
-								 result1[subphy_num][HWS_HIGH2LOW][1],
-								 result1[subphy_num][HWS_HIGH2LOW][2],
-								 result1[subphy_num][HWS_HIGH2LOW][3],
-								 result1[subphy_num][HWS_HIGH2LOW][4],
-								 result1[subphy_num][HWS_HIGH2LOW][5],
-								 result1[subphy_num][HWS_HIGH2LOW][6],
-								 result1[subphy_num][HWS_HIGH2LOW][7]));
+								 effective_cs, iface, subphy, mode,
+								 result1[subphy][HWS_LOW2HIGH][0],
+								 result1[subphy][HWS_LOW2HIGH][1],
+								 result1[subphy][HWS_LOW2HIGH][2],
+								 result1[subphy][HWS_LOW2HIGH][3],
+								 result1[subphy][HWS_LOW2HIGH][4],
+								 result1[subphy][HWS_LOW2HIGH][5],
+								 result1[subphy][HWS_LOW2HIGH][6],
+								 result1[subphy][HWS_LOW2HIGH][7]));
+					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_ERROR,
+								("cs %d if %d subphy %d mode %d result: "
+								 "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
+								 effective_cs, iface, subphy, mode,
+								 result1[subphy][HWS_HIGH2LOW][0],
+								 result1[subphy][HWS_HIGH2LOW][1],
+								 result1[subphy][HWS_HIGH2LOW][2],
+								 result1[subphy][HWS_HIGH2LOW][3],
+								 result1[subphy][HWS_HIGH2LOW][4],
+								 result1[subphy][HWS_HIGH2LOW][5],
+								 result1[subphy][HWS_HIGH2LOW][6],
+								 result1[subphy][HWS_HIGH2LOW][7]));
 				}
 			}
 		}
 	}
 
-	for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
-		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id); /* restore cs enable value */
-		status = ddr3_tip_if_write(dev_num, ACCESS_TYPE_UNICAST, if_id, CS_ENABLE_REG,
-					   cs_ena_reg_val[if_id], MASK_ALL_BITS);
-		if (status != MV_OK)
-			return status;
+	/* restore cs enable value */
+	for (iface = 0; iface < MAX_INTERFACE_NUM; iface++) {
+		VALIDATE_IF_ACTIVE(tm->if_act_mask, iface);
+		ddr3_tip_if_write(dev, ACCESS_TYPE_UNICAST, iface, CS_ENABLE_REG,
+				  cs_ena_reg_val[iface], MASK_ALL_BITS);
 	}
 
 	/* restore pbs (set to 0) */
-	for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
-		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
-		for (subphy_num = 0; subphy_num < subphy_max; subphy_num++) {
-			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy_num);
-			reg_addr = (mode == RX_DIR) ? 0x5f : 0x1f;
-			status = ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id, ACCESS_TYPE_UNICAST,
-						    subphy_num, DDR_PHY_DATA, reg_addr + effective_cs * 0x10, 0);
-			if (status != MV_OK)
-				return status;
+	for (iface = 0; iface < MAX_INTERFACE_NUM; iface++) {
+		VALIDATE_IF_ACTIVE(tm->if_act_mask, iface);
+		for (subphy = 0; subphy < subphy_max; subphy++) {
+			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy);
+			if (mode == RX_DIR)
+				reg_addr = RD_DESKEW_BRDCAST_PHY_REG(effective_cs);
+			else
+				reg_addr = WR_DESKEW_BRDCAST_PHY_REG(effective_cs);
+			ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface, ACCESS_TYPE_UNICAST,
+					   subphy, DDR_PHY_DATA, reg_addr, 0);
 		}
 	}
 
+	/* set deskew bias for rx valid window */
 	if (mode == RX_DIR) {
 		/*
 		 * pattern special for rx
 		 * check for rx_vw_pos stat
-		 * - add n pbs taps to every dq to align to left (pbs_max set to (31 - n)
+		 * - add n pbs taps to every dq to align to left (pbs_max set to (31 - n))
 		 * - add pbs taps to dqs to align to right
 		 */
-		for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
-			VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
-			for (subphy_num = 0; subphy_num < subphy_max; subphy_num++) {
-				if (rx_vw_pos[if_id][subphy_num] == 0) {
-					status = ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, 0,
-								    ACCESS_TYPE_UNICAST, subphy_num, DDR_PHY_DATA,
-								    0x5f + effective_cs * 0x10, 0xa);
-					if (status != MV_OK)
-						return status;
-
+		for (iface = 0; iface < MAX_INTERFACE_NUM; iface++) {
+			VALIDATE_IF_ACTIVE(tm->if_act_mask, iface);
+			for (subphy = 0; subphy < subphy_max; subphy++) {
+				if (rx_vw_pos[iface][subphy] == ALIGN_LEFT) {
+					ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, 0,
+							   ACCESS_TYPE_UNICAST, subphy, DDR_PHY_DATA,
+							   RD_DESKEW_BRDCAST_PHY_REG(effective_cs),
+							   VW_DESKEW_BIAS);
 					DEBUG_CALIBRATION(DEBUG_LEVEL_INFO,
 							  ("%s: if %d, subphy %d aligned to left\n",
-							   __func__, if_id, subphy_num));
-				} else if (rx_vw_pos[if_id][subphy_num] == 2) {
-					status = ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, 0,
-								    ACCESS_TYPE_UNICAST, subphy_num, DDR_PHY_DATA,
-								    0x54 + effective_cs * 0x10, 0xa);
-					if (status != MV_OK)
-						return status;
-
-					status = ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, 0,
-								    ACCESS_TYPE_UNICAST, subphy_num, DDR_PHY_DATA,
-								    0x55 + effective_cs * 0x10, 0xa);
-					if (status != MV_OK)
-						return status;
-
+							   __func__, iface, subphy));
+				} else if (rx_vw_pos[iface][subphy] == ALIGN_RIGHT) {
+					reg_addr = RD_DESKEW_PHY_REG(effective_cs, DQSP_PAD);
+					ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, 0,
+							   ACCESS_TYPE_UNICAST, subphy, DDR_PHY_DATA,
+							   reg_addr, VW_DESKEW_BIAS);
+					reg_addr = RD_DESKEW_PHY_REG(effective_cs, DQSN_PAD);
+					ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, 0,
+							   ACCESS_TYPE_UNICAST, subphy, DDR_PHY_DATA,
+							   reg_addr, VW_DESKEW_BIAS);
 					DEBUG_CALIBRATION(DEBUG_LEVEL_INFO,
 							  ("%s: if %d , subphy %d aligned to right\n",
-							   __func__, if_id, subphy_num));
+							   __func__, iface, subphy));
 				}
 			} /* subphy */
 		} /* if */
-	} /* rx */
+	} else { /* tx mode */
+		/* update wl solution */
+		if (status == MV_OK) {
+			for (iface = 0; iface < MAX_INTERFACE_NUM; iface++) {
+				VALIDATE_IF_ACTIVE(tm->if_act_mask, iface);
+				for (subphy = 0; subphy < subphy_max; subphy++) {
+					VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy);
+					if (is_dq_dqs_short[subphy]) {
+						wl_tap = ((wl_adll[subphy] >> WR_LVL_REF_DLY_OFFS) &
+							  WR_LVL_REF_DLY_MASK) +
+							 ((wl_adll[subphy] >> WR_LVL_PH_SEL_OFFS) &
+							  WR_LVL_PH_SEL_MASK) * ADLL_TAPS_PER_PHASE;
+						pbs_tap_factor_avg = (pbs_tap_factor[iface][subphy][0] +
+								      pbs_tap_factor[iface][subphy][1] +
+								      pbs_tap_factor[iface][subphy][2] +
+								      pbs_tap_factor[iface][subphy][3] +
+								      pbs_tap_factor[iface][subphy][4] +
+								      pbs_tap_factor[iface][subphy][5] +
+								      pbs_tap_factor[iface][subphy][6] +
+								      pbs_tap_factor[iface][subphy][7]) / 8;
+						DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
+									("%s: pbs_tap_factor_avg %d\n",
+									 __func__, pbs_tap_factor_avg));
+						new_wl_tap = wl_tap -
+							     (dqs_shift[subphy] * pbs_tap_factor_avg) /
+							     PBS_VAL_FACTOR;
+						reg_val = (new_wl_tap & WR_LVL_REF_DLY_MASK) |
+							  ((new_wl_tap &
+							    ((WR_LVL_PH_SEL_MASK << WR_LVL_PH_SEL_OFFS) >> 1))
+							   << 1) |
+							  (wl_adll[subphy] &
+							   ((CTRL_CENTER_DLY_MASK << CTRL_CENTER_DLY_OFFS) |
+							    (CTRL_CENTER_DLY_INV_MASK << CTRL_CENTER_DLY_INV_OFFS)));
+						ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface,
+								   ACCESS_TYPE_UNICAST, subphy, DDR_PHY_DATA,
+								   WL_PHY_REG(effective_cs), reg_val);
+						DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
+									("%s: tap tune tx algorithm final wl:\n",
+									 __func__));
+						DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
+									("%s: subphy %d, dqs pbs %d, old wl %d, final wl %d 0x%08x -> 0x%08x\n",
+									 __func__, subphy, pbs_tap_factor_avg,
+									 wl_tap, new_wl_tap, wl_adll[subphy],
+									 reg_val));
+					}
+				}
+			}
+		} else {
+			/* return to nominal wl */
+			for (subphy = 0; subphy < subphy_max; subphy++) {
+				ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface, ACCESS_TYPE_UNICAST,
+						   subphy, DDR_PHY_DATA, WL_PHY_REG(effective_cs),
+						   wl_adll[subphy]);
+				DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
+							("%s: tap tune failed; return to nominal wl\n",
+							__func__));
+				reg_addr = WR_DESKEW_PHY_REG(effective_cs, DQSP_PAD);
+				ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface, ACCESS_TYPE_UNICAST,
+						   subphy, DDR_PHY_DATA, reg_addr, 0);
+				reg_addr = WR_DESKEW_PHY_REG(effective_cs, DQSN_PAD);
+				ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface, ACCESS_TYPE_UNICAST,
+						   subphy, DDR_PHY_DATA, reg_addr, 0);
+			}
+		}
+	}
 
 	return status;
 }

@@ -415,6 +415,7 @@ enum {
 #define FC_SAMPLE_STAGES_MASK			0x7
 #define SINGLE_CS_PIN_OFFS			3
 #define SINGLE_CS_PIN_MASK			0x1
+#define SINGLE_CS_ENA				0x1
 enum {
 	ENABLE_TIP = 1,
 	ENABLE_MCKINLEY = 0,
@@ -430,8 +431,15 @@ enum {
 #define ODPG_BIST_DONE_BIT_VALUE_REV3		0
 
 #define WL_PHY_BASE				0x0
+#define WL_PHY_REG(cs)				(WL_PHY_BASE + (cs) * 0x4)
 #define WR_LVL_PH_SEL_OFFS			6
 #define WR_LVL_PH_SEL_MASK			0x7
+#define WR_LVL_REF_DLY_OFFS			0
+#define WR_LVL_REF_DLY_MASK			0x1f
+#define CTRL_CENTER_DLY_OFFS			10
+#define CTRL_CENTER_DLY_MASK			0x1f
+#define CTRL_CENTER_DLY_INV_OFFS		15
+#define CTRL_CENTER_DLY_INV_MASK		0x1
 enum {
 	FIRST_PHASE = 0x1,
 	SECOND_PHASE,
@@ -458,6 +466,19 @@ enum {
 #define TEST_ADLL_REG				0xbf
 #define CSN_IOB_VREF_REG(cs)			(0xdb + (cs * 12))
 #define CSN_IO_BASE_VREF_REG(cs)		(0xd0 + (cs * 12))
+
+enum {
+	DQSP_PAD = 4,
+	DQSN_PAD
+};
+#define WR_DESKEW_PHY_BASE			0x10
+#define WR_DESKEW_PHY_REG(cs, bit)		(WR_DESKEW_PHY_BASE + (cs) * 0x10 + (bit))
+#define WR_DESKEW_BRDCAST_PHY_BASE		0x1f
+#define WR_DESKEW_BRDCAST_PHY_REG(cs)		(WR_DESKEW_BRDCAST_PHY_BASE + (cs) * 0x10)
+#define RD_DESKEW_PHY_BASE			0x50
+#define RD_DESKEW_PHY_REG(cs, bit)		(RD_DESKEW_PHY_BASE + (cs) * 0x10 + (bit))
+#define RD_DESKEW_BRDCAST_PHY_BASE		0x5f
+#define RD_DESKEW_BRDCAST_PHY_REG(cs)		(RD_DESKEW_BRDCAST_PHY_BASE + (cs) * 0x10)
 
 #define RESULT_DB_PHY_REG_ADDR			0xc0
 #define RESULT_DB_PHY_REG_RX_OFFSET		5

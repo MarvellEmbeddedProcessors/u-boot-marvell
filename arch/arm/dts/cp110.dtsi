@@ -146,11 +146,6 @@ sar-reg {
 	status = "disabled";
 };
 
-rtc-reg {
-	compatible = "marvell,real-time-clock";
-	reg = <0x284000 104>;
-};
-
 comphy {
 	compatible = "marvell,mvebu-comphy", "marvell,comphy-cp110";
 	mux-bitcount = <4>;

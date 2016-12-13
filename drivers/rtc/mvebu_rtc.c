@@ -29,12 +29,22 @@ void __attribute__((section(".data"))) __iomem *rtc_base = NULL;
 /*******************************************************/
 void rtc_init(void)
 {
-	int node;
+	int node = 0;
 	unsigned long reg;
 
-	node = fdt_node_offset_by_compatible(gd->fdt_blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_RTC_REG));
+	/* scan for first enabled RTC node */
+	do {
+		node = fdtdec_next_compatible(gd->fdt_blob, node, COMPAT_MVEBU_RTC_REG);
+		if (node < 0) {
+			break;
+		} else { /* found RTC node */
+			if (fdtdec_get_is_enabled(gd->fdt_blob, node))
+				break;
+		}
+	} while (node > 0);
+
 	if (node < 0) {
-		debug("No rtc node found in FDT blob\n");
+		debug("No valid rtc node found in FDT blob\n");
 		return;
 	}
 

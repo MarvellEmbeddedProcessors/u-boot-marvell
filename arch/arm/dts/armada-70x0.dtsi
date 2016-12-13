@@ -23,4 +23,12 @@
 
 / {
 	compatible = "marvell,armada-70x0";
+
+	cp110-master {
+		internal-regs {
+			rtc-reg@284000 {
+				status = "okay";
+			};
+		};
+	};
 };

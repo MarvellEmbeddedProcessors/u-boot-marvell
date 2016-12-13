@@ -24,4 +24,12 @@
 
 / {
 	compatible = "marvell,armada-80x0";
+
+	cp110-slave {
+		internal-regs {
+			rtc-reg@284000 {
+				status = "okay";
+			};
+		};
+	};
 };

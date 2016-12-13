@@ -100,6 +100,11 @@
 				divisor = <10000>;
 				status = "okay";
 			};
+			rtc-reg@284000 {
+				compatible = "marvell,real-time-clock";
+				reg = <0x284000 104>;
+				status = "disabled";
+			};
 			gop {
 				emac4: mac0 {
 					mac-address = [00 00 00 00 00 04];

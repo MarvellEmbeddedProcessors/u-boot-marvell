@@ -111,6 +111,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BUS_WIDTH_DB_68XX	MV_DDR_DEV_WIDTH_8BIT
 #endif /* CONFIG_DDR4 */
 
+#if 0
 /* Marvell board - Board_ID = DB_68XX_ID = 1 (DDR3/4)*/
 static struct mv_ddr_topology_map board_topology_map = {
 	DEBUG_LEVEL_ERROR,
@@ -132,10 +133,10 @@ static struct mv_ddr_topology_map board_topology_map = {
 	{ {0} },			/* raw spd data */
 	{0}				/* timing parameters */
 };
-
-#if 0
+#else
 /* Marvell board - Board_ID = DB_GP_68XX_ID = 4 */
 static struct mv_ddr_topology_map board_topology_map = {
+	DEBUG_LEVEL_ERROR,
 	0x1, /* active interfaces */
 	/* cs_mask, mirror, dqs_swap, ck_swap X PUPs */
 	{ { { {0x1, 0, 0, 0},
@@ -143,13 +144,16 @@ static struct mv_ddr_topology_map board_topology_map = {
 	      {0x1, 0, 0, 0},
 	      {0x1, 0, 0, 0},
 	      {0x1, 0, 0, 0} },
-	    SPEED_BIN_DDR_1866L,	/* speed_bin */
-	    MV_DDR_DEV_WIDTH_8BIT,	/* sdram device width */
+	    SPEED_BIN_DDR_DB_68XX,	/* speed_bin */
+	    BUS_WIDTH_DB_68XX,		/* sdram device width */
 	    MV_DDR_DIE_CAP_4GBIT,	/* die capacity */
-	    DDR_FREQ_800,		/* frequency */
+	    DDR_FREQ_SAR,		/* frequency */
 	    0, 0,			/* cas_l cas_wl */
 	    MV_DDR_TEMP_LOW} },		/* temperature */
-	BUS_MASK_32BIT			/* Busses mask */
+	BUS_MASK_32BIT,			/* subphys mask */
+	MV_DDR_CFG_DEFAULT,		/* ddr configuration data source */
+	{ {0} },			/* raw spd data */
+	{0}				/* timing parameters */
 };
 #endif
 

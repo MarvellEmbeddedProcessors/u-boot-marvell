@@ -35,11 +35,6 @@ becomes hidden for everyone, including the BootROM. Therefore when JTAG is enabl
 by eFuse, the boot image should not be encrypted, since BootROM decryption will always
 fail unless zero-key was used for image encryption.
 
-A3700 platforms
----------------
-TBD
-
-
 2. Boot image format
 ====================
 The boot image should be properly formatted for the trusted boot mode, so the BootROM extracts
@@ -99,11 +94,6 @@ This file, which has standard INI file format, defines the following configurati
 		has two CPS connected to AP, so this array has to include 4 register addresses.
 		This parameter is optional.
 
-A3700 platforms
----------------
-TBD
-
-
 3. Work order - target preparation
 ==================================
 After the trusted boot mode is selected by SoC eFuse, the BootROM enforces security checks upon
@@ -129,7 +119,7 @@ A3700 platforms
 1. Create an UNTRUSTED boot image with eFuse command module support (as stated in "eFuses" chapter above)
    and burn it on target flash device using the regular "bubt" command.
 2. Create a TRUSTED boot image (as stated in "Boot image format" chapter above) and save it for later use.
-   When the trusted boot image is created, the the TBB tool saves the Key Authentication Key digest in the
+   When the trusted boot image is created, the TBB tool saves the Key Authentication Key digest in the
    file named OtpHash.txt. This digest value will be used for eFuse programming so save this file.
    The OtpHash.txt file lists the KAK digest in groups of 4-bytes values, organized in the following
    order:

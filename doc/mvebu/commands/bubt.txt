@@ -11,9 +11,9 @@ The bubt command gets the following parameters: ATF file name, destination devic
 			- source		Source to load image from [tftp, usb].		default = tftp
 
 Examples:
-		bubt					-	Burn flash-image.bin from tftp to active flash
-		bubt latest-spi.bin nand		-	Burn latest-spi.bin from tftp to NAND flash
-		bubt backup-nor.bin nor usb		-	Burn backup-nor.bin from usb to NOR flash
+	- bubt					- Burn flash-image.bin from tftp to active flash
+	- bubt latest-spi.bin nand		- Burn latest-spi.bin from tftp to NAND flash
+	- bubt backup-nor.bin nor usb		- Burn backup-nor.bin from usb to NOR flash
 
 Notes:
 - For the TFTP interface set serverip and ipaddr.

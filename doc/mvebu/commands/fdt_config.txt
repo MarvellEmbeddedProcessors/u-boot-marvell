@@ -10,11 +10,11 @@ Notes
 - fdt_config commands are only relevant for Marvell boards that used the EEPROM device.
 - The list of all the available configurations is located under "doc/mvebu/a8k/board_options"
 - This feature reads the configuration from EEPROM, so before running it for the first time,
-   Erase EEPROM with command "i2c mw.l 0x57 0.2 0 0x200" to delete garbage data..
-   a) In the I2C erase command, 0x57 is the EEPROM address for A3700 DB; for other boards it would be different.
-      Check the board spec for details.
-   b) Erasing EEPROM is a temporary workaround. When this feature is more mature, it will handle the the garbage data
-      in the EEPROM and so erasing will not be necessary.
+  Erase EEPROM with command "i2c mw.l 0x57 0.2 0 0x200" to delete garbage data.
+	- In the I2C erase command, 0x57 is the EEPROM address for A3700 DB; for other boards it would be different.
+	  Check the board spec for details.
+	- Erasing EEPROM is a temporary workaround. When this feature is more mature, it will handle the the garbage data
+	  in the EEPROM and so erasing will not be necessary.
 
 Usage
 ------
@@ -37,8 +37,8 @@ To create modified FDT on EEPROM, use the following:
 
 Example
 -------
-    1) Select one of dtb files in the U-Boot image to boot with next time.
-      a) List all the dtb files in the U-Boot image.
+	1) Select one of dtb files in the U-Boot image to boot with next time.
+		- List all the dtb files in the U-Boot image.
 
 			 >> fdt_config list
 			 FDT config list:
@@ -46,17 +46,16 @@ Example
 				1 - DB-88F3720-DDR3-Modular  [*]
 				2 - DB-88F3720-DDR3-Modular-SGMII1
 
-      b) Select one of the dtb files to boot with next time.
+		- Select one of the dtb files to boot with next time.
 
 			>> fdt_config select 2
 
-      c) Reset and U-Boot starts with the selected dtb file.
+		- Reset and U-Boot starts with the selected dtb file.
 
 			>> reset
 
-    2) Load certain dtb files from U-Boot image into DRAM and modify it.
-       Burn it into EEPROM and boot with it.
-      a) List all the dtb files in the U-Boot image.
+	2) Load certain dtb files from U-Boot image into DRAM and modify it, burn it into EEPROM and boot with it.
+		- List all the dtb files in the U-Boot image.
 
 			>> fdt_config list
 			 FDT config list:
@@ -64,31 +63,33 @@ Example
 				1 - DB-88F3720-DDR3-Modular
 				2 - DB-88F3720-DDR3-Modular-SGMII1  [*]
 
-      b) Load the dtb file into DRAM.
+		- Load the dtb file into DRAM.
 
 			>> fdt_config load 2
 
-	 To save the changes, please run the command fdt_config save.
-      c) Run "fdt print" command to see the entire dtb file in DRAM.
-      d) Edit any property, for example, the comphy 0 type value in the A3700 dts file.
-         Following are two valid values for the property "phy-type":
-	 - PHY_TYPE_SGMII0:	9
-	 - PHY_TYPE_SGMII1:	10
+		- To save the changes, please run the command fdt_config save.
+		- Run "fdt print" command to see the entire dtb file in DRAM.
+		- Edit any property, for example, the comphy 0 type value in the A3700 dts file.
+		  Following are two valid values for the property "phy-type":
+			 - PHY_TYPE_SGMII0:	9
+			 - PHY_TYPE_SGMII1:	10
 
-	 The following command sets comphy 0 type to SGMII1:
+		 The following command sets comphy 0 type to SGMII1:
 
 			>> fdt set /soc/internal-regs/comphy phy0 "<10>"
 
-      e) Save the dtb file into EEPROM.
+		- Save the dtb file into EEPROM.
 
 			>> fdt_config save
 
-	 FDT is saved in EEPROM, to boot from customized FDT please select it from list
-      f) Select customized fdt from EEPROM (option 0 in the list), to boot from.
+	 	FDT is saved in EEPROM, to boot from customized FDT please select it from list
+
+		- Select customized fdt from EEPROM (option 0 in the list), to boot from.
 
 			>> fdt_config select 0
 
-	 Read FDT from EEPROM, please wait
-      g) Reset and U-Boot starts with the dtb file in the EEPROM.
+		 Read FDT from EEPROM, please wait
+
+		-  Reset and U-Boot starts with the dtb file in the EEPROM.
 
 			>> reset

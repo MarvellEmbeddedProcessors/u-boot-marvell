@@ -58,7 +58,7 @@ Customer board porting procedure
 		-> Device Tree Control -> Default Device Tree for DT control -> "armada-7040-rz1-my_board"
 	- Save and exit
 
-					>> make savedefconfnig
+					>> make savedefconfig
 					>> cp defconfig configs/my_board_defconfig
 
 	2.2. Select USB2.0 or USB3.0 host controller (Armada-3700 only)

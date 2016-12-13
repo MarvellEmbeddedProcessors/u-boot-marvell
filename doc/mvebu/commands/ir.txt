@@ -29,7 +29,11 @@ To show the current base address use "base"
 To change the base address use "base 0xf2000000"
 
 Example:
+
 		>> base
+
 		Base Address: 0x00000000
+
 		>> base 0xf2000000
+
 		Base Address: 0xf2000000

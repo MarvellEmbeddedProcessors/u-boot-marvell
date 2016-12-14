@@ -6,7 +6,7 @@ Displays the contents of the internal register in 2 forms, hex and binary.
 It is possible to change the value by writing a hex value beginning with 0x
 or by writing 0 or 1 in the required place.
 Pressing enter without any value keeps the value unchanged.
-The IR command uses the default base address of the SoC:
+The ir command uses the default base address of the SoC:
 - Armada3700	-	0xd0000000
 - AP806		-	0xf0000000
 - CP110		-	0xf2000000

@@ -5,6 +5,7 @@ This document provide instructions for porting the Marvell U-Boot package to a c
 
 Relevant Devices
 ----------------
+- Armada-8040
 - Armada-7040
 - Armada-3700
 

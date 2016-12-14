@@ -17,12 +17,12 @@ Run the following commands from the U-Boot prompt:
 	- setenv fdt_name <DTB image name>
 
 To mount the file-system via NFS:
-- Set the NFS server with the appropriate file system.
-- Run the following commands from the U-Boot prompt:
+	- Set the NFS server with the appropriate file system.
+	- Run the following commands from the U-Boot prompt:
 
-	- setenv rootpath <path to filesystem in the NFS server>
-	- setenv netdev <NFS interface name, eth0 for example>
-	- setenv ramfs_name -
+			- setenv rootpath <path to filesystem in the NFS server>
+			- setenv netdev <NFS interface name, eth0 for example>
+			- setenv ramfs_name
 
 To load RAMFS:
 Run the following commands from the U-Boot prompt:

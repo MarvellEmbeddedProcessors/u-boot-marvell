@@ -3,10 +3,6 @@ U-Boot Build Instructions
 
 This document describes how to compile the U-Boot and how to change U-Boot configuration
 
-Acronyms:
-	- DVUBR - U-Boot vanila version.
-	- MVUBR - Marvell release.
-
 Build Procedure
 ----------------
 1. Set the cross compiler:

@@ -1,7 +1,7 @@
-BUBT (Burn ATF) command
+bubt (Burn ATF) command
 =======================
 
-Bubt command is used to burn a new ATF image to flash device.
+bubt command is used to burn a new ATF image to flash device.
 
 The bubt command gets the following parameters: ATF file name, destination device and source device.
 
@@ -22,7 +22,7 @@ Notes:
 - To burn image to SPI NAND flash, SPI NAND driver should be enabled
   by setting CONFIG_SPI_NAND to <Y>
 
-Bubt command details (burn image step by-step)
+bubt command details (burn image step by-step)
 ----------------------------------------------
 This section describe bubt implementation step-by-step:
 

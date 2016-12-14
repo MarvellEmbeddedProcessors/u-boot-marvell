@@ -5,74 +5,70 @@ These input parameters include a DDR system topology, electrical, and timing par
 The DDR code is responsible for taking these inputs, tuning timing and electrical parameters,
 and configuring the DDR memory controller and the PHY for reliable operation of the DDR system.
 
-1. Files location
-	Please refer to atf/docs/marvell/porting.txt for detailed description for ATF files location.
+1. Files location:
+	- Please refer to atf/docs/marvell/porting.txt for detailed description for ATF files location.
 
-2. DDR topology map description
-	The definition of DDR topology structure is given at "<mv_ddr>/ddr_topology_def.h" file:
+2. DDR topology map description:
+	- The definition of DDR topology structure is given at "<mv_ddr>/ddr_topology_def.h" file:
 
-		struct mv_ddr_topology_map {
-			u8 if_act_mask; /* active interfaces bit mask */
+			struct mv_ddr_topology_map {
+				u8 if_act_mask; /* active interfaces bit mask */
 
-			/* per interface controller configuration */
-			struct if_params interface_params[MAX_INTERFACE_NUM];
+				/* per interface controller configuration */
+				struct if_params interface_params[MAX_INTERFACE_NUM];
 
-			u16 bus_act_mask; /* active buses bit mask */
+				u16 bus_act_mask; /* active buses bit mask */
 
-			enum mv_ddr_cfg_src cfg_src; /* ddr configuration data source */
+				enum mv_ddr_cfg_src cfg_src; /* ddr configuration data source */
 
-			union mv_ddr_spd_data spd_data; /* raw spd data */
+				union mv_ddr_spd_data spd_data; /* raw spd data */
 
-			unsigned int timing_data[MV_DDR_TDATA_LAST]; /* timing parameters */
-		};
+				unsigned int timing_data[MV_DDR_TDATA_LAST]; /* timing parameters */
+			};
 
 	Detailed explanation of mv_ddr_topology_map structure:
 
-	2.1 if_act_mask - specifies active interfaces in a DDR system.
-		This parameter is defined as a bitwise mask for active interfaces.
-		Set it always to 0x1 for APN806 platform.
+	- if_act_mask - specifies active interfaces in a DDR system:
+		- This parameter is defined as a bitwise mask for active interfaces.
+		- Set it always to 0x1 for APN806 platform.
 
-	2.2 interface_params - contains a set of parameters to be configured per DDR interface.
-		This parameter is an array of if_params structures, one per interface.
-		The definition of if_params structure is given in "<mv_ddr>/ddr_topology_def.h" file:
+	- interface_params - contains a set of parameters to be configured per DDR interface:
+		- This parameter is an array of if_params structures, one per interface.
+		- The definition of if_params structure is given in "<mv_ddr>/ddr_topology_def.h" file:
 
-			struct if_params {
-				struct bus_params as_bus_params[MAX_BUS_NUM]; /* bus configuration */
+				struct if_params {
+					struct bus_params as_bus_params[MAX_BUS_NUM]; /* bus configuration */
 
-				enum hws_speed_bin speed_bin_index; /* speed bin table */
+					enum hws_speed_bin speed_bin_index; /* speed bin table */
 
-				enum mv_ddr_dev_width bus_width; /* sdram device width */
+					enum mv_ddr_dev_width bus_width; /* sdram device width */
 
-				/* total sdram capacity per die, megabits */
-				enum mv_ddr_die_capacity memory_size;
+					/* total sdram capacity per die, megabits */
+					enum mv_ddr_die_capacity memory_size;
 
-				enum hws_ddr_freq memory_freq; /* ddr interface frequency */
+					enum hws_ddr_freq memory_freq; /* ddr interface frequency */
 
-				u8 cas_wl; /* delay cas write latency */
+					u8 cas_wl; /* delay cas write latency */
 
-				u8 cas_l; /* delay cas latency */
+					u8 cas_l; /* delay cas latency */
 
-				enum mv_ddr_temperature interface_temp; /* operation temperature */
-			};
+					enum mv_ddr_temperature interface_temp; /* operation temperature */
+				};
 
 		Detailed explanation of if_params structure:
 
-		2.2.1 as_bus_params - contains a set of parameters to be configured per DDR subphy.
-			DDR interface consists of a number of subphys.
-			MAX_BUS_NUM is currently set to 9 (see section 2.3 for bus_act_mask parameter).
-			DDR subphy consists of 8 data bits connected to data bits of DDR module.
+		- as_bus_params - contains a set of parameters to be configured per DDR subphy.
+			- DDR interface consists of a number of subphys.
+			- MAX_BUS_NUM is currently set to 9 (see section 2.3 for bus_act_mask parameter).
+			- DDR subphy consists of 8 data bits connected to data bits of DDR module.
 
 			Notes:
-			- No need to configure these parameters if MV_DDR_CFG_SPD is set as
-				a source configuration.
-			- a70x0 soc cpu supports 64-bit DDR module memory bus width, while
-				its memory controler is 32-bit.
-			- a80x0 soc cpu supports 64-bit DDR module memory bus width, and
-				its memory controler is 64-bit.
+			- No need to configure these parameters if MV_DDR_CFG_SPD is set as a source configuration.
+			- a70x0 soc cpu supports 64-bit DDR module memory bus width, while its memory controler is 32-bit.
+			- a80x0 soc cpu supports 64-bit DDR module memory bus width, and its memory controler is 64-bit.
 			- Configure the parameters for one of the buses and copy to the rest.
 			- Specify a physical bus index for ecc bus (not sequential one).
-				For example, a70x0 ECC bus index will be 8 even if the chosen DDR module
-				memory bus width is 32 bits.
+				- For example, a70x0 ECC bus index will be 8 even if the chosen DDR module memory bus width is 32 bits.
 
 			The definition of bus_params structure is given at <mv_ddr>/ddr_topology_def.h file:
 
@@ -88,71 +84,70 @@ and configuring the DDR memory controller and the PHY for reliable operation of 
 
 			Detailed explanation of bus_params structure:
 
-			2.2.1.1 cs_bitmask - specifies a number of package ranks per DDR module.
-				This parameter is defined as a bitwise mask for active chip selects.
-				- Set 0x1 for a single chip select in the system.
-				- Set 0x3 for a dual chip select.
-				Note: No need to configure these parameters if MV_DDR_CFG_SPD is set as
-				      a source configuration.
-			2.2.1.2 mirror_enable_bitmask - specifies whether rank 1 adress mapping 1 is mirrored.
-				This parameter is defined as a bitwise mask.
-				- Set 0x0 for standard.
-				- Set 0x1 for mirrored.
-				Note: No need to configure these parameters if MV_DDR_CFG_SPD is set as
-				      a source configuration.
-			2.2.1.3 is_dqs_swap - specifies connectivity of dqs signal.
-				dqs signal is differential and can be swapped to ease its layout.
-				- Set 0x0 for standard.
-				- Set 0x1 for swapped.
-			2.2.1.4 is_ck_swap - specifies connectivity of ck signal.
-				ck signal is differential and can be swapped to ease its layout.
-				- Set 0x0 for standard.
-				- Set 0x1 for swapped.
+			- cs_bitmask - specifies a number of package ranks per DDR module:
+				- This parameter is defined as a bitwise mask for active chip selects.
+					- Set 0x1 for a single chip select in the system.
+					- Set 0x3 for a dual chip select.
+				- Note: No need to configure these parameters if MV_DDR_CFG_SPD is set as a source configuration.
 
-		2.2.2 speed_bin_index - specifies an index in speed bin table per chosen DDR module.
-			  The DDR code will configure the system per specified speed bin index, when
-			  MV_DDR_CFG_DEFAULT is set as a configuration source (refer to section 2.4).
-			  See sub-section 2.4.1 to properly choose such an index for a specific DDR module.
-			  This parameter is of enum hws_speed_bin type.
+			- mirror_enable_bitmask - specifies whether rank 1 adress mapping 1 is mirrored:
+				- This parameter is defined as a bitwise mask.
+					- Set 0x0 for standard.
+					- Set 0x1 for mirrored.
+				- Note: No need to configure these parameters if MV_DDR_CFG_SPD is set as a source configuration.
 
-			  List of supported speed bin index values:
-			  - SPEED_BIN_DDR_1600J
-			  - SPEED_BIN_DDR_1600K
-			  - SPEED_BIN_DDR_1600L
-			  - SPEED_BIN_DDR_1866L
-			  - SPEED_BIN_DDR_1866M
-			  - SPEED_BIN_DDR_1866N
-			  - SPEED_BIN_DDR_2133N
-			  - SPEED_BIN_DDR_2133P
-			  - SPEED_BIN_DDR_2133R
-			  - SPEED_BIN_DDR_2400P
-			  - SPEED_BIN_DDR_2400R
-			  - SPEED_BIN_DDR_2400S
-			  - SPEED_BIN_DDR_2400U
-			  Note: No need to configure these parameters if MV_DDR_CFG_SPD is set as
-			        a source configuration.
+			- is_dqs_swap - specifies connectivity of dqs signal:
+				- dqs signal is differential and can be swapped to ease its layout.
+					- Set 0x0 for standard.
+					- Set 0x1 for swapped.
 
+			- is_ck_swap - specifies connectivity of ck signal:
+				- ck signal is differential and can be swapped to ease its layout.
+					- Set 0x0 for standard.
+					- Set 0x1 for swapped.
 
-		2.2.3 bus_width - specifies the the ddr device module data bus width
-		      The conectivity between the ddr device memory and the controller is defined and
-		      described later in this document (see section 2.3 bus active mask)
-		2.2.4 memory_size - specifies total sdarm capacity per die in megabits
-		2.2.5 memory_freq - specifies ddr interface frequency
-		2.2.6 cas_wl - specifies cas write latency
-		2.2.7 cas_l - specifies cas latency
-		2.2.8 interface_temp - specifies interface operation temperature
+		- speed_bin_index - specifies an index in speed bin table per chosen DDR module.
+			The DDR code will configure the system per specified speed bin index, when
+			MV_DDR_CFG_DEFAULT is set as a configuration source (refer to section 2.4).
+			See sub-section 2.4.1 to properly choose such an index for a specific DDR module.
+			This parameter is of enum hws_speed_bin type.
 
-	2.3 bus_act_mask - specifies active buses in an interface.
+			List of supported speed bin index values:
+			- SPEED_BIN_DDR_1600J
+			- SPEED_BIN_DDR_1600K
+			- SPEED_BIN_DDR_1600L
+			- SPEED_BIN_DDR_1866L
+			- SPEED_BIN_DDR_1866M
+			- SPEED_BIN_DDR_1866N
+			- SPEED_BIN_DDR_2133N
+			- SPEED_BIN_DDR_2133P
+			- SPEED_BIN_DDR_2133R
+			- SPEED_BIN_DDR_2400P
+			- SPEED_BIN_DDR_2400R
+			- SPEED_BIN_DDR_2400S
+			- SPEED_BIN_DDR_2400U
+			- Note: No need to configure these parameters if MV_DDR_CFG_SPD is set as a source configuration.
+
+		- bus_width - specifies the the ddr device module data bus width
+			- The conectivity between the ddr device memory and the controller is defined and described later in this document
+			- (see section 2.3 bus active mask)
+		- memory_size - specifies total sdarm capacity per die in megabits
+		- memory_freq - specifies ddr interface frequency
+		- cas_wl - specifies cas write latency
+		- cas_l - specifies cas latency
+		- interface_temp - specifies interface operation temperature
+
+	- bus_act_mask - specifies active buses in an interface.
 		This parameter is defined as a bitwise mask for active busses
 
-	2.4 cfg_src - specifies ddr configuration data source.
+	- cfg_src - specifies ddr configuration data source.
 		This parameter is of enum mv_ddr_cfg_src type.
 
-		Supported options:
+		- Supported options:
 
-		2.4.1 MV_DDR_CFG_DEFAULT - a default configuration, which is mainly based on
+		- MV_DDR_CFG_DEFAULT - a default configuration, which is mainly based on
 		      data provided in mv_ddr topology_map structure.
-		2.4.2 MV_DDR_CFG_SPD - a configuration, which is based on data in a DDR module's SPD.
+		- MV_DDR_CFG_SPD - a configuration, which is based on data in a DDR module's SPD.
 			A DDR module's SPD is accessible via an I2C bus, while an I2C bus itself is
 			accessible via application processor (AP) or "south bridge" (CP).
 			The DDR code requires appropriate configuration in the porting layer to access
@@ -162,11 +157,11 @@ and configuring the DDR memory controller and the PHY for reliable operation of 
 			- update_dram_info(), where I2C initialization and read functions with appropirate
 			  parameters are called.
 			(Refer to a80x0 platform's dram_port.c file for a working example.)
-		2.4.3 MV_DDR_CFG_USER - a configuration, which is based on data from user.
-		2.4.4 MV_DDR_CFG_STATIC - as previous, but in register-value format.
+		- MV_DDR_CFG_USER - a configuration, which is based on data from user.
+		- MV_DDR_CFG_STATIC - as previous, but in register-value format.
 
-	2.5 spd_data - contains raw spd data read from a DDR module with spd.
-	2.6 timing_data - contains timing parameters.
+	- spd_data - contains raw spd data read from a DDR module with spd.
+	- timing_data - contains timing parameters.
 
 3. Electrical parameters
 
@@ -200,7 +195,7 @@ and configuring the DDR memory controller and the PHY for reliable operation of 
 5. Logging options
 	mv_ddr_debug_level - this parameter defines the ddr level options.
 	There are 3 logging option level:
-	- LOG_LEVEL_ERROR - prints only error messages during the ddr trainig
+	- LOG_LEVEL_ERROR - prints only error messages during the ddr training
 		this is the default configuration.
 	- LOG_LEVEL_TRACE - prints training algorithm data and errors
 	- LOG_LEVEL_INFO - prints training detailed information trace and errors

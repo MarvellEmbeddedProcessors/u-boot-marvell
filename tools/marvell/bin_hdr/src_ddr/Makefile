@@ -107,7 +107,8 @@ ifeq ($(DDR3LIB),2)
 SRC_DDR_SUBDIRS = ddr3libv2
 endif
 ifeq ($(DDR3LIB),3)
-SRC_DDR_SUBDIRS = mv_ddr
+MV_DDR_PATH ?= mv_ddr
+SRC_DDR_SUBDIRS = $(MV_DDR_PATH)
 endif
 
 clean:

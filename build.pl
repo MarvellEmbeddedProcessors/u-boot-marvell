@@ -54,7 +54,7 @@ sub HELP_MESSAGE
 # Main
 use Getopt::Std;
 
-getopt('f:b:o:i:v:d:m:r:u:g:z:a:k:j:x:l:');
+getopt('f:b:o:i:v:d:D:m:r:u:g:z:a:k:j:x:l:');
 
 if((!defined $opt_b) or
 	(!defined $opt_f)) {
@@ -377,6 +377,17 @@ if($opt_d eq 4)
 	$opt_d = 2;
 }
 
+# -d 3 and -D path/to/mv_ddr to support mv_ddr relocation option
+$bh_path = "$ENV{'PWD'}/tools/marvell/bin_hdr";
+$mv_ddr_path = mv_ddr;
+if ($opt_d eq 3) {
+	if (defined $opt_D) {
+		$mv_ddr_path = $opt_D;
+	}
+	system("echo \"BH_PATH = $bh_path\" >> include/config.mk");
+	system("echo \"MV_DDR_PATH = $mv_ddr_path\" >> include/config.mk");
+}
+
 # -d 2 option (ddr3libv2) set as a default, when not set explicitly
 if ($ddr3LibBuild eq "yes") {
 	if (!defined $opt_d) {
@@ -389,6 +400,7 @@ if ($ddr3LibBuild eq "yes") {
 # There are two memory compilation options:
 # 	-d option defines what ddr lib to compile: ddr3libv2 or mv_ddr,
 # 	-m option defines what ddr type to complile for: ddr3 or ddr4,
+# 	-D option defines a path to relocated mv_ddr and valid only with -d 3
 # Examples:
 # 	no options sets:
 # 		"-d 2 -m 4" for a39x (ddr3libv2 and ddr4) or
@@ -397,7 +409,9 @@ if ($ddr3LibBuild eq "yes") {
 # 	"-d 2 -m 4" will compile ddr3libv2 and ddr4
 # 	"-d 4" will compile as "-d 2" above plus rebuilds DDR4 sub-lib
 # 	"-d 3 -m 3" will compile mv_ddr for ddr3
+# 	"-d 3 -m 3 -D path/to/mv_ddr" as above plus mv_ddr relocated
 # 	"-d 3 -m 4" will compile mv_ddr for ddr4
+# 	"-d 3 -m 4 -D path/to/mv_ddr" as above plus mv_ddr relocated
 
 if (defined $opt_d) {
 	system("echo \"DDR3LIB = $opt_d\" >> include/config.mk");

@@ -119,46 +119,42 @@ obj-$(CONFIG_SPL_BUILD) += xor.o
 # U-BOOT MARVELL 2013.01 SUPPORT
 # ******************************
 else ifeq ($(DDR3LIB), 3)
-include ../../base.mk
+BH_PATH ?= ../..
+include $(BH_PATH)/base.mk
 
-INCLUDE = -I$(BH_ROOT_DIR)/src_ddr/mv_ddr -I$(BH_ROOT_DIR)/inc/common
+OBJ_DIR = $(BH_PATH)/src_ddr/lib
+MV_DDR_SRCPATH = . ./a38x
+INCPATH = $(MV_DDR_SRCPATH)
+INCLUDE = $(addprefix -I,$(INCPATH))
+INCLUDE += -I$(BH_PATH)/inc/common
 
-# A38x
-ifeq "$(CONFIG_ARMADA_38X)"  "y"
-  INCLUDE += -I$(BH_ROOT_DIR)/src_ddr/mv_ddr/a38x
-endif
-ifeq "$(CONFIG_ARMADA_39X)"  "y"
-  INCLUDE += -I$(BH_ROOT_DIR)/src_ddr/mv_ddr/a38x
-endif
+MV_DDR_LIBNAME = ./$(DDRTYPE)_training_$(LIBNAME).lib
+MV_DDR_LIB = $(OBJ_DIR)/$(MV_DDR_LIBNAME)
 
-TLIB = ./$(DDRTYPE)_training_$(LIBNAME).lib
+MV_DDR_CSRC = $(foreach DIR,$(MV_DDR_SRCPATH),$(wildcard $(DIR)/*.c))
+MV_DDR_COBJ = $(patsubst %.c,$(OBJ_DIR)/%.o,$(MV_DDR_CSRC))
 
-TSRC = $(wildcard ./*.c)
-# A38x
-ifeq "$(CONFIG_ARMADA_38X)"  "y"
-  TSRC += $(wildcard ./a38x/*.c)
-endif
-# A39x
-ifeq "$(CONFIG_ARMADA_39X)"  "y"
-  TSRC += $(wildcard ./a38x/*.c)
-endif
+.SILENT:
+all: header create_dir $(MV_DDR_LIB)
 
-TOBJ = $(TSRC:.c=.o)
-
-TARGETS = $(TLIB)
-
-all:   $(TARGETS)
-
-%.o: %.c
+# mv_ddr code compilation
+$(OBJ_DIR)/%.o: %.c
+	$(ECHO) "  CC      $<"
 	$(CC) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-$(TLIB): $(TOBJ)
-	$(RM) ./$@
-	ar rcs $(TLIB) $(TOBJ)
-	$(CP) ./$@ ../lib
+$(MV_DDR_LIB): $(MV_DDR_COBJ)
+	$(ECHO) "  AR      $(MV_DDR_LIBNAME)"
+	$(AR) rcs $(MV_DDR_LIB) $(MV_DDR_COBJ)
+
+create_dir:
+	$(MKDIR) $(OBJ_DIR)/a38x
+
+header:
+	$(ECHO) "\nBuilding DRAM driver"
 
 clean:
-	$(RM) ./*.o  ./*.a
+	$(ECHO) "  CLEAN"
+	@$(RM) $(MV_DDR_COBJ) $(MV_DDR_LIB)
 
 # *******************
 # MARVELL ATF SUPPORT

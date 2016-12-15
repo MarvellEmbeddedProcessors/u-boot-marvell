@@ -4360,7 +4360,15 @@ e1000_get_phy_cfg_done(struct e1000_hw *hw)
 		if (!timeout) {
 			DEBUGOUT("MNG configuration cycle has not "
 					"completed.\n");
-			return -E1000_ERR_RESET;
+			/*
+			 * Temporarely WA for PHY HW reset timeout on
+			 * MACCHIATOBin board.
+			 * The reason for the timeout is unknown, adding
+			 * delays before and after PCIe reset line release
+			 * did not help to solve the issue.
+			 *
+			 * return -E1000_ERR_RESET;
+			 */
 		}
 		break;
 	}

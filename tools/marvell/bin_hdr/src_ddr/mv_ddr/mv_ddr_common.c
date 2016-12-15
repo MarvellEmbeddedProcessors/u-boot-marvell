@@ -95,6 +95,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#include "mv_ddr_common.h"
+#if defined(MV_DDR) /* U-BOOT MARVELL 2013.01 */
+#include "ddr_mv_wrapper.h"
+#elif defined(MV_DDR_ATF) /* MARVELL ATF */
+#include "mv_ddr_atf_wrapper.h"
+#else /* U-BOOT SPL */
+#include "ddr_ml_wrapper.h"
+#endif
+
+void mv_ddr_ver_print(void)
+{
+	printf("%s %s\n", mv_ddr_version_string, mv_ddr_build_message);
+}
+
 /* ceiling division for positive integers */
 unsigned int ceil_div(unsigned int x, unsigned int y)
 {

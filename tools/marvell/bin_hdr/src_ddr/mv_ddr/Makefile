@@ -95,6 +95,28 @@
 #
 #*******************************************************************************
 
+# get mv_ddr git commit id
+MV_DDR_COMMIT_ID := $(shell git rev-parse --verify --quiet --short HEAD 2> /dev/null)
+ifeq ($(MV_DDR_COMMIT_ID),)
+MV_DDR_COMMIT_ID = ???
+endif
+
+# check for uncommitted changes in mv_ddr git
+MV_DDR_DIRTY_CHK := $(shell git diff-index --name-only HEAD 2> /dev/null)
+ifneq ($(MV_DDR_DIRTY_CHK),)
+MV_DDR_COMMIT_ID := $(MV_DDR_COMMIT_ID)-dirty
+endif
+
+# get mv_ddr version from localversion file in mv_ddr directory
+MV_DDR_VERSION := $(shell cat localversion 2> /dev/null)
+ifeq ($(MV_DDR_VERSION),)
+MV_DDR_VERSION = ???
+endif
+MV_DDR_VERSION := $(strip $(MV_DDR_VERSION))
+
+# set mv_ddr version string to be printed out
+MV_DDR_VERSION_STRING = mv_ddr: $(MV_DDR_VERSION)-g$(MV_DDR_COMMIT_ID)
+
 # ******************
 # U-BOOT SPL SUPPORT
 # ******************
@@ -133,9 +155,11 @@ MV_DDR_LIB = $(OBJ_DIR)/$(MV_DDR_LIBNAME)
 
 MV_DDR_CSRC = $(foreach DIR,$(MV_DDR_SRCPATH),$(wildcard $(DIR)/*.c))
 MV_DDR_COBJ = $(patsubst %.c,$(OBJ_DIR)/%.o,$(MV_DDR_CSRC))
+# add mv_ddr build message and version string object
+MV_DDR_COBJ += $(OBJ_DIR)/mv_ddr_build_message.o
 
 .SILENT:
-all: header create_dir $(MV_DDR_LIB)
+all: header create_dir add_ver $(MV_DDR_LIB)
 
 # mv_ddr code compilation
 $(OBJ_DIR)/%.o: %.c
@@ -145,6 +169,11 @@ $(OBJ_DIR)/%.o: %.c
 $(MV_DDR_LIB): $(MV_DDR_COBJ)
 	$(ECHO) "  AR      $(MV_DDR_LIBNAME)"
 	$(AR) rcs $(MV_DDR_LIB) $(MV_DDR_COBJ)
+
+add_ver:
+	@echo 'const char mv_ddr_build_message[] = "("__DATE__" - "__TIME__")"; \
+	       const char mv_ddr_version_string[] = "${MV_DDR_VERSION_STRING}";' | \
+		$(CC) -x c -c $(CFLAGS) - -o $(OBJ_DIR)/mv_ddr_build_message.o
 
 create_dir:
 	$(MKDIR) $(OBJ_DIR)/a38x
@@ -209,10 +238,12 @@ LDFLAGS = -Xlinker --discard-all -Wl,--build-id=none -static -nostartfiles
 MV_DDR_CSRC = $(foreach DIR,$(MV_DDR_SRCPATH),$(wildcard $(DIR)/*.c))
 
 MV_DDR_COBJ = $(patsubst %.c,$(OBJ_DIR)/%.o,$(MV_DDR_CSRC))
+# add mv_ddr build message and version string object
+MV_DDR_COBJ += $(OBJ_DIR)/mv_ddr_build_message.o
 
 .SILENT:
 
-all: check_env header create_dir $(MV_DDR_LIB)
+all: check_env header create_dir add_ver $(MV_DDR_LIB)
 
 # mv_ddr code compilation
 $(OBJ_DIR)/%.o: %.c
@@ -222,6 +253,11 @@ $(OBJ_DIR)/%.o: %.c
 $(MV_DDR_LIB): $(MV_DDR_COBJ)
 	$(ECHO) "  AR      $(MV_DDR_LIBNAME)"
 	$(AR) rcs $(MV_DDR_LIB) $(MV_DDR_COBJ)
+
+add_ver:
+	@echo 'const char mv_ddr_build_message[] = "("__DATE__" - "__TIME__")"; \
+	       const char mv_ddr_version_string[] = "${MV_DDR_VERSION_STRING}";' | \
+		$(CC) -x c -c $(CFLAGS) - -o $(OBJ_DIR)/mv_ddr_build_message.o
 
 create_dir:
 	$(MKDIR) $(OBJ_DIR)/apn806

@@ -102,8 +102,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr_topology_def.h"
 #include "ddr_training_ip_db.h"
 
-#define MV_DDR_VERSION "mv_ddr: version 16.12.1"
-
 #define MAX_CS_NUM		4
 #define MAX_TOTAL_BUS_NUM	(MAX_INTERFACE_NUM * MAX_BUS_NUM)
 

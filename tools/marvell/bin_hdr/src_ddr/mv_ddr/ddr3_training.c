@@ -187,12 +187,6 @@ u32 mask_tune_func = (SET_MEDIUM_FREQ_MASK_BIT |
 		      CENTRALIZATION_RX_MASK_BIT |
 		      CENTRALIZATION_TX_MASK_BIT);
 
-void mv_ddr_ver_print(void)
-{
-	printf(MV_DDR_VERSION);
-	printf("\n");
-}
-
 static int ddr3_tip_ddr3_training_main_flow(u32 dev_num);
 static int ddr3_tip_write_odt(u32 dev_num, enum hws_access_type access_type,
 			      u32 if_id, u32 cl_value, u32 cwl_value);

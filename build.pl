@@ -22,7 +22,10 @@ sub HELP_MESSAGE
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
 	print "\t-m\tDDR type(default: DDR4 for A39x, DDR3 for the rest). Accepts: 3 for DDR3, 4 for DDR4\n";
-	print "\t-d\tRebuild training lib, use '-d 2' to rebuild ddr3libv2 source\n";
+	print "\t-d\tRebuild training lib, use '-d 2' to rebuild ddr3libv2 source,\n";
+	print "\t\t\t\t      use '-d 3' to rebuild mv_ddr source\n";
+	print "\t-D\tPath to mv_ddr; use '-D path/to/mv_ddr' to specify mv_ddr location;\n";
+	print "\t\t\t\toptional; available only with '-d 3' option\n";
 	print "\t-i\tSupported interfaces, seperated by \":\" -  Accepts [spi:nor:nand]\n";
 	print "\t-v\tSW version (in file name: u-boot-alp-X.X.X-spi.bin, else using date by default)\n";
 	print "\t\tinterfaces. Supports spi, nor, nand. the boot \n";

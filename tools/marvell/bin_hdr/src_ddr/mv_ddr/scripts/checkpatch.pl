@@ -224,10 +224,11 @@ if ($tree) {
 		}
 	}
 
-	if (!defined $root) {
-		print "Must be run from the top-level dir. of a kernel tree\n";
-		exit(2);
-	}
+# Adapt checkpatch script for non-ATF/Kernel project so it can be used in mv_ddr
+#	if (!defined $root) {
+#		print "Must be run from the top-level dir. of a kernel tree\n";
+#		exit(2);
+#	}
 }
 
 my $emitted_corrupt = 0;

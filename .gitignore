@@ -50,6 +50,8 @@
 /u-boot.geany
 /include/u-boot.lst
 
+tools/marvell/bin_hdr/src_ddr/mv_ddr/*
+
 #
 # Generated files
 #

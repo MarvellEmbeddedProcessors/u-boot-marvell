@@ -72,6 +72,7 @@ endif #CONFIG_TARGET_ARMADA_3700
 
 ifdef CONFIG_TARGET_ARMADA_8K
 dtb-$(CONFIG_PALLADIUM) += apn-806-pd-a0.dtb \
+			   apn-810-pd.dtb \
 			   armada-70x0-pd.dtb
 dtb-$(CONFIG_DEVEL_BOARD) += armada-8k-default.dtb
 

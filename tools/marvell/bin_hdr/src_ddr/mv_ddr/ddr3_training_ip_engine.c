@@ -1813,7 +1813,7 @@ int ddr3_tip_load_phy_values(int b_load)
 					     (dev_num, if_id,
 					      ACCESS_TYPE_UNICAST, bus_cnt,
 					      DDR_PHY_DATA,
-					      RL_PHY_REG +
+					      RL_PHY_BASE +
 					      (effective_cs *
 					       CS_REGISTER_ADDR_OFFSET),
 					      &phy_reg_bk[if_id][bus_cnt]
@@ -1841,7 +1841,7 @@ int ddr3_tip_load_phy_values(int b_load)
 					     (dev_num, ACCESS_TYPE_UNICAST,
 					      if_id, ACCESS_TYPE_UNICAST,
 					      bus_cnt, DDR_PHY_DATA,
-					      RL_PHY_REG +
+					      RL_PHY_BASE +
 					      (effective_cs *
 					       CS_REGISTER_ADDR_OFFSET),
 					      phy_reg_bk[if_id][bus_cnt]

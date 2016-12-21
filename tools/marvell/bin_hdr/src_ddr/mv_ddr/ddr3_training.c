@@ -2367,13 +2367,13 @@ int ddr3_tip_ddr3_reset_phy_regs(u32 dev_num)
 				     (dev_num, ACCESS_TYPE_UNICAST,
 				      if_id, ACCESS_TYPE_UNICAST,
 				      phy_id, DDR_PHY_DATA,
-				      WL_PHY_REG +
+				      WL_PHY_BASE +
 				      CS_BYTE_GAP(effective_cs),
 				      phy_reg0_val));
 			CHECK_STATUS(ddr3_tip_bus_write
 				     (dev_num, ACCESS_TYPE_UNICAST, if_id,
 				      ACCESS_TYPE_UNICAST, phy_id, DDR_PHY_DATA,
-				      RL_PHY_REG + CS_BYTE_GAP(effective_cs),
+				      RL_PHY_BASE + CS_BYTE_GAP(effective_cs),
 				      phy_reg2_val));
 			CHECK_STATUS(ddr3_tip_bus_write
 				     (dev_num, ACCESS_TYPE_UNICAST, if_id,

@@ -167,7 +167,7 @@ int ddr3_tip_write_additional_odt_setting(u32 dev_num, u32 if_id)
 					     (dev_num, if_id,
 					      ACCESS_TYPE_UNICAST, pup_index,
 					      DDR_PHY_DATA,
-					      RL_PHY_REG + CS_BYTE_GAP(cs_num),
+					      RL_PHY_BASE + CS_BYTE_GAP(cs_num),
 					      &val));
 
 				current_phase = ((int)val & 0xe0) >> 6;

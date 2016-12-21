@@ -429,7 +429,7 @@ enum {
 #define ODPG_BIST_DONE_BIT_VALUE_REV2		1
 #define ODPG_BIST_DONE_BIT_VALUE_REV3		0
 
-#define WL_PHY_REG				0x0
+#define WL_PHY_BASE				0x0
 #define WR_LVL_PH_SEL_OFFS			6
 #define WR_LVL_PH_SEL_MASK			0x7
 enum {
@@ -443,7 +443,7 @@ enum {
 };
 
 #define WRITE_CENTRALIZATION_PHY_REG		0x1
-#define RL_PHY_REG				0x2
+#define RL_PHY_BASE				0x2
 #define READ_CENTRALIZATION_PHY_REG		0x3
 #define PBS_RX_PHY_REG				0x50
 #define PBS_TX_PHY_REG				0x10
@@ -462,12 +462,6 @@ enum {
 #define RESULT_DB_PHY_REG_ADDR			0xc0
 #define RESULT_DB_PHY_REG_RX_OFFSET		5
 #define RESULT_DB_PHY_REG_TX_OFFSET		0
-
-/* TBD - for NP5 use only CS 0 */
-#define PHY_WRITE_DELAY(cs)			WL_PHY_REG
-/*( ( _cs_ == 0 ) ? 0x0 : 0x4 )*/
-/* TBD - for NP5 use only CS 0 */
-#define PHY_READ_DELAY(cs)			RL_PHY_REG
 
 #define DDR0_ADDR_1				0xf8258
 #define DDR0_ADDR_2				0xf8254

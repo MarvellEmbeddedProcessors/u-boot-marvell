@@ -400,7 +400,7 @@ int ddr3_tip_dynamic_read_leveling(u32 dev_num, u32 freq)
 		 * Copy the result from the effective CS search to the
 		 * real Functional CS
 		 */
-		/*ddr3_tip_write_cs_result(dev_num, RL_PHY_REG); */
+		/*ddr3_tip_write_cs_result(dev_num, RL_PHY_BASE); */
 		CHECK_STATUS(ddr3_tip_if_write
 			     (dev_num, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,
 			      ODPG_DATA_CONTROL_REG, 0x0, MASK_ALL_BITS));
@@ -423,7 +423,7 @@ int ddr3_tip_dynamic_read_leveling(u32 dev_num, u32 freq)
 						   if_id,
 						   ACCESS_TYPE_UNICAST,
 						   bus_num, DDR_PHY_DATA,
-						   RL_PHY_REG +
+						   RL_PHY_BASE +
 						   ((effective_cs ==
 						     0) ? 0x0 : 0x4), data);
 			}
@@ -861,7 +861,7 @@ int ddr3_tip_dynamic_per_bit_read_leveling(u32 dev_num, u32 freq)
 						   if_id,
 						   ACCESS_TYPE_UNICAST,
 						   bus_num, DDR_PHY_DATA,
-						   RL_PHY_REG +
+						   RL_PHY_BASE +
 						   CS_BYTE_GAP(effective_cs),
 						   data2_write[if_id]
 						   [bus_num]);
@@ -909,7 +909,7 @@ int ddr3_tip_dynamic_per_bit_read_leveling(u32 dev_num, u32 freq)
 	 * Copy the result from the effective CS search to the real
 	 * Functional CS
 	 */
-	ddr3_tip_write_cs_result(dev_num, RL_PHY_REG);
+	ddr3_tip_write_cs_result(dev_num, RL_PHY_BASE);
 	CHECK_STATUS(ddr3_tip_if_write
 		     (dev_num, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,
 		      ODPG_DATA_CONTROL_REG, 0x0, MASK_ALL_BITS));
@@ -1223,7 +1223,7 @@ int ddr3_tip_dynamic_write_leveling(u32 dev_num, int phase_remove)
 				/* Search with WL CS0 subphy reg */
 				ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id,
 						   ACCESS_TYPE_UNICAST, bus_cnt,
-						   DDR_PHY_DATA, WL_PHY_REG, reg_data);
+						   DDR_PHY_DATA, WL_PHY_BASE, reg_data);
 				/*
 				 * Check for change in data read from DRAM.
 				 * If changed, fix the result
@@ -1338,7 +1338,7 @@ int ddr3_tip_dynamic_write_leveling(u32 dev_num, int phase_remove)
 						ACCESS_TYPE_UNICAST,
 						bus_cnt,
 						DDR_PHY_DATA,
-						WL_PHY_REG +
+						WL_PHY_BASE +
 						effective_cs *
 						CS_REGISTER_ADDR_OFFSET,
 						reg_data);
@@ -1376,7 +1376,7 @@ int ddr3_tip_dynamic_write_leveling(u32 dev_num, int phase_remove)
 	 * Copy the result from the effective CS search to the real
 	 * Functional CS
 	 */
-	/* ddr3_tip_write_cs_result(dev_num, WL_PHY_REG); */
+	/* ddr3_tip_write_cs_result(dev_num, WL_PHY_BASE); */
 	/* restore saved values */
 	for (if_id = 0; if_id <= MAX_INTERFACE_NUM - 1; if_id++) {
 		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
@@ -1560,7 +1560,7 @@ static int ddr3_tip_wl_supp_align_phase_shift(u32 dev_num, u32 if_id,
 	/* Read current phase */
 	CHECK_STATUS(ddr3_tip_bus_read
 		     (dev_num, if_id, ACCESS_TYPE_UNICAST, bus_id,
-		      DDR_PHY_DATA, WL_PHY_REG + effective_cs *
+		      DDR_PHY_DATA, WL_PHY_BASE + effective_cs *
 		      CS_REGISTER_ADDR_OFFSET, &data));
 	original_phase = (data >> 6) & 0x7;
 
@@ -1573,7 +1573,7 @@ static int ddr3_tip_wl_supp_align_phase_shift(u32 dev_num, u32 if_id,
 				     ((original_phase - 2) << 6);
 		ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id,
 				   ACCESS_TYPE_UNICAST, bus_id, DDR_PHY_DATA,
-				   WL_PHY_REG + effective_cs *
+				   WL_PHY_BASE + effective_cs *
 				   CS_REGISTER_ADDR_OFFSET, write_data);
 		if (ddr3_tip_xsb_compare_test
 		    (dev_num, if_id, bus_id, -2) == MV_OK)
@@ -1586,7 +1586,7 @@ static int ddr3_tip_wl_supp_align_phase_shift(u32 dev_num, u32 if_id,
 			     ((original_phase + 2) << 6);
 		ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id,
 				   ACCESS_TYPE_UNICAST, bus_id, DDR_PHY_DATA,
-				   WL_PHY_REG + effective_cs *
+				   WL_PHY_BASE + effective_cs *
 				   CS_REGISTER_ADDR_OFFSET, write_data);
 		if (ddr3_tip_xsb_compare_test
 		    (dev_num, if_id, bus_id, 2) == MV_OK)
@@ -1599,7 +1599,7 @@ static int ddr3_tip_wl_supp_align_phase_shift(u32 dev_num, u32 if_id,
 			     ((original_phase + 4) << 6);
 		ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id,
 				   ACCESS_TYPE_UNICAST, bus_id, DDR_PHY_DATA,
-				   WL_PHY_REG + effective_cs *
+				   WL_PHY_BASE + effective_cs *
 				   CS_REGISTER_ADDR_OFFSET, write_data);
 		if (ddr3_tip_xsb_compare_test
 		    (dev_num, if_id, bus_id, 4) == MV_OK)
@@ -1612,7 +1612,7 @@ static int ddr3_tip_wl_supp_align_phase_shift(u32 dev_num, u32 if_id,
 			     ((original_phase + 6) << 6);
 		ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id,
 				   ACCESS_TYPE_UNICAST, bus_id, DDR_PHY_DATA,
-				   WL_PHY_REG + effective_cs *
+				   WL_PHY_BASE + effective_cs *
 				   CS_REGISTER_ADDR_OFFSET, write_data);
 		if (ddr3_tip_xsb_compare_test
 		    (dev_num, if_id, bus_id, 6) == MV_OK)
@@ -1622,7 +1622,7 @@ static int ddr3_tip_wl_supp_align_phase_shift(u32 dev_num, u32 if_id,
 	/* Write original WL result back */
 	ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id,
 			   ACCESS_TYPE_UNICAST, bus_id, DDR_PHY_DATA,
-			   WL_PHY_REG + effective_cs *
+			   WL_PHY_BASE + effective_cs *
 			   CS_REGISTER_ADDR_OFFSET, data);
 	wr_supp_res[if_id][bus_id].is_pup_fail = 1;
 

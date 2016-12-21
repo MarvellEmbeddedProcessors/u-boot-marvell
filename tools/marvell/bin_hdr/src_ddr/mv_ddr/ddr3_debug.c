@@ -793,7 +793,7 @@ int ddr3_tip_print_stability_log(u32 dev_num)
 				ddr3_tip_bus_read(dev_num, if_id,
 						  ACCESS_TYPE_UNICAST,
 						  bus_id, DDR_PHY_DATA,
-						  WL_PHY_REG +
+						  WL_PHY_BASE +
 						  csindex * 4, &reg_data);
 				printf("%d,%d,%d,",
 				       (reg_data & 0x1f) +
@@ -813,7 +813,7 @@ int ddr3_tip_print_stability_log(u32 dev_num)
 				ddr3_tip_bus_read(dev_num, if_id,
 						  ACCESS_TYPE_UNICAST, bus_id,
 						  DDR_PHY_DATA,
-						  RL_PHY_REG + csindex * 4,
+						  RL_PHY_BASE + csindex * 4,
 						  &reg_data);
 				printf("%d,%d,%d,%d,",
 				       (reg_data & 0x1f) +
@@ -1706,7 +1706,7 @@ int ddr3_tip_run_leveling_sweep_test(int dev_num, u32 repeat_num,
 	u32 res[MAX_INTERFACE_NUM] = { 0 };
 	int if_id = 0, gap = 0;
 	u32 adll_value = 0;
-	int reg = (direction == 0) ? WL_PHY_REG : RL_PHY_REG;
+	int reg = (direction == 0) ? WL_PHY_BASE : RL_PHY_BASE;
 	enum hws_access_type pup_access;
 	u32 cs;
 	u32 max_cs = ddr3_tip_max_cs_get(dev_num);

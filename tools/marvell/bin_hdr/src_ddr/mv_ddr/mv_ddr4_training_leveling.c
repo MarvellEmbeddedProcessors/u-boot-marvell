@@ -405,7 +405,7 @@ static int mv_ddr4_dynamic_pb_wl_supp(u32 dev_num, enum mv_wl_supp_mode ecc_mode
 			flag = 1;
 			step = 0;
 			status = ddr3_tip_bus_read(dev_num, if_id, ACCESS_TYPE_UNICAST, subphy_num, DDR_PHY_DATA,
-						   WL_PHY_REG + effective_cs * 4, &rd_data);
+						   WL_PHY_BASE + effective_cs * 4, &rd_data);
 			if (status != MV_OK)
 				return status;
 			orig_phase = (rd_data >> 6) & 0x7;
@@ -427,7 +427,7 @@ static int mv_ddr4_dynamic_pb_wl_supp(u32 dev_num, enum mv_wl_supp_mode ecc_mode
 							ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id,
 									   ACCESS_TYPE_UNICAST, subphy_num,
 									   DDR_PHY_DATA,
-									   WL_PHY_REG + effective_cs * 4, wr_data);
+									   WL_PHY_BASE + effective_cs * 4, wr_data);
 						else
 							/* do nothing */;
 					} else if (step == 2) { /* shift phase to +1 */
@@ -436,7 +436,7 @@ static int mv_ddr4_dynamic_pb_wl_supp(u32 dev_num, enum mv_wl_supp_mode ecc_mode
 							ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id,
 									   ACCESS_TYPE_UNICAST, subphy_num,
 									   DDR_PHY_DATA,
-									   WL_PHY_REG + effective_cs * 4, wr_data);
+									   WL_PHY_BASE + effective_cs * 4, wr_data);
 						}
 					} else if (step == 3) {
 						if (orig_phase <= 3) {
@@ -444,7 +444,7 @@ static int mv_ddr4_dynamic_pb_wl_supp(u32 dev_num, enum mv_wl_supp_mode ecc_mode
 							ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id,
 									   ACCESS_TYPE_UNICAST, subphy_num,
 									   DDR_PHY_DATA,
-									   WL_PHY_REG + effective_cs * 4, wr_data);
+									   WL_PHY_BASE + effective_cs * 4, wr_data);
 						}
 					} else { /* error */
 						flag = 0;

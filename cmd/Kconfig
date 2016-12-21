@@ -1713,6 +1713,11 @@ config CMD_BSP
 	  option provides a way to control this. The commands that are enabled
 	  vary depending on the board.
 
+config CMD_BOOTIMGUP
+	bool "bootimgup"
+	help
+	  bootimgup command support
+
 config CMD_BLOCK_CACHE
 	bool "blkcache - control and stats for block cache"
 	depends on BLOCK_CACHE

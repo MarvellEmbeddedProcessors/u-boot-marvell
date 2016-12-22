@@ -34,11 +34,7 @@ u32 soc_ring_clk_get(void)
 
 u32 soc_mss_clk_get(void)
 {
-#ifdef CONFIG_AP806_Z_SUPPORT
-	return soc_ring_clk_get() / MSS_CLOCK_DIV;
-#else
 	return CONFIG_MSS_FREQUENCY;
-#endif
 }
 
 u32 soc_tclk_get(void)

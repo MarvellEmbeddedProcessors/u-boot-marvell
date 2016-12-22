@@ -732,15 +732,6 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	data |= 0x1 << SATA3_CTRL_SATA_SSU_OFFSET;
 	reg_set(sata_base + SATA3_VENDOR_DATA, data, mask);
 
-#ifdef CONFIG_AP806_Z_SUPPORT
-	/* Reduce read & write burst size to 64 byte due to bug in
-	 * AP-806-Z Aurora 2 that prohibits writes larger than 64 byte */
-	writel(0x4, sata_base + SATA3_VENDOR_ADDRESS);
-	mask = 0x77;
-	data = 0x44; /* 4 = 64 bytes burst */
-	reg_set(sata_base + SATA3_VENDOR_DATA, data, mask);
-#endif
-
 	/* MBUS request size and interface select register */
 	reg_set(sata_base + SATA3_VENDOR_ADDRESS,
 		SATA_MBUS_SIZE_SELECT_REG << SATA3_VENDOR_ADDR_OFSSET, SATA3_VENDOR_ADDR_MASK);

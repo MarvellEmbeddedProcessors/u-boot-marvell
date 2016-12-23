@@ -282,10 +282,11 @@ int spi_xfer(struct spi_slave *slave, unsigned int bitlen, const void *dout,
 		for (i = 0; i < SPI_WAIT_RDY_MAX_LOOP; i++)
 			if (readl(spi_bus.base_reg + SPI_INT_CAUSE_REG)) {
 				/* check that the RX data is needed */
-				*pdin = readl(spi_bus.base_reg + SPI_DATA_IN_REG);
-				/* increment the pointers */
-				if (pdin)
+				if (pdin) {
+					*pdin = readl(spi_bus.base_reg + SPI_DATA_IN_REG);
+					/* increment the pointers */
 					pdin++;
+				}
 				if (pdout)
 					pdout++;
 				bitlen -= 8;

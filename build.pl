@@ -378,7 +378,7 @@ if($opt_d eq 4)
 }
 
 # -d 3 and -D path/to/mv_ddr to support mv_ddr relocation option
-$bh_path = "$ENV{'PWD'}/tools/marvell/bin_hdr";
+$bh_path = "$path/tools/marvell/bin_hdr";
 $mv_ddr_path = mv_ddr;
 if ($opt_d eq 3) {
 	if (defined $opt_D) {

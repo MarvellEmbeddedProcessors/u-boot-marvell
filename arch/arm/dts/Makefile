@@ -56,7 +56,8 @@ dtb-$(CONFIG_SOCFPGA) += socfpga_cyclone5_socrates.dtb
 dtb-$(CONFIG_TARGET_ARMADA_38X) += armada-385-db.dtb
 ifdef CONFIG_TARGET_ARMADA_3700
 ifndef CONFIG_DEVEL_BOARD
-dtb-y += armada-3700-customer0.dtb
+dtb-y += armada-3700-customer0.dtb \
+	 armada-3700-espressobin.dtb
 endif #CONFIG_DEVEL_BOARD
 
 dtb-$(CONFIG_DEVEL_BOARD) += armada-3700-ddr3-db.dtb \

@@ -9,15 +9,29 @@
 #include <common.h>
 #include <div64.h>
 #include <dm.h>
+#include <dm/device-internal.h>
 #include <malloc.h>
 #include <mapmem.h>
+#include <memalign.h>
+#include <mmc.h>
 #include <spi.h>
 #include <spi_flash.h>
 #include <jffs2/jffs2.h>
+#include <asm/io.h>
 #include <linux/mtd/mtd.h>
 
-#include <asm/io.h>
-#include <dm/device-internal.h>
+struct dos_partition {
+	unsigned char boot_ind;		/* 0x80 - active			*/
+	unsigned char head;		/* starting head			*/
+	unsigned char sector;		/* starting sector			*/
+	unsigned char cyl;		/* starting cylinder			*/
+	unsigned char sys_ind;		/* What partition type			*/
+	unsigned char end_head;		/* end head				*/
+	unsigned char end_sector;	/* end sector				*/
+	unsigned char end_cyl;		/* end cylinder				*/
+	unsigned int  start4;		/* starting sector counting from 0	*/
+	unsigned int  size4;		/* nr of sectors in partition		*/
+};
 
 static struct spi_flash *flash;
 
@@ -31,7 +45,7 @@ static int validate_bootimg_header(unsigned long addr)
 
 	if (strncmp(buf1, flash_hdr, 8) == 0)
 		if (strncmp(buf2, bdk_magic, 8) == 0)
-			if (strncmp (buf3, bdk_magic, 8) == 0)
+			if (strncmp(buf3, bdk_magic, 8) == 0)
 				return 0;
 	return 1;
 }
@@ -47,7 +61,7 @@ static int validate_bootimg_header(unsigned long addr)
 static ulong bytes_per_second(unsigned int len, ulong start_ms)
 {
 	/* less accurate but avoids overflow */
-	if (len >= ((unsigned int) -1) / 1024)
+	if (len >= ((unsigned int)-1) / 1024)
 		return len / (max(get_timer(start_ms) / 1024, 1UL));
 	else
 		return 1024 * len / max(get_timer(start_ms), 1UL);
@@ -67,7 +81,7 @@ static ulong bytes_per_second(unsigned int len, ulong start_ms)
  * @return NULL if OK, else a string containing the stage which failed
  */
 static const char *spi_flash_update_block(struct spi_flash *flash, u32 offset,
-		size_t len, const char *buf)
+					  size_t len, const char *buf)
 {
 	char *ret = NULL;
 	char *ptr = (char *)buf;
@@ -87,9 +101,8 @@ static const char *spi_flash_update_block(struct spi_flash *flash, u32 offset,
 	if (spi_flash_read(flash, offset, len, rbuf))
 		ret = "read";
 
-	if (memcmp(ptr, rbuf, len)) {
+	if (memcmp(ptr, rbuf, len))
 		ret = "compare";
-	}
 
 	free(rbuf);
 	return ret;
@@ -106,7 +119,7 @@ static const char *spi_flash_update_block(struct spi_flash *flash, u32 offset,
  * @return 0 if ok, 1 on error
  */
 static int spi_flash_update(struct spi_flash *flash, u32 offset,
-		size_t len, const char *buf)
+			    size_t len, const char *buf)
 {
 	const char *err_oper = NULL;
 	const char *end = buf + len;
@@ -120,7 +133,7 @@ static int spi_flash_update(struct spi_flash *flash, u32 offset,
 		scale = (end - buf) / 100;
 	ulong last_update = get_timer(0);
 
-	for (; (buf < end) && (err_oper == NULL); buf += todo, offset += todo) {
+	for (; (buf < end) && (!err_oper); buf += todo, offset += todo) {
 		todo = min_t(size_t, end - buf, flash->sector_size);
 		if (get_timer(last_update) > 100) {
 			printf("   \rUpdating, %zu%% %lu B/s",
@@ -130,7 +143,7 @@ static int spi_flash_update(struct spi_flash *flash, u32 offset,
 			last_update = get_timer(0);
 		}
 		err_oper = spi_flash_update_block(flash, offset, todo, buf);
-		if (err_oper != NULL)
+		if (err_oper)
 			break;
 	}
 	putc('\r');
@@ -186,26 +199,26 @@ static int do_bootu_spi(int argc, char * const argv[])
 		return -1;
 
 	if (argc <= 2) {
-		if (argc == 1)
+		if (argc == 1) {
 			offset = 0;
-		else {
+		} else {
 			offset = simple_strtoul(argv[1], &endp, 0);
 			if (*argv[1] == 0 || *endp != 0)
 				return -1;
 		}
 		env1 = getenv("kernel_addr");
 		env2 = getenv("filesize");
-		debug(" %s kernel_addr %s filesize %s \n", __func__, env1, env2);
+		debug("%s kernel_addr %s filesize %s\n", __func__, env1, env2);
 
 		ret = strict_strtoul(env1, 16, &addr);
 		if (ret)
 			return -1;
-		debug(" %s addr %ld\n", __func__, addr);
+		debug("%s addr %ld\n", __func__, addr);
 
 		ret = strict_strtoul(env2, 16, &len);
 		if (ret)
 			return -1;
-		debug(" %s len %ld \n", __func__, len);
+		debug("%s len %ld\n", __func__, len);
 	} else {
 		offset = simple_strtoul(argv[1], &endp, 0);
 		if (*argv[1] == 0 || *endp != 0)
@@ -215,13 +228,13 @@ static int do_bootu_spi(int argc, char * const argv[])
 		addr = simple_strtoul(env1, &endp, 16);
 		if (*argv[2] == 0 || *endp != 0)
 			return -1;
-		debug(" %s addr %ld\n", __func__, addr);
+		debug("%s addr %ld\n", __func__, addr);
 
 		len = simple_strtoul(env2, &endp, 16);
 		if (*argv[3] == 0 || *endp != 0)
 			return -1;
 
-		debug(" %s len %ld\n", __func__, len);
+		debug("%s len %ld\n", __func__, len);
 	}
 
 	if (validate_bootimg_header(addr)) {
@@ -262,9 +275,153 @@ static int do_bootu_spi(int argc, char * const argv[])
 	return ret == 0 ? 0 : 1;
 }
 
+static int validate_partition_table(unsigned char *buf)
+{
+	struct dos_partition *p;
+
+	if ((buf[510] != 0x55) || (buf[511] != 0xaa))
+		return 1; /* no DOS Signature at all */
+
+	/* checks for FAT12 as partition 1 */
+	p = (struct dos_partition *)&buf[446];
+	if (p->sys_ind != 0x01)
+		return 1;
+
+	/* check for second partition start <16MB */
+	p = (struct dos_partition *)&buf[446 + 16];
+	if (p->sys_ind != 0)
+		if (__swab32p(&p->start4) < 0x8000)
+			return 1;
+
+	/* check for third partition start <16MB */
+	p = (struct dos_partition *)&buf[446 + 16 * 2];
+	if (p->sys_ind != 0)
+		if (__swab32p(&p->start4) < 0x8000)
+			return 1;
+
+	/* check for fourth partition start <16MB */
+	p = (struct dos_partition *)&buf[446 + 16 * 3];
+	if (p->sys_ind != 0)
+		if (__swab32p(&p->start4) < 0x8000)
+			return 1;
+
+	return 0;
+}
+
+static struct mmc *init_mmc_device(int dev, bool force_init)
+{
+	struct mmc *mmc;
+
+	mmc = find_mmc_device(dev);
+	if (!mmc) {
+		printf("no mmc device at slot %x\n", dev);
+		return NULL;
+	}
+	if (force_init)
+		mmc->has_init = 0;
+	if (mmc_init(mmc))
+		return NULL;
+	return mmc;
+}
+
 static int do_bootu_mmc(int argc, char * const argv[])
 {
-	printf("No support for mmc yet\n");
+	static int curr_device = -1;
+	struct mmc *mmc;
+	char *endp, *env1, *env2;
+	unsigned long blk, len, n;
+	unsigned long addr;
+	int ret;
+
+	if (argc < 1)
+		return -1;
+
+	if (argc <= 2) {
+		if (argc == 1) {
+			blk = 0;
+		} else {
+			blk = simple_strtoul(argv[1], &endp, 0);
+			if (*argv[1] == 0 || *endp != 0)
+				return -1;
+		}
+		env1 = getenv("kernel_addr");
+		env2 = getenv("filesize");
+		debug("%s kernel_addr %s filesize %s\n", __func__, env1, env2);
+
+		ret = strict_strtoul(env1, 16, &addr);
+		if (ret)
+			return -1;
+		debug("%s addr %ld\n", __func__, addr);
+
+		ret = strict_strtoul(env2, 16, &len);
+		if (ret)
+			return -1;
+		debug("%s len %ld\n", __func__, len);
+		if (len % 512)
+			len = len / 512 + 1;
+		else
+			len /= 512;
+		debug("%s len %ld\n", __func__, len);
+	} else {
+		blk = simple_strtoul(argv[1], NULL, 10);
+		addr = simple_strtoul(argv[2], NULL, 16);
+		len = simple_strtoul(argv[3], NULL, 16);
+	}
+
+	if ((blk + 512 * len) > 0x1000000) {
+		printf("\nBoot Image size exceeding 16MB\n");
+		return 1;
+	}
+
+	if (validate_bootimg_header(addr)) {
+		printf("\nNo valid boot image header found\n");
+		return 1;
+	}
+
+	if (curr_device < 0) {
+		if (get_mmc_num() > 0) {
+			curr_device = 0;
+		} else {
+			puts("No MMC device available\n");
+			return CMD_RET_FAILURE;
+		}
+	}
+
+	mmc = init_mmc_device(curr_device, false);
+	if (!mmc)
+		return CMD_RET_FAILURE;
+
+	ALLOC_CACHE_ALIGN_BUFFER(unsigned char, buffer, mmc->block_dev.blksz);
+	n = mmc->block_dev.block_read(&mmc->block_dev, 0, 1, buffer);
+	if (n != 1) {
+		printf("ERROR: read partition table failed\n");
+		return 1;
+	}
+
+	if (validate_partition_table(buffer)) {
+		printf("Invalid partition setup, can't write bootimg\n");
+		return 1;
+	}
+
+	printf("\nMMC write: dev # %d, block # %ld, count %ld ... ",
+	       curr_device, blk, len);
+
+	if (mmc_getwp(mmc) == 1) {
+		printf("Error: card is write protected!\n");
+		return CMD_RET_FAILURE;
+	}
+
+	n = mmc->block_dev.block_write(&mmc->block_dev, blk, len, (void *)addr);
+	printf("%ld blocks written: %s\n", n, (n == len) ? "OK" : "ERROR");
+	if (n != len)
+		return CMD_RET_FAILURE;
+
+	/* Update partition table with read boot sector */
+	n = mmc->block_dev.block_write(&mmc->block_dev, 0, 1, (void *)buffer);
+	printf("%ld blocks written: %s\n", n, (n == 1) ? "OK" : "ERROR");
+	if (n != 1)
+		return CMD_RET_FAILURE;
+
 	return 0;
 }
 

@@ -11,7 +11,7 @@
 #ifdef CONFIG_ARMV8_PSCI
 
 #define ATF_RESERVED_MEM_START	0x4000000
-#define ATF_RESERVED_MEM_SIZE	0x01E0000
+#define ATF_RESERVED_MEM_SIZE	0x0400000
 
 static void psci_reserve_mem(void *fdt)
 {

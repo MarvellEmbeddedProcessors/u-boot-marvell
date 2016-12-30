@@ -149,11 +149,19 @@
 				status = "disabled";
 			};
 
-			sata: sata@e0000 {
-				compatible = "marvell,armada-3700-ahci";
-				reg = <0xe0000 0x2000>;
-				interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
+			scsi: scsi {
+				compatible = "marvell,mvebu-scsi";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				max-id = <1>;
+				max-lun = <1>;
 				status = "disabled";
+				sata: sata@e0000 {
+					compatible = "marvell,armada-3700-ahci";
+					reg = <0xe0000 0x2000>;
+					interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
+					status = "disabled";
+				};
 			};
 
 			gic: interrupt-controller@1d00000 {

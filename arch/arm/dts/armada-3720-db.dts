@@ -89,6 +89,10 @@
 	status = "okay";
 };
 
+&scsi {
+	status = "okay";
+};
+
 /* CON3 */
 &sata {
 	status = "okay";

@@ -28,6 +28,16 @@ config DM_SCSI
 	  (IDs/LUNs) a block device is created with RAW read/write and
 	  filesystem support.
 
+config MVEBU_SCSI
+	bool "Marvell MVEBU SCSI driver"
+	depends on DM_SCSI
+	default n
+	help
+	  Say yes here to support Marvell MVEBU SCSI.
+	  Marvell MVEBU SCSI supports serial attached SCSI(SAS),
+	  which offers backward compatibility with SATA, versions 2 and later.
+	  It allows for SATA drives to be connected to SAS backplanes.
+
 config BLOCK_CACHE
 	bool "Use block device cache"
 	default n

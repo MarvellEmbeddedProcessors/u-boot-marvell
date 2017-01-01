@@ -896,7 +896,8 @@ static int comphy_sgmii_power_up(u32 lane, u32 sgmii_speed, void __iomem *hpipe_
 	return ret;
 }
 
-static int comphy_sfi_power_up(u32 lane, void __iomem *hpipe_base, void __iomem *comphy_base)
+static int comphy_sfi_power_up(u32 lane, void __iomem *hpipe_base,
+			       void __iomem *comphy_base, u32 speed)
 {
 	u32 mask, data, ret = 1;
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
@@ -951,7 +952,9 @@ static int comphy_sfi_power_up(u32 lane, void __iomem *hpipe_base, void __iomem 
 	debug("stage: Comphy configuration\n");
 	/* set reference clock */
 	mask = HPIPE_MISC_ICP_FORCE_MASK;
-	data = 0x1 << HPIPE_MISC_ICP_FORCE_OFFSET;
+	data = (speed == PHY_SPEED_5_15625G) ?
+		(0x0 << HPIPE_MISC_ICP_FORCE_OFFSET) :
+		(0x1 << HPIPE_MISC_ICP_FORCE_OFFSET);
 	mask |= HPIPE_MISC_REFCLK_SEL_MASK;
 	data |= 0x0 << HPIPE_MISC_REFCLK_SEL_OFFSET;
 	reg_set(hpipe_addr + HPIPE_MISC_REG, data, mask);
@@ -976,6 +979,19 @@ static int comphy_sfi_power_up(u32 lane, void __iomem *hpipe_base, void __iomem 
 	data = 0x1 << HPIPE_PWR_CTR_DTL_FLOOP_EN_OFFSET;
 	reg_set(hpipe_addr + HPIPE_PWR_CTR_DTL_REG, data, mask);
 
+	/* Transmitter/Receiver Speed Divider Force */
+	if (speed == PHY_SPEED_5_15625G) {
+		mask = HPIPE_SPD_DIV_FORCE_RX_SPD_DIV_MASK;
+		data = 1 << HPIPE_SPD_DIV_FORCE_RX_SPD_DIV_OFFSET;
+		mask |= HPIPE_SPD_DIV_FORCE_RX_SPD_DIV_FORCE_MASK;
+		data |= 1 << HPIPE_SPD_DIV_FORCE_RX_SPD_DIV_FORCE_OFFSET;
+		mask |= HPIPE_SPD_DIV_FORCE_TX_SPD_DIV_MASK;
+		data |= 1 << HPIPE_SPD_DIV_FORCE_TX_SPD_DIV_OFFSET;
+		mask |= HPIPE_SPD_DIV_FORCE_TX_SPD_DIV_FORCE_MASK;
+		data |= 1 << HPIPE_SPD_DIV_FORCE_TX_SPD_DIV_FORCE_OFFSET;
+		reg_set(hpipe_addr + HPIPE_SPD_DIV_FORCE_REG, data, mask);
+	}
+
 	/* Set analog paramters from ETP(HW) */
 	debug("stage: Analog paramters from ETP(HW)\n");
 	/* SERDES External Configuration 2 */
@@ -987,10 +1003,15 @@ static int comphy_sfi_power_up(u32 lane, void __iomem *hpipe_base, void __iomem 
 	data = 0x1 << HPIPE_DFE_RES_FORCE_OFFSET;
 	reg_set(hpipe_addr + HPIPE_DFE_REG0, data, mask);
 	/* 0xd-G1_Setting_0 */
-	mask = HPIPE_G1_SET_0_G1_TX_AMP_MASK;
-	data = 0x1c << HPIPE_G1_SET_0_G1_TX_AMP_OFFSET;
-	mask |= HPIPE_G1_SET_0_G1_TX_EMPH1_MASK;
-	data |= 0xe << HPIPE_G1_SET_0_G1_TX_EMPH1_OFFSET;
+	if (speed == PHY_SPEED_5_15625G) {
+		mask = HPIPE_G1_SET_0_G1_TX_EMPH1_MASK;
+		data = 0x6 << HPIPE_G1_SET_0_G1_TX_EMPH1_OFFSET;
+	} else {
+		mask = HPIPE_G1_SET_0_G1_TX_AMP_MASK;
+		data = 0x1c << HPIPE_G1_SET_0_G1_TX_AMP_OFFSET;
+		mask |= HPIPE_G1_SET_0_G1_TX_EMPH1_MASK;
+		data |= 0xe << HPIPE_G1_SET_0_G1_TX_EMPH1_OFFSET;
+	}
 	reg_set(hpipe_addr + HPIPE_G1_SET_0_REG, data, mask);
 	/* Genration 1 setting 2 (G1_Setting_2) */
 	mask = HPIPE_G1_SET_2_G1_TX_EMPH0_MASK;
@@ -1036,6 +1057,15 @@ static int comphy_sfi_power_up(u32 lane, void __iomem *hpipe_base, void __iomem 
 	/* Genration 1 setting 3 (G1_Setting_3) */
 	mask = HPIPE_G1_SETTINGS_3_G1_FBCK_SEL_MASK;
 	data = 0x1 << HPIPE_G1_SETTINGS_3_G1_FBCK_SEL_OFFSET;
+	if (speed == PHY_SPEED_5_15625G) {
+		/* Force FFE (Feed Forward Equalization) to 5G */
+		mask |= HPIPE_G1_SETTINGS_3_G1_FFE_CAP_SEL_MASK;
+		data |= 0xf << HPIPE_G1_SETTINGS_3_G1_FFE_CAP_SEL_OFFSET;
+		mask |= HPIPE_G1_SETTINGS_3_G1_FFE_RES_SEL_MASK;
+		data |= 0x4 << HPIPE_G1_SETTINGS_3_G1_FFE_RES_SEL_OFFSET;
+		mask |= HPIPE_G1_SETTINGS_3_G1_FFE_SETTING_FORCE_MASK;
+		data |= 0x1 << HPIPE_G1_SETTINGS_3_G1_FFE_SETTING_FORCE_OFFSET;
+	}
 	reg_set(hpipe_addr + HPIPE_G1_SETTINGS_3_REG, data, mask);
 
 	debug("stage: RFU configurations- Power Up PLL,Tx,Rx\n");
@@ -1603,7 +1633,8 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 			ret = comphy_sgmii_power_up(lane, ptr_comphy_map->speed, hpipe_base_addr, comphy_base_addr);
 			break;
 		case PHY_TYPE_SFI:
-			ret = comphy_sfi_power_up(lane, hpipe_base_addr, comphy_base_addr);
+			ret = comphy_sfi_power_up(lane, hpipe_base_addr, comphy_base_addr,
+						  ptr_comphy_map->speed);
 			break;
 		case PHY_TYPE_RXAUI0:
 		case PHY_TYPE_RXAUI1:

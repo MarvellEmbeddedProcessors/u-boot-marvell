@@ -57,9 +57,8 @@
  * There are main presets for Armada80x0 DB:
  * The specification of any preset found in doc/mvebu/a7k-a8k/
  */
-#define A80X0_10G		1
-#define A80X0_SGMII		2
-#define A80X0_CP1_SERDESB	3
+#define A80X0_A			1
+#define A80X0_A0		6
 
 /*
  * There are main presets for Armada70x0 PCAC:
@@ -72,7 +71,7 @@
 				0x04,			/* APN_806_DB	*/ \
 				0x01,			/* 7040_RZ_DB	*/ \
 				A70X0_ROUTER,		/* 7040_DB	*/ \
-				A80X0_10G,		/* 8040_DB	*/ \
+				A80X0_A,		/* 8040_DB	*/ \
 				A70X0_PCAC_KR,		/* 7040_PCAC	*/ \
 				A8K_A7K_default,	/* DEFAULT BOARD_ID, This must be the last value*/ \
 }

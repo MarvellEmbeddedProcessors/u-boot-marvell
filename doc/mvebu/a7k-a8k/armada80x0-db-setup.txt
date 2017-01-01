@@ -22,9 +22,9 @@ Booting Linux requires using the same Device Tree configuration as used in U-Boo
 Board Setup Options
 -------------------
 
-|		| 1: 10G (for A1)	| 2: SGMII (for A0)		|
+|		| 1: A (for A1)		| 2: A0 (for A0)		|
 |---------------|-----------------------|-------------------------------|
-|Device tree	|armada-80x0-db-10G.dtb	|armada-80x0-db-SGMII.dtb	|
+|Device tree	|armada-80x0-db-A.dtb	|armada-80x0-db-A0.dtb		|
 |CP0-SW1:1	| OFF			| ON				|
 |CP0-SW1:2	| OFF			| OFF				|
 |CP0-SW1:3	| OFF			| ON				|
@@ -47,7 +47,7 @@ The tables below summarizes the interface configuration of each setup
 SerDes Configuration
 ------------------------
 
- CP0 Lane	| 1: 10G (For A1)	| 2: SGMII (for A0)	|
+ CP0 Lane	| 1: A (For A1)		| 2: A0 (for A0)	|
 ----------------|-----------------------|-----------------------|
  0		| PCIe0 (x1)		| SGMII2 3.125G		|
  1		| SATA0			| USB3_HOST0		|
@@ -59,7 +59,7 @@ SerDes Configuration
 - USB2_H0 (UTMI only)
 - USB2_H1 (UTMI & USB3 SerDes)
 
- CP1 Lane	| 1: 10G (For A1)	| 2: SGMII (for A0)     |
+ CP1 Lane	| 1: A (For A1)		| 2: A0 (for A0)   	|
 ----------------|-----------------------|-----------------------|
  0		| PCIe0 (x1)		| SGMII2 3.125G		|
  1		| SATA0			| USB23_HOST0		|
@@ -74,14 +74,14 @@ SerDes Configuration
 Multi-purpose pin configurations
 --------------------------------
 
- AP806 pin	| 1: 10G (For A1)	| 2: SGMII (for A0)	|
+ AP806 pin	| 1: A (For A1)		| 2: A0 (for A0)	|
 ----------------|-----------------------|-----------------------|
     AP-SDIO	| [0-10]		| N/C			|
     I2C0        | N/C                   | [4-5]			|
     AP-SPI0	| N/C			| [0,3]			|
     AP-UART0	| [11,19]		| [11,19]		|
 
- CP0 pin	| 1: 10G (For A1)	| 2: SGMII (for A0)     |
+ CP0 pin	| 1: A (For A1)		| 2: A0 (for A0)	|
 ----------------|-----------------------|-----------------------|
     CP0-SMI	| [32,34]		| [32,34]		|
     CP0-XSMI	| [42-43]		| [35-36]		|
@@ -90,23 +90,25 @@ Multi-purpose pin configurations
     CP0-SATA0	| [41]			| [41]			|
     CP0-RGMII1	| [44-55]		| [44-55]		|
     CP0-SD	| [56-62]		| [56-62]		|
+    CP0-PTP_CLK	| [39]			| N/C			|
 
 GPIOS:
 	- 33: GPIO: GE_INT#/push button/Wake
 	- 35: MSS_GPIO[3]: MSS_PWDN (only in configuration 1)
 	- 36: MSS_GPIO[5]: MSS_VTT_EN (only in configuration 1)
 
- CP1 pin	| 1: 10G (For A1)	| 2: SGMII (for A0)     |
+ CP1 pin	| 1: A (For A1)		| 2: A0 (for A0)	|
 ----------------|-----------------------|-----------------------|
     CP1-RGMII0	| [0-11]		| [0-11]		|
     CP1-SMI	| [27,31]		| [27,31]		|
     CP1-SPI1	| [13-16]		| N/C			|
     CP1-UART0	| [29-30]		| N/C			|
+    CP1-SATA1	| [28]			| N/C			|
 
 
 Network configuration
 ---------------------
-1: 10G (For A1):
+1: A (For A1):
  Interface	| CPN#	| PPv2 Port	| GMAC Port	| Board Interface		|
  ---------------|-------|---------------|---------------|-------------------------------|
  eth0		| 0	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
@@ -114,7 +116,7 @@ Network configuration
  eth2		| 1	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
  eth3		| 1	| 1		| 2		| RGMII0			|
 
-2: SGMII (For A0):
+2: A0 (For A0):
  Interface      | CPN#  | PPv2 Port     | GMAC Port     | Board Interface               |
  ---------------|-------|---------------|---------------|-------------------------------|
  eth0           | 0     | 0             | 0             | SGMII				|

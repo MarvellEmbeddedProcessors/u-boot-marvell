@@ -23,9 +23,9 @@
 #include "cp110-mpp-bus-info.dtsi" /* include MPP bus info */
 #include <dt-bindings/multi-fdt/a8k/multi-fdt.h>
 / {
-	model = "DB-ARMADA-80x0 (SPI-CP1-SERDESB)";
+	model = "DB-ARMADA-80x0 (A0)";
 	compatible = "marvell,armada-80x0-db", "marvell,armada-80x0";
-	fdt_config_id = <A80X0_CP1_SERDESB>;
+	fdt_config_id = <A80X0_A0>;
 	board_id = <A8K_8040_DB>;
 
 	ap-806 {
@@ -83,9 +83,6 @@
 			sata@540000 {
 				status = "okay";
 			};
-			mmc@780000 {
-				status = "okay";
-			};
 			pcie-controller {
 				pcie@0,0 {
 					status = "disabled";
@@ -97,6 +94,9 @@
 					status = "okay";
 				};
 			};
+			mmc@780000 {
+				status = "okay";
+			};
 			pinctl@440000 {
 					/* MPP Bus:
 					   [0-31] = 0xff: Keep default CP0_shared_pins:
@@ -106,10 +106,9 @@
 						[29] AVS_FB_IN_CP2CP (in)
 					   [32,34] SMI
 					   [31]    GPIO: push button/Wake
-					   [35-36] GPIO
+					   [35-36] XSMI
 					   [37-38] I2C
 					   [40-41] SATA[0/1]_PRESENT_ACTIVEn
-					   [42-43] XSMI
 					   [44-55] RGMII1
 					   [56-62] SD
 					*/
@@ -117,16 +116,17 @@
 				pin-func = < 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
 					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
 					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
-					     0xff 0    7    0    7    0    0    2    2    0
-					     0    0    8    8    1    1    1    1    1    1
+					     0xff 0    7    0    7    7    7    2    2    0
+					     0    0    0    0    1    1    1    1    1    1
 					     1    1    1    1    1    1    0xE  0xE  0xE  0xE
 					     0xE  0xE  0xE>;
-				};
+			};
+
 			comphy {
 				/* Serdes Configuration:
 					Lane 0: SGMII2
 					Lane 1: USB3_HOST0
-					Lane 2: KR (10G)
+					Lane 2: SGMII
 					Lane 3: SATA1
 					Lane 4: USB3_HOST1
 					Lane 5: PEX2x1
@@ -139,7 +139,8 @@
 					phy-type = <PHY_TYPE_USB3_HOST0>;
 				};
 				phy2 {
-					phy-type = <PHY_TYPE_KR>;
+					phy-type = <PHY_TYPE_SGMII0>;
+					phy-speed = <PHY_SPEED_1_25G>;
 				};
 				phy3 {
 					phy-type = <PHY_TYPE_SATA1>;
@@ -154,22 +155,16 @@
 			mdio {
 				#address-cells = <1>;
 				#size-cells = <0>;
-				phy2: ethernet-phy@2 {
-					reg = <0>;
-				};
 				phy3: ethernet-phy@3 {
 					reg = <1>;
 				};
 			};
 			gop {
 				mac0 {
-					phy-mode = "kr"; /* lane-2 */
+					phy-mode = "sgmii"; /* lane-2 */
+					status = "okay";
 				};
-				mac2 {
-					phy-mode = "sgmii"; /* lane-0 */
-					phy = <&phy2>;
-					phy-speed = <2500>;
-				};
+				mac2 {/* disabled */};
 				mac3 {
 					phy-mode = "rgmii"; /* rgmii-1 */
 					phy = <&phy3>;
@@ -234,29 +229,28 @@
 
 			comphy {
 				/* Serdes Configuration:
-					Lane 0: UNCONNECTED
+					Lane 0: SGMII2
 					Lane 1: USB3_HOST0
-					Lane 2: SGMII0 (1.25G)
+					Lane 2: KR (10G)
 					Lane 3: SATA1
-					Lane 4: SGMII2 (1.25G)
+					Lane 4: Unconnected
 					Lane 5: PEX2x1
 				*/
 				phy0 {
-					phy-type = <PHY_TYPE_UNCONNECTED>;
+					phy-type = <PHY_TYPE_SGMII2>;
+					phy-speed = <PHY_SPEED_3_125G>;
 				};
 				phy1 {
 					phy-type = <PHY_TYPE_USB3_HOST0>;
 				};
 				phy2 {
-					phy-type = <PHY_TYPE_SGMII0>;
-					phy-speed = <PHY_SPEED_1_25G>;
+					phy-type = <PHY_TYPE_KR>;
 				};
 				phy3 {
 					phy-type = <PHY_TYPE_SATA1>;
 				};
 				phy4 {
-					phy-type = <PHY_TYPE_SGMII2>;
-					phy-speed = <PHY_SPEED_1_25G>;
+					phy-type = <PHY_TYPE_UNCONNECTED>;
 				};
 				phy5 {
 					phy-type = <PHY_TYPE_PEX2>;
@@ -268,21 +262,16 @@
 				phy4: ethernet-phy@2 {
 					reg = <0>;
 				};
-				phy5: ethernet-phy@3 {
-					reg = <1>;
-				};
 			};
 			gop {
 				mac0 {
-					phy-mode = "sgmii";
+					phy-mode = "kr"; /* lane-2 */
 				};
 				mac2 {
-					phy-mode = "rgmii";
+					phy-mode = "rgmii"; /* lane-0 */
 					phy = <&phy4>;
 				};
-				mac3 {
-					phy-mode = "sgmii";
-				};
+				mac3 {/* disabled */};
 			};
 			ppv22@000000 {
 				status = "okay";
@@ -298,7 +287,4 @@
 			};
 		};
 	};
-
-
 };
-

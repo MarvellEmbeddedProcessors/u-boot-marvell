@@ -33,24 +33,24 @@ Board Setup Options
 |CP0-SW1:6	| OFF			| OFF			| ON				|
 |CP0-SW1:7	| OFF			| OFF			| ON				|
 |CP0-SW1:8	| OFF			| OFF			| OFF				|
-|CP1-SW1:1	| OFF			| OFF			| ON                            |
-|CP1-SW1:2	| OFF			| OFF			| OFF                           |
-|CP1-SW1:3	| OFF			| OFF			| ON                            |
-|CP1-SW1:4	| OFF			| OFF			| OFF                           |
-|CP1-SW1:5	| ON			| ON			| OFF                           |
-|CP1-SW1:6	| OFF			| OFF			| ON                            |
-|CP1-SW1:7	| OFF			| OFF			| ON                            |
-|CP1-SW1:8	| OFF			| OFF			| OFF                           |
+|CP1-SW1:1	| OFF			| OFF			| ON				|
+|CP1-SW1:2	| OFF			| OFF			| OFF				|
+|CP1-SW1:3	| OFF			| OFF			| ON				|
+|CP1-SW1:4	| OFF			| OFF			| OFF				|
+|CP1-SW1:5	| ON			| ON			| OFF				|
+|CP1-SW1:6	| OFF			| OFF			| ON				|
+|CP1-SW1:7	| OFF			| OFF			| ON				|
+|CP1-SW1:8	| OFF			| OFF			| OFF				|
 
 DPR Setting
 ------------
-|					   | 1: A		| 5: D				| 2: A0		|
-|------------------------------------------|--------------------|-------------------------------|---------------|
-| Jumper-module (CON44): SLM1564	   | DPR all = 1-2	| DPR 96-108 = 2-3		| DPR all = 1-2	|
-| Serdes CP0 site module (CON42): SLM1521  | DPR 2-5 = 1-2	| DPR 2-5 = 1-2			| DPR 2-5 = 1-2	|
-| Serdes CP1 site module (CON41): SLM1521  | DPR 2-5 = 1-2	| DPR 2-5 = 1-2			| DPR 2-5 = 1-2	|
-| DB8040				   | 			| DPR 76,87,87 = 2-3		|		|
-|					   |                    | Audio module (CON51): SLM1449	|		|
+|						| 1: A		| 5: D				| 2: A0		|
+|-----------------------------------------------|---------------|-------------------------------|---------------|
+| Jumper-module (CON44): SLM1564		| DPR all = 1-2	| DPR 96-108 = 2-3		| DPR all = 1-2	|
+| Serdes CP0 site module (CON42): SLM1521	| DPR 2-5 = 1-2	| DPR 2-5 = 1-2			| DPR 2-5 = 1-2	|
+| Serdes CP1 site module (CON41): SLM1521	| DPR 2-5 = 1-2	| DPR 2-5 = 1-2			| DPR 2-5 = 1-2	|
+| DB8040					| 		| DPR 76,87,87 = 2-3		|		|
+|						|		| Audio module (CON51): SLM1449	|		|
 
 The tables below summarizes the interface configuration of each setup
 
@@ -69,7 +69,7 @@ SerDes Configuration
 - USB2_H0 (UTMI only)
 - USB2_H1 (UTMI & USB3 SerDes)
 
- CP1 Lane	| 1: A			| 5: D			| 2: A0		   	|
+ CP1 Lane	| 1: A			| 5: D			| 2: A0			|
 ----------------|-----------------------|-----------------------|-----------------------|
  0		| PCIe0 (x1)		| PCIe0 (x1)		| SGMII2 3.125G		|
  1		| SATA0			| SATA0			| USB23_HOST0		|
@@ -87,7 +87,7 @@ Multi-purpose pin configurations
  AP806 pin	| 1: A			| 5: D			| 2: A0			|
 ----------------|-----------------------|-----------------------|-----------------------|
     AP-SDIO	| [0-10]		| [0-10]		| N/C			|
-    I2C0        | N/C                   | N/C                   | [4-5]			|
+    I2C0	| N/C			| N/C			| [4-5]			|
     AP-SPI0	| N/C			| N/C			| [0,3]			|
     AP-UART0	| [11,19]		| [11,19]		| [11,19]		|
 
@@ -128,19 +128,19 @@ Network configuration
  eth3		| 1	| 1		| 2		| RGMII0			|
 
 5: D:
- Interface      | CPN#  | PPv2 Port     | GMAC Port     | Board Interface               |
+ Interface	| CPN#	| PPv2 Port	| GMAC Port	| Board Interface		|
  ---------------|-------|---------------|---------------|-------------------------------|
- eth0           | 0     | 0             | 0             | SGMII				|
- eth1           | 0     | 2             | 3             | RGMII1	                |
- eth2           | 1     | 0             | 0             | 10G (Lane 2 connected to SFP) |
+ eth0		| 0	| 0		| 0		| SGMII				|
+ eth1		| 0	| 2		| 3		| RGMII1			|
+ eth2		| 1	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
 
 2: A0:
- Interface      | CPN#  | PPv2 Port     | GMAC Port     | Board Interface               |
+ Interface	| CPN#	| PPv2 Port	| GMAC Port	| Board Interface		|
  ---------------|-------|---------------|---------------|-------------------------------|
- eth0           | 0     | 0             | 0             | SGMII				|
- eth1           | 0     | 2             | 3             | RGMII1	                |
- eth2           | 1     | 0             | 0             | 10G (Lane 2 connected to SFP) |
- eth3           | 1     | 1             | 2             | RGMII0                        |
+ eth0		| 0	| 0		| 0		| SGMII				|
+ eth1		| 0	| 2		| 3		| RGMII1			|
+ eth2		| 1	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
+ eth3		| 1	| 1		| 2		| RGMII0			|
 
 Notes:
 	- eth0/1/2/3 may in fact be higher numbers, if prior eth_x interfaces already exist.

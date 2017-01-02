@@ -58,7 +58,7 @@
  * The specification of any preset found in doc/mvebu/a7k-a8k/
  */
 #define A80X0_A			1
-#define A80X0_A0		6
+#define A80X0_A0		2
 
 /*
  * There are main presets for Armada70x0 PCAC:

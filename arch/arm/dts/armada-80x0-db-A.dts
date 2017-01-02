@@ -154,7 +154,7 @@
 			mdio {
 				#address-cells = <1>;
 				#size-cells = <0>;
-				phy3: ethernet-phy@3 {
+				mdio0_phy1: ethernet-phy@1 {
 					reg = <1>;
 				};
 			};
@@ -162,10 +162,12 @@
 				mac0 {
 					phy-mode = "kr"; /* lane-2 */
 				};
-				mac2 {/* disabled */};
+				mac2 {
+					phy-mode = "none"; /* disabled */
+				};
 				mac3 {
 					phy-mode = "rgmii"; /* rgmii-1 */
-					phy = <&phy3>;
+					phy = <&mdio0_phy1>;
 				};
 			};
 			ppv22@000000 {
@@ -262,7 +264,7 @@
 			mdio {
 				#address-cells = <1>;
 				#size-cells = <0>;
-				phy4: ethernet-phy@2 {
+				mdio1_phy1: ethernet-phy@1 {
 					reg = <0>;
 				};
 			};
@@ -272,9 +274,11 @@
 				};
 				mac2 {
 					phy-mode = "rgmii"; /* rgmii-0 */
-					phy = <&phy4>;
+					phy = <&mdio1_phy1>;
 				};
-				mac3 {/* disabled */};
+				mac3 {
+					phy-mode = "none"; /* disabled */
+				};
 			};
 			ppv22@000000 {
 				status = "okay";

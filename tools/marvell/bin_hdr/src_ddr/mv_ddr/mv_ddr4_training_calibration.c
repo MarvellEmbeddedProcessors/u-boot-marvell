@@ -324,7 +324,7 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 		for (subphy_num = 0; subphy_num < subphy_max; subphy_num++) {
 			VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy_num);
 			DEBUG_CALIBRATION(DEBUG_LEVEL_INFO,
-					  ("calculating center of mass for subphy %d, valid windonw size %d\n",
+					  ("calculating center of mass for subphy %d, valid window size %d\n",
 					   subphy_num, valid_win_size[if_id][subphy_num]));
 			if (valid_vref_cnt[if_id][subphy_num] > 0) {
 				/* calculate center of mass sampling point (t, v) for each subphy */
@@ -341,6 +341,12 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 				DEBUG_CALIBRATION(DEBUG_LEVEL_INFO,
 						  ("center of mass results: vref %d, adll %d\n",
 						   center_vref[if_id][subphy_num], center_adll[if_id][subphy_num]));
+			} else {
+				DEBUG_CALIBRATION(DEBUG_LEVEL_ERROR,
+						  ("%s subphy %d no vref results to calculate the center of mass\n",
+						  __func__, subphy_num));
+				status = MV_ERROR;
+				return status;
 			}
 		}
 	}
@@ -1307,16 +1313,33 @@ static int mv_ddr4_tap_tuning(u8 dev, u16 (*pbs_tap_factor)[MAX_BUS_NUM][BUS_WID
 				if ((mode == TX_DIR) && (loop == 0)) {
 					/* dqs pbs shift if distance b/w adll is too large */
 					if (dq_to_dqs_min_delta < dq_to_dqs_min_delta_threshold) {
+						/* first calculate the WL in taps */
+						wl_tap = ((wl_adll[subphy] >> WR_LVL_REF_DLY_OFFS) &
+							  WR_LVL_REF_DLY_MASK) +
+							  ((wl_adll[subphy] >> WR_LVL_PH_SEL_OFFS) &
+							  WR_LVL_PH_SEL_MASK) * ADLL_TAPS_PER_PHASE;
+
 						/* calc dqs pbs shift */
 						dqs_shift[subphy] =
 							dq_to_dqs_min_delta_threshold - dq_to_dqs_min_delta;
-						DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
-									("%s: tap tune tx: subphy %d, dqs shifted by %d adll taps, ",
+						/* check that the WL result have enough taps to reduce */
+						if (wl_tap > 0) {
+							if (wl_tap < dqs_shift[subphy])
+								dqs_shift[subphy] = wl_tap-1;
+							else
+								dqs_shift[subphy] = dqs_shift[subphy];
+						} else {
+							dqs_shift[subphy] = 0;
+						}
+						DEBUG_TAP_TUNING_ENGINE
+							(DEBUG_LEVEL_INFO,
+							 ("%s: tap tune tx: subphy %d, dqs shifted by %d adll taps, ",
 									 __func__, subphy, dqs_shift[subphy]));
 						dqs_shift[subphy] =
 							(dqs_shift[subphy] * PBS_VAL_FACTOR) / pbs_tap_factor0;
 						DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
 									("%d pbs taps\n", dqs_shift[subphy]));
+						/* check high limit */
 						if (dqs_shift[subphy] > MAX_PBS_NUM)
 							dqs_shift[subphy] = MAX_PBS_NUM;
 						reg_addr = WR_DESKEW_PHY_REG(effective_cs, DQSP_PAD);
@@ -1330,11 +1353,6 @@ static int mv_ddr4_tap_tuning(u8 dev, u16 (*pbs_tap_factor)[MAX_BUS_NUM][BUS_WID
 
 						is_dq_dqs_short[subphy] = DQS_TO_DQ_SHORT;
 
-						/* change adaptively wl solution */
-						wl_tap = ((wl_adll[subphy] >> WR_LVL_REF_DLY_OFFS) &
-							  WR_LVL_REF_DLY_MASK) +
-							 ((wl_adll[subphy] >> WR_LVL_PH_SEL_OFFS) &
-							  WR_LVL_PH_SEL_MASK) * ADLL_TAPS_PER_PHASE;
 						new_wl_tap = wl_tap -
 							     (dqs_shift[subphy] * pbs_tap_factor0) / PBS_VAL_FACTOR;
 						reg_val = (new_wl_tap & WR_LVL_REF_DLY_MASK) |
@@ -1347,8 +1365,9 @@ static int mv_ddr4_tap_tuning(u8 dev, u16 (*pbs_tap_factor)[MAX_BUS_NUM][BUS_WID
 						ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, iface,
 								   ACCESS_TYPE_UNICAST, subphy, DDR_PHY_DATA,
 								   WL_PHY_REG(effective_cs), reg_val);
-						DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
-									("%s: subphy %d, dq_to_dqs_min_delta %d, dqs_shift %d, old wl %d, temp wl %d 0x%08x\n",
+						DEBUG_TAP_TUNING_ENGINE
+							(DEBUG_LEVEL_INFO,
+							 ("%s: subphy %d, dq_to_dqs_min_delta %d, dqs_shift %d, old wl %d, temp wl %d 0x%08x\n",
 									 __func__, subphy, dq_to_dqs_min_delta,
 									 dqs_shift[subphy], wl_tap, new_wl_tap,
 									 reg_val));
@@ -1612,6 +1631,13 @@ static int mv_ddr4_tap_tuning(u8 dev, u16 (*pbs_tap_factor)[MAX_BUS_NUM][BUS_WID
 						new_wl_tap = wl_tap -
 							     (dqs_shift[subphy] * pbs_tap_factor_avg) /
 							     PBS_VAL_FACTOR;
+						/*
+						 * check wraparound due to change in the pbs_tap_factor_avg
+						 * vs the first guess
+						 */
+						if (new_wl_tap <= 0)
+							new_wl_tap = 0;
+
 						reg_val = (new_wl_tap & WR_LVL_REF_DLY_MASK) |
 							  ((new_wl_tap &
 							    ((WR_LVL_PH_SEL_MASK << WR_LVL_PH_SEL_OFFS) >> 1))

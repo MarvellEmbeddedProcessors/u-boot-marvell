@@ -1084,8 +1084,7 @@ int ddr3_post_algo_config(void)
  */
 int hws_ddr3_tip_run_alg(u32 dev_num, enum hws_algo_type algo_type)
 {
-	int ret = MV_OK;
-	int status;
+	int status = MV_OK;
 
 	status = ddr3_pre_algo_config();
 	if (MV_OK != status) {
@@ -1099,7 +1098,7 @@ int hws_ddr3_tip_run_alg(u32 dev_num, enum hws_algo_type algo_type)
 #endif
 
 	if (algo_type == ALGO_TYPE_DYNAMIC) {
-		ret = ddr3_tip_ddr3_auto_tune(dev_num);
+		status = ddr3_tip_ddr3_auto_tune(dev_num);
 	} else {
 #ifdef STATIC_ALGO_SUPPORT
 		{
@@ -1117,16 +1116,17 @@ int hws_ddr3_tip_run_alg(u32 dev_num, enum hws_algo_type algo_type)
 			 * Frequency per interface is not relevant,
 			 * only interface 0
 			 */
-			ret = ddr3_tip_run_static_alg(dev_num,
+			status = ddr3_tip_run_static_alg(dev_num,
 						      freq);
 		}
 #endif
 	}
 
-	if (ret != MV_OK) {
+	if (status != MV_OK) {
 		DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR,
 				  ("********   DRAM initialization Failed (res 0x%x)   ********\n",
-				   ret));
+				   status));
+		return status;
 	}
 
 	status = ddr3_post_algo_config();
@@ -1135,7 +1135,7 @@ int hws_ddr3_tip_run_alg(u32 dev_num, enum hws_algo_type algo_type)
 		return status;
 	}
 
-	return ret;
+	return status;
 }
 
 #ifdef ODT_TEST_SUPPORT
@@ -2978,7 +2978,8 @@ static int ddr3_tip_ddr3_training_main_flow(u32 dev_num)
  */
 static int ddr3_tip_ddr3_auto_tune(u32 dev_num)
 {
-	u32 if_id, stage, ret;
+	int status;
+	u32 if_id, stage;
 	int is_if_fail = 0, is_auto_tune_fail = 0;
 
 	training_stage = INIT_CONTROLLER;
@@ -2988,7 +2989,7 @@ static int ddr3_tip_ddr3_auto_tune(u32 dev_num)
 			training_result[stage][if_id] = NO_TEST_DONE;
 	}
 
-	ret = ddr3_tip_ddr3_training_main_flow(dev_num);
+	status = ddr3_tip_ddr3_training_main_flow(dev_num);
 
 	/* activate XSB test */
 	if (xsb_validate_type != 0) {
@@ -3003,7 +3004,7 @@ static int ddr3_tip_ddr3_auto_tune(u32 dev_num)
 	CHECK_STATUS(ddr3_tip_print_log(dev_num, window_mem_addr));
 
 #ifndef EXCLUDE_DEBUG_PRINTS
-	if (ret != MV_OK) {
+	if (status != MV_OK) {
 		CHECK_STATUS(ddr3_tip_print_stability_log(dev_num));
 	}
 #endif /* EXCLUDE_DEBUG_PRINTS */
@@ -3022,8 +3023,8 @@ static int ddr3_tip_ddr3_auto_tune(u32 dev_num)
 		}
 	}
 
-	if (((ret == MV_FAIL) && (is_auto_tune_fail == 0)) ||
-	    ((ret == MV_OK) && (is_auto_tune_fail == 1))) {
+	if (((status == MV_FAIL) && (is_auto_tune_fail == 0)) ||
+	    ((status == MV_OK) && (is_auto_tune_fail == 1))) {
 		/*
 		 * If MainFlow result and trainingResult DB not in sync,
 		 * issue warning (caused by no update of trainingResult DB
@@ -3031,11 +3032,11 @@ static int ddr3_tip_ddr3_auto_tune(u32 dev_num)
 		 */
 		DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO,
 				  ("Warning: Algorithm return value and Result DB"
-				   "are not synced (ret 0x%x  result DB %d)\n",
-				   ret, is_auto_tune_fail));
+				   "are not synced (status 0x%x  result DB %d)\n",
+				   status, is_auto_tune_fail));
 	}
 
-	if ((ret == MV_FAIL) || (is_auto_tune_fail == 1))
+	if ((status != MV_OK) || (is_auto_tune_fail == 1))
 		return MV_FAIL;
 	else
 		return MV_OK;

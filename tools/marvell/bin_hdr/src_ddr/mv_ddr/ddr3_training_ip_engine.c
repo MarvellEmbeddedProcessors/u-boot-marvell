@@ -868,7 +868,7 @@ int ddr3_tip_load_pattern_to_odpg(u32 dev_num, enum hws_access_type access_type,
 	for (pattern_length_cnt = 0;
 	     pattern_length_cnt < pattern_table[pattern].pattern_len;
 	     pattern_length_cnt++) {	/* FIXME: the ecc patch below is only for a7040 A0 */
-		if (MV_DDR_IS_64BIT_DRAM_MODE(tm->bus_act_mask) || tm->bus_act_mask == MV_DDR_32BIT_ECC_PUP8_BUS_MASK) {
+		if (MV_DDR_IS_64BIT_DRAM_MODE(tm->bus_act_mask)/* || tm->bus_act_mask == MV_DDR_32BIT_ECC_PUP8_BUS_MASK*/) {
 			CHECK_STATUS(ddr3_tip_if_write
 				     (dev_num, access_type, if_id,
 				      ODPG_PATTERN_DATA_LOW_REG,

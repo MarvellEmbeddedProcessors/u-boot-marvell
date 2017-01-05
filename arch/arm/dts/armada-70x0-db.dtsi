@@ -23,8 +23,6 @@
 / {
 	model = "DB-ARMADA-70x0";
 	compatible = "marvell,armada-70x0-db", "marvell,armada-70x0";
-	fdt_config_id = <A70X0_ROUTER>;
-	board_id = <A8K_7040_DB>;
 
 	cp110-master {
 		internal-regs {

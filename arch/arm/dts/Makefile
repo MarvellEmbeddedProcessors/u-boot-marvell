@@ -79,7 +79,7 @@ dtb-$(CONFIG_DEVEL_BOARD) += apn-806-db.dtb \
 			     armada-8k-default.dtb
 
 dtb-y += armada-70x0-customer0.dtb
-dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-db_router.dtb 	\
+dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-db-A.dtb \
 			     armada-70x0-db_kr.dtb	\
 			     armada-70x0-db_all_pcie.dtb \
 			     armada-70x0-db_rgmii_only.dtb \

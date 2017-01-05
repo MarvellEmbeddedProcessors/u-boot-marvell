@@ -46,13 +46,12 @@
  * The specification of any preset found in doc/mvebu/a7k-a8k/armada70x0-db-setup.txt
  */
 
-#define A70X0_ROUTER		1
+#define A70X0_A			1
 #define A70X0_CUSTOMER		2
 #define A70X0_KR		3
 #define A70X0_ALL_PCIE		4
 #define A70X0_NAND		5
 #define A70X0_RGMII_ONLY	6
-
 /*
  * There are main presets for Armada80x0 DB:
  * The specification of any preset found in doc/mvebu/a7k-a8k/
@@ -71,7 +70,7 @@
 #define DEFAULT_FDT_PER_BOARD { \
 				0x04,			/* APN_806_DB	*/ \
 				0x01,			/* 7040_RZ_DB	*/ \
-				A70X0_ROUTER,		/* 7040_DB	*/ \
+				A70X0_A,		/* 7040_DB_A	*/ \
 				A80X0_A,		/* 8040_DB	*/ \
 				A70X0_PCAC_KR,		/* 7040_PCAC	*/ \
 				A8K_A7K_default,	/* DEFAULT BOARD_ID, This must be the last value*/ \

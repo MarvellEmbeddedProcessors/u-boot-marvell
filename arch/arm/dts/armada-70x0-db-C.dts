@@ -1,0 +1,188 @@
+/*
+ * ***************************************************************************
+ * Copyright (C) 2015 Marvell International Ltd.
+ * ***************************************************************************
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ***************************************************************************
+ */
+
+/dts-v1/;
+
+#include "armada-70x0-db.dtsi" /* include SoC device tree */
+
+/ {
+	model = "DB-ARMADA-70x0 (C)";
+	compatible = "marvell,armada-70x0-db", "marvell,armada-70x0";
+	fdt_config_id = <A70X0_C>;
+	board_id = <A8K_7040_DB>;
+
+	ap-806 {
+		internal-regs {
+			spi0: spi@510600 {
+				status = "disabled";
+			};
+			i2c0: i2c@511000 {
+				status = "disabled";
+			};
+			pinctl: pinctl@6F4000 {
+					/* MPP Bus:
+						SDIO  [0-5]
+						UART0 [11,19]
+					*/
+					  /* 0 1 2 3 4 5 6 7 8 9 */
+				pin-func = < 1 1 1 1 1 1 0 0 0 0
+					     0 3 0 0 0 0 0 0 0 3 >;
+			};
+			mmc0: mmc@6E0000 {
+				status = "okay";
+			};
+		};
+	};
+	cp110-master {
+		internal-regs {
+			spi0@700600 {
+				status = "okay";
+			};
+			spi1@700680 {
+				status = "okay";
+			};
+			i2c@701000 {
+				status = "okay";
+			};
+			i2c@211000 { /* MSS_i2c0 */
+				status = "disabled";
+			};
+			i2c@211100 { /* MSS_i2c1 */
+				status = "disabled";
+			};
+			utmi0@580000 {
+				utmi-port = <UTMI_PHY_TO_USB3_HOST0>;
+			};
+			utmi1@581000 {
+				utmi-port = <UTMI_PHY_TO_USB3_HOST1>;
+			};
+			usb3@500000 {
+				status = "okay";
+			};
+			usb3@510000 {
+				status = "okay";
+			};
+			sata@540000 {
+				status = "okay";
+			};
+			mmc@780000 {
+				status = "okay";
+			};
+			pcie-controller {
+				pcie@0,0 {
+					status = "okay";
+				};
+				pcie@1,0 {
+					status = "disabled";
+				};
+				pcie@2,0 {
+					status = "okay";
+				};
+			};
+			nand@720000 {
+				status = "disabled";
+			};
+
+			pinctl@440000 {
+					/* MPP Bus:
+					   TDM	   [0-5]
+					   SPI0    [6-11]
+					   SS_PWDN [12]
+					   SPI1    [13-16]
+					   SATA1   [28]
+					   UART0   [29-30]
+					   MSS_VTT_EN [31]
+					   SMI	   [32,34]
+					   XSMI    [35-36]
+					   I2C	   [37-38]
+					   RGMII2  [44-55]
+					   SD	   [56-61]
+					   GPIO    [62]
+					*/
+					/*   0   1   2   3   4   5   6   7   8   9 */
+			pin-func = < 4   4   4   4   4   4   4   4   4   4
+					     4   4   0   3   3   3   3   0   0   0
+					     0   0   0   0   0   0   0   0   9   0xA
+					     0xA 0   7   0   7   7   7   2   2   0
+					     0   0   0   0   1   1   1   1   1   1
+					     1   1   1   1   1   1   0xE 0xE 0xE 0xE
+					     0xE 0xE 0>;
+			};
+
+			comphy {
+				/* Serdes Configuration:
+					Lane 0: PCIe0 (x1)
+					Lane 1: USB3-HOST0
+					Lane 2: SFI (10G)
+					Lane 3: SATA1
+					Lane 4: USB3-HOST1
+					Lane 5: PCIe2 (x1)
+				*/
+
+				phy0 {
+					phy-type = <PHY_TYPE_PEX0>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_USB3_HOST0>;
+				};
+				phy2 {
+					phy-type = <PHY_TYPE_SFI>;
+				};
+				phy3 {
+					phy-type = <PHY_TYPE_SATA1>;
+				};
+				phy4 {
+					phy-type = <PHY_TYPE_USB3_HOST1>;
+				};
+				phy5 {
+					phy-type = <PHY_TYPE_PEX2>;
+				};
+			};
+			mdio {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				phy2: ethernet-phy@2 {
+					reg = <1>;
+				};
+			};
+			gop {
+				mac0 {
+					phy-mode = "sfi"; /* lane-2 */
+				};
+				mac2 {
+					phy-mode = "none";
+				};
+				mac3 {
+					phy-mode = "rgmii"; /* rgmii-2 */
+					phy = <&phy2>;
+				};
+			};
+			ppv22@000000 {
+				eth0@010000 {
+					status = "okay";
+				};
+				eth1@020000 {
+					status = "disabled";
+				};
+				eth2@030000 {
+					status = "okay";
+				};
+			};
+		};
+	};
+};

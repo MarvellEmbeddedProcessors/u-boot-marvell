@@ -1,0 +1,288 @@
+/*
+ * ***************************************************************************
+ * Copyright (C) 2017 Marvell International Ltd.
+ * ***************************************************************************
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ***************************************************************************
+ */
+/dts-v1/;
+
+#include "armada-80x0.dtsi" /* include SoC device tree */
+#include "armada-80x0-dev-info.dtsi" /* include Marvell specific info (S@R, MPP cmd) */
+#include "cp110-mpp-bus-info.dtsi" /* include MPP bus info */
+#include <dt-bindings/multi-fdt/a8k/multi-fdt.h>
+/ {
+	model = "DB-ARMADA-80x0 (C)";
+	compatible = "marvell,armada-80x0-db", "marvell,armada-80x0";
+	fdt_config_id = <A80X0_C>;
+	board_id = <A8K_8040_DB>;
+
+	ap-806 {
+		internal-regs {
+			mmc0: mmc@6E0000 {
+				status = "okay";
+			};
+			pinctl: pinctl@6F4000 {
+					/* MPP Bus:
+						SDIO  [0-10]
+						UART0 [11,19]
+					*/
+					  /* 0 1 2 3 4 5 6 7 8 9 */
+				pin-func = < 1 1 1 1 1 1 1 1 1 1
+					     1 3 0 0 0 0 0 0 0 3>;
+			};
+		};
+	};
+	cp110-master {
+		internal-regs {
+			i2c@701000 {
+				status = "okay";
+				expander0: pca953x@21 {
+					compatible = "nxp,pca9555";
+					reg = <0x21>;
+					status = "okay";
+				};
+				expander1: pca953x@25 {
+					compatible = "nxp,pca9555";
+					reg = <0x25>;
+					status = "okay";
+				};
+			};
+			utmi0@580000 {
+				utmi-port = <UTMI_PHY_TO_USB3_HOST0>;
+			};
+			utmi1@581000 {
+				utmi-port = <UTMI_PHY_TO_USB3_HOST1>;
+			};
+			usb3@500000 {
+				gpio-vbus = <&expander0 EXPANDER0_GPIO(0) GPIO_ACTIVE_HIGH>;
+				gpio-vbus-cur-lim = <&expander0 EXPANDER0_GPIO(4) GPIO_ACTIVE_HIGH>;
+				vbus-enable-delay = <1000>;
+				vbus-disable-delay = <1000>;
+				status = "okay";
+			};
+			usb3@510000 {
+				gpio-vbus = <&expander0 EXPANDER0_GPIO(1) GPIO_ACTIVE_HIGH>;
+				gpio-vbus-cur-lim = <&expander0 EXPANDER0_GPIO(5) GPIO_ACTIVE_HIGH>;
+				vbus-enable-delay = <1000>;
+				vbus-disable-delay = <1000>;
+				status = "okay";
+			};
+			sata@540000 {
+				status = "okay";
+			};
+			pcie-controller {
+				pcie@0,0 {
+					status = "okay";
+				};
+				pcie@1,0 {
+					status = "disabled";
+				};
+				pcie@2,0 {
+					status = "okay";
+				};
+			};
+			mmc@780000 {
+				status = "okay";
+			};
+			pinctl@440000 {
+					/* MPP Bus:
+					   [0-31] = 0xff: Keep default CP0_shared_pins
+						[11] CLKOUT_MPP_11 (out)
+						[23] LINK_RD_IN_CP2CP (in)
+						[25] CLKOUT_MPP_25 (out)
+						[29] AVS_FB_IN_CP2CP (in)
+					   [32,34] GE_MDIO/MDC
+					   [33]    GPIO: GE_INT#/push button/Wake
+					   [35]    MSS_GPIO[3]: MSS_PWDN
+					   [36]    MSS_GPIO[5]: MSS_VTT_EN
+					   [37-38] I2C0
+					   [39]	   PTP_CLK
+					   [40-41] SATA[0/1]_PRESENT_ACTIVEn
+					   [42-43] XG_MDC/XG_MDIO (XSMI)
+					   [44-55] RGMII1
+					   [56-62] SD
+					*/
+					/*   0    1    2    3    4    5    6    7    8    9 */
+				pin-func = < 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 7    0    7    0xA  0xA  2    2    5
+					     9    9    8    8    1    1    1    1    1    1
+					     1    1    1    1    1    1    0xE  0xE  0xE  0xE
+					     0xE  0xE  0xE>;
+			};
+
+			comphy {
+				/* Serdes Configuration:
+					Lane 0: PCIe0 (x1)
+					Lane 1: SATA0
+					Lane 2: SFI (10G)
+					Lane 3: SATA1
+					Lane 4: USB3_HOST1
+					Lane 5: PCIe2 (x1)
+				*/
+				phy0 {
+					phy-type = <PHY_TYPE_PEX0>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_SATA0>;
+				};
+				phy2 {
+					phy-type = <PHY_TYPE_SFI>;
+				};
+				phy3 {
+					phy-type = <PHY_TYPE_SATA1>;
+				};
+				phy4 {
+					phy-type = <PHY_TYPE_USB3_HOST1>;
+				};
+				phy5 {
+					phy-type = <PHY_TYPE_PEX2>;
+				};
+			};
+			mdio {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				mdio0_phy1: ethernet-phy@1 {
+					reg = <1>;
+				};
+			};
+			gop {
+				mac0 {
+					phy-mode = "kr"; /* lane-2 */
+				};
+				mac2 {
+					phy-mode = "none"; /* disabled */
+				};
+				mac3 {
+					phy-mode = "rgmii"; /* rgmii-1 */
+					phy = <&mdio0_phy1>;
+				};
+			};
+			ppv22@000000 {
+				eth0@010000 {
+					status = "okay";
+				};
+				eth1@020000 {
+					status = "disabled";
+				};
+				eth2@030000 {
+					status = "okay";
+				};
+			};
+		};
+	};
+
+	cp110-slave {
+		internal-regs {
+			utmi0@580000 {
+				utmi-port = <UTMI_PHY_TO_USB3_HOST0>;
+			};
+			usb3@500000 {
+				gpio-vbus = <&expander1 EXPANDER1_GPIO(0) GPIO_ACTIVE_HIGH>;
+				gpio-vbus-cur-lim = <&expander1 EXPANDER1_GPIO(4) GPIO_ACTIVE_HIGH>;
+				vbus-enable-delay = <1000>;
+				vbus-disable-delay = <1000>;
+				status = "okay";
+			};
+			sata@540000 {
+				status = "okay";
+			};
+			spi1@700680 {
+				status = "okay";
+			};
+			pcie-controller {
+				pcie@0,0 {
+					status = "okay";
+				};
+				pcie@1,0 {
+					status = "okay";
+				};
+				pcie@2,0 {
+					status = "okay";
+				};
+			};
+			pinctl@440000 {
+					/* MPP Bus:
+					  [0-11] TDM
+					  [13-16] SPI1
+					  [27-28] SATA[0/1]_PRESENT_ACTIVEn
+					  [29-30] UART0
+					  [32-62] = 0xff: Keep default CP1_shared_pins
+					*/
+					/*   0    1    2    3    4    5    6    7    8    9 */
+				pin-func = < 0x4  0x4  0x4  0x4  0x4  0x4  0x4  0x4  0x4  0x4
+					     0x4  0x4  0x3  0x3  0x3  0x3  0x3  0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0x9  0x9  0xA
+					     0xA  0x0  0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff>;
+
+			};
+
+			comphy {
+				/* Serdes Configuration:
+					Lane 0: PCIe0 (x1)
+					Lane 1: SATA0
+					Lane 2: SFI (10G)
+					Lane 3: SATA1
+					Lane 4: PCIe1 (x1)
+					Lane 5: PCIe2 (x1)
+				*/
+				phy0 {
+					phy-type = <PHY_TYPE_PEX0>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_SATA0>;
+				};
+				phy2 {
+					phy-type = <PHY_TYPE_SFI>;
+				};
+				phy3 {
+					phy-type = <PHY_TYPE_SATA1>;
+				};
+				phy4 {
+					phy-type = <PHY_TYPE_PEX1>;
+				};
+				phy5 {
+					phy-type = <PHY_TYPE_PEX2>;
+				};
+			};
+			gop {
+				mac0 {
+					phy-mode = "kr"; /* lane-2 */
+				};
+				mac2 {
+					phy-mode = "none"; /* disabled */
+				};
+				mac3 {
+					phy-mode = "none"; /* disabled */
+				};
+			};
+			ppv22@000000 {
+				status = "okay";
+				eth0@010000 {
+					status = "okay";
+				};
+				eth1@020000 {
+					status = "disabled";
+				};
+				eth2@030000 {
+					status = "disabled";
+				};
+			};
+		};
+	};
+};

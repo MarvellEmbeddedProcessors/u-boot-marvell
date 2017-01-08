@@ -94,7 +94,8 @@ dtb-$(CONFIG_DEVEL_BOARD) += armada-80x0-db-A.dtb \
 			     armada-80x0-db-A0.dtb \
 			     armada-80x0-db-B.dtb \
 			     armada-80x0-db-C.dtb \
-			     armada-80x0-db-D.dtb
+			     armada-80x0-db-D.dtb \
+			     armada-80x0-db-E.dtb
 dtb-$(CONFIG_A80X0_CUSTOMER0_MCBIN) += armada-80x0-customer0-mcbin.dtb
 
 endif #CONFIG_TARGET_ARMADA_8K

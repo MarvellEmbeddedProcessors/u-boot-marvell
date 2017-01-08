@@ -58,6 +58,7 @@
  */
 #define A80X0_A			1
 #define A80X0_A0		2
+#define A80X0_B			3
 #define A80X0_C			4
 #define A80X0_D			5
 

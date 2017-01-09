@@ -129,7 +129,7 @@
 			};
 			gop {
 				mac0 {
-					phy-mode = "kr"; /* lane-4 */
+					phy-mode = "sfi"; /* lane-4 */
 				};
 			};
 			ppv22@000000 {
@@ -214,7 +214,7 @@
 			};
 			gop {
 				mac0 {
-					phy-mode = "kr"; /* lane-4 */
+					phy-mode = "sfi"; /* lane-4 */
 				};
 				mac2 {
 					phy-mode = "sgmii"; /* lane-0 */

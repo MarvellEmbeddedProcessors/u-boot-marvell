@@ -1719,7 +1719,7 @@ static int mv_gop110_port_events_mask(struct gop_hw *gop, struct mv_mac_data *ma
 
 	case PHY_INTERFACE_MODE_XAUI:
 	case PHY_INTERFACE_MODE_RXAUI:
-	case PHY_INTERFACE_MODE_KR:
+	case PHY_INTERFACE_MODE_SFI:
 		mv_gop110_xlg_port_link_event_mask(gop, port_num);
 	break;
 
@@ -1953,7 +1953,7 @@ static int mv_gop110_port_init(struct gop_hw *gop, struct mv_mac_data *mac)
 		mv_gop110_serdes_reset(gop, 0, false, false, false);
 		mv_gop110_serdes_reset(gop, 1, false, false, false);
 	break;
-	case PHY_INTERFACE_MODE_KR:
+	case PHY_INTERFACE_MODE_SFI:
 		num_of_act_lanes = 2;
 		mac_num = 0;
 		/* configure PCS */
@@ -2058,7 +2058,7 @@ static int mv_gop110_speed_duplex_set(struct gop_hw *gop, struct mv_mac_data *ma
 
 	case PHY_INTERFACE_MODE_XAUI:
 	case PHY_INTERFACE_MODE_RXAUI:
-	case PHY_INTERFACE_MODE_KR:
+	case PHY_INTERFACE_MODE_SFI:
 		mv_gop110_xlg_mac_speed_duplex_set(gop, port_num,
 			speed, duplex);
 	break;
@@ -2116,7 +2116,7 @@ static int mv_gop110_fl_cfg(struct gop_hw *gop, struct mv_mac_data *mac)
 
 	case PHY_INTERFACE_MODE_XAUI:
 	case PHY_INTERFACE_MODE_RXAUI:
-	case PHY_INTERFACE_MODE_KR:
+	case PHY_INTERFACE_MODE_SFI:
 		return 0;
 
 	default:
@@ -2196,7 +2196,7 @@ static void mv_gop110_port_enable(struct gop_hw *gop, struct mv_mac_data *mac)
 
 	case PHY_INTERFACE_MODE_XAUI:
 	case PHY_INTERFACE_MODE_RXAUI:
-	case PHY_INTERFACE_MODE_KR:
+	case PHY_INTERFACE_MODE_SFI:
 		mv_gop110_xlg_mac_port_enable(gop, port_num);
 
 	break;
@@ -2220,7 +2220,7 @@ static void mv_gop110_port_disable(struct gop_hw *gop, struct mv_mac_data *mac)
 
 	case PHY_INTERFACE_MODE_XAUI:
 	case PHY_INTERFACE_MODE_RXAUI:
-	case PHY_INTERFACE_MODE_KR:
+	case PHY_INTERFACE_MODE_SFI:
 		mv_gop110_xlg_mac_port_disable(gop, port_num);
 	break;
 
@@ -3699,12 +3699,12 @@ int mv_pp2x_dts_port_param_set(int port_node, struct mv_pp2x_dev_param *param)
 	else if (strncmp(phy_mode_str, "rgmii", 5) == 0)
 		phy_mode = PHY_INTERFACE_MODE_RGMII;
 
-	else if (strncmp(phy_mode_str, "kr", 2) == 0)
-		phy_mode = PHY_INTERFACE_MODE_KR;
+	else if (strncmp(phy_mode_str, "sfi", 3) == 0)
+		phy_mode = PHY_INTERFACE_MODE_SFI;
 
 	if (phy_mode != PHY_INTERFACE_MODE_SGMII &&
 		phy_mode != PHY_INTERFACE_MODE_RGMII &&
-		phy_mode != PHY_INTERFACE_MODE_KR) {
+		phy_mode != PHY_INTERFACE_MODE_SFI) {
 		printf("could not find phy-mode in pp2 node, init skipped!\n");
 	}
 

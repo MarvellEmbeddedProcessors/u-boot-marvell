@@ -54,7 +54,7 @@
 #define A70X0_RGMII_ONLY	6
 #define A70X0_B			7
 #define A70X0_C			8
-
+#define A70X0_D			9
 /*
  * There are main presets for Armada80x0 DB:
  * The specification of any preset found in doc/mvebu/a7k-a8k/

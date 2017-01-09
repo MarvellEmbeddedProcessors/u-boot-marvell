@@ -79,8 +79,9 @@ dtb-$(CONFIG_DEVEL_BOARD) += armada-8k-default.dtb
 dtb-y += armada-70x0-customer0.dtb
 dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-db-A.dtb \
 			     armada-70x0-db-B.dtb  \
-			     armada-70x0-db_sfi.dtb	\
-			     armada-70x0-db-C.dtb    \
+			     armada-70x0-db_sfi.dtb\
+			     armada-70x0-db-C.dtb   \
+			     armada-70x0-db-D.dtb	\
 			     armada-70x0-db_all_pcie.dtb \
 			     armada-70x0-db_rgmii_only.dtb \
 			     armada-70x0-db_nand.dtb

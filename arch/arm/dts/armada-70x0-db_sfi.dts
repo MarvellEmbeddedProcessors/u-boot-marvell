@@ -162,7 +162,7 @@
 			};
 			gop {
 				mac0 {
-					phy-mode = "kr"; /* lane-2 */
+					phy-mode = "sfi"; /* lane-2 */
 				};
 				mac2 {
 					phy-mode = "rgmii"; /* rgmii-0 */

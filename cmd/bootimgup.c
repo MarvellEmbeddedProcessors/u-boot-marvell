@@ -167,14 +167,17 @@ static int do_bootu_spi(int argc, char * const argv[])
 	char *endp, *env1, *env2;
 	int ret = 1;
 
-	if (argc < 2)
+	if (argc < 1)
 		return -1;
 
-	offset = simple_strtoul(argv[1], &endp, 0);
-	if (*argv[1] == 0 || *endp != 0)
-		return -1;
-
-	if (argc == 2) {
+	if (argc <= 2) {
+		if (argc == 1)
+			offset = 0;
+		else {
+			offset = simple_strtoul(argv[1], &endp, 0);
+			if (*argv[1] == 0 || *endp != 0)
+				return -1;
+		}
 		env1 = getenv("kernel_addr");
 		env2 = getenv("filesize");
 		debug(" %s kernel_addr %s filesize %s \n", __func__, env1, env2);
@@ -189,6 +192,9 @@ static int do_bootu_spi(int argc, char * const argv[])
 			return -1;
 		debug(" %s len %ld \n", __func__, len);
 	} else {
+		offset = simple_strtoul(argv[1], &endp, 0);
+		if (*argv[1] == 0 || *endp != 0)
+			return -1;
 		env1 = argv[2];
 		env2 = argv[3];
 		addr = simple_strtoul(env1, &endp, 16);
@@ -248,8 +254,8 @@ static int do_bootimgup(cmd_tbl_t *cmdtp, int flag, int argc,
 	const char *cmd;
 	int ret;
 
-	/* need at least three arguments */
-	if (argc < 3)
+	/* need at least two arguments */
+	if (argc < 2)
 		goto usage;
 
 	cmd = argv[1];
@@ -274,4 +280,25 @@ U_BOOT_CMD(
 	bootimgup, 5, 1, do_bootimgup, "Update Boot Image",
 	"bootimgup device offset addr len - loads image to device \n"
 	"			at offset from addr of len bytes \n"
+	" bootimgup interface offset addr len \n"
+	" interface - spi or mmc \n"
+	" offset - address in flash to load or block number \n"
+	"          to load on mmc device \n"
+	" addr   - address in RAM to fetch image \n"
+	" len    - length of image in RAM \n"
+	" interface spi example \n"
+	" >> bootimgup spi 0 0x1000 0x100 \n"
+	" offset - offset 0 in flash, in hex, if not given \n"
+	"          default value 0 is used \n"
+	" addr   - 1000 in hex, if not given $kernel_addr \n"
+	"          environment variable value is used \n"
+	" len    - 100 in hex, if not given $filesize \n"
+	"          environment variable value is used \n"
+	" interface mmc example \n"
+	" >> bootimgup mmc 0 0x1000 0x100 \n"
+	" blk    - block number 0 in device \n"
+	" addr   - 1000 in hex, if not given $kernel_addr \n"
+	"          environment variable value is used \n"
+	" len    - 100 in hex, if not given $filesize \n"
+	"          environment variable value is used \n"
 );

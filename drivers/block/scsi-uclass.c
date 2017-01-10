@@ -18,8 +18,27 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static int scsi_post_probe(struct udevice *dev)
 {
+	struct udevice *child_dev;
+	int ret;
+
 	debug("%s: device %p\n", __func__, dev);
-	scsi_low_level_init(0, dev);
+
+	/*
+	 * For the purpose of accessing peripheral devices through SCSI, the
+	 * peripheral devices need to be probed to finish low level
+	 * initialization, for example, ahci controller needs to do the ahci
+	 * initialization;
+	 * Since u-boot initialization does not probe devices by default, SCSI
+	 * children devices can be probed automatically in SCSI post probe
+	 * function when SCSI controller acts as a bus.
+	 */
+	list_for_each_entry(child_dev, &dev->child_head, sibling_node) {
+		ret = device_probe(child_dev);
+		if (ret)
+			printf("%s: child device %s probe failed!\n",
+			       child_dev->name);
+	}
+
 	return 0;
 }
 
@@ -54,6 +73,6 @@ UCLASS_DRIVER(scsi) = {
 	.id		= UCLASS_SCSI,
 	.name		= "scsi",
 	.post_bind	= scsi_post_bind,
-	.post_probe	 = scsi_post_probe,
+	.post_probe	= scsi_post_probe,
 	.per_device_platdata_auto_alloc_size = sizeof(struct scsi_platdata),
 };

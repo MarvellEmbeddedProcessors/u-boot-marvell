@@ -45,6 +45,9 @@ static int scsi_post_bind(struct udevice *dev)
 {
 	/* Get uclass plat data from fdt */
 	scsi_ofdata_to_uclass_platdata(dev);
+
+	/* bind subnode devices */
+	return dm_scan_fdt_dev(dev);
 }
 
 UCLASS_DRIVER(scsi) = {

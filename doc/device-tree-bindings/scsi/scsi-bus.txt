@@ -1,0 +1,23 @@
+SCSI (Small Computer System Interface) busses
+
+SCSI busses can be described with a node for the SCSI controller device
+and a set of child nodes for each SCSI devices on the bus. An SCSI controller
+node can also be a Serial Attached SCSI (SAS) controller, which can act as an
+add-on host bus adapter or work as a pure controller as an on-board component
+on the motherboard, to offer compatibility with SATA devices.
+
+The SCSI controller node requires the following properties:
+- #address-cells  - the number of cells used to represent physical base addresses
+- #size-cells     - the number of cells used to represent the size of an address
+- compatible      - the name of SCSI bus controller following generic names recommended practice
+
+No other properties are required in the SCSI bus node.  It is assumed
+that a driver for an SCSI bus device will understand that it is an SCSI bus.
+
+Optional property:
+- base            - scsi register base address
+- max-id          - maximum number of scsi target ids, the default value is CONFIG_SYS_SCSI_MAX_SCSI_ID
+- max-lun         - maximum number of scsi logical units, the default value is CONFIG_SYS_SCSI_MAX_LUN
+
+SCSI device nodes must be children of the SCSI controller node, for example, in "marvell,mvebu-scsi.txt",
+the SCSI device node "sata" is the child of the SCSI controller node "scsi".

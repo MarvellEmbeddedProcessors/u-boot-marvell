@@ -185,7 +185,6 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 	static u8 vref_byte_status[MAX_INTERFACE_NUM][MAX_BUS_NUM][MV_DDR4_VREF_MAX_RANGE];
 
 	DEBUG_CALIBRATION(DEBUG_LEVEL_INFO, ("Starting ddr4 dq vref calibration training stage\n"));
-
 	vdq_tv = 0;
 	duty_cycle = 0;
 
@@ -196,9 +195,15 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 			vref_state_per_subphy[if_id][subphy_num] = MV_DDR4_VREF_SUBPHY_CAL_ABOVE;
 		}
 	}
-
-	if (mv_ddr4_tap_tuning(dev_num, lambda_per_dq, TX_DIR) == MV_OK)
-		tap_tune_passed = MV_TRUE;
+	/*
+	 * FIXME: in case of calling tap tune before vref loop search below
+	 * the tap tune will results lambda expression which is incorrect sometimes
+	 * removing the tap tunning here and calling it in the vref search below solves
+	 * this issue.
+	 * need further investigation.
+	 * if (mv_ddr4_tap_tuning(dev_num, lambda_per_dq, TX_DIR) == MV_OK)
+	 * 	tap_tune_passed = MV_TRUE;
+	 */
 
 	/* place dram to vref training mode */
 	mv_ddr4_vref_training_mode_ctrl(dev_num, 0, ACCESS_TYPE_MULTICAST, MV_TRUE);
@@ -242,8 +247,8 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 				if (valid_win_size[if_id][subphy_num] > MV_DDR_VW_TX_NOISE_FILTER) {
 					if (vref_state_per_subphy[if_id][subphy_num] == MV_DDR4_VREF_SUBPHY_CAL_UNDER)
 						DEBUG_CALIBRATION(DEBUG_LEVEL_ERROR,
-								  ("warning: %s: ddr4 vref voltage noise\n",
-								   __func__));
+								  ("warning: %s: subphy %d vref tap %d voltage noise\n",
+								   __func__, subphy_num, vref_tap_idx));
 					/* window is valid; keep current vref_tap_idx value and increment counter */
 					vref_idx = valid_vref_cnt[if_id][subphy_num];
 					valid_vref_ptr[if_id][subphy_num][vref_idx] = vref_tap_idx;

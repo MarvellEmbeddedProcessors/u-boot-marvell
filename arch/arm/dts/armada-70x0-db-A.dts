@@ -133,7 +133,7 @@
 				*/
 
 				phy0 {
-					phy-type = <PHY_TYPE_SGMII2>;
+					phy-type = <PHY_TYPE_SGMII1>;
 				};
 				phy1 {
 					phy-type = <PHY_TYPE_USB3_HOST0>;

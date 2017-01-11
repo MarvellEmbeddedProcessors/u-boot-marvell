@@ -112,7 +112,11 @@ static int init_baudrate(void)
 
 static int display_banner(void)
 {
-	printf("\n\n%s\n\n", version_string);
+#if defined(BUILD_TAG)
+	printf ("\n\n%s, Build: %s\n\n", version_string, BUILD_TAG);
+#else
+	printf ("\n\n%s\n\n", version_string);
+#endif
 	debug("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n",
 	      _TEXT_BASE,
 	      _bss_start_ofs + _TEXT_BASE, _bss_end_ofs + _TEXT_BASE);

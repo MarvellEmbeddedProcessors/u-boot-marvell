@@ -55,7 +55,7 @@
 #define PHY_TYPE_XAUI3			21
 #define PHY_TYPE_RXAUI0			22
 #define PHY_TYPE_RXAUI1			23
-#define PHY_TYPE_KR			24
+#define PHY_TYPE_SFI			24
 #define PHY_TYPE_IGNORE			25
 #define PHY_TYPE_MAX			26
 #define PHY_TYPE_INVALID		0xff

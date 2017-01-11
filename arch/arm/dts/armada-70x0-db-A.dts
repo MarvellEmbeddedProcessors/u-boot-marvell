@@ -126,7 +126,7 @@
 				/* Serdes Configuration:
 					Lane 0: SGMII1 (1G)
 					Lane 1: USB3-HOST0
-					Lane 2: KR (10G)
+					Lane 2: SFI (10G)
 					Lane 3: SATA1
 					Lane 4: USB3-HOST1
 					Lane 5: PCIe2 (x1)
@@ -139,7 +139,7 @@
 					phy-type = <PHY_TYPE_USB3_HOST0>;
 				};
 				phy2 {
-					phy-type = <PHY_TYPE_KR>;
+					phy-type = <PHY_TYPE_SFI>;
 				};
 				phy3 {
 					phy-type = <PHY_TYPE_SATA1>;

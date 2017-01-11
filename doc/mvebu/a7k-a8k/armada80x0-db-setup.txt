@@ -61,7 +61,7 @@ SerDes Configuration
 ----------------|-----------------------|-----------------------|-----------------------|
  0		| PCIe0 (x1)		| PCIe0 (x1)		| SGMII2 3.125G		|
  1		| SATA0			| SATA0			| USB3_HOST0		|
- 2		| KR (10G)		| KR (10G)		| SGMII0		|
+ 2		| SFI (10G)		| SFI (10G)		| SGMII0		|
  3		| SATA1			| SATA1			| SATA1			|
  4		| USB3_HOST1		| USB3_HOST1		| USB3_HOST1		|
  5		| PCIe2 (x1)		| PCIe2 (x1)		| PCIe2 (x1)		|
@@ -73,7 +73,7 @@ SerDes Configuration
 ----------------|-----------------------|-----------------------|-----------------------|
  0		| PCIe0 (x1)		| PCIe0 (x1)		| SGMII2 3.125G		|
  1		| SATA0			| SATA0			| USB23_HOST0		|
- 2		| KR (10G)		| KR (10G)		| KR (10G)		|
+ 2		| SFI (10G)		| SFI (10G)		| SFI (10G)		|
  3		| SATA1			| SATA1			| SATA1			|
  4		| PCIe1 (x1)		| PCIe1 (x1)		| N/C			|
  5		| PCIe2 (x1)		| PCIe2 (x1)		| PCIe2 (x1)		|

@@ -124,7 +124,7 @@
 				/* Serdes Configuration:
 					Lane 0: PEX0x1
 					Lane 1: USB3-HOST0
-					Lane 2: 10GKR
+					Lane 2: 10GSFI
 					Lane 3: SATA1
 					Lane 4: USB3-HOST1
 					Lane 5: PEX2x1
@@ -136,7 +136,7 @@
 					phy-type = <PHY_TYPE_USB3_HOST0>;
 				};
 				phy2 {
-					phy-type = <PHY_TYPE_KR>;
+					phy-type = <PHY_TYPE_SFI>;
 					phy-speed = <PHY_SPEED_10_3125G>;
 				};
 				phy3 {

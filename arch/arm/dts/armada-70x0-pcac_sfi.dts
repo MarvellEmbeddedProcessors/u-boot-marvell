@@ -39,9 +39,9 @@
 #include <dt-bindings/multi-fdt/a8k/multi-fdt.h>
 
 / {
-	model = "PCAC-ARMADA-70x0 (SPI-KR)";
+	model = "PCAC-ARMADA-70x0 (SPI-SFI)";
 	compatible = "marvell,armada-70x0-pcac", "marvell,armada-70x0";
-	fdt_config_id = <A70X0_PCAC_KR>;
+	fdt_config_id = <A70X0_PCAC_SFI>;
 	board_id = <A8K_7040_PCAC>;
 
 	ap-806 {
@@ -122,7 +122,7 @@
 			comphy {
 				/* Serdes Configuration:
 					Lane 0-3: PEX0x4
-					Lane 4:   10G-KR
+					Lane 4:   10G-SFI
 					Lane 5:   SATA0
 				*/
 				phy0 {
@@ -138,7 +138,7 @@
 					phy-type = <PHY_TYPE_IGNORE>;
 				};
 				phy4 {
-					phy-type = <PHY_TYPE_KR>;
+					phy-type = <PHY_TYPE_SFI>;
 				};
 				phy5 {
 					phy-type = <PHY_TYPE_SATA1>;

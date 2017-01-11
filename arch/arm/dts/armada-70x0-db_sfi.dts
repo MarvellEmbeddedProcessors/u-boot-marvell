@@ -23,9 +23,9 @@
 #include <dt-bindings/multi-fdt/a8k/multi-fdt.h>
 
 / {
-	model = "DB-ARMADA-70x0 (SPI-KR)";
+	model = "DB-ARMADA-70x0 (SPI-SFI)";
 	compatible = "marvell,armada-70x0-db", "marvell,armada-70x0";
-	fdt_config_id = <A70X0_KR>;
+	fdt_config_id = <A70X0_SFI>;
 	board_id = <A8K_7040_DB>;
 
 	ap-806 {
@@ -126,7 +126,7 @@
 				/* Serdes Configuration:
 					Lane 0: PEX0x1
 					Lane 1: SATA0
-					Lane 2: 10GKR
+					Lane 2: 10GSFI
 					Lane 3: SATA1
 					Lane 4: PEX1x1
 					Lane 5: PEX2x1
@@ -138,7 +138,7 @@
 					phy-type = <PHY_TYPE_SATA0>;
 				};
 				phy2 {
-					phy-type = <PHY_TYPE_KR>;
+					phy-type = <PHY_TYPE_SFI>;
 				};
 				phy3 {
 					phy-type = <PHY_TYPE_SATA1>;

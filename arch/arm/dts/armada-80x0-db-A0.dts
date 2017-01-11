@@ -124,7 +124,7 @@
 
 			comphy {
 				/* Serdes Configuration:
-					Lane 0: SGMII2
+					Lane 0: SGMII1
 					Lane 1: USB3_HOST0
 					Lane 2: SGMII
 					Lane 3: SATA1
@@ -132,7 +132,7 @@
 					Lane 5: PEX2x1
 				*/
 				phy0 {
-					phy-type = <PHY_TYPE_SGMII2>;
+					phy-type = <PHY_TYPE_SGMII1>;
 					phy-speed = <PHY_SPEED_3_125G>;
 				};
 				phy1 {
@@ -231,7 +231,7 @@
 
 			comphy {
 				/* Serdes Configuration:
-					Lane 0: SGMII2
+					Lane 0: SGMII1
 					Lane 1: USB3_HOST0
 					Lane 2: KR (10G)
 					Lane 3: SATA1
@@ -239,7 +239,7 @@
 					Lane 5: PEX2x1
 				*/
 				phy0 {
-					phy-type = <PHY_TYPE_SGMII2>;
+					phy-type = <PHY_TYPE_SGMII1>;
 					phy-speed = <PHY_SPEED_3_125G>;
 				};
 				phy1 {

@@ -21,6 +21,21 @@
 
 static struct spi_flash *flash;
 
+static int validate_bootimg_header(unsigned long addr)
+{
+	char flash_hdr[] = {"CVM_CLIB"};
+	char bdk_magic[] = {"THUNDERX"};
+	char *buf1 = (char *)(addr + 0x10000); /* flash hdr offset */
+	char *buf2 = (char *)(addr + 0x20008); /* bdk magic offset */
+	char *buf3 = (char *)(addr + 0x50008); /* sec bdk magic offset */
+
+	if ( strncmp(buf1, flash_hdr, 8) == 0 )
+		if ( strncmp(buf2, bdk_magic, 8) == 0 )
+			if (strncmp (buf3, bdk_magic, 8) == 0 )
+				return 0;
+	return 1;
+}
+
 /**
  * This function takes a byte length and a delta unit of time to compute the
  * approximate bytes per second
@@ -207,6 +222,11 @@ static int do_bootu_spi(int argc, char * const argv[])
 			return -1;
 
 		debug(" %s len %ld\n", __func__, len);
+	}
+
+	if (validate_bootimg_header(addr)) {
+		printf("\n No valid boot image header found \n");
+		return 1;
 	}
 
 	/* The remaining commands require a selected device */

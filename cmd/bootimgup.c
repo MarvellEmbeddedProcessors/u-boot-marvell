@@ -29,9 +29,9 @@ static int validate_bootimg_header(unsigned long addr)
 	char *buf2 = (char *)(addr + 0x20008); /* bdk magic offset */
 	char *buf3 = (char *)(addr + 0x50008); /* sec bdk magic offset */
 
-	if ( strncmp(buf1, flash_hdr, 8) == 0 )
-		if ( strncmp(buf2, bdk_magic, 8) == 0 )
-			if (strncmp (buf3, bdk_magic, 8) == 0 )
+	if (strncmp(buf1, flash_hdr, 8) == 0)
+		if (strncmp(buf2, bdk_magic, 8) == 0)
+			if (strncmp (buf3, bdk_magic, 8) == 0)
 				return 0;
 	return 1;
 }

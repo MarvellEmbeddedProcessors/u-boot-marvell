@@ -120,8 +120,10 @@ Customer board porting procedure
 		- I2C - i2c/mvebu-i2c.txt
 		- SMI / XSMI - net/mvebu-mdio.txt
 		- SATA - sata/mvebu-sata.txt
-		- USB - usb/mvebu-usb3.txt
+		- USB3 - xHCI - usb/mvebu-xhci.txt
+		- USB2 - eHCI - usb/mvebu-ehci.txt
 		- PCIe - pci/mvebu-pci.txt
+		- GPIO - gpio/mvebu-gpio.txt
 
 	3.1. Armada-8k SoC family
 	-------------------------
@@ -138,3 +140,10 @@ Customer board porting procedure
 		- MBUS - misc/mvebu-mbus.txt
 		- GbE - net/mvebu-gbe.txt
 		- SPI - spi/mvebu-spi-a3700.txt
+		- I2C - i2c/mvebu-i2c-armada3700.txt
+		- AVS - power/mvebu-avs.txt
+		- MPPs - misc/mvebu-pinctl-a3700.txt
+		- PM - power/mvebu-pm.txt
+		- UTMI PHY - phy/mvebu_utmi_phy_a3700.txt
+		- MMC/SDIO - mmc/xenon-mmc.txt
+		- SATA PHY - phy/mvebu_sata_phy_a3700.txt

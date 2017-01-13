@@ -1,0 +1,27 @@
+Marvell EBU USB 2.0 bindings
+============================
+
+This USB 2.0 driver is based on mainline eHCI, and it supports Marvell EBU SoC,
+which implements the eHCI core operations.
+
+Mandatory properties:
+SoC specific:
+	- compatible: Should be "marvell,mvebu-usb".
+	- reg: Base address and size of the eHCI unit.
+Board specific:
+	- gpio-vbus: Should specify the GPIO for VBUS change
+		for more information check: check doc/device-tree-bindings/gpio/mvebu-gpio.txt
+	- vbus-enable-delay:
+		optional property, delay time in ms when enable gpio-vbus.
+	- vbus-disable-delay:
+		optional property, delay time in ms when disable gpio-vbus.
+	- status
+		The USB2 port status can be "okay" or "disabled".
+
+Example for USB 2.0 node:
+	usb2: usb2@58000 {
+		compatible = "marvell,mvebu-usb";
+		gpio-vbus = <&gpio1 CP0_GPIO(12) GPIO_ACTIVE_LOW>;
+		reg = <0x5e000 0x450>;
+		status = "disabled";
+	};

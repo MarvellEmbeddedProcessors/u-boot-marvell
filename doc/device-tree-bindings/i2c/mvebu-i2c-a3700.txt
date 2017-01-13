@@ -1,0 +1,22 @@
+Armada3700 I2C bindings
+====================
+
+The I2C driver provides read / write access to external peripherals
+using the I2C bus.
+
+Mandatory properties:
+SoC specific:
+	- compatible
+		Should be "marvell,armada-3700-i2c".
+	- reg
+		Base address and size of I2C.
+	- status
+		Set to okay/disabled if the I2C interface is enabled/disabled.
+
+Example for I2C-0 node:
+	i2c: i2c@11000 {
+		compatible = "marvell,armada-3700-i2c";
+
+		reg = <0x11000 0x100>;
+		status = "disabled";
+	};

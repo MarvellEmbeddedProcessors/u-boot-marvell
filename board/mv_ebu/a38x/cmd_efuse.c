@@ -191,8 +191,6 @@ static int write_efuse_hw(efuseDef *efDef, MV_U32 values[])
 		if ((values[dwordIdx] == 0) && (values[dwordIdx + 1] == 0))
 			continue;
 
-		printf("Burning the eFuse %#0x[%d] \n", EFUSE_BIT_31_0_ADDR(efuseNum), efuseNum);
-
 		/* Prepare register(s) values for the burn procedure */
 		/* Re-load eFuse value before write */
 		regVal = MV_EFUSE_REG_READ(EFUSE_BIT_31_0_ADDR(efuseNum));
@@ -206,8 +204,12 @@ static int write_efuse_hw(efuseDef *efDef, MV_U32 values[])
 		   for the Secure Boot Entry should be accumulited somewhere prior to writing them to the HW */
 		if ((efDef->efid == EFUSE_JTAGDIS_ID) || (efDef->efid == EFUSE_BOOTSRC_ID)) {
 			secFuse |= (values[dwordIdx] << efDef->offset) & efDef->mask;
-			DBPR("Store eFuse %08X value [%08X] internally\n", EFUSE_BIT_64_ADDR(efuseNum), secFuse);
+			printf("Store eFuse %08X value [%08X] internally\n", EFUSE_BIT_64_ADDR(efuseNum), secFuse);
+			printf("Do not reset the board until Secure Boot mode is enabled!\n");
+			printf("Otherwise, internal value will be lost!\n");
 			break;
+		} else {
+			printf("Burning the eFuse %#0x[%d] \n", EFUSE_BIT_31_0_ADDR(efuseNum), efuseNum);
 		}
 
 		/* Even DWORDs */

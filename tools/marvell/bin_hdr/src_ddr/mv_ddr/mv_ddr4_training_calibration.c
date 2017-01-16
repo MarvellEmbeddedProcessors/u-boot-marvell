@@ -1498,11 +1498,11 @@ static int mv_ddr4_tap_tuning(u8 dev, u16 (*pbs_tap_factor)[MAX_BUS_NUM][BUS_WID
 								 rx_vw_pos[iface][subphy]));
 				} else {
 					status = MV_FAIL;
-					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_ERROR,
+					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
 								("tap tuning fail %s cs %d if %d subphy %d bit %d\n",
 								 (mode == RX_DIR) ? "RX" : "TX", effective_cs, iface,
 								 subphy, bit));
-					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_ERROR,
+					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
 								("cs %d if %d subphy %d mode %d result: "
 								 "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
 								 effective_cs, iface, subphy, mode,
@@ -1514,7 +1514,7 @@ static int mv_ddr4_tap_tuning(u8 dev, u16 (*pbs_tap_factor)[MAX_BUS_NUM][BUS_WID
 								 result[subphy][HWS_LOW2HIGH][5],
 								 result[subphy][HWS_LOW2HIGH][6],
 								 result[subphy][HWS_LOW2HIGH][7]));
-					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_ERROR,
+					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
 								("cs %d if %d subphy %d mode %d result: "
 								 "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
 								 effective_cs, iface, subphy, mode,
@@ -1526,7 +1526,7 @@ static int mv_ddr4_tap_tuning(u8 dev, u16 (*pbs_tap_factor)[MAX_BUS_NUM][BUS_WID
 								 result[subphy][HWS_HIGH2LOW][5],
 								 result[subphy][HWS_HIGH2LOW][6],
 								 result[subphy][HWS_HIGH2LOW][7]));
-					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_ERROR,
+					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
 								("cs %d if %d subphy %d mode %d result: "
 								 "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
 								 effective_cs, iface, subphy, mode,
@@ -1538,7 +1538,7 @@ static int mv_ddr4_tap_tuning(u8 dev, u16 (*pbs_tap_factor)[MAX_BUS_NUM][BUS_WID
 								 result1[subphy][HWS_LOW2HIGH][5],
 								 result1[subphy][HWS_LOW2HIGH][6],
 								 result1[subphy][HWS_LOW2HIGH][7]));
-					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_ERROR,
+					DEBUG_TAP_TUNING_ENGINE(DEBUG_LEVEL_INFO,
 								("cs %d if %d subphy %d mode %d result: "
 								 "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
 								 effective_cs, iface, subphy, mode,

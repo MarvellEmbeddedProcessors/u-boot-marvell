@@ -861,16 +861,6 @@ int ddr3_tip_print_stability_log(u32 dev_num)
 					ddr3_tip_bus_read(dev_num, if_id,
 							  ACCESS_TYPE_UNICAST,
 							  bus_id, DDR_PHY_DATA,
-							  0xd0 +
-							  12 * csindex +
-							  idx, &reg_data);
-					printf("%d,", (reg_data & 0x3f));
-				}
-				printf("\t\t");
-				for (idx = 0; idx < 11; idx++) {
-					ddr3_tip_bus_read(dev_num, if_id,
-							  ACCESS_TYPE_UNICAST,
-							  bus_id, DDR_PHY_DATA,
 							  0x10 +
 							  16 * csindex +
 							  idx, &reg_data);

@@ -22,9 +22,9 @@ Booting Linux requires using the same Device Tree configuration as used in U-Boo
 Board Setup Options
 -------------------
 
-|		| 1: Router			| 3: KR			| 4: All PCIe			| 5: NAND			| 6: RGMII			|
+|		| 1: A				| 3: KR			| 4: All PCIe			| 5: NAND			| 6: RGMII			|
 |---------------|-------------------------------|-----------------------|-------------------------------|-------------------------------|-------------------------------|
-|Device tree	|armada-70x0-db_router.dts	|armada-70x0-db_kr.dts	|armada-70x0-db_all_pcie.dts	|armada-70x0-db_nand.dts	|armada-70x0-db_rgmii_only.dts 	|
+|Device tree	|armada-70x0-db-A.dts		|armada-70x0-db_kr.dts	|armada-70x0-db_all_pcie.dts	|armada-70x0-db_nand.dts	|armada-70x0-db_rgmii_only.dts 	|
 |CP0-SW1:1	| ON				| OFF			| OFF				| ON				| ON				|
 |CP0-SW1:2	| OFF				| OFF			| ON				| OFF				| OFF				|
 |CP0-SW1:3	| N/A				| N/A			| ON				| N/A				| OFF				|
@@ -40,37 +40,38 @@ The tables below summarize the interface configuration of each setup.
 SerDes Configuration
 ---------------------
 
- Lane	| 1: Router	| 3: KR		| 4: All PCI	| 5: NAND	| 6: RGMII	|
+ Lane	| 1: A		|	 3: KR		| 4: All PCI	| 5: NAND	| 6: RGMII	|
 --------|---------------|---------------|---------------|---------------|---------------|
  0	| sgmii2	| pex_x4_0	| pex_x4_0	| pex_x4_0	| pex_x4_0	|
  1	| usb3h0	| sata0		| pex_x4_0	| usb3h0	| usb3h0	|
- 2	| sgmii0	| kr		| pex_x4_0	| kr		| sata0		|
+ 2	| kr    	| kr		| pex_x4_0	| kr		| sata0		|
  3	| sata1		| sata1		| pex_x4_0	| sata1		| sata1		|
  4	| usb3h1	| pex_x1_1	| pex_x1_1	| usb3h1	| usb3h1	|
- 5	| pex_x1_2	| pex_x1_2	| pex_x1_2	| pex_x1_2	| pex_x1_2	|
+ 5	| pcie_x1_2	| pex_x1_2	| pex_x1_2	| pex_x1_2	| pex_x1_2	|
 
 
 Multi purpose pin configurations
 --------------------------------
 
- AP806 pin	| 1: Router	| 3: KR		| 4: All PCI	| 5: NAND	| 6: RGMII	|
+ AP806 pin	| 1: A		| 3: KR		| 4: All PCI	| 5: NAND	| 6: RGMII	|
 ----------------|---------------|---------------|---------------|---------------|---------------|
-	AP-SDIO | [0-10]	| [0-10]	| [0-10]	| [0-10]	| [0-10]	|
+	AP-SDIO | [0-5]		| [0-10]	| [0-10]	| [0-10]	| [0-10]	|
 	AP-SPI0 | N/C		| N/C		| N/C		| N/C		| N/C		|
 	AP-UART0| [11,19]	| 11,19]	| [11,19]	| [11,19]	| [11,19]	|
 
 
- CP110 pin	| 1: Router	| 3: KR		| 4: All PCI	| 5: NAND	| 6: RGMII	|
+ CP110 pin	| 1: A		| 3: KR		| 4: All PCI	| 5: NAND	| 6: RGMII	|
 ----------------|---------------|---------------|---------------|---------------|---------------|
 	CP-SPI0	| N/C		| N/C		| N/C		| N/C		| N/C		|
 	CP-SPI1	| [13-16]	| [13-16]	| [13-16]	| N/C		| [13-16]	|
 	NAND	| N/C		| N/C		| N/C		| [13,15-27]	| N/C		|
 	RGMII0	| N/C		| [0-11]	| [0-11]	| [0-11]	| [0-11]	|
-	RGMII1	| [44-55]	| [44-55]	| [44-55]	| [44-55]	| [44-55]	|
+	RGMII1	| [0-11]	| [44-55]	| [44-55]	| [44-55]	| [44-55]	|
 	CP-UART0| [29-30]	| [29-30]	| [29-30]	| [29-30]	| [29-30]	|
 	CP-UART1| N/C		| N/C		| N/C		| N/C		| N/C		|
-	SD	| [56-62]	| [56-62]	| [56-62]	| [56-62]	| [56-62]	|
-	TDM	| [0-11]	| N/C		| N/C		| N/C		| N/C		|
+	SD	| [56-61]	| [56-62]	| [56-62]	| [56-62]	| [56-62]	|
+	GPIO	| [62]      	| N/C		| N/C		| N/C		| N/C		|
+	TDM	| N/C		| N/C		| N/C		| N/C		| N/C		|
 	TWSI	| [37-38]	| [37-38]	| [37-38]	| [37-38]	| [37-38]	|
 	SATA0	| N/C		| [36]		| N/C		| N/C		| [36]		|
 	SATA1	| [28]		| [28]		| N/C		| [28]		| [28]		|
@@ -82,7 +83,7 @@ Network configuration
 
  Interface	| PPv2 Port	| GMAC Port	| Board Interface			|
  ---------------|---------------|---------------|---------------------------------------|
- eth0		| 0		| 0		| SGMII (Lane 2 connected to SFP)	|
+ eth0		| 0		| 0		| KR    (Lane 2 connected to KR)	|
  eth1		| 1		| 2		| SGMII (Lane 2 connected to RJ45)	|
  eth2		| 2		| 3		| RGMII1				|
 

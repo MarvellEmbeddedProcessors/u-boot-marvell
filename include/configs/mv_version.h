@@ -39,6 +39,6 @@
 /*
  * Version
  */
-#define CONFIG_IDENT_STRING	" Marvell version: devel-17.1.0"
+#define CONFIG_IDENT_STRING	" Marvell version: devel-17.1.1"
 
 #endif /* __MV_VERSION_H */

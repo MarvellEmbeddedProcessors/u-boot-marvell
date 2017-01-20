@@ -54,7 +54,6 @@ struct mvebu_spi_platdata {
 	struct spi_reg *spireg;
 	unsigned int frequency;
 	unsigned int clock;
-	bool fifo_enabled;
 };
 
 static void spi_cs_activate(struct spi_reg *reg, int cs)
@@ -167,88 +166,6 @@ static int spi_fifo_xfer_finisher(struct spi_reg *reg, bool force_stop)
 
 	return ret;
 }
-
-/**
- * spi_legacy_shift_byte() - triggers the real SPI transfer
- * @bytelen:	Indicate how many bytes to transfer.
- * @dout:	Buffer address of what to send.
- * @din:	Buffer address of where to receive.
- *
- * This function triggers the real SPI transfer in legacy mode. It
- * will shift out char buffer from @dout, and shift in char buffer to
- * @din, if necessary.
- *
- * This function assumes that only one byte is shifted at one time.
- * However, it is not its responisbility to set the transfer type to
- * one-byte. Also, it does not guarantee that it will work if transfer
- * type becomes two-byte. See spi_set_legacy() for details.
- *
- * In legacy mode, simply write to the SPI_DOUT register will trigger
- * the transfer.
- *
- * If @dout == NULL, which means no actual data needs to be sent out,
- * then the function will shift out 0x00 in order to shift in data.
- * The XFER_RDY flag is checked every time before accessing SPI_DOUT
- * and SPI_DIN register.
- *
- * The number of transfers to be triggerred is decided by @bytelen.
- *
- * Return:	0 - cool
- *		-ETIMEDOUT - XFER_RDY flag timeout
- */
-static int spi_legacy_shift_byte(struct spi_reg *reg, unsigned int bytelen,
-				 const void *dout, void *din)
-{
-	const u8 *dout_8;
-	u8 *din_8;
-	int ret;
-
-	/* Use 0x00 as dummy dout */
-	const u8 dummy_dout = 0x0;
-	u32 pending_dout = 0x0;
-
-	/* dout_8: pointer of current dout */
-	dout_8 = dout;
-	/* din_8: pointer of current din */
-	din_8 = din;
-
-	while (bytelen) {
-		ret = wait_for_bit(__func__, &reg->ctrl,
-				   MVEBU_SPI_A3700_XFER_RDY, true, 100, false);
-		if (ret)
-			return ret;
-
-		if (dout)
-			pending_dout = (u32)*dout_8;
-		else
-			pending_dout = (u32)dummy_dout;
-
-		/* Trigger the xfer */
-		writel(pending_dout, &reg->dout);
-
-		if (din) {
-			ret = wait_for_bit(__func__, &reg->ctrl,
-					   MVEBU_SPI_A3700_XFER_RDY,
-					   true, 100, false);
-			if (ret)
-				return ret;
-
-			/* Read what is transferred in */
-			*din_8 = (u8)readl(&reg->din);
-		}
-
-		/* Don't increment the current pointer if NULL */
-		if (dout)
-			dout_8++;
-		if (din)
-			din_8++;
-
-		bytelen--;
-	}
-
-	return 0;
-}
-
 static int spi_fifo_write(struct spi_reg *reg, unsigned int bytelen,
 				 const void *dout)
 {
@@ -358,48 +275,7 @@ static int spi_fifo_read(struct spi_reg *reg, unsigned int bytelen,
 	return ret;
 }
 
-static int mvebu_spi_xfer_non_fifo(struct udevice *dev, unsigned int bitlen,
-			  const void *dout, void *din, unsigned long flags)
-{
-	struct udevice *bus = dev->parent;
-	struct mvebu_spi_platdata *plat = dev_get_platdata(bus);
-	struct spi_reg *reg = plat->spireg;
-	unsigned int bytelen;
-	int ret;
-
-	bytelen = bitlen / 8;
-
-	if (dout && din)
-		debug("This is a duplex transfer.\n");
-
-	/* Activate CS */
-	if (flags & SPI_XFER_BEGIN) {
-		debug("SPI: activate cs.\n");
-		spi_cs_activate(reg, spi_chip_select(dev));
-	}
-
-	/* Send and/or receive */
-	if (dout || din) {
-		ret = spi_legacy_shift_byte(reg, bytelen, dout, din);
-		if (ret)
-			return ret;
-	}
-
-	/* Deactivate CS */
-	if (flags & SPI_XFER_END) {
-		ret = wait_for_bit(__func__, &reg->ctrl,
-				   MVEBU_SPI_A3700_XFER_RDY, true, 100, false);
-		if (ret)
-			return ret;
-
-		debug("SPI: deactivate cs.\n");
-		spi_cs_deactivate(reg, spi_chip_select(dev));
-	}
-
-	return 0;
-}
-
-static int mvebu_spi_xfer_fifo(struct udevice *dev, unsigned int bitlen,
+static int mvebu_spi_xfer(struct udevice *dev, unsigned int bitlen,
 			  const void *dout, void *din, unsigned long flags)
 {
 	struct udevice *bus = dev->parent;
@@ -452,18 +328,6 @@ static int mvebu_spi_xfer_fifo(struct udevice *dev, unsigned int bitlen,
 	}
 
 	return ret;
-}
-
-static int mvebu_spi_xfer(struct udevice *dev, unsigned int bitlen,
-			  const void *dout, void *din, unsigned long flags)
-{
-	struct udevice *bus = dev->parent;
-	struct mvebu_spi_platdata *plat = dev_get_platdata(bus);
-
-	if (plat->fifo_enabled)
-		return mvebu_spi_xfer_fifo(dev, bitlen, dout, din, flags);
-	else
-		return mvebu_spi_xfer_non_fifo(dev, bitlen, dout, din, flags);
 }
 
 static int mvebu_spi_set_speed(struct udevice *bus, uint hz)
@@ -525,43 +389,25 @@ static int mvebu_spi_probe(struct udevice *bus)
 	if (ret)
 		return ret;
 
-	/* Check if fifo-mode is enabled.*/
-	if (fdtdec_get_bool(gd->fdt_blob, bus->of_offset, "fifo-mode")) {
-		debug("SPI: FIFO Mode.\n");
+	/* Enable FIFO mode */
+	data |= MVEBU_SPI_A3700_FIFO_EN;
 
-		/* Enable FIFO flag */
-		plat->fifo_enabled = true;
-		/* Enable FIFO mode */
-		data |= MVEBU_SPI_A3700_FIFO_EN;
-
-		/*
-		 * Set FIFO threshold
-		 * For read FIFO threshold, value 0 presents 1 data entry,
-		 * which means when data in the read FIFO is equal to or
-		 * greater than 1 entry, flag RFIFO_RDY_IS will be set;
-		 * For write FIFO threshold, value 7 presents 7 data entry,
-		 * which means when data in the write FIFO is less than or
-		 * equal to 7 entry, flag WFIFO_RDY_IS will be set;
-		 */
-		data |= 0 << MVEBU_SPI_A3700_RFIFO_THRS_BIT;
-		data |= 7 << MVEBU_SPI_A3700_WFIFO_THRS_BIT;
-	} else {
-		debug("SPI: Legacy Mode.\n");
-		/*
-		 * Settings SPI controller to be working in legacy mode,
-		 * which means use only DO pin (I/O 1) for Data Out,
-		 * and DI pin (I/O 0) for Data In.
-		 */
-		/* Disable FIFO flag */
-		plat->fifo_enabled = false;
-		/* Disable FIFO mode */
-		data &= ~MVEBU_SPI_A3700_FIFO_EN;
-	}
-
-	/* Always shift 1 byte at a time */
+	/* Only support 1-byte xfer mode for now */
 	data &= ~MVEBU_SPI_A3700_BYTE_LEN;
-	writel(data, &reg->cfg);
 
+	/*
+	 * Set FIFO threshold
+	 * For read FIFO threshold, value 0 presents 1 data entry, which means
+	 * when data in the read FIFO is equal to or greater than 1 entry,
+	 * flag RFIFO_RDY_IS will be set;
+	 * For write FIFO threshold, value 7 presents 7 data entry, which means
+	 * when data in the write FIFO is less than or equal to 7 entry,
+	 * flag WFIFO_RDY_IS will be set;
+	 */
+	data |= 0 << MVEBU_SPI_A3700_RFIFO_THRS_BIT;
+	data |= 7 << MVEBU_SPI_A3700_WFIFO_THRS_BIT;
+
+	writel(data, &reg->cfg);
 	return 0;
 }
 

@@ -69,7 +69,7 @@
 				};
 			};
 			mmc0: mmc@D0000 {
-				sdio-vcc-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_1, 22) GPIO_ACTIVE_HIGH>;
+				sdio-vcc-gpio = <&gpio1 ARMADA_3700_GPIO(BANK_0, 4) GPIO_ACTIVE_HIGH>;
 				bus-width = <4>;
 				status = "okay";
 			};

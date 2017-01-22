@@ -1,0 +1,22 @@
+Marvell Armada3700 SPI bindings
+====================
+
+This SPI driver supports Marvell Armada3700 SoC, which implements the SPI core operations.
+The node name is spi0 to show that it's SPI-0, for SPI-1 it should be spi1.
+
+The SPI node for Armada3700 requires the following properties:
+SoC specific:
+	- compatible: Should be "marvell,armada-3700-spi".
+	- reg: The base address of the SPI unit.
+	- spi-max-frequency: SPI max bus frequency.
+	- clock-frequency: The input clock for the SPI interface.
+
+Example for SPI-0 node:
+	spi0: spi@10600 {
+		compatible = "marvell,armada-3700-spi";
+		reg = <0x10600 0x50>;
+		#clock-cells = <0>;
+		clock-frequency = <160000>;
+		spi-max-frequency = <40000>;
+		status = "disabled";
+	};

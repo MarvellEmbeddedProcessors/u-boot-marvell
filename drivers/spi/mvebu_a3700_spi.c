@@ -33,6 +33,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define MVEBU_SPI_A3700_WFIFO_THRS_BIT		28
 #define MVEBU_SPI_A3700_RFIFO_THRS_BIT		24
 #define MVEBU_SPI_A3700_FIFO_THRS_MASK		0x7
+#define MVEBU_SPI_A3700_ADDR_CNT_BIT		4
+#define MVEBU_SPI_A3700_ADDR_CNT_MASK		0x7
 #define MVEBU_SPI_A3700_CLK_PRESCALE_BIT	0
 #define MVEBU_SPI_A3700_CLK_PRESCALE_MASK	\
 	(0x1f << MVEBU_SPI_A3700_CLK_PRESCALE_BIT)
@@ -98,14 +100,16 @@ static inline int spi_is_wfifo_empty(struct spi_reg *reg)
 static int spi_fifo_out(struct spi_reg *reg, unsigned int buf_len,
 				 unsigned char *tx_buf)
 {
+	unsigned int val = 0;
+
 	while (!spi_is_wfifo_full(reg) && buf_len) {
-		/*
-		 * TODO:
-		 * Add 4-byte mode for FIFO mode.
-		 */
-		writel(*tx_buf, &reg->dout);
-		buf_len--;
-		tx_buf++;
+		val = (tx_buf[3] << 24) | (tx_buf[2] << 16) |
+				 (tx_buf[1] << 8) | tx_buf[0];
+
+		writel(val, &reg->dout);
+
+		buf_len -= 4;
+		tx_buf += 4;
 	}
 
 	/* Return the unwritten bytes number */
@@ -126,14 +130,27 @@ static int spi_fifo_in(struct spi_reg *reg, unsigned int buf_len,
 	unsigned int val;
 
 	while (!spi_is_rfifo_empty(reg)) {
-		/*
-		 * TODO:
-		 * Add 4-byte mode for FIFO mode.
-		 */
 		val = readl(&reg->din);
-		*rx_buf = val & 0xff;
-		rx_buf++;
-		buf_len--;
+		if (buf_len >= 4) {
+			rx_buf[0] = val & 0xff;
+			rx_buf[1] = (val >> 8) & 0xff;
+			rx_buf[2] = (val >> 16) & 0xff;
+			rx_buf[3] = (val >> 24) & 0xff;
+			buf_len -= 4;
+			rx_buf += 4;
+		} else {
+			/*
+			 * When remain bytes is smaller than 4, we should
+			 * avoid memory overwriting and and just write the
+			 * left rx buffer bytes.
+			 */
+			while (buf_len) {
+				*rx_buf++ = val & 0xff;
+				val >>= 8;
+				buf_len--;
+			}
+			break;
+		}
 	}
 
 	/* Return the unread bytes number */
@@ -166,13 +183,12 @@ static int spi_fifo_xfer_finisher(struct spi_reg *reg, bool force_stop)
 
 	return ret;
 }
-static int spi_fifo_write(struct spi_reg *reg, unsigned int bytelen,
-				 const void *dout)
+
+static unsigned int spi_fifo_header_set(struct spi_reg *reg,
+					 unsigned int bytelen, const void *dout)
 {
-	unsigned int val;
-	int ret = 0;
-	unsigned char *char_p;
-	int remain_len;
+	unsigned int addr_cnt = 0, val = 0, done_len = 0;
+	unsigned char *dout_ptr = (unsigned char *)dout;
 
 	/*
 	 * Clean number of bytes for instruction, address,
@@ -183,13 +199,51 @@ static int spi_fifo_write(struct spi_reg *reg, unsigned int bytelen,
 	writel(0x0, &reg->rmode);
 	writel(0x0, &reg->hdr_cnt);
 
+	if (bytelen % 4) {
+		addr_cnt = bytelen % 4;
+		val = ((addr_cnt & MVEBU_SPI_A3700_ADDR_CNT_MASK)
+			<< MVEBU_SPI_A3700_ADDR_CNT_BIT);
+
+		writel(val, &reg->hdr_cnt);
+		done_len = addr_cnt;
+
+		/* transfer 1~3 bytes by address count */
+		val = 0;
+		while (addr_cnt--) {
+			val = (val << 8) | dout_ptr[0];
+			dout_ptr++;
+		}
+		writel(val, &reg->addr);
+	}
+	return done_len;
+}
+
+static int spi_fifo_write(struct spi_reg *reg, unsigned int bytelen,
+				 const void *dout)
+{
+	unsigned int val;
+	int ret = 0;
+	unsigned char *char_p;
+	unsigned int len_done;
+	int remain_len;
+
+	/* when tx data is not 4 bytes aligned, there will be unexpected
+	 * MSB bytes of SPI output register, since it always shifts out
+	 * as whole 4 bytes. Which might causes incorrect transaction with
+	 * some device and flash. To fix this, Serial Peripheral Interface
+	 * Address (0xd0010614) in header count is used to transfer
+	 * 1 to 3 bytes to make the rest of data 4 bytes aligned.
+	 */
+	len_done = spi_fifo_header_set(reg, bytelen, dout);
+	bytelen -= len_done;
+
 	/* Start Write transfer */
 	val = readl(&reg->cfg);
 	val |= (MVEBU_SPI_A3700_XFER_START | MVEBU_SPI_A3700_RW_EN);
 	writel(val, &reg->cfg);
 
 	/* Write data to spi */
-	char_p = (unsigned char *)dout;
+	char_p = (unsigned char *)dout + len_done;
 	while (bytelen) {
 		ret = wait_for_bit(__func__, &reg->ctrl,
 				   MVEBU_SPI_A3700_WFIFO_RDY, true, 100, false);
@@ -213,7 +267,8 @@ static int spi_fifo_write(struct spi_reg *reg, unsigned int bytelen,
 	}
 
 	ret = wait_for_bit(__func__, &reg->ctrl,
-			   MVEBU_SPI_A3700_WFIFO_EMPTY, true, 100, false);
+			   MVEBU_SPI_A3700_WFIFO_EMPTY,
+			   true, 100, false);
 	if (ret) {
 		printf("SPI: waiting write_fifo_empty timeout.\n");
 		return ret;
@@ -286,8 +341,6 @@ static int mvebu_spi_xfer(struct udevice *dev, unsigned int bitlen,
 	u32 data;
 
 	bytelen = bitlen / 8;
-
-	spi_bytelen_set(reg, 1);
 
 	if (dout && din)
 		debug("This is a duplex transfer.\n");
@@ -392,9 +445,6 @@ static int mvebu_spi_probe(struct udevice *bus)
 	/* Enable FIFO mode */
 	data |= MVEBU_SPI_A3700_FIFO_EN;
 
-	/* Only support 1-byte xfer mode for now */
-	data &= ~MVEBU_SPI_A3700_BYTE_LEN;
-
 	/*
 	 * Set FIFO threshold
 	 * For read FIFO threshold, value 0 presents 1 data entry, which means
@@ -408,6 +458,9 @@ static int mvebu_spi_probe(struct udevice *bus)
 	data |= 7 << MVEBU_SPI_A3700_WFIFO_THRS_BIT;
 
 	writel(data, &reg->cfg);
+
+	/* set shift 4 bytes for writing and reading */
+	spi_bytelen_set(reg, 4);
 	return 0;
 }
 

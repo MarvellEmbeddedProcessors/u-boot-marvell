@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <dm.h>
 #include <i2c.h>
 #include <asm/io.h>
 #include <asm/arch/cpu.h>
@@ -41,6 +42,9 @@ int board_ahci_enable(void)
 	int ret;
 	u8 buf[8];
 
+	if (of_machine_is_compatible("marvell,armada-3720-espressobin"))
+		return 0;
+
 	/* Configure IO exander PCA9555: 7bit address 0x22 */
 	ret = i2c_get_chip_for_busnum(0, I2C_IO_EXP_ADDR, 1, &dev);
 	if (ret) {
@@ -74,6 +78,9 @@ int board_xhci_enable(void)
 	struct udevice *dev;
 	int ret;
 	u8 buf[8];
+
+	if (of_machine_is_compatible("marvell,armada-3720-espressobin"))
+		return 0;
 
 	/* Configure IO exander PCA9555: 7bit address 0x22 */
 	ret = i2c_get_chip_for_busnum(0, I2C_IO_EXP_ADDR, 1, &dev);

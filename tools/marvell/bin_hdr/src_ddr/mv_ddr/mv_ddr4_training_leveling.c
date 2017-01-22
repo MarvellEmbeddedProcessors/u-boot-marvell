@@ -115,15 +115,20 @@ static u8 mv_ddr4_xsb_comp_test(u32 dev_num, u32 subphy_num, u32 if_id,
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
 	u32 subphy_max = ddr3_tip_dev_attr_get(0, MV_ATTR_OCTET_PER_INTERFACE);
 	uint64_t read_pattern_64[MV_DDR4_XSB_COMP_PATTERNS_NUM] = {0};
-	uint64_t pattern_test_table_64[MV_DDR4_XSB_COMP_PATTERNS_NUM] = {
-		0xffffffffffffffff,
-		0xffffffffffffffff,
-		0x0000000000000000,
-		0x0000000000000000,
-		0x0000000000000000,
-		0x0000000000000000,
-		0xffffffffffffffff,
-		0xffffffffffffffff};
+	/*
+	 * FIXME: the pattern below is used for writing to the memory
+	 * by the cpu. it was changed to be written through the odpg.
+	 * for a workaround
+	 * uint64_t pattern_test_table_64[MV_DDR4_XSB_COMP_PATTERNS_NUM] = {
+	 *	0xffffffffffffffff,
+	 *	0xffffffffffffffff,
+	 *	0x0000000000000000,
+	 *	0x0000000000000000,
+	 *	0x0000000000000000,
+	 *	0x0000000000000000,
+	 *	0xffffffffffffffff,
+	 *	0xffffffffffffffff};
+	 */
 	u32 read_pattern[MV_DDR4_XSB_COMP_PATTERNS_NUM];
 	u32 pattern_test_table[MV_DDR4_XSB_COMP_PATTERNS_NUM] = {
 		0xffffffff,
@@ -140,7 +145,7 @@ static u8 mv_ddr4_xsb_comp_test(u32 dev_num, u32 subphy_num, u32 if_id,
 	int ecc_running = 0;
 	u32 ecc_read_subphy_num = 0; /* FIXME: change ecc read subphy num to be configurable */
 	u8 bit_counter = 0;
-
+	int edge = 0;
 	/* write and read data */
 	if (MV_DDR_IS_64BIT_DRAM_MODE(tm->bus_act_mask)) {
 		status = ddr3_tip_if_write(0, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_DATA_CONTROL_REG,
@@ -150,11 +155,25 @@ static u8 mv_ddr4_xsb_comp_test(u32 dev_num, u32 subphy_num, u32 if_id,
 			return status;
 
 		addr64 = (uintptr_t)pattern_table[PATTERN_TEST].start_addr;
-		for (i = 0; i < MV_DDR4_XSB_COMP_PATTERNS_NUM; i++) {
-			data64 = pattern_test_table_64[i];
-			writeq(addr64, data64);
-			addr64 +=  sizeof(uint64_t);
-		}
+		/*
+		 * FIXME: changed the load pattern to memory through the odpg
+		 * this change is needed to be validate
+		 * this change is done due to un calibrated dm at this stage
+		 * the below code is the code for loading the pattern directly
+		 * to the memory
+		 *
+		 * for (i = 0; i < MV_DDR4_XSB_COMP_PATTERNS_NUM; i++) {
+		 *	data64 = pattern_test_table_64[i];
+		 *	writeq(addr64, data64);
+		 *	addr64 +=  sizeof(uint64_t);
+		 *}
+		 * FIXME: the below code loads the pattern to the memory through the odpg
+		 * it loads it twice to due supplementary failure, need to check it
+		 */
+		int j;
+		for (j = 0; j < 2; j++)
+			ddr3_tip_load_pattern_to_mem(dev_num, PATTERN_TEST);
+
 	} else if (MV_DDR_IS_32BIT_IN_64BIT_DRAM_MODE(tm->bus_act_mask, subphy_max)) {
 		status = ddr3_tip_if_write(0, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_DATA_CONTROL_REG,
 					       effective_cs << ODPG_DATA_CS_OFFS,
@@ -207,19 +226,21 @@ static u8 mv_ddr4_xsb_comp_test(u32 dev_num, u32 subphy_num, u32 if_id,
 					       ODPG_DATA_CS_MASK << ODPG_DATA_CS_OFFS);
 		if (status != MV_OK)
 			return status;
-
-		addr64 = (uintptr_t)pattern_table[PATTERN_TEST].start_addr;
+		/*
+		 * in case of reading the pattern read it from the address x 8
+		 * the odpg multiply by 8 the addres to read from
+		 */
+		addr64 = ((uintptr_t)pattern_table[PATTERN_TEST].start_addr) << 3;
 		for (i = 0; i < MV_DDR4_XSB_COMP_PATTERNS_NUM; i++) {
 			data64 = readq(addr64);
 			addr64 +=  sizeof(uint64_t);
 			read_pattern_64[i] = data64;
 		}
-		DEBUG_LEVELING(DEBUG_LEVEL_TRACE,
-			       ("xsb comp: if %d subphy %d\n"
-				"0x%16jx\n0x%16jx\n0x%16jx\n0x%16jx\n0x%16jx\n0x%16jx\n0x%16jx\n0x%16jx\n",
-				if_id, subphy_num,
-				read_pattern_64[0], read_pattern_64[1], read_pattern_64[2], read_pattern_64[3],
-				read_pattern_64[4], read_pattern_64[5], read_pattern_64[6], read_pattern_64[7]));
+
+		DEBUG_LEVELING(DEBUG_LEVEL_INFO, ("xsb comp: if %d bus id %d\n", 0, subphy_num));
+		for (edge = 0; edge < 8; edge++)
+			DEBUG_LEVELING(DEBUG_LEVEL_INFO, ("0x%16jx\n", read_pattern_64[edge]));
+		DEBUG_LEVELING(DEBUG_LEVEL_INFO, ("\n"));
 	} else if (MV_DDR_IS_32BIT_IN_64BIT_DRAM_MODE(tm->bus_act_mask, subphy_max)) {
 		status = ddr3_tip_if_write(0, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_DATA_CONTROL_REG,
 					       effective_cs << ODPG_DATA_CS_OFFS,
@@ -231,22 +252,20 @@ static u8 mv_ddr4_xsb_comp_test(u32 dev_num, u32 subphy_num, u32 if_id,
 		if (status != MV_OK)
 			return status;
 
-		DEBUG_LEVELING(DEBUG_LEVEL_TRACE,
-				("xsb comp: if %d subphy %d 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
-				if_id, subphy_num,
-				read_pattern[0], read_pattern[1], read_pattern[2], read_pattern[3],
-				read_pattern[4], read_pattern[5], read_pattern[6], read_pattern[7]));
+		DEBUG_LEVELING(DEBUG_LEVEL_INFO, ("xsb comp: if %d bus id %d\n", 0, subphy_num));
+		for (edge = 0; edge < 8; edge++)
+			DEBUG_LEVELING(DEBUG_LEVEL_INFO, ("0x%16x\n", read_pattern[edge]));
+		DEBUG_LEVELING(DEBUG_LEVEL_INFO, ("\n"));
 	} else {
 		status = ddr3_tip_ext_read(dev_num, if_id, (pattern_table[PATTERN_TEST].start_addr +
 					    ((SDRAM_CS_SIZE + 1) * effective_cs)), 1, read_pattern);
 		if (status != MV_OK)
 			return status;
 
-		DEBUG_LEVELING(DEBUG_LEVEL_TRACE,
-			       ("xsb comp: if %d subphy %d 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
-				if_id, subphy_num,
-				read_pattern[0], read_pattern[1], read_pattern[2], read_pattern[3],
-				read_pattern[4], read_pattern[5], read_pattern[6], read_pattern[7]));
+		DEBUG_LEVELING(DEBUG_LEVEL_INFO, ("xsb comp: if %d bus id %d\n", 0, subphy_num));
+		for (edge = 0; edge < 8; edge++)
+			DEBUG_LEVELING(DEBUG_LEVEL_INFO, ("0x%16x\n", read_pattern[edge]));
+		DEBUG_LEVELING(DEBUG_LEVEL_INFO, ("\n"));
 	}
 
 	/* read centralization result to decide on half phase by inverse bit */
@@ -421,15 +440,11 @@ static int mv_ddr4_dynamic_pb_wl_supp(u32 dev_num, enum mv_wl_supp_mode ecc_mode
 							wr_data = (rd_data & ~0x1c0) | ((orig_phase - 2) << 6);
 						else if (orig_phase == 1)
 								wr_data = (rd_data & ~0x1df);
-						else
-							/* do nothing */;
 						if (orig_phase >= 1)
 							ddr3_tip_bus_write(dev_num, ACCESS_TYPE_UNICAST, if_id,
 									   ACCESS_TYPE_UNICAST, subphy_num,
 									   DDR_PHY_DATA,
 									   WL_PHY_BASE + effective_cs * 4, wr_data);
-						else
-							/* do nothing */;
 					} else if (step == 2) { /* shift phase to +1 */
 						if (orig_phase <= 5) {
 							wr_data = (rd_data & ~0x1c0) | ((orig_phase + 2) << 6);
@@ -449,14 +464,14 @@ static int mv_ddr4_dynamic_pb_wl_supp(u32 dev_num, enum mv_wl_supp_mode ecc_mode
 					} else { /* error */
 						flag = 0;
 						compare_result = MV_DDR4_COMP_TEST_NO_RESULT;
+						training_result[training_stage][if_id] = TEST_FAILED;
 					}
 				}
 			}
 		}
-		if (compare_result != MV_DDR4_COMP_TEST_NO_RESULT)
+		if ((training_result[training_stage][if_id] == NO_TEST_DONE) ||
+		    (training_result[training_stage][if_id] == TEST_SUCCESS))
 			training_result[training_stage][if_id] = TEST_SUCCESS;
-		else
-			training_result[training_stage][if_id] = TEST_FAILED;
 	}
 
 	if (ecc_mode == WRITE_LEVELING_SUPP_ECC_MODE_DATA_PUPS) {
@@ -499,7 +514,9 @@ static int mv_ddr4_dynamic_pb_wl_supp(u32 dev_num, enum mv_wl_supp_mode ecc_mode
 	} else {
 		/* do nothing for WRITE_LEVELING_SUPP_REG_MODE */;
 	}
-
-	return MV_OK;
+	if (training_result[training_stage][0] == TEST_SUCCESS)
+		return MV_OK;
+	else
+		return MV_FAIL;
 }
 #endif /* CONFIG_DDR4 */

@@ -195,15 +195,9 @@ int mv_ddr4_dq_vref_calibration(u8 dev_num)
 			vref_state_per_subphy[if_id][subphy_num] = MV_DDR4_VREF_SUBPHY_CAL_ABOVE;
 		}
 	}
-	/*
-	 * FIXME: in case of calling tap tune before vref loop search below
-	 * the tap tune will results lambda expression which is incorrect sometimes
-	 * removing the tap tunning here and calling it in the vref search below solves
-	 * this issue.
-	 * need further investigation.
-	 * if (mv_ddr4_tap_tuning(dev_num, lambda_per_dq, TX_DIR) == MV_OK)
-	 * 	tap_tune_passed = MV_TRUE;
-	 */
+
+	if (mv_ddr4_tap_tuning(dev_num, lambda_per_dq, TX_DIR) == MV_OK)
+		tap_tune_passed = MV_TRUE;
 
 	/* place dram to vref training mode */
 	mv_ddr4_vref_training_mode_ctrl(dev_num, 0, ACCESS_TYPE_MULTICAST, MV_TRUE);

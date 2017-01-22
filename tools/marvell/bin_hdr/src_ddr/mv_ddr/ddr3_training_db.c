@@ -874,13 +874,15 @@ u32 pattern_table_get_word(u32 dev_num, enum hws_pattern type, u8 index)
 				pattern = PATTERN_00;
 			else
 				pattern = PATTERN_01;
-#endif /* !CONFIG_DDR4 */
+#else /* !CONFIG_DDR4 */
+			pattern = PATTERN_FF;
+#endif /* CONFIG_DDR4 */
 			break;
 		case PATTERN_TEST:
 			if (index > 1 && index < 6)
-				pattern = PATTERN_20;
-			else
 				pattern = PATTERN_00;
+			else
+				pattern = PATTERN_FF;
 			break;
 		case PATTERN_FULL_SSO0:
 		case PATTERN_FULL_SSO1:

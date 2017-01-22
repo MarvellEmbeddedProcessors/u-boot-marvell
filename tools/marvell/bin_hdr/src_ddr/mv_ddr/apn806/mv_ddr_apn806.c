@@ -751,15 +751,11 @@ static void mv_ddr_convert_read_params_from_tip2mc6(void)
 	u32	mb_read_data_latency;
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
 	u32 max_cs = ddr3_tip_max_cs_get(DEV_NUM_0);
-	enum hws_speed_bin speed_bin_index;
-	enum hws_ddr_freq freq;
 
 	for (if_id = 0; if_id < MAX_INTERFACE_NUM; if_id++) {
 		VALIDATE_IF_ACTIVE(tm->if_act_mask, if_id);
-		speed_bin_index = tm->interface_params[if_id].speed_bin_index;
-		freq = tm->interface_params[first_active_if].memory_freq;
-		cl_val = cas_latency_table[speed_bin_index].cl_val[freq];
-		cwl_val = cas_write_latency_table[speed_bin_index].cl_val[freq];
+		cl_val = tm->interface_params[0].cas_l;
+		cwl_val = tm->interface_params[0].cas_wl;
 
 		reg_bit_clrset(MC6_REG_DRAM_CFG1,
 			cwl_val << MC6_CWL_OFFS | cl_val << MC6_CL_OFFS,

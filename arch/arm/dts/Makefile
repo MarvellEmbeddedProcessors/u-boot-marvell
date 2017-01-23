@@ -74,10 +74,7 @@ ifdef CONFIG_TARGET_ARMADA_8K
 dtb-$(CONFIG_PALLADIUM) += apn-806-pd.dtb \
 			   apn-806-pd-a0.dtb \
 			   armada-70x0-pd.dtb
-dtb-$(CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT) += apn-806-db-dop.dtb \
-						armada-7040-rz-db_dop.dtb
-dtb-$(CONFIG_DEVEL_BOARD) += apn-806-db.dtb \
-			     armada-8k-default.dtb
+dtb-$(CONFIG_DEVEL_BOARD) += armada-8k-default.dtb
 
 dtb-y += armada-70x0-customer0.dtb
 dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-db-A.dtb \

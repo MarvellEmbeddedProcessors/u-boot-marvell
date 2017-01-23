@@ -21,10 +21,10 @@
 	/* This should go only into devel boards */
 	compatible = "marvell,cp110";
 
+	#address-cells = <1>;
+	#size-cells = <0>;
 	sar {
 		compatible = "marvell,sample-at-reset";
-		#address-cells = <1>;
-		#size-cells = <0>;
 		reg = <0x4c 0x4e>;
 		chip_count = <2>;
 		bit_width = <5>;

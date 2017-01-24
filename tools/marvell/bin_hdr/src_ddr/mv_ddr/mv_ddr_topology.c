@@ -159,6 +159,10 @@ struct mv_ddr_topology_map *mv_ddr_topology_map_update(void)
 	unsigned char val = 0;
 	int i;
 
+#ifdef CONFIG_APN806
+	int rev_id = apn806_rev_id_get();
+#endif
+
 	if (tm->interface_params[0].memory_freq == DDR_FREQ_SAR)
 		tm->interface_params[0].memory_freq = mv_ddr_init_freq_get();
 
@@ -187,9 +191,6 @@ struct mv_ddr_topology_map *mv_ddr_topology_map_update(void)
 
 		/* update cs bit mask in topology map */
 		val = mv_ddr_spd_cs_bit_mask_get(&tm->spd_data);
-#ifdef CONFIG_APN806
-		int rev_id = apn806_rev_id_get();
-#endif
 		for (i = 0; i < octets_per_if_num; i++) {
 #ifdef CONFIG_APN806
 			if (rev_id == APN806_REV_ID_A0)
@@ -254,19 +255,18 @@ struct mv_ddr_topology_map *mv_ddr_topology_map_update(void)
 		if (tm->interface_params[0].cas_wl == 0)
 			tm->interface_params[0].cas_wl =
 				cas_write_latency_table[speed_bin_index].cl_val[freq];
-#ifdef CONFIG_APN806
-		int rev_id = apn806_rev_id_get();
-		/*
-		 * in case of a0 using 32 bit configuration with ecc
-		 * change the configuration to 32 bit without ecc
-		 * due to a0 bug in the patterns fifo using ecc.
-		 */
-		if (rev_id == APN806_REV_ID_A0) {
-			if (tm->bus_act_mask == MV_DDR_32BIT_ECC_PUP8_BUS_MASK)
-				tm->bus_act_mask = BUS_MASK_32BIT;
-		}
-#endif
 	}
+
+#ifdef CONFIG_APN806
+	/*
+	 * workaround for the apn806, rev a0 patterns fifo using ecc issue:
+	 * reconfigure the bus active mask set to 32-bit ecc to 32-bit only
+	 */
+	if (rev_id == APN806_REV_ID_A0) {
+		if (tm->bus_act_mask == MV_DDR_32BIT_ECC_PUP8_BUS_MASK)
+			tm->bus_act_mask = BUS_MASK_32BIT;
+	}
+#endif
 
 	return tm;
 }

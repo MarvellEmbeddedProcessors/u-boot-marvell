@@ -396,7 +396,7 @@ MV_VOID mvDdrPhyRegRead(MV_U8 regNum, MV_U8 pupNum, MV_U16 *value)
 	MV_U32 regAddr;
 	MV_U32 reg;
 
-	regAddr = (BIT31 | ((regNum & 0x3F) << 16) | ((pupNum & 0xF) << 22));
+	regAddr = (BIT31 | ((regNum & 0x30) << 28) | ((regNum & 0xF) << 16) | ((pupNum & 0xF) << 22));
 	MV_REG_WRITE(SDRAM_PHY_REGISTER_FILE_ACCESS, regAddr);
 
 	do {

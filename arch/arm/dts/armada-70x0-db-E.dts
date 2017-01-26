@@ -1,0 +1,193 @@
+/*
+ * ***************************************************************************
+ * Copyright (C) 2015 Marvell International Ltd.
+ * ***************************************************************************
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ***************************************************************************
+ */
+
+/dts-v1/;
+
+#include "armada-70x0-db.dtsi" /* include SoC device tree */
+
+/ {
+	model = "DB-ARMADA-70x0 (E)";
+	compatible = "marvell,armada-70x0-db", "marvell,armada-70x0";
+	fdt_config_id = <A70X0_E>;
+	board_id = <A8K_7040_DB>;
+
+	ap-806 {
+		internal-regs {
+			spi0: spi@510600 {
+				status = "okay";
+			};
+			i2c0: i2c@511000 {
+				status = "okay";
+			};
+			pinctl: pinctl@6F4000 {
+					/* MPP Bus:
+						SPI0  [0-3]
+						I2C0  [4-5]
+						UART0 [11,19]
+					*/
+					  /* 0 1 2 3 4 5 6 7 8 9 */
+				pin-func = < 3 3 3 3 3 3 0 0 0 0
+					     0 3 0 0 0 0 0 0 0 3 >;
+			};
+			mmc0: mmc@6E0000 {
+				status = "disabled";
+			};
+		};
+	};
+	cp110-master {
+		internal-regs {
+			spi0@700600 {
+				status = "disabled";
+			};
+			spi1@700680 {
+				status = "okay";
+			};
+			i2c@701000 {
+				status = "okay";
+			};
+			i2c@701100 {
+				status = "okay";
+			};
+			i2c@211000 { /* MSS_i2c0 */
+				status = "disabled";
+			};
+			i2c@211100 { /* MSS_i2c1 */
+				status = "disabled";
+			};
+			utmi0@580000 {
+				utmi-port = <UTMI_PHY_TO_USB3_HOST0>;
+			};
+			utmi1@581000 {
+				utmi-port = <UTMI_PHY_TO_USB3_HOST1>;
+			};
+			usb3@500000 {
+				status = "disabled";
+			};
+			usb3@510000 {
+				status = "okay";
+			};
+			sata@540000 {
+				status = "okay";
+			};
+			mmc@780000 {
+				status = "okay";
+			};
+			pcie-controller {
+				pcie@0,0 {
+					status = "okay";
+				};
+				pcie@1,0 {
+					status = "disabled";
+				};
+				pcie@2,0 {
+					status = "okay";
+				};
+			};
+			nand@720000 {
+				status = "disabled";
+			};
+
+			pinctl@440000 {
+					/* MPP Bus:
+					   RGMII1  [0-11]
+					   SS_PWDN [12]
+					   SPI1    [13-16]
+					   SATA1   [28]
+					   UART0   [29-30]
+					   MSS_VTT_EN [31]
+					   SMI	   [32,34]
+					   I2C1    [35-36]
+					   I2C0	   [37-38]
+					   UART1   [47,49]
+					   UART2   [50-51]
+					   SD_HW_RST [54]
+					   SD	   [56-61]
+					   GPIO    [62]
+					*/
+					/*   0   1   2   3   4   5   6   7   8   9 */
+				pin-func = < 3   3   3   3   3   3   3   3   3   3
+					     3   3   0   3   3   3   3   0   0   0
+					     0   0   0   0   0   0   0   0   9   0xA
+					     0xA 0   7   0   7   2   2   2   2   0
+					     0   0   0   0   1   1   1   7   1   7
+					     6   6   1   1   0xA   1   0xE 0xE 0xE 0xE
+					     0xE 0xE 0>;
+			};
+
+			comphy {
+				/* Serdes Configuration:
+					Lane 0: PCIe0 (x1)
+					Lane 1: SATA0
+					Lane 2: SGMII0 (1G)
+					Lane 3: SATA1
+					Lane 4: USB3-HOST1
+					Lane 5: PCIe2 (x1)
+				*/
+
+				phy0 {
+					phy-type = <PHY_TYPE_PEX0>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_SATA0>;
+				};
+				phy2 {
+					phy-type = <PHY_TYPE_SGMII0>;
+				};
+				phy3 {
+					phy-type = <PHY_TYPE_SATA1>;
+				};
+				phy4 {
+					phy-type = <PHY_TYPE_USB3_HOST1>;
+				};
+				phy5 {
+					phy-type = <PHY_TYPE_PEX2>;
+				};
+			};
+			mdio {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				phy2: ethernet-phy@2 {
+					reg = <0>;
+				};
+			};
+			gop {
+				mac0 {
+					phy-mode = "sgmii";
+				};
+				mac2 {
+					phy-mode = "rgmii"; /*rgmii1*/
+					phy = <&phy2>;
+				};
+				mac3 {
+					phy-mode = "none";
+				};
+			};
+			ppv22@000000 {
+				eth0@010000 {
+					status = "okay";
+				};
+				eth1@020000 {
+					status = "okay";
+				};
+				eth2@030000 {
+					status = "disabled";
+				};
+			};
+		};
+	};
+};

@@ -51,7 +51,7 @@
 	cp110-master {
 		internal-regs {
 			spi0@700600 {
-				status = "okay";
+				status = "disabled";
 			};
 			spi1@700680 {
 				status = "okay";

@@ -71,8 +71,7 @@ dtb-$(CONFIG_DEVEL_BOARD) += armada-3700-ddr3-db.dtb \
 endif #CONFIG_TARGET_ARMADA_3700
 
 ifdef CONFIG_TARGET_ARMADA_8K
-dtb-$(CONFIG_PALLADIUM) += apn-806-pd.dtb \
-			   apn-806-pd-a0.dtb \
+dtb-$(CONFIG_PALLADIUM) += apn-806-pd-a0.dtb \
 			   armada-70x0-pd.dtb
 dtb-$(CONFIG_DEVEL_BOARD) += armada-8k-default.dtb
 

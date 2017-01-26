@@ -108,7 +108,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* 1 for wa and sstl and pod to get the same vref value */
 u8 vref_calibration_wa = 1;
 
-#if defined(CONFIG_ARMADA_39X)
+#if defined(CONFIG_ARMADA_39X) || defined(CONFIG_ARMADA_38X)
 static int a39x_z1_config(u32 dev_num);
 #endif
 
@@ -189,7 +189,7 @@ int mv_ddr4_sdram_config(u32 dev_num)
 			return status;
 	}
 
-#if defined(CONFIG_ARMADA_39X)
+#if defined(CONFIG_ARMADA_39X) || defined(CONFIG_ARMADA_38X)
 	a39x_z1_config(dev_num);
 #endif
 
@@ -315,7 +315,6 @@ int mv_ddr4_phy_config(u32 dev_num)
 
 	vref_idx = (mv_ddr4_config_phy_vref_tap < 8) ? mv_ddr4_config_phy_vref_tap : 0;
 	rc_tap = (430 * (vref_val[vref_idx] - vcommon)) / 1000 + 33;
-
 	/* 0x1 for pod mode */
 	pod_val = (vref_calibration_wa == 1) ? 0x0 : 0x1;
 	upper_pcal = pod_val;
@@ -560,7 +559,7 @@ int mv_ddr4_calibration_adjust(u32 dev_num, u8 vref_en, u8 pod_only)
     return status;
 }
 
-#if defined(CONFIG_ARMADA_39X)
+#if defined(CONFIG_ARMADA_39X) || defined(CONFIG_ARMADA_38X)
 static int a39x_z1_config(u32 dev_num)
 {
 	u32 if_id;

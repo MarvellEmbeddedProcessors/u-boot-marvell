@@ -1581,6 +1581,7 @@ static int mv_ddr4_tap_tuning(u8 dev, u16 (*pbs_tap_factor)[MAX_BUS_NUM][BUS_WID
 		for (iface = 0; iface < MAX_INTERFACE_NUM; iface++) {
 			VALIDATE_IF_ACTIVE(tm->if_act_mask, iface);
 			for (subphy = 0; subphy < subphy_max; subphy++) {
+				VALIDATE_BUS_ACTIVE(tm->bus_act_mask, subphy);
 				if (rx_vw_pos[iface][subphy] == ALIGN_LEFT) {
 					ddr3_tip_bus_write(dev, ACCESS_TYPE_UNICAST, 0,
 							   ACCESS_TYPE_UNICAST, subphy, DDR_PHY_DATA,

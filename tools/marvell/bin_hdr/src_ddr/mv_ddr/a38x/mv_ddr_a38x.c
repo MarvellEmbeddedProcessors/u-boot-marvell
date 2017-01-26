@@ -838,6 +838,7 @@ static int mv_ddr_training_mask_set(void)
 		printf("vref_calibration_wa is disabled\n");
 		vref_calibration_wa = 0;
 	}
+
 #else /* CONFIG_DDR4 */
 	struct mv_ddr_topology_map *tm = mv_ddr_topology_map_get();
 	enum hws_ddr_freq ddr_freq = tm->interface_params[0].memory_freq;
@@ -1078,7 +1079,6 @@ int mv_ddr_early_init(void)
 	 * here the parameter is run over in ddr4 and ddr3 to '1' (in ddr4 the default is '1')
 	 * to configure the odt to work with timing restrictions
 	 */
-	odt_config = 1;
 
 	mv_ddr_sw_db_init(0, 0);
 

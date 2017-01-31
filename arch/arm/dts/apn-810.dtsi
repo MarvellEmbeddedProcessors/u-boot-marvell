@@ -1,0 +1,69 @@
+/*
+ * ***************************************************************************
+ * Copyright (C) 2015 Marvell International Ltd.
+ * ***************************************************************************
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ***************************************************************************
+ */
+
+/ {
+
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a72";
+			reg = <0>;
+		};
+	};
+
+	ap-810 {
+		compatible = "marvell,mvebu-apn-810", "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		internal-regs {
+			compatible = "marvell,internal-regs", "simple-bus";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0x0000 0xec000000 0x4000000>;
+
+			tclk: tclk {
+				compatible = "marvell,tclk";
+				#clock-cells = <0>;
+				clock-frequency = <200000000>;
+			};
+
+			ccu {
+				compatible = "marvell,mvebu-ccu";
+				reg = <0x4000 0x50>;
+				max-win = <8>;
+			};
+			rfu {
+				compatible = "marvell,mvebu-rfu";
+				reg = <0x6f0000 0x28>;
+				max-win = <7>;
+			};
+			sar-reg {
+				/* TODO: change compatible to 810 s@r driver once it's implemented */
+				compatible = "marvell,sample-at-reset-common", "marvell,sample-at-reset-ap806";
+				reg = <0x6F8200 0x8>;
+				status = "okay";
+			};
+		};
+	};
+};

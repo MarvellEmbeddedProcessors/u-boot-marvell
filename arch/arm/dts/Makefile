@@ -89,7 +89,6 @@ dtb-$(CONFIG_DEVEL_BOARD) += armada-70x0-pcac_sfi.dtb
 
 # A8040 DB device tree files
 dtb-$(CONFIG_DEVEL_BOARD) += armada-80x0-db-A.dtb \
-			     armada-80x0-db-A0.dtb \
 			     armada-80x0-db-B.dtb \
 			     armada-80x0-db-C.dtb \
 			     armada-80x0-db-D.dtb \

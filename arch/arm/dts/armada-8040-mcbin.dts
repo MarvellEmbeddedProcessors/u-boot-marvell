@@ -30,18 +30,24 @@
 		reg = <0x0 0x0 0x0 0x80000000>;
 	};
 
-reg_usb3h0_vbus: usb3-vbus0 {
-		compatible = "regulator-fixed";
-		pinctrl-names = "default";
-		pinctrl-0 = <&cpm_xhci_vbus_pins>;
-		regulator-name = "reg-usb3h0-vbus";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		startup-delay-us = <500000>;
-		enable-active-high;
-		regulator-always-on;
-		regulator-boot-on;
-		gpio = <&cpm_gpio1 15 GPIO_ACTIVE_HIGH>; /* GPIO[47] */
+	simple-bus {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		reg_usb3h0_vbus: usb3-vbus0 {
+			compatible = "regulator-fixed";
+			pinctrl-names = "default";
+			pinctrl-0 = <&cpm_xhci_vbus_pins>;
+			regulator-name = "reg-usb3h0-vbus";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			startup-delay-us = <500000>;
+			enable-active-high;
+			regulator-always-on;
+			regulator-boot-on;
+			gpio = <&cpm_gpio1 15 GPIO_ACTIVE_HIGH>; /* GPIO[47] */
+		};
 	};
 };
 

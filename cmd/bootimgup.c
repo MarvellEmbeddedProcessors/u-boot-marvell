@@ -454,28 +454,13 @@ usage:
 }
 
 U_BOOT_CMD(
-	bootimgup, 5, 1, do_bootimgup, "Update Boot Image",
-	"bootimgup device offset addr len - loads image to device \n"
-	"			at offset from addr of len bytes \n"
-	" bootimgup interface offset addr len \n"
-	" interface - spi or mmc \n"
-	" offset - address in flash to load or block number \n"
-	"          to load on mmc device \n"
-	" addr   - address in RAM to fetch image \n"
-	" len    - length of image in RAM \n"
-	" interface spi example \n"
-	" >> bootimgup spi 0 0x1000 0x100 \n"
-	" offset - offset 0 in flash, in hex, if not given \n"
-	"          default value 0 is used \n"
-	" addr   - 1000 in hex, if not given $kernel_addr \n"
-	"          environment variable value is used \n"
-	" len    - 100 in hex, if not given $filesize \n"
-	"          environment variable value is used \n"
-	" interface mmc example \n"
-	" >> bootimgup mmc 0 0x1000 0x100 \n"
-	" blk    - block number 0 in device \n"
-	" addr   - 1000 in hex, if not given $kernel_addr \n"
-	"          environment variable value is used \n"
-	" len    - 100 in hex, if not given $filesize \n"
-	"          environment variable value is used \n"
+	bootimgup, 5, 1, do_bootimgup, "Updates Boot Image",
+	" [mmc | spi] [image_address] [image_size] \n"
+	" where: \n"
+	" spi - updates boot image on spi flash \n"
+	" mmc - updates boot image on mmc card/chip \n"
+	" image_address - address image is located in RAM \n"
+	" image_size    - size of image in hex \n"
+	" If image_address, image_size are not specified, \n"
+	" then $kernel_addr and $filesize values are used \n"
 );

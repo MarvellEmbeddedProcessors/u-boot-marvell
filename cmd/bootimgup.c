@@ -416,6 +416,9 @@ static int do_bootu_mmc(int argc, char * const argv[])
 	if (n != len)
 		return CMD_RET_FAILURE;
 
+	/* Update partition table with FAT entry of boot image */
+	memcpy(&buffer[446], (void *) (addr + 446), 16);
+
 	/* Update partition table with read boot sector */
 	n = mmc->block_dev.block_write(&mmc->block_dev, 0, 1, (void *)buffer);
 	printf("%ld blocks written: %s\n", n, (n == 1) ? "OK" : "ERROR");

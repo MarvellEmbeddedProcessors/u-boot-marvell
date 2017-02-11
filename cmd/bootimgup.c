@@ -458,7 +458,7 @@ usage:
 
 U_BOOT_CMD(
 	bootimgup, 5, 1, do_bootimgup, "Updates Boot Image",
-	" [mmc | spi] [image_address] [image_size] \n"
+	" <mmc | spi> [image_address] [image_size] \n"
 	" where: \n"
 	" spi - updates boot image on spi flash \n"
 	" mmc - updates boot image on mmc card/chip \n"

@@ -25,25 +25,6 @@
 			#size-cells = <1>;
 			ranges = <0x0000 0xd0000000 0x2000000>;
 
-			io-decode {
-				compatible = "marvell,mvebu-io-decode";
-				#address-cells = <1>;
-				#size-cells = <1>;
-
-				unit_io_decode_info =
-					/* reg_base, range, IO_ATTR(win_attr, max_win, max_remap, remap_size, win_offset) */
-					<0xc000 0x30 IO_ATTR(0x3d, 3, 0, 32, 0x10)	/* USB */
-					 0xc100 0x30 IO_ATTR(0x3d, 3, 0, 32, 0x10)	/* USB3 */
-					 0xc200 0x30 IO_ATTR(0x3d, 3, 0, 32, 0x10)	/* DMA */
-					 0xc300 0x30 IO_ATTR(0x3d, 3, 0, 32, 0x10)	/* NETA0 */
-					 0xc400 0x30 IO_ATTR(0x3d, 3, 0, 32, 0x10)	/* NETA1 */
-					 0xc500 0x30 IO_ATTR(0x3d, 3, 0, 32, 0x10)	/* PCIe */
-					 0xc800 0x30 IO_ATTR(0x3d, 3, 0, 32, 0x10)	/* SATA */
-					 0xca00 0x30 IO_ATTR(0x3d, 3, 0, 32, 0x10)	/* SD */
-					 0xcb00 0x30 IO_ATTR(0x3d, 3, 0, 32, 0x10)	/* eMMC */
-					 0xce00 0x30 IO_ATTR(0x3d, 3, 0, 32, 0x10)>;	/* EIP97 */
-			};
-
 			mbus {
 				compatible = "marvell,mvebu-mbus";
 				reg = <0xcf00 0xf0>;

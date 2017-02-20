@@ -139,6 +139,14 @@
 #define CONFIG_SYS_NAND_ONFI_DETECTION
 #define CONFIG_SYS_NAND_USE_FLASH_BBT
 
+/*
+ * Ethernet Driver configuration
+ */
+#define CONFIG_ENV_OVERWRITE	/* ethaddr can be reprogrammed */
+#define CONFIG_PHY_GIGE		/* GbE speed/duplex detect */
+#define CONFIG_ARP_TIMEOUT	200
+#define CONFIG_NET_RETRY_COUNT	50
+
 /* USB 2.0 */
 #define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 3
 

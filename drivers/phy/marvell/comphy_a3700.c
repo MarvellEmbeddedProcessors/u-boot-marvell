@@ -25,6 +25,9 @@ struct comphy_mux_data a3700_comphy_mux_data[] = {
 /* Lane 1 */ {4, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII1, 0x0},
 			{PHY_TYPE_USB3_HOST0, 0x1},
 			{PHY_TYPE_USB3_DEVICE, 0x1} } },
+/* Lane 2 */ {4, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SATA0, 0x0},
+			{PHY_TYPE_USB3_HOST0, 0x1},
+			{PHY_TYPE_USB3_DEVICE, 0x1} } },
 };
 
 /* Changes to 40M1G25 mode data required for running 40M3G125 init mode */
@@ -133,6 +136,26 @@ static u32 comphy_poll_reg(void *addr, u32 val, u32 mask, u32 timeout,
 
 	debug("Time out waiting (%p = %#010x)\n", addr, rval);
 	return 0;
+}
+
+/*
+ * usb3_reg_set_indirect
+ *
+ * return: void
+ */
+static inline void usb3_reg_set_indirect(u32 reg_offset, u16 data, u16 mask)
+{
+	/*
+	 * When Lane 2 PHY is for USB3, access the PHY registers
+	 * through indirect Address and Data registers INDIR_ACC_PHY_ADDR
+	 * (RD00E0178h [31:0]) and INDIR_ACC_PHY_DATA (RD00E017Ch [31:0])
+	 * within the SATA Host Controller registers, Lane 2 base register
+	 * offset is 0x200
+	 */
+	reg_set((void __iomem *)rh_vsreg_addr, reg_offset +
+		USB3PHY_LANE2_REG_BASE_OFFSET, 0xFFFFFFFF);
+	reg_set((void __iomem *)rh_vsreg_data, data, mask);
+	return;
 }
 
 /*
@@ -259,16 +282,23 @@ static int comphy_pcie_power_up(u32 speed, u32 invert)
  *
  * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  */
-static int comphy_sata_power_up(void)
+static int comphy_sata_power_up(u32 invert)
 {
 	int	ret;
+	u32	data = 0;
 
 	debug_enter();
 
 	/*
-	 * 0. Swap SATA TX lines
+	 * 0. Check the Polarity invert bits
 	 */
-	sata_reg_set_indirect(vphy_sync_pattern_reg, bs_txd_inv, bs_txd_inv);
+	if (invert & PHY_POLARITY_TXD_INVERT)
+		data |= bs_txd_inv;
+
+	if (invert & PHY_POLARITY_RXD_INVERT)
+		data |= bs_rxd_inv;
+	sata_reg_set_indirect(vphy_sync_pattern_reg, data,
+			      bs_txd_inv | bs_rxd_inv);
 
 	/*
 	 * 1. Select 40-bit data width width
@@ -322,15 +352,36 @@ static int comphy_sata_power_up(void)
 }
 
 /*
+ * usb_phy_reg_set_direct
+ *
+ * return: void
+ */
+static void usb_phy_reg_set_direct(u32 reg_offset, u16 data, u16 mask)
+{
+	/*
+	 * When Lane 0 PHY is for USB3, access the PHY registers directly
+	 */
+	reg_set16((void __iomem *)(reg_offset * PHY_SHFT(USB3)
+		      + PHY_BASE(USB3)), data, mask);
+
+	return;
+}
+
+/*
  * comphy_usb3_power_up
  *
  * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  */
-static int comphy_usb3_power_up(u32 type, u32 speed, u32 invert)
+static int comphy_usb3_power_up(u32 type, u32 speed, u32 invert,
+				bool indirect_reg_access)
 {
 	int	ret;
+	void	(*fp_usb3_phy_reg_set)(u32, u16, u16) = usb_phy_reg_set_direct;
 
 	debug_enter();
+
+	if (indirect_reg_access)
+		fp_usb3_phy_reg_set = usb3_reg_set_indirect;
 
 	/*
 	 * 1. Power up OTG module
@@ -347,7 +398,7 @@ static int comphy_usb3_power_up(u32 type, u32 speed, u32 invert)
 
 	/* 0xd005c300 = 0x1001 */
 	/* set PRD_TXDEEMPH (3.5db de-emph) */
-	reg_set16((void __iomem *)LANE_CFG0_ADDR(USB3), 0x1, 0xFF);
+	fp_usb3_phy_reg_set(PHY_REG_LANE_CFG0_ADDR, 0x1, 0xFF);
 
 	/*
 	 * unset BIT0: set Tx Electrical Idle Mode: Transmitter is in
@@ -355,103 +406,126 @@ static int comphy_usb3_power_up(u32 type, u32 speed, u32 invert)
 	 */
 	/* unset BIT4: set G2 Tx Datapath with no Delayed Latency */
 	/* unset BIT6: set Tx Detect Rx Mode at LoZ mode */
-	reg_set16((void __iomem *)LANE_CFG1_ADDR(USB3), 0x0, 0xFFFF);
+	fp_usb3_phy_reg_set(PHY_REG_LANE_CFG1_ADDR, 0x0, 0xFFFF);
 
 
 	/* 0xd005c310 = 0x93: set Spread Spectrum Clock Enabled  */
-	reg_set16((void __iomem *)LANE_CFG4_ADDR(USB3),
-		  bf_spread_spectrum_clock_en, 0x80);
+	fp_usb3_phy_reg_set(PHY_REG_LANE_CFG4_ADDR,
+			    bf_spread_spectrum_clock_en, 0x80);
 
 	/*
 	 * set Override Margining Controls From the MAC: Use margining signals
 	 * from lane configuration
 	 */
-	reg_set16((void __iomem *)TEST_MODE_CTRL_ADDR(USB3),
-		  rb_mode_margin_override, 0xFFFF);
+	fp_usb3_phy_reg_set(PHY_REG_TEST_MODE_CTRL_ADDR,
+			    rb_mode_margin_override, 0xFFFF);
 
 	/* set Lane-to-Lane Bundle Clock Sampling Period = per PCLK cycles */
 	/* set Mode Clock Source = PCLK is generated from REFCLK */
-	reg_set16((void __iomem *)GLOB_CLK_SRC_LO_ADDR(USB3), 0x0, 0xFF);
+	fp_usb3_phy_reg_set(PHY_REG_GLOB_CLK_SRC_LO_ADDR, 0x0, 0xFF);
 
 	/* set G2 Spread Spectrum Clock Amplitude at 4K */
-	reg_set16((void __iomem *)GEN2_SETTING_2_ADDR(USB3), g2_tx_ssc_amp,
-		  0xF000);
+	fp_usb3_phy_reg_set(PHY_REG_GEN2_SETTINGS_2, g2_tx_ssc_amp,
+			    0xF000);
 
 	/*
 	 * unset G3 Spread Spectrum Clock Amplitude & set G3 TX and RX Register
 	 * Master Current Select
 	 */
-	reg_set16((void __iomem *)GEN2_SETTING_3_ADDR(USB3), 0x0, 0xFFFF);
+	fp_usb3_phy_reg_set(PHY_REG_GEN2_SETTINGS_3, 0x0, 0xFFFF);
 
 	/*
 	 * 3. Check crystal jumper setting and program the Power and PLL
 	 * Control accordingly
-	 */
-	if (get_ref_clk() == 40) {
-		reg_set16((void __iomem *)PWR_PLL_CTRL_ADDR(USB3), 0xFCA3,
-			  0xFFFF); /* 40 MHz */
-	} else {
-		reg_set16((void __iomem *)PWR_PLL_CTRL_ADDR(USB3), 0xFCA2,
-			  0xFFFF); /* 25 MHz */
-	}
-
-	/*
 	 * 4. Change RX wait
 	 */
-	reg_set16((void __iomem *)PWR_MGM_TIM1_ADDR(USB3), 0x10C, 0xFFFF);
+	if (get_ref_clk() == 40) {
+		/* 40 MHz */
+		fp_usb3_phy_reg_set(PHY_PWR_PLL_CTRL_ADDR,
+				    PHY_PWR_PLL_CTRL_ADDR_VAL |
+				    rf_ref_clock_speed_40m,
+				    PHY_PWR_PLL_CTRL_ADDR_VAL |
+				    rf_ref_freq_sel_mask);
+		fp_usb3_phy_reg_set(PHY_REG_PWR_MGM_TIM1_ADDR,
+				    CFG_PM_RXDEN_WAIT_1_UNIT |
+				    CFG_PM_RXDLOZ_WAIT_12_UNIT,
+				    0xFFFF);
+	} else {
+		/* 25 MHz */
+		fp_usb3_phy_reg_set(PHY_PWR_PLL_CTRL_ADDR,
+				    PHY_PWR_PLL_CTRL_ADDR_VAL |
+				    usb3_ref_clock_speed_25m,
+				    PHY_PWR_PLL_CTRL_ADDR_VAL |
+				    rf_ref_freq_sel_mask);
+		fp_usb3_phy_reg_set(PHY_REG_PWR_MGM_TIM1_ADDR,
+				    CFG_PM_RXDEN_WAIT_1_UNIT |
+				    CFG_PM_RXDLOZ_WAIT_7_UNIT,
+				    0xFFFF);
+	}
 
 	/*
 	 * 5. Enable idle sync
 	 */
-	reg_set16((void __iomem *)UNIT_CTRL_ADDR(USB3), 0x60 | rb_idle_sync_en,
-		  0xFFFF);
+	fp_usb3_phy_reg_set(PHY_REG_UNIT_CTRL_ADDR, 0x60 | rb_idle_sync_en,
+			    0xFFFF);
 
 	/*
 	 * 6. Enable the output of 500M clock
 	 */
-	reg_set16((void __iomem *)MISC_REG0_ADDR(USB3), 0xA00D | rb_clk500m_en,
-		  0xFFFF);
+	fp_usb3_phy_reg_set(PHY_MISC_REG0_ADDR, 0xA00D | rb_clk500m_en, 0xFFFF);
 
 	/*
 	 * 7. Set 20-bit data width
 	 */
-	reg_set16((void __iomem *)DIG_LB_EN_ADDR(USB3), 0x0400, 0xFFFF);
+	fp_usb3_phy_reg_set(PHY_DIG_LB_EN_ADDR, 0x0400, 0xFFFF);
 
 	/*
 	 * 8. Override Speed_PLL value and use MAC PLL
 	 */
-	reg_set16((void __iomem *)KVCO_CAL_CTRL_ADDR(USB3),
-		  0x0040 | rb_use_max_pll_rate, 0xFFFF);
+	fp_usb3_phy_reg_set(PHY_REG_KVCO_CAL_CTRL_ADDR,
+			    0x0040 | rb_use_max_pll_rate, 0xFFFF);
 
 	/*
 	 * 9. Check the Polarity invert bit
 	 */
 	if (invert & PHY_POLARITY_TXD_INVERT) {
-		reg_set16((void __iomem *)SYNC_PATTERN_ADDR(USB3),
-			  phy_txd_inv, 0);
+		fp_usb3_phy_reg_set(PHY_SYNC_PATTERN_ADDR, phy_txd_inv,
+				    phy_txd_inv);
 	}
 
 	if (invert & PHY_POLARITY_RXD_INVERT) {
-		reg_set16((void __iomem *)SYNC_PATTERN_ADDR(USB3),
-			  phy_rxd_inv, 0);
+		fp_usb3_phy_reg_set(PHY_SYNC_PATTERN_ADDR, phy_rxd_inv,
+				    phy_rxd_inv);
 	}
 
 	/*
 	 * 10. Release SW reset
 	 */
-	reg_set16((void __iomem *)GLOB_PHY_CTRL0_ADDR(USB3),
-		  rb_mode_core_clk_freq_sel | rb_mode_pipe_width_32 | 0x20,
-		  0xFFFF);
+	fp_usb3_phy_reg_set(PHY_REG_GLOB_PHY_CTRL0_ADDR,
+			    rb_mode_core_clk_freq_sel | rb_mode_pipe_width_32 |
+			    0x20, 0xFFFF);
 
 	/* Wait for > 55 us to allow PCLK be enabled */
 	udelay(PLL_SET_DELAY_US);
 
 	/* Assert PCLK enabled */
-	ret = comphy_poll_reg((void *)LANE_STAT1_ADDR(USB3),	/* address */
-			      rb_txdclk_pclk_en,		/* value */
-			      rb_txdclk_pclk_en,		/* mask */
-			      PLL_LOCK_TIMEOUT,			/* timeout */
-			      POLL_16B_REG);			/* 16bit */
+	if (indirect_reg_access) {
+		reg_set((void __iomem *)rh_vsreg_addr,
+			PHY_REG_LANE_STAT1_ADDR + USB3PHY_LANE2_REG_BASE_OFFSET,
+			0xFFFFFFFF);
+		ret = comphy_poll_reg((void *)rh_vsreg_data,	/* address */
+				      rb_txdclk_pclk_en,	/* value */
+				      rb_txdclk_pclk_en,	/* mask */
+				      PLL_LOCK_TIMEOUT,	/* timeout */
+				      POLL_32B_REG);	/* 32bit */
+	} else {
+		ret = comphy_poll_reg((void *)LANE_STAT1_ADDR(USB3),
+				/* address */
+			      rb_txdclk_pclk_en,	/* value */
+			      rb_txdclk_pclk_en,	/* mask */
+			      PLL_LOCK_TIMEOUT,	/* timeout */
+			      POLL_16B_REG);	/* 16bit */
+	}
 	if (ret == 0)
 		printf("Failed to lock USB3 PLL\n");
 
@@ -882,22 +956,6 @@ void comphy_dedicated_phys_init(void)
 	}
 
 	node = fdt_node_offset_by_compatible(blob, -1,
-					     "marvell,armada-3700-ahci");
-	if (node > 0) {
-		if (fdtdec_get_is_enabled(blob, node)) {
-			ret = comphy_sata_power_up();
-			if (ret == 0)
-				printf("Failed to initialize SATA PHY\n");
-			else
-				debug("SATA PHY init succeed\n");
-		} else {
-			debug("SATA node is disabled\n");
-		}
-	}  else {
-		debug("No SATA node in DT\n");
-	}
-
-	node = fdt_node_offset_by_compatible(blob, -1,
 					     "marvell,armada-8k-sdhci");
 	if (node <= 0) {
 		node = fdt_node_offset_by_compatible(
@@ -954,13 +1012,18 @@ int comphy_a3700_init(struct chip_serdes_phy_config *chip_cfg,
 		case PHY_TYPE_USB3_DEVICE:
 			ret = comphy_usb3_power_up(comphy_map->type,
 						   comphy_map->speed,
-						   comphy_map->invert);
+						   comphy_map->invert,
+						   (lane == 2) ? true : false);
 			break;
 
 		case PHY_TYPE_SGMII0:
 		case PHY_TYPE_SGMII1:
 			ret = comphy_sgmii_power_up(lane, comphy_map->speed,
 						    comphy_map->invert);
+			break;
+
+		case PHY_TYPE_SATA0:
+			ret = comphy_sata_power_up(comphy_map->invert);
 			break;
 
 		default:

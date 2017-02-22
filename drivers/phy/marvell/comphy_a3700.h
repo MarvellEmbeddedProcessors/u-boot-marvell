@@ -80,15 +80,35 @@
 #define usb32_ctrl_soft_id		BIT(1)
 #define usb32_ctrl_int_mode		BIT(4)
 
-
 #define PHY_PWR_PLL_CTRL_ADDR	0x01	/* for phy_read16 and phy_write16 */
 #define PWR_PLL_CTRL_ADDR(unit)		\
 	(PHY_PWR_PLL_CTRL_ADDR * PHY_SHFT(unit) + PHY_BASE(unit))
-#define rf_phy_mode_shift		5
-#define rf_phy_mode_mask		(0x7 << rf_phy_mode_shift)
+#define pu_ivref_bit		BIT(15)
+#define pu_pll_bit		BIT(14)
+#define pu_rx_bit		BIT(13)
+#define pu_tx_bit		BIT(12)
+#define pu_tx_intp_bit		BIT(11)
+#define pu_dfe_bit		BIT(10)
+#define reset_dtl_rx_bit	BIT(9)
+#define pll_lock_bit		BIT(8)
+#define pll_lock_bit		BIT(8)
+
+
 #define rf_ref_freq_sel_shift		0
 #define rf_ref_freq_sel_mask		(0x1F << rf_ref_freq_sel_shift)
-#define PHY_MODE_SGMII			0x4
+#define rf_ref_clock_speed_25m		(0x1 << rf_ref_freq_sel_shift)
+#define rf_ref_clock_speed_30m		(0x2 << rf_ref_freq_sel_shift)
+#define pcie_ref_clock_speed_25m	rf_ref_clock_speed_30m
+#define usb3_ref_clock_speed_25m	rf_ref_clock_speed_30m
+#define rf_ref_clock_speed_40m		(0x3 << rf_ref_freq_sel_shift)
+#define rf_phy_mode_shift		5
+#define rf_phy_mode_mask		(0x7 << rf_phy_mode_shift)
+#define PHY_MODE_SATA			(0x0 << rf_phy_mode_shift)
+#define PHY_MODE_PCIE			(0x3 << rf_phy_mode_shift)
+#define PHY_MODE_SGMII			(0x4 << rf_phy_mode_shift)
+#define PHY_MODE_USB3			(0x5 << rf_phy_mode_shift)
+#define PHY_PWR_PLL_CTRL_ADDR_VAL	(pu_ivref_bit | pu_pll_bit |\
+	pu_rx_bit | pu_tx_bit | pu_tx_intp_bit | pu_dfe_bit | PHY_MODE_USB3)
 
 /* for phy_read16 and phy_write16 */
 #define PHY_REG_KVCO_CAL_CTRL_ADDR	0x02
@@ -153,30 +173,62 @@
 #define MISC_REG1_ADDR(u)		(0x73 * PHY_SHFT(u) + PHY_BASE(u))
 #define bf_sel_bits_pcie_force		BIT(15)
 
-#define LANE_CFG0_ADDR(u)		(0x180 * PHY_SHFT(u) + PHY_BASE(u))
+#define PHY_REG_LANE_CFG0_ADDR		0x180
+#define LANE_CFG0_ADDR(u)	\
+	(PHY_REG_LANE_CFG0_ADDR * PHY_SHFT(u) + PHY_BASE(u))
 #define bf_use_max_pll_rate		BIT(9)
-#define LANE_CFG1_ADDR(u)		(0x181 * PHY_SHFT(u) + PHY_BASE(u))
+#define PHY_REG_LANE_CFG1_ADDR		0x181
+#define LANE_CFG1_ADDR(u)	\
+	(PHY_REG_LANE_CFG1_ADDR * PHY_SHFT(u) + PHY_BASE(u))
 #define bf_use_max_pll_rate		BIT(9)
 /* 0x5c310 = 0x93 (set BIT7) */
-#define LANE_CFG4_ADDR(u)		(0x188 * PHY_SHFT(u) + PHY_BASE(u))
+#define PHY_REG_LANE_CFG4_ADDR		0x188
+#define LANE_CFG4_ADDR(u)	\
+	(PHY_REG_LANE_CFG4_ADDR * PHY_SHFT(u) + PHY_BASE(u))
 #define bf_spread_spectrum_clock_en	BIT(7)
 
-#define LANE_STAT1_ADDR(u)		(0x183 * PHY_SHFT(u) + PHY_BASE(u))
+#define PHY_REG_LANE_STAT1_ADDR		0x183
+#define LANE_STAT1_ADDR(u)	\
+	(PHY_REG_LANE_STAT1_ADDR * PHY_SHFT(u) + PHY_BASE(u))
 #define rb_txdclk_pclk_en		BIT(0)
 
-#define GLOB_PHY_CTRL0_ADDR(u)		(0x1c1 * PHY_SHFT(u) + PHY_BASE(u))
+#define PHY_REG_GLOB_PHY_CTRL0_ADDR	0x1C1
+#define GLOB_PHY_CTRL0_ADDR(u)	\
+	(PHY_REG_GLOB_PHY_CTRL0_ADDR * PHY_SHFT(u) + PHY_BASE(u))
 #define bf_soft_rst			BIT(0)
 #define bf_mode_refdiv			0x30
 #define rb_mode_core_clk_freq_sel	BIT(9)
 #define rb_mode_pipe_width_32		BIT(3)
 
-#define TEST_MODE_CTRL_ADDR(u)		(0x1c2 * PHY_SHFT(u) + PHY_BASE(u))
+#define PHY_REG_TEST_MODE_CTRL_ADDR	0x1C2
+#define TEST_MODE_CTRL_ADDR(u)	\
+	(PHY_REG_TEST_MODE_CTRL_ADDR * PHY_SHFT(u) + PHY_BASE(u))
 #define rb_mode_margin_override		BIT(2)
 
-#define GLOB_CLK_SRC_LO_ADDR(u)		(0x1c3 * PHY_SHFT(u) + PHY_BASE(u))
+#define PHY_REG_GLOB_CLK_SRC_LO_ADDR	0x1C3
+#define GLOB_CLK_SRC_LO_ADDR(u)	\
+	(PHY_REG_GLOB_CLK_SRC_LO_ADDR * PHY_SHFT(u) + PHY_BASE(u))
 #define bf_cfg_sel_20b			BIT(15)
 
-#define PWR_MGM_TIM1_ADDR(u)		(0x1d0 * PHY_SHFT(u) + PHY_BASE(u))
+#define PHY_REG_PWR_MGM_TIM1_ADDR	0x1D0
+#define PWR_MGM_TIM1_ADDR(u)		\
+	(PHY_REG_PWR_MGM_TIM1_ADDR * PHY_SHFT(u) + PHY_BASE(u))
+#define CFG_PM_OSCCLK_WAIT_OFF		12
+#define CFG_PM_OSCCLK_WAIT_LEN		4
+#define CFG_PM_OSCCLK_WAIT_MASK		\
+	(((1 << CFG_PM_OSCCLK_WAIT_LEN) - 1) << CFG_PM_OSCCLK_WAIT_OFF)
+#define CFG_PM_RXDEN_WAIT_OFF		8
+#define CFG_PM_RXDEN_WAIT_LEN		4
+#define CFG_PM_RXDEN_WAIT_MASK		\
+	(((1 << CFG_PM_RXDEN_WAIT_LEN) - 1) << CFG_PM_RXDEN_WAIT_OFF)
+#define CFG_PM_RXDEN_WAIT_1_UNIT	\
+	(1 << CFG_PM_RXDEN_WAIT_OFF)
+#define CFG_PM_RXDLOZ_WAIT_OFF		0
+#define CFG_PM_RXDLOZ_WAIT_LEN		8
+#define CFG_PM_RXDLOZ_WAIT_MASK		\
+	(((1 << CFG_PM_RXDEN_WAIT_LEN) - 1) << CFG_PM_RXDEN_WAIT_OFF)
+#define CFG_PM_RXDLOZ_WAIT_7_UNIT	(7 << CFG_PM_RXDLOZ_WAIT_OFF)
+#define CFG_PM_RXDLOZ_WAIT_12_UNIT	(0xC << CFG_PM_RXDLOZ_WAIT_OFF)
 
 #define PHY_REF_CLK_ADDR		(0x4814 + PCIE_BASE)
 
@@ -187,6 +239,8 @@
 #define USB2_OTG_PHY_CTRL_ADDR		(0x820 + USB2PHY_BASE)
 #define rb_usb2phy_suspm		BIT(14)
 #define rb_usb2phy_pu			BIT(0)
+#define rb_usb2_dp_pulldn_dev_mode	BIT(5)
+#define rb_usb2_dm_pulldn_dev_mode	BIT(6)
 
 #define USB2_PHY_OTG_CTRL_ADDR		(0x34 + USB2PHY_BASE)
 #define rb_pu_otg			BIT(4)

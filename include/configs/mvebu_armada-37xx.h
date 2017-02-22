@@ -129,4 +129,45 @@
 /* MMC/SD IP block */
 #define CONFIG_SUPPORT_VFAT
 
+#define CONFIG_DEFAULT_CONSOLE		"console=ttyMV0,115200 "	\
+					"earlycon=ar3700_uart,0xd0012000"
+
+/* Default Env vars */
+/* Boot Argument Buffer Size */
+#define CONFIG_SYS_BARGSIZE             CONFIG_SYS_CBSIZE
+/* Default Dir for NFS */
+#define CONFIG_ROOTPATH                 "/srv/nfs/"
+#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x2000000\0"	\
+					"initrd_addr=0xa00000\0"	\
+					"initrd_size=0x2000000\0"	\
+					"fdt_addr=0x1000000\0"		\
+					"loadaddr=0x2000000\0"		\
+					"fdt_high=0xffffffffffffffff\0"	\
+					"hostname=marvell\0"		\
+					"ramfs_addr=0x3000000\0"	\
+					"ramfs_name=-\0"		\
+					"fdt_name=fdt.dtb\0"		\
+					"netdev=eth0\0"			\
+					"image_name=Image\0"		\
+					"get_ramfs=if test \"${ramfs_name}\" "\
+					"!= \"-\"; then setenv ramfs_addr "\
+					"0x3000000; tftpboot ${ramfs_addr} "\
+					"${ramfs_name}; else setenv "	\
+					"ramfs_addr -;fi\0"		\
+					"get_images=tftpboot ${kernel_addr} "\
+					"${image_name}; tftpboot ${fdt_addr} "\
+					"${fdt_name}; run get_ramfs\0"	\
+					"console=" CONFIG_DEFAULT_CONSOLE "\0"\
+					"root=root=/dev/nfs rw\0"	\
+					"set_bootargs=setenv bootargs "	\
+					"${console} ${root} ip=${ipaddr}"\
+					":${serverip}:${gatewayip}:"	\
+					"${netmask}:${hostname}"	\
+					":${netdev}:none nfsroot=${serverip}"\
+					":${rootpath} ${extra_params}"
+
+#define CONFIG_BOOTCOMMAND		"run get_images; run set_bootargs; "\
+					"booti ${kernel_addr} ${ramfs_addr} "\
+					"${fdt_addr}"
+
 #endif /* _CONFIG_MVEBU_ARMADA_37XX_H */

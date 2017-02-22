@@ -25,6 +25,7 @@ struct comphy_mux_data a3700_comphy_mux_data[] = {
 /* Lane 1 */ {4, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII1, 0x0},
 			{COMPHY_TYPE_USB3_HOST0, 0x1},
 			{COMPHY_TYPE_USB3_DEVICE, 0x1} } },
+/* Lane 2 */ {4, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SATA0, 0x0} } },
 };
 
 /* Changes to 40M1G25 mode data required for running 40M3G125 init mode */
@@ -247,18 +248,24 @@ static int comphy_pcie_power_up(u32 speed, u32 invert)
  *
  * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  */
-static int comphy_sata_power_up(void)
+static int comphy_sata_power_up(u32 invert)
 {
 	int	ret;
+	u32	data = 0;
 
 	debug_enter();
 
 	/*
-	 * 0. Swap SATA TX lines
+	 * 0. Check the Polarity invert bits
 	 */
+	if (invert & COMPHY_POLARITY_TXD_INVERT)
+		data |= bs_txd_inv;
+
+	if (invert & COMPHY_POLARITY_RXD_INVERT)
+		data |= bs_rxd_inv;
 	reg_set((void __iomem *)rh_vsreg_addr,
 		vphy_sync_pattern_reg, 0xFFFFFFFF);
-	reg_set((void __iomem *)rh_vsreg_data, bs_txd_inv, bs_txd_inv);
+	reg_set((void __iomem *)rh_vsreg_data, data, bs_txd_inv | bs_rxd_inv);
 
 	/*
 	 * 1. Select 40-bit data width width
@@ -876,22 +883,6 @@ void comphy_dedicated_phys_init(void)
 	}
 
 	node = fdt_node_offset_by_compatible(blob, -1,
-					     "marvell,armada-3700-ahci");
-	if (node > 0) {
-		if (fdtdec_get_is_enabled(blob, node)) {
-			ret = comphy_sata_power_up();
-			if (ret == 0)
-				printf("Failed to initialize SATA PHY\n");
-			else
-				debug("SATA PHY init succeed\n");
-		} else {
-			debug("SATA node is disabled\n");
-		}
-	}  else {
-		debug("No SATA node in DT\n");
-	}
-
-	node = fdt_node_offset_by_compatible(blob, -1,
 					     "marvell,armada-8k-sdhci");
 	if (node <= 0) {
 		node = fdt_node_offset_by_compatible(
@@ -955,6 +946,10 @@ int comphy_a3700_init(struct chip_serdes_phy_config *chip_cfg,
 		case COMPHY_TYPE_SGMII1:
 			ret = comphy_sgmii_power_up(lane, comphy_map->speed,
 						    comphy_map->invert);
+			break;
+
+		case COMPHY_TYPE_SATA0:
+			ret = comphy_sata_power_up(comphy_map->invert);
 			break;
 
 		default:

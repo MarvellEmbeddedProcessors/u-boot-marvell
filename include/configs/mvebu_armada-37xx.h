@@ -131,6 +131,15 @@
 
 #define CONFIG_DEFAULT_CONSOLE		"console=ttyMV0,115200 "	\
 					"earlycon=ar3700_uart,0xd0012000"
+/* Add network parameters when network command is enabled */
+#ifdef CONFIG_CMD_NET
+/* Environment */
+#define CONFIG_IPADDR			0.0.0.0	/* In order to cause an error */
+#define CONFIG_SERVERIP			0.0.0.0	/* In order to cause an error */
+#define CONFIG_NETMASK			255.255.255.0
+#define CONFIG_GATEWAYIP		10.4.50.254
+#define CONFIG_ETHPRIME			"neta0"
+#endif /* CONFIG_CMD_NET */
 
 /* Default Env vars */
 /* Boot Argument Buffer Size */

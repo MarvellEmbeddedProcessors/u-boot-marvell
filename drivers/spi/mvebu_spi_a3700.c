@@ -618,11 +618,9 @@ static int spi_xfer_fifo_write(struct spi_slave *slave, unsigned int bytelen, co
 			ret = 1;
 			goto error;
 		}
-	} else {
 		/*
-		 * If the instruction in SPI_INSTR does not require data to be
-		 * written to the SPI device, wait until SPI_RDY is 1 for the
-		 * SPI interface to be in idle.
+		 * wait for spi ready for spi interface to be idle (spi is
+		 * ready for a new transfer)
 		 */
 		if (!spi_poll_xfer_ready()) {
 			printf("spi_poll_xfer_ready timeout\n");

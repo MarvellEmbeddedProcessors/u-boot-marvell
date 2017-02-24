@@ -19,6 +19,14 @@ struct sgmii_phy_init_data_fix {
 	u16 value;
 };
 
+struct comphy_mux_data a3700_comphy_mux_data[] = {
+/* Lane 0 */ {3, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII0, 0x0},
+			{COMPHY_TYPE_PEX0, 0x1} } },
+/* Lane 1 */ {4, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII1, 0x0},
+			{COMPHY_TYPE_USB3_HOST0, 0x1},
+			{COMPHY_TYPE_USB3_DEVICE, 0x1} } },
+};
+
 /* Changes to 40M1G25 mode data required for running 40M3G125 init mode */
 static struct sgmii_phy_init_data_fix sgmii_phy_init_fix[] = {
 	{0x005, 0x07CC}, {0x015, 0x0000}, {0x01B, 0x0000}, {0x01D, 0x0000},
@@ -915,6 +923,10 @@ int comphy_a3700_init(struct chip_serdes_phy_config *chip_cfg,
 	u32 lane, ret = 0;
 
 	debug_enter();
+
+	/* PHY mux initialize */
+	chip_cfg->mux_data = a3700_comphy_mux_data;
+	comphy_mux_init(chip_cfg, serdes_map, (void __iomem *)COMPHY_SEL_ADDR);
 
 	for (lane = 0, comphy_map = serdes_map; lane < comphy_max_count;
 	     lane++, comphy_map++) {

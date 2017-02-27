@@ -136,6 +136,18 @@ static u32 comphy_poll_reg(void *addr, u32 val, u32 mask, u32 timeout,
 }
 
 /*
+ * sata_reg_set_indirect
+ *
+ * return: void
+ */
+static inline void sata_reg_set_indirect(u32 reg_offset, u16 data, u16 mask)
+{
+	reg_set((void __iomem *)rh_vsreg_addr, reg_offset, 0xFFFFFFFF);
+	reg_set((void __iomem *)rh_vsreg_data, data, mask);
+	return;
+}
+
+/*
  * comphy_pcie_power_up
  *
  * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
@@ -256,40 +268,34 @@ static int comphy_sata_power_up(void)
 	/*
 	 * 0. Swap SATA TX lines
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr,
-		vphy_sync_pattern_reg, 0xFFFFFFFF);
-	reg_set((void __iomem *)rh_vsreg_data, bs_txd_inv, bs_txd_inv);
+	sata_reg_set_indirect(vphy_sync_pattern_reg, bs_txd_inv, bs_txd_inv);
 
 	/*
 	 * 1. Select 40-bit data width width
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_loopback_reg0, 0xFFFFFFFF);
-	reg_set((void __iomem *)rh_vsreg_data, 0x800, bs_phyintf_40bit);
+	sata_reg_set_indirect(vphy_loopback_reg0, 0x800, bs_phyintf_40bit);
 
 	/*
 	 * 2. Select reference clock and PHY mode (SATA)
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_power_reg0, 0xFFFFFFFF);
 	if (get_ref_clk() == 40) {
-		reg_set((void __iomem *)rh_vsreg_data,
-			0x3, 0x00FF); /* 40 MHz */
+		sata_reg_set_indirect(vphy_power_reg0,
+				      0x3, 0x00FF); /* 40 MHz */
 	} else {
-		reg_set((void __iomem *)rh_vsreg_data,
-			0x1, 0x00FF); /* 25 MHz */
+		sata_reg_set_indirect(vphy_power_reg0,
+				      0x1, 0x00FF); /* 25 MHz */
 	}
 
 	/*
 	 * 3. Use maximum PLL rate (no power save)
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_calctl_reg, 0xFFFFFFFF);
-	reg_set((void __iomem *)rh_vsreg_data,
-		bs_max_pll_rate, bs_max_pll_rate);
+	sata_reg_set_indirect(vphy_calctl_reg, bs_max_pll_rate,
+			      bs_max_pll_rate);
 
 	/*
 	 * 4. Reset reserved bit (??)
 	 */
-	reg_set((void __iomem *)rh_vsreg_addr, vphy_reserve_reg, 0xFFFFFFFF);
-	reg_set((void __iomem *)rh_vsreg_data, 0, bs_phyctrl_frm_pin);
+	sata_reg_set_indirect(vphy_reserve_reg, 0, bs_phyctrl_frm_pin);
 
 	/*
 	 * 5. Set vendor-specific configuration (??)

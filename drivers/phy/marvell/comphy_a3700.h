@@ -189,6 +189,8 @@
 #define USB2_OTG_PHY_CTRL_ADDR		(0x820 + USB2PHY_BASE)
 #define rb_usb2phy_suspm		BIT(14)
 #define rb_usb2phy_pu			BIT(0)
+#define rb_usb2_dp_pulldn_dev_mode	BIT(5)
+#define rb_usb2_dm_pulldn_dev_mode	BIT(6)
 
 #define USB2_PHY_OTG_CTRL_ADDR		(0x34 + USB2PHY_BASE)
 #define rb_pu_otg			BIT(4)

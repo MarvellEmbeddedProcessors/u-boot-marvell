@@ -327,7 +327,7 @@ static int comphy_sata_power_up(u32 invert)
  *
  * return: 1 if PLL locked (OK), 0 otherwise (FAIL)
  */
-static int comphy_usb3_power_up(u32 type, u32 speed, u32 invert)
+static int comphy_usb3_power_up(u32 speed, u32 invert)
 {
 	int	ret;
 
@@ -457,24 +457,11 @@ static int comphy_usb3_power_up(u32 type, u32 speed, u32 invert)
 		printf("Failed to lock USB3 PLL\n");
 
 	/*
-	 * Set Soft ID for Host mode (Device mode works with Hard ID
-	 * detection)
+	 * No matter host mode and device mode, it works with Hard ID detection.
+	 * Unset DP and DM pulldown for USB2 Device mode
 	 */
-	if (type == COMPHY_TYPE_USB3_HOST0) {
-		/*
-		 * set   BIT0: set ID_MODE of Host/Device = "Soft ID" (BIT1)
-		 * clear BIT1: set SOFT_ID = Host
-		 * set   BIT4: set INT_MODE = ID. Interrupt Mode: enable
-		 *             interrupt by ID instead of using both interrupts
-		 *             of HOST and Device ORed simultaneously
-		 *             INT_MODE=ID in order to avoid unexpected
-		 *             behaviour or both interrupts together
-		 */
-		reg_set((void __iomem *)USB32_CTRL_BASE,
-			usb32_ctrl_id_mode | usb32_ctrl_int_mode,
-			usb32_ctrl_id_mode | usb32_ctrl_soft_id |
-			usb32_ctrl_int_mode);
-	}
+	reg_set((void __iomem *)USB2_OTG_PHY_CTRL_ADDR, 0x0,
+		rb_usb2_dp_pulldn_dev_mode | rb_usb2_dm_pulldn_dev_mode);
 
 	/* Disbale VBus interrupt which will be enable again in kernel */
 	reg_set((void __iomem *)USB3_TOP_INT_ENABLE_REG, 0x0, vbus_int_enable);
@@ -954,10 +941,10 @@ int comphy_a3700_init(struct chip_serdes_phy_config *chip_cfg,
 						   comphy_map->invert);
 			break;
 
+		case COMPHY_TYPE_USB3:
 		case COMPHY_TYPE_USB3_HOST0:
 		case COMPHY_TYPE_USB3_DEVICE:
-			ret = comphy_usb3_power_up(comphy_map->type,
-						   comphy_map->speed,
+			ret = comphy_usb3_power_up(comphy_map->speed,
 						   comphy_map->invert);
 			break;
 

@@ -476,6 +476,13 @@ static int comphy_usb3_power_up(u32 type, u32 speed, u32 invert)
 			usb32_ctrl_int_mode);
 	}
 
+	/* Disbale VBus interrupt which will be enable again in kernel */
+	reg_set((void __iomem *)USB3_TOP_INT_ENABLE_REG, 0x0, vbus_int_enable);
+
+	/* Clear VBus interrupt to prepare a clean state for kernel */
+	reg_set((void __iomem *)USB3_TOP_INT_STATUS_REG,
+		vbus_int_state, vbus_int_state);
+
 	debug_exit();
 
 	return ret;
@@ -564,6 +571,18 @@ static int comphy_usb2_power_up(u8 usb32)
 
 	if (ret == 0)
 		printf("Failed to lock USB2 PLL\n");
+
+	if (usb32) {
+		/*
+		 * Disbale VBus interrupt which will be
+		 * enable again in kernel
+		 */
+		reg_set((void __iomem *)USB3_TOP_INT_ENABLE_REG, 0x0,
+			vbus_int_enable);
+		/* Clear VBus interrupt to prepare a clean state for kernel */
+		reg_set((void __iomem *)USB3_TOP_INT_STATUS_REG,
+			vbus_int_state, vbus_int_state);
+	}
 
 	debug_exit();
 

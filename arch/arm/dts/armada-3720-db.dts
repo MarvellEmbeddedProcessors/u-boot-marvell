@@ -108,6 +108,12 @@
 		phy-type = <COMPHY_TYPE_USB3_HOST0>;
 		phy-speed = <COMPHY_SPEED_5G>;
 	};
+
+	phy2 {
+		phy-type = <COMPHY_TYPE_SATA0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+		phy-invert = <COMPHY_POLARITY_NO_INVERT>;
+	};
 };
 
 &eth0 {

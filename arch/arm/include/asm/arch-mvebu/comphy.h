@@ -87,7 +87,7 @@ struct chip_serdes_phy_config {
 	void __iomem *hpipe3_base_addr;
 	u32 comphy_lanes_count;
 	u32 comphy_mux_bitcount;
-	u32 comphy_index;
+	u32 cp_index;
 };
 
 void reg_set(void __iomem *addr, u32 data, u32 mask);

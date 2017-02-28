@@ -527,7 +527,7 @@ static int comphy_usb3_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 }
 
 static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem *comphy_base,
-				int comphy_index)
+				int cp_index)
 {
 	u32 mask, data, i, ret = 1;
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
@@ -545,7 +545,7 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base, void __iomem
 	 * In order to parse each CPs SATA node, fdt_node_offset_by_compatible
 	 * must be called again (according to the CP id)
 	 */
-	for (i = 0; i < (comphy_index + 1); i++)
+	for (i = 0; i < (cp_index + 1); i++)
 		sata_node = fdt_node_offset_by_compatible(gd->fdt_blob, sata_node,
 							  fdtdec_get_compatible(COMPAT_MVEBU_SATA));
 
@@ -1788,7 +1788,7 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy
 		case PHY_TYPE_SATA2:
 		case PHY_TYPE_SATA3:
 			ret = comphy_sata_power_up(lane, hpipe_base_addr, comphy_base_addr,
-						   ptr_chip_cfg->comphy_index);
+						   ptr_chip_cfg->cp_index);
 			break;
 		case PHY_TYPE_USB3_HOST0:
 		case PHY_TYPE_USB3_HOST1:

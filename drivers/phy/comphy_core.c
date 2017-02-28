@@ -200,8 +200,8 @@ u32 comphy_init(const void *blob)
 			comphy_map_data[lane].speed = PHY_TYPE_INVALID;
 			lane++;
 		}
-		/* Save comphy index for MultiCP devices (A8K) */
-		ptr_chip_cfg->comphy_index = i;
+		/* Save CP index for MultiCP devices (A8K) */
+		ptr_chip_cfg->cp_index = i;
 		/* PHY power UP sequence */
 		ptr_chip_cfg->ptr_comphy_chip_init(ptr_chip_cfg, comphy_map_data);
 		/* PHY print SerDes status */

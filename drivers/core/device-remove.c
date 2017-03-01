@@ -174,7 +174,12 @@ int device_remove(struct udevice *dev, uint flags)
 	if (ret)
 		goto err;
 
-	if (drv->remove) {
+	/*
+	 * Remove the device if called with the "normal" remove flag set,
+	 * or if the remove flag matches the driver flags
+	 */
+	if (drv->remove &&
+	    ((flags & DM_REMOVE_NORMAL) || (flags & drv->flags))) {
 		ret = drv->remove(dev);
 		if (ret)
 			goto err_remove;
@@ -188,10 +193,12 @@ int device_remove(struct udevice *dev, uint flags)
 		}
 	}
 
-	device_free(dev);
+	if ((flags & DM_REMOVE_NORMAL) || (flags & drv->flags)) {
+		device_free(dev);
 
-	dev->seq = -1;
-	dev->flags &= ~DM_FLAG_ACTIVATED;
+		dev->seq = -1;
+		dev->flags &= ~DM_FLAG_ACTIVATED;
+	}
 
 	return ret;
 

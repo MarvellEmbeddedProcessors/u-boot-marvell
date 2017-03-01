@@ -192,50 +192,37 @@ static int do_bootu_spi(int argc, char * const argv[])
 {
 	unsigned long addr, offset, len;
 	void *buf;
-	char *endp, *env1, *env2;
+	char *env1, *env2;
 	int ret = 1;
 
-	if (argc < 1)
+	if ((argc < 1) || (argc > 3))
 		return -1;
 
-	if (argc <= 2) {
-		if (argc == 1) {
-			offset = 0;
-		} else {
-			offset = simple_strtoul(argv[1], &endp, 0);
-			if (*argv[1] == 0 || *endp != 0)
-				return -1;
-		}
+	offset = 0;
+
+	debug("%s argv0 %s argv1 %s\n", __func__, argv[0], argv[1]);
+
+	if (argc == 1) {
 		env1 = getenv("kernel_addr");
 		env2 = getenv("filesize");
-		debug("%s kernel_addr %s filesize %s\n", __func__, env1, env2);
-
-		ret = strict_strtoul(env1, 16, &addr);
-		if (ret)
-			return -1;
-		debug("%s addr %ld\n", __func__, addr);
-
-		ret = strict_strtoul(env2, 16, &len);
-		if (ret)
-			return -1;
-		debug("%s len %ld\n", __func__, len);
 	} else {
-		offset = simple_strtoul(argv[1], &endp, 0);
-		if (*argv[1] == 0 || *endp != 0)
+		if (!argv[1] || !argv[2])
 			return -1;
-		env1 = argv[2];
-		env2 = argv[3];
-		addr = simple_strtoul(env1, &endp, 16);
-		if (*argv[2] == 0 || *endp != 0)
-			return -1;
-		debug("%s addr %ld\n", __func__, addr);
-
-		len = simple_strtoul(env2, &endp, 16);
-		if (*argv[3] == 0 || *endp != 0)
-			return -1;
-
-		debug("%s len %ld\n", __func__, len);
+		env1 = argv[1];
+		env2 = argv[2];
 	}
+
+	debug("%s kernel_addr %s filesize %s\n", __func__, env1, env2);
+
+	ret = strict_strtoul(env1, 16, &addr);
+	if (ret)
+		return -1;
+	debug("%s addr %ld\n", __func__, addr);
+
+	ret = strict_strtoul(env2, 16, &len);
+	if (ret)
+		return -1;
+	debug("%s len %ld\n", __func__, len);
 
 	if (validate_bootimg_header(addr)) {
 		printf("\n No valid boot image header found \n");
@@ -245,7 +232,7 @@ static int do_bootu_spi(int argc, char * const argv[])
 	/* The remaining commands require a selected device */
 	if (!flash) {
 		debug("No SPI flash selected.  Executing 'sf probe'\n");
-		ret = do_spi_flash_probe(argc, argv);
+		ret = do_spi_flash_probe(0, NULL);
 		if (ret)
 			return 1;
 	}
@@ -328,45 +315,41 @@ static int do_bootu_mmc(int argc, char * const argv[])
 {
 	static int curr_device = -1;
 	struct mmc *mmc;
-	char *endp, *env1, *env2;
+	char *env1, *env2;
 	unsigned long blk, len, n;
 	unsigned long addr;
 	int ret;
 
-	if (argc < 1)
+	if ((argc < 1) || (argc > 3))
 		return -1;
+	debug("%s argv0 %s argv1 %s\n", __func__, argv[0], argv[1]);
 
-	if (argc <= 2) {
-		if (argc == 1) {
-			blk = 0;
-		} else {
-			blk = simple_strtoul(argv[1], &endp, 0);
-			if (*argv[1] == 0 || *endp != 0)
-				return -1;
-		}
+	blk = 0;
+	if (argc == 1) {
 		env1 = getenv("kernel_addr");
 		env2 = getenv("filesize");
-		debug("%s kernel_addr %s filesize %s\n", __func__, env1, env2);
-
-		ret = strict_strtoul(env1, 16, &addr);
-		if (ret)
-			return -1;
-		debug("%s addr %ld\n", __func__, addr);
-
-		ret = strict_strtoul(env2, 16, &len);
-		if (ret)
-			return -1;
-		debug("%s len %ld\n", __func__, len);
-		if (len % 512)
-			len = len / 512 + 1;
-		else
-			len /= 512;
-		debug("%s len %ld\n", __func__, len);
 	} else {
-		blk = simple_strtoul(argv[1], NULL, 10);
-		addr = simple_strtoul(argv[2], NULL, 16);
-		len = simple_strtoul(argv[3], NULL, 16);
+		if (!argv[1] || !argv[2])
+			return -1;
+		env1 = argv[1];
+		env2 = argv[2];
 	}
+	debug("%s kernel_addr %s filesize %s\n", __func__, env1, env2);
+
+	ret = strict_strtoul(env1, 16, &addr);
+	if (ret)
+		return -1;
+	debug("%s addr %ld\n", __func__, addr);
+
+	ret = strict_strtoul(env2, 16, &len);
+	if (ret)
+		return -1;
+	debug("%s len %ld\n", __func__, len);
+	if (len % 512)
+		len = len / 512 + 1;
+	else
+		len /= 512;
+	debug("%s len %ld\n", __func__, len);
 
 	if ((blk + 512 * len) > 0x1000000) {
 		printf("\nBoot Image size exceeding 16MB\n");

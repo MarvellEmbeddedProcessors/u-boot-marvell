@@ -135,9 +135,11 @@ phys_size_t get_effective_memsize(void)
 
 void dram_init_banksize(void)
 {
-	/* Config 2 DRAM banks:
-	** Bank 0 - max size 4G - 256M
-	** Bank 1 - max size 4G */
+	/*
+	 * Config 2 DRAM banks:
+	 * Bank 0 - max size 4G - 256M
+	 * Bank 1 - ram size - 4G + 256M
+	 */
 	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
 	if (gd->ram_size <= SZ_4G) {
 		gd->bd->bi_dram[0].size = min(gd->ram_size, (phys_size_t)(SZ_4G - SZ_256M));
@@ -146,7 +148,7 @@ void dram_init_banksize(void)
 
 	gd->bd->bi_dram[0].size = SZ_4G - SZ_256M;
 	gd->bd->bi_dram[1].start = SZ_4G;
-	gd->bd->bi_dram[1].size = gd->ram_size - SZ_4G;
+	gd->bd->bi_dram[1].size = gd->ram_size - SZ_4G + SZ_256M;
 }
 
 void reset_cpu(ulong ignored)

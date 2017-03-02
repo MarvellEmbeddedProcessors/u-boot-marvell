@@ -171,17 +171,38 @@ void i2c_clk_enable(void)
 
 int dram_init(void)
 {
+	u32 cs;
+
 	gd->ram_size = 0;
 
 	/* DDR size has been passed to u-boot from ATF. */
-	gd->ram_size = (get_info(DRAM_CS0_SIZE) << 20);
+	for (cs = 0; cs < CONFIG_NR_DRAM_BANKS; cs++)
+		if (get_info(DRAM_CS0 + cs) == 1)
+			gd->ram_size += (get_info(DRAM_CS0_SIZE + cs)  << 20);
 
 	if (gd->ram_size == 0) {
 		error("No DRAM banks detected");
 		return 1;
 	}
-
 	return 0;
+}
+
+void dram_init_banksize(void)
+{
+	u32 cs;
+
+	/* Config DRAM banks according to DRAM info that passed
+	 * from ATF to u-boot.
+	 */
+	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
+	gd->bd->bi_dram[0].size = (get_info(DRAM_CS0_SIZE)  << 20);
+
+	/* DDR info has been passed to u-boot from ATF */
+	for (cs = 1; cs < CONFIG_NR_DRAM_BANKS; cs++)
+		if (get_info(DRAM_CS0 + cs) == 1) {
+			gd->bd->bi_dram[cs].size = (get_info(DRAM_CS0_SIZE + cs)  << 20);
+			gd->bd->bi_dram[cs].start = gd->bd->bi_dram[cs - 1].start + gd->bd->bi_dram[cs - 1].size;
+		}
 }
 
 void reset_cpu(ulong ignored)

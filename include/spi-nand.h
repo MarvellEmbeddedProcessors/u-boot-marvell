@@ -283,7 +283,8 @@ enum {
 #define SPINAND_NEED_DIE_SELECT	(1 << 1)
 
 #define SPINAND_MFR_MICRON		0x2C
-#define SPINAND_MAX_ID_LEN		2
+#define SPINAND_MFR_GIGADEVICE		0xC8
+#define SPINAND_MAX_ID_LEN		3
 
 #ifdef DEBUG
 #define spi_nand_debug(fmt, args...)	printf(fmt, ##args)

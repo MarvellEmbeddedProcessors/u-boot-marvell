@@ -36,7 +36,7 @@ static int scsi_post_probe(struct udevice *dev)
 		ret = device_probe(child_dev);
 		if (ret)
 			printf("%s: child device %s probe failed!\n",
-			       child_dev->name);
+			       __func__, child_dev->name);
 	}
 
 	return 0;

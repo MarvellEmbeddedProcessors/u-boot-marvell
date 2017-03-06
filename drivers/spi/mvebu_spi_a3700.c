@@ -356,60 +356,40 @@ static int spi_fifo_flush(void)
 	return 1;
 }
 
-static unsigned int spi_fifo_header_set(unsigned int bytelen, const void *dout, unsigned long flags)
+static unsigned int spi_fifo_header_set(unsigned int bytelen, const void *dout,
+					unsigned long flags)
 {
-	unsigned int max_instr_cnt = 1, max_addr_cnt = 3, max_dummy_cnt = 1;
-	unsigned int instr_cnt = 0, addr_cnt = 0, dummy_cnt = 0, val = 0, done_len;
+	unsigned int addr_cnt = 0, val = 0, done_len = 0;
 	unsigned char *dout_ptr = (unsigned char *)dout;
 
-	writel(0, MVEBU_SPI_A3700_IF_INST_ADDR);
-	writel(0, MVEBU_SPI_A3700_IF_ADDR);
-	writel(0, MVEBU_SPI_A3700_IF_RMODE);
+	/*
+	 * Clean number of bytes for instruction, address,
+	 * dummy field and read mode
+	 */
+	writel(0x0, MVEBU_SPI_A3700_IF_INST_ADDR);
+	writel(0x0, MVEBU_SPI_A3700_IF_ADDR);
+	writel(0x0, MVEBU_SPI_A3700_IF_RMODE);
+	writel(0x0, MVEBU_SPI_A3700_IF_HDR_CNT_ADDR);
 
-	if (flags & SPI_XFER_BEGIN) {
-		if (bytelen <= max_instr_cnt) {
-			instr_cnt = 1;
-			addr_cnt = 0;
-			dummy_cnt = 0;
-		} else if (bytelen <= max_instr_cnt + max_addr_cnt) {
-			instr_cnt = 1;
-			addr_cnt = bytelen - instr_cnt;
-			dummy_cnt = 0;
-		} else if (bytelen <= max_instr_cnt + max_addr_cnt + max_dummy_cnt) {
-			instr_cnt = 1;
-			addr_cnt = 3;
-			dummy_cnt = bytelen - instr_cnt - addr_cnt;
-		}
-		val = 0;
-		val |= ((instr_cnt & MVEBU_SPI_A3700_INSTR_CNT_MASK)
-			<< MVEBU_SPI_A3700_INSTR_CNT_BIT);
-		val |= ((addr_cnt & MVEBU_SPI_A3700_ADDR_CNT_MASK)
+	if (bytelen % 4) {
+		addr_cnt = bytelen % 4;
+		val = ((addr_cnt & MVEBU_SPI_A3700_ADDR_CNT_MASK)
 			<< MVEBU_SPI_A3700_ADDR_CNT_BIT);
-		val |= ((dummy_cnt & MVEBU_SPI_A3700_DUMMY_CNT_MASK)
-			<< MVEBU_SPI_A3700_DUMMY_CNT_BIT);
+
+		writel(val, MVEBU_SPI_A3700_IF_HDR_CNT_ADDR);
+		done_len = addr_cnt;
+
+		/* transfer 1~3 bytes by address count */
+		val = 0;
+		while (addr_cnt--) {
+			val = (val << 8) | dout_ptr[0];
+			dout_ptr++;
+		}
+		writel(val, MVEBU_SPI_A3700_IF_ADDR);
 	}
-
-	writel(val, MVEBU_SPI_A3700_IF_HDR_CNT_ADDR);
-	done_len = instr_cnt + addr_cnt + dummy_cnt;
-
-	/* Set Instruction */
-	val = 0;
-	while (instr_cnt--) {
-		val = (val << 8) | dout_ptr[0];
-		dout_ptr++;
-	}
-	writel(val, MVEBU_SPI_A3700_IF_INST_ADDR);
-
-	/* Set Address */
-	val = 0;
-	while (addr_cnt--) {
-		val = (val << 8) | dout_ptr[0];
-		dout_ptr++;
-	}
-	writel(val, MVEBU_SPI_A3700_IF_ADDR);
-
 	return done_len;
 }
+
 
 static inline int spi_is_wfifo_full(void)
 {
@@ -423,38 +403,13 @@ static int spi_fifo_write(unsigned int buf_len, unsigned char *tx_buf)
 {
 	unsigned int val = 0;
 
-	while (!spi_is_wfifo_full()) {
-		/*
-		 * In FIFO mode, the SPI controller is forced to work in 4-bytes mode.
-		 * It always shifts 4-bytes on each write.
-		 */
-		if (buf_len > 4) {
-			val = (tx_buf[3] << 24) | (tx_buf[2] << 16) | (tx_buf[1] << 8) | tx_buf[0];
-			buf_len -= 4;
-			tx_buf += 4;
-		} else {
-			/*
-			 * If the remained buffer length is less than 4-bytes, we should pad the write buffer with
-			 * all ones. So that it avoids overwrite the unexpected bytes following the last one;
-			 */
-			int i = 0;
-
-			val = 0xffffffff;
-			while (buf_len) {
-				val &= ~(0xff << (8 * i));
-				val |= *tx_buf++ << (8 * i);
-				i++;
-				buf_len--;
-			}
-
-			break;
-		}
+	while (!spi_is_wfifo_full() && buf_len) {
+		val = (tx_buf[3] << 24) | (tx_buf[2] << 16) | (tx_buf[1] << 8) | tx_buf[0];
 
 		writel(val, MVEBU_SPI_A3700_DOUT_ADDR);
+		buf_len -= 4;
+		tx_buf += 4;
 	}
-
-	writel(val, MVEBU_SPI_A3700_DOUT_ADDR);
-
 	/* Return the unwritten bytes number */
 	return buf_len;
 }
@@ -582,12 +537,16 @@ static int spi_xfer_fifo_write(struct spi_slave *slave, unsigned int bytelen, co
 	unsigned char *char_p;
 	int remain_len;
 	unsigned int len_done;
-	bool write_data;
 
-	/* Set number of bytes for instruction, address, dummy field and read mode */
+	/* when tx data is not 4 bytes aligned, there will be unexpected
+	 * bytes with value 0x0 at the high end of SPI output register, since it
+	 * always shifts out as whole 4 bytes. Which might compromise
+	 * transaction with some device/flash. To fix this, Serial Peripheral
+	 * Interface Address (0xd0010614) in header count feature is used to
+	 * transfer 1 to 3 bytes to make the rest of data 4 bytes aligned.
+	 */
 	len_done = spi_fifo_header_set(bytelen, dout, flags);
 	bytelen -= len_done;
-	write_data = (bytelen != 0);
 
 	/* Start Write transfer */
 	val = readl(MVEBU_SPI_A3700_CONF_ADDR);
@@ -595,7 +554,7 @@ static int spi_xfer_fifo_write(struct spi_slave *slave, unsigned int bytelen, co
 	writel(val, MVEBU_SPI_A3700_CONF_ADDR);
 
 	/* Write data to spi */
-	char_p = (unsigned char *)dout;
+	char_p = (unsigned char *)dout + len_done;
 	while (bytelen) {
 		if (!spi_poll_fifo_write_ready()) {
 			printf("spi_poll_fifo_write_ready timeout\n");
@@ -608,25 +567,11 @@ static int spi_xfer_fifo_write(struct spi_slave *slave, unsigned int bytelen, co
 		bytelen = remain_len;
 	}
 
-	if (write_data) {
-		/*
-		 * If there are data written to the SPI device, wait until SPI_WFIFO_EMPTY is 1
-		 * to wait for all data to transfer out of write FIFO.
-		 */
-		if (!spi_poll_fifo_write_empty()) {
-			printf("spi_poll_fifo_write_empty timeout\n");
-			ret = 1;
-			goto error;
-		}
-		/*
-		 * wait for spi ready for spi interface to be idle (spi is
-		 * ready for a new transfer)
-		 */
-		if (!spi_poll_xfer_ready()) {
-			printf("spi_poll_xfer_ready timeout\n");
-			ret = 1;
-			goto error;
-		}
+
+	if (!spi_poll_fifo_write_empty()) {
+		printf("spi_poll_fifo_write_empty timeout\n");
+		ret = 1;
+		goto error;
 	}
 
 	/* When read xfer finishes, force stop is needed */

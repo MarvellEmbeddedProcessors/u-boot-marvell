@@ -1871,17 +1871,28 @@ static void spi_nand_set_rd_wr_op(struct spi_nand_chip *chip)
 static int spi_nand_init(struct spi_slave *spi, struct spi_nand_chip *chip)
 {
 	u8 id[SPINAND_MAX_ID_LEN] = {0};
+	struct spi_nand_flash *type = spi_nand_table;
 
 	if (!chip)
 		return -ENOMEM;
 
 	chip->spi = spi;
 
-	spi_nand_set_rd_wr_op(chip);
-	spi_nand_reset(chip);
-	spi_nand_read_id(chip, id);
+	/* use given mfr_id to try ReadID with specific cmd_cfg_table */
+	for (; type->name != NULL; type++) {
+		if (chip->mfr_id == type->mfr_id)
+			continue;
+		chip->mfr_id = type->mfr_id;
 
-	if (spi_nand_scan_id_table(chip, id))
+		spi_nand_set_rd_wr_op(chip);
+		spi_nand_reset(chip);
+		spi_nand_read_id(chip, id);
+
+		if (spi_nand_scan_id_table(chip, id))
+			break;
+	}
+
+	if (type->name != NULL)
 		goto ident_done;
 	spi_nand_info("SPI-NAND mfr_id: %x, dev_id: %x is not in id table.\n",
 		      id[0], id[1]);

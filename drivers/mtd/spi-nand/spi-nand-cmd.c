@@ -26,6 +26,10 @@ struct spi_nand_cmd_cfg {
 	u8		data_bits;
 };
 
+struct spi_nand_cmd_cfg_table_map {
+	u8			mfr_id;
+	struct spi_nand_cmd_cfg *cmd_cfg_table;
+};
 
 static struct spi_nand_cmd_cfg micron_cmd_cfg_table[] = {
 /*opcode	addr_bytes	addr_bits	dummy_bytes	data_nbits*/
@@ -56,6 +60,38 @@ static struct spi_nand_cmd_cfg micron_cmd_cfg_table[] = {
 	{SPINAND_CMD_READ_ID,			0,	0,	1,	1},
 	{SPINAND_CMD_RESET,			0,	0,	0,	0},
 	{SPINAND_CMD_END},
+};
+
+static struct spi_nand_cmd_cfg gd_cmd_cfg_table[] = {
+/*opcode	addr_bytes	addr_bits	dummy_bytes	data_nbits*/
+	{SPINAND_CMD_GET_FEATURE,		1,	1,	0,	1},
+	{SPINAND_CMD_SET_FEATURE,		1,	1,	0,	1},
+	{SPINAND_CMD_PAGE_READ,			3,	1,	0,	0},
+	{SPINAND_CMD_READ_PAGE_CACHE_RDM,	3,	1,	0,	0},
+	{SPINAND_CMD_READ_PAGE_CACHE_LAST,	0,	0,	0,	0},
+	{SPINAND_CMD_READ_FROM_CACHE,		3,	1,	0,	1},
+	{SPINAND_CMD_READ_FROM_CACHE_FAST,	3,	1,	1,	1},
+	{SPINAND_CMD_READ_FROM_CACHE_X2,	2,	1,	1,	2},
+	{SPINAND_CMD_READ_FROM_CACHE_DUAL_IO,	2,	2,	1,	2},
+	{SPINAND_CMD_READ_FROM_CACHE_X4,	2,	1,	1,	4},
+	{SPINAND_CMD_READ_FROM_CACHE_QUAD_IO,	2,	4,	2,	4},
+	{SPINAND_CMD_BLK_ERASE,			3,	1,	0,	0},
+	{SPINAND_CMD_PROG_EXC,			3,	1,	0,	0},
+	{SPINAND_CMD_PROG_LOAD,			2,	1,	0,	1},
+	{SPINAND_CMD_PROG_LOAD_RDM_DATA,	2,	1,	0,	1},
+	{SPINAND_CMD_PROG_LOAD_X4,		2,	1,	0,	4},
+	{SPINAND_CMD_PROG_LOAD_RDM_DATA_X4,	2,	1,	0,	4},
+	{SPINAND_CMD_WR_ENABLE,			0,	0,	0,	0},
+	{SPINAND_CMD_WR_DISABLE,		0,	0,	0,	0},
+	{SPINAND_CMD_READ_ID,			0,	0,	0,	1},
+	{SPINAND_CMD_RESET,			0,	0,	0,	0},
+	{SPINAND_CMD_END},
+};
+
+static struct spi_nand_cmd_cfg_table_map cmd_cfg_table_map[] = {
+	{SPINAND_MFR_MICRON,		micron_cmd_cfg_table},
+	{SPINAND_MFR_GIGADEVICE,	gd_cmd_cfg_table},
+	{0},
 };
 
 static struct spi_nand_cmd_cfg *spi_nand_lookup_cmd_cfg_table(u8 opcode,
@@ -98,8 +134,17 @@ int spi_nand_issue_cmd(struct spi_nand_chip *chip, struct spi_nand_cmd *cmd)
 	struct spi_slave *spi = chip->spi;
 	int flags = SPI_XFER_BEGIN;
 	u8 buf[SPINAND_MAX_ADDR_LEN];
+	struct spi_nand_cmd_cfg_table_map *map = cmd_cfg_table_map;
 
-	cmd_cfg = spi_nand_lookup_cmd_cfg_table(cmd->cmd, micron_cmd_cfg_table);
+	for (; map->mfr_id != 0; map++) {
+		if (map->mfr_id == chip->mfr_id)
+			break;
+	}
+
+	if (map->mfr_id == 0)
+		return -EINVAL;
+
+	cmd_cfg = spi_nand_lookup_cmd_cfg_table(cmd->cmd, map->cmd_cfg_table);
 
 	if (!cmd_cfg)
 		return -EINVAL;

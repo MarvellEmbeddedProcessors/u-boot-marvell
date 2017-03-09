@@ -904,7 +904,7 @@ GT_STATUS    ddr3TipLoadAllPatternToMem
         /* enable single cs */
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, CS_ENABLE_REG, (1 << 3), (1 << 3)));
     }
-    for(pattern = 0; pattern < PATTERN_LIMIT; pattern++)
+    for(pattern = 0; pattern < /* PATTERN_LIMIT */PATTERN_FULL_SSO3; pattern++)
     {
         ddr3TipLoadPatternToMem(devNum,pattern);
     }

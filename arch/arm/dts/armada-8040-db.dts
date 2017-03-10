@@ -120,7 +120,7 @@
 	/* Serdes Configuration:
 	 *	Lane 0: PCIe0 (x1)
 	 *	Lane 1: SATA0
-	 *	Lane 2: KR (10G)
+	 *	Lane 2: SFI (10G)
 	 *	Lane 3: SATA1
 	 *	Lane 4: USB3_HOST1
 	 *	Lane 5: PCIe2 (x1)
@@ -132,7 +132,7 @@
 		phy-type = <PHY_TYPE_SATA0>;
 	};
 	phy2 {
-		phy-type = <PHY_TYPE_KR>;
+		phy-type = <PHY_TYPE_SFI>;
 	};
 	phy3 {
 		phy-type = <PHY_TYPE_SATA1>;
@@ -223,7 +223,7 @@
 	/* Serdes Configuration:
 	 *	Lane 0: PCIe0 (x1)
 	 *	Lane 1: SATA0
-	 *	Lane 2: KR (10G)
+	 *	Lane 2: SFI (10G)
 	 *	Lane 3: SATA1
 	 *	Lane 4: PCIe1 (x1)
 	 *	Lane 5: PCIe2 (x1)
@@ -235,7 +235,7 @@
 		phy-type = <PHY_TYPE_SATA0>;
 	};
 	phy2 {
-		phy-type = <PHY_TYPE_KR>;
+		phy-type = <PHY_TYPE_SFI>;
 	};
 	phy3 {
 		phy-type = <PHY_TYPE_SATA1>;

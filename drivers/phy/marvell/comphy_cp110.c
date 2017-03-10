@@ -360,15 +360,15 @@ static int comphy_pcie_power_up(u32 lane, u32 pcie_width, bool clk_src,
 	reg_set(hpipe_addr + HPIPE_DFE_REG0,  data, mask);
 
 	/* Configure initial and final coefficient value for receiver */
-	mask = HPIPE_G3_RX_SELMUPI_MASK;
-	data = 0x1 << HPIPE_G3_RX_SELMUPI_OFFSET;
+	mask = HPIPE_G3_SET_1_G3_RX_SELMUPI_MASK;
+	data = 0x1 << HPIPE_G3_SET_1_G3_RX_SELMUPI_OFFSET;
 
-	mask |= HPIPE_G3_RX_SELMUPF_MASK;
-	data |= 0x1 << HPIPE_G3_RX_SELMUPF_OFFSET;
+	mask |= HPIPE_G3_SET_1_G3_RX_SELMUPF_MASK;
+	data |= 0x1 << HPIPE_G3_SET_1_G3_RX_SELMUPF_OFFSET;
 
-	mask |= HPIPE_G3_SETTING_BIT_MASK;
-	data |= 0x0 << HPIPE_G3_SETTING_BIT_OFFSET;
-	reg_set(hpipe_addr + HPIPE_G3_SETTINGS_1_REG,  data, mask);
+	mask |= HPIPE_G3_SET_1_G3_SAMPLER_INPAIRX2_EN_MASK;
+	data |= 0x0 << HPIPE_G3_SET_1_G3_SAMPLER_INPAIRX2_EN_OFFSET;
+	reg_set(hpipe_addr + HPIPE_G3_SET_1_REG,  data, mask);
 
 	/* Trigger sampler enable pulse */
 	mask = HPIPE_SMAPLER_MASK;
@@ -693,10 +693,78 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base,
 		0x2 << HPIPE_LOOPBACK_SEL_OFFSET, HPIPE_LOOPBACK_SEL_MASK);
 
 	debug("stage: Analog paramters from ETP(HW)\n");
-	/*
-	 * TODO: Set analog paramters from ETP(HW) - for now use the
-	 * default datas
-	 */
+	/* Set analog parameters from ETP(HW) */
+	/* G1 settings */
+	mask = HPIPE_G1_SET_1_G1_RX_SELMUPI_MASK;
+	data = 0x0 << HPIPE_G1_SET_1_G1_RX_SELMUPI_OFFSET;
+	mask |= HPIPE_G1_SET_1_G1_RX_SELMUPP_MASK;
+	data |= 0x1 << HPIPE_G1_SET_1_G1_RX_SELMUPP_OFFSET;
+	mask |= HPIPE_G1_SET_1_G1_RX_SELMUFI_MASK;
+	data |= 0x0 << HPIPE_G1_SET_1_G1_RX_SELMUFI_OFFSET;
+	mask |= HPIPE_G1_SET_1_G1_RX_SELMUFF_MASK;
+	data |= 0x3 << HPIPE_G1_SET_1_G1_RX_SELMUFF_OFFSET;
+	mask |= HPIPE_G1_SET_1_G1_RX_DIGCK_DIV_MASK;
+	data |= 0x1 << HPIPE_G1_SET_1_G1_RX_DIGCK_DIV_OFFSET;
+	reg_set(hpipe_addr + HPIPE_G1_SET_1_REG, data, mask);
+
+	mask = HPIPE_G1_SETTINGS_3_G1_FFE_CAP_SEL_MASK;
+	data = 0xf << HPIPE_G1_SETTINGS_3_G1_FFE_CAP_SEL_OFFSET;
+	mask |= HPIPE_G1_SETTINGS_3_G1_FFE_RES_SEL_MASK;
+	data |= 0x2 << HPIPE_G1_SETTINGS_3_G1_FFE_RES_SEL_OFFSET;
+	mask |= HPIPE_G1_SETTINGS_3_G1_FFE_SETTING_FORCE_MASK;
+	data |= 0x1 << HPIPE_G1_SETTINGS_3_G1_FFE_SETTING_FORCE_OFFSET;
+	mask |= HPIPE_G1_SETTINGS_3_G1_FFE_DEG_RES_LEVEL_MASK;
+	data |= 0x1 << HPIPE_G1_SETTINGS_3_G1_FFE_DEG_RES_LEVEL_OFFSET;
+	mask |= HPIPE_G1_SETTINGS_3_G1_FFE_LOAD_RES_LEVEL_MASK;
+	data |= 0x1 << HPIPE_G1_SETTINGS_3_G1_FFE_LOAD_RES_LEVEL_OFFSET;
+	reg_set(hpipe_addr + HPIPE_G1_SETTINGS_3_REG, data, mask);
+
+	/* G2 settings */
+	mask = HPIPE_G2_SET_1_G2_RX_SELMUPI_MASK;
+	data = 0x0 << HPIPE_G2_SET_1_G2_RX_SELMUPI_OFFSET;
+	mask |= HPIPE_G2_SET_1_G2_RX_SELMUPP_MASK;
+	data |= 0x1 << HPIPE_G2_SET_1_G2_RX_SELMUPP_OFFSET;
+	mask |= HPIPE_G2_SET_1_G2_RX_SELMUFI_MASK;
+	data |= 0x0 << HPIPE_G2_SET_1_G2_RX_SELMUFI_OFFSET;
+	mask |= HPIPE_G2_SET_1_G2_RX_SELMUFF_MASK;
+	data |= 0x3 << HPIPE_G2_SET_1_G2_RX_SELMUFF_OFFSET;
+	mask |= HPIPE_G2_SET_1_G2_RX_DIGCK_DIV_MASK;
+	data |= 0x1 << HPIPE_G2_SET_1_G2_RX_DIGCK_DIV_OFFSET;
+	reg_set(hpipe_addr + HPIPE_G2_SET_1_REG, data, mask);
+
+	/* G3 settings */
+	mask = HPIPE_G3_SET_1_G3_RX_SELMUPI_MASK;
+	data = 0x2 << HPIPE_G3_SET_1_G3_RX_SELMUPI_OFFSET;
+	mask |= HPIPE_G3_SET_1_G3_RX_SELMUPF_MASK;
+	data |= 0x2 << HPIPE_G3_SET_1_G3_RX_SELMUPF_OFFSET;
+	mask |= HPIPE_G3_SET_1_G3_RX_SELMUFI_MASK;
+	data |= 0x3 << HPIPE_G3_SET_1_G3_RX_SELMUFI_OFFSET;
+	mask |= HPIPE_G3_SET_1_G3_RX_SELMUFF_MASK;
+	data |= 0x3 << HPIPE_G3_SET_1_G3_RX_SELMUFF_OFFSET;
+	mask |= HPIPE_G3_SET_1_G3_RX_DFE_EN_MASK;
+	data |= 0x1 << HPIPE_G3_SET_1_G3_RX_DFE_EN_OFFSET;
+	mask |= HPIPE_G3_SET_1_G3_RX_DIGCK_DIV_MASK;
+	data |= 0x2 << HPIPE_G3_SET_1_G3_RX_DIGCK_DIV_OFFSET;
+	mask |= HPIPE_G3_SET_1_G3_SAMPLER_INPAIRX2_EN_MASK;
+	data |= 0x0 << HPIPE_G3_SET_1_G3_SAMPLER_INPAIRX2_EN_OFFSET;
+	reg_set(hpipe_addr + HPIPE_G3_SET_1_REG, data, mask);
+
+	/* DTL Control */
+	mask = HPIPE_PWR_CTR_DTL_SQ_DET_EN_MASK;
+	data = 0x1 << HPIPE_PWR_CTR_DTL_SQ_DET_EN_OFFSET;
+	mask |= HPIPE_PWR_CTR_DTL_SQ_PLOOP_EN_MASK;
+	data |= 0x1 << HPIPE_PWR_CTR_DTL_SQ_PLOOP_EN_OFFSET;
+	mask |= HPIPE_PWR_CTR_DTL_FLOOP_EN_MASK;
+	data |= 0x1 << HPIPE_PWR_CTR_DTL_FLOOP_EN_OFFSET;
+	mask |= HPIPE_PWR_CTR_DTL_CLAMPING_SEL_MASK;
+	data |= 0x1 << HPIPE_PWR_CTR_DTL_CLAMPING_SEL_OFFSET;
+	mask |= HPIPE_PWR_CTR_DTL_INTPCLK_DIV_FORCE_MASK;
+	data |= 0x1 << HPIPE_PWR_CTR_DTL_INTPCLK_DIV_FORCE_OFFSET;
+	mask |= HPIPE_PWR_CTR_DTL_CLK_MODE_MASK;
+	data |= 0x1 << HPIPE_PWR_CTR_DTL_CLK_MODE_OFFSET;
+	mask |= HPIPE_PWR_CTR_DTL_CLK_MODE_FORCE_MASK;
+	data |= 0x1 << HPIPE_PWR_CTR_DTL_CLK_MODE_FORCE_OFFSET;
+	reg_set(hpipe_addr + HPIPE_PWR_CTR_DTL_REG, data, mask);
 
 	/* DFE reset sequence */
 	reg_set(hpipe_addr + HPIPE_PWR_CTR_REG,

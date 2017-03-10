@@ -63,6 +63,7 @@ DECLARE_GLOBAL_DATA_PTR;
  * The lowest AVS voltage as default
  */
 #define AVS_VDD_LOWEST		26 /* 1050mV */
+#define AVS_VDD_1200M_LOWEST	31 /* 1108mV */
 
 /* There is only one AVS node for Armada-3700 */
 #define AVS_DT_NUM_MAX		1
@@ -100,6 +101,17 @@ int set_avs_vdd_loads(void)
 	reg_val = readl(reg_base + MVEBU_AVS_CTRL_0);
 	reg_val &= ~((AVS_VDD_MASK << AVS_HIGH_VDD_LIMIT_OFFS) |
 			(AVS_VDD_MASK << AVS_LOW_VDD_LIMIT_OFFS));
+
+	/*
+	 * For preset CPU 1200 MHZ, 1108mV (vdd value is 31) is the lowest
+	 * voltage that CPU could switch back from 600MHz/300MHz/200MHz.
+	 * Now VSET1/2/3 (vdd min) value is read from fdt, yet in Armada3700
+	 * rev2 DB's dts file, vdd min value is 26, which works well for preset
+	 * CPU 600 MHz, 800 MHz and 1000 MHz, but not for CPU 1200MHz.
+	 * Below is a temp fix, to set vdd min value to 31 for CPU 1200MHz.
+	 */
+	if (get_cpu_clk() == 1200)
+		vdd_min = AVS_VDD_1200M_LOWEST;
 
 	/* Set VDD for VSET 1, VSET 2 and VSET 3 */
 	for (i = 1; i <= 3; i++) {

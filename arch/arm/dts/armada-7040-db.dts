@@ -149,6 +149,10 @@
 	status = "okay";
 };
 
+&cpm_scsi {
+	status = "okay";
+};
+
 &cpm_usb3_0 {
 	status = "okay";
 };

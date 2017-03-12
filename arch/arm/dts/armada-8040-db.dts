@@ -124,6 +124,10 @@
 	status = "okay";
 };
 
+&cpm_scsi {
+	status = "okay";
+};
+
 /* CON9 on CP0 expansion */
 &cpm_usb3_0 {
 	status = "okay";
@@ -187,7 +191,11 @@
 
 /* CON4 on CP1 expansion */
 &cps_sata0 {
-	status = "okay";
+	status = "disabled";
+};
+
+&cps_scsi {
+	status = "disabled";
 };
 
 /* CON9 on CP1 expansion */

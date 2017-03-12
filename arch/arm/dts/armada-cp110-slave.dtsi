@@ -118,12 +118,18 @@
 				#gpio-cells = <2>;
 			};
 
-			cps_sata0: sata@540000 {
-				compatible = "marvell,armada-8k-ahci";
-				reg = <0x540000 0x30000>;
-				interrupts = <GIC_SPI 287 IRQ_TYPE_LEVEL_HIGH>;
-				clocks = <&cps_syscon0 1 15>;
+			cps_scsi: scsi_1 {
+				compatible = "marvell,mvebu-scsi";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				max-id = <2>;
+				max-lun = <1>;
 				status = "disabled";
+				cps_sata0: sata@540000 {
+					compatible = "marvell,armada-8k-ahci";
+					reg = <0x540000 0x30000>;
+					status = "disabled";
+				};
 			};
 
 			cps_usb3_0: usb3@500000 {

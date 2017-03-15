@@ -174,9 +174,17 @@
 					"root=root=/dev/nfs rw\0"						\
 					"set_bootargs=setenv bootargs $console $root "				\
 						"ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:none "\
-						"nfsroot=$serverip:$rootpath $extra_params"
-
-#define CONFIG_BOOTCOMMAND		"run get_images; run set_bootargs; booti $kernel_addr $ramfs_addr $fdt_addr"
+						"nfsroot=$serverip:$rootpath $extra_params\0"			\
+					"get_env=mw 0x01700000 0 0x1000; "\
+					"fatload mmc 1:1 0x01700000 /uenv.txt; if test \"$?\" = \"0\"; then env import -t 0x01700000; else "\
+						"ext4load mmc 1:1 0x01700000 /uenv.txt; if test \"$?\" = \"0\"; then env import -t 0x01700000; else "\
+						" fatload mmc 0:1 0x01700000 /uenv.txt; if test \"$?\" = \"0\"; then env import -t 0x01700000; else "\
+						" ext4load mmc 0:1 0x01700000 /uenv.txt; if test \"$?\" = \"0\"; then env import -t 0x01700000; else "\
+						"usb start; "\
+						" fatload usb 0:1 0x01700000 /uenv.txt; if test \"$?\" = \"0\"; then env import -t 0x01700000; else "\
+						" ext4load usb 0:1 0x01700000 /uenv.txt; if test \"$?\" = \"0\"; then env import -t 0x01700000; "\
+						" fi;fi;fi;fi;fi;fi; if test \"${uenvcmd}\" != \"\"; then run uenvcmd; fi"
+#define CONFIG_BOOTCOMMAND		"run get_env; run get_images; run set_bootargs; booti $kernel_addr $ramfs_addr $fdt_addr"
 
 /* U-Boot Commands */
 /* #define CONFIG_BOOTP_MASK       (CONFIG_BOOTP_DEFAULT | CONFIG_BOOTP_BOOTFILESIZE) */

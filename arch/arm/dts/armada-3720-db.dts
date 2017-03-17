@@ -91,7 +91,17 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c1_pins>;
 	status = "okay";
+
+	#address-cells = <1>;
+	#size-cells = <0>;
+	expander0: pca953x@22 {
+		compatible = "nxp,pca9555";
+                #gpio-cells = <2>;
+		reg = <0x22>;
+		status = "okay";
+	};
 };
+
 
 /* CON3 */
 &sata {

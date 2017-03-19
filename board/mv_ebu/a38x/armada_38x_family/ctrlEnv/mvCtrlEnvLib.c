@@ -1663,6 +1663,7 @@ MV_VOID mvCtrlRevNameGet(char *pNameBuff)
 	switch (revId) {
 	case MV_88F68XX_Z1_ID:
 	case MV_88F68XX_A0_ID:
+	case MV_88F68XX_B0_ID:
 	case MV_88F69XX_Z1_ID:
 	case MV_88F69XX_A0_ID:
 	case MV_88F69XX_A1_ID:

@@ -145,6 +145,7 @@ U_BOOT_DRIVER(test_manual_drv) = {
 	.probe	= test_manual_probe,
 	.remove	= test_manual_remove,
 	.unbind	= test_manual_unbind,
+	.flags	= DM_FLAG_ACTIVE_DMA,
 };
 
 U_BOOT_DRIVER(test_pre_reloc_drv) = {

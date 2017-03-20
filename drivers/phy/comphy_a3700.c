@@ -399,11 +399,16 @@ static int comphy_usb3_power_up(u32 speed, u32 invert, bool indirect_reg_access)
 	/* set PRD_TXDEEMPH (3.5db de-emph) */
 	fp_usb3_phy_reg_set(PHY_REG_LANE_CFG0_ADDR, 0x1, 0xFF);
 
-	/* unset BIT0: set Tx Electrical Idle Mode: Transmitter is in low impedance mode during electrical idle */
-	/* unset BIT4: set G2 Tx Datapath with no Delayed Latency */
-	/* unset BIT6: set Tx Detect Rx Mode at LoZ mode */
-	fp_usb3_phy_reg_set(PHY_REG_LANE_CFG1_ADDR, 0x0, 0xFFFF);
-
+	/*
+	 * Set BIT0: enable transmitter in high impedance mode
+	 * Set BIT[3:4]: delay 2 clock cycles for HiZ off latency
+	 * Set BIT6: Tx detect Rx at HiZ mode
+	 * Unset BIT15: set to 0 to set USB3 De-emphasize level to -3.5db
+	 *              together with bit 0 of COMPHY_REG_LANE_CFG0_ADDR register
+	 */
+	fp_usb3_phy_reg_set(PHY_REG_LANE_CFG1_ADDR,
+			    TX_DET_RX_MODE | GEN2_TX_DATA_DLY_DEFT | TX_ELEC_IDLE_MODE_EN,
+			    PRD_TXDEEMPH1_MASK | TX_DET_RX_MODE | GEN2_TX_DATA_DLY_MASK | TX_ELEC_IDLE_MODE_EN);
 
 	/* phy reg offset 0x188 = 0x93: set Spread Spectrum Clock Enabled  */
 	fp_usb3_phy_reg_set(PHY_REG_LANE_CFG4_ADDR, bf_spread_spectrum_clock_en, 0x80);
@@ -464,8 +469,14 @@ static int comphy_usb3_power_up(u32 speed, u32 invert, bool indirect_reg_access)
 	if (invert & PHY_POLARITY_RXD_INVERT)
 		fp_usb3_phy_reg_set(PHY_SYNC_PATTERN_ADDR, phy_rxd_inv, phy_rxd_inv);
 
+	/* 10. Set max speed generation to USB3.0 5Gbps */
+	fp_usb3_phy_reg_set(PHY_SYNC_MASK_GEN_REG, PHY_GEN_USB3_5G, PHY_GEN_MAX_MASK);
+
+	/* 11. Set capacitor value for FFE gain peaking to 0xF */
+	fp_usb3_phy_reg_set(PHY_REG_GEN3_SETTINGS_3, PHY_GEN_FFE_CAP_SEL_VALUE, PHY_GEN_FFE_CAP_SEL_MASK);
+
 	/*
-	 * 10. Release SW reset
+	 * 12. Release SW reset
 	 */
 	fp_usb3_phy_reg_set(PHY_REG_GLOB_PHY_CTRL0_ADDR,
 			    rb_mode_core_clk_freq_sel | rb_mode_pipe_width_32 | 0x20,

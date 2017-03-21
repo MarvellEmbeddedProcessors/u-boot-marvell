@@ -4,8 +4,8 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#ifndef _CONFIG_MVEBU_DB_88F3720_H
-#define _CONFIG_MVEBU_DB_88F3720_H
+#ifndef _CONFIG_MVEBU_ARMADA_37XX_H
+#define _CONFIG_MVEBU_ARMADA_37XX_H
 
 /*
  * High Level Configuration Options (easy to change)
@@ -126,6 +126,9 @@
 #define CONFIG_SYS_SCSI_MAX_DEVICE	(CONFIG_SYS_SCSI_MAX_SCSI_ID * \
 					 CONFIG_SYS_SCSI_MAX_LUN)
 
+/* MMC/SD IP block */
+#define CONFIG_GENERIC_MMC
+
 #define CONFIG_SUPPORT_VFAT
 
-#endif /* _CONFIG_MVEBU_DB_88F3720_H */
+#endif /* _CONFIG_MVEBU_ARMADA_37XX_H */

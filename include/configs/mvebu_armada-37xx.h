@@ -127,8 +127,6 @@
 					 CONFIG_SYS_SCSI_MAX_LUN)
 
 /* MMC/SD IP block */
-#define CONFIG_GENERIC_MMC
-
 #define CONFIG_SUPPORT_VFAT
 
 #endif /* _CONFIG_MVEBU_ARMADA_37XX_H */

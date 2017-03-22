@@ -127,7 +127,6 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_SAR_REG_CP110, "marvell,sample-at-reset-cp110"),
 	COMPAT(MVEBU_RTC_REG, "marvell,real-time-clock"),
 	COMPAT(MVEBU_GPIO, "marvell,mvebu-gpio"),
-	COMPAT(MVEBU_A3700_PM, "marvell,armada-3700-pm"),
 	COMPAT(MVEBU_A3700_AVS, "marvell,armada-3700-avs"),
 	COMPAT(MVEBU_A3700_SATA_PHY, "marvell,armada-3700-sata-phy"),
 	COMPAT(MVEBU_A3700_UTMI_PHY, "marvell,armada-3700-utmi"),

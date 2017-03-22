@@ -24,5 +24,4 @@ obj-$(CONFIG_MVEBU_GPIO) += gpio.o
 obj-$(CONFIG_MVEBU_A3700_CLOCK) += mvebu_clock.o
 obj-$(CONFIG_MVEBU_BOOTMODE_SWITCH_SUPPORT) += mvebu_bootmode.o
 obj-$(CONFIG_MVEBU_EFUSE_SUPPORT) += a3700_mbox.o
-obj-$(CONFIG_MVEBU_A3700_PM) += pm.o
 obj-$(CONFIG_MVEBU_A3700_AVS) += avs.o

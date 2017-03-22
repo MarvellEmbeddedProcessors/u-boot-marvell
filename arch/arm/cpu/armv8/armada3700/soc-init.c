@@ -32,7 +32,6 @@
 #include <libfdt.h>
 #include <asm/arch/boot_mode.h>
 #include <fdt_support.h>
-#include <asm/arch/pm.h>
 #include <asm/arch/avs.h>
 #include <usb/mvebu_usb.h>
 
@@ -117,11 +116,6 @@ void soc_init(void)
 #ifdef CONFIG_MVEBU_A3700_AVS
 	init_avs();
 #endif
-
-#ifdef CONFIG_MVEBU_A3700_PM
-	init_pm();
-#endif
-
 	enable_spi_cs_clk_pins_output();
 	return;
 }

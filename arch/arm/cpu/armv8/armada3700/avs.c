@@ -37,7 +37,6 @@
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch/clock.h>
-#include <asm/arch/pm.h>
 #include <asm/errno.h>
 #include <asm/io.h>
 #ifdef CONFIG_DEVEL_BOARD

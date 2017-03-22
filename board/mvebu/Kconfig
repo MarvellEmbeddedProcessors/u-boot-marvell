@@ -73,17 +73,6 @@ config MVEBU_A3700_CLOCK
 	  For the first stage all clocks will be enabled
 	  by default.
 
-config MVEBU_A3700_PM
-	bool "Armada-3700 PM support"
-	depends on TARGET_ARMADA_3700
-	select MVEBU_A3700_AVS
-	default n
-	help
-	  Choose this option to support
-	  Marvell Armada-3700 power management.
-	  This configuration set default PM settings
-	  according to current DT and clock configuration.
-
 config MVEBU_A3700_AVS
 	bool "Armada-3700 AVS support"
 	depends on TARGET_ARMADA_3700

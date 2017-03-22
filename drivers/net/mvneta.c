@@ -414,6 +414,15 @@ static struct buffer_location buffer_loc;
 /* buffer has to be aligned to 1M */
 #define MVNETA_BUFFER_ALIGN_SIZE	(1 << 20)
 
+/*
+ * Dummy implementation that can be overwritten by a board
+ * specific function
+ */
+__weak int board_network_enable(struct mii_dev *bus)
+{
+	return 0;
+}
+
 /* Utility/helper methods */
 
 /* Write helper method */
@@ -1738,10 +1747,13 @@ int mvneta_initialize_dev(bd_t *bis, unsigned long base_addr, int devnum, int ph
 			return -EINVAL;
 		pp->duplex = fixed_link_status->duplex;
 		pp->speed = fixed_link_status->link_speed;
-	} else {
-		miiphy_register(dev->name, smi_reg_read, smi_reg_write);
-		pp->bus = miiphy_get_dev_by_name(dev->name);
 	}
+
+	miiphy_register(dev->name, smi_reg_read, smi_reg_write);
+	pp->bus = miiphy_get_dev_by_name(dev->name);
+
+	if (board_network_enable(pp->bus))
+		return -EINVAL;
 
 	return 1;
 }

@@ -22,10 +22,6 @@
 			serial: serial@12000 {
 				status = "okay";
 			};
-			pm@14000 {
-				vdd_control = "avs";
-				status = "okay";
-			};
 			comphy {
 				phy0 {
 					phy-type = <PHY_TYPE_PEX0>;

@@ -73,16 +73,6 @@ config MVEBU_A3700_CLOCK
 	  For the first stage all clocks will be enabled
 	  by default.
 
-config MVEBU_A3700_AVS
-	bool "Armada-3700 AVS support"
-	depends on TARGET_ARMADA_3700
-	default n
-	help
-	  Choose this option to support
-	  Marvell Armada-3700 Adaptive Voltage Scaling(AVS).
-	  This configuration set default AVS settings
-	  according to current DT and clock configuration.
-
 config MVEBU_BOOTMODE_SWITCH_SUPPORT
 	bool "Mvebu bootmode switch support"
 	depends on DEVEL_BOARD && TARGET_ARMADA_3700

@@ -32,7 +32,6 @@
 #include <libfdt.h>
 #include <asm/arch/boot_mode.h>
 #include <fdt_support.h>
-#include <asm/arch/avs.h>
 #include <usb/mvebu_usb.h>
 
 /* NB warm reset */
@@ -109,13 +108,6 @@ void soc_init(void)
 		error("COMPHY initialization failed\n");
 #endif
 
-/*
- * The AVS should be initialized before PM since the PM will decide
- * to invoke DVS either by AVS, I2C or GPIO.
- */
-#ifdef CONFIG_MVEBU_A3700_AVS
-	init_avs();
-#endif
 	enable_spi_cs_clk_pins_output();
 	return;
 }

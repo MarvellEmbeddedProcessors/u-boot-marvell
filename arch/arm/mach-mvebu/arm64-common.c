@@ -142,8 +142,17 @@ int arch_early_init_r(void)
 			break;
 	}
 
-	/* Cause the SATA device to do its early init */
-	uclass_first_device(UCLASS_AHCI, &dev);
+	/* Cause the SATA devices to do their early init */
+	for (uclass_first_device(UCLASS_AHCI, &dev);
+	     dev;
+	     uclass_next_device(&dev))
+		;
+
+	/* Trigger PCIe devices to do early init and plug-in cards detection */
+	for (uclass_first_device(UCLASS_PCI, &dev);
+	     dev;
+	     uclass_next_device(&dev))
+		;
 
 	return 0;
 }

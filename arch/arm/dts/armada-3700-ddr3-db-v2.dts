@@ -27,9 +27,6 @@
 
 	soc {
 		internal-regs {
-			avs@11500 {
-				vdd-min = <26>;
-			};
 			comphy {
 				phy2 {
 					phy-invert = <PHY_POLARITY_NO_INVERT>;

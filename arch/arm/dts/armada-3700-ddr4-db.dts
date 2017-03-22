@@ -26,9 +26,6 @@
 	board_id = <A3700_DDR4_DB_ID>;
 	soc {
 		internal-regs {
-			avs@11500 {
-				vdd-min = <26>;
-			};
 			comphy {
 				phy2 {
 					phy-invert = <PHY_POLARITY_NO_INVERT>;

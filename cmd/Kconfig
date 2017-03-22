@@ -1684,6 +1684,12 @@ endif
 
 menu "Misc commands"
 
+config CMD_BOOTIMGUP
+	depends on MMC_CAVIUM
+	bool "bootimgup"
+	help
+	  bootimgup command support
+
 config CMD_BMP
 	bool "Enable 'bmp' command"
 	depends on LCD || DM_VIDEO || VIDEO

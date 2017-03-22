@@ -1209,6 +1209,8 @@ static int _xhci_submit_control_msg(struct usb_device *udev, unsigned long pipe,
 	struct xhci_ctrl *ctrl = xhci_get_ctrl(udev);
 	int ret = 0;
 
+	udelay(100);
+
 	if (usb_pipetype(pipe) != PIPE_CONTROL) {
 		printf("non-control pipe (type=%lu)", usb_pipetype(pipe));
 		return -EINVAL;

@@ -315,6 +315,7 @@ static int do_bootu_mmc(int argc, char * const argv[])
 {
 	static int curr_device = -1;
 	struct mmc *mmc;
+	struct blk_desc *desc;
 	char *env1, *env2;
 	unsigned long blk, len, n;
 	unsigned long addr;
@@ -374,8 +375,14 @@ static int do_bootu_mmc(int argc, char * const argv[])
 	if (!mmc)
 		return CMD_RET_FAILURE;
 
-	ALLOC_CACHE_ALIGN_BUFFER(unsigned char, buffer, mmc->block_dev.blksz);
-	n = mmc->block_dev.block_read(&mmc->block_dev, 0, 1, buffer);
+	desc = mmc_get_blk_desc(mmc, curr_device);
+	if (!desc)
+		return CMD_RET_FAILURE;
+
+	ALLOC_CACHE_ALIGN_BUFFER(unsigned char, buffer, desc->blksz);
+	n = blk_dread(desc, 0, 1, buffer);
+	/* flush cache after read */
+	flush_cache((ulong)addr, 512);
 	if (n != 1) {
 		printf("ERROR: read partition table failed\n");
 		return 1;
@@ -394,7 +401,7 @@ static int do_bootu_mmc(int argc, char * const argv[])
 		return CMD_RET_FAILURE;
 	}
 
-	n = mmc->block_dev.block_write(&mmc->block_dev, blk, len, (void *)addr);
+	n = blk_dwrite(desc, blk, len, (void *)addr);
 	printf("%ld blocks written: %s\n", n, (n == len) ? "OK" : "ERROR");
 	if (n != len)
 		return CMD_RET_FAILURE;
@@ -403,7 +410,7 @@ static int do_bootu_mmc(int argc, char * const argv[])
 	memcpy(&buffer[446], (void *) (addr + 446), 16);
 
 	/* Update partition table with read boot sector */
-	n = mmc->block_dev.block_write(&mmc->block_dev, 0, 1, (void *)buffer);
+	n = blk_dwrite(desc, 0, 1, (void *)buffer);
 	printf("%ld blocks written: %s\n", n, (n == 1) ? "OK" : "ERROR");
 	if (n != 1)
 		return CMD_RET_FAILURE;

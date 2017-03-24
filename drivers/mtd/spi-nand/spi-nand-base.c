@@ -38,6 +38,12 @@ static struct spi_nand_flash spi_nand_table[] = {
 	{.name = NULL},
 };
 
+static u8 spi_nand_mfr_table[] = {
+	SPINAND_MFR_MICRON,
+	SPINAND_MFR_GIGADEVICE,
+};
+
+
 /* OOB layout */
 static struct nand_ecclayout micron_ecc_layout_64 = {
 	.eccbytes = 32,
@@ -1729,6 +1735,25 @@ static bool spi_nand_scan_id_table(struct spi_nand_chip *chip, u8 *id)
 	return false;
 }
 
+/**
+ * spi_nand_scan_mfr_table - scan mfr info in mfr table
+ * mfr_id: manufacture id
+ * Description:
+ *   If found in mfr table, return true.
+ */
+static bool spi_nand_scan_mfr_table(u8 mfr_id)
+{
+	u32 i = 0;
+
+	for (; i < ARRAY_SIZE(spi_nand_mfr_table); i++) {
+		if (spi_nand_mfr_table[i] == mfr_id)
+			return true;
+	}
+
+	return false;
+}
+
+
 static u16 onfi_crc16(u16 crc, u8 const *p, size_t len)
 {
 	int i;
@@ -1890,6 +1915,14 @@ static int spi_nand_init(struct spi_slave *spi, struct spi_nand_chip *chip)
 
 		if (spi_nand_scan_id_table(chip, id))
 			break;
+		/*
+		 * If dev is not in id table, but mfr_id is supported,
+		 * check onfi.
+		 */
+		if (spi_nand_scan_mfr_table(id[0])) {
+			type->name = NULL;
+			break;
+		}
 	}
 
 	if (type->name != NULL)

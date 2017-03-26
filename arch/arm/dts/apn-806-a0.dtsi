@@ -75,7 +75,7 @@
 				bank-name ="apn-806";
 				reg = <0x6F4000 0x10>;
 				pin-count = <20>;
-				max-func = <3>;
+				max-func = <4>;
 			};
 			gpio0: gpio@6F5040 {
 				compatible = "marvell,mvebu-gpio";

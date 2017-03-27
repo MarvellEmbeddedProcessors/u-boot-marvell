@@ -8,6 +8,7 @@
 #include <dm.h>
 #include <fdtdec.h>
 #include <libfdt.h>
+#include <pci.h>
 #include <asm/io.h>
 #include <asm/system.h>
 #include <asm/arch/cpu.h>
@@ -148,11 +149,10 @@ int arch_early_init_r(void)
 	     uclass_next_device(&dev))
 		;
 
-	/* Trigger PCIe devices to do early init and plug-in cards detection */
-	for (uclass_first_device(UCLASS_PCI, &dev);
-	     dev;
-	     uclass_next_device(&dev))
-		;
+#ifdef CONFIG_DM_PCI
+	/* Trigger PCIe devices detection */
+	pci_init();
+#endif
 
 	return 0;
 }

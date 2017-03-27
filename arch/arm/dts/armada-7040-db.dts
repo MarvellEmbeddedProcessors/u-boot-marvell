@@ -174,8 +174,8 @@
 	};
 
 	phy2 {
-		phy-type = <COMPHY_TYPE_SGMII0>;
-		phy-speed = <COMPHY_SPEED_1_25G>;
+		phy-type = <COMPHY_TYPE_SFI>;
+
 	};
 
 	phy3 {
@@ -229,10 +229,15 @@
 	status = "okay";
 };
 
+&cpm_eth0 {
+	status = "okay";
+	phy-mode = "sfi"; /* lane-2 */
+};
+
 &cpm_eth1 {
 	status = "okay";
 	phy = <&phy0>;
-	phy-mode = "sgmii";
+	phy-mode = "sgmii"; /* lane-0 */
 };
 
 &cpm_eth2 {

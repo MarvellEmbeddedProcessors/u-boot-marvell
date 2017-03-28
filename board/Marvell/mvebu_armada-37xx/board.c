@@ -84,9 +84,8 @@ int board_init(void)
 }
 
 /* Board specific AHCI / SATA enable code */
-int board_ahci_enable(void)
+int board_ahci_enable(struct udevice *dev)
 {
-	struct udevice *dev;
 	int ret;
 	u8 buf[8];
 

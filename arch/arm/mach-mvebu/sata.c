@@ -14,7 +14,7 @@ DECLARE_GLOBAL_DATA_PTR;
  * Dummy implementation that can be overwritten by a board
  * specific function
  */
-__weak int board_ahci_enable(void)
+__weak int board_ahci_enable(struct udevice *dev)
 {
 	return 0;
 }
@@ -25,7 +25,7 @@ static int mvebu_ahci_probe(struct udevice *dev)
 	 * Board specific SATA / AHCI enable code, e.g. enable the
 	 * AHCI power or deassert reset
 	 */
-	board_ahci_enable();
+	board_ahci_enable(dev);
 
 	ahci_init(dev_get_addr_ptr(dev));
 

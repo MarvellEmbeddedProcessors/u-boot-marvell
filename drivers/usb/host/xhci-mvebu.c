@@ -67,6 +67,27 @@ static int xhci_usb_probe(struct udevice *dev)
 	return xhci_register(dev, ctx->hcd, hcor);
 }
 
+static int xhci_usb_remove(struct udevice *dev)
+{
+	int ret;
+	struct udevice *regulator;
+
+	ret = xhci_deregister(dev);
+	if (ret)
+		return ret;
+
+	ret = device_get_supply_regulator(dev, "vbus-supply", &regulator);
+	if (!ret) {
+		ret = regulator_set_enable(regulator, false);
+		if (ret) {
+			printf("Failed to turn OFF the VBUS regulator\n");
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
 static int xhci_usb_ofdata_to_platdata(struct udevice *dev)
 {
 	struct mvebu_xhci_platdata *plat = dev_get_platdata(dev);
@@ -96,7 +117,7 @@ U_BOOT_DRIVER(usb_xhci) = {
 	.of_match = xhci_usb_ids,
 	.ofdata_to_platdata = xhci_usb_ofdata_to_platdata,
 	.probe = xhci_usb_probe,
-	.remove = xhci_deregister,
+	.remove = xhci_usb_remove,
 	.ops	= &xhci_usb_ops,
 	.platdata_auto_alloc_size = sizeof(struct mvebu_xhci_platdata),
 	.priv_auto_alloc_size = sizeof(struct mvebu_xhci),

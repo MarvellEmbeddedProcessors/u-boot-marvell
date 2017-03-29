@@ -28,6 +28,52 @@
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, \
 					  115200, 230400, 460800, 921600 }
 
+/* Default Env vars */
+#define CONFIG_IPADDR			0.0.0.0	/* In order to cause an error */
+#define CONFIG_SERVERIP			0.0.0.0	/* In order to cause an error */
+#define CONFIG_NETMASK			255.255.255.0
+#define CONFIG_GATEWAYIP		10.4.50.254
+#define CONFIG_HAS_ETH1
+#define CONFIG_HAS_ETH2
+#define CONFIG_ETHPRIME			"egiga0"
+#define CONFIG_ROOTPATH                 "/srv/nfs/" /* Default Dir for NFS */
+#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x5000000\0"	\
+					"initrd_addr=0xa00000\0"	\
+					"initrd_size=0x2000000\0"	\
+					"fdt_addr=0x4f00000\0"		\
+					"loadaddr=0x5000000\0"		\
+					"fdt_high=0xffffffffffffffff\0"	\
+					"hostname=marvell\0"		\
+					"ramfs_addr=0x8000000\0"	\
+					"ramfs_name=-\0"		\
+					"fdt_name=fdt.dtb\0"		\
+					"netdev=eth0\0"			\
+					"ethaddr=00:51:82:11:22:00\0"	\
+					"eth1addr=00:51:82:11:22:01\0"	\
+					"eth2addr=00:51:82:11:22:02\0"	\
+					"eth3addr=00:51:82:11:22:03\0"	\
+					"image_name=Image\0"		\
+					"get_ramfs=if test \"${ramfs_name}\"" \
+						" != \"-\"; then setenv " \
+						"ramfs_addr 0x8000000; " \
+						"tftpboot $ramfs_addr " \
+						"$ramfs_name; else setenv " \
+						"ramfs_addr -;fi\0"	\
+					"get_images=tftpboot $kernel_addr " \
+						"$image_name; tftpboot " \
+						"$fdt_addr $fdt_name; " \
+						"run get_ramfs\0"	\
+					"console=console=ttyS0,115200\0" \
+					"root=root=/dev/nfs rw\0"	\
+					"set_bootargs=setenv bootargs $console"\
+						" $root ip=$ipaddr:$serverip:" \
+						"$gatewayip:$netmask:$hostname"\
+						":$netdev:none nfsroot="\
+						"$serverip:$rootpath " \
+						"$extra_params"
+#define CONFIG_BOOTCOMMAND	"run get_images; run set_bootargs; " \
+				"booti $kernel_addr $ramfs_addr $fdt_addr"
+
 /*
  * For booting Linux, the board info and command line data
  * have to be in the first 8 MB of memory, since this is

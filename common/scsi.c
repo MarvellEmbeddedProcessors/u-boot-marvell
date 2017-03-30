@@ -607,7 +607,7 @@ int scsi_scan(int mode)
 				}
 
 				if (mode == 1) {
-					printf("  Device %d: ", 0);
+					printf("  Device %d: ", bdesc->devnum);
 					dev_print(bdesc);
 				} /* if mode */
 			} /* next LUN */

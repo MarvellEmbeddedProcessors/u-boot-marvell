@@ -1,0 +1,51 @@
+ARMADA 37XX GPIO DT bindings
+-----------------------
+Required properties:
+- compatible:           Should be "marvell,armada-3700-gpio"
+- #gpio-cells: 		Should be 2. The first cell is the GPIO number and the second
+  				cell specifies GPIO flags, as defined in <dt-bindings/gpio/gpio.h>.
+                                Only the GPIO_ACTIVE_HIGH and GPIO_ACTIVE_LOW flags are supported.
+- reg:                  The register base for the GPIO bank controller
+- bank-name:            The GPIO bank name
+- ngpios:               GPIO count in bank
+
+
+Optional properties:
+None
+
+Examples:
+Armada3700 example:
+Armada3700 has two GPIO banks, one is the Northbridge GPIO bank and the other is the Southbridge GPIO bank.
+
+	gpio0: gpio@13800 {
+		compatible = "marvell,armada-3700-gpio";
+		#gpio-cells = <2>;
+		reg = <0x13800 0x30>;
+		bank-name = "armada-3700-north-bridge";
+		ngpios = <36>;
+		status = "okay";
+	};
+
+	gpio1: gpio@18800 {
+		compatible = "marvell,armada-3700-gpio";
+		#gpio-cells = <2>;
+		reg = <0x18800 0x30>;
+		bank-name = "armada-3700-south-bridge";
+		ngpios = <30>;
+		status = "okay";
+	};
+
+When other nodes want to use a GPIO pin, the unit driver should support this.
+For example, mmc0 can use the gpio1's 22nd pin for SDIO VCC setting as below.
+
+mmc0: mmc@D0000 {
+	sdio-vcc-gpio = <&gpio1 22 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+When unit (USB/PEX/MMC) needs to use GPIO, the unit driver should support this.
+For example: USB use GPIO pin #12 in the CP0 for VBUS enable as below:
+	usb3@500000 {
+		gpio-vbus = <&gpio1 12 GPIO_ACTIVE_LOW>;
+		status = "okay";
+	};

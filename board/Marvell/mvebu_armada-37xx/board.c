@@ -11,6 +11,7 @@
 #include <asm/io.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
+#include <power/regulator.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -86,36 +87,23 @@ int board_init(void)
 /* Board specific AHCI / SATA enable code */
 int board_ahci_enable(struct udevice *dev)
 {
+#if defined(CONFIG_DM_REGULATOR)
 	int ret;
-	u8 buf[8];
+	struct udevice *regulator;
 
-	if (!of_machine_is_compatible("marvell,armada-3720-db"))
-		return 0;
-
-	/* Configure IO exander PCA9555: 7bit address 0x22 */
-	ret = i2c_get_chip_for_busnum(0, I2C_IO_EXP_ADDR, 1, &dev);
+	ret = device_get_supply_regulator(dev, "power-supply",
+					  &regulator);
 	if (ret) {
-		printf("Cannot find PCA9555: %d\n", ret);
+		debug("%s: No sata power supply\n", dev->name);
 		return 0;
 	}
 
-	ret = dm_i2c_read(dev, I2C_IO_CFG_REG_0, buf, 1);
+	ret = regulator_set_enable(regulator, true);
 	if (ret) {
-		printf("Failed to read IO expander value via I2C\n");
-		return -EIO;
+		error("Error enabling sata power supply\n");
+		return ret;
 	}
-
-	/*
-	 * Enable SATA power via IO expander connected via I2C by setting
-	 * the corresponding bit to output mode to enable power for SATA
-	 */
-	buf[0] &= ~(1 << I2C_IO_REG_0_SATA_OFF);
-	ret = dm_i2c_write(dev, I2C_IO_CFG_REG_0, buf, 1);
-	if (ret) {
-		printf("Failed to set IO expander via I2C\n");
-		return -EIO;
-	}
-
+#endif
 	return 0;
 }
 

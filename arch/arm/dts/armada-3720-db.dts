@@ -83,6 +83,17 @@
 		regulator-max-microvolt = <5000000>;
 		gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
 	};
+
+	vcc_sd_reg0: regulator@0 {
+		compatible = "regulator-gpio";
+		regulator-name = "vcc_sd0";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-type = "voltage";
+		states = <1800000 0x1
+			  3300000 0x0>;
+		gpios = <&gpio1 23 GPIO_ACTIVE_HIGH>;
+	};
 };
 
 &comphy {
@@ -130,6 +141,7 @@
 
 &sdhci0 {
 	bus-width = <4>;
+	vqmmc-supply = <&vcc_sd_reg0>;
 	status = "okay";
 };
 

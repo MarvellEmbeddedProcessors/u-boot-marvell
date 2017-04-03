@@ -305,11 +305,6 @@
 	status = "okay";
 };
 
-/* CON10 on CP1 expansion */
-&cps_usb3_1 {
-	status = "okay";
-};
-
 &cps_utmi0 {
 	status = "okay";
 };

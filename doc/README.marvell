@@ -1,0 +1,42 @@
+Marvell U-Boot Build Instructions
+=================================
+
+This document describes how to compile the U-Boot and how to change U-Boot configuration
+
+Build Procedure
+----------------
+1. Set the cross compiler:
+
+		# export CROSS_COMPILE=/path/to/toolchain/aarch64-marvell-linux-gnu-
+
+2. Clean-up old residuals:
+
+		# make mrproper
+
+3. Configure the U-Boot:
+
+		# make <defconfig_file>
+
+4. For Armada-8k Development boards, select required device tree:
+
+		# export DEVICE_TREE=<device_tree_name>
+
+	- For the Armada-8040 DB board use "export DEVICE_TREE=armada-8040-db"
+	- For the Armada-7040 DB board use "export DEVICE_TREE=armada-7040-db"
+	- For the Armada-7040 DB board with NAND setup use "export DEVICE_TREE=armada-7040-db-nand"
+
+5. Build the U-Boot image:
+
+		# make
+
+	The U-Boot compilation generates u-boot.bin - the U-Boot image
+
+	Please Note:
+	The u-boot.bin should not be used as a stand-alone image.
+	The ARM Trusted Firmware (ATF) build process uses this image to generate the
+	flash image.
+
+Configuration update
+---------------------
+	To update the U-Boot configuration, please refer to doc/README.kconfig
+

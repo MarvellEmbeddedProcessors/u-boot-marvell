@@ -75,6 +75,14 @@
 		enable-active-high;
 		gpio = <&expander0 2 GPIO_ACTIVE_HIGH>;
 	};
+
+	reg_usb3_vbus: usb3_vbus@0 {
+		compatible = "regulator-fixed";
+		regulator-name = "usb3-vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
+	};
 };
 
 &comphy {
@@ -166,5 +174,6 @@
 
 /* CON31 */
 &usb3 {
+	vbus-supply = <&reg_usb3_vbus>;
 	status = "okay";
 };

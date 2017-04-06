@@ -14,8 +14,6 @@
  */
 #define CONFIG_SYS_TCLK		250000000	/* 250MHz */
 
-#define CONFIG_DISPLAY_BOARDINFO_LATE
-
 #define	CONFIG_SYS_TEXT_BASE	0x00000000
 
 /* additions for new ARM relocation support */

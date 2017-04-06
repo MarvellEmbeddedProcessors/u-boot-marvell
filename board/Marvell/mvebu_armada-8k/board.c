@@ -157,6 +157,9 @@ int board_init(void)
 {
 	/* adress of boot parameters */
 	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
+#ifdef CONFIG_OF_CONTROL
+	printf("U-Boot DT blob at : %p\n", gd->fdt_blob);
+#endif
 
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
 	cfg_eeprom_init();

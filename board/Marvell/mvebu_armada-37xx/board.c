@@ -165,6 +165,9 @@ int board_init(void)
 {
 	/* adress of boot parameters */
 	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
+#ifdef CONFIG_OF_CONTROL
+	printf("U-Boot DT blob at : %p\n", gd->fdt_blob);
+#endif
 
 	/* enable serdes lane 2 mux for sata phy */
 	board_comphy_usb3_sata_mux(COMPHY_LANE2_MUX_SATA);

@@ -1859,6 +1859,10 @@ void comphy_dedicated_phys_init(void)
 
 	i = 0;
 	while (node > 0) {
+		/* check if node is enabled */
+		if (!fdtdec_get_is_enabled(gd->fdt_blob, node))
+			goto next_utmi;
+
 		/* get base address of UTMI phy */
 		cp110_utmi_data[i].utmi_base_addr =
 			(void __iomem *)fdtdec_get_addr_size_auto_noparent(
@@ -1901,9 +1905,11 @@ void comphy_dedicated_phys_init(void)
 			continue;
 		}
 
+		/* count valid UTMI unit */
+		i++;
+next_utmi:
 		node = fdt_node_offset_by_compatible(
 			gd->fdt_blob, node, "marvell,mvebu-utmi-2.6.0");
-		i++;
 	}
 
 	if (i > 0)

@@ -14,6 +14,7 @@
 #include <asm/arch/soc.h>
 #include <asm/armv8/mmu.h>
 #include <mach/fw_info.h>
+#include <mach/clock.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -97,3 +98,12 @@ u32 get_ref_clk(void)
 	else
 		return 40;
 }
+
+#if defined(CONFIG_DISPLAY_BOARDINFO)
+int print_cpuinfo(void)
+{
+	soc_print_clock_info();
+
+	return 0;
+}
+#endif

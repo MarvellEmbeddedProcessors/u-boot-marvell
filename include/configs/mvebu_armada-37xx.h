@@ -129,6 +129,14 @@
 /* MMC/SD IP block */
 #define CONFIG_SUPPORT_VFAT
 
+/*
+ * PCI configuration
+ */
+#ifdef CONFIG_PCIE_ADVK
+#define CONFIG_E1000
+#define CONFIG_CMD_PCI
+#endif
+
 #define CONFIG_DEFAULT_CONSOLE		"console=ttyMV0,115200 "	\
 					"earlycon=ar3700_uart,0xd0012000"
 /* Add network parameters when network command is enabled */

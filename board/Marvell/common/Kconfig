@@ -1,0 +1,13 @@
+menu "MVEBU Development Board Utilities"
+	depends on ARCH_MVEBU
+
+config BOARD_CONFIG_EEPROM
+	bool "Support configuration EEPROM"
+	default n
+	help
+	  If this option is enabled, U-Boot will initialize
+	  configuration EEPROM on board.
+	  It will be enabled once the CMD_MVEBU_BOX_INFO or
+	  MULTI_DT_FILE is enabled
+
+endmenu

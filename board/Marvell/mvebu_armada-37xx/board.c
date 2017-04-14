@@ -11,6 +11,10 @@
 #include <asm/io.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
+#include <power/regulator.h>
+#ifdef CONFIG_BOARD_CONFIG_EEPROM
+#include <mvebu/cfg_eeprom.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -122,6 +126,9 @@ static int board_comphy_usb3_sata_mux(enum COMPHY_LANE2_MUXING comphy_mux)
 
 int board_early_init_f(void)
 {
+#ifdef CONFIG_BOARD_CONFIG_EEPROM
+	cfg_eeprom_init();
+#endif
 	return 0;
 }
 

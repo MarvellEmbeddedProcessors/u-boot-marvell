@@ -27,6 +27,16 @@ config CMD_MVEBU_TSEN
 	  tsen - Display the SoC temperature
 	  as read from the on chip thermal sensor
 
+config CMD_MVEBU_HW_INFO
+	bool "hw_info"
+	select BOARD_CONFIG_EEPROM
+	default n
+	help
+	  hw_info - load HW information such as board ID, PCB SLM number,
+	  MAC addresses from EEPROM and apply them to environment variables.
+	  And update the MAC address in FDT file for Linux.
+	  When save the box information, it will be saved to EEPROM.
+
 choice
 	prompt "Flash for image"
 	default MVEBU_SPI_BOOT

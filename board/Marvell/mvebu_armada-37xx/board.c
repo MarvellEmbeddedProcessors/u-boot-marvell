@@ -12,6 +12,9 @@
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
 #include <power/regulator.h>
+#ifdef CONFIG_BOARD_CONFIG_EEPROM
+#include <mvebu_cfg_eeprom.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -72,6 +75,10 @@ int board_early_init_f(void)
 
 		off = fdt_node_offset_by_compatible(blob, off, compat);
 	}
+
+#ifdef CONFIG_BOARD_CONFIG_EEPROM
+	cfg_eeprom_init();
+#endif
 
 	return 0;
 }

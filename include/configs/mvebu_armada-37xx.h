@@ -16,7 +16,7 @@
 /* additions for new ARM relocation support */
 #define CONFIG_SYS_SDRAM_BASE	0x00000000
 
-#define CONFIG_NR_DRAM_BANKS	1
+#define CONFIG_NR_DRAM_BANKS	4
 
 /* auto boot */
 #define CONFIG_PREBOOT

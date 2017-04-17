@@ -10,6 +10,7 @@ obj-$(CONFIG_ARMADA_3700) += armada3700/
 obj-$(CONFIG_ARMADA_8K) += armada8k/
 obj-y += arm64-common.o
 obj-y += sata.o
+obj-$(CONFIG_MVEBU_SYS_INFO) += system_info.o
 
 else # CONFIG_ARM64
 

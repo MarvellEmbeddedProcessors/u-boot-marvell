@@ -151,6 +151,13 @@ int board_early_init_f(void)
 	cfg_eeprom_init();
 #endif
 
+#ifdef CONFIG_MVEBU_SYS_INFO
+	/*
+	 * Call this function to transfer data from address 0x4000000
+	 * into a global struct, before code relocation.
+	 */
+	sys_info_init();
+#endif
 	return 0;
 }
 

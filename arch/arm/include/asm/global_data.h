@@ -8,6 +8,10 @@
 #ifndef	__ASM_GBL_DATA_H
 #define __ASM_GBL_DATA_H
 
+#ifdef CONFIG_MVEBU_SYS_INFO
+#include "arch/system_info.h"
+#endif
+
 /* Architecture-specific global data */
 struct arch_global_data {
 #if defined(CONFIG_FSL_ESDHC)
@@ -67,6 +71,9 @@ struct arch_global_data {
 #endif
 #if defined(CONFIG_FSL_LSCH3) && defined(CONFIG_SYS_FSL_HAS_DP_DDR)
 	unsigned long mem2_clk;
+#endif
+#ifdef CONFIG_MVEBU_SYS_INFO
+	struct sys_info local_sys_info[MAX_OPTION];
 #endif
 };
 

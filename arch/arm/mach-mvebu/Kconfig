@@ -181,4 +181,14 @@ config SECURED_MODE_CSK_INDEX
 	default 0
 	depends on SECURED_MODE_IMAGE
 
+config MVEBU_SYS_INFO
+	bool "System info transmitted to u-boot"
+	default n
+	help
+	  Choose this option to add support
+	  for system information in u-boot.
+	  If you want to transfer information
+	  from spl to u-boot, you need to choose
+	  this option.
+
 endif

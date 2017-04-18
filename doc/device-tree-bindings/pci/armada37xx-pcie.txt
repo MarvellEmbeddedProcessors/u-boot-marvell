@@ -1,0 +1,30 @@
+Armada-37xx PCIe DT details:
+==========================
+Armada-37xx uses Aardvark PCIe controller.
+
+Required properties:
+- compatible : should be "marvell,armada-37xx-pcie".
+- reg: base addresses and lengths of the PCIe registers.
+- All other definitions as per generic PCI bindings
+See Linux kernel documentation:
+"Documentation/devicetree/bindings/pci/aardvark-pci.txt"
+
+Optional properties:
+- reset-gpio :  specifies a GPIO that needs to be activated for plug-in card reset signal release.
+
+Example:
+
+pcie0: pcie@d0070000 {
+	compatible = "marvell,armada-37xx-pcie";
+	reg = <0 0xd0070000 0 0x20000>;
+	#address-cells = <3>;
+	#size-cells = <2>;
+	num-lanes = <1>;
+	device_type = "pci";
+	reset-gpio = <&gpio1 3 GPIO_ACTIVE_HIGH>;
+
+	bus-range = <0 0xff>;
+	ranges = <0x82000000 0 0xe8000000   0 0xe8000000 0 0x1000000 /* Port 0 MEM */
+		  0x81000000 0 0xe9000000   0 0xe9000000 0 0x10000>; /* Port 0 IO*/
+	status = "disabled";
+};

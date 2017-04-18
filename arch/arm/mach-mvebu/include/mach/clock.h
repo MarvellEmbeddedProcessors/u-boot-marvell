@@ -14,6 +14,9 @@
 
 u32 soc_cpu_clk_get(void);
 u32 soc_ddr_clk_get(void);
+u32 soc_tclk_get(void);
+u32 soc_l2_clk_get(void);
+u32 soc_timer_clk_get(void);
 
 void soc_print_clock_info(void);
 

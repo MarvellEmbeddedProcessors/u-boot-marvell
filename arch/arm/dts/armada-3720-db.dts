@@ -189,3 +189,9 @@
 	vbus-supply = <&reg_usb3_vbus>;
 	status = "okay";
 };
+
+/* CON17 */
+&pcie0 {
+	reset-gpio = <&gpio1 3 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};

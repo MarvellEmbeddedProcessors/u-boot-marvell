@@ -133,3 +133,8 @@
 &usb3 {
 	status = "okay";
 };
+
+&pcie0 {
+	reset-gpio = <&gpio1 3 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};

@@ -138,7 +138,7 @@
 #define CONFIG_SERVERIP			0.0.0.0	/* In order to cause an error */
 #define CONFIG_NETMASK			255.255.255.0
 #define CONFIG_GATEWAYIP		10.4.50.254
-#define CONFIG_ETHPRIME			"neta0"
+#define CONFIG_ETHPRIME			"eth0"
 #endif /* CONFIG_CMD_NET */
 
 /* Default Env vars */

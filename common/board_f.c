@@ -917,11 +917,11 @@ static const init_fnc_t init_sequence_f[] = {
 #if defined(CONFIG_PPC) || defined(CONFIG_M68K) || defined(CONFIG_SH)
 	checkcpu,
 #endif
-#if defined(CONFIG_DISPLAY_CPUINFO)
-	print_cpuinfo,		/* display cpu info (and speed) */
-#endif
 #if defined(CONFIG_DISPLAY_BOARDINFO)
 	show_board_info,
+#endif
+#if defined(CONFIG_DISPLAY_CPUINFO)
+	print_cpuinfo,		/* display cpu info (and speed) */
 #endif
 	INIT_FUNC_WATCHDOG_INIT
 #if defined(CONFIG_MISC_INIT_F)

@@ -10,7 +10,6 @@
 /*
  * High Level Configuration Options (easy to change)
  */
-#define CONFIG_DISPLAY_BOARDINFO_LATE
 
 #define	CONFIG_SYS_TEXT_BASE	0x00000000
 

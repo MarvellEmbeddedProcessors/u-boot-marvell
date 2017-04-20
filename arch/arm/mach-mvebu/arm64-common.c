@@ -47,16 +47,24 @@ const struct mbus_dram_target_info *mvebu_mbus_dram_info(void)
 
 /* DRAM init code ... */
 
+__weak int mvebu_dram_init(void)
+{
+	return fdtdec_setup_memory_size();
+}
+
+__weak int mvebu_dram_init_banksize(void)
+{
+	return fdtdec_setup_memory_banksize();
+}
+
 int dram_init_banksize(void)
 {
-	fdtdec_setup_memory_banksize();
-
-	return 0;
+	return mvebu_dram_init_banksize();
 }
 
 int dram_init(void)
 {
-	if (fdtdec_setup_memory_size() != 0)
+	if (mvebu_dram_init() != 0)
 		return -EINVAL;
 
 	return 0;

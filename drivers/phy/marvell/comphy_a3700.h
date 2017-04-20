@@ -112,6 +112,13 @@
 #define phy_txd_inv			BIT(10)
 #define phy_rxd_inv			BIT(11)
 
+#define PHY_SYNC_MASK_GEN_REG		0x25
+#define SYNC_MASK_GEN_REG(unit)		\
+	(PHY_SYNC_MASK_GEN_REG * PHY_SHFT(unit) + PHY_BASE(unit))
+#define PHY_GEN_MAX_OFFSET		10
+#define PHY_GEN_MAX_MASK		(3 << PHY_GEN_MAX_OFFSET)
+#define PHY_GEN_USB3_5G			(1 << PHY_GEN_MAX_OFFSET)
+
 /* for phy_read16 and phy_write16 */
 #define PHY_REG_UNIT_CTRL_ADDR		0x48
 #define UNIT_CTRL_ADDR(unit)		\
@@ -154,10 +161,24 @@
 #define MISC_REG1_ADDR(u)		(0x73 * PHY_SHFT(u) + PHY_BASE(u))
 #define bf_sel_bits_pcie_force		BIT(15)
 
-#define LANE_CFG0_ADDR(u)		(0x180 * PHY_SHFT(u) + PHY_BASE(u))
+#define PHY_REG_GEN3_SETTINGS_3		0x112
+#define GEN3_SETTINGS_3(u)	\
+	(PHY_REG_GEN3_SETTINGS_3 * PHY_SHFT(u) + PHY_BASE(u))
+#define PHY_GEN_FFE_CAP_SEL_MASK	0xF
+#define PHY_GEN_FFE_CAP_SEL_VALUE	0xF
+
+#define PHY_REG_LANE_CFG0_ADDR		0x180
+#define LANE_CFG0_ADDR(u)	\
+	(PHY_REG_LANE_CFG0_ADDR * PHY_SHFT(u) + PHY_BASE(u))
+#define PHY_REG_LANE_CFG1_ADDR		0x181
+#define LANE_CFG1_ADDR(u)	\
+	(PHY_REG_LANE_CFG1_ADDR * PHY_SHFT(u) + PHY_BASE(u))
+#define PRD_TXDEEMPH1_MASK		BIT(15)
 #define bf_use_max_pll_rate		BIT(9)
-#define LANE_CFG1_ADDR(u)		(0x181 * PHY_SHFT(u) + PHY_BASE(u))
-#define bf_use_max_pll_rate		BIT(9)
+#define TX_DET_RX_MODE			BIT(6)
+#define GEN2_TX_DATA_DLY_MASK		(BIT(3) | BIT(4))
+#define GEN2_TX_DATA_DLY_DEFT		(2 << 3)
+#define TX_ELEC_IDLE_MODE_EN		BIT(0)
 /* 0x5c310 = 0x93 (set BIT7) */
 #define LANE_CFG4_ADDR(u)		(0x188 * PHY_SHFT(u) + PHY_BASE(u))
 #define bf_spread_spectrum_clock_en	BIT(7)

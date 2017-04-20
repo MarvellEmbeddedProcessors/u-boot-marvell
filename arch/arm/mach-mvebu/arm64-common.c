@@ -57,7 +57,7 @@ static const void *get_memory_reg_prop(const void *fdt, int *lenp)
 	return fdt_getprop(fdt, offset, "reg", lenp);
 }
 
-int dram_init(void)
+__weak int mvebu_dram_init(void)
 {
 	const void *fdt = gd->fdt_blob;
 	const fdt32_t *val;
@@ -83,7 +83,7 @@ int dram_init(void)
 	return 0;
 }
 
-void dram_init_banksize(void)
+__weak void mvebu_dram_init_banksize(void)
 {
 	const void *fdt = gd->fdt_blob;
 	const fdt32_t *val;
@@ -115,6 +115,18 @@ void dram_init_banksize(void)
 		      i, (unsigned long)gd->bd->bi_dram[i].start,
 		      (unsigned long)gd->bd->bi_dram[i].size);
 	}
+}
+
+int dram_init(void)
+{
+	int ret;
+	ret = mvebu_dram_init();
+	return ret;
+}
+
+void dram_init_banksize(void)
+{
+	mvebu_dram_init_banksize();
 }
 
 int arch_cpu_init(void)

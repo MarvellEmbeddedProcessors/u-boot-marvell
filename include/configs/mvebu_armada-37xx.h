@@ -67,6 +67,10 @@
  */
 #define CONFIG_I2C_MV
 #define CONFIG_SYS_I2C_SLAVE		0x0
+/*
+ * The EEPROM ST M24C64 has 32 byte page write mode and takes up to 10 msec.
+ */
+#define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS 10
 
 /*
  * SPI Flash configuration

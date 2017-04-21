@@ -188,4 +188,9 @@
 #define CONFIG_CMD_PCI
 #endif
 
+/*
+ * The EEPROM ST M24C64 has 32 byte page write mode and takes up to 10 msec.
+ */
+#define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS 10
+
 #endif /* _CONFIG_MVEBU_ARMADA_8K_H */

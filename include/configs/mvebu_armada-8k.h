@@ -128,6 +128,11 @@
 /* Environment in NAND flash */
 #elif defined(CONFIG_MVEBU_NAND_BOOT)
 #define CONFIG_ENV_IS_IN_NAND
+/* Environment in MMC */
+#elif defined(CONFIG_MVEBU_MMC_BOOT)
+#define CONFIG_ENV_IS_IN_MMC
+#define CONFIG_SYS_MMC_ENV_DEV		0
+#define CONFIG_SYS_MMC_ENV_PART		1 /* 0 - DATA, 1 - BOOT0, 2 - BOOT1 */
 #endif
 
 #define CONFIG_ENV_OFFSET		0x180000 /* as Marvell U-Boot version */

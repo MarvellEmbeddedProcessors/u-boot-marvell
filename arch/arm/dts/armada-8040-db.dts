@@ -99,6 +99,13 @@
 		     1 3 0 0 0 0 0 0 0 3 >;
 };
 
+&ap_sdhci0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ap_emmc_pins>;
+	bus-width = <8>;
+	status = "okay";
+};
+
 &cp0_pinctl {
 	/* MPP Bus:
 	 *	[0-31]	= 0xff: Keep default CP0_shared_pins
@@ -205,6 +212,13 @@
 };
 
 &cp0_utmi1 {
+	status = "okay";
+};
+
+&cp0_sdhci0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cp0_sdhci_pins>;
+	bus-width = <4>;
 	status = "okay";
 };
 

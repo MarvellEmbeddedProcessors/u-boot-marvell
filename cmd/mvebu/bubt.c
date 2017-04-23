@@ -118,6 +118,9 @@ static int mmc_burn_image(size_t image_size)
 	lbaint_t	blk_count;
 	ulong		blk_written;
 	int		err;
+#ifdef CONFIG_SYS_MMC_ENV_PART
+	uint		curernt_part;
+#endif
 	const u8	mmc_dev_num = CONFIG_SYS_MMC_ENV_DEV;
 #ifdef CONFIG_BLK
 	struct blk_desc *blk_desc;
@@ -136,8 +139,9 @@ static int mmc_burn_image(size_t image_size)
 	}
 
 #ifdef CONFIG_SYS_MMC_ENV_PART
-	if (mmc->part_num != CONFIG_SYS_MMC_ENV_PART) {
-		err = mmc_switch_part(mmc_dev_num, CONFIG_SYS_MMC_ENV_PART);
+	curernt_part = mmc->part_config & PART_ACCESS_MASK;
+	if (curernt_part != CONFIG_SYS_MMC_ENV_PART) {
+		err = mmc_switch_part(mmc, CONFIG_SYS_MMC_ENV_PART);
 		if (err) {
 			printf("MMC partition switch failed\n");
 			return err;
@@ -177,8 +181,8 @@ static int mmc_burn_image(size_t image_size)
 	printf("Done!\n");
 
 #ifdef CONFIG_SYS_MMC_ENV_PART
-	if (mmc->part_num != CONFIG_SYS_MMC_ENV_PART)
-		mmc_switch_part(mmc_dev_num, mmc->part_num);
+	if (curernt_part != CONFIG_SYS_MMC_ENV_PART)
+		mmc_switch_part(mmc, curernt_part);
 #endif
 
 	return 0;
@@ -700,7 +704,7 @@ struct bubt_dev *find_bubt_dev(char *dev_name)
 #define DEFAULT_BUBT_DST "nand"
 #elif defined(CONFIG_MVEBU_MMC_BOOT)
 #define DEFAULT_BUBT_DST "mmc"
-else
+#else
 #define DEFAULT_BUBT_DST "error"
 #endif
 #endif /* DEFAULT_BUBT_DST */

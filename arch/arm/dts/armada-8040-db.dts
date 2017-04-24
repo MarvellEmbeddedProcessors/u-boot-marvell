@@ -45,6 +45,7 @@
  */
 
 #include "armada-8040.dtsi"
+#include "armada-8040-dev-info.dtsi"
 
 / {
 	model = "Marvell Armada 8040 DB board";

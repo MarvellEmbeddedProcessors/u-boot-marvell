@@ -4,6 +4,7 @@
  */
 
 #include "armada-70x0.dtsi" /* include SoC device tree */
+#include "armada-7040-dev-info.dtsi"
 
 / {
 	model = "DB-ARMADA-70x0";

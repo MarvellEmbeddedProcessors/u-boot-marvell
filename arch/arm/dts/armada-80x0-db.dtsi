@@ -4,6 +4,7 @@
  */
 
 #include "armada-8040.dtsi" /* include SoC device tree */
+#include "armada-8040-dev-info.dtsi"
 
 / {
 	compatible = "marvell,armada-80x0-db", "marvell,armada-8040";

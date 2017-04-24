@@ -17,3 +17,4 @@
 #
 
 obj-$(CONFIG_BOARD_CONFIG_EEPROM)	+= cfg_eeprom.o
+obj-$(CONFIG_MVEBU_SAR)	+= sar.o

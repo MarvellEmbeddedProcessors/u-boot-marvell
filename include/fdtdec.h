@@ -155,7 +155,7 @@ enum fdt_compat_id {
 	COMPAT_INTEL_BAYTRAIL_FSP_MDP,	/* Intel FSP memory-down params */
 	COMPAT_INTEL_IVYBRIDGE_FSP,	/* Intel Ivy Bridge FSP */
 	COMPAT_SUNXI_NAND,		/* SUNXI NAND controller */
-
+	COMPAT_MVEBU_SAR,
 	COMPAT_COUNT,
 };
 

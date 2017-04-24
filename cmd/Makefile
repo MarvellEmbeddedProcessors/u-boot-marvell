@@ -13,6 +13,7 @@ obj-y += help.o
 obj-y += version.o
 
 # command
+obj-$(CONFIG_CMD_MVEBU_SAR) += sar.o
 obj-$(CONFIG_CMD_AES) += aes.o
 obj-$(CONFIG_CMD_ARMFLASH) += armflash.o
 obj-y += blk_common.o

@@ -146,6 +146,13 @@ comment "Commands"
 
 menu "Info commands"
 
+config CMD_MVEBU_SAR
+	bool "sar"
+	depends on MVEBU_SAR
+	default n
+	help
+	  sar - Modify SOC's sample at reset (SAR) values
+
 config CMD_BDI
 	bool "bdinfo"
 	default y

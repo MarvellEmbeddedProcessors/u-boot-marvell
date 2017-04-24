@@ -10,4 +10,13 @@ config BOARD_CONFIG_EEPROM
 	  It will be enabled once the CMD_MVEBU_BOX_INFO or
 	  MULTI_DT_FILE is enabled
 
+config MVEBU_SAR
+	bool "Support MVEBU SAR Utility"
+	default n
+	help
+	  Say Y here to add support for Sample
+	  at Reset Utility. You need this only if
+	  you work on a Marvell development board.
+	  If not, keep this off to reduce code size
+
 endmenu

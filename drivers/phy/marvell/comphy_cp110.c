@@ -37,35 +37,47 @@ struct utmi_phy_data {
  * Eth_port_0 that include (SGMII0, RXAUI0, SFI)
  */
 struct comphy_mux_data cp110_comphy_phy_mux_data[] = {
-	{4, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII1, 0x1}, /* Lane 0 */
-	     {PHY_TYPE_SATA1, 0x4} } },
-	{4, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII2, 0x1}, /* Lane 1 */
-	     {PHY_TYPE_SATA0, 0x4} } },
-	{6, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII0, 0x1}, /* Lane 2 */
-	     {PHY_TYPE_RXAUI0, 0x1}, {PHY_TYPE_SFI, 0x1},
-	     {PHY_TYPE_SATA0, 0x4} } },
-	{8, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_RXAUI1, 0x1}, /* Lane 3 */
-	     {PHY_TYPE_SGMII1, 0x2}, {PHY_TYPE_SATA1, 0x4} } },
-	{7, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII0, 0x2}, /* Lane 4 */
-	     {PHY_TYPE_RXAUI0, 0x2}, {PHY_TYPE_SFI, 0x2},
-	     {PHY_TYPE_SGMII1, 0x1} } },
-	{6, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_SGMII2, 0x1}, /* Lane 5 */
-	     {PHY_TYPE_RXAUI1, 0x2}, {PHY_TYPE_SATA1, 0x4} } },
+	/* Lane 0 */
+	{4, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII1, 0x1},
+	     {COMPHY_TYPE_SATA1, 0x4} } },
+	/* Lane 1 */
+	{4, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII2, 0x1},
+	     {COMPHY_TYPE_SATA0, 0x4} } },
+	/* Lane 2 */
+	{6, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII0, 0x1},
+	     {COMPHY_TYPE_RXAUI0, 0x1}, {COMPHY_TYPE_SFI, 0x1},
+	     {COMPHY_TYPE_SATA0, 0x4} } },
+	/* Lane 3 */
+	{8, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_RXAUI1, 0x1},
+	     {COMPHY_TYPE_SGMII1, 0x2}, {COMPHY_TYPE_SATA1, 0x4} } },
+	/* Lane 4 */
+	{7, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII0, 0x2},
+	     {COMPHY_TYPE_RXAUI0, 0x2}, {COMPHY_TYPE_SFI, 0x2},
+	     {COMPHY_TYPE_SGMII1, 0x1} } },
+	/* Lane 5 */
+	{6, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII2, 0x1},
+	     {COMPHY_TYPE_RXAUI1, 0x2}, {COMPHY_TYPE_SATA1, 0x4} } },
 };
 
 struct comphy_mux_data cp110_comphy_pipe_mux_data[] = {
-	{2, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX0, 0x4} } }, /* Lane 0 */
-	{4, {{PHY_TYPE_UNCONNECTED, 0x0}, /* Lane 1 */
-	     {PHY_TYPE_USB3_HOST0, 0x1}, {PHY_TYPE_USB3_DEVICE, 0x2},
-	     {PHY_TYPE_PEX0, 0x4} } },
-	{3, {{PHY_TYPE_UNCONNECTED, 0x0}, /* Lane 2 */
-	     {PHY_TYPE_USB3_HOST0, 0x1}, {PHY_TYPE_PEX0, 0x4} } },
-	{3, {{PHY_TYPE_UNCONNECTED, 0x0}, /* Lane 3 */
-	     {PHY_TYPE_USB3_HOST1, 0x1}, {PHY_TYPE_PEX0, 0x4} } },
-	{4, {{PHY_TYPE_UNCONNECTED, 0x0}, /* Lane 4 */
-	     {PHY_TYPE_USB3_HOST1, 0x1},
-	     {PHY_TYPE_USB3_DEVICE, 0x2}, {PHY_TYPE_PEX1, 0x4} } },
-	{2, {{PHY_TYPE_UNCONNECTED, 0x0}, {PHY_TYPE_PEX2, 0x4} } }, /* Lane 5 */
+	/* Lane 0 */
+	{2, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_PEX0, 0x4} } },
+	/* Lane 1 */
+	{4, {{COMPHY_TYPE_UNCONNECTED, 0x0},
+	     {COMPHY_TYPE_USB3_HOST0, 0x1}, {COMPHY_TYPE_USB3_DEVICE, 0x2},
+	     {COMPHY_TYPE_PEX0, 0x4} } },
+	/* Lane 2 */
+	{3, {{COMPHY_TYPE_UNCONNECTED, 0x0},
+	     {COMPHY_TYPE_USB3_HOST0, 0x1}, {COMPHY_TYPE_PEX0, 0x4} } },
+	/* Lane 3 */
+	{3, {{COMPHY_TYPE_UNCONNECTED, 0x0},
+	     {COMPHY_TYPE_USB3_HOST1, 0x1}, {COMPHY_TYPE_PEX0, 0x4} } },
+	/* Lane 4 */
+	{4, {{COMPHY_TYPE_UNCONNECTED, 0x0},
+	     {COMPHY_TYPE_USB3_HOST1, 0x1},
+	     {COMPHY_TYPE_USB3_DEVICE, 0x2}, {COMPHY_TYPE_PEX1, 0x4} } },
+	/* Lane 5 */
+	{2, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_PEX2, 0x4} } },
 };
 
 static u32 polling_with_timeout(void __iomem *addr, u32 val,
@@ -1010,7 +1022,7 @@ static int comphy_sgmii_power_up(u32 lane, u32 sgmii_speed,
 	data = 0x0 << SD_EXTERNAL_CONFIG0_SD_PU_PLL_OFFSET;
 	mask |= SD_EXTERNAL_CONFIG0_SD_PHY_GEN_RX_MASK;
 	mask |= SD_EXTERNAL_CONFIG0_SD_PHY_GEN_TX_MASK;
-	if (sgmii_speed == PHY_SPEED_1_25G) {
+	if (sgmii_speed == COMPHY_SPEED_1_25G) {
 		data |= 0x6 << SD_EXTERNAL_CONFIG0_SD_PHY_GEN_RX_OFFSET;
 		data |= 0x6 << SD_EXTERNAL_CONFIG0_SD_PHY_GEN_TX_OFFSET;
 	} else {
@@ -1189,7 +1201,7 @@ static int comphy_sfi_power_up(u32 lane, void __iomem *hpipe_base,
 	debug("stage: Comphy configuration\n");
 	/* set reference clock */
 	mask = HPIPE_MISC_ICP_FORCE_MASK;
-	data = (speed == PHY_SPEED_5_15625G) ?
+	data = (speed == COMPHY_SPEED_5_15625G) ?
 		(0x0 << HPIPE_MISC_ICP_FORCE_OFFSET) :
 		(0x1 << HPIPE_MISC_ICP_FORCE_OFFSET);
 	mask |= HPIPE_MISC_REFCLK_SEL_MASK;
@@ -1217,7 +1229,7 @@ static int comphy_sfi_power_up(u32 lane, void __iomem *hpipe_base,
 	reg_set(hpipe_addr + HPIPE_PWR_CTR_DTL_REG, data, mask);
 
 	/* Transmitter/Receiver Speed Divider Force */
-	if (speed == PHY_SPEED_5_15625G) {
+	if (speed == COMPHY_SPEED_5_15625G) {
 		mask = HPIPE_SPD_DIV_FORCE_RX_SPD_DIV_MASK;
 		data = 1 << HPIPE_SPD_DIV_FORCE_RX_SPD_DIV_OFFSET;
 		mask |= HPIPE_SPD_DIV_FORCE_RX_SPD_DIV_FORCE_MASK;
@@ -1243,7 +1255,7 @@ static int comphy_sfi_power_up(u32 lane, void __iomem *hpipe_base,
 	data = 0x1 << HPIPE_DFE_RES_FORCE_OFFSET;
 	reg_set(hpipe_addr + HPIPE_DFE_REG0, data, mask);
 	/* 0xd-G1_Setting_0 */
-	if (speed == PHY_SPEED_5_15625G) {
+	if (speed == COMPHY_SPEED_5_15625G) {
 		mask = HPIPE_G1_SET_0_G1_TX_EMPH1_MASK;
 		data = 0x6 << HPIPE_G1_SET_0_G1_TX_EMPH1_OFFSET;
 	} else {
@@ -1278,7 +1290,7 @@ static int comphy_sfi_power_up(u32 lane, void __iomem *hpipe_base,
 	/* 0xE-G1_Setting_1 */
 	mask = HPIPE_G1_SET_1_G1_RX_DFE_EN_MASK;
 	data = 0x1 << HPIPE_G1_SET_1_G1_RX_DFE_EN_OFFSET;
-	if (speed == PHY_SPEED_5_15625G) {
+	if (speed == COMPHY_SPEED_5_15625G) {
 		mask |= HPIPE_G1_SET_1_G1_RX_SELMUPI_MASK;
 		data |= 0x1 << HPIPE_G1_SET_1_G1_RX_SELMUPI_OFFSET;
 		mask |= HPIPE_G1_SET_1_G1_RX_SELMUPP_MASK;
@@ -1311,7 +1323,7 @@ static int comphy_sfi_power_up(u32 lane, void __iomem *hpipe_base,
 	/* Genration 1 setting 3 (G1_Setting_3) */
 	mask = HPIPE_G1_SETTINGS_3_G1_FBCK_SEL_MASK;
 	data = 0x1 << HPIPE_G1_SETTINGS_3_G1_FBCK_SEL_OFFSET;
-	if (speed == PHY_SPEED_5_15625G) {
+	if (speed == COMPHY_SPEED_5_15625G) {
 		/* Force FFE (Feed Forward Equalization) to 5G */
 		mask |= HPIPE_G1_SETTINGS_3_G1_FFE_CAP_SEL_MASK;
 		data |= 0xf << HPIPE_G1_SETTINGS_3_G1_FFE_CAP_SEL_OFFSET;
@@ -1945,9 +1957,10 @@ static void comphy_mux_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 			comphy_base_addr + COMMON_SELECTOR_PIPE_OFFSET);
 	/* Fix the type after check the PHY and PIPE configuration */
 	for (lane = 0; lane < comphy_max_count; lane++) {
-		if ((comphy_map_pipe_data[lane].type == PHY_TYPE_UNCONNECTED) &&
-		    (comphy_map_phy_data[lane].type == PHY_TYPE_UNCONNECTED))
-			serdes_map[lane].type = PHY_TYPE_UNCONNECTED;
+		if ((comphy_map_pipe_data[lane].type ==
+		    COMPHY_TYPE_UNCONNECTED) &&
+		    (comphy_map_phy_data[lane].type == COMPHY_TYPE_UNCONNECTED))
+			serdes_map[lane].type = COMPHY_TYPE_UNCONNECTED;
 	}
 }
 
@@ -1971,7 +1984,7 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 	/* Check if the first 4 lanes configured as By-4 */
 	for (lane = 0, ptr_comphy_map = serdes_map; lane < 4;
 	     lane++, ptr_comphy_map++) {
-		if (ptr_comphy_map->type != PHY_TYPE_PEX0)
+		if (ptr_comphy_map->type != COMPHY_TYPE_PEX0)
 			break;
 		pcie_width++;
 	}
@@ -1988,53 +2001,53 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 			pcie_width = 1;
 		}
 		switch (ptr_comphy_map->type) {
-		case PHY_TYPE_UNCONNECTED:
-		case PHY_TYPE_IGNORE:
+		case COMPHY_TYPE_UNCONNECTED:
+		case COMPHY_TYPE_IGNORE:
 			continue;
 			break;
-		case PHY_TYPE_PEX0:
-		case PHY_TYPE_PEX1:
-		case PHY_TYPE_PEX2:
-		case PHY_TYPE_PEX3:
+		case COMPHY_TYPE_PEX0:
+		case COMPHY_TYPE_PEX1:
+		case COMPHY_TYPE_PEX2:
+		case COMPHY_TYPE_PEX3:
 			ret = comphy_pcie_power_up(
 				lane, pcie_width, ptr_comphy_map->clk_src,
 				serdes_map->end_point,
 				hpipe_base_addr, comphy_base_addr);
 			break;
-		case PHY_TYPE_SATA0:
-		case PHY_TYPE_SATA1:
-		case PHY_TYPE_SATA2:
-		case PHY_TYPE_SATA3:
+		case COMPHY_TYPE_SATA0:
+		case COMPHY_TYPE_SATA1:
+		case COMPHY_TYPE_SATA2:
+		case COMPHY_TYPE_SATA3:
 			ret = comphy_sata_power_up(
 				lane, hpipe_base_addr, comphy_base_addr,
 				ptr_chip_cfg->cp_index);
 			break;
-		case PHY_TYPE_USB3_HOST0:
-		case PHY_TYPE_USB3_HOST1:
-		case PHY_TYPE_USB3_DEVICE:
+		case COMPHY_TYPE_USB3_HOST0:
+		case COMPHY_TYPE_USB3_HOST1:
+		case COMPHY_TYPE_USB3_DEVICE:
 			ret = comphy_usb3_power_up(lane, hpipe_base_addr,
 						   comphy_base_addr);
 			break;
-		case PHY_TYPE_SGMII0:
-		case PHY_TYPE_SGMII1:
-		case PHY_TYPE_SGMII2:
-		case PHY_TYPE_SGMII3:
-			if (ptr_comphy_map->speed == PHY_SPEED_INVALID) {
+		case COMPHY_TYPE_SGMII0:
+		case COMPHY_TYPE_SGMII1:
+		case COMPHY_TYPE_SGMII2:
+		case COMPHY_TYPE_SGMII3:
+			if (ptr_comphy_map->speed == COMPHY_SPEED_INVALID) {
 				debug("Warning: SGMII PHY speed in lane %d is invalid, set PHY speed to 1.25G\n",
 				      lane);
-				ptr_comphy_map->speed = PHY_SPEED_1_25G;
+				ptr_comphy_map->speed = COMPHY_SPEED_1_25G;
 			}
 			ret = comphy_sgmii_power_up(
 				lane, ptr_comphy_map->speed, hpipe_base_addr,
 				comphy_base_addr);
 			break;
-		case PHY_TYPE_SFI:
+		case COMPHY_TYPE_SFI:
 			ret = comphy_sfi_power_up(lane, hpipe_base_addr,
 						  comphy_base_addr,
 						  ptr_comphy_map->speed);
 			break;
-		case PHY_TYPE_RXAUI0:
-		case PHY_TYPE_RXAUI1:
+		case COMPHY_TYPE_RXAUI0:
+		case COMPHY_TYPE_RXAUI1:
 			ret = comphy_rxauii_power_up(lane, hpipe_base_addr,
 						     comphy_base_addr);
 			break;
@@ -2046,9 +2059,9 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 		if (ret == 0) {
 			/*
 			 * If interface wans't initialized, set the lane to
-			 * PHY_TYPE_UNCONNECTED state.
+			 * COMPHY_TYPE_UNCONNECTED state.
 			 */
-			ptr_comphy_map->type = PHY_TYPE_UNCONNECTED;
+			ptr_comphy_map->type = COMPHY_TYPE_UNCONNECTED;
 			pr_err("PLL is not locked - Failed to initialize lane %d\n",
 			      lane);
 		}

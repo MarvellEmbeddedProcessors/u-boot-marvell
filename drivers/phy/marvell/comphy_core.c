@@ -21,8 +21,9 @@ DECLARE_GLOBAL_DATA_PTR;
 static char *get_speed_string(u32 speed)
 {
 	char *speed_strings[] = {"1.25 Gbps", "1.5 Gbps", "2.5 Gbps",
-				 "3.0 Gbps", "3.125 Gbps", "5 Gbps", "6 Gbps",
-				 "6.25 Gbps", "10.31 Gbps" };
+				 "3.0 Gbps", "3.125 Gbps", "5 Gbps",
+				 "5.125 Gpbs", "6 Gbps", "6.25 Gbps",
+				 "10.3125 Gbps" };
 
 	if (speed < 0 || speed > COMPHY_SPEED_MAX)
 		return "invalid";

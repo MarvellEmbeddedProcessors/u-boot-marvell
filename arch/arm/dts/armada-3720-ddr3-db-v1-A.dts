@@ -1,0 +1,35 @@
+
+#include "armada-3720-ddr3-db-v2-A.dts"
+
+/* detail board setup:
+ * Pcie Jumper slot	:	DB-88F3720-PCIe-mPCIe-Jumper
+ * SGMII module slot	:	DB-88F3720-SerDes-Jumper
+ * RGMII module slot	:	DB-88F3720-PHY module
+ * eMMC slot		:	DB-88F3720-eMMC_NAND module
+ * SDIO slot		:	DB-88F3720-SDcard module
+ *
+ * PHY0 (USB3/SGMII1)	:	USB3
+ * PHY1 (PCIe/SGMII0)	:	PCIe (WiFi via mini_PCIe module)
+ * PHY2 (SATA)		:	SATA
+ * RGMII-0		:	Ethernet via PHY (1 Lane)
+ * USB2 Port 0		:	USB2 as part USB3
+ * USB2 Port 1		:	USB2 Host
+ * eMMC*		:	eMMC NAND
+ * SDIO*		:	SD card
+ * BOOT device*		:	SPI Flash
+*/
+
+/ {
+	model = "DB-88F3720-DDR3-Modular-V1";
+	compatible = "marvell,armada-3720-db-v1", "marvell,armada-3720";
+
+	soc {
+		internal-regs {
+			comphy: comphy@18300 {
+				phy2 {
+					phy-invert = <PHY_POLARITY_TXD_INVERT>;
+				};
+			};
+		};
+	};
+};

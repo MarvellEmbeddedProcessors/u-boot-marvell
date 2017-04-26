@@ -27,7 +27,7 @@
 		internal-regs {
 			comphy: comphy@18300 {
 				phy2 {
-					phy-invert = <PHY_POLARITY_NO_INVERT>;
+					phy-invert = <COMPHY_POLARITY_NO_INVERT>;
 				};
 			};
 		};

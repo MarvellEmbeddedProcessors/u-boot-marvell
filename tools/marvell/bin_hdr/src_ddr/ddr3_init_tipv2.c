@@ -179,7 +179,7 @@ extern MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel);
 static MV_U32 gLogLevel = 0;
 static MV_STATUS ddr3HwsTuneTrainingParams(MV_U8 devNum);
 
-MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize);
+MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U64* pCsSize);
 
 #if defined(MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI)
 static MV_STATUS ddr3UpdateTopologyMap(MV_HWS_TOPOLOGY_MAP* topologyMap);
@@ -656,8 +656,8 @@ MV_VOID ddr3NewTipDlbConfig()
 MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 
 	MV_U32 uiReg, uiCs;
-    MV_U32 uiMemTotalSize = 0;
-    MV_U32 uiCsMemSize = 0;
+	MV_U64 MemTotalSize = 0;
+	MV_U64 CsMemSize = 0;
 	MV_U32 uiMemTotalSize_c, uiCsMemSize_c;
 
 #ifdef MV_DEVICE_MAX_DRAM_ADDRESS_SIZE
@@ -670,7 +670,7 @@ MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
     for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
         if (uiCsEna & (1 << uiCs)) {
 		    /* get CS size */
-			if (ddr3CalcMemCsSize(uiCs, &uiCsMemSize) != MV_OK)
+			if (ddr3CalcMemCsSize(uiCs, &CsMemSize) != MV_OK)
                 return MV_FAIL;
 
 #ifdef MV_DEVICE_MAX_DRAM_ADDRESS_SIZE
@@ -683,31 +683,31 @@ MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 				maxMemSize = MV_DEVICE_MAX_DRAM_ADDRESS_SIZE * 2; /* 16bit mem device can be twice more - no need in less significant pin*/
 
 			if (physicalMemSize > maxMemSize ){
-				uiCsMemSize = maxMemSize * (ddr3GetBusWidth() / ddr3GetDeviceWidth(uiCs)) ;
+				CsMemSize = maxMemSize * (ddr3GetBusWidth() / ddr3GetDeviceWidth(uiCs)) ;
 				mvPrintf ("Updated Physical Mem size is from 0x%x to %x\n", physicalMemSize, MV_DEVICE_MAX_DRAM_ADDRESS_SIZE);
 			}
 #endif
            /* set fast path window control for the cs */
             uiReg = 0xFFFFE1;
             uiReg |= (uiCs << 2);
-            uiReg |= (uiCsMemSize - 1) & 0xFFFF0000;
+            uiReg |= (CsMemSize - 1) & 0xFFFF0000;
             MV_REG_WRITE(REG_FASTPATH_WIN_CTRL_ADDR(uiCs), uiReg); /*Open fast path Window */
             /* set fast path window base address for the cs */
-            uiReg = ((uiCsMemSize) * uiCs) & 0xFFFF0000;
+            uiReg = ((CsMemSize) * uiCs) & 0xFFFF0000;
             MV_REG_WRITE(REG_FASTPATH_WIN_BASE_ADDR(uiCs), uiReg); /*Set base address */
 			/* since memory size may be bigger than 4G the summ may be more than 32 bit word,
-			so to estimate the result divide uiMemTotalSize and uiCsMemSize by 0x10000 (it is equal to >>16) */
-			uiMemTotalSize_c = uiMemTotalSize >> 16;
-			uiCsMemSize_c = uiCsMemSize >>16;
+			so to estimate the result divide MemTotalSize and CsMemSize by 0x10000 (it is equal to >>16) */
+			uiMemTotalSize_c = MemTotalSize >> 16;
+			uiCsMemSize_c = CsMemSize >>16;
 			/*if the sum less than 2 G - calculate the value*/
 			if (uiMemTotalSize_c + uiCsMemSize_c < 0x10000)
-				uiMemTotalSize += uiCsMemSize;
+				MemTotalSize += CsMemSize;
 			else /* put max possible size */
-				uiMemTotalSize = L2_FILTER_FOR_MAX_MEMORY_SIZE;
+				MemTotalSize = L2_FILTER_FOR_MAX_MEMORY_SIZE;
        }
     }
 	/* Set L2 filtering to Max Memory size */
-	MV_REG_WRITE( ADDRESS_FILTERING_END_REGISTER, uiMemTotalSize);
+	MV_REG_WRITE( ADDRESS_FILTERING_END_REGISTER, MemTotalSize);
 	return MV_OK;
 }
 
@@ -762,7 +762,7 @@ MV_FLOAT ddr3GetDeviceSize(MV_U32 uiCs) {
     }
 }
 
-MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize){
+MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U64* pCsSize){
 
     MV_FLOAT uiCsMemSize;
 
@@ -770,23 +770,26 @@ MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize){
 
 	/*Multiple controller bus width, 2x for 64 bit
 	(SoC controller may be 32 or 64 bit, 
-	so bit 15 in 0x1400, that means if whole bus used or only half, have a differnt meaning*/
+	so bit 15 in 0x1400, that means if whole bus used or only half, have a different meaning*/
 	uiCsMemSize *= MV_DDR_CONTROLLER_BUS_WIDTH_MULTIPLIER;
 
 	if (uiCsMemSize == 0.125) {
-        *puiCsSize = _128M;
+        *pCsSize = _128M;
     } else if (uiCsMemSize == 0.25) {
-        *puiCsSize = _256M;
+        *pCsSize = _256M;
     } else if (uiCsMemSize == 0.5) {
-        *puiCsSize = _512M;
+        *pCsSize = _512M;
     } else if (uiCsMemSize == 1) {
-        *puiCsSize = _1G;
+        *pCsSize = _1G;
     } else if (uiCsMemSize == 2) {
-        *puiCsSize = _2G;
+        *pCsSize = _2G;
+    } else if (uiCsMemSize == 4) {
+	*pCsSize = _4G;
     } else {
         DEBUG_INIT_C("Error: Wrong Memory size of Cs: ", uiCs, 1);
         return MV_BAD_VALUE;
     }
+
     return MV_OK;
 }
 

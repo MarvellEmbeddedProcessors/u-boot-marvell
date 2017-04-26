@@ -269,6 +269,7 @@ MV_U32 __timerGet(void);
 
 #define _1G         0x40000000
 #define _2G         0x80000000
+#define _4G         0x100000000
 
 /* Swap tool */
 

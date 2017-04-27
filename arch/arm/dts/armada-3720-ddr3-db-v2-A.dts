@@ -97,6 +97,12 @@
 	};
 };
 
+&mdio {
+	ethphy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+};
+
 &comphy {
 	phy0 {
 		phy-type = <PHY_TYPE_PEX0>;
@@ -118,6 +124,7 @@
 &eth0 {
 	status = "okay";
 	phy-mode = "rgmii";
+	phy = <&ethphy0>;
 };
 
 &i2c0 {

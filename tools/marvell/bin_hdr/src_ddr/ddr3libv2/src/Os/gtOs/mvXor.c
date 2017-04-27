@@ -75,10 +75,12 @@ static GT_U32 uiXorRegsBaseBackup[MAX_CS];
 static GT_U32 uiXorRegsMaskBackup[MAX_CS];
 
 extern GT_U32 mvHwsDdr3TipMaxCSGet(GT_U32 devNum);
+extern MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U64* pCsSize);
 
-GT_VOID mvSysXorInit(GT_U32 uiNumOfCS, GT_U32 uiCsEna, GT_U32 csSize, GT_U32 baseDelta)
+GT_VOID mvSysXorInit(GT_U32 uiNumOfCS, GT_U32 uiCsEna, MV_U64 csSize, GT_U32 baseDelta)
 {
-	GT_U32 uiReg,ui,uiBase,uiCsCount;
+	GT_U32 uiReg, ui, uiCsCount;
+	MV_U64 base, size_mask;
 
 	uiXorRegsCtrlBackup = MV_REG_READ(XOR_WINDOW_CTRL_REG(0, 0));
 	for(ui=0;ui<MAX_CS;ui++)
@@ -88,8 +90,8 @@ GT_VOID mvSysXorInit(GT_U32 uiNumOfCS, GT_U32 uiCsEna, GT_U32 csSize, GT_U32 bas
 
 	uiReg = 0;
 	for(ui=0;ui<(uiNumOfCS);ui++) {
-		uiReg |= (0x1 << (ui)); 					/* 	Enable Window x for each CS */
-		uiReg |= (0x3 << ((ui*2)+16)); 				/* 	Enable Window x for each CS */
+		uiReg |= (0x1 << (ui)); 		/* Enable Window x for each CS */
+		uiReg |= (0x3 << ((ui*2)+16)); 		/* Enable Window x for each CS */
 	}
 
 	MV_REG_WRITE(XOR_WINDOW_CTRL_REG(0, 0), uiReg);
@@ -98,26 +100,27 @@ GT_VOID mvSysXorInit(GT_U32 uiNumOfCS, GT_U32 uiCsEna, GT_U32 csSize, GT_U32 bas
 	for(ui=0;ui<uiNumOfCS;ui++) {
 		if(uiCsEna & (1<<ui)) {
 			/* window x - Base - 0x00000000, Attribute 0x0E - DRAM */
-			uiBase = csSize*ui + baseDelta;
+			base = csSize * ui + baseDelta;
 			switch(ui) {
 				case 0:
-					uiBase |= 0xE00;
+					base |= 0xE00;
 					break;
 				case 1:
-					uiBase |= 0xD00;
+					base |= 0xD00;
 					break;
 				case 2:
-					uiBase |= 0xB00;
+					base |= 0xB00;
 					break;
 				case 3:
-					uiBase |= 0x700;
+					base |= 0x700;
 					break;
 			}
+			MV_REG_WRITE(XOR_BASE_ADDR_REG(0, uiCsCount), (GT_U32)base);
 
-			MV_REG_WRITE(XOR_BASE_ADDR_REG(0, uiCsCount), uiBase);
-
+			size_mask = (csSize / _64K) - 1;
+			size_mask = (size_mask << XESMRX_SIZE_MASK_OFFS) & XESMRX_SIZE_MASK_MASK;
 			/* window x - Size*/
-			MV_REG_WRITE(XOR_SIZE_MASK_REG(0, uiCsCount), 0x7FFF0000);
+			MV_REG_WRITE(XOR_SIZE_MASK_REG(0, uiCsCount), (GT_U32)size_mask);
 			uiCsCount++;
 		}
 	}
@@ -218,9 +221,12 @@ GT_STATUS mvXorCtrlSet(GT_U32 chan, GT_U32 xorCtrl)
 *
 *
 *******************************************************************************/
-GT_STATUS mvXorMemInit(GT_U32 chan, GT_U32 startPtr, GT_U32 blockSize, GT_U32 initValHigh, GT_U32 initValLow)
+GT_STATUS mvXorMemInit(GT_U32 chan, GT_U32 startPtr, MV_U64 blockSize, GT_U32 initValHigh, GT_U32 initValLow)
 {
 	GT_U32 temp;
+
+	if (blockSize == _4G)
+		blockSize -= 1;
 
 	/* Parameter checking   */
 	if (chan >= MV_XOR_MAX_CHAN) {
@@ -390,28 +396,26 @@ GT_STATUS mvXorCommandSet(GT_U32 chan, MV_COMMAND command)
 *******************************************************************************/
 MV_VOID	ddr3NewTipEccScrub()
 {
-	MV_U32 cs_c,max_cs;
+	MV_U32 cs_c, max_cs;
 	MV_U32 uiCsEna = 0;
-    mvPrintf("DDR Training Sequence - Start scrubbing \n");
+	MV_U64 total_mem_size, cs_mem_size = 0;
+	mvPrintf("DDR Training Sequence - Start scrubbing \n");
 
 	max_cs = mvHwsDdr3TipMaxCSGet(0);
+	ddr3CalcMemCsSize(0, &cs_mem_size);	/* '0' stands for CS0 */
 	for (cs_c = 0; cs_c < max_cs; cs_c++)
 		uiCsEna |= 1 << cs_c;
 
-	mvSysXorInit(max_cs, uiCsEna, 0x80000000, 0);
+	mvSysXorInit(max_cs, uiCsEna, cs_mem_size, 0);
+	total_mem_size = max_cs * cs_mem_size;
+	mvXorMemInit(0, 0, total_mem_size, 0xdeadbeef, 0xdeadbeef);
+	/* wait for previous transfer completion */
+	while (mvXorStateGet(0) != MV_IDLE);
 
-	mvXorMemInit(0, 0x00000000, 0x80000000, 0xdeadbeef, 0xdeadbeef);
-    /* wait for previous transfer completion */
-    while (mvXorStateGet(0) != MV_IDLE);
+	/* Return XOR State */
+	mvSysXorFinish();
 
-	mvXorMemInit(0, 0x80000000, 0x40000000, 0xdeadbeef, 0xdeadbeef);
-    /* wait for previous transfer completion */
-    while (mvXorStateGet(0) != MV_IDLE);
-
-    /* Return XOR State */
-    mvSysXorFinish();
-
-    mvPrintf("DDR Training Sequence - End scrubbing \n");
+	mvPrintf("DDR Training Sequence - End scrubbing \n");
 }
 
 

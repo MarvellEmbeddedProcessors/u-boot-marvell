@@ -241,13 +241,13 @@ typedef struct {
 		XOR_NEXT_DESC	/* Next Descriptor Address Control */
 	} MV_XOR_OVERRIDE_TARGET;
 
-	GT_VOID mvSysXorInit(GT_U32 uiNumOfCS, GT_U32 uiCsEna, GT_U32 csSize, GT_U32 baseDelta);
+	GT_VOID mvSysXorInit(GT_U32 uiNumOfCS, GT_U32 uiCsEna, MV_U64 csSize, GT_U32 baseDelta);
 	GT_VOID mvSysXorFinish(void);
 	GT_VOID mvXorHalInit(GT_U32 xorChanNum);
 	GT_STATUS mvXorCtrlSet(GT_U32 chan, GT_U32 xorCtrl);
 	GT_STATUS mvXorEccClean(GT_U32 chan, MV_XOR_ECC *pXorEccConfig);
 	GT_U32 mvXorEccCurrTimerGet(GT_U32 chan, GT_U32 tClk);
-	GT_STATUS mvXorMemInit(GT_U32 chan, GT_U32 startPtr, GT_U32 blockSize, GT_U32 initValHigh, GT_U32 initValLow);
+	GT_STATUS mvXorMemInit(GT_U32 chan, GT_U32 startPtr, MV_U64 blockSize, GT_U32 initValHigh, GT_U32 initValLow);
 	GT_STATUS mvXorTransfer(GT_U32 chan, MV_XOR_TYPE xorType, GT_U32 xorChainPtr);
 	MV_STATE mvXorStateGet(GT_U32 chan);
 	GT_STATUS mvXorCommandSet(GT_U32 chan, MV_COMMAND command);

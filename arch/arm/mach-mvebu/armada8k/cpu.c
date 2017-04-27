@@ -20,6 +20,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define MVEBU_RFU_BASE			(MVEBU_REGISTER(0x6f0000))
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
+#define SZ_1M				0x00100000
+#define SZ_256M				0x10000000
+#define SZ_4G				0x100000000
 
 /*
  * The following table includes all memory regions for Armada 7k and
@@ -126,3 +129,41 @@ u32 mvebu_get_nand_clock(void)
 		return 250 * 1000000;
 }
 #endif
+
+int mvebu_dram_init(void)
+{
+	u32 cs;
+	gd->ram_size = 0;
+	for (cs = 0; cs < 4; cs++)
+		if (get_info(DRAM_CS0 + cs))
+			gd->ram_size += get_info(DRAM_CS0_SIZE + cs);
+
+	gd->ram_size *= SZ_1M;
+	/* if DRAM size == 0, print error message */
+	if (gd->ram_size == 0) {
+		error("DRAM size not initialized - check DRAM configuration\n");
+		printf("\n Using temporary DRAM size of 256MB.\n\n");
+		gd->ram_size = SZ_256M;
+	}
+
+	return 0;
+}
+
+void mvebu_dram_init_banksize(void)
+{
+	/*
+	 * Config 2 DRAM banks:
+	 * Bank 0 - max size 4G - 256M
+	 * Bank 1 - ram size - 4G + 256M
+	 */
+	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
+	if (gd->ram_size <= SZ_4G) {
+		gd->bd->bi_dram[0].size = min(gd->ram_size,
+					      (phys_size_t)(SZ_4G - SZ_256M));
+		return;
+	}
+
+	gd->bd->bi_dram[0].size = SZ_4G - SZ_256M;
+	gd->bd->bi_dram[1].start = SZ_4G;
+	gd->bd->bi_dram[1].size = gd->ram_size - SZ_4G + SZ_256M;
+}

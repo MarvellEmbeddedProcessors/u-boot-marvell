@@ -804,7 +804,7 @@ static int comphy_sgmii_power_up(u32 lane, u32 speed, u32 invert)
 
 	/* 9. Program COMPHY register PHY_MODE */
 	phy_write16(lane, PHY_PWR_PLL_CTRL_ADDR,
-		    PHY_MODE_SGMII << rf_phy_mode_shift, rf_phy_mode_mask);
+		    PHY_MODE_SGMII, rf_phy_mode_mask);
 
 	/*
 	 * 10. Set COMPHY register REFCLK_SEL to select the correct REFCLK

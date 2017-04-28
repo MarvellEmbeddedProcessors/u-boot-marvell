@@ -1,0 +1,61 @@
+SOHO Switch Support with SOC
+----------------------------
+
+Overview
+========
+Marvell SOHO switch can be integrated to work with ARMADA 7K/8k/37xx SoC
+devices. This doc corresponds to mv88e6xxx driver which adds basic support
+for peridot and topaz switches i.e. 88E6390/88E6290/88E6190 and
+88E6341/88E6141 switches.
+
+SOHO switch is connected to SOC through smi interface. When the mv88e6xxx is
+hardware configured to have smi address zero, it behaves in single-chip
+addressing mode. Otherwise it behaves in multi-chip addressing mode.
+In single chip addressing mode, switch registers can be accessed directly with
+mdio_read/mdio_write functions. When the chip is configured to a non-zero
+address, it only responds to that SMI address and requires indirect writes
+through smi command and smi data registers of the switch to access the
+different device addresses.
+
+SOHO switches has phys integrated inside the chip. Registers of the internal
+phys can only be accessed indirectly through switch registers (smi phy command
+and smi phy data registers).
+
+mv88e6xxx driver
+=================
+mv88e6xxx driver reads the device tree for parameters like smi address,
+cpu port, portmask etc. and initializes switch devices structures. It adds an
+uboot command "switch" which provides utility functions to get switch
+information, read/write switch or internal phy registers, get link status.
+
+The definition "CONFIG_MV88E6XXX_SWITCH=y" must be present in the config
+file to enable the switch driver or switch command.
+
+Sample device tree modification
+===============================
+Hardware:
+- Armada 7040 development board i.e. PCB: DB-88F7040-Modular
+- SOHO switch (88E6390) module i.e. PCB: DB-A8k-SWITCH-MODULE
+
+Device tree modification:
+Add below node inside mdio node in dts file.
+
+&cpm_mdio {
+	mvswitch: switch@0{
+		compatible = "marvell,mv88e6xxx";
+		status = "okay";
+		phy-addr = <3>;
+		cpu-port = <0x0>;
+		port-mask = <0x3ff>;
+	};
+};
+
+Mandatory properties:
+
+compatible - "marvell,mv88e6xxx" for peridot (MV88E6190/6290/6390) and
+	     topaz SOHO family of switches.
+phy-addr   - smi address. 0 for direct addressing, non-zero of indirect
+             addressing mode.
+cpu-port   - cpu port. Default port 0 is used as cpu port.
+port-mask  - port mask specified number of valid/usable ports on the
+	     board.

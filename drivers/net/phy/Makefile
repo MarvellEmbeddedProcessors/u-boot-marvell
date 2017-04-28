@@ -8,6 +8,7 @@
 obj-$(CONFIG_BITBANGMII) += miiphybb.o
 obj-$(CONFIG_MV88E61XX_SWITCH) += mv88e61xx.o
 obj-$(CONFIG_MV88E6352_SWITCH) += mv88e6352.o
+obj-$(CONFIG_MV88E6XXX_SWITCH) += mv88e6xxx.o
 
 obj-$(CONFIG_PHYLIB) += phy.o
 obj-$(CONFIG_PHYLIB_10G) += generic_10g.o

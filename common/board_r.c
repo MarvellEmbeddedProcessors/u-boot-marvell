@@ -640,6 +640,14 @@ static int initr_net(void)
 }
 #endif
 
+#ifdef CONFIG_MV88E6XXX_SWITCH
+static int initr_mv88e6xxx(void)
+{
+	mv88e6xxx_initialize(gd->fdt_blob);
+	return 0;
+}
+#endif
+
 #ifdef CONFIG_POST
 static int initr_post(void)
 {
@@ -911,6 +919,11 @@ static init_fnc_t init_sequence_r[] = {
 	INIT_FUNC_WATCHDOG_RESET
 	initr_net,
 #endif
+
+#ifdef CONFIG_MV88E6XXX_SWITCH
+	initr_mv88e6xxx,
+#endif
+
 #ifdef CONFIG_POST
 	initr_post,
 #endif

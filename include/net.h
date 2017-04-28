@@ -241,6 +241,10 @@ int eth_initialize(void);		/* Initialize network subsystem */
 void eth_try_another(int first_restart);	/* Change the device */
 void eth_set_current(void);		/* set nterface to ethcur var */
 
+#ifdef CONFIG_MV88E6XXX_SWITCH
+int mv88e6xxx_initialize(const void *blob);
+#endif
+
 int eth_get_dev_index(void);		/* get the device index */
 void eth_parse_enetaddr(const char *addr, uchar *enetaddr);
 int eth_getenv_enetaddr(const char *name, uchar *enetaddr);

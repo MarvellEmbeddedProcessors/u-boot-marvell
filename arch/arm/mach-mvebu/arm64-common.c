@@ -162,6 +162,9 @@ int arch_early_init_r(void)
 		;
 
 #ifdef CONFIG_DM_PCI
+	/* Set the top of region accessible by PCI to 2GB */
+	gd->pci_ram_top = board_get_usable_ram_top(gd->ram_top);
+
 	/* Trigger PCIe devices detection */
 	pci_init();
 #endif

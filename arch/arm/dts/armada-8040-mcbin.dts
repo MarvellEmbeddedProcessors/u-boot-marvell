@@ -186,6 +186,25 @@
 	};
 };
 
+&cpm_mdio {
+        phy0: ethernet-phy@0 {
+                reg = <0>;
+        };
+};
+
+&cpm_ethernet {
+        pinctrl-names = "default";
+        status = "okay";
+};
+
+/* 10G SFI/copper */
+&cpm_eth0 {
+        status = "okay";
+        phy-mode = "sfi";
+        phy-reset-gpios = <&cps_gpio0 31 GPIO_ACTIVE_HIGH>;
+        marvell,sfp-tx-disable-gpio = <&cps_gpio0 29 GPIO_ACTIVE_HIGH>;
+};
+
 &cps_sata0 {
 	status = "okay";
 };
@@ -290,4 +309,31 @@
 	phy5 {
 		phy-type = <COMPHY_TYPE_SGMII3>;
 	};
+};
+
+&cps_ethernet {
+        status = "okay";
+};
+
+/* 10G SFI/copper */
+&cps_eth0 {
+	status = "okay";
+	phy-mode = "sfi";
+	phy-reset-gpios = <&cps_gpio0 9 GPIO_ACTIVE_HIGH>;
+	marvell,sfp-tx-disable-gpio = <&cps_gpio0 10 GPIO_ACTIVE_HIGH>;
+};
+
+/* 1G SFI */
+&cps_eth1 {
+	status = "okay";
+	phy-mode = "sgmii";
+	phy = <&phy0>;
+};
+
+/* 2.5G copper */
+&cps_eth2 {
+	status = "okay";
+	phy-mode = "sgmii";
+	phy-speed = <2500>;
+	marvell,sfp-tx-disable-gpio = <&cps_gpio0 24 GPIO_ACTIVE_HIGH>;
 };

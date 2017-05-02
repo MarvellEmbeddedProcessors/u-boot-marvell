@@ -7,6 +7,8 @@
 #ifndef _CONFIG_MVEBU_ARMADA_37XX_H
 #define _CONFIG_MVEBU_ARMADA_37XX_H
 
+#include <asm/arch/soc.h>
+
 /*
  * High Level Configuration Options (easy to change)
  */

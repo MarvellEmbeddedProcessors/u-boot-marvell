@@ -195,6 +195,7 @@
 /* CON31 */
 &usb3 {
 	vbus-supply = <&reg_usb3_vbus>;
+	vbus-disable-delay = <1000>;
 	status = "okay";
 };
 

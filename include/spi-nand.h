@@ -19,6 +19,13 @@
 #include <linux/types.h>
 #include <linux/mtd/mtd.h>
 
+#ifndef CONFIG_SNF_DEFAULT_CS
+#define CONFIG_SNF_DEFAULT_CS			0
+#endif
+#ifndef CONFIG_SNF_DEFAULT_BUS
+#define CONFIG_SNF_DEFAULT_BUS			0
+#endif
+
 /*
  * Standard SPI-NAND flash commands
  */

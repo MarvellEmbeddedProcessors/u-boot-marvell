@@ -460,6 +460,11 @@ config CMD_SF
 	help
 	  SPI Flash support
 
+config CMD_SPI_NAND
+	bool "spi nand"
+	help
+	  SPI nand utility command.
+
 config CMD_SPI
 	bool "sspi"
 	help

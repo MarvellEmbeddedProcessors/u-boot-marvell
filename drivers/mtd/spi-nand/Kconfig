@@ -18,6 +18,7 @@ config DM_SPI_NAND_FLASH
 config SPI_NAND
 	bool "SPI NAND support"
 	default n
+	select CMD_SPI_NAND
 	help
 	  Choose this option to add support
 	  for SPI NAND driver

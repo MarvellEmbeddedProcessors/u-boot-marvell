@@ -69,7 +69,7 @@ dtb-$(CONFIG_TEGRA) += tegra20-harmony.dtb \
 	tegra210-p2571.dtb
 
 dtb-$(CONFIG_ARCH_MVEBU) +=			\
-	armada-3720-ddr3-db-v2-A.dtb		\
+	armada-3720-db.dtb			\
 	armada-3720-ddr3-db-v2-B.dtb		\
 	armada-3720-ddr3-db-v2-C.dtb		\
 	armada-3720-ddr3-db-v1-A.dtb		\

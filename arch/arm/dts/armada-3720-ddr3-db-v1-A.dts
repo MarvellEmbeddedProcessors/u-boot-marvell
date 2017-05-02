@@ -1,5 +1,5 @@
 
-#include "armada-3720-ddr3-db-v2-A.dts"
+#include "armada-3720-db.dts"
 
 /* detail board setup:
  * Pcie Jumper slot	:	DB-88F3720-PCIe-mPCIe-Jumper

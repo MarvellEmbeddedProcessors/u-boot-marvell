@@ -161,8 +161,37 @@ int board_early_init_f(void)
 	return 0;
 }
 
+int board_usb3_vbus_init(void)
+{
+	const void *fdt = gd->fdt_blob;
+	struct udevice *regulator;
+	int node, ret, delay;
+	const char *compat = "marvell,armada3700-xhci";
+
+	/* lower usb vbus  */
+	ret = regulator_get_by_platname("usb3-vbus", &regulator);
+	if (ret)
+		error("Cannot get usb3-vbus regulator\n");
+
+	ret = regulator_set_enable(regulator, false);
+	if (ret)
+		error("Failed to turn OFF the VBUS regulator\n");
+
+	node = fdt_node_offset_by_compatible(fdt, -1, compat);
+	if (node == 0)
+		error("usb3 node not found in FDT\n");
+
+	delay = fdtdec_get_int(fdt, node, "vbus-disable-delay", -1);
+	if (delay > 0)
+		mdelay(delay);
+
+	return 0;
+}
+
 int board_init(void)
 {
+	board_usb3_vbus_init();
+
 	/* adress of boot parameters */
 	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
 #ifdef CONFIG_OF_CONTROL

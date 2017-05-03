@@ -410,6 +410,8 @@ static void usb_show_tree_graph(struct usb_device *dev, char *pre)
 			continue;
 
 		udev = dev_get_parent_priv(child);
+		if (!udev)
+			continue;
 
 		/* Ignore emulators, we only want real devices */
 		if (device_get_uclass_id(child) != UCLASS_USB_EMUL) {
@@ -457,7 +459,8 @@ static void usb_for_each_root_dev(usb_dev_func_t func)
 		device_find_first_child(bus, &dev);
 		if (dev && device_active(dev)) {
 			udev = dev_get_parent_priv(dev);
-			func(udev);
+			if (udev)
+				func(udev);
 		}
 	}
 }
@@ -604,7 +607,8 @@ static void usb_show_info(struct usb_device *udev)
 	     device_find_next_child(&child)) {
 		if (device_active(child)) {
 			udev = dev_get_parent_priv(child);
-			usb_show_info(udev);
+			if (udev)
+				usb_show_info(udev);
 		}
 	}
 }

@@ -1060,6 +1060,10 @@ static inline bool is_read_page_fast_benefit(struct spi_nand_chip *chip,
 					     loff_t from,
 					     size_t len)
 {
+	/* GD spi nand does not support READ PAGE CACHE RANDOM to speed up */
+	if (chip->mfr_id == SPINAND_MFR_GIGADEVICE)
+		return false;
+
 	if (len < chip->page_size << 2)
 		return false;
 	if (from >> chip->lun_shift == (from + len) >> chip->lun_shift)

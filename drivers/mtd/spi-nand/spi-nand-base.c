@@ -1897,6 +1897,7 @@ static int spi_nand_init(struct spi_slave *spi, struct spi_nand_chip *chip)
 {
 	u8 id[SPINAND_MAX_ID_LEN] = {0};
 	struct spi_nand_flash *type = spi_nand_table;
+	bool detect_onfi = false;
 
 	if (!chip)
 		return -ENOMEM;
@@ -1920,13 +1921,14 @@ static int spi_nand_init(struct spi_slave *spi, struct spi_nand_chip *chip)
 		 * check onfi.
 		 */
 		if (spi_nand_scan_mfr_table(id[0])) {
-			type->name = NULL;
+			detect_onfi = true;
 			break;
 		}
 	}
 
-	if (type->name != NULL)
+	if (type->name != NULL && !detect_onfi)
 		goto ident_done;
+
 	spi_nand_info("SPI-NAND mfr_id: %x, dev_id: %x is not in id table.\n",
 		      id[0], id[1]);
 	if (spi_nand_detect_onfi(chip))

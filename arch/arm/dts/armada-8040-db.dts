@@ -65,6 +65,30 @@
 		device_type = "memory";
 		reg = <0x0 0x0 0x0 0x80000000>;
 	};
+
+	cpm_reg_usb3_vbus0:cpm_usb3_vbus@0 {
+		compatible = "regulator-fixed";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&expander0 0 GPIO_ACTIVE_HIGH>;
+	};
+
+	cpm_reg_usb3_vbus1: cpm_usb3_vbus@1 {
+		compatible = "regulator-fixed";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
+	};
+
+	/* even though this node used for enable/disable cps usb vbus-supply,
+	 * we use "cpm" prefix since the expander is connected to cpm.
+	 */
+	cpm_reg_usb3_vbus2: cpm_usb3_vbus@2 {
+		compatible = "regulator-fixed";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&expander1 0 GPIO_ACTIVE_HIGH>;
+	};
 };
 
 /* Accessible over the mini-USB CON9 connector on the main board */
@@ -190,11 +214,13 @@
 
 /* CON9 on CP0 expansion */
 &cpm_usb3_0 {
+	vbus-supply = <&cpm_reg_usb3_vbus0>;
 	status = "okay";
 };
 
 /* CON10 on CP0 expansion */
 &cpm_usb3_1 {
+	vbus-supply = <&cpm_reg_usb3_vbus1>;
 	status = "okay";
 };
 
@@ -315,6 +341,7 @@
 
 /* CON9 on CP1 expansion */
 &cps_usb3_0 {
+	vbus-supply = <&cpm_reg_usb3_vbus2>;
 	status = "okay";
 };
 

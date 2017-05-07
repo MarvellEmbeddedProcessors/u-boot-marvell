@@ -25,7 +25,57 @@
 					status = "okay";
 				};
 			};
+
+			cpm_reg_usb3_vbus0:cpm_usb3_vbus@0 {
+				compatible = "regulator-fixed";
+				regulator-min-microvolt = <5000000>;
+				regulator-max-microvolt = <5000000>;
+				startup-delay-us = <100000>;
+				regulator-force-boot-off;
+				gpio = <&expander0 0 GPIO_ACTIVE_HIGH>;
+			};
+
+			cpm_reg_usb3_vbus1: cpm_usb3_vbus@1 {
+				compatible = "regulator-fixed";
+				regulator-min-microvolt = <5000000>;
+				regulator-max-microvolt = <5000000>;
+				startup-delay-us = <100000>;
+				regulator-force-boot-off;
+				gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
+			};
+
+			/*
+			 * Even though this node used for enable/disable
+			 * cps usb vbus-supply, we use "cpm" prefix since
+			 * the expander is connected to cpm.
+			 */
+			cpm_reg_usb3_vbus2: cpm_usb3_vbus@2 {
+				compatible = "regulator-fixed";
+				regulator-min-microvolt = <5000000>;
+				regulator-max-microvolt = <5000000>;
+				startup-delay-us = <100000>;
+				regulator-force-boot-off;
+				gpio = <&expander1 0 GPIO_ACTIVE_HIGH>;
+			};
+
+			cpm_usb3_0: usb3@500000 {
+				vbus-supply = <&cpm_reg_usb3_vbus0>;
+				vbus-disable-delay = <500>;
+			};
+			cpm_usb3_1: usb3@510000 {
+				vbus-supply = <&cpm_reg_usb3_vbus1>;
+				vbus-disable-delay = <500>;
+			};
 		};
 	};
 
+	cp110-slave {
+		config-space {
+
+			cps_usb3_0: usb3@500000 {
+				vbus-supply = <&cpm_reg_usb3_vbus2>;
+				vbus-disable-delay = <500>;
+			};
+		};
+	};
 };

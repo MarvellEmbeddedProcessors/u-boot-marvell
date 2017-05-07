@@ -8,4 +8,24 @@
 / {
 	compatible = "marvell,armada-80x0-db", "marvell,armada-8040";
 	model = "DB-ARMADA-80x0";
+
+	cp110-master {
+		config-space {
+			i2c@701000 {
+				expander0: pca953x@21 {
+					compatible = "nxp,pca9555";
+					#gpio-cells = <2>;
+					reg = <0x21>;
+					status = "okay";
+				};
+				expander1: pca953x@25 {
+					compatible = "nxp,pca9555";
+					#gpio-cells = <2>;
+					reg = <0x25>;
+					status = "okay";
+				};
+			};
+		};
+	};
+
 };

@@ -91,6 +91,11 @@
 	pinctrl-0 = <&cpm_i2c0_pins>;
 	status = "okay";
 	clock-frequency = <100000>;
+	expander0: pca953x@21 {
+		compatible = "nxp,pca9555";
+		reg = <0x21>;
+		status = "okay";
+	};
 };
 
 &cpm_pinctl {

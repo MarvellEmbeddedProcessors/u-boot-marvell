@@ -165,6 +165,18 @@
 	pinctrl-0 = <&cpm_i2c0_pins>;
 	status = "okay";
 	clock-frequency = <100000>;
+	expander0: pca953x@21 {
+		compatible = "nxp,pca9555";
+		#gpio-cells = <2>;
+		reg = <0x21>;
+		status = "okay";
+	};
+	expander1: pca953x@25 {
+		compatible = "nxp,pca9555";
+		#gpio-cells = <2>;
+		reg = <0x25>;
+		status = "okay";
+	};
 };
 
 /* CON4 on CP0 expansion */

@@ -9,13 +9,20 @@
 #include <serial.h>
 #include <asm/io.h>
 
+enum reg_uart_type {
+	REG_UART_A3700,
+	REG_UART_A3700_EXT,
+};
+
 struct mvebu_platdata {
 	void __iomem *base;
+	enum reg_uart_type reg_type;
 };
 
 /*
  * Register offset
  */
+/* REG_UART_A3700 */
 #define UART_RX_REG		0x00
 #define UART_TX_REG		0x04
 #define UART_CTRL_REG		0x08
@@ -31,6 +38,24 @@ struct mvebu_platdata {
 
 #define CONFIG_UART_BASE_CLOCK	25804800
 
+/* REG_UART_A3700_EXT */
+#define UART_EXT_RX_REG		0x18
+#define UART_EXT_TX_REG		0x1c
+#define UART_EXT_CTRL_REG		0x04
+#define UART_EXT_STATUS_RX_RDY		0x4000
+
+/* Register and bit offset helpers */
+#define REG_RX(data) (((data)->reg_type == REG_UART_A3700) \
+			? (UART_RX_REG) : (UART_EXT_RX_REG))
+#define REG_TX(data) (((data)->reg_type == REG_UART_A3700) \
+			? (UART_TX_REG) : (UART_EXT_TX_REG))
+#define REG_CTRL(data) (((data)->reg_type == REG_UART_A3700) \
+			? (UART_CTRL_REG) : (UART_EXT_CTRL_REG))
+
+#define BIT_STATUS_RX_RDY(data) (((data)->reg_type == REG_UART_A3700) \
+			? (UART_STATUS_RX_RDY) : (UART_EXT_STATUS_RX_RDY))
+
+
 static int mvebu_serial_putc(struct udevice *dev, const char ch)
 {
 	struct mvebu_platdata *plat = dev_get_platdata(dev);
@@ -39,7 +64,7 @@ static int mvebu_serial_putc(struct udevice *dev, const char ch)
 	while (readl(base + UART_STATUS_REG) & UART_STATUS_TXFIFO_FULL)
 		;
 
-	writel(ch, base + UART_TX_REG);
+	writel(ch, base + REG_TX(plat));
 
 	return 0;
 }
@@ -49,10 +74,10 @@ static int mvebu_serial_getc(struct udevice *dev)
 	struct mvebu_platdata *plat = dev_get_platdata(dev);
 	void __iomem *base = plat->base;
 
-	while (!(readl(base + UART_STATUS_REG) & UART_STATUS_RX_RDY))
+	while (!(readl(base + UART_STATUS_REG) & BIT_STATUS_RX_RDY(plat)))
 		;
 
-	return readl(base + UART_RX_REG) & 0xff;
+	return readl(base + REG_RX(plat)) & 0xff;
 }
 
 static int mvebu_serial_pending(struct udevice *dev, bool input)
@@ -60,7 +85,7 @@ static int mvebu_serial_pending(struct udevice *dev, bool input)
 	struct mvebu_platdata *plat = dev_get_platdata(dev);
 	void __iomem *base = plat->base;
 
-	if (readl(base + UART_STATUS_REG) & UART_STATUS_RX_RDY)
+	if (readl(base + UART_STATUS_REG) & BIT_STATUS_RX_RDY(plat))
 		return 1;
 
 	return 0;
@@ -91,12 +116,14 @@ static int mvebu_serial_probe(struct udevice *dev)
 	struct mvebu_platdata *plat = dev_get_platdata(dev);
 	void __iomem *base = plat->base;
 
+	plat->reg_type = (enum reg_uart_type)dev_get_driver_data(dev);
+
 	/* reset FIFOs */
 	writel(UART_CTRL_RXFIFO_RESET | UART_CTRL_TXFIFO_RESET,
-	       base + UART_CTRL_REG);
+	       base + REG_CTRL(plat));
 
 	/* No Parity, 1 Stop */
-	writel(0, base + UART_CTRL_REG);
+	writel(0, base + REG_CTRL(plat));
 
 	return 0;
 }
@@ -118,7 +145,14 @@ static const struct dm_serial_ops mvebu_serial_ops = {
 };
 
 static const struct udevice_id mvebu_serial_ids[] = {
-	{ .compatible = "marvell,armada-3700-uart" },
+	{
+		.compatible = "marvell,armada-3700-uart",
+		.data = (ulong)REG_UART_A3700
+	},
+	{
+		.compatible = "marvell,armada-3700-uart-ext",
+		.data = (ulong)REG_UART_A3700_EXT
+	},
 	{ }
 };
 

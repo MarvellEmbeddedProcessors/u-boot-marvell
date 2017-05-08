@@ -46,6 +46,7 @@
  */
 
 #include "armada-7040.dtsi"
+#include "armada-7040-dev-info.dtsi"
 
 / {
 	model = "Marvell Armada 7040 DB (D) board";
@@ -153,33 +154,33 @@
 
 &cpm_comphy {
 	phy0 {
-		phy-type = <PHY_TYPE_PEX0>;
-		phy-speed = <PHY_SPEED_5G>;
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
 	};
 
 	phy1 {
-		phy-type = <PHY_TYPE_USB3_DEVICE>;
-		phy-speed = <PHY_SPEED_5G>;
+		phy-type = <COMPHY_TYPE_USB3_DEVICE>;
+		phy-speed = <COMPHY_SPEED_5G>;
 	};
 
 	phy2 {
-		phy-type = <PHY_TYPE_SFI>;
-		phy-speed = <PHY_SPEED_10_3125G>;
+		phy-type = <COMPHY_TYPE_SFI>;
+		phy-speed = <COMPHY_SPEED_10_3125G>;
 	};
 
 	phy3 {
-		phy-type = <PHY_TYPE_SATA1>;
-		phy-speed = <PHY_SPEED_5G>;
+		phy-type = <COMPHY_TYPE_SATA1>;
+		phy-speed = <COMPHY_SPEED_5G>;
 	};
 
 	phy4 {
-		phy-type = <PHY_TYPE_USB3_HOST1>;
-		phy-speed = <PHY_SPEED_5G>;
+		phy-type = <COMPHY_TYPE_USB3_HOST1>;
+		phy-speed = <COMPHY_SPEED_5G>;
 	};
 
 	phy5 {
-		phy-type = <PHY_TYPE_PEX2>;
-		phy-speed = <PHY_SPEED_5G>;
+		phy-type = <COMPHY_TYPE_PEX2>;
+		phy-speed = <COMPHY_SPEED_5G>;
 	};
 };
 

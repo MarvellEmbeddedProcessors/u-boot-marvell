@@ -1839,18 +1839,15 @@ static void spi_nand_set_rd_wr_op(struct spi_nand_chip *chip)
 /**
  * spi_nand_init - [Interface] Init SPI-NAND device driver
  * @spi: spi device structure
- * @chip_ptr: pointer point to spi nand device structure pointer
+ * @chip_ptr: pointer point to spi nand device structure
  */
-static int spi_nand_init(struct spi_slave *spi, struct spi_nand_chip **chip_ptr)
+static int spi_nand_init(struct spi_slave *spi, struct spi_nand_chip *chip)
 {
 	u8 id[SPINAND_MAX_ID_LEN] = {0};
-	struct spi_nand_chip *chip = NULL;
 
-	chip = malloc(sizeof(struct spi_nand_chip));
 	if (!chip)
 		return -ENOMEM;
 
-	memset(chip, 0, sizeof(struct spi_nand_chip));
 	chip->spi = spi;
 
 	spi_nand_set_rd_wr_op(chip);
@@ -1889,7 +1886,6 @@ ident_done:
 
 	spi_nand_lock_block(chip, BL_ALL_UNLOCKED);
 	spi_nand_enable_ecc(chip);
-	*chip_ptr = chip;
 
 	return 0;
 }
@@ -2033,7 +2029,7 @@ int spi_nand_cmd_read_ops(struct spi_nand_chip *chip, u32 offset,
 	return ret;
 }
 
-int spi_nand_probe_slave(struct spi_slave *spi, struct spi_nand_chip **chip)
+int spi_nand_probe_slave(struct spi_slave *spi, struct spi_nand_chip *chip)
 {
 	int ret;
 

@@ -71,6 +71,7 @@ enum uclass_id {
 	UCLASS_SPI,		/* SPI bus */
 	UCLASS_SPMI,		/* System Power Management Interface bus */
 	UCLASS_SPI_FLASH,	/* SPI flash */
+	UCLASS_SPI_NAND_FLASH,	/* SPI nand flash */
 	UCLASS_SPI_GENERIC,	/* Generic SPI flash target */
 	UCLASS_SYSCON,		/* System configuration device */
 	UCLASS_SYSRESET,	/* System reset device */

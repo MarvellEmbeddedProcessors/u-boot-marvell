@@ -215,7 +215,7 @@ struct spi_nand_onfi_params {
 struct spi_nand_chip {
 	char		*name;
 	struct spi_slave	*spi;
-
+	struct udevice	*dev;
 	u8		mfr_id;
 	u8		dev_id;
 	u8		read_cache_op;
@@ -295,7 +295,7 @@ enum {
 
 int spi_nand_block_markbad(struct spi_nand_chip *chip, loff_t offs);
 int spi_nand_block_isbad(struct spi_nand_chip *chip, loff_t offs);
-int spi_nand_probe_slave(struct spi_slave *spi, struct spi_nand_chip **chip);
+int spi_nand_probe_slave(struct spi_slave *spi, struct spi_nand_chip *chip);
 int spi_nand_cmd_read_ops(struct spi_nand_chip *chip, u32 offset,
 		size_t len, void *data);
 int spi_nand_cmd_write_ops(struct spi_nand_chip *chip, u32 offset,

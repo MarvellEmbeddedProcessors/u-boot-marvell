@@ -122,12 +122,16 @@
 };
 
 &eth0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&rgmii_pins>;
 	status = "okay";
 	phy-mode = "rgmii";
 	phy = <&ethphy0>;
 };
 
 &i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_pins>;
 	status = "okay";
 	expander0: pca953x@22 {
 		compatible = "nxp,pca9555";
@@ -171,6 +175,8 @@
 
 &spi0 {
 	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi_quad_pins>;
 
 	spi-flash@0 {
 		#address-cells = <1>;
@@ -184,6 +190,8 @@
 
 /* Exported on the micro USB connector CON32 through an FTDI */
 &uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart1_pins>;
 	status = "okay";
 };
 

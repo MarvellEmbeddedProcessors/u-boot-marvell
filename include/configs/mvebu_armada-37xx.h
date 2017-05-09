@@ -90,6 +90,14 @@
 #define CONFIG_ENV_SIZE			(64 << 10) /* 64KiB */
 #define CONFIG_ENV_SECT_SIZE		(64 << 10) /* 64KiB sectors */
 
+/* Environment in MMC */
+#define CONFIG_SYS_MMC_ENV_DEV		1 /* 0 means sdio, 1 means mmc. */
+/* partition 0: user data partition.
+ * partition 1: boot partition 1 (BOOT0).
+ * partition 2: boot partition 2 (BOOT1).
+ */
+#define CONFIG_SYS_MMC_ENV_PART		1
+
 /*
  * Ethernet Driver configuration
  */

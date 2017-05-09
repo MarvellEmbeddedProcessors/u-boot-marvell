@@ -20,7 +20,9 @@
 #include <errno.h>
 #include <spi.h>
 
-static int spi_nand_erase(struct spi_nand_chip *chip, uint64_t addr, uint64_t len);
+static int spi_nand_erase(struct spi_nand_chip *chip,
+			      uint64_t addr,
+			      uint64_t len);
 
 static struct spi_nand_flash spi_nand_table[] = {
 	SPI_NAND_INFO("MT29F2G01AAAED", 0x2C, 0x22, 2048, 64, 64, 2048,
@@ -353,7 +355,9 @@ static int spi_nand_read_from_cache(struct spi_nand_chip *chip, u32 page_addr,
  *   Since it is writing the data to cache, there is no tPROG time.
  */
 static int spi_nand_program_data_to_cache(struct spi_nand_chip *chip,
-		u32 page_addr, u32 column, size_t len, const u8 *wbuf, bool clr_cache)
+					  u32 page_addr, u32 column,
+					  size_t len, const u8 *wbuf,
+					  bool clr_cache)
 {
 	struct spi_nand_cmd cmd;
 
@@ -611,7 +615,9 @@ static int spi_nand_change_mode(struct spi_nand_chip *chip, u8 mode)
  *      Cache Dual/Quad IO)
  */
 static int spi_nand_do_read_page(struct spi_nand_chip *chip, u32 page_addr,
-				u32 column, bool ecc_off, unsigned int *corrected, u_char *buf, size_t len)
+				u32 column, bool ecc_off,
+				unsigned int *corrected,
+				u_char *buf, size_t len)
 {
 	int ret;
 	unsigned int ecc_error;
@@ -657,7 +663,8 @@ static int spi_nand_do_read_page(struct spi_nand_chip *chip, u32 page_addr,
  *   of data in the cache buffer will remain unchanged.
  */
 static int spi_nand_do_write_page(struct spi_nand_chip *chip, u32 page_addr,
-				u32 column, const u_char *buf, size_t len, bool clr_cache)
+				u32 column, const u_char *buf, size_t len,
+				bool clr_cache)
 {
 	u8 status;
 	bool p_fail = false;
@@ -797,11 +804,13 @@ static int spi_nand_read_pages(struct spi_nand_chip *chip,
 	int readlen = ops->len;
 	int oobreadlen = ops->ooblen;
 	bool ecc_off = ops->mode == MTD_OPS_RAW;
-	int ooblen = (ops->mode == MTD_OPS_AUTO_OOB) ? chip->ecclayout->oobavail : chip->oob_size;
+	int ooblen = (ops->mode == MTD_OPS_AUTO_OOB) ?
+		     chip->ecclayout->oobavail : chip->oob_size;
 	unsigned int failed = 0;
 	int lun_num;
 
-	spi_nand_debug("%s: from = 0x%012llx, len = %i\n", __func__, from, readlen);
+	spi_nand_debug("%s: from = 0x%012llx, len = %i\n",
+		       __func__, from, readlen);
 
 	page_addr = from >> chip->page_shift;
 	page_offset = from & chip->page_mask;
@@ -813,11 +822,13 @@ static int spi_nand_read_pages(struct spi_nand_chip *chip,
 	while (1) {
 		size = min(readlen, chip->page_size - page_offset);
 		ret = spi_nand_do_read_page(chip, page_addr, page_offset,
-					ecc_off, &corrected, ops->datbuf + ops->retlen, size);
+					    ecc_off, &corrected,
+					    ops->datbuf + ops->retlen, size);
 		if (ret == -EBADMSG) {
 			failed++;
 		} else if (ret) {
-			spi_nand_error("error %d reading page 0x%x\n", ret, page_addr);
+			spi_nand_error("error %d reading page 0x%x\n",
+				       ret, page_addr);
 			goto out;
 		}
 		max_bitflip = max(corrected, max_bitflip);
@@ -828,8 +839,15 @@ static int spi_nand_read_pages(struct spi_nand_chip *chip,
 
 		if (unlikely(ops->oobbuf)) {
 			size = min(oobreadlen, ooblen);
-			spi_nand_read_from_cache(chip, page_addr, chip->page_size, chip->oob_size, chip->oobbuf);
-			spi_nand_transfer_oob(chip, ops->oobbuf + ops->oobretlen, ops, size);
+			spi_nand_read_from_cache(chip,
+						 page_addr,
+						 chip->page_size,
+						 chip->oob_size,
+						 chip->oobbuf);
+			spi_nand_transfer_oob(chip,
+					      ops->oobbuf + ops->oobretlen,
+					      ops,
+					      size);
 			ops->oobretlen += size;
 			oobreadlen -= size;
 		}
@@ -838,7 +856,8 @@ static int spi_nand_read_pages(struct spi_nand_chip *chip,
 
 		page_addr++;
 		/* Check, if we cross lun boundary */
-		if (!(page_addr & ((1 << (chip->lun_shift - chip->page_shift)) - 1)) &&
+		if (!(page_addr &
+		      ((1 << (chip->lun_shift - chip->page_shift)) - 1)) &&
 		    (chip->options & SPINAND_NEED_DIE_SELECT)) {
 			lun_num++;
 			spi_nand_lun_select(chip, lun_num);
@@ -874,7 +893,8 @@ static int spi_nand_read_pages_fast(struct spi_nand_chip *chip,
 	int oobreadlen = ops->ooblen;
 	bool ecc_off = ops->mode == MTD_OPS_RAW, cross_lun = false;
 	bool read_ramdon_issued = false;
-	int ooblen = (ops->mode == MTD_OPS_AUTO_OOB) ? chip->ecclayout->oobavail : chip->oob_size;
+	int ooblen = (ops->mode == MTD_OPS_AUTO_OOB) ?
+		     chip->ecclayout->oobavail : chip->oob_size;
 	u8 status;
 	unsigned int ecc_error;
 	unsigned int failed = 0;
@@ -891,17 +911,21 @@ again:
 	spi_nand_read_page_to_cache(chip, page_addr);
 	ret = spi_nand_wait(chip, &status);
 	if (ret < 0) {
-		spi_nand_error("error %d waiting page 0x%x to cache\n", ret, page_addr);
+		spi_nand_error("error %d waiting page 0x%x to cache\n",
+			       ret, page_addr);
 		return ret;
 	}
 	while ((page_offset + readlen > chip->page_size) && !cross_lun) {
 		if (!(chip->options & SPINAND_NEED_DIE_SELECT) ||
-		    (page_addr + 1) & ((1 << (chip->lun_shift - chip->page_shift)) - 1)) {
+		    (page_addr + 1) &
+		    ((1 << (chip->lun_shift - chip->page_shift)) - 1)) {
 			read_ramdon_issued = true;
 			spi_nand_read_page_cache_random(chip, page_addr + 1);
 			ret = spi_nand_wait(chip, &status);
 			if (ret < 0) {
-				spi_nand_error("error %d waiting page 0x%x to data resigter\n", ret, page_addr + 1);
+				spi_nand_error("error %d ", ret);
+				spi_nand_error("wait page 0x%x to resigter\n",
+					       page_addr + 1);
 				return ret;
 			}
 		} else {
@@ -911,27 +935,38 @@ again:
 		if (!ecc_off) {
 			spi_nand_ecc_status(status, &corrected, &ecc_error);
 			if (ecc_error) {
-				spi_nand_error("internal ECC error reading page 0x%x\n", page_addr);
+				spi_nand_error("ECC error reading page 0x%x\n",
+					       page_addr);
 				failed++;
 			}
 		}
 		max_bitflip = max(corrected, max_bitflip);
 		size = min(readlen, chip->page_size - page_offset);
-		spi_nand_read_from_cache(chip, page_addr, page_offset, size, ops->datbuf + ops->retlen);
+		spi_nand_read_from_cache(chip, page_addr, page_offset, size,
+					 ops->datbuf + ops->retlen);
 		page_offset = 0;
 		ops->retlen += size;
 		readlen -= size;
 		if (unlikely(ops->oobbuf)) {
 			size = min(oobreadlen, ooblen);
-			spi_nand_read_from_cache(chip, page_addr, chip->page_size, chip->oob_size, chip->oobbuf);
-			spi_nand_transfer_oob(chip, ops->oobbuf + ops->oobretlen, ops, size);
+			spi_nand_read_from_cache(chip,
+						 page_addr,
+						 chip->page_size,
+						 chip->oob_size,
+						 chip->oobbuf);
+			spi_nand_transfer_oob(chip,
+					      ops->oobbuf + ops->oobretlen,
+					      ops,
+					      size);
 			ops->oobretlen += size;
 			oobreadlen -= size;
 		}
 		if (!cross_lun) {
 			ret = spi_nand_wait_crbusy(chip);
 			if (ret < 0) {
-				spi_nand_error("error %d waiting page 0x%x to cache\n", ret, page_addr + 1);
+				spi_nand_error("error %d ", ret);
+				spi_nand_error("waiting page 0x%x to cache\n",
+					       page_addr + 1);
 				return ret;
 			}
 		}
@@ -945,26 +980,31 @@ again:
 		*/
 		ret = spi_nand_wait(chip, &status);
 		if (ret < 0) {
-			spi_nand_error("error %d waiting page 0x%x to cache\n", ret, page_addr);
+			spi_nand_error("error %d waiting page 0x%x to cache\n",
+				       ret, page_addr);
 			return ret;
 		}
 	}
 	if (!ecc_off) {
 		spi_nand_ecc_status(status, &corrected, &ecc_error);
 		if (ecc_error) {
-			spi_nand_error("internal ECC error reading page 0x%x\n", page_addr);
+			spi_nand_error("internal ECC error read page 0x%x\n",
+				       page_addr);
 			failed++;
 		}
 	}
 	max_bitflip = max(corrected, max_bitflip);
 	size = min(readlen, chip->page_size - page_offset);
-	spi_nand_read_from_cache(chip, page_addr, page_offset, size, ops->datbuf + ops->retlen);
+	spi_nand_read_from_cache(chip, page_addr, page_offset, size,
+				 ops->datbuf + ops->retlen);
 	ops->retlen += size;
 	readlen -= size;
 	if (unlikely(ops->oobbuf)) {
 		size = min(oobreadlen, ooblen);
-		spi_nand_read_from_cache(chip, page_addr, chip->page_size, chip->oob_size, chip->oobbuf);
-		spi_nand_transfer_oob(chip, ops->oobbuf + ops->oobretlen, ops, size);
+		spi_nand_read_from_cache(chip, page_addr, chip->page_size,
+					 chip->oob_size, chip->oobbuf);
+		spi_nand_transfer_oob(chip, ops->oobbuf + ops->oobretlen,
+				      ops, size);
 		ops->oobretlen += size;
 		oobreadlen -= size;
 	}
@@ -983,7 +1023,9 @@ again:
 	return ret;
 }
 
-static inline bool is_read_page_fast_benefit(struct spi_nand_chip *chip, loff_t from, size_t len)
+static inline bool is_read_page_fast_benefit(struct spi_nand_chip *chip,
+					     loff_t from,
+					     size_t len)
 {
 	if (len < chip->page_size << 2)
 		return false;
@@ -1012,24 +1054,28 @@ static int spi_nand_do_read_ops(struct spi_nand_chip *chip, loff_t from,
 	int ooblen = (ops->mode == MTD_OPS_AUTO_OOB) ?
 		chip->ecclayout->oobavail : chip->oob_size;
 
-	spi_nand_debug("%s: from = 0x%012llx, len = %i\n", __func__, from, ops->len);
+	spi_nand_debug("%s: from = 0x%012llx, len = %i\n",
+		       __func__, from, ops->len);
 	/* Do not allow reads past end of device */
 	if (unlikely(from >= chip->size)) {
-		spi_nand_error("%s: attempt to read beyond end of device\n", __func__);
+		spi_nand_error("%s: attempt to read beyond end of device\n",
+			       __func__);
 		return -EINVAL;
 	}
 
 	/* for oob */
 	if (oobreadlen > 0) {
 		if (unlikely(ops->ooboffs >= ooblen)) {
-			spi_nand_error("%s: attempt to start read outside oob\n", __func__);
+			spi_nand_error("%s: start read outside oob\n",
+				       __func__);
 			return -EINVAL;
 		}
 
 		if (unlikely(ops->ooboffs + oobreadlen >
 		((chip->size >> chip->page_shift) - (from >> chip->page_shift))
 		* ooblen)) {
-			spi_nand_error("%s: attempt to read beyond end of device\n", __func__);
+			spi_nand_error("%s: read beyond end of device\n",
+				       __func__);
 			return -EINVAL;
 		}
 		ooblen -= ops->ooboffs;
@@ -1072,10 +1118,12 @@ static int spi_nand_do_write_ops(struct spi_nand_chip *chip, loff_t to,
 	int lun_num;
 
 
-	spi_nand_debug("%s: to = 0x%012llx, len = %i\n", __func__, to, writelen);
+	spi_nand_debug("%s: to = 0x%012llx, len = %i\n",
+		       __func__, to, writelen);
 	/* Do not allow reads past end of device */
 	if (unlikely(to >= chip->size)) {
-		spi_nand_error("%s: attempt to write beyond end of device\n", __func__);
+		spi_nand_error("%s: attempt to write beyond end of device\n",
+			       __func__);
 		return -EINVAL;
 	}
 
@@ -1087,13 +1135,15 @@ static int spi_nand_do_write_ops(struct spi_nand_chip *chip, loff_t to,
 	/* for oob */
 	if (oobwritelen > 0) {
 		if (unlikely(ops->ooboffs >= ooblen)) {
-			spi_nand_error("%s: attempt to start write outside oob\n", __func__);
+			spi_nand_error("%s: start write outside oob\n",
+				       __func__);
 			return -EINVAL;
 		}
 		if (unlikely(ops->ooboffs + oobwritelen >
 		((chip->size >> chip->page_shift) - (to >> chip->page_shift))
 			* ooblen)) {
-			spi_nand_error("%s: attempt to write beyond end of device\n", __func__);
+			spi_nand_error("%s: write beyond end of device\n",
+				       __func__);
 			return -EINVAL;
 		}
 		ooblen -= ops->ooboffs;
@@ -1109,11 +1159,13 @@ static int spi_nand_do_write_ops(struct spi_nand_chip *chip, loff_t to,
 		if (unlikely(ops->oobbuf)) {
 			size = min(oobwritelen, ooblen);
 
-			spi_nand_fill_oob(chip, ops->oobbuf + ops->oobretlen, size, ops);
+			spi_nand_fill_oob(chip, ops->oobbuf + ops->oobretlen,
+					  size, ops);
 			ret = spi_nand_program_data_to_cache(chip, page_addr,
 			chip->page_size, chip->oob_size, chip->oobbuf, true);
 			if (ret) {
-				spi_nand_error("error %d store page oob to cache 0x%x\n", ret, page_addr);
+				spi_nand_error("error %d oob to cache 0x%x\n",
+					       ret, page_addr);
 				goto out;
 			}
 			clr_cache = false;
@@ -1124,7 +1176,8 @@ static int spi_nand_do_write_ops(struct spi_nand_chip *chip, loff_t to,
 		ret = spi_nand_do_write_page(chip, page_addr, page_offset,
 				ops->datbuf + ops->retlen, size, clr_cache);
 		if (ret) {
-			spi_nand_error("error %d writing page 0x%x\n", ret, page_addr);
+			spi_nand_error("error %d writing page 0x%x\n",
+				       ret, page_addr);
 			goto out;
 		}
 		ops->retlen += size;
@@ -1134,7 +1187,8 @@ static int spi_nand_do_write_ops(struct spi_nand_chip *chip, loff_t to,
 			break;
 		page_addr++;
 		/* Check, if we cross lun boundary */
-		if (!(page_addr & ((1 << (chip->lun_shift - chip->page_shift)) - 1)) &&
+		if (!(page_addr &
+		      ((1 << (chip->lun_shift - chip->page_shift)) - 1)) &&
 		    (chip->options & SPINAND_NEED_DIE_SELECT)) {
 			lun_num++;
 			spi_nand_lun_select(chip, lun_num);
@@ -1219,15 +1273,18 @@ static int spi_nand_do_read_oob(struct spi_nand_chip *chip, loff_t from,
 	int ret = 0;
 	int lun_num;
 
-	spi_nand_debug("%s: from = 0x%012llx, len = %i\n", __func__, from, readlen);
+	spi_nand_debug("%s: from = 0x%012llx, len = %i\n",
+		       __func__, from, readlen);
 	if (unlikely(ooboffs >= max_len)) {
 		spi_nand_error("%s: attempt to read outside oob\n", __func__);
 		return -EINVAL;
 	}
 	if (unlikely(from >= chip->size ||
-		     ooboffs + readlen > ((chip->size >> chip->page_shift) -
-							(from >> chip->page_shift)) * max_len)) {
-		spi_nand_error("%s: attempt to read beyond end of device\n", __func__);
+		     ooboffs + readlen >
+		     ((chip->size >> chip->page_shift) -
+		      (from >> chip->page_shift)) * max_len)) {
+		spi_nand_error("%s: attempt to read beyond end of device\n",
+			       __func__);
 		return -EINVAL;
 	}
 
@@ -1245,16 +1302,19 @@ static int spi_nand_do_read_oob(struct spi_nand_chip *chip, loff_t from,
 	while (1) {
 		/*read data from chip*/
 		ret = spi_nand_do_read_page(chip, page_addr, chip->page_size,
-				ecc_off, &corrected, chip->oobbuf, chip->oob_size);
+					    ecc_off, &corrected, chip->oobbuf,
+					    chip->oob_size);
 		if (ret == -EBADMSG) {
 			failed++;
 		} else if (ret) {
-			spi_nand_error("error %d reading page 0x%x\n", ret, page_addr);
+			spi_nand_error("error %d reading page 0x%x\n",
+				       ret, page_addr);
 			goto out;
 		}
 
 		max_len = min(max_len, readlen);
-		spi_nand_transfer_oob(chip, ops->oobbuf + ops->oobretlen, ops, max_len);
+		spi_nand_transfer_oob(chip, ops->oobbuf + ops->oobretlen,
+				      ops, max_len);
 
 		readlen -= max_len;
 		ops->oobretlen += max_len;
@@ -1263,7 +1323,8 @@ static int spi_nand_do_read_oob(struct spi_nand_chip *chip, loff_t from,
 
 		page_addr++;
 		/* Check, if we cross lun boundary */
-		if (!(page_addr & ((1 << (chip->lun_shift - chip->page_shift)) - 1)) &&
+		if (!(page_addr &
+		       ((1 << (chip->lun_shift - chip->page_shift)) - 1)) &&
 		    (chip->options & SPINAND_NEED_DIE_SELECT)) {
 			lun_num++;
 			spi_nand_lun_select(chip, lun_num);
@@ -1297,7 +1358,8 @@ static int spi_nand_do_write_oob(struct spi_nand_chip *chip, loff_t to,
 	int writelen = ops->ooblen;
 	int lun_num;
 
-	spi_nand_debug("%s: to = 0x%012llx, len = %i\n", __func__, to, writelen);
+	spi_nand_debug("%s: to = 0x%012llx, len = %i\n",
+		       __func__, to, writelen);
 
 	/* Do not allow write past end of page */
 	if (unlikely(ooboffs > max_len)) {
@@ -1305,8 +1367,11 @@ static int spi_nand_do_write_oob(struct spi_nand_chip *chip, loff_t to,
 		return -EINVAL;
 	}
 	if (unlikely(to >= chip->size) ||
-	    unlikely(ooboffs + writelen > ((chip->size >> chip->page_shift) - (to >> chip->page_shift)) * max_len)) {
-		spi_nand_error("%s: attempt to write beyond end of device\n", __func__);
+	    unlikely(ooboffs + writelen >
+		     ((chip->size >> chip->page_shift) -
+		      (to >> chip->page_shift)) * max_len)) {
+		spi_nand_error("%s: attempt to write beyond end of device\n",
+			       __func__);
 		return -EINVAL;
 	}
 
@@ -1323,12 +1388,16 @@ static int spi_nand_do_write_oob(struct spi_nand_chip *chip, loff_t to,
 
 	while (1) {
 		max_len = min(max_len, writelen);
-		spi_nand_fill_oob(chip, ops->oobbuf + ops->oobretlen, max_len, ops);
+		spi_nand_fill_oob(chip,
+				  ops->oobbuf + ops->oobretlen,
+				  max_len,
+				  ops);
 
 		ret = spi_nand_do_write_page(chip, page_addr, chip->page_size,
 					chip->oobbuf, chip->oob_size, true);
 		if (ret) {
-			spi_nand_error("error %d writing page 0x%x\n", ret, page_addr);
+			spi_nand_error("error %d writing page 0x%x\n",
+				       ret, page_addr);
 			goto out;
 		}
 
@@ -1339,7 +1408,8 @@ static int spi_nand_do_write_oob(struct spi_nand_chip *chip, loff_t to,
 
 		page_addr++;
 		/* Check, if we cross lun boundary */
-		if (!(page_addr & ((1 << (chip->lun_shift - chip->page_shift)) - 1)) &&
+		if (!(page_addr &
+		       ((1 << (chip->lun_shift - chip->page_shift)) - 1)) &&
 		    (chip->options & SPINAND_NEED_DIE_SELECT)) {
 			lun_num++;
 			spi_nand_lun_select(chip, lun_num);
@@ -1354,9 +1424,9 @@ out:
 
 /**
  * The below 2 static functions spi_nand_read_oob and spi_nand_write_oob
- * from the Micron SPI NAND patch can not pass compilation since they are not used;
- * an undefined macro CONFIG_SPI_NAND_OOB is added for codes reservation and
- * compilation prohibition.
+ * from the Micron SPI NAND patch can not pass compilation since they are
+ * not used; an undefined macro CONFIG_SPI_NAND_OOB is added for codes
+ * reservation and compilation prohibition.
  */
 #ifdef CONFIG_SPI_NAND_OOB
 /**
@@ -1374,7 +1444,8 @@ static int spi_nand_read_oob(struct spi_nand_chip *chip, loff_t from,
 
 	/* Do not allow reads past end of device */
 	if (ops->datbuf && (from + ops->len) > chip->size) {
-		spi_nand_error("%s: attempt to read beyond end of device\n", __func__);
+		spi_nand_error("%s: attempt to read beyond end of device\n",
+			       __func__);
 		return -EINVAL;
 	}
 
@@ -1412,7 +1483,8 @@ static int spi_nand_write_oob(struct spi_nand_chip *chip, loff_t to,
 
 	/* Do not allow writes past end of device */
 	if (ops->datbuf && (to + ops->len) > chip->size) {
-		spi_nand_error("%s: attempt to write beyond end of device\n", __func__);
+		spi_nand_error("%s: attempt to write beyond end of device\n",
+			       __func__);
 		return -EINVAL;
 	}
 
@@ -1442,8 +1514,8 @@ out:
  * @chip: spi nand device structure
  * @offs: offset from device start
  * Description:
- *   For a block, read the first page's first two byte of oob data, if data is all
- *   0xFF, the block is a good block, otherwise it a bad block.
+ *   For a block, read the first page's first two byte of oob data, if data is
+ *   all 0xFF, the block is a good block, otherwise it a bad block.
  */
 int spi_nand_block_isbad(struct spi_nand_chip *chip, loff_t offs)
 {
@@ -1488,12 +1560,16 @@ int spi_nand_block_markbad(struct spi_nand_chip *chip, loff_t offs)
 		return ret;
 	}
 	block_addr = offs >> chip->block_shift;
-	spi_nand_erase(chip, block_addr << chip->block_shift, chip->block_size);
+	spi_nand_erase(chip,
+		       block_addr << chip->block_shift,
+		       chip->block_size);
 	ops.mode = MTD_OPS_PLACE_OOB;
 	ops.ooblen = 2;
 	ops.oobbuf = buf;
 
-	ret = spi_nand_do_write_oob(chip, block_addr << chip->block_shift, &ops);
+	ret = spi_nand_do_write_oob(chip,
+				    block_addr << chip->block_shift,
+				    &ops);
 
 	return ret;
 }
@@ -1510,14 +1586,16 @@ int spi_nand_block_markbad(struct spi_nand_chip *chip, loff_t offs)
  *       D8h (BLOCK ERASE command)
  *       0Fh (GET FEATURES command to read the status register)
  */
-static int spi_nand_erase(struct spi_nand_chip *chip, uint64_t addr, uint64_t len)
+static int spi_nand_erase(struct spi_nand_chip *chip, uint64_t addr,
+			  uint64_t len)
 {
 	int page_addr, pages_per_block;
 	u8 status;
 	int ret = 0;
 	int lun_num;
 
-	spi_nand_debug("%s: address = 0x%012llx, len = %llu\n", __func__, addr, len);
+	spi_nand_debug("%s: address = 0x%012llx, len = %llu\n",
+		       __func__, addr, len);
 	/* check address align on block boundary */
 	if (addr & (chip->block_size - 1)) {
 		spi_nand_error("%s: Unaligned address\n", __func__);
@@ -1546,8 +1624,10 @@ static int spi_nand_erase(struct spi_nand_chip *chip, uint64_t addr, uint64_t le
 		/* Check if we have a bad block, we do not erase bad blocks! */
 		if (spi_nand_block_isbad(chip, ((loff_t) page_addr) <<
 					chip->page_shift)) {
-			spi_nand_error("%s: attempt to erase a bad block at 0x%012llx\n",
-				       __func__, ((loff_t) page_addr) << chip->page_shift);
+			spi_nand_error("%s: erase a bad block at 0x%012llx\n",
+				       __func__,
+				       ((loff_t) page_addr) <<
+					chip->page_shift);
 			goto erase_exit;
 		}
 		spi_nand_write_enable(chip);
@@ -1558,7 +1638,9 @@ static int spi_nand_erase(struct spi_nand_chip *chip, uint64_t addr, uint64_t le
 			goto erase_exit;
 		}
 		if ((status & STATUS_E_FAIL_MASK) == STATUS_E_FAIL) {
-			spi_nand_error("erase block 0x%012llx failed\n", ((loff_t) page_addr) << chip->page_shift);
+			spi_nand_error("erase block 0x%012llx failed\n",
+				       ((loff_t) page_addr) <<
+					chip->page_shift);
 			ret = -EIO;
 			goto erase_exit;
 		}
@@ -1601,13 +1683,15 @@ static bool spi_nand_scan_id_table(struct spi_nand_chip *chip, u8 *id)
 	for (; type->name; type++) {
 		if (id[0] == type->mfr_id && id[1] == type->dev_id) {
 			chip->name = type->name;
-			chip->size = type->page_size * type->pages_per_blk
-					* type->blks_per_lun * type->luns_per_chip;
+			chip->size = type->page_size * type->pages_per_blk *
+				     type->blks_per_lun *
+				     type->luns_per_chip;
 			chip->block_size = type->page_size
 					* type->pages_per_blk;
 			chip->page_size = type->page_size;
 			chip->oob_size = type->oob_size;
-			chip->lun_shift = ilog2(chip->block_size * type->blks_per_lun);
+			chip->lun_shift = ilog2(chip->block_size *
+						type->blks_per_lun);
 			chip->ecc_strength = type->ecc_strength;
 			chip->options = type->options;
 
@@ -1688,7 +1772,7 @@ static bool spi_nand_detect_onfi(struct spi_nand_chip *chip)
 			break;
 	}
 	if (i == 3) {
-		spi_nand_error("Could not find valid ONFI parameter page; aborting\n");
+		spi_nand_error("Not find valid ONFI parameter page; abort\n");
 		ret = false;
 		goto out;
 	}
@@ -1708,7 +1792,8 @@ static bool spi_nand_detect_onfi(struct spi_nand_chip *chip)
 			le32_to_cpu(p->pages_per_block);
 	chip->page_size = le32_to_cpu(p->byte_per_page);
 	chip->oob_size = le16_to_cpu(p->spare_bytes_per_page);
-	chip->lun_shift = ilog2(chip->block_size * le32_to_cpu(p->blocks_per_lun));
+	chip->lun_shift = ilog2(chip->block_size *
+				le32_to_cpu(p->blocks_per_lun));
 	if (p->vendor.micron_sepcific.two_plane_page_read)
 		chip->options |= SPINAND_NEED_PLANE_SELECT;
 	if (p->vendor.micron_sepcific.die_selection)
@@ -1774,8 +1859,8 @@ static int spi_nand_init(struct spi_slave *spi, struct spi_nand_chip **chip_ptr)
 
 	if (spi_nand_scan_id_table(chip, id))
 		goto ident_done;
-	spi_nand_info("SPI-NAND type mfr_id: %x, dev_id: %x is not in id table.\n", id[0], id[1]);
-
+	spi_nand_info("SPI-NAND mfr_id: %x, dev_id: %x is not in id table.\n",
+		      id[0], id[1]);
 	if (spi_nand_detect_onfi(chip))
 		goto ident_done;
 
@@ -1841,7 +1926,8 @@ int spi_nand_cmd_write_ops(struct spi_nand_chip *chip, u32 offset,
 		}
 		if (writelen) {
 			writelen = min(writelen, leftlen);
-			ret = spi_nand_write(chip, writeoffset, writelen, &retlen, buf + (len - leftlen));
+			ret = spi_nand_write(chip, writeoffset, writelen,
+					     &retlen, buf + (len - leftlen));
 			if (ret || writelen != retlen)
 				return -1;
 			leftlen -= writelen;
@@ -1851,7 +1937,8 @@ int spi_nand_cmd_write_ops(struct spi_nand_chip *chip, u32 offset,
 	return ret;
 }
 
-int spi_nand_cmd_erase_ops(struct spi_nand_chip *chip, u32 offset, size_t len, bool spread)
+int spi_nand_cmd_erase_ops(struct spi_nand_chip *chip, u32 offset,
+			   size_t len, bool spread)
 {
 	size_t leftlen = len;
 	size_t eraselen;
@@ -1935,7 +2022,8 @@ int spi_nand_cmd_read_ops(struct spi_nand_chip *chip, u32 offset,
 		}
 		if (readlen) {
 			readlen = min(readlen, leftlen);
-			ret = spi_nand_read(chip, readoffset, readlen, &retlen, data + (len - leftlen));
+			ret = spi_nand_read(chip, readoffset, readlen, &retlen,
+					    data + (len - leftlen));
 			if (ret || readlen != retlen)
 				return -1;
 			leftlen -= readlen;

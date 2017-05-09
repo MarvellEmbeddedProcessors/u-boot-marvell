@@ -104,7 +104,8 @@ int spi_nand_issue_cmd(struct spi_nand_chip *chip, struct spi_nand_cmd *cmd)
 	if (!cmd_cfg)
 		return -EINVAL;
 
-	if (cmd->n_tx == 0 && cmd->n_rx == 0 && cmd_cfg->addr_bytes == 0 && cmd_cfg->dummy_bytes == 0)
+	if (cmd->n_tx == 0 && cmd->n_rx == 0 && cmd_cfg->addr_bytes == 0 &&
+	    cmd_cfg->dummy_bytes == 0)
 		flags |= SPI_XFER_END;
 
 	spi_nand_xfer(spi, 8, 1, &cmd->cmd, NULL, flags);
@@ -115,16 +116,24 @@ int spi_nand_issue_cmd(struct spi_nand_chip *chip, struct spi_nand_cmd *cmd)
 		if (cmd_cfg->addr_bytes > cmd->n_addr) {
 			memcpy(buf, cmd->addr, cmd->n_addr);
 			memset(cmd->addr, 0, cmd->n_addr);
-			memcpy(cmd->addr + cmd_cfg->addr_bytes - cmd->n_addr, buf, cmd->n_addr);
+			memcpy(cmd->addr + cmd_cfg->addr_bytes - cmd->n_addr,
+			       buf,
+			       cmd->n_addr);
 		}
-		spi_nand_xfer(spi, (cmd_cfg->addr_bytes + cmd_cfg->dummy_bytes) * 8, cmd_cfg->addr_bits,
-			      cmd->addr, NULL, flags);
+		spi_nand_xfer(spi,
+			      (cmd_cfg->addr_bytes + cmd_cfg->dummy_bytes) * 8,
+			      cmd_cfg->addr_bits,
+			      cmd->addr,
+			      NULL,
+			      flags);
 	}
 
 	if (cmd->n_tx)
-		spi_nand_xfer(spi, cmd->n_tx * 8, cmd_cfg->data_bits, cmd->tx_buf, NULL, SPI_XFER_END);
+		spi_nand_xfer(spi, cmd->n_tx * 8, cmd_cfg->data_bits,
+			      cmd->tx_buf, NULL, SPI_XFER_END);
 	else if (cmd->n_rx)
-		spi_nand_xfer(spi, cmd->n_rx * 8, cmd_cfg->data_bits, NULL, cmd->rx_buf, SPI_XFER_END);
+		spi_nand_xfer(spi, cmd->n_rx * 8, cmd_cfg->data_bits,
+			      NULL, cmd->rx_buf, SPI_XFER_END);
 
 	return 0;
 }

@@ -15,7 +15,7 @@
 */
 #include <common.h>
 #include <spi-nand.h>
-#include <asm-generic/errno.h>
+#include <errno.h>
 #include <spi.h>
 
 struct spi_nand_cmd_cfg {

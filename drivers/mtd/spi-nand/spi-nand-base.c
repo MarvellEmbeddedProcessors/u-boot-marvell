@@ -17,7 +17,7 @@
 #include <malloc.h>
 #include <linux/mtd/mtd.h>
 #include <spi-nand.h>
-#include <asm-generic/errno.h>
+#include <errno.h>
 #include <spi.h>
 
 static int spi_nand_erase(struct spi_nand_chip *chip, uint64_t addr, uint64_t len);
@@ -1735,14 +1735,14 @@ static void spi_nand_set_rd_wr_op(struct spi_nand_chip *chip)
 {
 	struct spi_slave *spi = chip->spi;
 
-	if (spi->op_mode_rx & SPI_OPM_RX_QOF)
+	if (spi->mode & SPI_RX_QUAD)
 		chip->read_cache_op = SPINAND_CMD_READ_FROM_CACHE_QUAD_IO;
-	else if (spi->op_mode_rx & SPI_OPM_RX_DOUT)
+	else if (spi->mode & SPI_RX_DUAL)
 		chip->read_cache_op = SPINAND_CMD_READ_FROM_CACHE_DUAL_IO;
 	else
 		chip->read_cache_op = SPINAND_CMD_READ_FROM_CACHE_FAST;
 
-	if (spi->op_mode_tx & SPI_OPM_TX_QPP) {
+	if (spi->mode & SPI_TX_QUAD) {
 		chip->write_cache_op = SPINAND_CMD_PROG_LOAD_X4;
 		chip->write_cache_rdm_op = SPINAND_CMD_PROG_LOAD_RDM_DATA_X4;
 	} else {

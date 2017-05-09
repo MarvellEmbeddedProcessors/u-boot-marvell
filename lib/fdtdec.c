@@ -74,6 +74,10 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(ALTERA_SOCFPGA_FPGA0, "altr,socfpga-a10-fpga-mgr"),
 	COMPAT(ALTERA_SOCFPGA_NOC, "altr,socfpga-a10-noc"),
 	COMPAT(MVEBU_SAR, "marvell,sample-at-reset"),
+	COMPAT(MVEBU_SAR_REG_COMMON, "marvell,sample-at-reset-common"),
+	COMPAT(MVEBU_SAR_REG_AP806, "marvell,sample-at-reset-ap806"),
+	COMPAT(MVEBU_SAR_REG_CP110, "marvell,sample-at-reset-cp110"),
+
 };
 
 const char *fdtdec_get_compatible(enum fdt_compat_id id)

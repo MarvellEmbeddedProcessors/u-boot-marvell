@@ -59,6 +59,15 @@
 				status = "disabled";
 			};
 
+			CP110_LABEL(sar-reg) {
+				compatible = "marvell,sample-at-reset-common",
+					     "marvell,sample-at-reset-cp110";
+				reg = <0x400200 0x8>;
+				sar-driver = "cp110_sar";
+				sar-name = CP110_STRING_LABEL(sar);
+				status = "okay";
+			};
+
 			CP110_LABEL(ld_efuse0): efuse0@400F00 {
 				compatible = "marvell,mvebu-fuse-ld-user";
 				reg = <0x400008 0x4>;

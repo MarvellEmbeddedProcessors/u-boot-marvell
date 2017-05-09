@@ -67,6 +67,10 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(INTEL_IVYBRIDGE_FSP, "intel,ivybridge-fsp"),
 	COMPAT(COMPAT_SUNXI_NAND, "allwinner,sun4i-a10-nand"),
 	COMPAT(MVEBU_SAR, "marvell,sample-at-reset"),
+	COMPAT(MVEBU_SAR_REG_COMMON, "marvell,sample-at-reset-common"),
+	COMPAT(MVEBU_SAR_REG_AP806, "marvell,sample-at-reset-ap806"),
+	COMPAT(MVEBU_SAR_REG_CP110, "marvell,sample-at-reset-cp110"),
+
 };
 
 const char *fdtdec_get_compatible(enum fdt_compat_id id)
@@ -340,6 +344,21 @@ enum fdt_compat_id fdtdec_lookup(const void *blob, int node)
 		if (0 == fdt_node_check_compatible(blob, node,
 				compat_names[id]))
 			return id;
+	return COMPAT_UNKNOWN;
+}
+
+enum fdt_compat_id fdtdec_next_lookup(const void *blob, int node,
+				      enum fdt_compat_id compat)
+{
+	enum fdt_compat_id id;
+
+	for (id = COMPAT_UNKNOWN; id < COMPAT_COUNT; id++) {
+		if (id == compat)
+			continue;
+		if (0 == fdt_node_check_compatible(blob, node,
+						   compat_names[id]))
+			return id;
+	}
 	return COMPAT_UNKNOWN;
 }
 

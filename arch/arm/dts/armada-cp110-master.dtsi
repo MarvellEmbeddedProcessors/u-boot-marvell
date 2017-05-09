@@ -68,6 +68,12 @@
 				reg = <0x12a200 0x10>;
 			};
 
+			sar-reg {
+				compatible = "marvell,sample-at-reset-common", "marvell,sample-at-reset-cp110";
+			        reg = <0x400200 0x8>;
+				status = "disabled";
+			};
+
 			cpm_syscon0: system-controller@440000 {
 				compatible = "marvell,cp110-system-controller0",
 					     "syscon";

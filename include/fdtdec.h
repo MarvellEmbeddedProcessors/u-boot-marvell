@@ -156,6 +156,9 @@ enum fdt_compat_id {
 	COMPAT_INTEL_IVYBRIDGE_FSP,	/* Intel Ivy Bridge FSP */
 	COMPAT_SUNXI_NAND,		/* SUNXI NAND controller */
 	COMPAT_MVEBU_SAR,
+	COMPAT_MVEBU_SAR_REG_COMMON,
+	COMPAT_MVEBU_SAR_REG_AP806,
+	COMPAT_MVEBU_SAR_REG_CP110,
 	COMPAT_COUNT,
 };
 
@@ -231,7 +234,20 @@ int fdtdec_parse_phandle_with_args(const void *blob, int src_node,
  */
 int fdtdec_next_alias(const void *blob, const char *name,
 		enum fdt_compat_id id, int *upto);
-
+/**
+ * Find the second comaptible ID for a given node.
+ *
+ * Generally each node has at least one compatible string attached to it.
+ * This function looks through our list of known compatible strings and
+ * returns the corresponding ID which matches the compatible string, that
+ * different than the first compatible in the node
+ * @param blob          FDT blob to use
+ * @param node          Node containing compatible string to find
+ * @param compat        compatible ID of the first compatible
+ * @return compatible ID, or COMPAT_UNKNOWN if we cannot find a match
+ */
+enum fdt_compat_id fdtdec_next_lookup(const void *blob, int node,
+				      enum fdt_compat_id compat);
 /**
  * Find the compatible ID for a given node.
  *

@@ -6,3 +6,5 @@
 
 obj-y = cpu.o
 obj-y += clock.o
+obj-$(CONFIG_MVEBU_EFUSE_SUPPORT) += efuse.o
+obj-$(CONFIG_MVEBU_EFUSE_SUPPORT) += mbox.o

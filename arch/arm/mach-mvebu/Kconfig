@@ -191,4 +191,6 @@ config MVEBU_SYS_INFO
 	  from spl to u-boot, you need to choose
 	  this option.
 
+source "arch/arm/mach-mvebu/armada3700/Kconfig"
+
 endif

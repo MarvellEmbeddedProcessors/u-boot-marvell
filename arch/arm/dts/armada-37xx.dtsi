@@ -57,6 +57,7 @@
 
 	aliases {
 		serial0 = &uart0;
+		serial1 = &uart1;
 	};
 
 	cpus {
@@ -104,6 +105,13 @@
 				compatible = "marvell,armada-3700-uart";
 				reg = <0x12000 0x200>;
 				interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
+				status = "disabled";
+			};
+
+			uart1: serial@12200 {
+				compatible = "marvell,armada-3700-uart-ext";
+				reg = <0x12200 0x30>;
+				interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
 				status = "disabled";
 			};
 

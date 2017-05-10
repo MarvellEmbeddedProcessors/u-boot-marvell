@@ -188,6 +188,10 @@
 	status = "okay";
 };
 
+&uart1 {
+	status = "okay";
+};
+
 /* CON29 */
 &usb2 {
 	status = "okay";

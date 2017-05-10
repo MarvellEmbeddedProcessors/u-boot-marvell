@@ -59,4 +59,15 @@ config MVEBU_UBOOT_DFLT_NAME
 	  This option should contain a default file name to be used with
 	  MVEBU "bubt" command if the source file name is omitted
 
+config CMD_MVEBU_EFUSE
+	bool "efuse"
+	depends on TARGET_MVEBU_ARMADA_37XX
+	select MVEBU_EFUSE_SUPPORT
+	default n
+	help
+	  eFuse - allow access to SoC eFuse entries
+	  eFuse commands to support efuse list/dump/read/write
+	  For details about eFuse command please see help of eFuse
+	  in uboot
+
 endmenu

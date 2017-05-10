@@ -7,3 +7,4 @@
 
 obj-$(CONFIG_CMD_MVEBU_BUBT) += bubt.o
 obj-$(CONFIG_CMD_MVEBU_HW_INFO) += hw_info.o
+obj-$(CONFIG_CMD_MVEBU_EFUSE) += efuse.o

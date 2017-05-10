@@ -16,9 +16,20 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+int __soc_early_init_f(void)
+{
+	return 0;
+}
+
+int soc_early_init_f(void)
+			__attribute__((weak, alias("__soc_early_init_f")));
+
 int board_early_init_f(void)
 {
 #ifdef CONFIG_MVEBU_SYS_INFO
+
+	soc_early_init_f();
+
 	/*
 	 * Call this function to transfer data from address 0x4000000
 	 * into a global struct, before code relocation.

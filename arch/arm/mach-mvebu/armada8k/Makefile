@@ -3,6 +3,6 @@
 #
 # SPDX-License-Identifier:	GPL-2.0+
 #
-
-obj-y = cpu.o
+obj-y += soc.o
+obj-y += cpu.o
 obj-y += cache_llc.o

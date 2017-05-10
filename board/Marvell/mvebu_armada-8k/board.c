@@ -17,9 +17,17 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+int __soc_early_init_f(void)
+{
+	return 0;
+}
+
+int soc_early_init_f(void)
+			__attribute__((weak, alias("__soc_early_init_f")));
+
 int board_early_init_f(void)
 {
-	/* Nothing to do (yet), perhaps later some pin-muxing etc */
+	soc_early_init_f();
 
 	return 0;
 }

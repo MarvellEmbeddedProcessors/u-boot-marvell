@@ -8,6 +8,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch/soc.h>
+#include <mvebu/mvebu_chip_sar.h>
 
 #define CP_DEV_ID_STATUS_REG		(MVEBU_REGISTER(0x2400240))
 #define DEVICE_ID_STATUS_MASK		0xffff
@@ -140,6 +141,16 @@ void soc_print_device_info(void)
 		printf("%dx CP%x-A%d\n", cp_num, cp_type, cp_rev);
 	else
 		printf("CP%x-A%d\n", cp_type, cp_rev);
+}
+
+int soc_early_init_f(void)
+{
+#ifdef CONFIG_MVEBU_SAR
+	/* Sample at reset register init */
+	mvebu_sar_init();
+#endif
+
+	return 0;
 }
 
 #ifdef CONFIG_ARCH_MISC_INIT

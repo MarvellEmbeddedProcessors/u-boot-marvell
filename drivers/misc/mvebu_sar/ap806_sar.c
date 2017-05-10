@@ -10,6 +10,7 @@
 #include <asm/io.h>
 #include <errno.h>
 #include <fdtdec.h>
+#include <mach/clock.h>
 #include <mvebu/mvebu_chip_sar.h>
 
 #include <sar-uclass.h>
@@ -17,9 +18,6 @@
 #define CPU_CLOCK_ID	0
 #define DDR_CLOCK_ID	1
 #define RING_CLOCK_ID	2
-
-#define MHz			1000000
-#define GHz			1000000000
 
 /* SAR AP806 registers */
 #define SAR_CLOCK_FREQ_MODE_OFFSET	0

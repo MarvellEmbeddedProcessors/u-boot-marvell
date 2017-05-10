@@ -13,6 +13,7 @@
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
 #include <asm/armv8/mmu.h>
+#include <mach/clock.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -167,3 +168,12 @@ void mvebu_dram_init_banksize(void)
 	gd->bd->bi_dram[1].start = SZ_4G;
 	gd->bd->bi_dram[1].size = gd->ram_size - SZ_4G + SZ_256M;
 }
+
+
+#if defined(CONFIG_DISPLAY_BOARDINFO)
+int print_cpuinfo(void)
+{
+	soc_print_clock_info();
+	return 0;
+}
+#endif

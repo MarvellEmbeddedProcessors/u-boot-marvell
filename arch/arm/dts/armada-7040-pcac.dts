@@ -150,7 +150,7 @@
 	status = "okay";
 };
 
-&cpm_usb3_0 {
+&cpm_usb3_1 {
 	status = "okay";
 };
 
@@ -187,6 +187,10 @@
 	bus-width = <4>;
 	no-1-8-v;
 	non-removable;
+};
+
+&cpm_utmi0 {
+	status = "okay";
 };
 
 &cpm_mdio {

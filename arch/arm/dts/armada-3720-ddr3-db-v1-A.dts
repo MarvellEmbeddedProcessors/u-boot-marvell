@@ -20,8 +20,8 @@
 */
 
 / {
-	model = "DB-88F3720-DDR3-Modular-V1";
-	compatible = "marvell,armada-3720-db-v1", "marvell,armada-3720";
+	model = "Marvell Armada 3720 Development Board DB-88F3720-DDR3-V1";
+	compatible = "marvell,armada-3720-db-v1", "marvell,armada3720", "marvell,armada3710";
 
 	soc {
 		internal-regs {

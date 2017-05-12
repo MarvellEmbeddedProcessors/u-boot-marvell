@@ -8,7 +8,7 @@
  * eMMC slot		:	DB-88F3720-eMMC_NAND module
  * SDIO slot		:	DB-88F3720-SDcard module
  *
- * PHY0 (USB3/SGMII1)	:	USB3
+ * PHY0 (USB3/SGMII1)	:	SGMII1
  * PHY1 (PCIe/SGMII0)	:	PCIe (WiFi via mini_PCIe module)
  * PHY2 (SATA)		:	SATA
  * RGMII-0		:	Ethernet via PHY (1 Lane)
@@ -26,7 +26,7 @@
 	soc {
 		internal-regs {
 			comphy: comphy@18300 {
-				phy1 {
+				phy0 {
 					phy-type = <COMPHY_TYPE_SGMII1>;
 					phy-speed = <COMPHY_SPEED_1_25G>;
 				};

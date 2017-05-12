@@ -75,8 +75,8 @@ dtb-$(CONFIG_ARCH_MVEBU) +=			\
 	armada-3720-ddr3-db-v1-A.dtb		\
 	armada-3720-ddr3-db-v1-B.dtb		\
 	armada-3720-ddr3-db-v1-C.dtb		\
-	armada-3720-ddr4-db-v2-A.dtb		\
-	armada-3720-ddr4-db-v2-B.dtb		\
+	armada-3720-ddr4-db-v3-A.dtb		\
+	armada-3720-ddr4-db-v3-B.dtb		\
 	armada-3720-ddr4-db-v1-A.dtb		\
 	armada-3720-ddr4-db-v1-B.dtb		\
 	armada-3720-espressobin.dtb		\

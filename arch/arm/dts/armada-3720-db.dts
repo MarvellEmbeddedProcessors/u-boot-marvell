@@ -102,13 +102,13 @@
 
 &comphy {
 	phy0 {
-		phy-type = <COMPHY_TYPE_PEX0>;
-		phy-speed = <COMPHY_SPEED_2_5G>;
+		phy-type = <COMPHY_TYPE_USB3>;
+		phy-speed = <COMPHY_SPEED_5G>;
 	};
 
 	phy1 {
-		phy-type = <COMPHY_TYPE_USB3>;
-		phy-speed = <COMPHY_SPEED_5G>;
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_2_5G>;
 	};
 
 	phy2 {

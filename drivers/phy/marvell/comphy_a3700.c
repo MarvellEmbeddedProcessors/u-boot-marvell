@@ -14,17 +14,42 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define A3700_LANE_MAX_NUM	3
+
 struct sgmii_phy_init_data_fix {
 	u16 addr;
 	u16 value;
 };
 
+/*
+ * In PHY mux initialization, comphy_mux_init() takes it for granted that
+ * lanes' phy select bits in selector base register are ordered by lane number;
+ * but for a3700, lane1 phy select bit is before lane0 in selector base
+ * register as below, so it requires the mapping from the nominal lane index
+ * defined in FS to the actual lane index by PHY Selector register order.
+ *
+ * RD00183FCh (00000011h) - PHY Selector
+ *      bit 0: PCIE_GBE0_SEL -PHY Lane 1 Mode Select, 0h: GbE0 1h: PCIe
+ *      bit 4: USB_GBE1_SEL -PHY Lane 0 Mode Select, 0h: GbE1 1h: USB
+ *      bit 8: USB_SATA_SEL -PHY Lane 2 Mode Select, 0h: SATA 1h: USB
+ */
+struct a3700_comphy_lane_mux_map {
+	u32 lane_num;		/* the nominal lane index defined in FS  */
+	u32 phy_select_num;	/* the actual lane index in PHY Selector Reg */
+};
+
+struct a3700_comphy_lane_mux_map lane_mux_map[A3700_LANE_MAX_NUM] = {
+/* Lane 0 */ {0, 1},
+/* Lane 1 */ {1, 0},
+/* Lane 2 */ {2, 2}
+};
+
 struct comphy_mux_data a3700_comphy_mux_data[] = {
-/* Lane 0 */ {3, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII0, 0x0},
-			{COMPHY_TYPE_PEX0, 0x1} } },
-/* Lane 1 */ {4, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII1, 0x0},
-			{COMPHY_TYPE_USB3_HOST0, 0x1},
+/* Lane 0 */ {5, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII1, 0x0},
+			{COMPHY_TYPE_USB3, 0x1}, {COMPHY_TYPE_USB3_HOST0, 0x1},
 			{COMPHY_TYPE_USB3_DEVICE, 0x1} } },
+/* Lane 1 */ {3, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII0, 0x0},
+			{COMPHY_TYPE_PEX0, 0x1} } },
 /* Lane 2 */ {4, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SATA0, 0x0} } },
 };
 
@@ -912,6 +937,64 @@ void comphy_dedicated_phys_init(void)
 	debug_exit();
 }
 
+static int comphy_a3700_get_phy_select_num(u32 lane_num, u32 *phy_select_num)
+{
+	u32 i;
+
+	for (i = 0; i < A3700_LANE_MAX_NUM; i++) {
+		if (lane_num == lane_mux_map[i].lane_num) {
+			*phy_select_num = lane_mux_map[i].phy_select_num;
+			return 0;
+		}
+	}
+
+	debug("No lane %d in the lane mux map table!\n", lane_num);
+	return 1;
+}
+
+static void comphy_a3700_mux_init(struct chip_serdes_phy_config *chip_cfg,
+				  struct comphy_map *serdes_map)
+{
+	u32 lane, phy_select_num;
+	u32 comphy_max_count = chip_cfg->comphy_lanes_count;
+	struct comphy_mux_data ordered_mux_data[A3700_LANE_MAX_NUM];
+	struct comphy_map ordered_serdes_map[A3700_LANE_MAX_NUM];
+
+	debug_enter();
+
+	/*
+	 * In PHY mux initialization, comphy_mux_init() takes it for granted
+	 * that lanes' phy select bits in selector base register are ordered by
+	 * lane number; but for a3700, lane1 phy select bit is before lane0 in
+	 * selector base register as below, so mux data and serdes map need
+	 * to be re-ordered to align with the lane index order in PHY Selector
+	 * register.
+	 *
+	 * RD00183FCh (00000011h) - PHY Selector
+	 *      bit 0: PCIE_GBE0_SEL -PHY Lane 1 Mode Select, 0h: GbE0 1h: PCIe
+	 *      bit 4: USB_GBE1_SEL -PHY Lane 0 Mode Select, 0h: GbE1 1h: USB
+	 *      bit 8: USB_SATA_SEL -PHY Lane 2 Mode Select, 0h: SATA 1h: USB
+	 */
+	memset(ordered_mux_data, 0, sizeof(ordered_mux_data));
+	memset(ordered_serdes_map, 0, sizeof(ordered_serdes_map));
+	for (lane = 0; lane < comphy_max_count; lane++) {
+		if (comphy_a3700_get_phy_select_num(lane, &phy_select_num))
+			return;
+		memcpy(&ordered_mux_data[phy_select_num],
+		       &a3700_comphy_mux_data[lane],
+		       sizeof(struct comphy_mux_data));
+		memcpy(&ordered_serdes_map[phy_select_num],
+		       serdes_map + lane,
+		       sizeof(struct comphy_map));
+	}
+
+	chip_cfg->mux_data = ordered_mux_data;
+	comphy_mux_init(chip_cfg, ordered_serdes_map,
+			(void __iomem *)COMPHY_SEL_ADDR);
+
+	debug_exit();
+}
+
 int comphy_a3700_init(struct chip_serdes_phy_config *chip_cfg,
 		      struct comphy_map *serdes_map)
 {
@@ -921,9 +1004,13 @@ int comphy_a3700_init(struct chip_serdes_phy_config *chip_cfg,
 
 	debug_enter();
 
+	if (comphy_max_count > A3700_LANE_MAX_NUM) {
+		printf("Comphy number %d is too large\n", comphy_max_count);
+		return 1;
+	}
+
 	/* PHY mux initialize */
-	chip_cfg->mux_data = a3700_comphy_mux_data;
-	comphy_mux_init(chip_cfg, serdes_map, (void __iomem *)COMPHY_SEL_ADDR);
+	comphy_a3700_mux_init(chip_cfg, serdes_map);
 
 	for (lane = 0, comphy_map = serdes_map; lane < comphy_max_count;
 	     lane++, comphy_map++) {

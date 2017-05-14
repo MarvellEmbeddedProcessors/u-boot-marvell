@@ -10,9 +10,6 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-/* pointer of sata base for future initialization */
-void __iomem *sata_ptr;
-
 /*
  * Dummy implementation that can be overwritten by a board
  * specific function
@@ -30,19 +27,9 @@ static int mvebu_ahci_probe(struct udevice *dev)
 	 */
 	board_ahci_enable(dev);
 
-	/*
-	 * save current sata ptr for future initialization,
-	 * assuming there is only one controller.
-	 */
-	sata_ptr = dev_get_addr_ptr(dev);
-	ahci_init(sata_ptr);
+	ahci_init(dev_get_addr_ptr(dev));
 
 	return 0;
-}
-
-void scsi_bus_reset(void)
-{
-	ahci_init(sata_ptr);
 }
 
 static const struct udevice_id mvebu_ahci_ids[] = {

@@ -10,6 +10,7 @@
 #include <inttypes.h>
 #include <pci.h>
 #include <scsi.h>
+#include <ahci.h>
 #include <dm/device-internal.h>
 #include <dm/uclass-internal.h>
 
@@ -50,6 +51,9 @@ static int scsi_curr_dev; /* current device */
 
 static struct blk_desc scsi_dev_desc[CONFIG_SYS_SCSI_MAX_DEVICE];
 #endif
+
+void __iomem *curr_ctrl_base = 0;
+static void __iomem *dev_ctrl[CONFIG_SYS_SCSI_MAX_DEVICE] = {0};
 
 /* almost the maximum amount of the scsi_ext command.. */
 #define SCSI_MAX_READ_BLK 0xFFFF
@@ -167,6 +171,17 @@ static ulong scsi_read(struct blk_desc *block_dev, lbaint_t blknr,
 	debug("\nscsi_read: dev %d startblk " LBAF
 	      ", blccnt " LBAF " buffer %lx\n",
 	      block_dev->devnum, start, blks, (unsigned long)buffer);
+
+	/*
+	 * check if the current device use the current controller
+	 * if not, init the device controller.
+	 */
+	if (dev_ctrl[block_dev->devnum] &&
+	    curr_ctrl_base != dev_ctrl[block_dev->devnum]) {
+		curr_ctrl_base = dev_ctrl[block_dev->devnum];
+		ahci_init(curr_ctrl_base);
+	}
+
 	do {
 		pccb->pdata = (unsigned char *)buf_addr;
 #ifdef CONFIG_SYS_64BIT_LBA
@@ -554,6 +569,7 @@ int scsi_scan(int mode)
 	unsigned char i, lun;
 	struct uclass *uc;
 	struct udevice *dev; /* SCSI controller */
+	struct udevice *sata_dev;
 	int ret;
 
 	if (mode == 1)
@@ -576,6 +592,14 @@ int scsi_scan(int mode)
 		/* Get controller platdata */
 		plat = dev_get_uclass_platdata(dev);
 
+		/* Get SATA device */
+		ret = device_get_child(dev, 0, &sata_dev);
+		if (ret)
+			return ret;
+
+		/* init SATA controller */
+		ahci_init((void *)dev_get_addr(sata_dev));
+
 		for (i = 0; i < plat->max_id; i++) {
 			for (lun = 0; lun < plat->max_lun; lun++) {
 				struct udevice *bdev; /* block device */
@@ -597,6 +621,12 @@ int scsi_scan(int mode)
 					return ret;
 				}
 				bdesc = dev_get_uclass_platdata(bdev);
+
+				/*
+				 * save current device ctrl base for
+				 * future initialization
+				 */
+				dev_ctrl[bdesc->devnum] = curr_ctrl_base;
 
 				scsi_init_dev_desc_priv(bdesc);
 				bdesc->lun = lun;

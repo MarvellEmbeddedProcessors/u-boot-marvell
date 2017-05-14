@@ -178,6 +178,8 @@ void scsi_low_level_init(int busdevfunc, struct udevice *dev);
 void scsi_init(void);
 int scsi_scan(int mode);
 
+extern void __iomem *curr_ctrl_base;
+
 #if defined(CONFIG_DM_SCSI)
 /**
  * struct scsi_platdata - stores information about SCSI controller

@@ -1023,6 +1023,7 @@ int ahci_init(void __iomem *base)
 	probe_ent->udma_mask = 0x7f;	/*Fixme,assume to support UDMA6 */
 
 	probe_ent->mmio_base = base;
+	curr_ctrl_base = base;
 
 	/* initialize adapter */
 	rc = ahci_host_init(probe_ent);

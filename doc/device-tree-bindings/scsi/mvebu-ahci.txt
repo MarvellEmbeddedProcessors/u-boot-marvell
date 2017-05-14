@@ -1,0 +1,40 @@
+Marvell EBU SATA binding
+========================
+
+Support for the AHCI based SATA unit in MVEBU SoCs.
+
+Mandatory properties:
+SoC specific:
+	- compatible: Should be one of the following:
+			"marvell,armada-8k-ahci" for Armada70x0/80x0
+			"marvell,armada-3700-ahci" for Armada37x0
+	- reg: Base address and size of the SATA unit.
+
+Optional properties:
+Soc specific:
+	- interrupts: AHCI interrupt number and type.
+Board specific:
+	- power-supply: Handle power regulator.
+
+Examples:
+	Armada80x0:
+		cpm_sata0: sata@540000 {
+			compatible = "marvell,armada-8k-ahci";
+			reg = <0x540000 0x30000>;
+		};
+
+	Armada37x0:
+
+		regulator_sata_power: sata-power-regulator {
+			.
+			.
+			.
+		};
+
+		sata: sata@e0000 {
+			compatible = "marvell,armada-3700-ahci";
+			reg = <0xe0000 0x2000>;
+			interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
+			power-supply = <&regulator_sata_power>;
+		};
+

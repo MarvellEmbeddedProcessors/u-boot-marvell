@@ -67,6 +67,12 @@ do {									\
 
 #define NET_SKB_PAD	max(32, MVPP2_CPU_D_CACHE_LINE_SIZE)
 
+#define MV_EMAC_F_REMOVE_BIT	0
+#define MVPP2_F_PROBE_BIT	1
+
+#define MVPP2_F_PROBE		BIT(MV_EMAC_F_REMOVE_BIT)
+#define MVPP2_F_REMOVE		BIT(MVPP2_F_PROBE_BIT)
+
 #define CONFIG_NR_CPUS		1
 #define ETH_HLEN		ETHER_HDR_SIZE	/* Total octets in header */
 
@@ -942,6 +948,9 @@ struct mvpp2 {
 	struct mii_dev *bus;
 
 	int probe_done;
+
+	/* Flags */
+	u64 flags;
 };
 
 struct mvpp2_pcpu_stats {
@@ -5551,11 +5560,14 @@ static int mvpp2_probe(struct udevice *dev)
 		gop_port_init(port);
 	}
 
-	/* Initialize network controller */
-	err = mvpp2_init(dev, priv);
-	if (err < 0) {
-		dev_err(&pdev->dev, "failed to initialize controller\n");
-		return err;
+	if (!(priv->flags & MVPP2_F_PROBE)) {
+		/* Initialize network controller */
+		err = mvpp2_init(dev, priv);
+		if (err < 0) {
+			dev_err(&pdev->dev, "failed to initialize controller\n");
+			return err;
+		}
+		priv->flags |= MVPP2_F_PROBE;
 	}
 
 	err = mvpp2_port_probe(dev, port, dev_of_offset(dev), priv);
@@ -5583,8 +5595,13 @@ static int mvpp2_remove(struct udevice *dev)
 	struct mvpp2 *priv = port->priv;
 	int i;
 
+	if (priv->flags & MVPP2_F_REMOVE)
+		return 0;
+
 	for (i = 0; i < MVPP2_BM_POOLS_NUM; i++)
 		mvpp2_bm_pool_destroy(dev, priv, &priv->bm_pools[i]);
+
+	priv->flags |= MVPP2_F_REMOVE;
 
 	return 0;
 }

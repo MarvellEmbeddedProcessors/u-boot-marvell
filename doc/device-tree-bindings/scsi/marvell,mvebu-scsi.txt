@@ -1,19 +1,22 @@
 Binding for marvell mvebu SCSI controller
 
 Required properties:
-- #address-cells  - the number of cells used to represent physical base addresses
-- #size-cells     - the number of cells used to represent the size of an address
-- compatible      - the name of mvebu SCSI bus controller, supported value "marvell,mvebu-scsi",
-                    covers the following Marvell SoC families: armada3700, armada70x0 and armada80x0
+- #address-cells  - Number of cells used to represent physical base addresses
+- #size-cells     - Number of cells used to represent the size of an address
+- compatible      - Name of mvebu SCSI bus controller, supported value "marvell,mvebu-scsi".
+                    Covers the following Marvell SoC families: armada3700, armada70x0 and armada80x0
 
 Optional property:
-- max-id          - maximum number of scsi target ids, the default value is CONFIG_SYS_SCSI_MAX_SCSI_ID
-- max-lun         - maximum number of scsi logical units, the default value is CONFIG_SYS_SCSI_MAX_LUN
+- max-id          - Maximum number of SCSI target IDs, the default value is CONFIG_SYS_SCSI_MAX_SCSI_ID
+- max-lun         - maximum number of SCSI logical units, the default value is CONFIG_SYS_SCSI_MAX_LUN
 
-Example for armada3700 SCSI controller which is SAS and acts as an add-on host bus adapter without the
-base register:
-- Armada3700 has only 1 SATA interface, so the property "max-id" is 1;
-- Armada3700 max logical units number is 1, so the property "max-lun" is 1.
+
+Examples of SCSI controller which is SAS and acts as an add-on host
+bus adapter without the base register.
+
+Armada37x0:
+	- Has only 1 SATA interface, so the property "max-id" is 1;
+	- Max logical units number is 1, so the property "max-lun" is 1.
 
 	scsi: scsi {
 		compatible = "marvell,mvebu-scsi";
@@ -25,5 +28,22 @@ base register:
 			compatible = "marvell,armada-3700-ahci";
 			reg = <0xe0000 0x2000>;
 			interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
+		};
+	};
+
+Armada80x0:
+	- Has 2 SATA interface, so the property "max-id" is 2;
+        - Max logical units number is 1, so the property "max-lun" is 1.
+
+	cpm_scsi: scsi_0 {
+		compatible = "marvell,mvebu-scsi";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		max-id = <2>;
+		max-lun = <1>;
+		status = "disabled";
+		cpm_sata0: sata@540000 {
+			compatible = "marvell,armada-8k-ahci";
+			reg = <0x540000 0x30000>;
 		};
 	};

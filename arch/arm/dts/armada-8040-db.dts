@@ -332,11 +332,11 @@
 
 /* CON4 on CP1 expansion */
 &cps_sata0 {
-	status = "disabled";
+	status = "okay";
 };
 
 &cps_scsi {
-	status = "disabled";
+	status = "okay";
 };
 
 /* CON9 on CP1 expansion */

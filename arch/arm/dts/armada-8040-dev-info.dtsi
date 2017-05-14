@@ -32,10 +32,8 @@
 			description = "CPU/DDR and PIDI frequencies";
 			start-bit = <0>;
 			bit-length = <4>;
-			option-cnt = <6>;
-			options = "0x0", "CPU/DDR = 0x0: 2000/1200 Mhz, PIDI = 3: 1Ghz",
-				  "0x1", "CPU/DDR = 0x1: 2000/1050 Mhz, PIDI = 0: 1Ghz",
-				  "0x2", "CPU/DDR = 0x2: 1800/1200 Mhz, PIDI = 0: 1Ghz",
+			option-cnt = <4>;
+			options = "0x1", "CPU/DDR = 0x1: 2000/1050 Mhz, PIDI = 0: 1Ghz",
 				  "0x3", "CPU/DDR = 0x3: 1800/1050 Mhz, PIDI = 0: 1Ghz",
 				  "0x4", "CPU/DDR = 0x4: 1600/1050 Mhz, PIDI = 0: 1Ghz",
 				  "0xe", "CPU/DDR = 0x6: 1300/800 Mhz,  PIDI = 1: 500Mhz";

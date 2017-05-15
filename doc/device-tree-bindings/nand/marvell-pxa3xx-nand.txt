@@ -1,0 +1,38 @@
+PXA3xx NAND DT bindings
+=======================
+
+Implementation of the NAND controller device driver for Marvell SoCs
+
+Mandatory properties:
+SoC specific:
+- compatible:		Should be set to: marvell,mvebu-pxa3xx-nand
+- reg:			Register base for the controller
+- clocks:		phandle to system controller clock driving this unit
+- #address-cells:	Set to <1> if the node includes partitions
+
+Optional properties:
+SoC specific:
+	- nand-enable-arbiter: Set to enable the bus arbiter
+	- nand-keep-config:    Set to keep the NAND controller config as set by the bootrom.
+Board specific:
+	- nand-ecc-strength:   Number of bits to correct per ECC step
+	- nand-ecc-step-size:  Number of data bytes covered by a single ECC step
+	- num-cs:              Number of chipselect lines to use
+
+The following ECC strength and step sizes are currently supported:
+	- nand-ecc-strength = <1>, nand-ecc-step-size = <512>
+	- nand-ecc-strength = <4>, nand-ecc-step-size = <512>
+	- nand-ecc-strength = <8>, nand-ecc-step-size = <512>
+
+Example:
+	cpm_nand: nand@720000 {
+		compatible = "marvell,mvebu-pxa3xx-nand";
+		reg = <0x720000 0x100>;
+		#address-cells = <1>;
+
+		clocks = <&cpm_syscon0 1 2>;
+		nand-enable-arbiter;
+		num-cs = <1>;
+		nand-ecc-strength = <4>;
+		nand-ecc-step-size = <512>;
+	};

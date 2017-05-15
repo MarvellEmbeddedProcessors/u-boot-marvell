@@ -1,0 +1,79 @@
+MVEBU GPIO DT bindings
+-----------------------
+Required properties:
+- compatible:           Should be "marvell,orion-gpio".
+- reg:                  Register base for the GPIO bank controller.
+- ngpios:               GPIO count in bank.
+- #gpio-cells:		Should be 2.
+			The first cell is the GPIO number and the second cell specifies
+			GPIO flags, as defined in <dt-bindings/gpio/gpio.h>.
+			Only the GPIO_ACTIVE_HIGH and GPIO_ACTIVE_LOW flags are supported.
+
+Optional properties:
+- bank-name:			GPIO bank name
+- phy-reset-gpios:		GPIO used for resetting copper PHY by network unit
+- marvell,sfp-tx-disable-gpio:	GPIO used for disabling SFP TX signal network unit
+
+
+Examples:
+Armada-70x0 example:
+Armada-70x0 includes AP-806 and CP-110:
+AP-806 has 20 pins, and CP-110 has 63 pins
+AP-806 has 1 bank with 20 pins, CP-110 has 2 banks (1st bank: 0-31, 2nd bank: 32-62)
+Armada-70x0 GPIO alias names:
+	aliases {
+		gpio_0 = &gpio0;
+		gpio_1 = &gpio1;
+		gpio_2 = &gpio2;
+	};
+AP-806 GPIO example node:
+	ap_gpio0: gpio@6F5040 {
+		compatible = "marvell,orion-gpio";
+		reg = <0x6F5040 0x40>;
+		ngpios = <20>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+CP-110 GPIO example node:
+	cpm_gpio0: gpio@440100 {
+		compatible = "marvell,orion-gpio";
+		reg = <0x440100 0x40>;
+		ngpios = <32>;
+		gpiobase = <20>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+	cpm_gpio1: gpio@440140 {
+		compatible = "marvell,orion-gpio";
+		reg = <0x440140 0x40>;
+		ngpios = <31>;
+		gpiobase = <52>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+When a unit needs to use GPIO, the unit driver should support this.
+For example, USB use GPIO in the following way:
+USB points to a vbus regulator, which in turn uses GPIO pin:
+	reg_usb3h0_vbus: usb3-vbus0 {
+		compatible = "regulator-fixed";
+		.
+		.
+		.
+		gpio = <&cpm_gpio1 15 GPIO_ACTIVE_HIGH>;
+	};
+
+	&cps_usb3_0 {
+		vbus-supply = <&reg_usb3h0_vbus>;
+		status = "okay";
+	};
+
+
+When network unit (MAC) needs to use GPIO, the unit driver should support this.
+For example: MAC use GPIO pin #9 in CP1 for phy reset and pin #10 in CP1 for SFP TX disable.
+&cps_eth0 {
+	status = "okay";
+	phy-mode = "sfi";
+	phy-reset-gpios = <&cps_gpio0 9 GPIO_ACTIVE_HIGH>;
+	marvell,sfp-tx-disable-gpio = <&cps_gpio0 10 GPIO_ACTIVE_HIGH>;
+};

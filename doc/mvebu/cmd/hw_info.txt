@@ -1,0 +1,60 @@
+hw_info command
+===============
+hw_info commands are used for the following:
+- Store HW manufacturing information to EEPROM during the board production in order to
+keep these parameters, regardless of the boot-loader upgrading.
+- Load HW manufacturing information from the EEPROM to the relevant U-Boot env variable in
+order to take effect.
+
+Note:
+- hw_info commands are only relevant for Marvell boards that use the EEPROM device
+  to save the HW manufacturing information.
+
+
+hw_info usage
+-------------
+- "hw_info dump [name]"  - Dump all or specific HW parameters from the EEPROM.
+- "hw_info load [name]"  - Load all or specific HW parameters from the EEPROM to env variables.
+                           The hw_info load will be performed automatically with the
+                           "env default -a" operation, however it requires that the user
+			   executes "env save" manually, later on.
+- "hw_info store [name]" - Store all or specific HW parameters from env variables to the EEPROM.
+                           Before the store operation, the expected env varibles
+                           should already be saved to env by using the command setenv or editenv.
+
+Supported HW information parameters
+------------------------------------
+- board_id      board ID
+- pcb_slm       PCB system level manufacturing part ID (SLM)
+- pcb_rev       PCB revision number
+- eco_rev       ECO revision number
+- pcb_sn        PCB SN
+- ethaddr       first MAC address
+- eth1addr      second MAC address
+- eth2addr      third MAC address
+- eth3addr      fourth MAC address
+
+Examples
+---------
+1. Initialize or change HW manufacturing information for the Armada-3700
+
+		> setenv board_id 0020
+		> setenv pcb_slm 1443
+		> setenv pcb_rev 10
+		> setenv eco_rev 12
+		> setenv pcb_sn 0028
+		> setenv ethaddr 00:50:43:00:00:01
+		> setenv eth1addr 00:50:43:00:00:02
+		> setenv eth2addr 00:50:43:00:00:03
+		> setenv eth3addr 00:50:43:00:00:04
+		> saveenv
+		> hw_info store
+
+2. Restore HW manufacturing information env variables after the resetenv command
+
+		> hw_info load
+		> saveenv (optional since hw_info load will ask user whether to saveenv)
+
+3. Dump HW parameters from EEPROM
+
+		> hw_info dump

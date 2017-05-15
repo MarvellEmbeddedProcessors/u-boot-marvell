@@ -1,0 +1,27 @@
+Marvell I2C binding
+===================
+
+The I2C driver provides read/write access to external peripherals
+using the I2C bus.
+
+Mandatory properties:
+SoC specific:
+- compatible:		Should be "marvell,mv78230-i2c".
+- reg:			Base address and size of I2C.
+- clock:		Points to the clock used for the I2C interface.
+- interrupts:		Interrupt ID.
+- clock-frequency:	Desired I2C bus frequency in Hz.
+- #address-cells:	Standard property, Must be <1>.
+- #size-cells:		Standard property, Must be <0>.
+
+
+
+Example:
+	cpm_i2c0: i2c@701000 {
+		compatible = "marvell,mv78230-i2c";
+		reg = <0x701000 0x20>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&cpm_syscon0 1 21>;
+	};

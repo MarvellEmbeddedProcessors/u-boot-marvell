@@ -86,6 +86,7 @@ dtb-$(CONFIG_ARCH_MVEBU) +=			\
 	armada-385-amc.dtb			\
 	armada-7040-db.dtb			\
 	armada-7040-db-B.dtb			\
+	armada-7040-db-C.dtb                    \
 	armada-7040-db-D.dtb			\
 	armada-7040-pcac.dtb	                \
 	armada-7040-db-nand.dtb			\

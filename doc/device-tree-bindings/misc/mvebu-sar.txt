@@ -1,0 +1,62 @@
+Marvell SAR bindings
+====================
+
+The SAR node describes the sample at reset command, and all the options that the
+board support.
+
+The SAR node requires the following properties:
+	- compatible: Should be "marvell,sample-at-reset";
+	- chip_count: Number of the Sample at reset I2C chips
+	- reg: Addresses list of the Sample at reset I2C chips
+	- bit_width: Bit width in every I2C chip of the Sample at reset
+	- The options of the sample at reset discribed with the child nodes of sar node:
+		The option node requires the following proporties:
+		- key: Key name of the option, should be the same as subnode name
+		- description : Description of the option
+		- start-bit: Start bit in the I2C chip from the start of the first I2C chip
+				for example: 6 means the 1st bit in the 2nd chip (if bit width=5)
+		- bit-length: Bit length of the option in the I2C chip
+		- option-cnt: The count of the options in this sample at reset node
+		- options: Describe the options list by setting the "value", "describtion of the value"
+		- default: What is the value of default options
+		- swap-bit: Boolean set if the bit is swapped in this option
+		- status: Set if the Sample at reset option is enabled/disabled
+
+Example:
+cpm_sar {
+
+		compatible = "marvell,sample-at-reset";
+		reg = <0x4c 0x4e>;
+		chip_count = <2>;
+		bit_width = <5>;
+
+		freq {
+			key = "freq";
+			description = "CPU/DDR and PIDI frequencies";
+			start-bit = <0>;
+			bit-length = <4>;
+			option-cnt = <4>;
+			options = "0x1", "CPU/DDR = 0x1: 2000/1050 Mhz, PIDI = 0: 1Ghz",
+				  "0x3", "CPU/DDR = 0x3: 1800/1050 Mhz, PIDI = 0: 1Ghz",
+				  "0x4", "CPU/DDR = 0x4: 1600/1050 Mhz, PIDI = 0: 1Ghz",
+				  "0xe", "CPU/DDR = 0x6: 1300/800 Mhz,  PIDI = 1: 500Mhz";
+			default = <0xe>;
+			status = "okay";
+		};
+		boot_mode {
+			key = "boot_mode";
+			description = "Boot mode options";
+			start-bit = <4>;
+			bit-length = <6>;
+			option-cnt = <6>;
+			options = "0xE", "CP1_NAND IHB BW-8bit, PS-4KB, ECC-4bit\t(supported configuration: D)",
+				  "0x29", "CP0_SD\t\t\t\t\t(supported configurations: C, D and E)",
+				  "0x2A", "AP_EMMC\t\t\t\t\t(supported configurations: A, B, C and D)",
+				  "0x2B", "CP0_EMMC\t\t\t\t\t(supported configurations: A and B)",
+				  "0x30", "AP_SPI 24bits\t\t\t\t(supported configurations: E and A0)",
+				  "0x32", "CP1_SPI_1 24bits\t\t\t\t(supported configurations: A, B, C and E)";
+			default = <0x32>;
+			status = "okay";
+		};
+	};
+

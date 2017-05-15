@@ -1,0 +1,22 @@
+Marvell MDIO binding
+====================
+
+The MDIO driver implements the required APIs to access
+Ethernet PHYs/switches, using the SMI protocol.
+
+Mandatory properties:
+SoC specific:
+	- compatible: Should be "marvell,orion-mdio".
+	- reg: Base address and size SMI bus.
+	- #address-cells: Must be <1>.
+	- #size-cells: Must be <0>.
+
+
+Example for MDIO node:
+	cpm_mdio: mdio@12a200 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "marvell,orion-mdio";
+		reg = <0x12a200 0x10>;
+	};
+

@@ -72,7 +72,8 @@ static int board_comphy_usb3_sata_mux(enum COMPHY_LANE2_MUXING comphy_mux)
 	struct udevice *i2c_dev;
 	int i2c_byte, i2c_bit_in_byte;
 
-	if (!of_machine_is_compatible("marvell,armada-3720-db-v2"))
+	if (!of_machine_is_compatible("marvell,armada-3720-db-v2") &&
+	    !of_machine_is_compatible("marvell,armada-3720-db-v3"))
 		return 0;
 
 	ret = i2c_get_chip_for_busnum(0, I2C_IO_EXP_ADDR, 1, &i2c_dev);

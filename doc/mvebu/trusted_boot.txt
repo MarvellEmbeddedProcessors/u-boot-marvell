@@ -1,0 +1,159 @@
+Trusted Boot (Secure Mode)
+==========================
+
+The trusted boot setup requires configuration of several components:
+- eFuse module - Allows burning boot device, authentication key digest, encryption key, etc.
+- boot image format - Provides the trusted boot information to BootROM.
+
+1. eFuses
+=========
+The eFuse command module and driver provides RW access to SoC eFuses through the "efuse" command.
+In order to enable this SW component, the following configuration entry should be set:
+
+	CONFIG_MVEBU_EFUSE_SUPPORT=y
+
+The same parameter can be selected using "make menuconfig":
+
+	-> Device Drivers
+		-> eFuse support
+			-> eFuse support
+
+The above configuration enables the eFuse driver and eFuse command module.
+Refer to SoC and BootROM manuals for details about supported eFuses
+and their role in the trusted boot flow.
+Since the eFuse command module and driver are only used for simplified access
+to eFuse HW values, the presence of these components in the final trusted boot image
+is not required.
+
+A8K platforms
+-------------
+The AES-256 key is visible only during the efuse burn session. It will be hidden after
+reset and accessible only on early boot stages by the internal BootROM procedures.
+Trying to read efuse values of AES-256 key will return zeros.
+Note that if the JTAG is permanently enabled in A8K efuse, the AES-256 key
+becomes hidden for everyone, including the BootROM. Therefore when JTAG is enabled permanently
+by eFuse, the boot image should not be encrypted, since BootROM decryption will always
+fail unless zero-key was used for image encryption.
+
+2. Boot image format
+====================
+The boot image should be properly formatted for the trusted boot mode, so the BootROM extracts
+the required information from the image headers and uses it for authentication against eFuse
+values and digital signatures and for image decryption.
+Various platforms use different BootROMs and boot image formats. For specific details refer
+to the SoC functional specification, BootROM manual and to the section related to a selected
+platform below.
+Refer to ATF build documentation for enabling secure image output.
+
+A8K platforms
+-------------
+Refer to A8K functional specification for details about trusted boot image components.
+The secure image configuration is defined by a file sec_img_xx.cfg located in ATF folder
+tools/doimage/secure. The xx in the configuration file name is either 7K or 8K for targeting
+Armada-80x0 or Aramda-70x0 platform setup accordingly.
+The configuration file has a standard INI file format and defines the following options:
+
+- kak_key_file - The string containing path to the Keys Authentication Key file in PEM format.
+		This parameter is mandatory.
+
+- csk_key_file	- Array of string containing paths to Code Signing Key files in PEM format.
+		This array has to include at least a single key used for signing the boot image and
+		prolog. The key index is defined by the file location in this array.
+		Empty key paths should be coded as "*" strings to make the entire array size of 16
+                strings. This parameter is mandatory.
+
+- csk_key_index - The integer value in range of 0 to 15 defining the CSK file from the above array
+		to be used for creating image and prolog signatures.
+		This parameter is optional and if omitted defaults to 0.
+
+- aes_key_file	- The string containing the path to the AES-256 symmetric key file in ASCII text
+		format.
+ 		The boot image will be encrypted if this parameter is included in the configuration
+		or left unencrypted if the parameter is omitted.
+		This parameter is optional.
+
+- efuse_disable - Boolean parameter defining whether to disable access to efuses in secure boot
+		mode or not.
+		Can be either "true" or "false". The efuse access policy is enforced by the BootROM.
+		This parameter is optional and if omitted defaults to "true".
+
+- jtag		- Parameters defining the JTAG behavior in trusted boot mode.
+		There are two parameters enclosed in curly brackets - "enable" and "delay".
+		The "jtag.enable" boolean parameter allows to enable the JTAG support in trusted
+		boot mode (valid values "true" and "false").
+		The second parameter - "jtag.delay" (integer) defines delay in milliseconds
+		the BootROM waits before enabling the JTAG connection in the HW.
+		These parameters are optional and if omitted default to "false" and 0 respectfully.
+
+- box_id	- 4 byte hexadecimal number to be used as box ID. This value will be part of the
+		secure extension in the trusted boot image and should match the value burned in the
+		appropriate efuse field.
+		This parameter is optional and if omitted defaults to 0.
+
+- flash_id	- 4 byte hexadecimal number to be used as the flash ID. This value will be part of
+		the secure extension in trusted boot image and should match the value burned in the
+		appropriate efuse field.
+		This parameter is optional and if omitted defaults to 0.
+
+- control	- Array of hexadecimal addresses to be set on each CP connected to an AP in trusted
+		mode.
+		It is required to add two addresses for each connected CP.
+		The first address points to the CP SecureBootControl register and the second address
+		points to the CP EfuseBurnControl register.
+		Refer to your SoC documentation for details. For instance, Armada-7040 SoC
+		has a single CP connected to AP, so this array has to list 2 register addresses.
+		The Armada-8040 has two CPS connected to AP, so this array has to include 4
+		register addresses.
+		This parameter is optional.
+
+3. Work order - target preparation
+==================================
+After the trusted boot mode is selected by the SoC eFuse, the BootROM enforces security checks upon
+boot image load. Therefore a right work order is essential for target preparation and preventing
+the system from self-locking.
+
+A8K platforms
+-------------
+1. Build an image for trusted boot mode using the configuration file described above and any
+   additional settings required by ATF. The image encryption option should not be used in this build,
+   since the resulting image should be compatible with non-trusted systems.
+2. Burn the image on the target board and boot it. The secure header will be bypassed in non-trusted
+   boot mode and the system will start as usual.
+3. Burn all required efuses using "efuse write" commands. The trusted boot enable efuse should be
+   burned last since any further modifications to the SoC efuses will not be possible afterwards.
+4. Verify the efuse values using "efuse dump" and/or "efuse raw" commands.
+5. Restart the system and ensure the secure boot authentication stage has been passed.
+6. If the image encryption option is required, build a new image with image encryption enabled and
+   burn it to the system boot device using the regular "bubt" command.
+
+A3700 platforms
+---------------
+1. Create an UNTRUSTED boot image with eFuse command module support (as stated in the "eFuses"
+   chapter above) and burn it on the target flash device using the regular "bubt" command.
+2. Create a TRUSTED boot image (as stated in "Boot image format" chapter above) and save it
+   for later use.
+   When the trusted boot image is created, the TBB tool saves the Key Authentication Key digest in
+   the file named OtpHash.txt.
+   This digest value will be used for eFuse programming so save this file.
+   The OtpHash.txt file lists the KAK digest in groups of 4-bytes values, organized in the following
+   order:
+       LSB ... ... ... MSB
+   These values should be converted to a single 32-bytes value for eFuse burning:
+       MSB ... ... ... LSB.
+   For instance, the following OTP hash:
+
+	   0x1887C298
+	   0x59C9AFD9
+	   0x6E814E34
+	   0x25CD518B
+	   0x3CDB7EED
+	   0x33CC58B1
+	   0x2C69997A
+	   0xC27B7242
+
+   Will be used in the following form in eFuse KAK digest write command:
+       C27B72422C69997A33CC58B13CDB7EED25CD518B6E814E3459C9AFD91887C298
+3. Boot the target board with the UNTRUSTED boot image.
+4. Using the "efuse" command, program eFuse values as required, but do not reset the target board yet.
+5. Burn the TRUSTED boot image using regular "bubt" command.
+6. Reset the board and verify that the trusted boot mode works.

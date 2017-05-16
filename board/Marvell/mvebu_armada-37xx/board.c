@@ -164,18 +164,23 @@ int board_early_init_f(void)
 
 int board_usb3_vbus_init(void)
 {
+#if defined(CONFIG_DM_REGULATOR)
 	struct udevice *regulator;
 	int ret;
 
 	/* lower usb vbus  */
 	ret = regulator_get_by_platname("usb3-vbus", &regulator);
-	if (ret)
-		error("Cannot get usb3-vbus regulator\n");
+	if (ret) {
+		debug("Cannot get usb3-vbus regulator\n");
+		return 0;
+	}
 
 	ret = regulator_set_enable(regulator, false);
-	if (ret)
+	if (ret) {
 		error("Failed to turn OFF the VBUS regulator\n");
-
+		return ret;
+	}
+#endif
 	return 0;
 }
 

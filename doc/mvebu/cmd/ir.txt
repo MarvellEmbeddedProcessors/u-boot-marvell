@@ -15,6 +15,7 @@ command, described later) must be set:
 - CP110-1	-	0xf4000000
 
 Example:
+
 	Marvell>> base 0xf4000000
 	Base Address: 0xf4000000
 	Marvell>> ir 440000

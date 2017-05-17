@@ -479,7 +479,7 @@ static int xenon_sdhci_probe(struct udevice *dev)
 	if (priv->pad_ctrl_reg)
 		armada_3700_soc_pad_voltage_set(host);
 
-	host->host_caps = MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_DDR_52MHz;
+	host->host_caps = MMC_MODE_HS | MMC_MODE_HS_52MHz;
 	switch (fdtdec_get_int(gd->fdt_blob, dev_of_offset(dev), "bus-width",
 		1)) {
 	case 8:

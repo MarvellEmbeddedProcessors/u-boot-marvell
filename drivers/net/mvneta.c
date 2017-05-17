@@ -1654,7 +1654,8 @@ static int mvneta_recv(struct udevice *dev, int flags, uchar **packetp)
 		 */
 		*packetp = data;
 
-		mvneta_rxq_desc_num_update(pp, rxq, rx_done, rx_done);
+		/* each time process one packet */
+		mvneta_rxq_desc_num_update(pp, rxq, 1, 1);
 	}
 
 	return rx_bytes;

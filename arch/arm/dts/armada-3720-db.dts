@@ -113,7 +113,7 @@
 
 	phy2 {
 		phy-type = <COMPHY_TYPE_SATA0>;
-		phy-speed = <COMPHY_SPEED_5G>;
+		phy-speed = <COMPHY_SPEED_6G>;
 		phy-invert = <COMPHY_POLARITY_NO_INVERT>;
 	};
 };

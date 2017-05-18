@@ -39,8 +39,8 @@ DB File		| armada-3720-db-v(x)-A		| armada-3720-db-v(x)-B	| armada-3720-db-v(x)-
 ----------------|-------------------------------|-----------------------|-------------------------------|
 Interface	| Setup-1: Default 		| Setup-2: SGMII1	| Setup-3: SGMII1-SFP2.5G	|
 ----------------|-------------------------------|-----------------------|-------------------------------|
-SerDes PHY0	| PCIe0				| PCIe0			| PCIe0				|
-SerDes PHY1	| USB3_H0			| SGMII1		| SGMII1-SFP2.5G		|
+SerDes PHY0	| USB3_H0			| SGMII1		| SGMII1-SFP2.5G		|
+SerDes PHY1	| PCIe0				| PCIe0			| PCIe0				|
 SerDes PHY2	| SATA				| SATA			| SATA				|
 SATA		| CON6				| CON6			| CON6				|
 PCIe		| CON12/17			| CON12/17		| CON12/17			|

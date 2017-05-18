@@ -14,9 +14,8 @@
  * RGMII-0		:	Ethernet via PHY (1 Lane)
  * USB2 Port 0		:	USB2 as part USB3
  * USB2 Port 1		:	USB2 Host
- * eMMC*		:	eMMC NAND
- * SDIO*		:	SD card
- * BOOT device*		:	SPI Flash
+ * eMMC*		:	eMMC NAND, connected to SD / eMMC Host 1 in North Bridge
+ * SDIO*		:	SD card, connected to SDIO Host 0 in South Bridge
 */
 
 / {

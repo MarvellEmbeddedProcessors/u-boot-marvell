@@ -100,6 +100,7 @@ dtb-$(CONFIG_ARCH_MVEBU) +=			\
 	armada-8040-db-C.dtb			\
 	armada-8040-db-D.dtb			\
 	armada-8040-db-E.dtb			\
+	armada-8040-db-F.dtb			\
 	armada-8040-mcbin.dtb			\
 	armada-xp-gp.dtb			\
 	armada-xp-maxbcm.dtb			\

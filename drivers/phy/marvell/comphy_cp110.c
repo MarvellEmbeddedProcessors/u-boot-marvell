@@ -46,7 +46,7 @@ struct comphy_mux_data cp110_comphy_phy_mux_data[] = {
 	/* Lane 2 */
 	{6, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_SGMII0, 0x1},
 	     {COMPHY_TYPE_RXAUI0, 0x1}, {COMPHY_TYPE_SFI, 0x1},
-	     {COMPHY_TYPE_SATA0, 0x4} } },
+	     {COMPHY_TYPE_SATA0, 0x4}, {COMPHY_TYPE_AP, 0x1} } },
 	/* Lane 3 */
 	{8, {{COMPHY_TYPE_UNCONNECTED, 0x0}, {COMPHY_TYPE_RXAUI1, 0x1},
 	     {COMPHY_TYPE_SGMII1, 0x2}, {COMPHY_TYPE_SATA1, 0x4} } },
@@ -996,6 +996,32 @@ static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base,
 
 	debug_exit();
 	return ret;
+}
+
+/* During AP the proper mode is auto-negotiated and the mac, pcs and serdes
+ * configuration are done by the firmware loaded to the MG's CM3 for appropriate
+ * negotiated mode. Therefore there is no need to configure the mac, pcs and
+ * serdes from u-boot. The only thing that need to be setup is powering up
+ * the comphy, which is done through Common PHY<n> Configuration 1 Register
+ * (CP0: 0xF2441000, CP1: 0xF4441000). This step can't be done by MG's CM3,
+ * since it doesn't have an access to this register-set (but it has access to
+ * the network registers like: MG, AP, MAC, PCS, Serdes etc.)
+ */
+static int comphy_ap_power_up(u32 lane, void __iomem *comphy_base)
+{
+	u32 mask, data;
+	void __iomem *comphy_addr = COMPHY_ADDR(comphy_base, lane);
+
+	debug_enter();
+	debug("stage: RFU configurations - hard reset comphy\n");
+	/* RFU configurations - hard reset comphy */
+	mask = COMMON_PHY_CFG1_PWR_UP_MASK;
+	data = 0x1 << COMMON_PHY_CFG1_PWR_UP_OFFSET;
+	mask |= COMMON_PHY_CFG1_PIPE_SELECT_MASK;
+	data |= 0x0 << COMMON_PHY_CFG1_PIPE_SELECT_OFFSET;
+	reg_set(comphy_addr + COMMON_PHY_CFG1_REG, data, mask);
+
+	return 1;
 }
 
 static int comphy_sgmii_power_up(u32 lane, u32 sgmii_speed,
@@ -2238,6 +2264,9 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 		case COMPHY_TYPE_RXAUI1:
 			ret = comphy_rxauii_power_up(lane, hpipe_base_addr,
 						     comphy_base_addr);
+			break;
+		case COMPHY_TYPE_AP:
+			ret = comphy_ap_power_up(lane, comphy_base_addr);
 			break;
 		default:
 			debug("Unknown SerDes type, skip initialize SerDes %d\n",

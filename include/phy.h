@@ -64,6 +64,7 @@ typedef enum {
 	PHY_INTERFACE_MODE_XAUI,
 	PHY_INTERFACE_MODE_RXAUI,
 	PHY_INTERFACE_MODE_SFI,
+	PHY_INTERFACE_MODE_AP,
 	PHY_INTERFACE_MODE_NONE,	/* Must be last */
 
 	PHY_INTERFACE_MODE_COUNT,
@@ -86,6 +87,7 @@ static const char *phy_interface_strings[] = {
 	[PHY_INTERFACE_MODE_XAUI]		= "xaui",
 	[PHY_INTERFACE_MODE_RXAUI]		= "rxaui",
 	[PHY_INTERFACE_MODE_SFI]		= "sfi",
+	[PHY_INTERFACE_MODE_AP]			= "ap",
 	[PHY_INTERFACE_MODE_NONE]		= "",
 };
 

@@ -3399,6 +3399,9 @@ static int gop_port_init(struct mvpp2_port *port)
 		gop_xlg_mac_reset(port, 0);
 		break;
 
+	case PHY_INTERFACE_MODE_AP:
+		break;
+
 	default:
 		netdev_err(NULL, "%s: Requested port mode (%d) not supported\n",
 			   __func__, port->phy_interface);
@@ -3439,6 +3442,8 @@ static void gop_port_enable(struct mvpp2_port *port, int enable)
 	case PHY_INTERFACE_MODE_SFI:
 		gop_xlg_mac_port_enable(port, enable);
 
+		break;
+	case PHY_INTERFACE_MODE_AP:
 		break;
 	default:
 		netdev_err(NULL, "%s: Wrong port mode (%d)\n", __func__,

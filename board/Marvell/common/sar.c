@@ -211,11 +211,11 @@ int sar_validate_key(const char *key)
 	int id = sar_get_key_id(key);
 
 	if (id  == -1) {
-		printf("Satr: Error: Unknown key \"%s\"\n", key);
+		printf("sar: Error: Unknown key \"%s\"\n", key);
 		return -1;
 	}
 	if (sar_is_var_active(id) == 0) {
-		printf("Satr: Error: Key \"%s\" is inactive on this board\n",
+		printf("sar: Error: Key \"%s\" is inactive on this board\n",
 		       key);
 		return -1;
 	}
@@ -230,7 +230,7 @@ struct sar_var *sar_id_to_var(int id)
 }
 
 
-/* Interface to SatR command */
+/* Interface to sar command */
 int sar_is_available(void)
 {
 	if (board_get_sar_table() == NULL)
@@ -353,7 +353,7 @@ int  sar_write_key(const char *key, int val)
 	if (desc == NULL) {
 		printf("ERROR: value 0x%x not supported for key %s\n",
 		       val, key);
-		printf("use \"SatR list %s\" to print supported values\n",
+		printf("use \"sar list %s\" to print supported values\n",
 		       key);
 		return -1;
 	}
@@ -411,11 +411,11 @@ static void sar_dump(void)
 	struct sar_var *sar_var;
 	int i, id;
 	printf("Sample at reset Dumper:\n");
-	printf("\tSatR had %d chip addresses: ", sar->chip_count);
+	printf("\tsar had %d chip addresses: ", sar->chip_count);
 	for (i = 0; i < sar->chip_count; i++)
 		printf("0x%x ", sar->chip_addr[i]);
 	printf("\n\tBit width for the I2C chip is: 0x%x\n", sar->bit_width);
-	printf("\tAll SatR variables thet available:\n");
+	printf("\tAll sar variables thet available:\n");
 	for (i = 0, sar_var = sar->sar_lookup; i < MAX_SAR; i++, sar_var++) {
 		if (sar_var->active == 0)
 			continue;

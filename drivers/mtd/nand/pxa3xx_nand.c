@@ -570,8 +570,7 @@ static void pxa3xx_nand_irq_thread(struct pxa3xx_nand_info *info)
 
 static irqreturn_t pxa3xx_nand_irq(struct pxa3xx_nand_info *info)
 {
-	unsigned int status = nand_readl(info, NDSR);
-	unsigned int  is_completed = 0, is_ready = 0;
+	unsigned int status, is_completed = 0, is_ready = 0;
 	unsigned int ready, cmd_done;
 	irqreturn_t ret = IRQ_HANDLED;
 
@@ -583,9 +582,6 @@ static irqreturn_t pxa3xx_nand_irq(struct pxa3xx_nand_info *info)
 		cmd_done        = NDSR_CS1_CMDD;
 	}
 
-	/* TODO - find out why we need to read the NDSR register twice
-	 * as a WA for controller timeout during write operation.
-	 */
 	status = nand_readl(info, NDSR);
 
 	if (status & NDSR_UNCORERR)

@@ -262,23 +262,6 @@
 
 &cps_pinctl {
 	/* MPP Bus:
-	 *	[0-11]	RGMII0
-	 *	[13-16]	SPI1
-	 *	[27,31]	GE_MDIO/MDC
-	 *	[28]	SATA1_PRESENT_ACTIVEn
-	 *	[29-30]	UART0
-	 *	[32-62]	= 0xff: Keep default CP1_shared_pins
-	 */
-		/*   0    1    2    3    4    5    6    7    8    9 */
-	pin-func = < 0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3
-		     0x3  0x3  0x3  0x3  0x3  0x3  0x3  0xff 0xff 0xff
-		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0x8  0x9  0xa
-		     0xA  0x8  0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
-		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
-		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
-		     0xff 0xff 0xff>;
-
-	/* MPP Bus:
 	 *	[0-5]   AU_I2S
 	 *	[12]    SPI1
 	 *	[13]    ND_RBn
@@ -338,35 +321,6 @@
 /* CON5 on CP1 expansion */
 &cps_pcie2 {
 	status = "okay";
-};
-
-&cps_spi1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&cps_spi1_pins>;
-	status = "okay";
-
-	spi-flash@0 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		compatible = "jedec,spi-nor";
-		reg = <0>;
-		spi-max-frequency = <10000000>;
-
-		partitions {
-			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
-
-			partition@0 {
-				label = "U-Boot";
-				reg = <0 0x200000>;
-			};
-			partition@400000 {
-				label = "Filesystem";
-				reg = <0x200000 0xce0000>;
-			};
-		};
-	};
 };
 
 /* CON4 on CP1 expansion */

@@ -124,6 +124,16 @@ void set_default_env(const char *s)
 
 	gd->flags |= GD_FLG_ENV_READY;
 	gd->flags |= GD_FLG_ENV_DEFAULT;
+
+#ifdef CONFIG_CMD_MVEBU_HW_INFO
+	/* load the HW configuration from EEPROM to env variables and saveenv.
+	 * This is because when the env varibles are reset, need to recover the
+	 * HW configuration related env varibles from EEPROM.
+	 * The only generic U-Boot env variable that will be overwrote here
+	 * will be the Marvell specific variables
+	 */
+	cmd_hw_info_load(NULL, 1);
+#endif /* CONFIG_CMD_MVEBU_HW_INFO */
 }
 
 

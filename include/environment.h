@@ -210,6 +210,11 @@ void env_crc_update(void);
 /* Look up the variable from the default environment */
 char *getenv_default(const char *name);
 
+/* load box information to environment */
+#ifdef CONFIG_CMD_MVEBU_HW_INFO
+int cmd_hw_info_load(char *name, int silence);
+#endif /* CONFIG_CMD_MVEBU_HW_INFO */
+
 /* [re]set to the default environment */
 void set_default_env(const char *s);
 

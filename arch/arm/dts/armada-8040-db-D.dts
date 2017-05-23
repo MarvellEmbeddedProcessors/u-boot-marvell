@@ -95,6 +95,12 @@
 		regulator-force-boot-off;
 		gpio = <&expander1 0 GPIO_ACTIVE_HIGH>;
 	};
+
+	cpm_sar {
+		boot_mode {
+			default = <0xe>;
+		};
+	};
 };
 
 /* Accessible over the mini-USB CON9 connector on the main board */

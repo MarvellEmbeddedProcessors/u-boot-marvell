@@ -75,6 +75,12 @@
 		regulator-force-boot-off;
 		gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
 	};
+
+	cpm_sar {
+		boot_mode {
+			default = <0xe>;
+		};
+	};
 };
 
 &ap_pinctl {

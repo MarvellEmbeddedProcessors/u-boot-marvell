@@ -108,6 +108,7 @@
 	clock-frequency = <100000>;
 	expander0: pca953x@21 {
 		compatible = "nxp,pca9555";
+		#gpio-cells = <2>;
 		reg = <0x21>;
 		status = "okay";
 	};

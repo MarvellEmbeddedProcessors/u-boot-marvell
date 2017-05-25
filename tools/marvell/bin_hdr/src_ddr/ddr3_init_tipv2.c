@@ -658,7 +658,7 @@ MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 	MV_U32 uiReg, uiCs;
 	MV_U64 MemTotalSize = 0;
 	MV_U64 CsMemSize = 0;
-	MV_U32 uiMemTotalSize_c, uiCsMemSize_c;
+	MV_U64 uiMemTotalSize_c, uiCsMemSize_c;
 
 #ifdef MV_DEVICE_MAX_DRAM_ADDRESS_SIZE
 	MV_U32 physicalMemSize;
@@ -697,8 +697,8 @@ MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
             MV_REG_WRITE(REG_FASTPATH_WIN_BASE_ADDR(uiCs), uiReg); /*Set base address */
 			/* since memory size may be bigger than 4G the summ may be more than 32 bit word,
 			so to estimate the result divide MemTotalSize and CsMemSize by 0x10000 (it is equal to >>16) */
-			uiMemTotalSize_c = MemTotalSize >> 16;
-			uiCsMemSize_c = CsMemSize >>16;
+			uiMemTotalSize_c = (MemTotalSize >> 16) & 0xffffffffffff;
+			uiCsMemSize_c = (CsMemSize >>16) & 0xffffffffffff;
 			/*if the sum less than 2 G - calculate the value*/
 			if (uiMemTotalSize_c + uiCsMemSize_c < 0x10000)
 				MemTotalSize += CsMemSize;

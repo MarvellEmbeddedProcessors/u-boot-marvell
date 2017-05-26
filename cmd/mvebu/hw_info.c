@@ -125,7 +125,10 @@ static int cmd_hw_info_store(char *name)
 	int idx;
 	int str_len = 0;
 	int total_str_len = 0;
+	int ret;
 	int hw_param_num;
+	int name_in_eeprom_flag = 0;
+	char *target_value;
 	uchar hw_info_str[MVEBU_HW_INFO_LEN];
 	struct hw_info_data_struct hw_info_data_arry[HW_INFO_MAX_PARAM_NUM];
 
@@ -133,14 +136,65 @@ static int cmd_hw_info_store(char *name)
 	if (!confirm_yesno())
 		return 0;
 
-	/* get hw_info from env */
-	hw_param_num = cfg_eeprom_parse_env(&hw_info_data_arry[0],
-					    sizeof(hw_info_data_arry));
+	/* need to memset the arry to 0 for later string operation */
+	memset(hw_info_data_arry, 0, sizeof(hw_info_data_arry));
 
-	/* return in case no valid env variables */
-	if (0 == hw_param_num) {
-		printf("There is no supported HW configuration in env\n");
-		return 0;
+	if (!name) {
+		/* get hw_info from env */
+		hw_param_num = cfg_eeprom_parse_env(&hw_info_data_arry[0],
+						    sizeof(hw_info_data_arry));
+		/* return in case no valid env variables */
+		if (hw_param_num == 0) {
+			printf("There is no supported HW configuration in env\n");
+
+			return 0;
+		}
+	} else {
+		/* get hw_info from eeprom */
+		hw_param_num = cfg_eeprom_parse_hw_info(hw_info_data_arry);
+
+		/* name valid check */
+		ret = cfg_eeprom_validate_name(name);
+		if (ret) {
+			printf("The HW parameter is invalid\n");
+
+			return 0;
+		}
+		/* check the name in hw_info_data_arry */
+		for (idx = 0; idx < hw_param_num; idx++) {
+			if (strcmp(name, hw_info_data_arry[idx].name) == 0) {
+				target_value = getenv(name);
+				str_len = strlen(target_value);
+				/* clear value */
+				memset(hw_info_data_arry[idx].value, 0,
+				       sizeof(hw_info_data_arry[idx].value));
+				/* overwrite value */
+				memcpy(hw_info_data_arry[idx].value,
+				       target_value, str_len);
+				name_in_eeprom_flag = 1;
+			}
+		}
+		/* name is not in hw_info_data_arry */
+		if (!name_in_eeprom_flag) {
+			target_value = getenv(name);
+			str_len = strlen(name);
+			/* clear name */
+			memset(hw_info_data_arry[idx].name, 0,
+			       sizeof(hw_info_data_arry[idx].name));
+			/* add name */
+			memcpy(hw_info_data_arry[idx].name, name, str_len);
+
+			str_len = strlen(target_value);
+			/* clear value */
+			memset(hw_info_data_arry[idx].value, 0,
+			       sizeof(hw_info_data_arry[idx].value));
+			/* add value */
+			memcpy(hw_info_data_arry[idx].value, target_value,
+			       str_len);
+
+			hw_param_num++;
+		}
+
 	}
 
 	 /* need to memset the hw_info to 0 for later string operation */
@@ -148,10 +202,6 @@ static int cmd_hw_info_store(char *name)
 	for (idx = 0;
 	     (idx < hw_param_num) && (total_str_len < MVEBU_HW_INFO_LEN);
 	     idx++) {
-		/* check name in case only to store specific HW parameter */
-		if (name && strcmp(name, hw_info_data_arry[idx].name))
-			continue;
-
 		str_len = strlen(hw_info_data_arry[idx].name);
 		if (str_len > HW_INFO_MAX_NAME_LEN)
 			str_len = HW_INFO_MAX_NAME_LEN;

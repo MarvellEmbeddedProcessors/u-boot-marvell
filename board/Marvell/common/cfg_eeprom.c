@@ -272,6 +272,21 @@ int cfg_eeprom_parse_hw_info(struct hw_info_data_struct *hw_info_data_array)
 	return count;
 }
 
+/* cfg_eeprom_validate_name - check parameter's name is valid or not
+ * valid - return 0
+ * invalid - return -1
+ */
+int cfg_eeprom_validate_name(char *name)
+{
+	int idx;
+	for (idx = 0; idx < hw_info_param_num; idx++) {
+		if (strcmp(name, hw_info_param_list[idx]) == 0)
+			return 0;
+	}
+
+	return -1;
+}
+
 /* cfg_eeprom_parse_env - parse the env from env to name/value pairs */
 int cfg_eeprom_parse_env(struct hw_info_data_struct *data_array,
 				   int size)

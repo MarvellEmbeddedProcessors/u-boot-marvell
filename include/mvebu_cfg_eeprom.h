@@ -103,5 +103,6 @@ void cfg_eeprom_set_hw_info_str(uchar *hw_info_str);
 int cfg_eeprom_parse_hw_info(struct hw_info_data_struct *hw_info_data_array);
 int cfg_eeprom_parse_env(struct hw_info_data_struct *data_array,
 				   int size);
+int cfg_eeprom_validate_name(char *name);
 
 #endif /* _MVEBU_CFG_EEPROM_H_ */

@@ -100,8 +100,7 @@ void cfg_eeprom_save(int length);
 struct eeprom_struct *cfg_eeprom_get_board_config(void);
 void cfg_eeprom_get_hw_info_str(uchar *hw_info_str);
 void cfg_eeprom_set_hw_info_str(uchar *hw_info_str);
-int cfg_eeprom_parse_hw_info(uchar *hw_info_str,
-			struct hw_info_point_struct *hw_info_point_array);
+int cfg_eeprom_parse_hw_info(struct hw_info_data_struct *hw_info_data_array);
 int cfg_eeprom_parse_env(struct hw_info_data_struct *data_array,
 				   int size);
 

@@ -227,12 +227,16 @@ static char *cfg_eeprom_skip_space(char *buf)
  * cfg_eeprom_parse_hw_info
  * - parse the hw_info from string to name/value pairs
  */
-int cfg_eeprom_parse_hw_info(uchar *hw_info_str,
-			struct hw_info_point_struct *hw_info_point_array)
+int cfg_eeprom_parse_hw_info(struct hw_info_data_struct *hw_info_data_array)
 {
 	int count;
 	char *name;
 	char *value;
+	int len;
+	uchar hw_info_str[MVEBU_HW_INFO_LEN];
+
+	/* need to set all to 0 for later string operation */
+	memset(hw_info_str, 0, sizeof(hw_info_str));
 
 	cfg_eeprom_get_hw_info_str(hw_info_str);
 	name = (char *)hw_info_str;
@@ -242,21 +246,25 @@ int cfg_eeprom_parse_hw_info(uchar *hw_info_str,
 		return 0;
 
 	for (count = 0; name != NULL; count++) {
-		hw_info_point_array[count].name = name;
 		value = strchr(name, '=');
 
 		if (value == NULL)
 			return count;
 
 		*value = '\0';
+		len = strlen(name);
+		memcpy(hw_info_data_array[count].name, name, len);
+		hw_info_data_array[count].name[len] = '\0';
 		value++;
-		hw_info_point_array[count].value = value;
 
 		name = strchr(value, ' ');
 		if (name == NULL)
 			return ++count;
 
 		*name = '\0';
+		len = strlen(value);
+		memcpy(hw_info_data_array[count].value, value, len);
+		hw_info_data_array[count].value[len] = '\0';
 		name = cfg_eeprom_skip_space(name + 1);
 	}
 	count++;

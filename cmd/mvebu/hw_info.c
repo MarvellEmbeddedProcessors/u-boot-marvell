@@ -26,14 +26,9 @@ static int cmd_hw_info_dump(char *name)
 {
 	int idx;
 	int hw_param_num;
-	uchar hw_info_str[MVEBU_HW_INFO_LEN];
-	struct hw_info_point_struct hw_info_point_array[HW_INFO_MAX_PARAM_NUM];
+	struct hw_info_data_struct hw_info_data_array[HW_INFO_MAX_PARAM_NUM];
 
-	/* need to set all to 0 for later string operation */
-	memset(hw_info_str, 0, sizeof(hw_info_str));
-
-	hw_param_num = cfg_eeprom_parse_hw_info(hw_info_str,
-						hw_info_point_array);
+	hw_param_num = cfg_eeprom_parse_hw_info(hw_info_data_array);
 
 	/* it is possible the HW configuration is empty */
 	if (hw_param_num == 0)
@@ -49,16 +44,16 @@ static int cmd_hw_info_dump(char *name)
 	printf("------------------------------------\n");
 	for (idx = 0; idx < hw_param_num; idx++) {
 		if (name) {
-			if (strcmp(name, hw_info_point_array[idx].name) == 0) {
+			if (strcmp(name, hw_info_data_array[idx].name) == 0) {
 				printf("%-16s   %-s\n",
-				       hw_info_point_array[idx].name,
-				       hw_info_point_array[idx].value);
+				       hw_info_data_array[idx].name,
+				       hw_info_data_array[idx].value);
 				break;
 			}
 		} else {
 			printf("%-16s   %-s\n",
-			       hw_info_point_array[idx].name,
-			       hw_info_point_array[idx].value);
+			       hw_info_data_array[idx].name,
+			       hw_info_data_array[idx].value);
 		}
 	}
 
@@ -69,17 +64,12 @@ int cmd_hw_info_load(char *name, int silence)
 {
 	int idx;
 	int hw_param_num;
-	uchar hw_info_str[MVEBU_HW_INFO_LEN];
-	struct hw_info_point_struct hw_info_point_array[HW_INFO_MAX_PARAM_NUM];
+	struct hw_info_data_struct hw_info_data_array[HW_INFO_MAX_PARAM_NUM];
 
 	/* get hw_info from system
 	 * need to memset the hw_info to 0 for later string operation
 	 */
-	memset(hw_info_str, 0, sizeof(hw_info_str));
-	cfg_eeprom_get_hw_info_str(hw_info_str);
-
-	hw_param_num = cfg_eeprom_parse_hw_info(hw_info_str,
-						hw_info_point_array);
+	hw_param_num = cfg_eeprom_parse_hw_info(hw_info_data_array);
 
 	/* it is possible the HW configuration is empty */
 	if (hw_param_num == 0)
@@ -98,14 +88,14 @@ int cmd_hw_info_load(char *name, int silence)
 		 * otherwise save all the HW parameters from EEPROM to env.
 		 */
 		if (name) {
-			if (strcmp(name, hw_info_point_array[idx].name) == 0) {
-				setenv(hw_info_point_array[idx].name,
-				       hw_info_point_array[idx].value);
+			if (strcmp(name, hw_info_data_array[idx].name) == 0) {
+				setenv(hw_info_data_array[idx].name,
+				       hw_info_data_array[idx].value);
 				break;
 			}
 		} else {
-			setenv(hw_info_point_array[idx].name,
-			       hw_info_point_array[idx].value);
+			setenv(hw_info_data_array[idx].name,
+			       hw_info_data_array[idx].value);
 		}
 	}
 

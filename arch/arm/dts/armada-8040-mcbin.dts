@@ -144,6 +144,10 @@
 	clock-frequency = <100000>;
 };
 
+&cpm_scsi {
+	status = "okay";
+};
+
 &cpm_sata0 {
 	status = "okay";
 };
@@ -203,6 +207,10 @@
         phy-mode = "sfi";
         phy-reset-gpios = <&cps_gpio0 31 GPIO_ACTIVE_HIGH>;
         marvell,sfp-tx-disable-gpio = <&cps_gpio0 29 GPIO_ACTIVE_HIGH>;
+};
+
+&cps_scsi {
+	status = "okay";
 };
 
 &cps_sata0 {

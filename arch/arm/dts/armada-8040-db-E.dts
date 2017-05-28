@@ -58,7 +58,7 @@
 
 	aliases {
 		i2c0 = &cpm_i2c0;
-		spi0 = &cps_spi1;
+		spi0 = &ap_spi0;
 	};
 
 	memory@00000000 {

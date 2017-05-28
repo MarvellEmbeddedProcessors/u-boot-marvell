@@ -42,10 +42,8 @@
 			regulator-name = "reg-usb3h0-vbus";
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
-			startup-delay-us = <500000>;
-			enable-active-high;
-			regulator-always-on;
-			regulator-boot-on;
+			startup-delay-us = <300000>;
+			regulator-force-boot-off;
 			gpio = <&cpm_gpio1 15 GPIO_ACTIVE_HIGH>; /* GPIO[47] */
 		};
 	};

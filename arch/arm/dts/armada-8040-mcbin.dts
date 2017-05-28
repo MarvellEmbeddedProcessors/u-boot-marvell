@@ -44,8 +44,6 @@
 			regulator-max-microvolt = <5000000>;
 			startup-delay-us = <500000>;
 			enable-active-high;
-			regulator-always-on;
-			regulator-boot-on;
 			gpio = <&cpm_gpio1 15 GPIO_ACTIVE_HIGH>; /* GPIO[47] */
 		};
 	};

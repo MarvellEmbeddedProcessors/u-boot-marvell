@@ -217,6 +217,7 @@
 
 &cps_usb3_0 {
 	vbus-supply = <&reg_usb3h0_vbus>;
+	vbus-disable-delay = <500>;
 	status = "okay";
 };
 

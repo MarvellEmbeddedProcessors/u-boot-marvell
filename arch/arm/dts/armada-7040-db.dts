@@ -71,6 +71,7 @@
 		compatible = "regulator-fixed";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
+		startup-delay-us = <100000>;
 		gpio = <&expander0 0 GPIO_ACTIVE_HIGH>;
 	};
 
@@ -78,6 +79,7 @@
 		compatible = "regulator-fixed";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
+		startup-delay-us = <100000>;
 		gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
 	};
 };
@@ -176,11 +178,13 @@
 
 &cpm_usb3_0 {
 	vbus-supply = <&cpm_reg_usb3_vbus0>;
+	vbus-disable-delay = <500>;
 	status = "okay";
 };
 
 &cpm_usb3_1 {
 	vbus-supply = <&cpm_reg_usb3_vbus1>;
+	vbus-disable-delay = <500>;
 	status = "okay";
 };
 

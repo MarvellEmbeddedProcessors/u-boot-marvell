@@ -100,6 +100,7 @@ Customer board porting procedure
 		- Serial - serial/snps-dw-apb-uart.txt
 		- PCIe - pci/armada8k-pcie.txt
 		- I2C - i2c/mvebu-i2c.txt
+		- PPv2 - net/marvell-pp2x.txt
 
 	3.2. Armada-3700 SoC family
 	---------------------------

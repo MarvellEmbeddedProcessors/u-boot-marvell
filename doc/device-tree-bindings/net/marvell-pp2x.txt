@@ -1,0 +1,53 @@
+Marvell PPv2x Ethernet Controller (PPv2x)
+
+cpm_ethernet required properties:
+=========================
+- compatible: Should be "marvell,armada-7k-pp22"
+- reg: Addresses and length of the register sets for the device.
+  Must contain the following register sets:
+	- Packet Processor v22 registers
+	- Cpn110 GOP/GMAC registers
+
+cpm_eth port required properties:
+==============================
+- port-id: Should be '0' or '1' or '2' for ethernet ports, it references the ppv2 port-id.
+- gop-port-id: Should be '0', '2', or '3' for ethernet macs, references the mac-id (GOP port-id).
+- phy-mode: Refer to doc/device-tree-bindings/net/ethernet.txt
+
+cpm_eth port optional properties:
+==============================
+- phy-speed: For 2.5Gbits SGMII port 2500 phy-speed should be set.
+	     For 5Gbits XSI/SFI port 5000 phy-speed should be set(used only for 2.5Gbits and 5Gbits)
+- phy: A handle to a PHY node defining the PHY address (as the reg property, a single integer).
+
+Example:
+
+cpm_ethernet: ethernet@0 {
+	compatible = "marvell,armada-7k-pp22";
+	reg = <0x0 0x100000>, <0x129000 0xb000>;
+	status = "okay";
+	dma-coherent;
+
+	cpm_eth0: eth0 {
+		phy-mode = "sfi"; /* lane-2 */
+		port-id = <0>;
+		gop-port-id = <0>;
+		status = "okay";
+	};
+
+	cpm_eth1: eth1 {
+		port-id = <1>;
+		gop-port-id = <2>;
+		phy-mode = "rgmii-id";
+		phy = <&phy0>;
+		status = "okay";
+	};
+
+	cpm_eth2: eth2 {
+		port-id = <2>;
+		gop-port-id = <3>;
+		phy-mode = "rgmii-id";
+		phy = <&phy0>;
+		status = "okay";
+	};
+};

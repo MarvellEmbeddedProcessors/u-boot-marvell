@@ -10,12 +10,23 @@
 #include <asm/io.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
+#include <power/regulator.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
 int board_early_init_f(void)
 {
 	/* Nothing to do (yet), perhaps later some pin-muxing etc */
+
+	return 0;
+}
+
+int board_early_init_r(void)
+{
+#ifdef CONFIG_DM_REGULATOR
+	/* Check if any existing regulator should be turned down */
+	regulators_enable_boot_off(false);
+#endif
 
 	return 0;
 }

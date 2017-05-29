@@ -14,6 +14,7 @@
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
 #include <asm/armv8/mmu.h>
+#include <power/regulator.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

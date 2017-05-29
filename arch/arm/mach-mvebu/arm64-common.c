@@ -14,6 +14,7 @@
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
 #include <asm/armv8/mmu.h>
+#include <power/regulator.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -140,6 +141,9 @@ int arch_early_init_r(void)
 	struct udevice *dev;
 	int ret;
 	int i;
+
+	/* Check if any existing regulator should be turned down */
+	regulators_enable_boot_off(false);
 
 	/*
 	 * Loop over all MISC uclass drivers to call the comphy code

@@ -23,6 +23,9 @@ the first time or when the board fails to boot.
 
 UART boot for Armada-3700 platform
 ----------------------------------
+Note that WtpDownload application used to do the UART boot is not located in the release binaries or
+source code, please download it from Marvell extranet.
+
 1. The normal ATF build procedure for A3700 target creates a folder
    with all the images required for UART boot under ATF build output
    folder (build/a3700/). Make sure u-boot was built before
@@ -31,6 +34,10 @@ UART boot for Armada-3700 platform
 2. Make sure the target board is in UART mode and ">" prompt is
    presented on the connected terminal. Pressing "Enter" in this mode
    will show "E" and then ">" again.
+   There is a way to stop the target board booting from other sources,
+   SPI flash for example, and switch to UART boot mode, by sending the
+   pattern file Xmodem_boot_pattern.bin (same with Armada-70x0/80x0),
+   at the very beginning of the boot.
 
 3. Stop the terminal emulator program on the UART port attached to the
    target board (minicom) for releasing the serial port and allowing

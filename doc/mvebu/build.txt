@@ -23,7 +23,7 @@ Build Procedure
 
 		# make <defconfig_file>
 
-	- For the Armada-70x0/80x0 DB board use "mvebu_db_armada8k_defconfig"
+	- For the Armada-70x0/80x0 DB board and Armada-7020 AMC use "mvebu_db_armada8k_defconfig"
 	- For the Armada-80x0 MacchiatoBin use "make mvebu_mcbin-88f8040_defconfig"
 	- For the Armada-3700 DB board use "make mvebu_db-88f3720_defconfig"
 	- For the Armada-3700 EsspressoBin use "make mvebu_espressobin-88f3720_defconfig"
@@ -43,6 +43,7 @@ Build Procedure
 			# make DEVICE_TREE=<name>
 
 	- For the Armada-70x0 DB use "make DEVICE_TREE=armada-7040-db[-X]"
+	- For the Armada-7020 AMC use "make DEVICE_TREE=armada-7020-amc"
 	- For the Armada-80x0 DB use "make DEVICE_TREE=armada-8040-db[-X]"
 	- For the Armada-80x0 MacchiatoBin use "make DEVICE_TREE=armada-8040-mcbin"
 	- For the Armada-37x0 DB use "make DEVICE_TREE=armada-3720-ddrX-db[-X]"

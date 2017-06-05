@@ -33,6 +33,6 @@
 	};
 
 	vcc_sd_reg0: regulator@0 {
-		gpios = <&gpio1 22 GPIO_ACTIVE_HIGH>;
+		gpios = <&gpiosb 22 GPIO_ACTIVE_HIGH>;
 	};
 };

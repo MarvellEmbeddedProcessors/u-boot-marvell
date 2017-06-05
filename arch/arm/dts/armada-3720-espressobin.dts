@@ -76,7 +76,7 @@
 		regulator-type = "voltage";
 		states = <1800000 0x1
 			  3300000 0x0>;
-		gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
+		gpios = <&gpionb 4 GPIO_ACTIVE_HIGH>;
 	};
 
 	mvswitch: switch@000000{
@@ -175,7 +175,7 @@
 &pcie0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pcie_pins>;
-	reset-gpio = <&gpio1 3 GPIO_ACTIVE_HIGH>;
+	reset-gpio = <&gpiosb 3 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 };
 

@@ -304,38 +304,6 @@
 				};
 			};
 
-			gpio0: gpio@13800 {
-				compatible = "marvell,armada-3700-gpio";
-				#gpio-cells = <2>;
-				reg = <0x13800 0x30>;
-				bank-name = "armada-3700-north-bridge";
-				ngpios = <36>;
-				status = "okay";
-			};
-
-			pinctl0: pinctl@13830 { /* north bridge */
-				compatible = "marvell,armada-3700-pinctl";
-				bank-name = "armada-3700-nb";
-				reg = <0x13830 0x4>;
-				pin-count = <36>;
-			};
-
-			gpio1: gpio@18800 {
-				compatible = "marvell,armada-3700-gpio";
-				#gpio-cells = <2>;
-				reg = <0x18800 0x30>;
-				bank-name = "armada-3700-south-bridge";
-				ngpios = <30>;
-				status = "okay";
-			};
-
-			pinctl1: pinctl@18830 { /* south bridge */
-				compatible = "marvell,armada-3700-pinctl";
-				bank-name = "armada-3700-sb";
-				reg = <0x18830 0x4>;
-				pin-count = <30>;
-			};
-
 			comphy: comphy@18300 {
 				compatible = "marvell,mvebu-comphy", "marvell,comphy-armada-3700";
 				reg = <0x18300 0x28>,

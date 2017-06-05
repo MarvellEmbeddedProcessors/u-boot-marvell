@@ -178,13 +178,3 @@
 	reset-gpio = <&gpiosb 3 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 };
-
-/* North GPIO PINs selection register(13830) value setting */
-&pinctl0 {
-	pin-func = <0x000573fa>;
-};
-
-/* Soutch GPIO PINs selection register(18830) value setting */
-&pinctl1 {
-	pin-func = <0x00003823>;
-};

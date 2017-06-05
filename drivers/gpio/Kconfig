@@ -158,16 +158,6 @@ config MVEBU_GPIO
 	help
 	  Say yes here to support Marvell MVEBU (Armada XP/38x) GPIOs.
 
-config A37XX_GPIO
-	bool "Marvell Armada 37XX GPIO driver"
-	depends on DM_GPIO && ARCH_MVEBU
-	default y
-	help
-	  Say yes here to support Marvell Armada 37xx GPIOs.
-	  There two GPIO banks, one is north bridge which has 36 GPIO Pins
-	  and the other is south bridge having 30 GPIO Pins.
-	  This drive implements the high level interfaces of GPIOs.
-
 config ZYNQ_GPIO
 	bool "Zynq GPIO driver"
 	depends on DM_GPIO && (ARCH_ZYNQ || ARCH_ZYNQMP)

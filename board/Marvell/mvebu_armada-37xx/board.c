@@ -99,33 +99,6 @@ static int board_comphy_usb3_sata_mux(enum COMPHY_LANE2_MUXING comphy_mux)
 
 int board_early_init_f(void)
 {
-	const void *blob = gd->fdt_blob;
-	const char *compat = "marvell,armada-3700-pinctl";
-	int off;
-	void __iomem *addr;
-	int mpp_value;
-
-	/* FIXME
-	 * Temporary WA for setting correct pin control values
-	 * until the real pin control driver is available.
-	 * Currently, this WA gets GPIO function selection value
-	 * from dts file and then sets registers 0x13830 and 0x18830 directly
-	 * When there is no GPIO selection value in dts, it will give a warning
-	 * message and keep the SoC default values.
-	 */
-	off = fdt_node_offset_by_compatible(blob, -1, compat);
-	while (off != -FDT_ERR_NOTFOUND) {
-		addr = (void __iomem *)fdtdec_get_addr_size_auto_noparent(
-				blob, off, "reg", 0, NULL, true);
-		mpp_value = fdtdec_get_int(blob, off, "pin-func", -1);
-		if (mpp_value == -FDT_ERR_NOTFOUND)
-			printf("Warning: no gpio function selection value node found in dts\n");
-		else
-			writel(mpp_value, addr);
-
-		off = fdt_node_offset_by_compatible(blob, off, compat);
-	}
-
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
 	cfg_eeprom_init();
 #endif

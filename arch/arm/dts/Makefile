@@ -93,6 +93,7 @@ dtb-$(CONFIG_ARCH_MVEBU) +=			\
 	armada-388-clearfog.dtb			\
 	armada-388-gp.dtb			\
 	armada-385-amc.dtb			\
+	armada-7020-amc.dtb			\
 	armada-7040-db.dtb			\
 	armada-7040-db-nand.dtb			\
 	armada-8040-db.dtb			\

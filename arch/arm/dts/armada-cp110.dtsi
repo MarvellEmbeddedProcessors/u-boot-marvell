@@ -140,6 +140,14 @@
 				status = "disabled";
 			};
 
+			CP110_LABEL(mss_i2c0): i2c@211000 {
+				compatible = "marvell,mv78230-i2c";
+				reg = <0x211000 0x20>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "disabled";
+			};
+
 			CP110_LABEL(comphy): comphy@441000 {
 				compatible = "marvell,mvebu-comphy", "marvell,comphy-cp110";
 				reg = <0x441000 0x8>,

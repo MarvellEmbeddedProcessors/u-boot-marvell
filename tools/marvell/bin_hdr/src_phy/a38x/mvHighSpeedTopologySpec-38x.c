@@ -86,8 +86,12 @@ SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
 	{ USB3_HOST0,	__5Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
 	{ USB3_HOST1,	__5Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
 },
-{	/* ClarFog A1 board topology */
+{	/* ClearFog A1 board topology */
+#if 1
 	{ SATA0,	__3Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+#else
+	{ PEX0,		__5Gbps,	PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+#endif
 	{ SGMII1,	__1_25Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
 #if 1
 	{ PEX1,	  	__5Gbps,	PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },

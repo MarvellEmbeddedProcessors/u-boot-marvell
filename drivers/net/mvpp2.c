@@ -1600,7 +1600,6 @@ static void mvpp2_prs_sram_ai_update(struct mvpp2_prs_entry *pe,
 	int ai_off = MVPP2_PRS_SRAM_AI_OFFS;
 
 	for (i = 0; i < MVPP2_PRS_SRAM_AI_CTRL_BITS; i++) {
-
 		if (!(mask & BIT(i)))
 			continue;
 
@@ -2650,7 +2649,8 @@ static int mvpp2_bm_pool_destroy(struct udevice *dev,
 
 	mvpp2_bm_bufs_free(dev, priv, bm_pool);
 	if (bm_pool->buf_num) {
-		dev_err(dev, "cannot free all buffers in pool %d\n", bm_pool->id);
+		dev_err(dev, "cannot free all buffers in pool %d\n",
+			bm_pool->id);
 		return 0;
 	}
 
@@ -2804,7 +2804,6 @@ static int mvpp2_bm_bufs_add(struct mvpp2_port *port,
 		mvpp2_bm_pool_put(port, bm_pool->id,
 				  (dma_addr_t)buffer_loc.rx_buffer[i],
 				  (unsigned long)buffer_loc.rx_buffer[i]);
-
 	}
 
 	/* Update BM driver with number of buffers added to pool */
@@ -4885,10 +4884,12 @@ static void mvpp2_rx_fifo_init(struct mvpp2 *priv)
 			} else if (port == 1) {
 				mvpp2_write(priv,
 					    MVPP2_RX_DATA_FIFO_SIZE_REG(port),
-					    MVPP22_RX_FIFO_2_5GB_PORT_DATA_SIZE);
+					    MVPP22_RX_FIFO_2_5GB_PORT_DATA_SIZE
+					    );
 				mvpp2_write(priv,
 					    MVPP2_RX_ATTR_FIFO_SIZE_REG(port),
-					    MVPP22_RX_FIFO_2_5GB_PORT_ATTR_SIZE);
+					    MVPP22_RX_FIFO_2_5GB_PORT_ATTR_SIZE
+					    );
 			} else {
 				mvpp2_write(priv,
 					    MVPP2_RX_DATA_FIFO_SIZE_REG(port),
@@ -4996,9 +4997,9 @@ static int mvpp2_init(struct udevice *dev, struct mvpp2 *priv)
 		return -EINVAL;
 	}
 
-	if (priv->hw_version == MVPP22)
+	if (priv->hw_version == MVPP22) {
 		mvpp2_axi_init(priv);
-	else {
+	} else {
 		/* MBUS windows configuration */
 		dram_target_info = mvebu_mbus_dram_info();
 		if (dram_target_info)

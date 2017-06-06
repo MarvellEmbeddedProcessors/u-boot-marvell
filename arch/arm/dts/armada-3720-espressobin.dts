@@ -78,6 +78,14 @@
 			  3300000 0x0>;
 		gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
 	};
+
+	mvswitch: switch@000000{
+		compatible = "marvell,mv88e6xxx";
+		status = "okay";
+		phy-addr = <1>;
+		cpu-port = <0x0>;
+		port-mask = <0xf>;
+	};
 };
 
 &comphy {

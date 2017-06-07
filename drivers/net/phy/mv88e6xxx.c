@@ -17,6 +17,7 @@
 
 static struct mv88e6xxx_dev soho_dev;
 static struct mv88e6xxx_dev *soho_dev_handle;
+static int REG_PORT_BASE = REG_PORT_BASE_LEGACY;
 
 static int mv88e6xxx_reg_wait_ready(struct mv88e6xxx_dev *dev)
 {
@@ -258,7 +259,7 @@ int mv88e6xxx_get_link_status(struct mv88e6xxx_dev *dev, int port)
 {
 	int ret;
 
-	ret = mv88e6xxx_read_register(dev, port, PORT_STATUS);
+	ret = mv88e6xxx_read_register(dev, REG_PORT(port), PORT_STATUS);
 	if (ret < 0)
 		return ret;
 
@@ -291,19 +292,24 @@ int mv88e6xxx_get_switch_id(struct mv88e6xxx_dev *dev)
 {
 	int id, product_num;
 
-	id = mv88e6xxx_read_register(dev, 0, PORT_SWITCH_ID);
+	id = mv88e6xxx_read_register(dev, REG_PORT(0), PORT_SWITCH_ID);
 	if (id < 0)
 		return id;
 
 	product_num = id >> 4;
-	if (product_num == PORT_SWITCH_ID_PROD_NUM_6390 ||
-	    product_num == PORT_SWITCH_ID_PROD_NUM_6290 ||
-	    product_num == PORT_SWITCH_ID_PROD_NUM_6190 ||
-	    product_num == PORT_SWITCH_ID_PROD_NUM_6141 ||
-	    product_num == PORT_SWITCH_ID_PROD_NUM_6341)
+	if ((product_num == PORT_SWITCH_ID_PROD_NUM_6190) ||
+	    (product_num == PORT_SWITCH_ID_PROD_NUM_6290) ||
+	    (product_num == PORT_SWITCH_ID_PROD_NUM_6390)) {
+		/* Peridot switch port device address starts from 0 */
+		REG_PORT_BASE = REG_PORT_BASE_PERIDOT;
 		return id;
-	else
+	} else if (product_num == PORT_SWITCH_ID_PROD_NUM_6141 ||
+		   product_num == PORT_SWITCH_ID_PROD_NUM_6341) {
+		/* Legacy switch port device address starts from 0x10 */
+		return id;
+	} else {
 		return -ENODEV;
+	}
 
 	return 0;
 }
@@ -382,7 +388,7 @@ static int do_sw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		}
 		port = (int)simple_strtoul(argv[2], NULL, 16);
 		reg  = (int)simple_strtoul(argv[3], NULL, 16);
-		ret = mv88e6xxx_read_register(dev, port, reg);
+		ret = mv88e6xxx_read_register(dev, REG_PORT(port), reg);
 		if (ret < 0) {
 			printf("Failed: Read  - switch port: 0x%X, ", port);
 			printf("reg: 0x%X, ret: %d\n", reg, ret);
@@ -401,7 +407,7 @@ static int do_sw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		port = (int)simple_strtoul(argv[2], NULL, 16);
 		reg  = (int)simple_strtoul(argv[3], NULL, 16);
 		val  = (int)simple_strtoul(argv[4], NULL, 16);
-		ret = mv88e6xxx_write_register(dev, port, reg,
+		ret = mv88e6xxx_write_register(dev, REG_PORT(port), reg,
 					       (unsigned short)val);
 		if (ret < 0) {
 			printf("Failed: Write - switch port: 0x%X, ", port);
@@ -423,7 +429,8 @@ static int do_sw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		port = (int)simple_strtoul(argv[2], NULL, 16);
 		page = (int)simple_strtoul(argv[3], NULL, 16);
 		reg  = (int)simple_strtoul(argv[4], NULL, 16);
-		ret = mv88e6xxx_read_phy_register(dev, port, page, reg);
+		ret = mv88e6xxx_read_phy_register(dev, REG_PORT(port),
+						  page, reg);
 		if (ret < 0) {
 			printf("Failed: Read - switch port: 0x%X, ", port);
 			printf("page: 0x%X, reg: 0x%X\n, ret: %d",
@@ -445,7 +452,8 @@ static int do_sw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		page = (int)simple_strtoul(argv[3], NULL, 16);
 		reg  = (int)simple_strtoul(argv[4], NULL, 16);
 		val  = (int)simple_strtoul(argv[5], NULL, 16);
-		ret = mv88e6xxx_write_phy_register(dev, port, page, reg,
+		ret = mv88e6xxx_write_phy_register(dev, REG_PORT(port),
+						   page, reg,
 						   (unsigned short)val);
 		if (ret < 0) {
 			printf("Failed: Write - switch port: 0x%X, ", port);

@@ -275,6 +275,14 @@
 				status = "disabled";
 			};
 
+			cps_mci1: mci1 {
+				compatible = "marvell,mvebu-mci";
+				reg = <0x1c3000 0x5>;
+				unit_id = <1>;
+				phy_unit_cp;
+				status = "okay";
+			};
+
 			cps_ethernet: ethernet@0 {
 				compatible = "marvell,armada-7k-pp22";
 				reg = <0x0 0x100000>, <0x129000 0xb000>;

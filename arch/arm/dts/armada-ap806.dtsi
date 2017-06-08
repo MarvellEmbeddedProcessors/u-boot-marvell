@@ -120,6 +120,24 @@
 				};
 			};
 
+			ap_mci0: mci0 {
+				compatible = "marvell,mvebu-mci";
+				reg = <0x6f4218 0x5>;
+				unit_id = <0>;
+				phy_unit_ap;
+				indirect_base_reg;
+				status = "okay";
+			};
+
+			ap_mci1: mci1 {
+				compatible = "marvell,mvebu-mci";
+				reg = <0x6f4238 0x5>;
+				unit_id = <1>;
+				phy_unit_ap;
+				indirect_base_reg;
+				status = "okay";
+			};
+
 			timer {
 				compatible = "arm,armv8-timer";
 				interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_EDGE_RISING)>,

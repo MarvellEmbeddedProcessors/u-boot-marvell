@@ -27,6 +27,13 @@ config CMD_MVEBU_TSEN
 	  tsen - Display the SoC temperature
 	  as read from the on chip thermal sensor
 
+config CMD_MVEBU_MCI_INDIRECT_ACCESS
+	bool "mci"
+	depends on MVEBU_MCI_INDIRECT_ACCESS
+	default y
+	help
+	  mci - Indirect access to mci registers
+
 choice
 	prompt "Flash for image"
 	default MVEBU_SPI_BOOT

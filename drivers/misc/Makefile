@@ -52,3 +52,4 @@ obj-$(CONFIG_FSL_DEVICE_DISABLE) += fsl_devdis.o
 obj-$(CONFIG_WINBOND_W83627) += winbond_w83627.o
 obj-$(CONFIG_MVEBU_SAR) += mvebu_sar/
 obj-$(CONFIG_QFW) += qfw.o
+obj-$(CONFIG_MVEBU_MCI_INDIRECT_ACCESS) += mvebu_mci.o

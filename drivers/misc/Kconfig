@@ -13,6 +13,16 @@ config MISC
 	  set of generic read, write and ioctl methods may be used to
 	  access the device.
 
+config MVEBU_MCI_INDIRECT_ACCESS
+	bool "Initialize MCI configuration"
+	depends on TARGET_MVEBU_ARMADA_8K
+	default n
+	help
+	  Choose this option to add support
+	  for MCI phy configuration init,
+	  which allows MCI indirect access
+	  to MCI phy and ctrl.
+
 config ALTERA_SYSID
 	bool "Altera Sysid support"
 	depends on MISC

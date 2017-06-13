@@ -82,7 +82,6 @@
 		regulator-name = "usb3-vbus";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
-		startup-delay-us = <200000>;
 		gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
 	};
 

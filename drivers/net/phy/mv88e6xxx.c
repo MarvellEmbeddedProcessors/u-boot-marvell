@@ -243,12 +243,16 @@ void mv88e6xxx_display_switch_info(struct mv88e6xxx_dev *dev)
 		printf("Series    : Peridot\n");
 		printf("Product # : %X\n", product_num);
 		printf("Revision  : %X\n", dev->id & 0xf);
+		if (dev->cpu_port != -1)
+			printf("Cpu port  : %d\n", dev->cpu_port);
 	} else if (product_num == PORT_SWITCH_ID_PROD_NUM_6141 ||
 		   product_num == PORT_SWITCH_ID_PROD_NUM_6341) {
 		printf("Switch    : SOHO\n");
 		printf("Series    : Topaz\n");
 		printf("Product # : %X\n", product_num);
 		printf("Revision  : %X\n", dev->id & 0xf);
+		if (dev->cpu_port != -1)
+			printf("Cpu port  : %d\n", dev->cpu_port);
 	} else {
 		printf("Unknown switch with Device ID: 0x%X\n", dev->id);
 	}
@@ -341,6 +345,33 @@ int mv88e6xxx_initialize(const void *blob)
 		soho_dev.addr_mode = 1;  /* Multi Addressing mode */
 
 	soho_dev.id = mv88e6xxx_get_switch_id(&soho_dev);
+
+	soho_dev.cpu_port = fdtdec_get_int(blob, node, "cpu-port", -1);
+	if (soho_dev.cpu_port != -1) {
+		u16 reg;
+
+		reg = mv88e6xxx_read_register(&soho_dev,
+					      REG_PORT(soho_dev.cpu_port),
+					      PORT_PCS_CTRL);
+		/* CPU port is forced link-up, duplex and 1GB speed */
+		reg &= ~PORT_PCS_CTRL_UNFORCED;
+		reg |= PORT_PCS_CTRL_FORCE_LINK |
+		       PORT_PCS_CTRL_LINK_UP |
+		       PORT_PCS_CTRL_DUPLEX_FULL |
+		       PORT_PCS_CTRL_FORCE_DUPLEX |
+		       PORT_PCS_CTRL_1000;
+		if ((soho_dev.id >> 4) == PORT_SWITCH_ID_PROD_NUM_6341) {
+			/* Configure RGMII Delay on cpu port */
+			reg |= PORT_PCS_CTRL_FORCE_SPEED |
+			       PORT_PCS_CTRL_RGMII_DELAY_TXCLK |
+			       PORT_PCS_CTRL_RGMII_DELAY_RXCLK;
+		}
+		ret = mv88e6xxx_write_register(&soho_dev,
+					       REG_PORT(soho_dev.cpu_port),
+					       PORT_PCS_CTRL, reg);
+		if (ret)
+			return ret;
+	}
 
 	soho_dev_handle = &soho_dev;
 

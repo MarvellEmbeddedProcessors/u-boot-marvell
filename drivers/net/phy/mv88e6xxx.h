@@ -366,6 +366,7 @@ struct mv88e6xxx_dev {
 	unsigned int port_mask;
 	unsigned int addr_mode;
 	int id;
+	int cpu_port;	/* The switch port to which the CPU is attached */
 };
 
 enum sw_opts {

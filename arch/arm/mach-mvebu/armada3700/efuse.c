@@ -196,7 +196,7 @@ int efuse_write(enum efuse_id fid, const char *value)
 		   In order to set single index, 2 or 3 physical bits should
 		   be programmed. Gap between index start positions is 4 bits.
 		 */
-		fullrow = 0x7 << (4 * numval);
+		fullrow = 0x7UL << (4 * numval);
 		args[0] = fullrow & 0xFFFFFFFF;
 		args[1] = (fullrow >> 32) & 0xFFFFFFFF;
 		break;
@@ -403,7 +403,7 @@ int efuse_read(enum efuse_id fid, char *value)
 		fullrow = args[1];	/* MSB */
 		fullrow <<= 32;
 		fullrow |= args[0];	/* LSB */
-		for (n = 0; n < 15; n++) {
+		for (n = 0; n < 16; n++) {
 			/* Each CSK validity is a 3 bit majority vote
 			   The distance between fileds is 4 bits */
 			numval = (fullrow >> (n * 4)) & 0x7;

@@ -41,7 +41,7 @@
  */
 
 /*
- * Device Tree file for the Armada 7040 SoC, made of an AP806 Quad and
+ * Device Tree file for the Armada 70x0 SoC, made of an AP806 Quad and
  * one CP110.
  */
 
@@ -50,7 +50,7 @@
 #include "armada-cp110-master.dtsi"
 
 / {
-	model = "Marvell Armada 7040";
-	compatible = "marvell,armada7040", "marvell,armada-ap806-quad",
+	model = "Marvell Armada 70x0";
+	compatible = "marvell,armada70x0", "marvell,armada-ap806-quad",
 		     "marvell,armada-ap806";
 };

@@ -45,8 +45,8 @@
  * Boot device: SPI NOR, 0x32 (SW3)
  */
 
-#include "armada-7040.dtsi"
-#include "armada-7040-dev-info.dtsi"
+#include "armada-70x0.dtsi"
+#include "armada-70x0-dev-info.dtsi"
 
 / {
 	model = "Marvell Armada 7040 DB (D) board";

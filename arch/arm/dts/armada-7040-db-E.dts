@@ -58,7 +58,7 @@
 	};
 
 	aliases {
-		i2c0 = &i2c0;
+		i2c0 = &ap_i2c0;
 		spi0 = &ap_spi0;
 	};
 
@@ -90,7 +90,7 @@
 	status = "okay";
 };
 
-&i2c0 {
+&ap_i2c0 {
 	status = "okay";
 };
 

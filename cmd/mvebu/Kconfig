@@ -19,6 +19,14 @@ config CMD_MVEBU_HW_INFO
 	  And update the MAC address in FDT file for Linux.
 	  When save the box information, it will be saved to EEPROM.
 
+config CMD_MVEBU_TSEN
+	bool "tsen"
+	depends on MVEBU_THERMAL_SENSOR
+	default y
+	help
+	  tsen - Display the SoC temperature
+	  as read from the on chip thermal sensor
+
 choice
 	prompt "Flash for image"
 	default MVEBU_SPI_BOOT

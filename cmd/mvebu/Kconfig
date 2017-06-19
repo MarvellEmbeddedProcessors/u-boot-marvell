@@ -19,6 +19,14 @@ config CMD_MVEBU_PHY_FW_DOWNLOAD
 	  This command is used for Marvell PHYs
 	  88X3220/88X3310
 
+config CMD_MVEBU_TSEN
+	bool "tsen"
+	depends on MVEBU_THERMAL_SENSOR
+	default y
+	help
+	  tsen - Display the SoC temperature
+	  as read from the on chip thermal sensor
+
 choice
 	prompt "Flash for image"
 	default MVEBU_SPI_BOOT

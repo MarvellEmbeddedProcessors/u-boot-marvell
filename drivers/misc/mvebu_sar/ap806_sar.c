@@ -24,7 +24,7 @@
 #include <mvebu/mvebu_chip_sar.h>
 #include <mach/clock.h>
 
-#include "chip_sar.h"
+#include <sar-uclass.h>
 
 #define CPU_CLOCK_ID	0
 #define DDR_CLOCK_ID	1
@@ -71,7 +71,6 @@
 #define SAR1_PLL0_MASK			(0x1f << SAR1_PLL0_OFFSET)
 #define SAR1_PIDI_CONNECT_OFFSET	(24)
 #define SAR1_PIDI_CONNECT_MASK		(1 << SAR1_PIDI_CONNECT_OFFSET)
-#define SAR_BASE			0xf06F8200
 
 struct sar_info {
 	char *name;
@@ -140,8 +139,6 @@ enum clocking_options {
 	CPU_1000_DDR_800_RCLK_800 = 0x1d,
 };
 
-static void __iomem *__attribute__((section(".data")))sar_base;
-
 static const u32 pll_freq_tbl[16][4] = {
 	/* CPU */   /* DDR */   /* Ring */
 	{2.0 * GHz, 1.2  * GHz, 1.2  * GHz, CPU_2000_DDR_1200_RCLK_1200},
@@ -160,12 +157,13 @@ static const u32 pll_freq_tbl[16][4] = {
 	{1.0 * GHz, 800  * MHz, 800  * MHz, CPU_1000_DDR_800_RCLK_800}
 };
 
-static u32 sar_get_clock_freq_mode(void)
+static u32 sar_get_clock_freq_mode(struct udevice *dev)
 {
 	u32 i;
-	u32 clock_freq = (readl(sar_base) & SAR_CLOCK_FREQ_MODE_MASK) >>
-			  SAR_CLOCK_FREQ_MODE_OFFSET;
+	struct dm_sar_pdata *priv = dev_get_priv(dev);
 
+	u32 clock_freq = (readl(priv->sar_base) & SAR_CLOCK_FREQ_MODE_MASK) >>
+			  SAR_CLOCK_FREQ_MODE_OFFSET;
 	for (i = 0; i < 16; i++) {
 		if (pll_freq_tbl[i][3] == clock_freq)
 			return i;
@@ -174,7 +172,8 @@ static u32 sar_get_clock_freq_mode(void)
 	return -1;
 }
 
-int ap806_sar_value_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
+int ap806_sar_value_get(struct udevice *dev, enum mvebu_sar_opts sar_opt,
+		struct sar_val *val)
 {
 	u32 clock_type, clock_freq_mode;
 
@@ -192,18 +191,19 @@ int ap806_sar_value_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
 		error("AP806-SAR: Unsupported SAR option %d.\n", sar_opt);
 		return -EINVAL;
 	}
-	clock_freq_mode = sar_get_clock_freq_mode();
+	clock_freq_mode = sar_get_clock_freq_mode(dev);
 	val->raw_sar_val = clock_freq_mode;
 	val->freq = pll_freq_tbl[clock_freq_mode][clock_type];
 	return 0;
 }
 
-static int ap806_sar_dump(void)
+static int ap806_sar_dump(struct udevice *dev)
 {
 	u32 reg, val;
 	struct sar_info *sar;
+	struct dm_sar_pdata *priv = dev_get_priv(dev);
 
-	reg = readl(sar_base);
+	reg = readl(priv->sar_base);
 	printf("AP806 SAR register 0 [0x%08x]:\n", reg);
 	printf("----------------------------------\n");
 	sar = ap806_sar_0;
@@ -213,7 +213,7 @@ static int ap806_sar_dump(void)
 		sar++;
 	}
 
-	reg = readl(sar_base + AP806_SAR_1_REG);
+	reg = readl(priv->sar_base + AP806_SAR_1_REG);
 	printf("\nAP806 SAR register 1 [0x%08x]:\n", reg);
 	printf("----------------------------------\n");
 	sar = ap806_sar_1;
@@ -225,13 +225,9 @@ static int ap806_sar_dump(void)
 	return 0;
 }
 
-
-
-int ap806_sar_init(const void *blob, int node)
+int ap806_sar_init(struct udevice *dev)
 {
-	uintptr_t chip_id;
 	int ret, i;
-	struct sar_chip_info info;
 
 	u32 sar_list[] = {
 		SAR_CPU_FREQ,
@@ -239,24 +235,9 @@ int ap806_sar_init(const void *blob, int node)
 		SAR_AP_FABRIC_FREQ
 	};
 
-	/* sar_base = fdt_get_regs_offs(blob, node, "reg");
-	 * TODO: fetch the register base address without using
-	 * fdt_get_regs_offs function
-	 */
-	sar_base = (void *)SAR_BASE;
-
-	info.sar_dump_func = ap806_sar_dump;
-	info.sar_value_get_func = ap806_sar_value_get;
-
-	ret = mvebu_sar_chip_register(COMPAT_MVEBU_SAR_REG_AP806,
-				      &info, &chip_id);
-	if (ret) {
-		error("Failed to register AP806 SAR functions.\n");
-		return ret;
-	}
-
+	device_probe(dev);
 	for (i = 0; i < ARRAY_SIZE(sar_list); i++) {
-		ret = mvebu_sar_id_register(chip_id, sar_list[i]);
+		ret = mvebu_sar_id_register(dev, sar_list[i]);
 		if (ret) {
 			error("Failed to register SAR %d, for AP806.\n",
 			      sar_list[i]);
@@ -266,3 +247,15 @@ int ap806_sar_init(const void *blob, int node)
 	return 0;
 }
 
+static const struct sar_ops ap806_sar_ops = {
+	.sar_init_func = ap806_sar_init,
+	.sar_value_get_func = ap806_sar_value_get,
+	.sar_dump_func = ap806_sar_dump,
+};
+
+U_BOOT_DRIVER(ap806_sar) = {
+	.name = "ap806_sar",
+	.id = UCLASS_SAR,
+	.priv_auto_alloc_size = sizeof(struct dm_sar_pdata),
+	.ops = &ap806_sar_ops,
+};

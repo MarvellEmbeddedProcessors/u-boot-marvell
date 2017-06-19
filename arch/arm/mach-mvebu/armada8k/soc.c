@@ -30,7 +30,7 @@ int soc_early_init_f(void)
 {
 #ifdef CONFIG_MVEBU_SAR
 	/* Sample at reset register init */
-	mvebu_sar_init(gd->fdt_blob);
+	mvebu_sar_init();
 #endif
 
 	return 0;

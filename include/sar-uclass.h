@@ -20,22 +20,20 @@
 #include <libfdt.h>
 #include <mvebu/mvebu_chip_sar.h>
 #include <fdtdec.h>
+#include <dm.h>
+#include <dm/device-internal.h>
 
-struct sar_chip_info {
-	enum fdt_compat_id compat;
-	int (*sar_init_func)(const void *blob, int node);
-	int (*sar_dump_func)(void);
-	int (*sar_value_get_func)(enum mvebu_sar_opts sar, struct sar_val *val);
-	int (*sar_bootsrc_get)(u32 *idx);
+struct sar_ops {
+	int (*sar_init_func)(struct udevice *dev);
+	int (*sar_dump_func)(struct udevice *dev);
+	int (*sar_value_get_func)(struct udevice *dev, enum mvebu_sar_opts sar,
+			struct sar_val *val);
+	int (*sar_bootsrc_get)(struct udevice *dev, u32 *idx);
 };
 
-int mvebu_sar_chip_register(enum fdt_compat_id compat,
-			    struct sar_chip_info *info,
-			    uintptr_t *chip_id);
-int mvebu_sar_id_register(uintptr_t chip_id, u32 sar_id);
+struct dm_sar_pdata {
+	void __iomem *sar_base;
+	const char *sar_name;
+};
 
-/* AP806 SAR functions. */
-int ap806_sar_init(const void *blob, int node);
-
-/* CP110 SAR functions. */
-int cp110_sar_init(const void *blob, int node);
+int mvebu_sar_id_register(struct udevice *dev, u32 sar_id);

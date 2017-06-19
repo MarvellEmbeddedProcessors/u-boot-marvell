@@ -24,9 +24,17 @@
 #include <mach/clock.h>
 #include <mvebu/mvebu_chip_sar.h>
 
-#include "chip_sar.h"
+#include <sar-uclass.h>
 
-/* SAR CP110 registers */
+/* SAR CP1 registers */
+#define SAR1_RST_PCIE0_CLOCK_CONFIG_CP1_OFFSET	(0)
+#define SAR1_RST_PCIE0_CLOCK_CONFIG_CP1_MASK	\
+	(0x1 << SAR1_RST_PCIE0_CLOCK_CONFIG_CP1_OFFSET)
+#define SAR1_RST_PCIE1_CLOCK_CONFIG_CP1_OFFSET	(1)
+#define SAR1_RST_PCIE1_CLOCK_CONFIG_CP1_MASK	\
+	(0x1 << SAR1_RST_PCIE1_CLOCK_CONFIG_CP1_OFFSET)
+
+/* SAR CP0 registers */
 #define SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_OFFSET	(2)
 #define SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_MASK	\
 	(0x1 << SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_OFFSET)
@@ -37,14 +45,19 @@
 #define SAR1_RST_BOOT_MODE_AP_CP0_OFFSET	(4)
 #define SAR1_RST_BOOT_MODE_AP_CP0_MASK		\
 	(0x3f << SAR1_RST_BOOT_MODE_AP_CP0_OFFSET)
-#define SAR_BASE				0x400200
-
-static void __iomem *__attribute__((section(".data")))sar_base;
 
 struct sar_info {
 	char *name;
 	u32 offset;
 	u32 mask;
+};
+
+struct sar_info cp110_sar_1[] = {
+	{"PCIE0 clock config   ", SAR1_RST_PCIE0_CLOCK_CONFIG_CP1_OFFSET,
+				  SAR1_RST_PCIE0_CLOCK_CONFIG_CP1_MASK},
+	{"PCIE1 clock config   ", SAR1_RST_PCIE1_CLOCK_CONFIG_CP1_OFFSET,
+				  SAR1_RST_PCIE1_CLOCK_CONFIG_CP1_MASK},
+	{"",			-1,			-1},
 };
 
 struct sar_info cp110_sar_0[] = {
@@ -79,11 +92,14 @@ static struct bootsrc_idx_info bootsrc_list[] = {
 	{-1,	-1,	-1}
 };
 
-int cp110_sar_bootsrc_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
+int cp110_sar_bootsrc_get(struct udevice *dev, enum mvebu_sar_opts sar_opt,
+		struct sar_val *val)
 {
 	u32 reg, mode;
 	int i;
-	reg = readl(sar_base);
+	struct dm_sar_pdata *priv = dev_get_priv(dev);
+
+	reg = readl(priv->sar_base);
 	mode = (reg & SAR1_RST_BOOT_MODE_AP_CP0_MASK) >>
 		SAR1_RST_BOOT_MODE_AP_CP0_OFFSET;
 
@@ -107,24 +123,38 @@ int cp110_sar_bootsrc_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
 	return 0;
 }
 
-int cp110_sar_value_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
+int cp110_sar_value_get(struct udevice *dev, enum mvebu_sar_opts sar_opt,
+		struct sar_val *val)
 {
 	u32 reg, mode;
+	struct dm_sar_pdata *priv = dev_get_priv(dev);
 
-	reg = readl(sar_base);
+	reg = readl(priv->sar_base);
 
 	switch (sar_opt) {
 	case SAR_BOOT_SRC:
-		return cp110_sar_bootsrc_get(sar_opt, val);
-	case SAR_CP_PCIE0_CLK:
+		return cp110_sar_bootsrc_get(dev, sar_opt, val);
+	case SAR_CP0_PCIE0_CLK:
 		mode = (reg & SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_MASK) >>
 			SAR1_RST_PCIE0_CLOCK_CONFIG_CP0_OFFSET;
 		val->raw_sar_val = mode;
 		val->clk_direction = mode;
 		break;
-	case SAR_CP_PCIE1_CLK:
+	case SAR_CP0_PCIE1_CLK:
 		mode = (reg & SAR1_RST_PCIE1_CLOCK_CONFIG_CP0_MASK) >>
 			SAR1_RST_PCIE1_CLOCK_CONFIG_CP0_OFFSET;
+		val->raw_sar_val = mode;
+		val->clk_direction = mode;
+		break;
+	case SAR_CP1_PCIE0_CLK:
+		mode = (reg & SAR1_RST_PCIE0_CLOCK_CONFIG_CP1_MASK) >>
+			SAR1_RST_PCIE0_CLOCK_CONFIG_CP1_OFFSET;
+		val->raw_sar_val = mode;
+		val->clk_direction = mode;
+		break;
+	case SAR_CP1_PCIE1_CLK:
+		mode = (reg & SAR1_RST_PCIE1_CLOCK_CONFIG_CP1_MASK) >>
+			SAR1_RST_PCIE1_CLOCK_CONFIG_CP1_OFFSET;
 		val->raw_sar_val = mode;
 		val->clk_direction = mode;
 		break;
@@ -135,15 +165,21 @@ int cp110_sar_value_get(enum mvebu_sar_opts sar_opt, struct sar_val *val)
 	return 0;
 }
 
-static int cp110_sar_dump(void)
+static int cp110_sar_dump(struct udevice *dev)
 {
 	u32 reg, val;
 	struct sar_info *sar;
+	struct dm_sar_pdata *priv = dev_get_priv(dev);
 
-	reg = readl(sar_base);
+	reg = readl(priv->sar_base);
 	printf("\nCP110 SAR register 0 [0x%08x]:\n", reg);
 	printf("----------------------------------\n");
-	sar = cp110_sar_0;
+
+	if (!strcmp(priv->sar_name, "cp0_sar"))
+		sar = cp110_sar_0;
+	else
+		sar = cp110_sar_1;
+
 	while (sar->offset != -1) {
 		val = (reg & sar->mask) >> sar->offset;
 		printf("%s  0x%x\n", sar->name, val);
@@ -152,45 +188,62 @@ static int cp110_sar_dump(void)
 	return 0;
 }
 
-int cp110_sar_init(const void *blob, int node)
+static int cp110_sar_register(struct udevice *dev, u32 sar_list[], int size)
 {
-	uintptr_t chip_id;
 	int ret, i;
-	struct sar_chip_info info;
 
-
-	u32 sar_list[] = {
-		SAR_CP_PCIE0_CLK,
-		SAR_CP_PCIE1_CLK,
-		SAR_BOOT_SRC
-	};
-
-	/* sar_base = fdt_get_regs_offs(blob, node, "reg");
-	 * TODO: fetch the register base address without using
-	 * fdt_get_regs_offs function
-	 */
-	sar_base = (void *)SAR_BASE;
-
-	info.sar_dump_func = cp110_sar_dump;
-	info.sar_value_get_func = cp110_sar_value_get;
-
-	ret = mvebu_sar_chip_register(COMPAT_MVEBU_SAR_REG_CP110,
-				      &info, &chip_id);
-	if (ret) {
-		error("Failed to register AP806 SAR functions.\n");
-		return ret;
-	}
-
-	for (i = 0; i < ARRAY_SIZE(sar_list); i++) {
-		ret = mvebu_sar_id_register(chip_id, sar_list[i]);
+	for (i = 0; i < size; i++) {
+		ret = mvebu_sar_id_register(dev, sar_list[i]);
 		if (ret) {
-			error("Failed to register SAR %d, for CP110.\n",
-			      sar_list[i]);
+			error("Failed to register SAR %d, for %s.\n",
+			      sar_list[i], dev->name);
 			return ret;
 		}
 	}
 
+	return 0;
+}
+
+int cp110_sar_init(struct udevice *dev)
+{
+	int ret;
+	struct dm_sar_pdata *priv = dev_get_priv(dev);
+
+	device_probe(dev);
+
+	u32 cp0_sar_list[] = {
+		SAR_CP0_PCIE0_CLK,
+		SAR_CP0_PCIE1_CLK,
+		SAR_BOOT_SRC
+	};
+
+	u32 cp1_sar_list[] = {
+		SAR_CP1_PCIE0_CLK,
+		SAR_CP1_PCIE1_CLK,
+	};
+
+	if (!strcmp(priv->sar_name, "cp0_sar"))
+		ret = cp110_sar_register(dev, cp0_sar_list,
+				ARRAY_SIZE(cp0_sar_list));
+	else
+		ret = cp110_sar_register(dev, cp1_sar_list,
+				ARRAY_SIZE(cp1_sar_list));
+
+	if (ret)
+		return -EINVAL;
 
 	return 0;
 }
 
+static const struct sar_ops cp110_sar_ops = {
+	.sar_init_func = cp110_sar_init,
+	.sar_value_get_func = cp110_sar_value_get,
+	.sar_dump_func = cp110_sar_dump,
+};
+
+U_BOOT_DRIVER(cp110_sar) = {
+	.name = "cp110_sar",
+	.id = UCLASS_SAR,
+	.priv_auto_alloc_size = sizeof(struct dm_sar_pdata),
+	.ops = &cp110_sar_ops,
+};

@@ -35,8 +35,10 @@ enum mvebu_sar_opts {
 	SAR_DDR_FREQ,
 	SAR_AP_FABRIC_FREQ,
 	SAR_CP_FABRIC_FREQ,
-	SAR_CP_PCIE0_CLK,
-	SAR_CP_PCIE1_CLK,
+	SAR_CP0_PCIE0_CLK,
+	SAR_CP0_PCIE1_CLK,
+	SAR_CP1_PCIE0_CLK,
+	SAR_CP1_PCIE1_CLK,
 	SAR_BOOT_SRC,
 	SAR_MAX_IDX
 };
@@ -77,9 +79,9 @@ struct sar_val {
 };
 
 
-int mvebu_sar_init(const void *blob);
+int mvebu_sar_init(void);
 int mvebu_sar_value_get(enum mvebu_sar_opts opt, struct sar_val *val);
-void mvebu_sar_dump(void);
+void mvebu_sar_dump(struct udevice *dev);
 char *mvebu_sar_bootsrc_to_name(enum mvebu_bootsrc_type src);
 
 #endif	/* _MVEBU_CHIP_SAR_H_ */

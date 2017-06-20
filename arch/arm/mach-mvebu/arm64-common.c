@@ -143,7 +143,8 @@ int arch_early_init_r(void)
 	int i;
 
 	/* Check if any existing regulator should be turned down */
-	regulators_enable_boot_off(false);
+	if (!of_machine_is_compatible("marvell,armada3710"))
+		regulators_enable_boot_off(false);
 
 	/*
 	 * Loop over all MISC uclass drivers to call the comphy code

@@ -4808,6 +4808,7 @@ static int phy_info_parse(struct udevice *dev, struct mvpp2_port *port)
 	return 0;
 }
 
+#ifdef CONFIG_DM_GPIO
 /* Port GPIO initialization */
 static void mvpp2_gpio_init(struct mvpp2_port *port)
 {
@@ -4820,6 +4821,7 @@ static void mvpp2_gpio_init(struct mvpp2_port *port)
 	if (dm_gpio_is_valid(&port->phy_tx_disable_gpio))
 		dm_gpio_set_value(&port->phy_tx_disable_gpio, 0);
 }
+#endif
 
 /* Ports initialization */
 static int mvpp2_port_probe(struct udevice *dev,

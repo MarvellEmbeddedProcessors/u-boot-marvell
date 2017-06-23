@@ -322,6 +322,7 @@ int mv88e6xxx_initialize(const void *blob)
 {
 	int node = 0;
 	int ret;
+	int port;
 
 	soho_dev_handle = NULL;
 
@@ -371,6 +372,28 @@ int mv88e6xxx_initialize(const void *blob)
 					       PORT_PCS_CTRL, reg);
 		if (ret)
 			return ret;
+	}
+
+	/* Force port setup */
+	for (port = 0; port < sizeof(soho_dev.port_mask) * 8; port++) {
+		if (!(soho_dev.port_mask & BIT(port)))
+			continue;
+
+		/* Set port control register */
+		mv88e6xxx_write_register(&soho_dev,
+					 REG_PORT(port),
+					 PORT_CONTROL,
+					 PORT_CONTROL_STATE_FORWARDING |
+					 PORT_CONTROL_FORWARD_UNKNOWN |
+					 PORT_CONTROL_FORWARD_UNKNOWN_MC |
+					 PORT_CONTROL_USE_TAG |
+					 PORT_CONTROL_USE_IP |
+					 PORT_CONTROL_TAG_IF_BOTH);
+		/* Set port based vlan table */
+		mv88e6xxx_write_register(&soho_dev,
+					 REG_PORT(port),
+					 PORT_BASE_VLAN,
+					 soho_dev.port_mask & ~BIT(port));
 	}
 
 	soho_dev_handle = &soho_dev;

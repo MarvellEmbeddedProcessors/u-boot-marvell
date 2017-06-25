@@ -5,7 +5,7 @@
  * https://spdx.org/licenses
  */
 
-#include "armada-8040.dtsi" /* include SoC device tree */
+#include "armada-80x0-db.dtsi" /* include SoC device tree */
 
 / {
 	model = "Marvell Armada 8040 MACHIATOBin";

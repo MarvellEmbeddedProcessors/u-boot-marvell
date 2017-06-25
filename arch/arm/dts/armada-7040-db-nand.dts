@@ -45,7 +45,7 @@
  * Boot device: NAND, 0xE (SW3)
  */
 
-#include "armada-7040.dtsi"
+#include "armada-70x0-db.dtsi"
 
 / {
 	model = "Marvell Armada 7040 Development Board DB-88FA7040 with NAND";

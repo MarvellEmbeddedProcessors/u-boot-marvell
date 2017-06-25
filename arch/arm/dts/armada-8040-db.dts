@@ -44,7 +44,7 @@
  * Device Tree file for Marvell Armada 8040 Development board platform
  */
 
-#include "armada-8040.dtsi"
+#include "armada-80x0-db.dtsi"
 
 / {
 	model = "Marvell Armada 8040 Development Board DB-88F8040";

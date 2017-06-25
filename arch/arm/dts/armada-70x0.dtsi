@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Marvell International Ltd.
+ */
+
+/*
+ * Device Tree file for the Armada 7040 SoC, made of an AP806 Quad and
+ * one CP110.
+ */
+
+#include <dt-bindings/gpio/gpio.h>
+#include "armada-ap806-quad.dtsi"
+#include "armada-cp110-master.dtsi"
+
+/ {
+	model = "Marvell Armada 7040";
+	compatible = "marvell,armada7040", "marvell,armada-ap806-quad",
+		     "marvell,armada-ap806";
+};

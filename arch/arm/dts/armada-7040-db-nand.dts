@@ -45,7 +45,7 @@
  * Boot device: NAND, 0xE (SW3)
  */
 
-#include "armada-70x0.dtsi"
+#include "armada-70x0-db.dtsi"
 
 / {
 	model = "Marvell Armada 7040 DB board";
@@ -64,24 +64,6 @@
 	memory@00000000 {
 		device_type = "memory";
 		reg = <0x0 0x0 0x0 0x80000000>;
-	};
-
-	cpm_reg_usb3_vbus0:cpm_usb3_vbus@0 {
-		compatible = "regulator-fixed";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		startup-delay-us = <100000>;
-		regulator-force-boot-off;
-		gpio = <&expander0 0 GPIO_ACTIVE_HIGH>;
-	};
-
-	cpm_reg_usb3_vbus1: cpm_usb3_vbus@1 {
-		compatible = "regulator-fixed";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		startup-delay-us = <100000>;
-		regulator-force-boot-off;
-		gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
 	};
 };
 
@@ -109,12 +91,6 @@
 	pinctrl-0 = <&cpm_i2c0_pins>;
 	status = "okay";
 	clock-frequency = <100000>;
-	expander0: pca953x@21 {
-		compatible = "nxp,pca9555";
-		#gpio-cells = <2>;
-		reg = <0x21>;
-		status = "okay";
-	};
 };
 
 &cpm_pinctl {
@@ -180,14 +156,10 @@
 };
 
 &cpm_usb3_0 {
-	vbus-supply = <&cpm_reg_usb3_vbus0>;
-	vbus-disable-delay = <500>;
 	status = "okay";
 };
 
 &cpm_usb3_1 {
-	vbus-supply = <&cpm_reg_usb3_vbus1>;
-	vbus-disable-delay = <500>;
 	status = "okay";
 };
 

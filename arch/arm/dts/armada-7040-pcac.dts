@@ -45,8 +45,7 @@
  * Boot device: SPI NOR, 0x32 (SW3)
  */
 
-#include "armada-70x0.dtsi"
-#include "armada-70x0-dev-info.dtsi"
+#include "armada-70x0-db.dtsi"
 
 / {
 	model = "Marvell PCAC-Armada 7040 DB board";

@@ -1,0 +1,93 @@
+/*
+ * ***************************************************************************
+ * Copyright (C) 2017 Marvell International Ltd.
+ * ***************************************************************************
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ***************************************************************************
+ */
+
+ #include "armada-8040.dtsi" /* include SoC device tree */
+ #include "armada-8040-dev-info.dtsi" /* include Marvell specific info (S@R, MPP cmd) */
+/ {
+	compatible = "marvell,armada-80x0-db", "marvell,armada-8040";
+	model = "DB-ARMADA-80x0";
+
+	cp110-master {
+		config-space {
+			i2c@701000 {
+				expander0: pca953x@21 {
+					compatible = "nxp,pca9555";
+					#gpio-cells = <2>;
+					reg = <0x21>;
+					status = "okay";
+				};
+				expander1: pca953x@25 {
+					compatible = "nxp,pca9555";
+					#gpio-cells = <2>;
+					reg = <0x25>;
+					status = "okay";
+				};
+			};
+
+			cpm_reg_usb3_vbus0:cpm_usb3_vbus@0 {
+				compatible = "regulator-fixed";
+				regulator-min-microvolt = <5000000>;
+				regulator-max-microvolt = <5000000>;
+				startup-delay-us = <100000>;
+				regulator-force-boot-off;
+				gpio = <&expander0 0 GPIO_ACTIVE_HIGH>;
+			};
+
+			cpm_reg_usb3_vbus1: cpm_usb3_vbus@1 {
+				compatible = "regulator-fixed";
+				regulator-min-microvolt = <5000000>;
+				regulator-max-microvolt = <5000000>;
+				startup-delay-us = <100000>;
+				regulator-force-boot-off;
+				gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
+			};
+
+			/* even though this node used for enable/disable cps usb vbus-supply,
+			 * we use "cpm" prefix since the expander is connected to cpm.
+			 */
+			cpm_reg_usb3_vbus2: cpm_usb3_vbus@2 {
+				compatible = "regulator-fixed";
+				regulator-min-microvolt = <5000000>;
+				regulator-max-microvolt = <5000000>;
+				startup-delay-us = <100000>;
+				regulator-force-boot-off;
+				gpio = <&expander1 0 GPIO_ACTIVE_HIGH>;
+			};
+
+			cpm_usb3_0: usb3@500000 {
+				vbus-supply = <&cpm_reg_usb3_vbus0>;
+				vbus-disable-delay = <500>;
+			};
+			cpm_usb3_1: usb3@510000 {
+				vbus-supply = <&cpm_reg_usb3_vbus1>;
+				vbus-disable-delay = <500>;
+			};
+		};
+	};
+
+	cp110-slave {
+		config-space {
+
+			cps_usb3_0: usb3@500000 {
+				vbus-supply = <&cpm_reg_usb3_vbus2>;
+				vbus-disable-delay = <500>;
+			};
+		};
+	};
+
+};

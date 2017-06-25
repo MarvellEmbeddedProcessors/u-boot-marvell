@@ -54,3 +54,7 @@
 	compatible = "marvell,armada70x0", "marvell,armada-ap806-quad",
 		     "marvell,armada-ap806";
 };
+
+&cpm_rtc {
+	status = "okay";
+};

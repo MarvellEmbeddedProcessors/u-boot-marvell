@@ -55,3 +55,7 @@
 	compatible = "marvell,armada8040", "marvell,armada-ap806-quad",
 		     "marvell,armada-ap806";
 };
+
+&cps_rtc {
+	status = "okay";
+};

@@ -198,4 +198,10 @@
  */
 #define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS 10
 
+/* RTC configuration */
+#ifdef CONFIG_MVEBU_RTC
+#define ERRATA_FE_3124064
+#define CONFIG_CMD_DATE
+#endif
+
 #endif /* _CONFIG_MVEBU_ARMADA_8K_H */

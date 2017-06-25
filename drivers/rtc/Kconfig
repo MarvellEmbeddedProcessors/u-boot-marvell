@@ -13,6 +13,15 @@ config DM_RTC
 	  drivers to perform the actual functions. See rtc.h for a
 	  description of the API.
 
+config MVEBU_RTC
+	bool "MVEBU RTC support"
+	depends on DM_RTC
+	help
+	  Choose this option to add
+	  support for Marvell's MVEBU
+	  RTC driver, which is used
+	  by Armada8k.
+
 config RTC_PCF2127
 	bool "Enable PCF2127 driver"
 	depends on DM_RTC

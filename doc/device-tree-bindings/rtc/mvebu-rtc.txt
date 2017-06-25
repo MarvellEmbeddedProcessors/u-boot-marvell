@@ -1,0 +1,17 @@
+Marvell RTC bindings
+====================
+
+The RTC driver provides get / set time from RTC registers
+
+Mandatory properties:
+SoC specific:
+	- compatible
+		Should be "marvell,real-time-clock".
+	- reg
+		Base address and size of RTC.
+
+Example for RTC node:
+	rtc-reg {
+		compatible = "marvell,real-time-clock";
+		reg = <0x284000 0x104>;
+	};

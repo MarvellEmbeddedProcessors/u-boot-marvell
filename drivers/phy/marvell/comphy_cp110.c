@@ -96,27 +96,68 @@ static u32 polling_with_timeout(void __iomem *addr, u32 val,
 	return 0;
 }
 
+/*
+ * We need to read the PCIe clock direction from the sample-at-reset.
+ * The are 2 PCIe clocks in CP110:
+ *	- Ref clock #0 for lanes 1, 2 and 3.
+ *	- Ref clock #1 for lanes 4 and 5.
+ *
+ * TODO:
+ * This info should be provided by the sample-at-reset driver and not
+ * via direct read. This code is temporary until proper sample-at-reset
+ * driver will be introduced.
+ */
+#define DEVICE_SAR_RST_PCIE1_CLK_CFG_CPx(cp_index)	(cp_index ? 0x2 : 0x8)
+#define DEVICE_SAR_RST_PCIE0_CLK_CFG_CPx(cp_index)	(cp_index ? 0x1 : 0x4)
+
+static int comphy_get_pcie_clk_source(u32 lane, u32 cp_index)
+{
+	u32 reg, pcie_clk = 0;
+	int sar_node = -1; /* Set to -1 in order to read the first node */
+	void __iomem *sar_base = NULL;
+	int i;
+
+	for (i = 0; i < (cp_index + 1); i++)
+		sar_node = fdt_node_offset_by_compatible(gd->fdt_blob,
+							 sar_node,
+							 "marvell,sample-at-reset-cp110");
+
+	if (sar_node == 0) {
+		error("SAR node isn't found in the device-tree\n");
+		return 0;
+	}
+
+	sar_base = (void __iomem *)
+		fdtdec_get_addr_size_auto_noparent(gd->fdt_blob, sar_node,
+						   "reg", 0, NULL, true);
+	if (sar_base == NULL) {
+		error("SAR address isn't found in the device-tree\n");
+		return 0;
+	}
+
+	reg = readl(sar_base);
+
+	if (lane == 4 || lane == 5) {
+		if (reg & DEVICE_SAR_RST_PCIE1_CLK_CFG_CPx(cp_index))
+			pcie_clk = 1;
+	} else {
+		if (reg & DEVICE_SAR_RST_PCIE0_CLK_CFG_CPx(cp_index))
+			pcie_clk = 1;
+	}
+
+	return pcie_clk;
+}
+
 static int comphy_pcie_power_up(u32 lane, u32 pcie_width, bool clk_src,
 				bool is_end_point, void __iomem *hpipe_base,
-				void __iomem *comphy_base)
+				void __iomem *comphy_base, int cp_index)
 {
 	u32 mask, data, ret = 1;
 	void __iomem *hpipe_addr = HPIPE_ADDR(hpipe_base, lane);
 	void __iomem *comphy_addr = COMPHY_ADDR(comphy_base, lane);
 	void __iomem *addr;
-	u32 pcie_clk = 0; /* set input by default */
+	u32 pcie_clk = comphy_get_pcie_clk_source(lane, cp_index);
 
-	debug_enter();
-
-	/*
-	 * ToDo:
-	 * Add SAR (Sample-At-Reset) configuration for the PCIe clock
-	 * direction. SAR code is currently not ported from Marvell
-	 * U-Boot to mainline version.
-	 *
-	 * SerDes Lane 4/5 got the PCIe ref-clock #1,
-	 * and SerDes Lane 0 got PCIe ref-clock #0
-	 */
 	debug("PCIe clock = %x\n", pcie_clk);
 	debug("PCIe RC    = %d\n", !is_end_point);
 	debug("PCIe width = %d\n", pcie_width);
@@ -2015,7 +2056,8 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 			ret = comphy_pcie_power_up(
 				lane, pcie_width, ptr_comphy_map->clk_src,
 				serdes_map->end_point,
-				hpipe_base_addr, comphy_base_addr);
+				hpipe_base_addr, comphy_base_addr,
+				ptr_chip_cfg->cp_index);
 			break;
 		case COMPHY_TYPE_SATA0:
 		case COMPHY_TYPE_SATA1:

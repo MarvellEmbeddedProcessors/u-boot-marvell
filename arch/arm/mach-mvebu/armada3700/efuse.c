@@ -92,7 +92,8 @@ struct a3700_efuse_info {
 		{ EFUSE_ID_UART_PERM_DIS,     MB_OPSZ_BIT,   0,   1, { 36, 0, 0, 0 } }, \
 		{ EFUSE_ID_ESC_SEQ_DIS,       MB_OPSZ_BIT,   1,   1, { 20, 0, 0, 0 } }, \
 		{ EFUSE_ID_GPIO_TOGGLE_DIS,   MB_OPSZ_BIT,   1,   1, { 16, 0, 0, 0 } }, \
-		{ EFUSE_ID_LONG_KEY_EN,       MB_OPSZ_BIT,   1,   1, { 12, 0, 0, 0 } } \
+		{ EFUSE_ID_LONG_KEY_EN,       MB_OPSZ_BIT,   1,   1, { 12, 0, 0, 0 } }, \
+		{ EFUSE_ID_DEVICE_DEPLOYMENT, MB_OPSZ_BIT,   0,   1, { 8, 0, 0, 0 } } \
 	}
 
 static struct a3700_efuse_info efuse_info[EFUSE_ID_MAX] = A3700_EFUSE_INFO;
@@ -221,6 +222,7 @@ int efuse_write(enum efuse_id fid, const char *value)
 	case EFUSE_ID_GPIO_TOGGLE_DIS:
 	case EFUSE_ID_LONG_KEY_EN:
 	case EFUSE_ID_EMMC_CLOCK:
+	case EFUSE_ID_DEVICE_DEPLOYMENT:
 		numval = simple_strtoul(value, 0, 10);
 		if (numval != 1) {
 			printf("%s: Invalid value %d, expected 1\n",
@@ -455,6 +457,11 @@ int efuse_read(enum efuse_id fid, char *value)
 		spare_page = (args[1] >> 16) & 0xFF;
 		sprintf(value, "%04d.%02d.%02d.%02d", page_sz,
 			page_block, spare_offs, spare_page);
+		break;
+
+	case EFUSE_ID_DEVICE_DEPLOYMENT:
+		sprintf(value, "%s (%d)", numval == 0 ? "UN-DEPLOYED" :
+			"DEPLOYED", numval);
 		break;
 
 	default:

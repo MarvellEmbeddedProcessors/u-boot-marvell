@@ -83,6 +83,8 @@ enum efuse_id {
 	EFUSE_ID_GPIO_TOGGLE_DIS	= 19,
 	/* GPIO toggle disable */
 	EFUSE_ID_LONG_KEY_EN		= 20,
+	/* Device Deployment */
+	EFUSE_ID_DEVICE_DEPLOYMENT	= 21,
 	/* Long key enable */
 	EFUSE_ID_MAX
 };
@@ -126,6 +128,7 @@ struct efuse_info {
 		{"ESC_SEQ_DIS", "Enabe/Disable Escape sequence in trusted boot mode - 0 or 1"}, \
 		{"GPIO_TOGGLE_DIS", "Enabe/Disable GPIO pin 11 and 12 toogle - 0 or 1"}, \
 		{"LONG_KEY_EN", "Enabe/Disable long key (512b) support  - 0 or 1"}, \
+		{"DEV_DEPLOY", "Set to 1 if deployed to consumer"}, \
 		{"INVALID", "Invalid ID"} \
 	}
 

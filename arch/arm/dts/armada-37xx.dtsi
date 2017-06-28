@@ -265,6 +265,11 @@
 					groups = "uart2";
 					function = "uart";
 				};
+
+				mmc_pins: mmc-pins {
+					groups = "emmc_nb";
+					function = "mmc";
+				};
 			};
 
 			pinctrl_sb: pinctrl-sb@18800 {
@@ -288,6 +293,15 @@
 					function = "mii";
 				};
 
+				sdio_pins: sdio-pins {
+					groups = "sdio_sb";
+					function = "sdio";
+				};
+
+				pcie_pins: pcie-pins {
+					groups = "pcie1";
+					function = "pcie";
+				};
 			};
 
 			gpio0: gpio@13800 {

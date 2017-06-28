@@ -154,6 +154,8 @@
 &sdhci0 {
 	bus-width = <4>;
 	vqmmc-supply = <&vcc_sd_reg0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdio_pins>;
 	status = "okay";
 };
 
@@ -163,6 +165,8 @@
 	mmc-ddr-1_8v;
 	mmc-hs400-1_8v;
 	marvell,pad-type = "fixed-1-8v";
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc_pins>;
 	status = "okay";
 
 	#address-cells = <1>;
@@ -196,6 +200,8 @@
 };
 
 &uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart2_pins>;
 	status = "okay";
 };
 
@@ -213,6 +219,8 @@
 
 /* CON17 */
 &pcie0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie_pins>;
 	reset-gpio = <&gpio1 3 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 };

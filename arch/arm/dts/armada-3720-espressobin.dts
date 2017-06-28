@@ -135,6 +135,8 @@
 &sdhci0 {
 	bus-width = <4>;
 	vqmmc-supply = <&vcc_sd_reg0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdio_pins>;
 	status = "okay";
 };
 
@@ -171,6 +173,8 @@
 };
 
 &pcie0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie_pins>;
 	reset-gpio = <&gpio1 3 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 };

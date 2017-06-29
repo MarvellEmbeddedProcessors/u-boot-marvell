@@ -20,6 +20,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define MVEBU_SPI_A3700_BYTE_LEN		BIT(5)
 #define MVEBU_SPI_A3700_CLK_PHA			BIT(6)
 #define MVEBU_SPI_A3700_CLK_POL			BIT(7)
+#define MVEBU_SPI_A3700_DATA_PIN_DUAL		BIT(10)
+#define MVEBU_SPI_A3700_DATA_PIN_QUAD		BIT(11)
+#define MVEBU_SPI_A3700_ADDR_PIN		BIT(12)
 #define MVEBU_SPI_A3700_FIFO_EN			BIT(17)
 #define MVEBU_SPI_A3700_SPI_EN_0		BIT(16)
 #define MVEBU_SPI_A3700_WFIFO_FULL		BIT(7)
@@ -67,6 +70,23 @@ static void spi_cs_deactivate(struct spi_reg *reg, int cs)
 {
 	clrbits_le32(&reg->ctrl, MVEBU_SPI_A3700_SPI_EN_0 << cs);
 }
+
+static void spi_pin_mode_set(struct spi_reg *reg, unsigned long flags)
+{
+	unsigned int data;
+
+	data = readl(&reg->cfg);
+	data &= ~(MVEBU_SPI_A3700_DATA_PIN_DUAL |
+		  MVEBU_SPI_A3700_DATA_PIN_QUAD);
+
+	if (flags & SPI_XFER_DUAL)
+		data = data | MVEBU_SPI_A3700_DATA_PIN_DUAL;
+	else if (flags & SPI_XFER_QUAD)
+		data = data | MVEBU_SPI_A3700_DATA_PIN_QUAD;
+
+	writel(data, &reg->cfg);
+}
+
 
 static inline void spi_bytelen_set(struct spi_reg *reg, unsigned int len)
 {
@@ -351,6 +371,9 @@ static int mvebu_spi_xfer(struct udevice *dev, unsigned int bitlen,
 		spi_cs_activate(reg, spi_chip_select(dev));
 	}
 
+	/* Set data transfer pins number */
+	spi_pin_mode_set(reg, flags);
+
 	/* Flush read/write FIFO */
 	data = readl(&reg->cfg);
 	writel(data | MVEBU_SPI_A3700_FIFO_FLUSH, &reg->cfg);
@@ -456,6 +479,14 @@ static int mvebu_spi_probe(struct udevice *bus)
 	 */
 	data |= 0 << MVEBU_SPI_A3700_RFIFO_THRS_BIT;
 	data |= 7 << MVEBU_SPI_A3700_WFIFO_THRS_BIT;
+
+	/*
+	* Address Register is used to send none 4 byte aligned
+	* header data at first while Data Out/In register is used to
+	* send remain 4 byte aligned data, so address transfer pins
+	* number should be same as data pins;
+	*/
+	data |= MVEBU_SPI_A3700_ADDR_PIN;
 
 	writel(data, &reg->cfg);
 

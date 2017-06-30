@@ -1,0 +1,53 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Marvell International Ltd.
+ */
+
+#include "armada-3900-db.dtsi"
+
+/ {
+	model = "Marvell Armada 3900 Validation Development board(CP NAND)";
+	compatible = "marvell,armada3900-vd", "marvell,armada7040",
+		     "marvell,armada-ap806-quad", "marvell,armada-ap806";
+
+	aliases {
+		i2c1 = &ap_i2c0;
+	};
+};
+
+/*
+ * AP related configuration
+ */
+&ap_i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ap_i2c0_pins>;
+	status = "okay";
+};
+
+/*
+ * CP related configuration
+ */
+&cp0_pinctl {
+		/* MPP Bus:
+		 *   NAND	[13,15-27]
+		 *   SMI	[32,34]
+		 *   XSMI	[35-36]
+		 *   I2C0	[37-38]
+		 *   USB	[44-45]
+		 *   UART1	[46-47,49,58]
+		 *   IHB	[56-57]
+		 *   UART0	[59-62]
+		 */
+		/*   0   1   2   3   4   5   6   7   8   9 */
+	pin-func = < 0   0   0   0   0   0   0   0   0   0
+		     0   0   0   2   0   1   1   1   1   1
+		     1   1   1   1   1   1   1   1   0   0
+		     0   0   7   0   7   7   7   2   2   0
+		     0   0   0   0   0   0   7   7   0   7
+		     0   0   0   0   0   0   0   0   7   7
+		     7   7   7>;
+};
+
+&cp0_nand {
+	status = "okay";
+};

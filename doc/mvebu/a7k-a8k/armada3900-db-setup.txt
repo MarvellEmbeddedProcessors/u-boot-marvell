@@ -1,0 +1,89 @@
+Armada-3900 Development Board Setup
+===================================
+
+The Armada 3900 Development Board are a series of configurable boards with different
+configuations for different purposes
+U-Boot supports a defined set of those configurations via different device tree files.
+
+This document describes the board modifications required to setup each configuration and the
+interfaces supported (or disabled in each one).
+
+To switch board configuration:
+1. Modify HW board settings according to the instructions in the "Board Setup" section below.
+2. Modify the Device tree file used by U-BOOT during compilation:
+   mvebu_db_armada8k_defconfig           - Choose Armada80x0/70x0 general defconfig
+   export DEVICE_TREE=<device_tree_name> - Choose specific device-tree
+
+Note:
+Booting Linux requires using the same Device Tree configuration as used in U-Boot.
+
+
+Board Target Usage and Setup Options
+-------------------
+
+|		| 1: VD				| 2: VD-NAND			|
+|---------------|-------------------------------|-------------------------------|
+|Device tree	| armada-3900-vd.dts		| armada-3900-vd-nand.dts	|
+|Purpose	| internal test	with NOR boot	| internal test with nand boot	|
+|PCB		| TB_A3900-BGA			| TB_A3900-BGA			|
+|pcie x 2 iface	| stardard x2 interface		| startard x 2 interface	|
+|pcie x 1 iface	| mini x2 interface		| mini x2 interface		|
+|mochi 		| external through mcix4	| external through mcix4	|
+
+The tables below summarize the interface configuration of each setup.
+
+SerDes Configuration
+---------------------
+ Lane	|  VD/VD-NAND/AXIS		|
+--------|-------------------------------|
+ 0	|  PCIe0 (x2)			|
+ 1	|  PCIe0 (x2)	        	|
+ 2	|  SGMII0 (auto-neg <= 1G) (*)	|
+ 3	|  SGMII1 (auto-neg <= 1G)	|
+ 4	|  USB3 HOST1	        	|
+ 5	|  PCIe2 (x1)	        	|
+-----------------------------------------
+
+Multi purpose pin configurations
+--------------------------------
+ AP806 pin	| 1: VD		| 2: VD-NAND	|
+----------------|---------------|---------------|
+	AP-SDIO | N/C		| N/C		|
+	AP-SPI0 | [0-3]		| [0-3]		|
+	AP-I2C	| [4-5]		| [4-5]		|
+	AP-UART0| [11,19]	| [11,19]	|
+
+ CP110 pin	| 1: VD		| 2: VD-NAND	|
+----------------|---------------|---------------|
+ CP-SPI1	| [13-16]	| N/C		|
+ CP-I2C0	| N/C		| N/C		|
+ CP-I2C1	| [37-38]	| [37-38]	|
+ NAND		| N/C		| [13,15-27]	|
+ CP-UART0	| [59-62]	| [59-62]	|
+ CP-UART1	| [46-47,49,58]	| [46-47,49,58] |
+ SMI		| [32,34]	| [32,34]	|
+ XSMI		| [35-36]	| [35-36]	|
+ USB0_VDD 	| [44]		| [44]		|
+ USB1_VDD 	| [45]		| [45]		|
+ IHB-ENABLE     | [56]          | [56]		|
+ IHB-RESET      | [57]		| [57]		|
+ IOT-RESET      | N/C		| N/C		|
+ ETH-PHY-RESET  | N/C		| N/C		|
+ PPS-RESET      | N/C		| N/C		|
+
+Network configuration
+---------------------
+1: VD/VD-NAND
+---------------------
+ Interface	| GMAC Port	| Board Interface			|
+ ---------------|---------------|---------------------------------------|
+ eth0		| 0		| SGMII (*)                         	|
+ eth1		| 2		| SGMII                         	|
+
+Notes:
+	- (*) eth0/serdes2 are expected to run with 5G speed but u-boot can't dynammically change the
+              serdes speed. It is configured with 1G and let Linux handle 5G task.
+	- Equivalent of this configuration can be viewed in arch/arm64/boot/dts/mvebu/armada-cpn110.dtsi
+	- eth0/1/2/3 may in fact be higher numbers, if prior eth_x interfaces already exist.
+
+

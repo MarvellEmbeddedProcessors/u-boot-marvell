@@ -1,0 +1,239 @@
+/*
+ * ***************************************************************************
+ * Copyright (C) 2017 Marvell International Ltd.
+ * ***************************************************************************
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ***************************************************************************
+ */
+
+#include "armada-70x0.dtsi" /* include SoC device tree */
+#include "armada-70x0-dev-info.dtsi" /* include Marvell specific info (S@R, MPP cmd) */
+
+/ {
+	model = "DB-ARMADA-3900";
+	compatible = "marvell,armada7040", "marvell,armada-ap806-quad",
+		     "marvell,armada-ap806";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		i2c0 = &cpm_i2c0;
+		spi0 = &ap_spi0;
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+
+	cp110-master {
+		config-space {
+			cpm_reg_usb3_vbus0: cpm_usb3_vbus@0 {
+				compatible = "regulator-fixed";
+				pinctrl-names = "default";
+				pinctrl-0 = <&cpm_xhci0_vbus_pins>;
+				regulator-name = "cpm-xhci0-vbus";
+				regulator-min-microvolt = <5000000>;
+				regulator-max-microvolt = <5000000>;
+				startup-delay-us = <100000>;
+				enable-active-high;
+				regulator-force-boot-off;
+				gpio = <&cpm_gpio1 12 GPIO_ACTIVE_HIGH>;
+			};
+
+			cpm_reg_usb3_vbus1: cpm_usb3_vbus@1 {
+				compatible = "regulator-fixed";
+				pinctrl-names = "default";
+				pinctrl-0 = <&cpm_xhci1_vbus_pins>;
+				regulator-name = "cpm-xhci1-vbus";
+				regulator-min-microvolt = <5000000>;
+				regulator-max-microvolt = <5000000>;
+				startup-delay-us = <100000>;
+				enable-active-high;
+				regulator-force-boot-off;
+				gpio = <&cpm_gpio1 13 GPIO_ACTIVE_HIGH>;
+			};
+
+			cpm_mochi_reset: cpm_mochi_reset {
+				compatible = "regulator-fixed";
+				pinctrl-names = "default";
+				pinctrl-0 = <&cpm_mochi_reset_pins>;
+				regulator-name = "cpm-mochi-reset";
+				enable-active-high;
+				gpio = <&cpm_gpio1 24 GPIO_ACTIVE_HIGH>;
+			};
+
+			cpm_mochi_enable: cpm_mochi_enable {
+				compatible = "regulator-fixed";
+				pinctrl-names = "default";
+				pinctrl-0 = <&cpm_mochi_enable_pins>;
+				regulator-name = "cpm-mochi-enable";
+				enable-active-high;
+				gpio = <&cpm_gpio1 25 GPIO_ACTIVE_HIGH>;
+			};
+		};
+	};
+};
+
+
+/*
+ * AP related configuration
+ */
+&ap_pinctl {
+		/* MPP Bus:
+		 * SPI   [0-3]
+		 * I2C   [4-5]
+		 * UART0 [11,19]
+		 */
+		/*   0 1 2 3 4 5 6 7 8 9 */
+	pin-func = < 3 3 3 3 3 3 0 0 0 0
+		     0 3 0 0 0 0 0 0 0 3 >;
+};
+
+&ap_spi0 {
+	status = "okay";
+};
+
+&uart0 {
+	status = "okay";
+};
+
+
+/*
+ * CP related configuration
+ */
+&cpm_pinctl {
+	cpm_xhci0_vbus_pins: cpm-xhci0-vbus-pins {
+		marvell,pins = <44>;
+		marvell,function = <0>;
+	};
+
+	cpm_xhci1_vbus_pins: cpm-xhci1-vbus-pins {
+		marvell,pins = <45>;
+		marvell,function = <0>;
+	};
+
+	cpm_mochi_reset_pins: cpm-mochi-reset-pins {
+		marvell,pins = <56>;
+		marvell,function = <0>;
+	};
+
+	cpm_mochi_enable_pins: cpm-mochi-enable-pins {
+		marvell,pins = <57>;
+		marvell,function = <0>;
+	};
+};
+
+&cpm_i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cpm_i2c0_pins>;
+	status = "okay";
+};
+
+&cpm_utmi0 {
+	status = "okay";
+};
+
+&cpm_utmi1 {
+	status = "okay";
+};
+
+&cpm_usb3_0 {
+	status = "okay";
+	vbus-supply = <&cpm_reg_usb3_vbus0>;
+	vbus-disable-delay = <500>;
+};
+
+&cpm_usb3_1 {
+	status = "okay";
+	vbus-supply = <&cpm_reg_usb3_vbus1>;
+	vbus-disable-delay = <500>;
+};
+
+&cpm_pcie0 {
+	status = "okay";
+	ranges =
+		/* downstream I/O */
+		<0x81000000 0 0xf7000000 0  0xf7000000 0 0x10000
+		/* non-prefetchable memory */
+		0x82000000 0 0xf6000000 0  0xf6000000 0 0xf00000>;
+};
+
+&cpm_pcie2 {
+	status = "okay";
+	ranges =
+		/* downstream I/O */
+		<0x81000000 0 0xf7020000 0  0xf7020000 0 0x10000
+		/* non-prefetchable memory */
+		0x82000000 0 0xf8000000 0  0xf8000000 0 0xf00000>;
+};
+
+&cpm_comphy {
+	phy0 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+
+	phy1 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+
+	phy2 {
+		phy-type = <COMPHY_TYPE_SGMII0>;
+		phy-speed = <COMPHY_SPEED_1_25G>;
+	};
+
+	phy3 {
+		phy-type = <COMPHY_TYPE_SGMII1>;
+		phy-speed = <COMPHY_SPEED_1_25G>;
+	};
+
+	phy4 {
+		phy-type = <COMPHY_TYPE_USB3_HOST1>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+
+	phy5 {
+		phy-type = <COMPHY_TYPE_PEX2>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+};
+
+&cpm_xmdio {
+	phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+	phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+};
+
+&cpm_ethernet {
+	status = "okay";
+};
+
+&cpm_eth0 {
+	status = "okay";
+	phy-mode = "sgmii";
+	phy = <&phy0>;
+};
+
+&cpm_eth1 {
+	status = "okay";
+	phy-mode = "sgmii";
+	phy = <&phy1>;
+};
+

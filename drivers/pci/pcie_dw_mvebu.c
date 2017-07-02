@@ -101,6 +101,10 @@ DECLARE_GLOBAL_DATA_PTR;
 #define PCIE_SPCIE_NEXT_OFFSET_MASK	0xfff00000
 #define PCIE_SPCIE_NEXT_OFFSET_OFFSET	20
 
+#define PCIE_LANE_EQ_CTRL01_REG		0x164
+#define PCIE_LANE_EQ_CTRL23_REG		0x168
+#define PCIE_LANE_EQ_SETTING		0x55555555
+
 #define PCIE_TPH_EXT_CAP_HDR_REG	0x1b8
 #define PCIE_TPH_REQ_NEXT_PTR_MASK	0xfff00000
 #define PCIE_TPH_REQ_NEXT_PTR_OFFSET	20
@@ -358,6 +362,28 @@ static int wait_link_up(const void *regs_base)
 static void pcie_dw_mvebu_pcie_config(const void *regs_base)
 {
 	u32 reg;
+
+	/*
+	 * Set the correct hints for lane equalization.
+	 *
+	 * These registers consist of the following fields:
+	 *	- Downstream Port Transmitter Preset - Used for equalization by
+	 *	  this port when the Port is operating as a downstream Port.
+	 *	- Downstream Port Receiver Preset Hint - May be used as a hint
+	 *	  for receiver equalization by this port when the Port is
+	 *	  operating as a downstream Port.
+	 *	- Upstream Port Transmitter Preset - Field contains the
+	 *	  transmit preset value sent or received during link
+	 *	  equalization.
+	 *	- Upstream Port Receiver Preset Hint - Field contains the
+	 *	  receiver preset hint value sent or received during link
+	 *	  equalization.
+	 *
+	 * The default values for this registers aren't optimal for our
+	 * hardware, so we set the optimal values according to HW measurements.
+	 */
+	writel(PCIE_LANE_EQ_SETTING, regs_base + PCIE_LANE_EQ_CTRL01_REG);
+	writel(PCIE_LANE_EQ_SETTING, regs_base + PCIE_LANE_EQ_CTRL23_REG);
 
 	/*
 	 * There is an issue in CPN110 that does not allow to

@@ -250,7 +250,6 @@ static int spi_burn_image(size_t image_size)
 {
 	int ret;
 	struct spi_flash *flash;
-	u32 erase_bytes;
 
 	/* Probe the SPI bus to get the flash device */
 	flash = spi_flash_probe(CONFIG_ENV_SPI_BUS,
@@ -265,19 +264,8 @@ static int spi_burn_image(size_t image_size)
 #ifdef CONFIG_SPI_FLASH_PROTECTION
 	spi_flash_protect(flash, 0);
 #endif
-	erase_bytes = image_size +
-		(flash->erase_size - image_size % flash->erase_size);
-	printf("Erasing %d bytes (%d blocks) at offset 0 ...",
-	       erase_bytes, erase_bytes / flash->erase_size);
-	ret = spi_flash_erase(flash, 0, erase_bytes);
-	if (ret)
-		printf("Error!\n");
-	else
-		printf("Done!\n");
 
-	printf("Writing %d bytes from 0x%lx to offset 0 ...",
-	       (int)image_size, get_load_addr());
-	ret = spi_flash_write(flash, 0, image_size, (void *)get_load_addr());
+	ret = spi_flash_update(flash, 0, image_size, (void *)get_load_addr());
 	if (ret)
 		printf("Error!\n");
 	else

@@ -227,6 +227,9 @@ static inline int spi_flash_erase(struct spi_flash *flash, u32 offset,
 }
 #endif
 
+int spi_flash_update(struct spi_flash *flash, u32 offset, size_t len,
+		const char *buf);
+
 static inline int spi_flash_protect(struct spi_flash *flash, u32 ofs, u32 len,
 					bool prot)
 {

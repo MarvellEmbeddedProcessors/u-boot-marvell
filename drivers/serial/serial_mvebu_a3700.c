@@ -32,6 +32,7 @@ struct mvebu_platdata {
 
 #define UART_STATUS_RX_RDY	0x10
 #define UART_STATUS_TXFIFO_FULL	0x800
+#define UART_STATUS_TXFIFO_EMPT	0x40
 
 #define UART_CTRL_RXFIFO_RESET	0x4000
 #define UART_CTRL_TXFIFO_RESET	0x8000
@@ -115,8 +116,18 @@ static int mvebu_serial_probe(struct udevice *dev)
 {
 	struct mvebu_platdata *plat = dev_get_platdata(dev);
 	void __iomem *base = plat->base;
+	int wait = 0;
+	int maxtimeout = 10;
 
 	plat->reg_type = (enum reg_uart_type)dev_get_driver_data(dev);
+
+	/* wait for the TX FIFO is empty. If wait for 10ms, the TX FIFO is still
+	 * not empty, TX FIFO will reset by all means.*/
+	while (!(readl(base + UART_STATUS_REG) & UART_STATUS_TXFIFO_EMPT) &&
+		(wait <= maxtimeout)) {
+		mdelay(1);
+		wait++;
+	}
 
 	/* reset FIFOs */
 	writel(UART_CTRL_RXFIFO_RESET | UART_CTRL_TXFIFO_RESET,

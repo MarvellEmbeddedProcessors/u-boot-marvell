@@ -542,6 +542,43 @@ do {									\
 #define MVPP2_SGMII_TX_FIFO_MIN_TH		0x5
 #define MVPP2_SGMII2_5_TX_FIFO_MIN_TH		0xb
 
+/* XSMI management register fields */
+#define MVPP2_XSMI_DATA_OFFS			0
+#define MVPP2_XSMI_DATA_MASK			(0xffff << \
+						 MVPP2_XSMI_DATA_OFFS)
+
+#define MVPP2_XSMI_PHY_ADDR_OFFS		16
+#define MVPP2_XSMI_PHY_ADDR_MASK		(0x1f << \
+						 MVPP2_XSMI_PHY_ADDR_OFFS)
+
+#define MVPP2_XSMI_DEV_ADDR_OFFS		21
+#define MVPP2_XSMI_DEV_ADDR_MASK		(0x1f << \
+						 MVPP2_XSMI_DEV_ADDR_OFFS)
+
+#define MVPP2_XSMI_OPCODE_OFFS			26
+#define MVPP2_XSMI_OPCODE_MASK			(7 << MVPP2_XSMI_OPCODE_OFFS)
+#define MVPP2_XSMI_OPCODE_WRITE			(1 << MVPP2_XSMI_OPCODE_OFFS)
+#define MVPP2_XSMI_OPCODE_INC_READ		(2 << MVPP2_XSMI_OPCODE_OFFS)
+#define MVPP2_XSMI_OPCODE_READ			(3 << MVPP2_XSMI_OPCODE_OFFS)
+#define MVPP2_XSMI_OPCODE_ADDR_WRITE		(5 << MVPP2_XSMI_OPCODE_OFFS)
+#define MVPP2_XSMI_OPCODE_ADDR_INC_READ		(6 << MVPP2_XSMI_OPCODE_OFFS)
+#define MVPP2_XSMI_OPCODE_ADDR_READ		(7 << MVPP2_XSMI_OPCODE_OFFS)
+
+#define MVPP2_XSMI_READ_VALID			(1 << 29)
+#define MVPP2_XSMI_BUSY				(1 << 30)
+
+/* XSMI address register */
+#define MVPP2_XSMI_REG_ADDR			0x8
+#define MVPP2_XSMI_REG_ADDR_OFFS		0
+#define MVPP2_XSMI_REG_ADDR_MASK		(0xffff << \
+						 MVPP2_XSMI_REG_ADDR_OFFS)
+
+/* XSMI configuration register */
+#define MVPP2_XSMI_CFG_ADDR			0xC
+#define MVPP2_XSMI_CFG_DIV_OFFS			0
+#define MVPP2_XSMI_CFG_DIV_MASK			(0x3 << MVPP2_XSMI_CFG_DIV_OFFS)
+
+
 /* Net Complex */
 enum mv_netc_topology {
 	MV_NETC_GE_MAC2_SGMII		=	BIT(0),
@@ -5078,18 +5115,144 @@ static int mvpp2_init(struct udevice *dev, struct mvpp2 *priv)
 
 /* SMI / MDIO functions */
 
+static int xsmi_wait_ready(struct mvpp2 *priv)
+{
+	u32 timeout = MVPP2_SMI_TIMEOUT;
+	u32 xsmi_reg;
+
+	/* Wait till the xSMI is not busy */
+	do {
+		/* Read xSMI register */
+		xsmi_reg = readl(priv->mdio_base);
+		if (timeout-- == 0) {
+			debug("xSMI busy time-out\n");
+			return -ETIME;
+		}
+	} while (xsmi_reg & MVPP2_XSMI_BUSY);
+
+	return 0;
+}
+
+/*
+ * mpp2_xsmi_read - miiphy_read callback function.
+ *
+ * Returns 16bit phy register value, or 0xffff on error
+ */
+static int mpp2_xsmi_read(struct mii_dev *bus, int addr, int devad, int reg)
+{
+	struct mvpp2 *priv = bus->priv;
+	u32 xsmi_reg;
+	u32 timeout = MVPP2_SMI_TIMEOUT;
+
+	if (addr > (MVPP2_XSMI_PHY_ADDR_MASK >> MVPP2_XSMI_PHY_ADDR_OFFS)) {
+		error("Invalid PHY address %d\n", addr);
+		return -EFAULT;
+	}
+
+	if (devad > (MVPP2_XSMI_DEV_ADDR_MASK >> MVPP2_XSMI_DEV_ADDR_OFFS)) {
+		error("Invalid Device address %d\n", devad);
+		return -EFAULT;
+	}
+
+	if (reg > (MVPP2_XSMI_REG_ADDR_MASK >> MVPP2_XSMI_REG_ADDR_OFFS)) {
+		error("Invalid Reg offset %d\n", reg);
+		return -EFAULT;
+	}
+
+	/* Wait till the xSMI is not busy */
+	if (xsmi_wait_ready(priv) < 0)
+		return -EINVAL;
+
+	/* Fill the register offset */
+	xsmi_reg = (reg << MVPP2_XSMI_REG_ADDR_OFFS);
+	writel(xsmi_reg, priv->mdio_base + MVPP2_XSMI_REG_ADDR);
+
+	/* Fill the phy address and device address and read opcode */
+	xsmi_reg = (addr << MVPP2_XSMI_PHY_ADDR_OFFS)
+		| (devad << MVPP2_XSMI_DEV_ADDR_OFFS)
+		| MVPP2_XSMI_OPCODE_ADDR_READ;
+
+	/* Write the xSMI register */
+	writel(xsmi_reg, priv->mdio_base);
+
+	/* Wait till read value is ready */
+	do {
+		/* Read xSMI register */
+		xsmi_reg = readl(priv->mdio_base);
+		if (timeout-- == 0) {
+			error("xSMI read ready time-out\n");
+			return -ETIME;
+		}
+	} while (!(xsmi_reg & MVPP2_XSMI_READ_VALID));
+
+	return readl(priv->mdio_base) & MVPP2_XSMI_DATA_MASK;
+}
+
+/*
+ * mpp2_xsmi_write - miiphy_write callback function.
+ *
+ * Returns 0 if write succeed
+ * -EFAULT on bad parameters
+ * -EINVAL on bus polling failure
+ */
+static int mpp2_xsmi_write(struct mii_dev *bus, int addr, int devad, int reg,
+				u16 value)
+{
+	struct mvpp2 *priv = bus->priv;
+	u32 xsmi_reg;
+
+	if (addr > (MVPP2_XSMI_PHY_ADDR_MASK >> MVPP2_XSMI_PHY_ADDR_OFFS)) {
+		error("Invalid PHY address %d\n", addr);
+		return -EFAULT;
+	}
+
+	if (devad > (MVPP2_XSMI_DEV_ADDR_MASK >> MVPP2_XSMI_DEV_ADDR_OFFS)) {
+		error("Invalid Device address %d\n", devad);
+		return -EFAULT;
+	}
+
+	if (reg > (MVPP2_XSMI_REG_ADDR_MASK >> MVPP2_XSMI_REG_ADDR_OFFS)) {
+		error("Invalid Reg offset %d\n", reg);
+		return -EFAULT;
+	}
+
+	/* Wait till the xSMI is not busy */
+	if (xsmi_wait_ready(priv) < 0)
+		return -EINVAL;
+
+	/* Fill the register offset */
+	xsmi_reg = (reg << MVPP2_XSMI_REG_ADDR_OFFS);
+	writel(xsmi_reg, priv->mdio_base + MVPP2_XSMI_REG_ADDR);
+
+	/* Fill the phy address and device address and write opcode */
+	xsmi_reg = (value << MVPP2_XSMI_DATA_OFFS)
+		| (addr << MVPP2_XSMI_PHY_ADDR_OFFS)
+		| (devad << MVPP2_XSMI_DEV_ADDR_OFFS)
+		| MVPP2_XSMI_OPCODE_ADDR_WRITE;
+
+	/* Write the xsmi register */
+	writel(xsmi_reg, priv->mdio_base);
+
+	/* Wait till the xSMI is not busy */
+	if (xsmi_wait_ready(priv) < 0)
+		return -EINVAL;
+
+	return 0;
+}
+
+
 static int smi_wait_ready(struct mvpp2 *priv)
 {
 	u32 timeout = MVPP2_SMI_TIMEOUT;
 	u32 smi_reg;
 
-	/* wait till the SMI is not busy */
+	/* Wait till the SMI is not busy */
 	do {
-		/* read smi register */
+		/* Read smi register */
 		smi_reg = readl(priv->mdio_base);
 		if (timeout-- == 0) {
-			printf("Error: SMI busy timeout\n");
-			return -EFAULT;
+			debug("Error: SMI busy timeout\n");
+			return -ETIME;
 		}
 	} while (smi_reg & MVPP2_SMI_BUSY);
 
@@ -5097,17 +5260,17 @@ static int smi_wait_ready(struct mvpp2 *priv)
 }
 
 /*
- * mpp2_mdio_read - miiphy_read callback function.
+ * mpp2_smi_read - miiphy_read callback function.
  *
  * Returns 16bit phy register value, or 0xffff on error
  */
-static int mpp2_mdio_read(struct mii_dev *bus, int addr, int devad, int reg)
+static int mpp2_smi_read(struct mii_dev *bus, int addr, int devad, int reg)
 {
 	struct mvpp2 *priv = bus->priv;
 	u32 smi_reg;
-	u32 timeout;
+	u32 timeout = MVPP2_SMI_TIMEOUT;
 
-	/* check parameters */
+	/* Check parameters */
 	if (addr > MVPP2_PHY_ADDR_MASK) {
 		printf("Error: Invalid PHY address %d\n", addr);
 		return -EFAULT;
@@ -5118,27 +5281,25 @@ static int mpp2_mdio_read(struct mii_dev *bus, int addr, int devad, int reg)
 		return -EFAULT;
 	}
 
-	/* wait till the SMI is not busy */
+	/* Wait till the SMI is not busy */
 	if (smi_wait_ready(priv) < 0)
 		return -EFAULT;
 
-	/* fill the phy address and regiser offset and read opcode */
+	/* Fill the phy address and regiser offset and read opcode */
 	smi_reg = (addr << MVPP2_SMI_DEV_ADDR_OFFS)
 		| (reg << MVPP2_SMI_REG_ADDR_OFFS)
 		| MVPP2_SMI_OPCODE_READ;
 
-	/* write the smi register */
+	/* Write the smi register */
 	writel(smi_reg, priv->mdio_base);
 
-	/* wait till read value is ready */
-	timeout = MVPP2_SMI_TIMEOUT;
-
+	/* Wait till read value is ready */
 	do {
-		/* read smi register */
+		/* Read smi register */
 		smi_reg = readl(priv->mdio_base);
 		if (timeout-- == 0) {
 			printf("Err: SMI read ready timeout\n");
-			return -EFAULT;
+			return -ETIME;
 		}
 	} while (!(smi_reg & MVPP2_SMI_READ_VALID));
 
@@ -5150,18 +5311,19 @@ static int mpp2_mdio_read(struct mii_dev *bus, int addr, int devad, int reg)
 }
 
 /*
- * mpp2_mdio_write - miiphy_write callback function.
+ * mpp2_smi_write - miiphy_write callback function.
  *
- * Returns 0 if write succeed, -EINVAL on bad parameters
- * -ETIME on timeout
+ * Returns 0 if write succeed,
+ * -EFAULT on bad parameters
+ * -EINVAL on bus polling failure
  */
-static int mpp2_mdio_write(struct mii_dev *bus, int addr, int devad, int reg,
+static int mpp2_smi_write(struct mii_dev *bus, int addr, int devad, int reg,
 			   u16 value)
 {
 	struct mvpp2 *priv = bus->priv;
 	u32 smi_reg;
 
-	/* check parameters */
+	/* Check parameters */
 	if (addr > MVPP2_PHY_ADDR_MASK) {
 		printf("Error: Invalid PHY address %d\n", addr);
 		return -EFAULT;
@@ -5172,20 +5334,49 @@ static int mpp2_mdio_write(struct mii_dev *bus, int addr, int devad, int reg,
 		return -EFAULT;
 	}
 
-	/* wait till the SMI is not busy */
+	/* Wait till the SMI is not busy */
 	if (smi_wait_ready(priv) < 0)
-		return -EFAULT;
+		return -EINVAL;
 
-	/* fill the phy addr and reg offset and write opcode and data */
+	/* Fill the phy addr and reg offset and write opcode and data */
 	smi_reg = value << MVPP2_SMI_DATA_OFFS;
 	smi_reg |= (addr << MVPP2_SMI_DEV_ADDR_OFFS)
 		| (reg << MVPP2_SMI_REG_ADDR_OFFS);
 	smi_reg &= ~MVPP2_SMI_OPCODE_READ;
 
-	/* write the smi register */
+	/* Write the smi register */
 	writel(smi_reg, priv->mdio_base);
 
 	return 0;
+}
+
+/*
+ * mpp2_mdio_read - wrapper for smi/xsmi interface
+ *
+ * Returns 16bit phy register value, or 0xffff on error
+ */
+static int mpp2_mdio_read(struct mii_dev *bus, int addr, int devad, int reg)
+{
+	if (devad == -1)
+		return mpp2_smi_read(bus, addr, devad, reg);
+	else
+		return mpp2_xsmi_read(bus, addr, devad, reg);
+}
+
+/*
+ * mpp2_mdio_write - wrapper for smi/xsmi interface
+ *
+ * Returns 0 if write succeed.
+ * -EFAULT on bad parameters
+ * -EINVAL on bus polling failure
+ */
+static int mpp2_mdio_write(struct mii_dev *bus, int addr, int devad, int reg,
+			   u16 value)
+{
+	if (devad == -1)
+		return mpp2_smi_write(bus, addr, devad, reg, value);
+	else
+		return mpp2_xsmi_write(bus, addr, devad, reg, value);
 }
 
 static int mvpp2_recv(struct udevice *dev, int flags, uchar **packetp)

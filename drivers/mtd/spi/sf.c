@@ -9,6 +9,8 @@
 
 #include <common.h>
 #include <spi.h>
+#include <spi_flash.h>
+#include "sf_internal.h"
 
 static int spi_flash_read_write(struct spi_slave *spi,
 				const u8 *cmd, size_t cmd_len,
@@ -26,8 +28,15 @@ static int spi_flash_read_write(struct spi_slave *spi,
 		debug("SF: Failed to send command (%zu bytes): %d\n",
 		      cmd_len, ret);
 	} else if (data_len != 0) {
-		ret = spi_xfer(spi, data_len * 8, data_out, data_in,
-					SPI_XFER_END);
+		flags = SPI_XFER_END;
+
+		if (*cmd == CMD_READ_QUAD_OUTPUT_FAST ||
+		    *cmd == CMD_QUAD_PAGE_PROGRAM)
+			flags |= SPI_XFER_QUAD;
+		else if (*cmd == CMD_READ_DUAL_OUTPUT_FAST)
+			flags |= SPI_XFER_DUAL;
+
+		ret = spi_xfer(spi, data_len * 8, data_out, data_in, flags);
 		if (ret)
 			debug("SF: Failed to transfer %zu bytes of data: %d\n",
 			      data_len, ret);

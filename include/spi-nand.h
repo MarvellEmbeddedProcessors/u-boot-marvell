@@ -73,6 +73,8 @@
 
 
 /*Configuration register defines*/
+#define CFG_QUAD_MASK		0x01
+#define CFG_QUAD_ENABLE		0x01
 #define CFG_ECC_MASK		0X10
 #define CFG_ECC_ENABLE		0x10
 #define CFG_LOT_MASK		0x20

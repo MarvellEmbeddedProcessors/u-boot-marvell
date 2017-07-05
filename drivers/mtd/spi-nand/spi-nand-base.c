@@ -234,6 +234,24 @@ static int spi_nand_lun_select(struct spi_nand_chip *chip, u8 lun)
 }
 
 /**
+ * spi_nand_enable_quad - enable quad mode
+ * @chip: SPI-NAND device structure
+ * Description:
+ *   There is one bit( bit 0x01 ) to set quad mode.
+ *   Enable chip in quad mode, set the bit to 1
+ */
+static int spi_nand_enable_quad(struct spi_nand_chip *chip)
+{
+	u8 cfg = 0;
+
+	spi_nand_get_cfg(chip, &cfg);
+	if ((cfg & CFG_QUAD_MASK) == CFG_QUAD_ENABLE)
+		return 0;
+	cfg |= CFG_QUAD_ENABLE;
+	return spi_nand_set_cfg(chip, &cfg);
+}
+
+/**
  * spi_nand_enable_ecc - enable internal ECC
  * @chip: SPI-NAND device structure
  * Description:
@@ -1914,6 +1932,8 @@ static int spi_nand_init(struct spi_slave *spi, struct spi_nand_chip *chip)
 			continue;
 		chip->mfr_id = type->mfr_id;
 
+		if (spi->mode & (SPI_RX_QUAD | SPI_TX_QUAD))
+			spi_nand_enable_quad(chip);
 		spi_nand_set_rd_wr_op(chip);
 		spi_nand_reset(chip);
 		spi_nand_read_id(chip, id);

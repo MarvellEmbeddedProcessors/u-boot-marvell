@@ -48,7 +48,7 @@ static struct mm_region mvebu_mem_map[] = {
 		/* PCI CP1 regions */
 		.phys = 0xfa000000UL,
 		.virt = 0xfa000000UL,
-		.size = 0x04000000UL,	/* 64MiB CP110 slave PCI space */
+		.size = 0x03000000UL,	/* 48MiB CP110 slave PCI space */
 		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
 			 PTE_BLOCK_NON_SHARE
 	},
@@ -82,6 +82,22 @@ static struct mm_region mvebu_mem_map[] = {
 		.phys = 0xf6000000UL,
 		.virt = 0xf6000000UL,
 		.size = 0x04000000UL,	/* 64MiB CP110 master PCI space */
+		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
+			 PTE_BLOCK_NON_SHARE
+	},
+	{
+		/* PCI CP1 IO regions or mochi indirect access space */
+		.phys = 0xfd000000UL,
+		.virt = 0xfd000000UL,
+		.size = 0x00200000UL,	/* 2MiB */
+		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
+			 PTE_BLOCK_NON_SHARE
+	},
+	{
+		/* mochi indirect access space */
+		.phys = 0xfe000000UL,
+		.virt = 0xfe000000UL,
+		.size = 0x00200000UL,	/* 2MiB */
 		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
 			 PTE_BLOCK_NON_SHARE
 	},

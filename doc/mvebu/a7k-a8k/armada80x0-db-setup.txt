@@ -27,9 +27,9 @@ Board Setup Options
 |---------------|-----------------------|-----------------------|-----------------------|-----------------------|-----------------------|-----------------------|
 |Device tree	|armada-8040-db.dtb	|armada-8040-db-B.dtb	|armada-8040-db-C.dtb	|armada-8040-db-D.dtb	|armada-8040-db-E.dtb	|armada-8040-db-F.dtb	|
 |CP0-SW1:1	| OFF			| OFF			| OFF			| OFF			| OFF			| OFF			|
-|CP0-SW1:2	| OFF			| OFF			| OFF			| OFF			| OFF			| OFF			|
-|CP0-SW1:3	| OFF			| OFF			| OFF			| OFF			| OFF			| OFF			|
-|CP0-SW1:4	| OFF			| OFF			| OFF			| OFF			| OFF			| OFF			|
+|CP0-SW1:2	| OFF			| ON			| OFF			| OFF			| OFF			| OFF			|
+|CP0-SW1:3	| OFF			| ON			| OFF			| OFF			| OFF			| OFF			|
+|CP0-SW1:4	| OFF			| ON			| OFF			| OFF			| OFF			| OFF			|
 |CP0-SW1:5	| OFF			| OFF			| OFF			| OFF			| OFF			| OFF			|
 |CP0-SW1:6	| OFF			| OFF			| OFF			| OFF			| OFF			| OFF			|
 |CP0-SW1:7	| OFF			| OFF			| OFF			| OFF			| OFF			| OFF			|

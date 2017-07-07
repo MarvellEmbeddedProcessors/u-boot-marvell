@@ -1,0 +1,176 @@
+/*
+ * Copyright (C) 2017 Marvell Technology Group Ltd.
+ *
+ * This file is dual-licensed: you can use it either under the terms
+ * of the GPLv2 or the X11 license, at your option. Note that this dual
+ * licensing only applies to this file, and not this project as a
+ * whole.
+ *
+ *  a) This library is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU General Public License as
+ *     published by the Free Software Foundation; either version 2 of the
+ *     License, or (at your option) any later version.
+ *
+ *     This library is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ * Or, alternatively,
+ *
+ *  b) Permission is hereby granted, free of charge, to any person
+ *     obtaining a copy of this software and associated documentation
+ *     files (the "Software"), to deal in the Software without
+ *     restriction, including without limitation the rights to use,
+ *     copy, modify, merge, publish, distribute, sublicense, and/or
+ *     sell copies of the Software, and to permit persons to whom the
+ *     Software is furnished to do so, subject to the following
+ *     conditions:
+ *
+ *     The above copyright notice and this permission notice shall be
+ *     included in all copies or substantial portions of the Software.
+ *
+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ *     OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+#include "armada-3900-db.dtsi"
+
+/ {
+	model = "Marvell Armada 3900 AXIS board";
+	compatible = "marvell,armada3900-axis", "marvell,armada7040",
+		     "marvell,armada-ap806-quad", "marvell,armada-ap806";
+
+	aliases {
+		i2c1 = &cpm_i2c1;
+	};
+
+	cp110-master {
+		config-space {
+			cpm_reg_usb3_vbus0: cpm_usb3_vbus@0 {
+				gpio = <&cpm_gpio0 7 GPIO_ACTIVE_HIGH>;
+			};
+
+			cpm_reg_usb3_vbus1: cpm_usb3_vbus@1 {
+				gpio = <&cpm_gpio0 5 GPIO_ACTIVE_HIGH>;
+			};
+
+			cpm_mochi_reset: cpm_mochi_reset {
+				regulator-boot-on;
+			};
+
+			cpm_mochi_enable: cpm_mochi_enable {
+				regulator-force-boot-off;
+			};
+
+			iot_radio_reset: iot-radio-reset {
+				compatible = "regulator-fixed";
+				pinctrl-names = "default";
+				pinctrl-0 = <&iot_radio_reset_pins>;
+				regulator-name = "iot-radio-reset";
+				enable-active-high;
+				regulator-boot-on;
+				gpio = <&cpm_gpio0 0 GPIO_ACTIVE_HIGH>;
+			};
+
+			eth_phy_reset: eth-phy-reset {
+				compatible = "regulator-fixed";
+				pinctrl-names = "default";
+				pinctrl-0 = <&eth_phy_reset_pins>;
+				regulator-name = "eth-phy-reset";
+				enable-active-high;
+				regulator-boot-on;
+				gpio = <&cpm_gpio0 1 GPIO_ACTIVE_HIGH>;
+			};
+
+			W9068_pps_reset: W9068-pps-reset {
+				compatible = "regulator-fixed";
+				pinctrl-names = "default";
+				pinctrl-0 = <&W9068_pps_pins>;
+				regulator-name = "w9068-pps";
+				enable-active-high;
+				regulator-boot-on;
+				gpio = <&cpm_gpio0 29 GPIO_ACTIVE_HIGH>;
+			};
+		};
+	};
+};
+
+/*
+ * CP related configuration
+ */
+&cpm_pinctl {
+		/* MPP Bus:
+		 *   I2C1    [2,3]
+		 *   USB     [5,7]
+		 *   NAND    [13,15-27]
+		 *   SMI     [32,34]
+		 *   XSMI    [35-36]
+		 *   I2C0    [37-38]
+		 *   UART1   [46-47,49,58]
+		 *   IHB     [56-57]
+		 *   UART0   [59-62]
+		 */
+		/*   0   1   2   3   4   5   6   7   8   9 */
+	pin-func = < 0   0   7   7   0   0   0   0   0   0
+		     0   0   0   2   0   1   1   1   1   1
+		     1   1   1   1   1   1   1   1   0   0
+		     0   0   7   0   7   7   7   2   2   0
+		     0   0   0   0   0   0   7   7   0   7
+		     0   0   0   0   0   0   0   0   7   7
+		     7   7   7>;
+
+	cpm_i2c1_pins: cpm-i2c-pins-1 {
+		marvell,pins = < 2 3 >;
+		marvell,function = <7>;
+	};
+
+	cpm_xhci0_vbus_pins: cpm-xhci0-vbus-pins {
+		marvell,pins = <7>;
+		marvell,function = <0>;
+	};
+
+	cpm_xhci1_vbus_pins: cpm-xhci1-vbus-pins {
+		marvell,pins = <5>;
+		marvell,function = <0>;
+	};
+
+	iot_radio_reset_pins: iot-radio-reset-pins {
+		marvell,pins = <0>;
+		marvell,function = <0>;
+	};
+
+	eth_phy_reset_pins: eth-phy-reset-pins {
+		marvell,pins = <1>;
+		marvell,function = <0>;
+	};
+
+	W9068_pps_pins: W9068-pps-pins {
+		marvell,pins = <29>;
+		marvell,function = <0>;
+	};
+};
+
+&cpm_i2c1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&cpm_i2c1_pins>;
+};
+
+
+&cpm_nand {
+	status = "okay";
+};
+
+&cpm_comphy {
+	phy1 {
+		phy-type = <COMPHY_TYPE_USB3_HOST0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+};

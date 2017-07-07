@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Marvell International Ltd.
+ */
+
+#include "armada-3900-axis-common.dtsi"
+
+/ {
+	model = "Marvell Armada 3900 AXIS board";
+};
+
+&cp0_comphy {
+	phy1 {
+		phy-type = <COMPHY_TYPE_USB3_HOST0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+};

@@ -409,7 +409,19 @@ static int usb_scan_port(struct usb_device_scan *usb_scan)
 	debug("Port %d Status %X Change %X\n", i + 1, portstatus, portchange);
 
 	/* No connection change happened, wait a bit more. */
+#ifdef CONFIG_ARCH_MVEBU
+/* If usb device was already connected before detection ('usb start'),
+ * port connect status bit is set (USB_PORT_STAT_CONNECTION),
+ * but port connect status change bit (USB_PORT_STAT_C_CONNECTION) is not set.
+ * - Added WA (aligned with kernel driver): instead of checking port change
+ *   status, to be satisfied with checking USB_PORT_STAT_CONNECTION Bit
+ *   on portstatus or USB_PORT_STAT_C_CONNECTION on port change status.
+ */
+	if (!(portchange & USB_PORT_STAT_C_CONNECTION) && !(portstatus &
+		USB_PORT_STAT_CONNECTION)) {
+#else
 	if (!(portchange & USB_PORT_STAT_C_CONNECTION)) {
+#endif
 		if (get_timer(0) >= hub->connect_timeout) {
 			debug("devnum=%d port=%d: timeout\n",
 			      dev->devnum, i + 1);

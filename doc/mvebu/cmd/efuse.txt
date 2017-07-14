@@ -1,0 +1,54 @@
+EFUSE (burn/read efuse value) commands for A7K/8K and A38x SoCs:
+--------------------------------------
+Efuse command is used to burn efuse value to chip efuse block or read
+efuse values.
+
+The efuse command gets the following parameters: bank, word, count, hexval.
+fuse sense/overide are not supported for Marvell SoCs chips.
+
+bank	- efuse row line ID.
+word	- starting word for each efuse row, each word contains 32 bits.
+count	- amount of words shown by read command. Default is 1.
+hexval	- new efuse value to be programmed
+
+Example:
+---------
+fuse read <bank> <word> [<count>] - read 1 or 'count' fuse words,
+    starting at 'word'
+fuse prog [-y] <bank> <word> <hexval> [<hexval>...] - program 1 or
+    several fuse words, starting at 'word' (permanent change)
+
+efuse command details (read/burn step by-step)
+----------------------------------------------
+This section describes efuse command flow:
+Efuse Read/prog are supported using a single command or multiple commands.
+For efuse HD row(65 bits length), count must be less than 2. However, efuse LD
+row's(256 bits length) count is less than 8. Besides, only HD efuse has a lock
+bit.
+
+See the efuse reading/programming example for A8K device below.
+Read efuse line ID == 32's entire row value.
+	a. single command:
+		fuse read 32 0 2	- efuse line ID 32's whole 65 bits(bit0~64).
+	b. multiple commands:
+		fuse read 32 0		- read HD efuse line ID bits from 0 to 31.
+		fuse read 32 1		- read HD efuse line ID bits from 32 to 63.
+		fuse read 32 2		- read HD efuse line ID bit 64(lock bit).
+
+
+Prog/burn efuse value to the whole efuse row (Line ID == 32).
+	a. single command:
+		fuse prog -y 32 0 0x12030412 0x00234532 0x1	- prog new efuse value to
+						the whole efuse row.
+	b. multiple commands:
+		fuse prog -y 32 0 0x12030412	- prog/burn 0x12030412 to HD efuse
+						row's bits from 0 to 31.
+		fuse prog -y 32 1 0x00234532	- prog/burn 0x00234532 to HD efuse
+						row's bits from 32 to 63.
+		fuse prog -y 32 2 0x1		- prog/burn 0x1(lock bit) to LD efuse
+						row's bit64.
+
+HD efuse supports independent programming of the row lock bit. For such case
+efuse row bits 0 through 63 will be zeroed.
+	c. fuse prog -y 32 2 0x1		- Only prog lock bit for HD efuse row.
+

@@ -112,19 +112,11 @@
 		marvell,pins = < 47 >;
 		marvell,function = <0>;
 	};
-
-	cpm_pcie_reset_pins: cpm-pcie-reset-pins {
-		marvell,pins = < 52 >;
-		marvell,function = <0>;
-	};
 };
 
 /* PCIe x4 */
 &cpm_pcie0 {
 	num-lanes = <4>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_pcie_reset_pins>;
-	marvell,reset-gpio = <&cpm_gpio1 20 GPIO_ACTIVE_HIGH>; /* GPIO[52] */
 	status = "okay";
 };
 

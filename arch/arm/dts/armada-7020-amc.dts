@@ -69,6 +69,19 @@
 		reg = <0x0 0x0 0x0 0x80000000>; /* 2GB */
 	};
 
+	simple-bus {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		reg_i2c0: reg_i2c {
+			compatible = "regulator-fixed";
+			regulator-name = "reg-i2c";
+			enable-active-high;
+			 /* set GPIO[44] to 1 to connect ap_i2c0 to main switch board */
+			gpio = <&cpm_gpio1 12 GPIO_ACTIVE_HIGH>;
+		};
+	};
 };
 
 &ap_pinctl {
@@ -87,8 +100,9 @@
 };
 
 &ap_i2c0 {
-        pinctrl-names = "default";
-        pinctrl-0 = <&ap_i2c0_pins>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&ap_i2c0_pins>;
+	enable_gpios = <&reg_i2c0>;
 	status = "okay";
 };
 

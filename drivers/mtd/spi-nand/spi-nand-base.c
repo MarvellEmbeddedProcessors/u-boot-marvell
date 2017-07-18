@@ -2156,6 +2156,14 @@ int spi_nand_probe_slave(struct spi_slave *spi, struct spi_nand_chip *chip)
 		return ret;
 	}
 
+#ifdef CONFIG_SPI_NAND_FLASH_MTD
+	ret = spi_nand_mtd_register(chip);
+	if (ret) {
+		printf("SPI-NAND: Failed to Register MTD\n");
+		return -ENODEV;
+	}
+#endif
+
 	/* Release spi bus */
 	spi_release_bus(spi);
 

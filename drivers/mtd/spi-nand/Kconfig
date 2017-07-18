@@ -30,4 +30,17 @@ config SPI_NAND_USE_SPI_NOR_RD_PROT
 	  Micron M79A SPI NAND support implement 03h/0Bh command, as is done
 	  with SPI NOR for compatibility.
 
+config SPI_NAND_FLASH_MTD
+	bool "SPI NAND Flash MTD support"
+	default n
+	depends on SPI_NAND
+	help
+	  Enable the MTD support for spi nand flash layer, this adapter is
+	  for translating mtd_read/mtd_write commands into spi_flash_read
+	  and write commands. It is not intended to use it within sf_cmd or
+	  the SPI nand flash subsystem. Such an adapter is needed for
+	  subsystems like UBI which can only operate on top of the MTD layer.
+
+	  If unsure, say N
+
 endmenu # menu "SPI NAND Support"

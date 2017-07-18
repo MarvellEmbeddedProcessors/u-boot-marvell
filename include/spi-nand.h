@@ -316,5 +316,9 @@ struct spi_nand_chip *spi_nand_flash_probe(unsigned int busnum, unsigned int cs,
 void spi_nand_flash_free(struct spi_nand_chip *chip);
 void spi_nand_release(struct spi_nand_chip *chip);
 int spi_nand_issue_cmd(struct spi_nand_chip *chip, struct spi_nand_cmd *cmd);
+#ifdef CONFIG_SPI_NAND_FLASH_MTD
+int spi_nand_mtd_register(struct spi_nand_chip *chip);
+void spi_nand_mtd_unregister(void);
+#endif
 
 #endif

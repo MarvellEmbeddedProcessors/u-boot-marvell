@@ -173,9 +173,67 @@ A8K platforms
    since the resulting image should be compatible with non-trusted systems.
 2. Burn the image on the target board and boot it. The secure header will be bypassed in non-trusted
    boot mode and the system will start as usual.
-3. Burn all required efuses using "efuse write" commands. The trusted boot enable efuse should be
-   burned last since any further modifications to the SoC efuses will not be possible afterwards.
-4. Verify the efuse values using "efuse dump" and/or "efuse raw" commands.
+3. Burn all required efuses to each efuse rows using "fuse prog" commands. The trusted boot enable
+   efuse should be burned last since any further modifications to the SoC efuses will not be possible
+   afterwards.
+   See the efuse programming example for A8K device below.
+   uboot fuse command:
+			/* prog KAK_DIGEST key to efuse */
+			fuse prog -y 25 0 <KAK_DIGEST bits 31-0> <KAK_DIGEST bits 55-32> <0x1>
+			fuse prog -y 26 0 <KAK_DIGEST bits 95-56> <KAK_DIGEST bits 111-96> <0x1>
+			fuse prog -y 27 0 <KAK_DIGEST bits 143-112> <KAK_DIGEST bits 167-144> <0x1>
+			fuse prog -y 28 0 <KAK_DIGEST bits 199-168> <KAK_DIGEST bits 223-200> <0x1>
+			fuse prog -y 29 0 <KAK_DIGEST bits 255-224> <0x0> <0x1>
+			For example:
+			KAK key hash
+			8B3732C8F03D0C407F34200C206CA36B0701E47C9074034EDE97FBFF5BA6D778
+			fuse prog -y 25 0 0xC832378B 0x000C3DF0 0x1
+			fuse prog -y 26 0 0x20347F40 0x006C200C 0x1
+			fuse prog -y 27 0 0x01076BA3 0x00907CE4 0x1
+			fuse prog -y 28 0 0xDE4E0374 0x00FFFB97 0x1
+			fuse prog -y 29 0 0x78D7A65B 0x0 0x1
+			/* prog AES key to efuse */
+			fuse prog -y 32 0 <AES_KEY bits 31-0> <AES_KEY bits 55-32> <0x1>
+			fuse prog -y 33 0 <AES_KEY bits 95-56> <AES_KEY bits 111-96> <0x1>
+			fuse prog -y 34 0 <AES_KEY bits 143-112> <AES_KEY bits 167-144> <0x1>
+			fuse prog -y 35 0 <AES_KEY bits 199-168> <AES_KEY bits 223-200> <0x1>
+			fuse prog -y 36 0 <AES_KEY bits 255-224> <0x0> <0x1>
+			For example:
+			AES key
+			ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890
+			fuse prog -y 32 0 0x12EFCDAB 0x00785634 0x1
+			fuse prog -y 33 0 0xEFCDAB90 0x00563412 0x1
+			fuse prog -y 34 0 0xCDAB9078 0x003412EF 0x1
+			fuse prog -y 35 0 0xAB907856 0x0012EFCD 0x1
+			fuse prog -y 36 0 0x90785634 0x0 0x1
+			/* prog efuse row to select CSK valid - the first empty row specifies the
+			CSK index */
+			fuse prog -y 37~50 0 <0x1> <0x0> <0x1>
+			For example:
+			/* prog efuse row to select CSK 3 valid,need to set bit[0] in the efuse
+			rows 37, 38 and 39 to non zero values and leave the efuse row 40 intact */
+			fuse prog -y 37 0 <0x1> <0x0> <0x1>
+			fuse prog -y 38 0 <0x1> <0x0> <0x1>
+			fuse prog -y 39 0 <0x1> <0x0> <0x1>
+			/* prog flash ID to efuse row 30 */
+			fuse prog -y 30 0 <0xbaddf00d> <0x0> <0x1>
+			/* prog flash ID to efuse row 31 */
+			fuse prog -y 31 0 <0xdeadbeef> <0x0> <0x1>
+
+			/* enable trusted and enable JTAG permanent, select boot device, enable CPU
+			Wakeup/Enable in AP LD1*/
+			fuse prog -y 65 0 <0x1> <0xC000> <0x0> <0x0> <0x0> <0x0> <0x0> <0x0>
+			/* enable trusted/JTAG permanent select boot device, disable ICU
+			message LD1 in SB0 */
+			fuse prog -y 67 0 <0xc9> <0x1> <0x0> <0x0> <0x0> <0x0> <0x0> <0x0>
+			/* enable trusted/JTAG permanent select boot device, disable ICU
+			message LD1 in SB1 */
+			fuse prog -y 69 0 <0xc9> <0x1> <0x0> <0x0> <0x0> <0x0> <0x0> <0x0>
+
+	Note: HD_efuse (bank ID 0~63's bit56-63 must be 0x0 according to Functional
+	Specification document). Efuse row 64,66,68 are LD0 and read-only.
+
+4. Verify the efuse values for correct efuse rows using "fuse read" commands.
 5. Restart the system and ensure the secure boot authentication stage has been passed.
 6. If the image encryption option is required, build a new image with image encryption enabled and
    burn it to the system boot device using the regular "bubt" command.

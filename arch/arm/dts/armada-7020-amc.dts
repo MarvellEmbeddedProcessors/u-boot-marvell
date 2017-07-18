@@ -59,7 +59,7 @@
 
 	aliases {
 		i2c0 = &cpm_i2c0;
-		i2c1 = &cpm_i2c1;
+		i2c1 = &cpm_mss_i2c0;
 		i2c2 = &ap_i2c0;
 		spi0 = &ap_spi0;
 	};
@@ -147,7 +147,7 @@
 	clock-frequency = <100000>;
 };
 
-&cpm_i2c1 {
+&cpm_mss_i2c0 {
 	status = "okay";
 	clock-frequency = <100000>;
 };

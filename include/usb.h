@@ -769,6 +769,14 @@ struct dm_usb_ops {
 	 * reset_root_port() - Reset usb root port
 	 */
 	int (*reset_root_port)(struct udevice *bus, struct usb_device *udev);
+
+	/**
+	 * update_hub_device() - Update HCD's internal representation of hub
+	 *
+	 * After a hub descriptor is fetched, notify HCD so that its internal
+	 * representation of this hub can be updated (xHCI)
+	 */
+	int (*update_hub_device)(struct udevice *bus, struct usb_device *udev);
 };
 
 #define usb_get_ops(dev)	((struct dm_usb_ops *)(dev)->driver->ops)
@@ -942,6 +950,17 @@ int usb_new_device(struct usb_device *dev);
 int usb_alloc_device(struct usb_device *dev);
 
 /**
+ * update_hub_device() - Update HCD's internal representation of hub
+ *
+ * After a hub descriptor is fetched, notify HCD so that its internal
+ * representation of this hub can be updated.
+ *
+ * @dev:		Hub device
+ * @return 0 if OK, -ve on error
+ */
+int usb_update_hub_device(struct usb_device *dev);
+
+/**
  * usb_emul_setup_device() - Set up a new USB device emulation
  *
  * This is normally called when a new emulation device is bound. It tells
@@ -953,7 +972,7 @@ int usb_alloc_device(struct usb_device *dev);
  * @desc_list:		List of points or USB descriptors, terminated by NULL.
  *			The first entry must be struct usb_device_descriptor,
  *			and others follow on after that.
- * @return 0 if OK, -ve on error
+ * @return 0 if OK, -ENOSYS if not implemented, other -ve on error
  */
 int usb_emul_setup_device(struct udevice *dev, struct usb_string *strings,
 			  void **desc_list);

@@ -272,7 +272,7 @@ static int do_spi_nand_flash_show_bad(void)
 
 	for (offset = 0; offset < chip->size; offset += chip->block_size) {
 		if (spi_nand_flash_block_is_bad(chip, offset))
-			printf("Bad block at 0x%#llx\n", offset);
+			printf("Bad block at %#llx\n", offset);
 	}
 
 	return 0;
@@ -293,7 +293,7 @@ static int do_spi_nand_flash_mark_bad(int argc, char * const argv[])
 
 	ret = spi_nand_flash_block_mark_bad(chip, offset);
 	if (!ret)
-		printf("SPI-NAND: 0x%#llx marked as bad block\n", offset);
+		printf("SPI-NAND: %#llx marked as bad block\n", offset);
 
 	return ret == 0 ? 0 : 1;
 }

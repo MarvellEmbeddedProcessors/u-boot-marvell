@@ -175,7 +175,6 @@ int usb_stop(void)
 #ifdef CONFIG_USB_STORAGE
 	usb_stor_reset();
 #endif
-	usb_hub_reset();
 	uc_priv->companion_device_count = 0;
 	usb_started = 0;
 
@@ -228,7 +227,6 @@ int usb_init(void)
 	int ret;
 
 	asynch_allowed = 1;
-	usb_hub_reset();
 
 	ret = uclass_get(UCLASS_USB, &uc);
 	if (ret)

@@ -70,7 +70,6 @@ static int xhci_usb_probe(struct udevice *dev)
 static int xhci_usb_remove(struct udevice *dev)
 {
 	int ret;
-	int delay;
 	struct udevice *regulator;
 
 	ret = xhci_deregister(dev);
@@ -84,11 +83,6 @@ static int xhci_usb_remove(struct udevice *dev)
 			printf("Failed to turn OFF the VBUS regulator\n");
 			return ret;
 		}
-
-		delay = fdtdec_get_int(gd->fdt_blob, dev_of_offset(dev),
-				       "vbus-disable-delay", -1);
-		if (delay > 0)
-			mdelay(delay);
 	}
 
 	return 0;

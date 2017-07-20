@@ -43,6 +43,7 @@
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
 			startup-delay-us = <300000>;
+			shutdown-delay-us = <500000>;
 			regulator-force-boot-off;
 			gpio = <&cpm_gpio1 15 GPIO_ACTIVE_HIGH>; /* GPIO[47] */
 		};
@@ -209,7 +210,6 @@
 
 &cps_usb3_0 {
 	vbus-supply = <&reg_usb3h0_vbus>;
-	vbus-disable-delay = <500>;
 	status = "okay";
 };
 

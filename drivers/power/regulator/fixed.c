@@ -20,6 +20,7 @@ DECLARE_GLOBAL_DATA_PTR;
 struct fixed_regulator_platdata {
 	struct gpio_desc gpio; /* GPIO for regulator enable control */
 	unsigned int startup_delay_us;
+	unsigned int shutdown_delay_us;
 };
 
 static int fixed_regulator_ofdata_to_platdata(struct udevice *dev)
@@ -56,6 +57,11 @@ static int fixed_regulator_ofdata_to_platdata(struct udevice *dev)
 	dev_pdata->startup_delay_us = fdtdec_get_uint(gd->fdt_blob,
 						      dev_of_offset(dev),
 						      "startup-delay-us", 0);
+
+	/* Get optional shutdown delay */
+	dev_pdata->shutdown_delay_us = fdtdec_get_uint(gd->fdt_blob,
+						       dev_of_offset(dev),
+						       "shutdown-delay-us", 0);
 
 	return 0;
 }
@@ -124,6 +130,8 @@ static int fixed_regulator_set_enable(struct udevice *dev, bool enable)
 
 	if (enable && dev_pdata->startup_delay_us)
 		udelay(dev_pdata->startup_delay_us);
+	else if (!enable && dev_pdata->shutdown_delay_us)
+		udelay(dev_pdata->shutdown_delay_us);
 
 	return 0;
 }

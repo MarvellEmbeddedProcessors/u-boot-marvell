@@ -361,6 +361,13 @@
 #define GLOBAL2_QOS_WEIGHT			0x1c
 #define GLOBAL2_MISC				0x1d
 
+#define PHY_COPPER_CONTROL		0x0
+#define PHY_COPPER_CONTROL_SPEED_1G	BIT(6)
+#define PHY_COPPER_CONTROL_DUPLEX	BIT(8)
+#define PHY_COPPER_CONTROL_POWER_DOWN	BIT(11)
+#define PHY_COPPER_CONTROL_AUTO_NEG_EN	BIT(12)
+#define PHY_COPPER_CONTROL_SPEED_100M	BIT(13)
+
 struct mv88e6xxx_dev {
 	unsigned int phy_addr;
 	unsigned int port_mask;

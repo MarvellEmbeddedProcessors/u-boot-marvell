@@ -394,6 +394,18 @@ int mv88e6xxx_initialize(const void *blob)
 					 REG_PORT(port),
 					 PORT_BASE_VLAN,
 					 soho_dev.port_mask & ~BIT(port));
+
+		if (port == soho_dev.cpu_port)
+			continue;
+
+		/* Set phy copper control for lan ports */
+		mv88e6xxx_write_phy_register(&soho_dev,
+					     REG_PORT(port),
+					     0,
+					     PHY_COPPER_CONTROL,
+					     PHY_COPPER_CONTROL_SPEED_1G |
+					     PHY_COPPER_CONTROL_DUPLEX |
+					     PHY_COPPER_CONTROL_AUTO_NEG_EN);
 	}
 
 	soho_dev_handle = &soho_dev;

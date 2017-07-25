@@ -268,7 +268,7 @@
 
 				mmc_pins: mmc-pins {
 					groups = "emmc_nb";
-					function = "mmc";
+					function = "emmc";
 				};
 			};
 

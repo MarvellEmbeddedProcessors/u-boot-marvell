@@ -235,3 +235,27 @@ u32 sys_env_device_id_get(void)
 
 	return g_dev_id;
 }
+
+/*
+ * sys_env_device_rev_get - Get Marvell controller device revision number
+ *
+ * DESCRIPTION:
+ *       This function returns 8bit describing the device revision as defined
+ *       Revision ID Register.
+ *
+ * INPUT:
+ *       None.
+ *
+ * OUTPUT:
+ *       None.
+ *
+ * RETURN:
+ *       8bit desscribing Marvell controller revision number
+ */
+u8 sys_env_device_rev_get(void)
+{
+	u32 value;
+
+	value = reg_read(DEV_VERSION_ID_REG);
+	return (value & (REVISON_ID_MASK)) >> REVISON_ID_OFFS;
+}

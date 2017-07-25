@@ -10,13 +10,19 @@ obj-$(CONFIG_$(SPL_)RAM)	+= ram/
 
 ifdef CONFIG_SPL_BUILD
 
+ifneq ($(EXT_DDR_PATH),)
+DDR_PATH := $(EXT_DDR_PATH)
+else
+DDR_PATH := ddr/marvell/a38x/
+endif
+
 obj-$(CONFIG_SPL_CPU_SUPPORT) += cpu/
 obj-$(CONFIG_SPL_CRYPTO_SUPPORT) += crypto/
 obj-$(CONFIG_SPL_I2C_SUPPORT) += i2c/
 obj-$(CONFIG_SPL_GPIO_SUPPORT) += gpio/
 obj-$(CONFIG_SPL_MMC_SUPPORT) += mmc/
 obj-$(CONFIG_SPL_MPC8XXX_INIT_DDR_SUPPORT) += ddr/fsl/
-obj-$(CONFIG_ARMADA_38X) += ddr/marvell/a38x/
+obj-$(CONFIG_ARMADA_38X) += $(DDR_PATH)
 obj-$(CONFIG_ARMADA_XP) += ddr/marvell/axp/
 obj-$(CONFIG_ALTERA_SDRAM) += ddr/altera/
 obj-$(CONFIG_SPL_SERIAL_SUPPORT) += serial/

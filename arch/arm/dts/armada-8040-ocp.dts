@@ -163,6 +163,7 @@
 &cpm_eth0 {
         status = "okay";
         phy-mode = "sfi";
+	marvell,sfp-tx-disable-gpio = <&cps_gpio0 24 GPIO_ACTIVE_HIGH>;
 };
 
 &cps_utmi0 {
@@ -277,4 +278,5 @@
 &cps_eth0 {
 	status = "okay";
 	phy-mode = "sfi";
+	marvell,sfp-tx-disable-gpio = <&cps_gpio0 10 GPIO_ACTIVE_HIGH>;
 };

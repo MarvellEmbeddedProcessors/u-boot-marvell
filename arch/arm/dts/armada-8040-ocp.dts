@@ -35,7 +35,18 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		/* TBD: set vbus regulator */
+		reg_usb3h0_vbus: usb3-vbus0 {
+			compatible = "regulator-fixed";
+			pinctrl-names = "default";
+			pinctrl-0 = <&cpm_xhci_vbus_pins>;
+			regulator-name = "reg-usb3h0-vbus";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			startup-delay-us = <300000>;
+			shutdown-delay-us = <500000>;
+			regulator-force-boot-off;
+			gpio = <&cpm_gpio1 15 GPIO_ACTIVE_HIGH>; /* GPIO[47] */
+		};
 	};
 };
 
@@ -91,7 +102,10 @@
 		     0    0    0    0    0    0    0xe  0xe  0xe  0xe
 		     0xe  0xe  0 >;
 
-	/* TBD: need to set cpm_xhci_vbus_pins */
+	cpm_xhci_vbus_pins: cpm-xhci-vbus-pins {
+		marvell,pins = < 47 >;
+		marvell,function = <0>;
+	};
 };
 
 &cpm_i2c0 {
@@ -152,6 +166,11 @@
 };
 
 &cps_utmi0 {
+	status = "okay";
+};
+
+&cps_usb3_0 {
+	vbus-supply = <&reg_usb3h0_vbus>;
 	status = "okay";
 };
 

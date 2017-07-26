@@ -49,8 +49,8 @@ static struct mm_region mvebu_mem_map[] = {
 	},
 	{
 		/* PCI regions */
-		.phys = 0xd8200000UL,
-		.virt = 0xd8200000UL,
+		.phys = 0xe8000000UL,
+		.virt = 0xe8000000UL,
 		.size = 0x02000000UL,	/* 32MiB master PCI space */
 		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
 			 PTE_BLOCK_NON_SHARE

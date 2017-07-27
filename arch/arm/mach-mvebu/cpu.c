@@ -464,6 +464,10 @@ u32 mvebu_get_nand_clock(void)
 		  NAND_ECC_DIVCKL_RATIO_MASK) >> NAND_ECC_DIVCKL_RATIO_OFFS);
 }
 
+void mvebu_nand_select(void)
+{
+	return;
+}
 /*
  * SOC specific misc init
  */

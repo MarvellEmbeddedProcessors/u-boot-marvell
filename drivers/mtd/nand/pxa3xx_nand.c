@@ -1606,6 +1606,14 @@ static int pxa3xx_nand_probe(struct pxa3xx_nand_info *info)
 
 	pdata = info->pdata;
 
+	/* If the NAND flash is enabled in DT, but the boot image is not
+	 * running from NAND, it may be needed to enable NAND on SOC
+	 * DEVBUS MUX level.
+	 * When the boot device is NAND, such configuration is done
+	 * in the BootROM.
+	 */
+	mvebu_nand_select();
+
 	ret = alloc_nand_resource(info);
 	if (ret) {
 		dev_err(&pdev->dev, "alloc nand resource failed\n");

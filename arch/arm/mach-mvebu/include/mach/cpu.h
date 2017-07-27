@@ -136,6 +136,7 @@ void mvebu_sdram_size_adjust(enum memory_bank bank);
 int mvebu_mbus_probe(struct mbus_win windows[], int count);
 int mvebu_soc_family(void);
 u32 mvebu_get_nand_clock(void);
+void mvebu_nand_select(void);
 
 void return_to_bootrom(void);
 

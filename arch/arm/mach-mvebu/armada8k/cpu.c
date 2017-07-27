@@ -130,6 +130,15 @@ u32 mvebu_get_nand_clock(void)
 	else
 		return 250 * 1000000;
 }
+
+/* Select NAND in the device bus multiplexer */
+void mvebu_nand_select(void)
+{
+	unsigned long SOC_DEV_MULTIPLEX_REG = 0xf2440208;
+	unsigned long SOC_MUX_NAND_EN_MASK = 0x1;
+
+	setbits_le32(SOC_DEV_MULTIPLEX_REG, SOC_MUX_NAND_EN_MASK);
+}
 #endif
 
 int mvebu_dram_init(void)

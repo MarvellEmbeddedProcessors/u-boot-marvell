@@ -32,7 +32,11 @@
 #endif
 
 /* SOC specific definations */
+#if defined(CONFIG_ARMADA_8K)
+#define INTREG_BASE		0xf0000000
+#else
 #define INTREG_BASE		0xd0000000
+#endif
 #define INTREG_BASE_ADDR_REG	(INTREG_BASE + 0x20080)
 #if defined(CONFIG_SPL_BUILD) || defined(CONFIG_ARMADA_3700)
 /*

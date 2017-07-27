@@ -1226,10 +1226,6 @@ int do_ir(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	int is_modified = 0;
 	u8 *regs_base = (u8 *)INTREG_BASE;
 
-	/* using base command, the u-boot can change the base address */
-	if (base_address != 0)
-		regs_base = (u8 *)base_address;
-
 	if (argc == 2) {
 		offset = simple_strtoul(argv[1], NULL, 16);
 	} else {
@@ -1239,7 +1235,8 @@ int do_ir(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	reg = readl(regs_base + offset);
 	tmp_val = reg;
-	printf("Internal register 0x%x value : 0x%x\n", offset, reg);
+	printf("Internal register 0x%x (at base 0x%p) value : 0x%x\n",
+	       offset, regs_base, reg);
 	printf("\n    31      24        16         8         0");
 	printf("\n     |       |         |         |         |\nOLD: ");
 

@@ -46,6 +46,12 @@ Customer board porting procedure
 
 					>> cp arch/arm/dts/armada-8040-db.dts arch/arm/dts/armada-70x0-my_board.dts
 
+		- Add new DT file to arch/arm/dts/Makefile under CONFIG_ARCH_MVEBU:
+
+					dtb-$(CONFIG_ARCH_MVEBU) +=                     \
+						armada-70x0-my_board.dtb                \
+						armada-3720-db.dtb                      \
+
 	2. Basic defconfig setup
 	------------------------
 	2.1. Update my_board defconfig

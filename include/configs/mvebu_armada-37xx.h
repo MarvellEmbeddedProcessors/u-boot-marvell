@@ -18,12 +18,6 @@
 #define CONFIG_NR_DRAM_BANKS	4
 
 /*
- * Size of malloc() pool
- */
-#define CONFIG_SYS_MALLOC_LEN	(4 << 20) /* 4MiB for malloc() */
-
-
-/*
  * I2C
  */
 #define CONFIG_I2C_MV

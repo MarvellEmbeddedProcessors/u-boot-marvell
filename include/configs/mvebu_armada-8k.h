@@ -18,12 +18,6 @@
 #define CONFIG_NR_DRAM_BANKS	2
 
 /*
- * Size of malloc() pool
- */
-#define CONFIG_SYS_MALLOC_LEN	(8 << 20) /* 8MiB for malloc() */
-
-
-/*
  * SPI Flash configuration
  */
 #define CONFIG_KIRKWOOD_SPI

@@ -86,6 +86,11 @@
 		+sizeof(CONFIG_SYS_PROMPT) + 16)	/* Print Buff */
 
 /*
+ * Size of malloc() pool
+ */
+#define CONFIG_SYS_MALLOC_LEN	(8 << 20) /* 8MiB for malloc() */
+
+/*
  * Other required minimal configurations
  */
 #define CONFIG_SYS_LONGHELP

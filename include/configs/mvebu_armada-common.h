@@ -131,8 +131,11 @@
 #define CONFIG_SYS_MMC_ENV_PART		1 /* 0 - DATA, 1 - BOOT0, 2 - BOOT1 */
 #endif
 
-#define CONFIG_ENV_OFFSET		0x180000 /* as Marvell U-Boot version */
+/* Assume minimum flash/eMMC boot partition size of 4MB
+ * and save the environment at the end of the boot device
+*/
 #define CONFIG_ENV_SIZE			(64 << 10) /* 64KiB */
+#define CONFIG_ENV_OFFSET		(0x400000 - CONFIG_ENV_SIZE)
 #define CONFIG_ENV_SECT_SIZE		(64 << 10) /* 64KiB sectors */
 
 

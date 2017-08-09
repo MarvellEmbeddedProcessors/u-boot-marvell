@@ -1,0 +1,26 @@
+#
+# EFUSE infrastructure and drivers
+#
+
+menu "EFUSE Support"
+
+config MVEBU_EFUSE
+	bool "Enable eFuse support"
+	default n
+	depends on HAVE_MVEBU_EFUSE
+	help
+	  This enable mvebu efuse driver.
+	  It supports for reading and writing eFuses.
+	  This efuse driver supports marvell
+	  a38x SoC chips.
+
+config MVEBU_EFUSE_FAKE
+	bool "Fake eFuse access (dry run)"
+	default n
+	depends on MVEBU_EFUSE
+	help
+	  This enables a "dry run" mode where eFuses are not really programmed.
+	  Instead the eFuse accesses are emulated by writing to and reading
+	  from a memory block.
+	  This is can be used for testing prog scripts.
+endmenu

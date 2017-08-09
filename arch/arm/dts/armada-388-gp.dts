@@ -232,6 +232,11 @@
 				vcc-supply = <&reg_usb3_vbus>;
 				status = "okay";
 			};
+
+			efuse@f9000 {
+				status = "okay";
+			};
+
 		};
 
 		pcie-controller {

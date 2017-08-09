@@ -24,6 +24,8 @@ source "drivers/dma/Kconfig"
 
 source "drivers/fpga/Kconfig"
 
+source "drivers/fuse/Kconfig"
+
 source "drivers/gpio/Kconfig"
 
 source "drivers/hwmon/Kconfig"

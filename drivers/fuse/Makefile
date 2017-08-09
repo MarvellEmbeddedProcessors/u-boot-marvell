@@ -1,0 +1,1 @@
+obj-$(CONFIG_MVEBU_EFUSE) += efuse.o

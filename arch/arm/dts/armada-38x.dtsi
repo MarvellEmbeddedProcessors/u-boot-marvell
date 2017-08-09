@@ -581,6 +581,14 @@
 				clocks = <&gateclk 10>;
 				status = "disabled";
 			};
+
+			efuse: efuse@f9000 {
+				compatible = "marvell,a38x-efuse";
+				reg = <0xE4008 0x4>;
+				otp-mem = <0xf60f9000>;
+				row-count = <64>;
+				status = "disabled";
+			};
 		};
 	};
 

@@ -1554,6 +1554,10 @@ static int mvneta_start(struct udevice *dev)
 
 			phydev = phy_connect(pp->bus, pp->phyaddr, dev,
 					     pp->phy_interface);
+			if (!phydev) {
+				printf("phy_connect failed\n");
+				return -1;
+			}
 
 			pp->phydev = phydev;
 			phy_config(phydev);

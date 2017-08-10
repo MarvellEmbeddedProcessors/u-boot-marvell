@@ -49,6 +49,7 @@
 
 	aliases {
 		i2c1 = &ap_i2c0;
+		spi1 = &cp0_spi1;
 	};
 
 	cp0 {

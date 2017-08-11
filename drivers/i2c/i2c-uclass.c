@@ -270,6 +270,7 @@ static int i2c_probe_chip(struct udevice *bus, uint chip_addr,
 	/* Probe with a zero-length message */
 	msg->addr = chip_addr;
 	msg->flags = chip_flags & DM_I2C_CHIP_10BIT ? I2C_M_TEN : 0;
+	msg->flags |= I2C_M_RD;
 	msg->len = 0;
 	msg->buf = NULL;
 

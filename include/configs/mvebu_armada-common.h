@@ -135,9 +135,12 @@
  * and save the environment at the end of the boot device
 */
 #define CONFIG_ENV_SIZE			(64 << 10) /* 64KiB */
-#define CONFIG_ENV_OFFSET		(0x400000 - CONFIG_ENV_SIZE)
 #define CONFIG_ENV_SECT_SIZE		(64 << 10) /* 64KiB sectors */
-
+#ifdef CONFIG_MVEBU_NAND_BOOT
+#define CONFIG_ENV_OFFSET		0x400000
+#else
+#define CONFIG_ENV_OFFSET		(0x400000 - CONFIG_ENV_SIZE)
+#endif
 
 /* USB 2.0 */
 #define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 3

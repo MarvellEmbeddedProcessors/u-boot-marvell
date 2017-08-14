@@ -59,6 +59,11 @@
 	aliases {
 		i2c0 = &ap_i2c0;
 		spi0 = &ap_spi0;
+		fuse0 = &ap_hd_efuse0;
+		fuse1 = &ap_ld_efuse0;
+		fuse2 = &ap_ld_efuse1;
+		fuse3 = &cpm_ld_efuse0;
+		fuse4 = &cpm_ld_efuse1;
 	};
 
 	memory@00000000 {
@@ -87,6 +92,18 @@
 };
 
 &uart0 {
+	status = "okay";
+};
+
+&ap_hd_efuse0 {
+	status = "okay";
+};
+
+&ap_ld_efuse0 {
+	status = "okay";
+};
+
+&ap_ld_efuse1 {
 	status = "okay";
 };
 
@@ -161,6 +178,14 @@
 			};
 		};
 	};
+};
+
+&cpm_ld_efuse0 {
+	status = "okay";
+};
+
+&cpm_ld_efuse1 {
+	status = "okay";
 };
 
 &cpm_sata0 {

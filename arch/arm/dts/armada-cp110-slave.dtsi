@@ -103,6 +103,20 @@
 					"cps-usb3dev", "cps-eip150", "cps-eip197";
 			};
 
+			cps_ld_efuse0: efuse-2@400F00 {
+				compatible = "marvell,mvebu-fuse-ld-user";
+				reg = <0x400008 0x4>;
+				otp-mem = <0xF2400F00>;
+				status = "disabled";
+			};
+
+			cps_ld_efuse1: efuse-3@400F00 {
+				compatible = "marvell,mvebu-fuse-ld-prop";
+				reg = <0x400008 0x4>;
+				otp-mem = <0xF2400F00>;
+				status = "disabled";
+			};
+
 			cps_pinctl: cps-pinctl@440000 {
 				compatible = "marvell,mvebu-pinctrl",
 					     "marvell,a80x0-cp1-pinctrl";

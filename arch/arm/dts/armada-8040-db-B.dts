@@ -58,6 +58,13 @@
 	aliases {
 		i2c0 = &cpm_i2c0;
 		spi0 = &cps_spi1;
+		fuse0 = &ap_hd_efuse0;
+		fuse1 = &ap_ld_efuse0;
+		fuse2 = &ap_ld_efuse1;
+		fuse3 = &cpm_ld_efuse0;
+		fuse4 = &cpm_ld_efuse1;
+		fuse5 = &cps_ld_efuse0;
+		fuse6 = &cps_ld_efuse1;
 	};
 
 	memory@00000000 {
@@ -68,6 +75,18 @@
 
 /* Accessible over the mini-USB CON9 connector on the main board */
 &uart0 {
+	status = "okay";
+};
+
+&ap_hd_efuse0 {
+	status = "okay";
+};
+
+&ap_ld_efuse0 {
+	status = "okay";
+};
+
+&ap_ld_efuse1 {
 	status = "okay";
 };
 
@@ -114,6 +133,14 @@
 		     0x9  0x9  0x8  0x8  0x1  0x1  0x1  0x1  0x1  0x1
 		     0x1  0x1  0x1  0x1  0x1  0x1  0xe  0xe  0xe  0xe
 		     0xe  0xe  0xe>;
+};
+
+&cpm_ld_efuse0 {
+	status = "okay";
+};
+
+&cpm_ld_efuse1 {
+	status = "okay";
 };
 
 &cpm_comphy {
@@ -232,6 +259,14 @@
 		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
 		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
 		     0xff 0xff 0xff>;
+};
+
+&cps_ld_efuse0 {
+	status = "okay";
+};
+
+&cps_ld_efuse1 {
+	status = "okay";
 };
 
 &cps_comphy {

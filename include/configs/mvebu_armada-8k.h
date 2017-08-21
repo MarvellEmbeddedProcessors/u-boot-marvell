@@ -9,6 +9,12 @@
 
 #define CONFIG_DEFAULT_CONSOLE		"console=ttyS0,115200"
 
+/* USB 2.0 */
+#define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 3
+
+/* USB 3.0 */
+#define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS 3
+
 #include <configs/mvebu_armada-common.h>
 
 /*

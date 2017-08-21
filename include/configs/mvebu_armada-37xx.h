@@ -10,6 +10,12 @@
 #define CONFIG_DEFAULT_CONSOLE		"console=ttyMV0,115200 "\
 					"earlycon=ar3700_uart,0xd0012000"
 
+/* USB 2.0 */
+#define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 1
+
+/* USB 3.0 */
+#define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS 2
+
 #include <configs/mvebu_armada-common.h>
 
 /*

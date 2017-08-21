@@ -107,7 +107,6 @@ static int comphy_probe(struct udevice *dev)
 	const void *blob = gd->fdt_blob;
 	int node = dev_of_offset(dev);
 	struct chip_serdes_phy_config *chip_cfg = dev_get_priv(dev);
-	struct comphy_map comphy_map_data[MAX_LANE_OPTIONS];
 	int subnode;
 	int lane;
 	int last_idx = 0;
@@ -157,28 +156,29 @@ static int comphy_probe(struct udevice *dev)
 		if (!fdtdec_get_is_enabled(blob, subnode))
 			continue;
 
-		comphy_map_data[lane].type =
+		chip_cfg->comphy_map_data[lane].type =
 			fdtdec_get_int(blob, subnode, "phy-type",
 				       COMPHY_TYPE_INVALID);
 
-		if (comphy_map_data[lane].type == COMPHY_TYPE_INVALID) {
+		if (chip_cfg->comphy_map_data[lane].type ==
+		    COMPHY_TYPE_INVALID) {
 			printf("no phy type for lane %d, setting lane as unconnected\n",
 			       lane + 1);
 			continue;
 		}
 
-		comphy_map_data[lane].speed =
+		chip_cfg->comphy_map_data[lane].speed =
 			fdtdec_get_int(blob, subnode, "phy-speed",
 				       COMPHY_SPEED_INVALID);
 
-		comphy_map_data[lane].invert =
+		chip_cfg->comphy_map_data[lane].invert =
 			fdtdec_get_int(blob, subnode, "phy-invert",
 				       COMPHY_POLARITY_NO_INVERT);
 
-		comphy_map_data[lane].clk_src =
+		chip_cfg->comphy_map_data[lane].clk_src =
 			fdtdec_get_bool(blob, subnode, "clk-src");
 
-		comphy_map_data[lane].end_point =
+		chip_cfg->comphy_map_data[lane].end_point =
 			fdtdec_get_bool(blob, subnode, "end_point");
 
 		lane++;
@@ -187,11 +187,11 @@ static int comphy_probe(struct udevice *dev)
 	/* Save CP index for MultiCP devices (A8K) */
 	chip_cfg->cp_index = current_idx++;
 	/* PHY power UP sequence */
-	chip_cfg->ptr_comphy_chip_init(chip_cfg, comphy_map_data);
+	chip_cfg->ptr_comphy_chip_init(chip_cfg, chip_cfg->comphy_map_data);
 	/* PHY print SerDes status */
 	if (of_machine_is_compatible("marvell,armada8040"))
 		printf("Comphy chip #%d:\n", chip_cfg->cp_index);
-	comphy_print(chip_cfg, comphy_map_data);
+	comphy_print(chip_cfg, chip_cfg->comphy_map_data);
 
 	/*
 	 * Only run the dedicated PHY init code once, in the last PHY init call

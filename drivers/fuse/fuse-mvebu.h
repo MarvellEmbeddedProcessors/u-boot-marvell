@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0+
  * Copyright (C) 2018 Marvell International Ltd.
- * Copyright (C) 2015-2016 Reinhard Pfau <reinhard.pfau@gdsys.cc>
  *
  * https://spdx.org/licenses
  */
@@ -10,27 +9,40 @@
 
 #include <common.h>
 
-struct efuse_val {
-	union {
-		struct {
-			u8 d[8];
-		} bytes;
-		struct {
-			u16 d[4];
-		} words;
-		struct {
-			u32 d[2];
-		} dwords;
-	};
-	u32 lock;
+#if defined(CONFIG_MVEBU_EFUSE_FAKE)
+#define DRY_RUN
+#else
+#undef DRY_RUN
+#endif
+
+#define MVEBU_EFUSE_SRV_CTRL_LD_SEL_USER	BIT(6)
+#define MVEBU_EFUSE_CTRL_LD_SEC_EN_MASK		BIT(7)
+#define MVEBU_EFUSE_CTRL_PROGRAM_ENABLE		BIT(31)
+
+struct mvebu_fuse_platform_data {
+	unsigned int row_bit_width;
+	unsigned int row_step;
 };
 
-int mvebu_efuse_init_hw(unsigned long efuse_base);
+struct mvebu_fuse_block_data {
+	struct mvebu_fuse_platform_data	*pdata;
+	unsigned int	row_base;
+	unsigned int	row_num;
+	void	*control_reg;
+	void	*target_otp_mem;
+	char	block_name[64];
+};
 
-int mvebu_read_efuse(int nr, struct efuse_val *val);
+struct fuse_ops {
+	int (*fuse_init)(struct udevice *dev);
+	int (*fuse_hd_read)(struct udevice *dev, int row_id, u32 *val);
+	int (*fuse_hd_prog)(struct udevice *dev, int word, int row_id,
+			    u32 new_val);
+};
 
-int mvebu_write_efuse(int nr, struct efuse_val *val);
-
-int mvebu_lock_efuse(int nr);
+int mvebu_efuse_init_hw(struct udevice *dev);
+int mvebu_efuse_hd_read(struct udevice *dev, int row_id, u32 *val);
+int mvebu_efuse_hd_prog(struct udevice *dev, int word, int row_id, u32 new_val);
 
 #endif
+

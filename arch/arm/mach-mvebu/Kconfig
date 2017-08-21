@@ -38,6 +38,7 @@ config ARMADA_3700
 config ARMADA_8K
 	bool
 	select ARM64
+	select HAVE_MVEBU_EFUSE
 
 # Armada PLL frequency (used for NAND clock generation)
 config SYS_MVEBU_PLL_CLOCK

@@ -12,6 +12,7 @@
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
 #include <sdhci.h>
+#include <fuse-mvebu-priv.h>
 
 #define DDR_BASE_CS_OFF(n)	(0x0000 + ((n) << 3))
 #define DDR_SIZE_CS_OFF(n)	(0x0004 + ((n) << 3))
@@ -445,6 +446,12 @@ int arch_cpu_init(void)
 
 	/* Disable MBUS error propagation */
 	clrsetbits_le32(SOC_COHERENCY_FABRIC_CTRL_REG, MBUS_ERR_PROP_EN, 0);
+
+	if (mvebu_soc_family() == MVEBU_SOC_A38X) {
+		struct fuse_ops a38x_ops;
+		a38x_ops.fuse_init = mvebu_efuse_init_hw;
+		reg_fuse_ops(&a38x_ops);
+	}
 
 	return 0;
 }

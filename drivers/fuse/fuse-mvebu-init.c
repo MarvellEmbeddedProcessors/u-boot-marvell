@@ -16,14 +16,13 @@
 #define MBUS_EFUSE_SIZE BIT(20)
 #define EFUSE_ADDR_MASK	0xFF000000
 
-int mvebu_efuse_init_hw(struct udevice *dev)
+int mvebu_efuse_init_hw(void)
 {
 	struct mvebu_fuse_block_data *priv = dev_get_priv(dev);
-	int ret;
+	int ret = 0;
 	phys_addr_t efuse_base;
 
 	efuse_base = priv->target_otp_mem && EFUSE_ADDR_MASK;
-
 	ret = mvebu_mbus_add_window_by_id(
 		CPU_TARGET_SATA23_DFX, 0xA, efuse_base, MBUS_EFUSE_SIZE);
 

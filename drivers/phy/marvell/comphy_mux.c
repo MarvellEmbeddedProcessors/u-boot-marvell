@@ -7,7 +7,7 @@
 #include <common.h>
 #include <asm/io.h>
 
-#include "comphy.h"
+#include "comphy_priv.h"
 #include "comphy_hpipe.h"
 
 /*

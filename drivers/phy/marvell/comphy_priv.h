@@ -4,15 +4,15 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#ifndef _COMPHY_H_
-#define _COMPHY_H_
+#ifndef _COMPHY_PRIV_H_
+#define _COMPHY_PRIV_H_
 
 #include <dt-bindings/comphy/comphy_data.h>
 #include <fdtdec.h>
 
 #if defined(DEBUG)
-#define debug_enter()	printf("----> Enter %s\n", __func__);
-#define debug_exit()	printf("<---- Exit  %s\n", __func__);
+#define debug_enter()	{ printf("----> Enter %s\n", __func__); }
+#define debug_exit()	{ printf("<---- Exit  %s\n", __func__); }
 #else
 #define debug_enter()
 #define debug_exit()
@@ -128,7 +128,7 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 		      struct comphy_map *serdes_map);
 #else
 static inline int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
-		      struct comphy_map *serdes_map)
+				    struct comphy_map *serdes_map)
 {
 	/*
 	 * This function should never be called in this configuration, so
@@ -151,5 +151,5 @@ void comphy_pcie_config_detect(u32 comphy_max_count,
 			       struct comphy_map *serdes_map);
 void comphy_pcie_unit_general_config(u32 pex_index);
 
-#endif /* _COMPHY_H_ */
+#endif /* _COMPHY_PRIV_H_ */
 

@@ -12,7 +12,7 @@
 #include <linux/errno.h>
 #include <asm/io.h>
 
-#include "comphy.h"
+#include "comphy_priv.h"
 
 #define COMPHY_MAX_CHIP 4
 

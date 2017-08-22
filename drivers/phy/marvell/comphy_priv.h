@@ -4,8 +4,8 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#ifndef _COMPHY_H_
-#define _COMPHY_H_
+#ifndef _COMPHY_PRIV_H_
+#define _COMPHY_PRIV_H_
 
 #include <dt-bindings/comphy/comphy_data.h>
 #include <fdtdec.h>
@@ -93,6 +93,7 @@ struct chip_serdes_phy_config {
 	struct comphy_mux_data *mux_data;
 	int (*ptr_comphy_chip_init)(struct chip_serdes_phy_config *,
 				    struct comphy_map *);
+	int (*rx_training)(struct chip_serdes_phy_config *, u32);
 	void __iomem *comphy_base_addr;
 	void __iomem *hpipe3_base_addr;
 	u32 comphy_lanes_count;
@@ -126,6 +127,9 @@ static inline int comphy_a3700_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 #ifdef CONFIG_ARMADA_8K
 int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 		      struct comphy_map *serdes_map);
+int comphy_cp110_sfi_rx_training(struct chip_serdes_phy_config *ptr_chip_cfg,
+				 u32 lane);
+
 #else
 static inline int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 		      struct comphy_map *serdes_map)
@@ -136,6 +140,18 @@ static inline int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 	 */
 	return -1;
 }
+
+static inline int comphy_cp110_sfi_rx_training(
+	struct chip_serdes_phy_config *ptr_chip_cfg,
+	u32 lane)
+{
+	/*
+	 * This function should never be called in this configuration, so
+	 * lets return an error here.
+	 */
+	return -1;
+}
+
 #endif
 
 void comphy_dedicated_phys_init(void);
@@ -151,5 +167,5 @@ void comphy_pcie_config_detect(u32 comphy_max_count,
 			       struct comphy_map *serdes_map);
 void comphy_pcie_unit_general_config(u32 pex_index);
 
-#endif /* _COMPHY_H_ */
+#endif /* _COMPHY_PRIV_H_ */
 

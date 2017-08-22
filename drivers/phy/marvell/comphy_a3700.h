@@ -7,7 +7,7 @@
 #ifndef _COMPHY_A3700_H_
 #define _COMPHY_A3700_H_
 
-#include "comphy.h"
+#include "comphy_priv.h"
 #include "comphy_hpipe.h"
 
 #define MVEBU_REG(offs)			((uintptr_t)MVEBU_REGISTER(offs))

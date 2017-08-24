@@ -78,7 +78,9 @@
 			sar-reg {
 				compatible = "marvell,sample-at-reset-common", "marvell,sample-at-reset-cp110";
 			        reg = <0x400200 0x8>;
-				status = "disabled";
+				sar-driver = "cp110_sar";
+				sar-name = "cp0_sar";
+				status = "okay";
 			};
 
 			cpm_syscon0: system-controller@440000 {

@@ -47,7 +47,7 @@ Build Procedure
 	- For the Armada-80x0 DB use "make DEVICE_TREE=armada-8040-db[-X]"
 	- For the Armada-80x0 MacchiatoBin use "make DEVICE_TREE=armada-8040-mcbin"
 	- For the Armada-37x0 DB use "make DEVICE_TREE=armada-3720-ddrX-db[-X]"
-	- For the Armada-37x0 EsspressoBin use "make armada-3720-espressobin"
+	- For the Armada-37x0 EsspressoBin use "make DEVICE_TREE=armada-3720-espressobin"
 	(X represents possible configuration)
 
 	The U-Boot compilation generates u-boot.bin - the U-Boot image

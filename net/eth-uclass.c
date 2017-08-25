@@ -504,10 +504,10 @@ static int eth_post_probe(struct udevice *dev)
 			       pdata->enetaddr);
 			printf("Address in environment is  %pM\n",
 			       env_enetaddr);
+			/* Override the env with ROM MAC address */
+			eth_setenv_enetaddr_by_index("eth", dev->seq,
+						     pdata->enetaddr);
 		}
-
-		/* Override the ROM MAC address */
-		memcpy(pdata->enetaddr, env_enetaddr, ARP_HLEN);
 	} else if (is_valid_ethaddr(pdata->enetaddr)) {
 		eth_setenv_enetaddr_by_index("eth", dev->seq, pdata->enetaddr);
 		printf("\nWarning: %s using MAC address from ROM\n",

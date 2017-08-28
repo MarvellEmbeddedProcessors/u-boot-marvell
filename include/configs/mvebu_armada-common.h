@@ -71,7 +71,7 @@
 						"$extra_params"
 #define CONFIG_BOOTCOMMAND	"run get_images; run set_bootargs; " \
 				"booti $kernel_addr $ramfs_addr $fdt_addr"
-
+#define CONFIG_ENV_OVERWRITE	/* ethaddr can be reprogrammed */
 /*
  * For booting Linux, the board info and command line data
  * have to be in the first 8 MB of memory, since this is

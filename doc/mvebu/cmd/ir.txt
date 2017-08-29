@@ -1,0 +1,53 @@
+ir command
+==========
+Reading and changing internal register values.
+
+Displays the contents of the internal register in 2 forms, hex and binary.
+It is possible to change the value by writing a hex value beginning with 0x
+or by writing 0 or 1 in the required place.
+Pressing enter without any value keeps the value unchanged.
+
+NOTE: before using the ir command, the base address (using base
+command, described later) must be set:
+- Armada3700	-	0xd0000000
+- AP806		-	0xf0000000
+- CP110-0	-	0xf2000000
+- CP110-1	-	0xf4000000
+
+Example:
+
+	Marvell>> base 0xf4000000
+	Base Address: 0xf4000000
+	Marvell>> ir 440000
+	Internal register 0x440000 value : 0x33333333
+
+	31      24        16         8         0
+	 |       |         |         |         |
+	OLD: 0011-0011-0011-0011-0011-0011-0011-0011
+	NEW:             00           1			/* Set specific bits */
+
+	New value = 0x33033b33
+
+	Marvell>> ir 440000
+	Internal register 0x440000 value : 0x33033b33
+
+	31      24        16         8         0
+	 |       |         |         |         |
+	OLD: 0011-0011-0000-0011-0011-1011-0011-0011
+	NEW:	/* Press enter to keep the value unchanged */
+
+Base command:
+-------------
+Base command provides the ability to change the base address of a memory command (ir, md, mm, etc..)
+To show the current base address use "base"
+To change the base address use "base 0xf2000000"
+
+Example:
+
+		>> base
+
+		Base Address: 0x00000000
+
+		>> base 0xf2000000
+
+		Base Address: 0xf2000000

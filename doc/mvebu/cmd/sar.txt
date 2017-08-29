@@ -1,0 +1,26 @@
+SAR (Sample at Reset) commands
+===============================
+SAR commands are used to toggle the available Sample at Reset modes.
+
+Notes:
+- SAR commands are only relevant for Marvell boards that use EEPROM device.
+- At first use, a reset should be done to SAR fields values with "sar default" command.
+- In order to use SAR fields values a jumper should be in:
+	- jumper 52 in a8040-db
+	- jumper 38 in a7040-db
+- After a SAR write command, a reset is required for the changes to take effect.
+
+Examples
+--------
+- "sar list" - Get the list of possible fields.
+- "sar list <field>" - Get the list of possible values for a specific field.
+- "sar read" - Get the current values of all available SAR fields.
+- "sar read <field>" - Get the current value of a specific SAR field.
+- "sar write <field> <value>" - Set the required value for a specific field.
+	- A reset is required after a SAR write command for the changes to
+	  take effect.
+- "sar default" - Reset all writable SAR fields back to their default values.
+- "sar default <field>" - Reset SAR field back to his default value.
+
+The list of the Sample At Reset possible fields and values is defined in the device tree.
+For more information, please refer to doc/device-tree-bindings/misc/mvebu-sar.txt.

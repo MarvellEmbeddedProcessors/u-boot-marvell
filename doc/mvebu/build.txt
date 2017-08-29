@@ -1,45 +1,131 @@
-
 U-Boot Build Instructions
 =========================
 
-This document describes how to compile the U-Boot and how to change U-Boot configuration
+This document describes how to compile U-Boot and how to change U-Boot configuration
 
-   (1) Set the cross compiler::
+Build Procedure
+----------------
+1. install required packages:
 
-		> export CROSS_COMPILE_BH=/path/to/your/cross/little/endian/compiler
-		> export CROSS_COMPILE=/path/to/your/cross/little/endian/compiler
+		# sudo apt-get install libssl-dev
+		# sudo apt-get install device-tree-compiler
+		# sudo apt-get install swig libpython-dev
 
-   (2) Clean-up old residuals::
+2. Set the cross compiler:
 
-		> make mrproper
+		# export CROSS_COMPILE=/path/to/toolchain/aarch64-linux-gnu
 
-   (3) Configure the U-Boot:
+3. Clean-up old residuals:
 
-		> build.pl -b <SoC name> -f <flash_type> -d <ddr driver> -m <ddr3/4> -D <path/to/mv_ddr>
-		  -v <version string as needed> [-e -o <output> -i <interfaces>]
+		# make mrproper
 
-	For example::
+4. Configure the U-Boot:
 
-		> build.pl -b armada_38x -f spi -v 2017.02 -i nand:spi -d 3 -m 4 -D ../../mv_ddr -o /tftpboot/2015_T1.0
+		# make <defconfig_file>
 
-   (4) U-Boot Build Command Parameters::
+	- For the Armada-70x0/80x0 DB board and Armada-7020 AMC use "mvebu_db_armada8k_defconfig"
+	- For the Armada-80x0 MacchiatoBin use "make mvebu_mcbin-88f8040_defconfig"
+	- For the Armada-3700 DB board use "make mvebu_db-88f3720_defconfig"
+	- For the Armada-3700 EsspressoBin use "make mvebu_espressobin-88f3720_defconfig"
 
-		-b <SoC name>: armada_38x
-		-f <boot device>:
-			- spi — boot from SPI
-			- nand — boot from NAND
-			- mmc — boot from MMC
-		-d <ddr driver>:
-			- 2 - legacy DDR driver
-			- 3 - mv_ddr driver
-		-m <ddr3/4>: DDR
-		 	- 3 - DDR3
-			- 4 - DDR4
-		-D <path/to/mv_ddr>: 	Path to the mv_ddr folder
-		-v <version>:		String representing the version name (part of the image name)
-		-o <output>: 		Copy the build image files to an output directory. By default the files are not copied.
-		-i <interfaces>:	Colon-separated list of supported interfaces:
-			- spi — add SPI support
-			- nand — add NAND support
-			- mmc — add MMC support
+5. Configure the device-tree and build the U-Boot image:
 
+	All device-tree files are located in ./arch/arm/dts/ folder.
+	Information about the different configuration available for the
+	development board is located in:
+
+	- For A37x0: ./doc/mvebu/a3700/armada-3700-db-setup.txt
+	- For A70x0: ./doc/mvebu/a7k-a8k/armada70x0-db-setup.txt
+	- For A80x0: ./doc/mvebu/a7k-a8k/armada80x0-db-setup.txt
+
+	In order to compile u-boot with a specific device-tree, use the following:
+
+			# make DEVICE_TREE=<name>
+
+	- For the Armada-70x0 DB use "make DEVICE_TREE=armada-7040-db[-X]"
+	- For the Armada-7020 AMC use "make DEVICE_TREE=armada-7020-amc"
+	- For the Armada-80x0 DB use "make DEVICE_TREE=armada-8040-db[-X]"
+	- For the Armada-80x0 MacchiatoBin use "make DEVICE_TREE=armada-8040-mcbin"
+	- For the Armada-37x0 DB use "make DEVICE_TREE=armada-3720-ddrX-db[-X]"
+	- For the Armada-37x0 EsspressoBin use "make armada-3720-espressobin"
+	(X represents possible configuration)
+
+	The U-Boot compilation generates u-boot.bin - the U-Boot image
+
+	NOTE:
+	The u-boot.bin should not be used as a stand-alone image.
+	The ARM Trusted Firmware (ATF) build process uses this image to generate the
+	flash image.
+
+Configuration update
+---------------------
+	To update the U-Boot configuration, refer to doc/README.kconfig
+
+
+Boot Device Selection
+---------------------
+The following options are available:
+	- Boot from SPI boot
+	- Boot from eMMC boot
+
+eMMC boot device
+-----------------
+The Armada-3700 and armada-8k supports eMMC as the boot device on the target.
+The default boot device on this platform is SPI NOR flash.
+In order to change the boot device to eMMC, set the following parameter
+the default configuration:
+	- CONFIG_MVEBU_MMC_BOOT=y
+
+If "menuconfig" is used, navigate to the following location:
+-> Command line interface
+  -> Misc commands
+    -> MVEBU commands
+      -> Flash for image
+and select "eMMC flash boot".
+
+If select SDIO eMMC as boot device, the Macro parameters should be:
+#define CONFIG_SYS_MMC_ENV_DEV		0
+#define CONFIG_SYS_MMC_ENV_PART		0
+
+If select eMMC as boot device, the Macro parameters should be:
+#define CONFIG_SYS_MMC_ENV_DEV		1
+#define CONFIG_SYS_MMC_ENV_PART		1/2
+
+The eMMC has 2 boot partitions (BOOT0 and BOOT1) and a user data partition (DATA).
+The boot partitions are numbered as partition 1 and 2 in MMC driver.
+Number 0 is used for user data partition and should not be utilized for storing
+boot images and U-Boot environment in RAW mode since it will break file system
+structures usually located here.
+
+The default boot partition is BOOT0. It is selected by the following parameter:
+CONFIG_SYS_MMC_ENV_PART=1
+Valid values for this parameter are 1 for BOOT0 and 2 for BOOT1.
+Never use partition number 0 here!
+
+Both parameters can be changed in the "include/configs/mvebu_armada-37xx.h"
+or "include/configs/mvebu_armada-8k.h" depend on the device.
+
+Note that this configuration is only available when "Flash for image"
+selects "eMMC flash boot" device as described above.
+The selected partition will be used by U-Boot "bubt" and "savenv" commands
+for flashing the boot image and saving U-Boot configuration.
+
+
+Boot Device Selection for Armada-8k/7k Build
+-------------------------------------------
+The following options are available for A8K and A7K boot:
+
+	- Boot from SPI NAND
+
+SPI NAND boot device
+--------------------
+The Armada-7K and ARMADA-8K supports SPI NAND flash as the boot device on the target.
+In order to burn the image and save enviroment variables to SPI NAND flash,
+please enable SPI NAND driver at first by set the following parameter to <Y>:
+CONFIG_MVEBU_NAND_BOOT=y
+If "menuconfig" is used, navigate to the following location:
+-> Command line interface
+  -> Misc commands
+    -> MVEBU commands
+      -> Flash for image
+and select "NAND flash boot".

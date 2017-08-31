@@ -61,6 +61,15 @@ static int xhci_usb_probe(struct udevice *dev)
 		}
 	}
 
+	ret = device_get_supply_regulator(dev, "current-limiter", &regulator);
+	if (!ret) {
+		ret = regulator_set_enable(regulator, true);
+		if (ret) {
+			printf("Failed to turn ON the Current-Limiter regulator\n");
+			return ret;
+		}
+	}
+
 	/* Enable USB xHCI (VBUS, reset etc) in board specific code */
 	board_xhci_enable();
 
@@ -81,6 +90,15 @@ static int xhci_usb_remove(struct udevice *dev)
 		ret = regulator_set_enable(regulator, false);
 		if (ret) {
 			printf("Failed to turn OFF the VBUS regulator\n");
+			return ret;
+		}
+	}
+
+	ret = device_get_supply_regulator(dev, "current-limiter", &regulator);
+	if (!ret) {
+		ret = regulator_set_enable(regulator, false);
+		if (ret) {
+			printf("Failed to turn OFF the Current-Limiter regulator\n");
 			return ret;
 		}
 	}

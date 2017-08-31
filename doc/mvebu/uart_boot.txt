@@ -3,12 +3,14 @@ UART boot
 
 UART boot for Armada-70x0/80x0
 ------------------------------
+
 UART boot is used to load flash-image.bin using the Xmodem interface
 when the board boots for the first time or when the board fails to
 boot.
 
 1. Set the board to receiving mode using either of the following
    methods:
+
 	- Start a terminal application (e.g. minicom), and send the
 	  Xmodem_boot_pattern.bin file in ASCII (located under
           /tools/marvell/xmodem/xmodem_boot.pattern),
@@ -17,20 +19,27 @@ boot.
 	- This option is only relevant for Marvell development boards:
 	  Set the boot source to UART, using boot source DIP-switch
 	  pins, and then reset the board.
+
 2. After booting from UART, or sending the pattern file, characters
    are displayed on the screen every second. These are the Xmodem
    NACKs that indicate readiness to send the new ATF with the Xmodem
    protocol.
+
 3. Start the TTY transfer using the Xmodem protocol
    (for minicom do: Ctrl+A, then S, and select the Xmodem protocol).
+
 4. Select flash-image.bin file, and start the transfer.
+
 5. When the transfer is done, U-Boot will start and you should hit
    'return' to get the U-Boot prompt.
+
 6. Refer to "doc/mvebu/cmd/bubt.txt" for instructions how to burn
    flash-image.bin to the boot device
 
+
 UART boot for Armada-3700 platform
 ----------------------------------
+
 Note that WtpDownload application (v3.3.11.15) is Linux host tool used
 to do the UART boot. The source code and binaries is provided as part
 of A3700 utility package, which is out of the bootloader source tree.
@@ -52,7 +61,7 @@ according to your set-up.
    will show "E" and then ">" again.
    There is a way to stop the target board booting from other sources,
    SPI flash for example, and switch to UART boot mode, by using the
-   WtpDownload application.
+   WtpDownload application::
 
 	sudo stty -F /dev/ttyUSB0 clocal
 	./WtpDownload_linux -P UART -C 0 -R 115200 -Y
@@ -61,21 +70,21 @@ according to your set-up.
    target board (minicom) for releasing the serial port and allowing
    an application to use it for image download.
 
-4. Disable the TTY modem control signals.
+4. Disable the TTY modem control signals::
 
 	sudo stty -F /dev/ttyUSB0 clocal
 
 5. Start the image download application in the ATF build folder using
    the following parameters.
 
-   WTP downloader usage example - non-secure boot:
+   WTP downloader usage example - non-secure boot::
 
 	./WtpDownload_linux -P UART -C 0 -R 115200 \
 		-B ./uart-images/TIM_ATF.bin \
 		-I ./uart-images/boot-image_h.bin \
 		-I ./uart-images/wtmi_h.bin -E
 
-   WTP downloader usage example - secure boot:
+   WTP downloader usage example - secure boot::
 
 	./WtpDownload_linux -P UART -C 0 -R 115200 \
 		-B ./uart-images/TIM_ATF_TRUSTED.bin \
@@ -94,7 +103,7 @@ according to your set-up.
    program (minicom) on that the UART port attached to the target
    board and ensure the U-Boot prompt is reached.
 
-Note that step 2-5 can be simplified with a single command as below.
+Note that steps 2-5 can be simplified with a single command as below::
 
 	sudo stty -F /dev/ttyUSB0 clocal
 	./WtpDownload_linux -P UART -C 0 -R 115200 \

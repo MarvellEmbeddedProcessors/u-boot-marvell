@@ -6,6 +6,7 @@ Key generating and updating, assuming that the SoC being used is already
 supported in U-Boot & ATF.
 
 The trusted boot document describes the following components:
+
 - eFuse module - Allows burning boot device, authentication key digest,
   encryption key, etc.
 - Boot image format - Provides the trusted boot information to BootROM.
@@ -14,12 +15,12 @@ The trusted boot document describes the following components:
 - Authentication Keys Generation and selection - Provides method to generate
   and select authentication keys.
 
-1. eFuses
-=========
+eFuses
+-------
 The eFuse command module and driver provides RW access to SoC eFuses through
 the "efuse" command.
 In order to enable this SW component, the following configuration entry should
-be set by using "make menuconfig":
+be set by using "make menuconfig"::
 
 	-> command line interface
 		-> Misc commands
@@ -34,7 +35,7 @@ to eFuse HW values, the presence of these components in the final trusted boot
 image is not required.
 
 A8K platforms
--------------
+~~~~~~~~~~~~~
 The AES-256 key is visible only during the efuse burn session. It will be hidden after
 reset and accessible only on early boot stages by the internal BootROM procedures.
 Trying to read efuse values of AES-256 key will return zeros.
@@ -44,13 +45,13 @@ by eFuse, the boot image should not be encrypted, since BootROM decryption will 
 fail unless a zero-key was used for image encryption.
 
 A3700 platforms
--------------
+~~~~~~~~~~~~~~~
 The AES-256 KEY can be hidden by setting the "DEV_DEPLOY" bits, these bits are
 set by the customer when deploying their products which will set the chip to
 trusted mode.
 
-2. Boot image format
-====================
+Boot Image Format
+-----------------
 The boot image should be properly formatted for the trusted boot mode, so the BootROM extracts
 the required information from the image headers and uses it for authentication against eFuse
 values and digital signatures and for image decryption.
@@ -60,7 +61,7 @@ platform below.
 Refer to ATF build documentation for enabling secure image output.
 
 A8K platforms
--------------
+~~~~~~~~~~~~~
 Refer to A8K functional specification for details about trusted boot image components.
 The secure image configuration is defined by a file sec_img_xx.cfg located in ATF folder
 tools/doimage/secure. The xx in the configuration file name is either 7K or 8K for targeting
@@ -120,10 +121,9 @@ The configuration file has a standard INI file format and defines the following 
 		register addresses.
 		This parameter is optional.
 
-///////////////
-A3700 platforms
-///////////////
 
+A3700 platforms
+~~~~~~~~~~~~~~~
 Please refer to MARVELL WIRELESS Trusted Platform Tools Packages functional
 specification for details about trusted boot image components.
 The secure image configuration is defined by a single file atf_timN.txt located
@@ -132,7 +132,7 @@ There are some files in the A3700_utils/trusted folder which are used for
 trusted image boot.
 
 - aes-256.txt - This file includes AES-256 encryption key values. This key
-        is used to do Encryption/Decryption on wtmi and obmi images which
+		is used to do Encryption/Decryption on wtmi and obmi images which
 		should be programmed into efuse. it can be updated by the image
 		provider.
 
@@ -160,14 +160,15 @@ trusted image boot.
 		This file is mandatory and and can be updated according to
 		requirements for updating Secure Trusted image.
 
-3. Work flow - target preparation
-==================================
+Work flow - Target Preparation
+------------------------------
 After the trusted boot mode is selected by the SoC eFuse, the BootROM enforces security checks upon
 boot image load. Therefore a right work flow is essential for target preparation and preventing
 the system from self-locking.
 
 A8K platforms
--------------
+~~~~~~~~~~~~~
+
 1. Build an image for trusted boot mode using the configuration file described above and any
    additional settings required by ATF. The image encryption option should not be used in this build,
    since the resulting image should be compatible with non-trusted systems.
@@ -177,60 +178,62 @@ A8K platforms
    efuse should be burned last since any further modifications to the SoC efuses will not be possible
    afterwards.
    See the efuse programming example for A8K device below.
-   uboot fuse command:
-			/* prog KAK_DIGEST key to efuse */
-			fuse prog -y 25 0 <KAK_DIGEST bits 31-0> <KAK_DIGEST bits 55-32> <0x1>
-			fuse prog -y 26 0 <KAK_DIGEST bits 95-56> <KAK_DIGEST bits 111-96> <0x1>
-			fuse prog -y 27 0 <KAK_DIGEST bits 143-112> <KAK_DIGEST bits 167-144> <0x1>
-			fuse prog -y 28 0 <KAK_DIGEST bits 199-168> <KAK_DIGEST bits 223-200> <0x1>
-			fuse prog -y 29 0 <KAK_DIGEST bits 255-224> <0x0> <0x1>
-			For example:
-			KAK key hash
-			8B3732C8F03D0C407F34200C206CA36B0701E47C9074034EDE97FBFF5BA6D778
-			fuse prog -y 25 0 0xC832378B 0x000C3DF0 0x1
-			fuse prog -y 26 0 0x20347F40 0x006C200C 0x1
-			fuse prog -y 27 0 0x01076BA3 0x00907CE4 0x1
-			fuse prog -y 28 0 0xDE4E0374 0x00FFFB97 0x1
-			fuse prog -y 29 0 0x78D7A65B 0x0 0x1
-			/* prog AES key to efuse */
-			fuse prog -y 32 0 <AES_KEY bits 31-0> <AES_KEY bits 55-32> <0x1>
-			fuse prog -y 33 0 <AES_KEY bits 95-56> <AES_KEY bits 111-96> <0x1>
-			fuse prog -y 34 0 <AES_KEY bits 143-112> <AES_KEY bits 167-144> <0x1>
-			fuse prog -y 35 0 <AES_KEY bits 199-168> <AES_KEY bits 223-200> <0x1>
-			fuse prog -y 36 0 <AES_KEY bits 255-224> <0x0> <0x1>
-			For example:
-			AES key
-			ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890
-			fuse prog -y 32 0 0x12EFCDAB 0x00785634 0x1
-			fuse prog -y 33 0 0xEFCDAB90 0x00563412 0x1
-			fuse prog -y 34 0 0xCDAB9078 0x003412EF 0x1
-			fuse prog -y 35 0 0xAB907856 0x0012EFCD 0x1
-			fuse prog -y 36 0 0x90785634 0x0 0x1
-			/* prog efuse row to select CSK valid - the first empty row specifies the
-			CSK index */
-			fuse prog -y 37~50 0 <0x1> <0x0> <0x1>
-			For example:
-			/* prog efuse row to select CSK 3 valid,need to set bit[0] in the efuse
-			rows 37, 38 and 39 to non zero values and leave the efuse row 40 intact */
-			fuse prog -y 37 0 <0x1> <0x0> <0x1>
-			fuse prog -y 38 0 <0x1> <0x0> <0x1>
-			fuse prog -y 39 0 <0x1> <0x0> <0x1>
-			/* prog flash ID to efuse row 30 */
-			fuse prog -y 30 0 <0xbaddf00d> <0x0> <0x1>
-			/* prog flash ID to efuse row 31 */
-			fuse prog -y 31 0 <0xdeadbeef> <0x0> <0x1>
+   uboot fuse command::
 
-			/* enable trusted and enable JTAG permanent, select boot device, enable CPU
-			Wakeup/Enable in AP LD1*/
-			fuse prog -y 65 0 <0x1> <0xC000> <0x0> <0x0> <0x0> <0x0> <0x0> <0x0>
-			/* enable trusted/JTAG permanent select boot device, disable ICU
-			message LD1 in SB0 */
-			fuse prog -y 67 0 <0xc9> <0x1> <0x0> <0x0> <0x0> <0x0> <0x0> <0x0>
-			/* enable trusted/JTAG permanent select boot device, disable ICU
-			message LD1 in SB1 */
-			fuse prog -y 69 0 <0xc9> <0x1> <0x0> <0x0> <0x0> <0x0> <0x0> <0x0>
+		/* prog KAK_DIGEST key to efuse */
+		fuse prog -y 25 0 <KAK_DIGEST bits 31-0> <KAK_DIGEST bits 55-32> <0x1>
+		fuse prog -y 26 0 <KAK_DIGEST bits 95-56> <KAK_DIGEST bits 111-96> <0x1>
+		fuse prog -y 27 0 <KAK_DIGEST bits 143-112> <KAK_DIGEST bits 167-144> <0x1>
+		fuse prog -y 28 0 <KAK_DIGEST bits 199-168> <KAK_DIGEST bits 223-200> <0x1>
+		fuse prog -y 29 0 <KAK_DIGEST bits 255-224> <0x0> <0x1>
+		For example:
+		KAK key hash
+		8B3732C8F03D0C407F34200C206CA36B0701E47C9074034EDE97FBFF5BA6D778
+		fuse prog -y 25 0 0xC832378B 0x000C3DF0 0x1
+		fuse prog -y 26 0 0x20347F40 0x006C200C 0x1
+		fuse prog -y 27 0 0x01076BA3 0x00907CE4 0x1
+		fuse prog -y 28 0 0xDE4E0374 0x00FFFB97 0x1
+		fuse prog -y 29 0 0x78D7A65B 0x0 0x1
+		/* prog AES key to efuse */
+		fuse prog -y 32 0 <AES_KEY bits 31-0> <AES_KEY bits 55-32> <0x1>
+		fuse prog -y 33 0 <AES_KEY bits 95-56> <AES_KEY bits 111-96> <0x1>
+		fuse prog -y 34 0 <AES_KEY bits 143-112> <AES_KEY bits 167-144> <0x1>
+		fuse prog -y 35 0 <AES_KEY bits 199-168> <AES_KEY bits 223-200> <0x1>
+		fuse prog -y 36 0 <AES_KEY bits 255-224> <0x0> <0x1>
+		For example:
+		AES key
+		ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890
+		fuse prog -y 32 0 0x12EFCDAB 0x00785634 0x1
+		fuse prog -y 33 0 0xEFCDAB90 0x00563412 0x1
+		fuse prog -y 34 0 0xCDAB9078 0x003412EF 0x1
+		fuse prog -y 35 0 0xAB907856 0x0012EFCD 0x1
+		fuse prog -y 36 0 0x90785634 0x0 0x1
+		/* prog efuse row to select CSK valid - the first empty row specifies the
+		CSK index */
+		fuse prog -y 37~50 0 <0x1> <0x0> <0x1>
+		For example:
+		/* prog efuse row to select CSK 3 valid,need to set bit[0] in the efuse
+		rows 37, 38 and 39 to non zero values and leave the efuse row 40 intact */
+		fuse prog -y 37 0 <0x1> <0x0> <0x1>
+		fuse prog -y 38 0 <0x1> <0x0> <0x1>
+		fuse prog -y 39 0 <0x1> <0x0> <0x1>
+		/* prog flash ID to efuse row 30 */
+		fuse prog -y 30 0 <0xbaddf00d> <0x0> <0x1>
+		/* prog flash ID to efuse row 31 */
+		fuse prog -y 31 0 <0xdeadbeef> <0x0> <0x1>
 
-	Note: HD_efuse (bank ID 0~63's bit56-63 must be 0x0 according to Functional
+		/* enable trusted and enable JTAG permanent, select boot device, enable CPU
+		Wakeup/Enable in AP LD1*/
+		fuse prog -y 65 0 <0x1> <0xC000> <0x0> <0x0> <0x0> <0x0> <0x0> <0x0>
+		/* enable trusted/JTAG permanent select boot device, disable ICU
+		message LD1 in SB0 */
+		fuse prog -y 67 0 <0xc9> <0x1> <0x0> <0x0> <0x0> <0x0> <0x0> <0x0>
+		/* enable trusted/JTAG permanent select boot device, disable ICU
+		message LD1 in SB1 */
+		fuse prog -y 69 0 <0xc9> <0x1> <0x0> <0x0> <0x0> <0x0> <0x0> <0x0>
+
+   .. Note::
+	HD_efuse (bank ID 0~63's bit56-63 must be 0x0 according to Functional
 	Specification document). Efuse row 64,66,68 are LD0 and read-only.
 
 4. Verify the efuse values for correct efuse rows using "fuse read" commands.
@@ -239,7 +242,7 @@ A8K platforms
    burn it to the system boot device using the regular "bubt" command.
 
 A3700 platforms
----------------
+~~~~~~~~~~~~~~~
 1. Create an UNTRUSTED boot image with eFuse command module support (as stated
    in the "eFuses" chapter above) and burn it on the target flash device using
    the regular "bubt" command.
@@ -260,11 +263,11 @@ A3700 platforms
 5. Burn the TRUSTED boot image using regular "bubt" command.
 6. Reset the board and verify that the trusted boot mode works.
 
-Notes:
+.. Note::
 	a. binary value: supports 00/01/10/11 disable/.../enable encryption for
 	   primary type image/...
-	b. AES-256 value: AES-256 symmetric encryption key in HEX format. The value
-       are in the aes-256.txt file.
+	b. AES-256 value: AES-256 symmetric encryption key in HEX format.
+	   The values are in the aes-256.txt file.
 	c. device_type: SPINOR, SPINAND, EMMCNORM..., select device flash according
 	   to requirement.
 	   After selecting device_type by efuse, the device could not be changed
@@ -285,15 +288,20 @@ Notes:
    KAK_DIGEST command.
    The OtpHash.txt file lists the otphash_value in groups of 4-bytes values,
    organized in the following
-   order:
+   order::
+
        LSB
        ...
        ...
        MSB
+
    These otphash_value should be converted to a single 32-bytes value for
-   eFuse burning:
+   eFuse burning::
+
        MSB ... ... ... LSB.
-   For instance, the following otphash_value:
+
+   For instance, the following otphash_value::
+
        0x1887C298
        0x59C9AFD9
        0x6E814E34
@@ -302,17 +310,20 @@ Notes:
        0x33CC58B1
        0x2C69997A
        0xC27B7242
-   Will be used in the following form in eFuse KAK digest write command:
+
+   Will be used in the following form in eFuse KAK digest write command::
+
        efuse write KAK_DIGEST C27B72422C69997A33CC58B13CDB7EED25CD518B6E814E3459C9AFD91887C298
 
 <key_index>
    key_index is the index of the "timnsign.txt", refer to "timnsign.txt" in the
    previous chapter for detailed description.
-   For instance, the following sample content is from timnsign.txt
+   For instance, the following sample content is from timnsign.txt::
+
       DSA Algorithm ID:                7			; Signed with CSK6
       Hash Algorithm ID:               32
       Key Size in bits:                2048
-      RSA Public Exponent:
+      RSA Public Exponent
 	  ... ... ... ...(aligned with CSK6 file)
 	  ... ... ... ...
 	  RSA System Modulus:
@@ -321,26 +332,28 @@ Notes:
 	  RSA Private Key:
 	  ... ... ... ...(aligned with CSK6 file)
 	  ... ... ... ...
-   The key_index will be used in the following form in eFuse CSK_INDEX write command:
+
+   The key_index will be used in the following form in eFuse CSK_INDEX write command::
+
       efuse write CSK_INDEX 6
 
 i.e.
 
-Default commands before bubt Secure Trusted boot image:
-	a. efuse write ENCRYPTION 10
-	b. efuse write AES256_KEY 0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF
-	c. efuse write BOOT_DEVICE SPINOR
-	d. efuse write KAK_DIGEST C27B72422C69997A33CC58B13CDB7EED25CD518B6E814E3459C9AFD91887C298
-	e. efuse write CSK_INDEX 6
-	f. efuse write OPER_MODE 2
+Default commands before bubt Secure Trusted boot image::
 
-=============================================
-4. Authentication/Encryption Keys Generation and selection
-=============================================
+	efuse write ENCRYPTION 10
+	efuse write AES256_KEY 0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF
+	efuse write BOOT_DEVICE SPINOR
+	efuse write KAK_DIGEST C27B72422C69997A33CC58B13CDB7EED25CD518B6E814E3459C9AFD91887C298
+	efuse write CSK_INDEX 6
+	efuse write OPER_MODE 2
 
-///////////////
+
+Authentication/Encryption Keys Generation and Selection
+-------------------------------------------------------
+
 A3700 platforms
-///////////////
+~~~~~~~~~~~~~~~
 
 A3700 platform supports to select 16 authentication key files(CSK0~CSKF.txt
 in A3700_utils/keys/ folder) for trusted boot.
@@ -355,22 +368,25 @@ Secure Trusted Image, we could update
 three files (kak.txt/csk-1~16.txt/timnsign.txt) stored in the A3700_utils/trust
 folder. Please follow the below steps to update these files.
 
-1. Key Generation command
+1. Key Generation command::
+
        tbb_linux.exe -G <<path\>KeyGeneration.txt>
+
    Normally KeyGenernation.txt is stored in the A3700_utils/keys/ folder. If
    the file is a directory other than the directory from which TBB is executed,
    then a file path must also be provided.
 
 2. KeyGeneration.txt
 
-   Content:
-      Seed: Trusted platform
-      Key ID: DSIG
-      Encrypt Algorithm ID: 7
-      Hash Algorithm ID: 32
-      Key Size: 2048
-      Output Binary Filename:
-      Output Text Filename: ./KAK.txt
+   Content::
+
+	Seed: Trusted platform
+	Key ID: DSIG
+	Encrypt Algorithm ID: 7
+	Hash Algorithm ID: 32
+	Key Size: 2048
+	Output Binary Filename:
+	Output Text Filename: ./KAK.txt
 
    - Seed - The ASCII seed value can be any continuous ASCII alphanumeric
          sequence delimited by white-space. TBB hashes the ASCII seed value to
@@ -383,9 +399,9 @@ folder. Please follow the below steps to update these files.
 		 supported.
 
    - Hash Algorithm ID - Hash Algorithm uses the Hash Algorithm ID to hash the
-		 data associated with the key.
+         data associated with the key.
          i.e. 20 = SHA160, 32 = SHA256, 64 = SHA512. Our A3700 use 32 as
-		 default.
+	 default.
 
    - Key Size - For PKCS, the supported key sixe in bits is 2048.
 
@@ -399,7 +415,8 @@ folder. Please follow the below steps to update these files.
    Copy CSK0~CSKF.txt to A3700_utils/trusted folder and remove RSA Private Key
    part from these files. Rename CSK0~CSKF.txt to csk-1~csk-16.txt in
    A3700_utils/trusted folder. Change csk-1~csk-16.txt file headers in the
-   content
+   content::
+
        Key ID: CSKA
        Encrypt Algorithm ID: 7
        Hash Algorithm ID: 32
@@ -407,7 +424,8 @@ folder. Please follow the below steps to update these files.
        RSA Public Exponent:
        ... ... ... ...
 
-   to below format
+   to below format::
+
        Key ID:                          0x43534B41		; CSKA
        Hash Algorithm ID:               32
        Key Size in bits:                2048
@@ -418,12 +436,14 @@ folder. Please follow the below steps to update these files.
 
    Copy KAK.txt to A3700_utils/trusted folder and updating some parameters
    Rename KAK.txt to kak.txt in A3700_utils/trusted folder.
-   Change kak.txt file headers in the content
+   Change kak.txt file headers in the content::
+
        Key ID: DSIG
        Encrypt Algorithm ID: 7
        ... ... ... ...
 
-   to below format
+   to below format::
+
        DSA Algorithm ID:                7			; Signed with KAK
        ... ... ... ...
 
@@ -431,6 +451,7 @@ folder. Please follow the below steps to update these files.
    chapter.
 
 4. Update timnsign.txt file content to select CSK_Index
+
    Update all parameters(DSA Algorithm ID/Hash Algorithm ID/Key Size in bits
    /RSA Public Exponent/RSA System Modulus/RSA Private Key) value in
    timnsign.txt according to CSK0~F.txt files located in tools/wtp/key folder.

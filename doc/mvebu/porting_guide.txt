@@ -112,6 +112,6 @@ Customer board porting procedure
 	---------------------------
 
 		- Serial - serial/mvebu-serial.txt
-		- GPIO - gpio/armada37xx-gpio.txt
+		- MPPs & GPIO - pinctrl/marvell,armada-37xx-pinctrl.txt
 		- SPI - spi/mvebu-a3700-spi.txt
 		- PCIe - pci/armada37xx-pcie.txt

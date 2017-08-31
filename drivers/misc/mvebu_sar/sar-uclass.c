@@ -80,6 +80,7 @@ int mvebu_sar_init(void)
 		}
 		sar_name = fdt_getprop(blob, node, "sar-name", NULL);
 		/* Initialize driver priv struct */
+		device_probe(sar_chip[i]);
 		priv = dev_get_priv(sar_chip[i]);
 		priv->sar_base = sar_base;
 		priv->sar_name = sar_name;

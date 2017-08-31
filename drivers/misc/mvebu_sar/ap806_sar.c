@@ -235,7 +235,6 @@ int ap806_sar_init(struct udevice *dev)
 		SAR_AP_FABRIC_FREQ
 	};
 
-	device_probe(dev);
 	for (i = 0; i < ARRAY_SIZE(sar_list); i++) {
 		ret = mvebu_sar_id_register(dev, sar_list[i]);
 		if (ret) {

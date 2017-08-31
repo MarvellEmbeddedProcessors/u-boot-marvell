@@ -209,7 +209,6 @@ int cp110_sar_init(struct udevice *dev)
 	int ret;
 	struct dm_sar_pdata *priv = dev_get_priv(dev);
 
-	device_probe(dev);
 
 	u32 cp0_sar_list[] = {
 		SAR_CP0_PCIE0_CLK,

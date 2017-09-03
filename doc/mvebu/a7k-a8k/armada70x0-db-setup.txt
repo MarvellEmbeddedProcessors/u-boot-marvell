@@ -23,83 +23,89 @@ Booting Linux requires using the same Device Tree configuration as used in U-Boo
 Board Setup Options
 -------------------
 
-|		| 1: A			| 2: B			| 4: D			|
-|---------------|-----------------------|-----------------------|-----------------------|
-|Device tree	|armada-70x0-db.dts	|armada-70x0-db-B.dts   | armada-70x0-db-D.dts	|
-|CP0-SW1:1	| ON			| OFF			| ON			|
-|CP0-SW1:2	| OFF			| ON			| OFF			|
-|CP0-SW1:3	| N/A			| ON			| ON			|
-|CP0-SW1:4	| OFF			| ON			| OFF			|
-|CP0-SW1:5	| OFF			| ON			| OFF			|
-|CP0-SW1:6	| N/A			| ON			| ON			|
-|CP0-SW1:7	| N/A			| ON			| ON			|
-|CP0-SW1:8	| OFF			| OFF			| OFF			|
+|		| 1: A			| 2: B			| 3: C			| 4: D			| 5: E			|
+|---------------|-----------------------|-----------------------|-----------------------|-----------------------|-----------------------|
+|Device tree	|armada-70x0-db.dts	|armada-70x0-db-B.dts 	|armada-70x0-db-C.dts	|armada-70x0-db-D.dts	|armada-70x0-db-E.dts	|
+|CP0-SW1:1	| ON			| OFF			| ON			| ON			| OFF			|
+|CP0-SW1:2	| OFF			| ON			| OFF			| OFF			| OFF			|
+|CP0-SW1:3	| N/A			| ON			| ON			| ON			| ON			|
+|CP0-SW1:4	| OFF			| ON			| OFF			| OFF			| OFF			|
+|CP0-SW1:5	| OFF			| ON			| OFF			| OFF			| OFF			|
+|CP0-SW1:6	| N/A			| ON			| ON			| ON			| ON			|
+|CP0-SW1:7	| N/A			| ON			| ON			| ON			| ON			|
+|CP0-SW1:8	| OFF			| OFF			| OFF			| OFF			| OFF			|
 
 DPR Setting
 ------------
-|					| 1: A					 | 2: B					  |
+|					| 	1: default (A)			 |	2: B:                             |
 |---------------------------------------|----------------------------------------|----------------------------------------|
 | Mpp Jumper Module (SLM1548)		| Default release (ALL DPRs 1-2 position)| Default release (ALL DPRs 1-2 position)|
 | Serdess Jumper Module (SLM1547)	| DPR152,153,154,155 - 1-2 position	 | DPR152,153,154,155 - 1-2 position      |
 |					| DPR148,149,150,151 - 2-3 position	 | DPR148,149,150,151 - 1-2 position      |
 | CP0 Serdess module (SLM1521)		| SW1 - (1,3,6,7)= ON,  (2,4,5,8)=OFF	 | SW1 - (2,3,4,5,6,7)= ON,  (1,8)=OFF    |
-|					| DPR2,3,4,5 - 1-2 position		 | DPR2,3,4,5 - 2-3 position              |
+| 					| DPR2,3,4,5 - 1-2 position		 | DPR2,3,4,5 - 2-3 position              |
+----------------------------------------|----------------------------------------|----------------------------------------|
 
-|					| 4: D						    |
-|---------------------------------------|---------------------------------------------------|
-| Mpp Jumper Module (SLM1548)		| DPR138 - 143  2-3 position,DPR133-137 not connect |
-| Serdess Jumper Module (SLM1547)	| DPR152,153,154,155 - 1-2 position                 |
-|					| DPR148,149,150,151 - 1-2 position		    |
-| CP0 Serdess module (SLM1521)		| SW1 - (1,3,6,7)= ON,  (1,2,4,5,8)=OFF             |
-|					| DPR2,3,4,5 - 1-2 position                         |
-|					| CON9 not connect , CON10 connect,                 |
-|					| R77 R79 R81-82 R84-85 connect                     |
-| Install TDM Module (SLM1448)		| -                                                 |
-| Install Audio Module (SLM1449)	| on DB-7040 CON46                                  |
-| DB-7040 Modular (SLM1546)		| wire from U36-1 to con47-2, DPR23 - NC            |
----------------------------------------------------------------------------------------------
+|					| 	3: C				 |	4:D					       |	5:E                                          |
+|---------------------------------------|----------------------------------------|-----------------------------------------------------|-----------------------------------------------------|
+| Mpp Jumper Module (SLM1548)		| DPR133 - 143  2-3 position		 | DPR138 - 143  2-3 position,DPR133-137 not connect   | DPR133 -143  1-2 position , DPR144-147 2-3 position |
+| Serdess Jumper Module (SLM1547)	| DPR152,153,154,155 - 1-2 position	 | DPR152,153,154,155 - 1-2 position                   | DPR152,153,154,155 - 1-2 position                   |
+|					| DPR148,149,150,151 - 1-2 position	 | DPR148,149,150,151 - 1-2 position		       | DPR148,149,150,151 - 1-2 position                   |
+| CP0 Serdess module (SLM1521)		| SW1 - (1,3,6,7)= ON,  (2,4,5,8)=OFF	 | SW1 - (1,3,6,7)= ON,  (1,2,4,5,8)=OFF               | SW1 - (3,6,7)= ON,  (1,2,4,5,8)=OFF                 |
+| 					| DPR2,3,4,5 - 1-2 position		 | DPR2,3,4,5 - 1-2 position                           | DPR2,3,4,5 - 1-2 position                           |
+|					|					 | CON9 not connect , CON10 connect,                   |                                                     |
+|					|					 | R77 R79 R81-82 R84-85 connect                       |                                                     |
+| Install TDM Module (SLM1448)		| on DB-7040 CON46			 | -                                                   | -                                                   |
+|					|					 |                                                     |                                                     |
+| Install Audio Module (SLM1449)	| - 					 | on DB-7040 CON46.                                   | -                                                   |
+|					|					 |                                                     |                                                     |
+|					|					 |                                                     |                                                     |
+| DB-4070 Modular (SLM1546)		| - 					 | wire from U36-1 to con47-2, DPR23 -NC               | DPR53-54 1-2 position , DPR61 2-3 position          |
+|					| 					 |                                                     | DPR10-11 position 1-2, DPR12-15 position 1-2        |
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
 The tables below summarize the interface configuration of each setup.
 
 SerDes Configuration
 ---------------------
- Lane	| 1: A		| 2: B		|4: D		|
---------|---------------|---------------|---------------|
- 0	| sgmii2	| pcie_x4_0	| pcie_x1_0	|
- 1	| usb3h0	| pcie_x4_0	| usb0 device	|
- 2	| sfi		| pcie_x4_0	| sfi		|
- 3	| sata1		| pcie_x4_0	| sata1		|
- 4	| usb3h1	| usb3h1	| usb2h device	|
- 5	| pcie_x1_2	| pcie_x1_2	| pcie_x1_2	|
----------------------------------------------------------
+
+ Lane	| 1: A		| 2: B 		|3: C		|4: D		|5: E		|
+--------|---------------|---------------|---------------|---------------|---------------|
+ 0	| sgmii2	| pcie_x4_0	| pcie_x1_0	| pcie_x1_0	| pcie_x1_0	|
+ 1	| usb3h0	| pcie_x4_0	| usb3h0	| usb0 device	| sata0		|
+ 2	| sfi		| pcie_x4_0	| sfi		| sfi		| sgmii-1G	|
+ 3	| sata1		| pcie_x4_0	| sata1		| sata1		| sata1		|
+ 4	| usb3h1	| usb3h1	| usb3h1	| usb2h device	| usb3h1	|
+ 5	| pcie_x1_2	| pcie_x1_2	| pcie_x1_2	| pcie_x1_2	| pcie_x1_2	|
+
 
 Multi purpose pin configurations
 --------------------------------
- AP806 pin	| 1: A		| 2: B		| 4: D		|
-----------------|---------------|---------------|---------------|
-	AP-SDIO | [0-5]		| [0-5]		| [0-5]		|
-	AP-SPI0 | N/C		| N/C		| N/C		|
-	AP-I2C	| N/C		| N/C		| N/C		|
-	AP-UART0| [11,19]	| [11,19]	| [11,19]	|
 
- CP110 pin	| 1: A		| 2: B		| 4: D		|
-----------------|---------------|---------------|---------------|
-	CP-SPI0	| N/C		| N/C		| N/C		|
-	CP-SPI1	| [13-16]	| [13-16]	| N/C		|
-	NAND	| N/C		| N/C		| [15-27]	|
-	RGMII0	| N/C		| [0-11]	| N/C		|
-	RGMII1	| [44-55]	| [44-55]	| [44-55]	|
-	CP-UART0| [29-30]	| [29-30]	| [29-30]	|
-	CP-UART1| N/C		| N/C		| N/C		|
-	SD	| [56-61]	| [56-61]	| N/C		|
-	GPIO	| [62]		| [62]		| [62]		|
-	TDM	| N/C		| N/C		| N/C		|
-	TWSI	| [37-38]	| [37-38]	| [37-38]	|
-	SATA0	| N/C		| N/C		| N/C		|
-	SATA1	| [28]		| [28]		| [28]		|
-	SMI	| [32,34]	| [32,34]	| [32,34]	|
-	XSMI	| [35-36]	| [35-36]	| [35-36]	|
-	USB_DEV | N/C		| N/C		| [7]		|
+ AP806 pin	| 1: A		| 2: B		| 3: C		| 4: D		| 5:E		|
+----------------|---------------|---------------|---------------|---------------|---------------|
+	AP-SDIO | [0-5]		| [0-5]		| [0-5]		| [0-5]		| [0-3]		|
+	AP-SPI0 | N/C		| N/C		| N/C 		| N/C		| [4,5]		|
+	AP-UART0| [11,19]	| [11,19]	| [11,19]	| [11,19]	| [11,19]	|
+
+
+ CP110 pin	| 1: A		| 2: B		| 3: C		| 4: D		| 5:E		|
+----------------|---------------|---------------|---------------|---------------|---------------|
+	CP-SPI0	| N/C		| N/C		| [6-11]	| N/C		| N/C		|
+	CP-SPI1	| [13-16]	| [13-16]	| [13-16]	| N/C		| [13-16]	|
+	NAND	| N/C		| N/C		| N/C		| [15-27]	| N/C		|
+	RGMII0	| [0-11]	| [0-11]	| N/C		| N/C		| [0-11] 	|
+	RGMII1	| N/C		| [44-55]	| [44-55]	| [44-55]	| N/C		|
+	CP-UART0| [29-30]	| [29-30]	| [29-30]	| [29-30]	| [29-30]	|
+	CP-UART1| N/C		| N/C		| N/C		| N/C		| [47,49-51]	|
+	SD	| [56-61]	| [56-61]	| [56-61]	| [56-61]	| [54,56-61]	|
+	GPIO	| [62]      	| [62]		| [62]		| [62]		| [62]		|
+	TDM	| N/C		| N/C		| [0-5]		| N/C		| N/C		|
+	TWSI	| [37-38]	| [37-38|	| [37-38]	| [37-38]	| [37-38]	|
+	SATA0	| N/C		| N/C		| N/C		| N/C		| N/C		|
+	SATA1	| [28]		| [28]		| [28]		| [28]		| [28]		|
+	SMI	| [32,34]	| [32,34]	| [32,34]	| [32,34]	| [32,34]	|
+	XSMI	| [35-36]	| [35-36]	| [35-36]	| [35-36]	| [35-36]	|
 
 Network configuration
 ---------------------
@@ -118,12 +124,26 @@ Network configuration
  eth0           | 2             | RGMII0			        |
  eth1           | 3             | RGMII1				|
 
+ 3: C
+--------------------
+ Interface      | GMAC Port     | Board Interface                       |
+ ---------------|---------------|---------------------------------------|
+ eth0           | mac0          | SFI (Lane 2 connected to SFI)		|
+ eth1           | mac3          | RGMII1				|
+
  3: D
+--------------------
+Interface      | GMAC Port     | Board Interface                       |
+---------------|---------------|---------------------------------------|
+ eth0          | mac0          | SFI (Lane 2 connected to SFI)         |
+ eth1          | mac3          | RGMII1                                |
+
+ 4: E
 --------------------
 Interface       | GMAC Port     | Board Interface                       |
 ----------------|---------------|---------------------------------------|
- eth0           | mac0          | SFI (Lane 2 connected to SFI)         |
- eth1           | mac3          | RGMII1                                |
+eth0            | mac0          | SGMII	      			        |
+eth1            | mac2          | RGMII1                                |
 
 Notes:
 	- Equivalent of this configuration can be viewed in arch/arm64/boot/dts/mvebu/armada-cpn110.dtsi

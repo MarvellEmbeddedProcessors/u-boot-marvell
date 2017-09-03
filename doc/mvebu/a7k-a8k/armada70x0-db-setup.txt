@@ -19,25 +19,25 @@ To switch board configuration:
 Note:
 Booting Linux requires using the same Device Tree configuration as used in U-Boot.
 
-
 Board Setup Options
 -------------------
 
-|		| 1: A			| 2: B			| 3: C			| 4: D			| 5: E			|
+|		| 1: A			| 2: B			| 3: C			| 4: D			| 4: E			|
 |---------------|-----------------------|-----------------------|-----------------------|-----------------------|-----------------------|
-|Device tree	|armada-70x0-db.dts	|armada-70x0-db-B.dts 	|armada-70x0-db-C.dts	|armada-70x0-db-D.dts	|armada-70x0-db-E.dts	|
-|CP0-SW1:1	| ON			| OFF			| ON			| ON			| OFF			|
-|CP0-SW1:2	| OFF			| ON			| OFF			| OFF			| OFF			|
-|CP0-SW1:3	| N/A			| ON			| ON			| ON			| ON			|
-|CP0-SW1:4	| OFF			| ON			| OFF			| OFF			| OFF			|
-|CP0-SW1:5	| OFF			| ON			| OFF			| OFF			| OFF			|
-|CP0-SW1:6	| N/A			| ON			| ON			| ON			| ON			|
-|CP0-SW1:7	| N/A			| ON			| ON			| ON			| ON			|
-|CP0-SW1:8	| OFF			| OFF			| OFF			| OFF			| OFF			|
+|Device tree	| armada-7040-db.dts	| armada-7040-db-B.dts	| armada-7040-db-C.dts	| armada-7040-db-D.dts  |armada-7040-db-E.dts	|
+|CP0-SW1:1	| ON			| OFF			| ON			| ON 			| OFF                   |
+|CP0-SW1:2	| OFF			| ON			| OFF			| OFF 			| OFF                   |
+|CP0-SW1:3	| ON			| ON			| ON			| ON			| ON                    |
+|CP0-SW1:4	| OFF			| ON			| OFF			| OFF			| OFF                   |
+|CP0-SW1:5	| OFF			| ON			| OFF			| OFF			| OFF                   |
+|CP0-SW1:6	| ON			| ON			| ON			| ON			| ON                    |
+|CP0-SW1:7	| ON			| ON			| ON			| ON			| ON                    |
+|CP0-SW1:8	| OFF			| OFF			| OFF			| OFF			| OFF                   |
+----------------------------------------------------------------------------------------------------------------------------------------|
 
 DPR Setting
 ------------
-|					| 	1: default (A)			 |	2: B:                             |
+|					| 1: A					 | 2: B					  |
 |---------------------------------------|----------------------------------------|----------------------------------------|
 | Mpp Jumper Module (SLM1548)		| Default release (ALL DPRs 1-2 position)| Default release (ALL DPRs 1-2 position)|
 | Serdess Jumper Module (SLM1547)	| DPR152,153,154,155 - 1-2 position	 | DPR152,153,154,155 - 1-2 position      |
@@ -46,7 +46,7 @@ DPR Setting
 | 					| DPR2,3,4,5 - 1-2 position		 | DPR2,3,4,5 - 2-3 position              |
 ----------------------------------------|----------------------------------------|----------------------------------------|
 
-|					| 	3: C				 |	4:D					       |	5:E                                          |
+|					| 3: C					 | 4: D						       | 5: E						     |
 |---------------------------------------|----------------------------------------|-----------------------------------------------------|-----------------------------------------------------|
 | Mpp Jumper Module (SLM1548)		| DPR133 - 143  2-3 position		 | DPR138 - 143  2-3 position,DPR133-137 not connect   | DPR133 -143  1-2 position , DPR144-147 2-3 position |
 | Serdess Jumper Module (SLM1547)	| DPR152,153,154,155 - 1-2 position	 | DPR152,153,154,155 - 1-2 position                   | DPR152,153,154,155 - 1-2 position                   |
@@ -64,33 +64,38 @@ DPR Setting
 |					| 					 |                                                     | DPR10-11 position 1-2, DPR12-15 position 1-2        |
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
-The tables below summarize the interface configuration of each setup.
+The tables below summarizes the interface configuration of each setup
 
 SerDes Configuration
----------------------
+------------------------
 
- Lane	| 1: A		| 2: B 		|3: C		|4: D		|5: E		|
---------|---------------|---------------|---------------|---------------|---------------|
- 0	| sgmii2	| pcie_x4_0	| pcie_x1_0	| pcie_x1_0	| pcie_x1_0	|
- 1	| usb3h0	| pcie_x4_0	| usb3h0	| usb0 device	| sata0		|
- 2	| sfi		| pcie_x4_0	| sfi		| sfi		| sgmii-1G	|
- 3	| sata1		| pcie_x4_0	| sata1		| sata1		| sata1		|
- 4	| usb3h1	| usb3h1	| usb3h1	| usb2h device	| usb3h1	|
- 5	| pcie_x1_2	| pcie_x1_2	| pcie_x1_2	| pcie_x1_2	| pcie_x1_2	|
+| CP0 Lane 	| 1: A		| 2: B		| 3: C		| 4: D		| 5: E		|
+|---------------|---------------|---------------|---------------|---------------|---------------|
+| 0		| SGMII2	| PICE0 (x4)	| PCIE0 (x1)    | PCIE0 (x1)    | PCIE0 (x1)	|
+| 1		| USB3_HOST0	| PCIE0 (x4)	| USB3_HOST0    | USB3_DEVICE0  | SATA0		|
+| 2		| SFI (10G)	| PCIE0 (x4)	| SFI (10G)     | SFI (1G)  	| SGMII0 (1G)	|
+| 3		| SATA1		| PCIE0 (x4)	| SATA1		| SATA1         | SATA1		|
+| 4		| USB3_HOST1	| USB3_HOST1	| USB3_HOST1    | USB3_HOST1    | USB_HOST1	|
+| 5		| PCIE2 (x1)	| PCIE2 (x1)	| PCIE2 (x1)    | PCIE2 (x1)    | PCIE2 (x1)	|
+-------------------------------------------------------------------------------------------------
+
+- USB2_H0 (UTMI only)
+- USB2_H1 (UTMI & USB3 SerDes)
 
 
-Multi purpose pin configurations
+Multi-purpose pin configurations
 --------------------------------
 
- AP806 pin	| 1: A		| 2: B		| 3: C		| 4: D		| 5:E		|
-----------------|---------------|---------------|---------------|---------------|---------------|
-	AP-SDIO | [0-5]		| [0-5]		| [0-5]		| [0-5]		| [0-3]		|
-	AP-SPI0 | N/C		| N/C		| N/C 		| N/C		| [4,5]		|
-	AP-UART0| [11,19]	| [11,19]	| [11,19]	| [11,19]	| [11,19]	|
+AP806 pin	| 1: A		| 2: B		| 3: C		| 4: D		| 5: E		|
+-------------------------------------------------------------------------------------------------
+	AP-SDIO | [0-5]		| [0-5]		| [0-5]         | [0-5]		| N/C		|
+	AP-SPI0 | N/C		| N/C		| N/C		| N/C		| [0-3]		|
+	AP-I2C	| N/C		| N/C		| N/C		| N/C		| [4,5]		|
+	AP-UART0| [11,19]	| [11,19]	| [11,19]       | [11,19]	| [11,19]	|
+-------------------------------------------------------------------------------------------------
 
-
- CP110 pin	| 1: A		| 2: B		| 3: C		| 4: D		| 5:E		|
-----------------|---------------|---------------|---------------|---------------|---------------|
+CP0 pin:	| 1: A		| 3: B		| 3: C		| 4: D		| 5: E		|
+-------------------------------------------------------------------------------------------------
 	CP-SPI0	| N/C		| N/C		| [6-11]	| N/C		| N/C		|
 	CP-SPI1	| [13-16]	| [13-16]	| [13-16]	| N/C		| [13-16]	|
 	NAND	| N/C		| N/C		| N/C		| [15-27]	| N/C		|
@@ -101,49 +106,51 @@ Multi purpose pin configurations
 	SD	| [56-61]	| [56-61]	| [56-61]	| [56-61]	| [54,56-61]	|
 	GPIO	| [62]      	| [62]		| [62]		| [62]		| [62]		|
 	TDM	| N/C		| N/C		| [0-5]		| N/C		| N/C		|
-	TWSI	| [37-38]	| [37-38|	| [37-38]	| [37-38]	| [37-38]	|
+	TWSI	| [37-38]	| [37-38]	| [37-38]	| [37-38]	| [37-38]	|
 	SATA0	| N/C		| N/C		| N/C		| N/C		| N/C		|
 	SATA1	| [28]		| [28]		| [28]		| [28]		| [28]		|
 	SMI	| [32,34]	| [32,34]	| [32,34]	| [32,34]	| [32,34]	|
 	XSMI	| [35-36]	| [35-36]	| [35-36]	| [35-36]	| [35-36]	|
+	USB_DEV | N/C 		| N/C 		| N/C		| [7]		| N/C		|
+-------------------------------------------------------------------------------------------------
 
 Network configuration
 ---------------------
-1: A
----------------------
- Interface	| GMAC Port	| Board Interface			|
- ---------------|---------------|---------------------------------------|
- eth0		| 0		| SFI (Lane 2 connected to SFI)		|
- eth1		| 2		| SGMII (Lane 2 connected to RJ45)	|
- eth2		| 3		| RGMII0				|
+1: A:
+ Interface	| CP#	| PPv2 Port	| GMAC Port	| Board Interface		|
+ ---------------|-------|---------------|---------------|-------------------------------|
+ eth0		| CP0	| eth0		| 0		| SFI (10G)			|
+ eth1		| CP0	| eth1		| 2		| RGMII0			|
+ eth2		| CP0	| eth2		| 3		| RGMII1			|
+ ----------------------------------------------------------------------------------------
 
-2: B
---------------------
- Interface      | GMAC Port     | Board Interface                       |
- ---------------|---------------|---------------------------------------|
- eth0           | 2             | RGMII0			        |
- eth1           | 3             | RGMII1				|
+2: B:
+ Interface      | CP#   | PPv2 Port     | GMAC Port     | Board Interface               |
+ ---------------|-------|---------------|---------------|-------------------------------|
+ eth0           | CP0   | eth0          | 2             | RGMII0                        |
+ eth1           | CP0   | eth1          | 3             | RGMII1                        |
+ ----------------------------------------------------------------------------------------
 
- 3: C
---------------------
- Interface      | GMAC Port     | Board Interface                       |
- ---------------|---------------|---------------------------------------|
- eth0           | mac0          | SFI (Lane 2 connected to SFI)		|
- eth1           | mac3          | RGMII1				|
+3: C:
+ Interface      | CP#   | PPv2 Port     | GMAC Port     | Board Interface               |
+ ---------------|-------|---------------|---------------|-------------------------------|
+ eth0           | CP0   | eth0          | 0             | SFI (10G)                     |
+ eth1           | CP0   | eth1          | 3             | RGMII1                        |
+ ----------------------------------------------------------------------------------------
 
- 3: D
---------------------
-Interface      | GMAC Port     | Board Interface                       |
----------------|---------------|---------------------------------------|
- eth0          | mac0          | SFI (Lane 2 connected to SFI)         |
- eth1          | mac3          | RGMII1                                |
+4: D:
+ Interface      | CP#   | PPv2 Port     | GMAC Port     | Board Interface               |
+ ---------------|-------|---------------|---------------|-------------------------------|
+ eth0           | CP0   | eth0          | 0             | SFI (10G)                     |
+ eth1           | CP0   | eth1          | 3             | RGMII1                        |
+ ----------------------------------------------------------------------------------------
 
- 4: E
---------------------
-Interface       | GMAC Port     | Board Interface                       |
-----------------|---------------|---------------------------------------|
-eth0            | mac0          | SGMII	      			        |
-eth1            | mac2          | RGMII1                                |
+5: E:
+ Interface      | CP#   | PPv2 Port     | GMAC Port     | Board Interface               |
+ ---------------|-------|---------------|---------------|-------------------------------|
+ eth0           | CP0   | eth0          | 0             | SGMII0 (1G)                   |
+ eth1           | CP0   | eth1          | 2             | RGMII0                        |
+ ----------------------------------------------------------------------------------------: A
 
 Notes:
 	- Equivalent of this configuration can be viewed in arch/arm64/boot/dts/mvebu/armada-cpn110.dtsi

@@ -45,7 +45,7 @@ Board Setup Options
 
 DPR Setting
 ------------
-|						| 1: A		| 2: B			| 3: c				|
+|						| 1: A		| 2: B			| 3: C				|
 |-----------------------------------------------|---------------|-----------------------|-------------------------------|
 | Jumper-module (CON44): SLM1564		| DPR all = 1-2	| DPR all = 1-2		| DPR 96-108 = 2-3		|
 | Serdes CP0 site module (CON42): SLM1521	| DPR 2-5 = 1-2	| DPR 2-5 = 2-3		| DPR 2-5 = 1-2			|
@@ -100,7 +100,7 @@ Multi-purpose pin configurations
     AP-SPI0	| N/C		| N/C		| N/C		| N/C		| [0,3]		| N/C		|
     AP-UART0	| [11,19]	| [11,19]	| [11,19]	| [11,19]	| [11,19]	| [11,19]	|
 
- CP0 pin	| 1: A		| 2: B		| 3: C		| 4: D		| 4: E		| 6: F		|
+ CP0 pin	| 1: A		| 2: B		| 3: C		| 4: D		| 5: E		| 6: F		|
 ----------------|---------------|---------------|---------------|---------------|---------------|---------------|
     CP0-SMI	| [32,34]	| [32,34]	| [32,34]	| [32,34]	| N/C		| [32,34]	|
     CP0-XSMI	| [42-43]	| [42-43]	| [42-43]	| [42-43]	| [42-43]	| [42-43]	|
@@ -136,9 +136,9 @@ Network configuration
 1: A:
  Interface	| CPN#	| PPv2 Port	| GMAC Port	| Board Interface		|
  ---------------|-------|---------------|---------------|-------------------------------|
- eth0		| 0	| 0		| 0		| 10G (Lane 2 connected to SFI)	|
+ eth0		| 0	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
  eth1		| 0	| 2		| 3		| RGMII1			|
- eth2		| 1	| 0		| 0		| 10G (Lane 2 connected to SFI)	|
+ eth2		| 1	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
  eth3		| 1	| 1		| 2		| RGMII0			|
 
 2: B:
@@ -151,22 +151,22 @@ Network configuration
 3: C:
  Interface	| CPN#	| PPv2 Port	| GMAC Port	| Board Interface		|
  ---------------|-------|---------------|---------------|-------------------------------|
- eth0		| 0	| 0		| 0		| 10G (Lane 2 connected to SFI)	|
+ eth0		| 0	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
  eth1		| 0	| 2		| 3		| RGMII1			|
- eth2		| 1	| 0		| 0		| 10G (Lane 2 connected to SFI)	|
+ eth2		| 1	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
 
 4: D:
  Interface	| CPN#	| PPv2 Port	| GMAC Port	| Board Interface		|
  ---------------|-------|---------------|---------------|-------------------------------|
- eth0		| 0	| 0		| 0		| 10G (Lane 2 connected to SFI)	|
+ eth0		| 0	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
  eth1		| 0	| 2		| 3		| RGMII1			|
- eth2		| 1	| 0		| 0		| 10G (Lane 2 connected to SFI)	|
+ eth2		| 1	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
 
 5: E:
  Interface	| CPN#	| PPv2 Port	| GMAC Port	| Board Interface		|
  ---------------|-------|---------------|---------------|-------------------------------|
- eth0		| 0	| 0		| 0		| 10G (Lane 2 connected to SFI)	|
- eth1		| 1	| 0		| 0		| 10G (Lane 2 connected to SFI)	|
+ eth0		| 0	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
+ eth1		| 1	| 0		| 0		| 10G (Lane 2 connected to SFP)	|
  eth2		| 1	| 1		| 2		| RGMII0			|
 
 6: F:

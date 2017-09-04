@@ -125,6 +125,9 @@
 		#define CONFIG_ENV_IS_IN_SPI_FLASH
 	#endif
 	#define DEFAULT_BUBT_DST	"spi"
+	#ifdef CONFIG_NAND_PXA3XX
+		#define CONFIG_ENV_IS_IN_NAND
+	#endif
 #endif /* CONIFG_ENV_IS_IN_BOOTDEV */
 
 /* End of 16M scrubbed by training in bootrom */
@@ -146,7 +149,7 @@
 */
 #define CONFIG_ENV_SIZE			(64 << 10) /* 64KiB */
 #define CONFIG_ENV_SECT_SIZE		(64 << 10) /* 64KiB sectors */
-#ifdef CONFIG_MVEBU_NAND_BOOT
+#ifdef CONFIG_ENV_IS_IN_NAND
 #define CONFIG_ENV_OFFSET		0x400000
 #else
 #define CONFIG_ENV_OFFSET		(0x400000 - CONFIG_ENV_SIZE)

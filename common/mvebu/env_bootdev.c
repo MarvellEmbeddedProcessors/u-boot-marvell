@@ -30,6 +30,11 @@ int env_init(void)
 	mvebu_sar_value_get(SAR_BOOT_SRC, &sar);
 
 	switch (sar.bootsrc.type) {
+	case BOOTSRC_NAND:
+#ifdef CONFIG_NAND_PXA3XX
+		nand_env_init();
+		break;
+#endif
 	case BOOTSRC_SPI:
 	case BOOTSRC_AP_SPI:
 #ifdef CONFIG_SPI_FLASH
@@ -59,6 +64,12 @@ void env_relocate_spec(void)
 	 * address relocation, the addreses need to be corrected
 	 */
 	switch (sar.bootsrc.type) {
+	case BOOTSRC_NAND:
+#ifdef CONFIG_NAND_PXA3XX
+		nand_env_init();
+		env_name_spec = "NAND Flash";
+#endif
+		break;
 	case BOOTSRC_SPI:
 	case BOOTSRC_AP_SPI:
 #ifdef CONFIG_SPI_FLASH

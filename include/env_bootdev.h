@@ -20,5 +20,6 @@ struct env_func_ptr {
 };
 
 void sf_env_init(void);
+void nand_env_init(void);
 
 #endif /* _ENV_BOOTDEV_H_ */

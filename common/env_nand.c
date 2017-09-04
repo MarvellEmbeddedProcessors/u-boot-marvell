@@ -39,7 +39,9 @@
 #define CONFIG_ENV_RANGE	CONFIG_ENV_SIZE
 #endif
 
+#ifndef CONFIG_ENV_IS_IN_BOOTDEV
 char *env_name_spec = "NAND";
+#endif
 
 #if defined(ENV_IS_EMBEDDED)
 env_t *env_ptr = &environment;
@@ -63,7 +65,11 @@ DECLARE_GLOBAL_DATA_PTR;
  * This way the SPL loads not only the U-Boot image from NAND but
  * also the environment.
  */
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+static int _nand_env_init(void)
+#else
 int env_init(void)
+#endif
 {
 #if defined(ENV_IS_EMBEDDED) || defined(CONFIG_NAND_ENV_DST)
 	int crc1_ok = 0, crc2_ok = 0;
@@ -180,8 +186,11 @@ static int erase_and_write_env(const struct env_location *location,
 #ifdef CONFIG_ENV_OFFSET_REDUND
 static unsigned char env_flags;
 #endif
-
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+static int nand_saveenv(void)
+#else
 int saveenv(void)
+#endif
 {
 	int	ret = 0;
 	ALLOC_CACHE_ALIGN_BUFFER(env_t, env_new, 1);
@@ -311,7 +320,12 @@ int get_nand_env_oob(struct mtd_info *mtd, unsigned long *result)
 #endif
 
 #ifdef CONFIG_ENV_OFFSET_REDUND
+
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+static void nand_env_relocate_spec(void)
+#else
 void env_relocate_spec(void)
+#endif
 {
 #if !defined(ENV_IS_EMBEDDED)
 	int read1_fail = 0, read2_fail = 0;
@@ -383,7 +397,11 @@ done:
  * device i.e., nand_dev_desc + 0. This is also the behaviour using
  * the new NAND code.
  */
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+void nand_env_relocate_spec(void)
+#else
 void env_relocate_spec(void)
+#endif
 {
 #if !defined(ENV_IS_EMBEDDED)
 	int ret;
@@ -413,3 +431,12 @@ void env_relocate_spec(void)
 #endif /* ! ENV_IS_EMBEDDED */
 }
 #endif /* CONFIG_ENV_OFFSET_REDUND */
+
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+void nand_env_init(void)
+{
+	gd->arch.env_func.save_env = nand_saveenv;
+	gd->arch.env_func.init_env = _nand_env_init;
+	gd->arch.env_func.reloc_env = nand_env_relocate_spec;
+}
+#endif

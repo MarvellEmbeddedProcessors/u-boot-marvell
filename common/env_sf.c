@@ -41,12 +41,18 @@ static ulong env_new_offset	= CONFIG_ENV_OFFSET_REDUND;
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#ifndef CONFIG_ENV_IS_IN_BOOTDEV
 char *env_name_spec = "SPI Flash";
+#endif
 
 static struct spi_flash *env_flash;
 
 #if defined(CONFIG_ENV_OFFSET_REDUND)
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+static int sf_saveenv(void)
+#else
 int saveenv(void)
+#endif
 {
 	env_t	env_new;
 	char	*saved_buffer = NULL, flag = OBSOLETE_FLAG;
@@ -149,7 +155,11 @@ int saveenv(void)
 	return ret;
 }
 
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+static void sf_env_relocate_spec(void)
+#else
 void env_relocate_spec(void)
+#endif
 {
 	int ret;
 	int crc1_ok = 0, crc2_ok = 0;
@@ -236,7 +246,11 @@ out:
 	free(tmp_env2);
 }
 #else
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+static int sf_saveenv(void)
+#else
 int saveenv(void)
+#endif
 {
 	u32	saved_size, saved_offset, sector = 1;
 	char	*saved_buffer = NULL;
@@ -319,8 +333,11 @@ int saveenv(void)
 
 	return ret;
 }
-
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+static void sf_env_relocate_spec(void)
+#else
 void env_relocate_spec(void)
+#endif
 {
 	int ret;
 	char *buf = NULL;
@@ -353,7 +370,11 @@ out:
 }
 #endif
 
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+int _sf_env_init(void)
+#else
 int env_init(void)
+#endif
 {
 	/* SPI flash isn't usable before relocation */
 	gd->env_addr = (ulong)&default_environment[0];
@@ -361,3 +382,12 @@ int env_init(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+void sf_env_init(void)
+{
+	gd->arch.env_func.save_env = sf_saveenv;
+	gd->arch.env_func.init_env = _sf_env_init;
+	gd->arch.env_func.reloc_env = sf_env_relocate_spec;
+}
+#endif

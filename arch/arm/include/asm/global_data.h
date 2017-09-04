@@ -12,6 +12,10 @@
 #include "arch/system_info.h"
 #endif
 
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+#include <env_bootdev.h>
+#endif
+
 /* Architecture-specific global data */
 struct arch_global_data {
 #if defined(CONFIG_FSL_ESDHC)
@@ -74,6 +78,10 @@ struct arch_global_data {
 #endif
 #ifdef CONFIG_MVEBU_SYS_INFO
 	struct sys_info local_sys_info[MAX_OPTION];
+#endif
+
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+	struct env_func_ptr env_func;
 #endif
 };
 

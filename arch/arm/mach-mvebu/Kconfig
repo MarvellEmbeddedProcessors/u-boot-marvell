@@ -167,4 +167,13 @@ config MVEBU_SYS_INFO
 
 source "arch/arm/mach-mvebu/armada3700/Kconfig"
 
+config ENV_IS_IN_BOOTDEV
+	bool "Boot-time Environment Selection"
+	depends on MVEBU_SPI_BOOT
+	help
+	  Choose this option to add support
+	  for boot-time environment selection.
+	  the boot-time environment is decided
+	  according to the boot source value
+	  in sample at reset.
 endif

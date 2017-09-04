@@ -105,6 +105,28 @@
 
 #define CONFIG_SYS_ALT_MEMTEST
 
+#ifndef CONFIG_ENV_IS_IN_BOOTDEV
+	#if defined(CONFIG_MVEBU_SPI_BOOT)
+		#define CONFIG_ENV_IS_IN_SPI_FLASH
+	#elif defined(CONFIG_MVEBU_NAND_BOOT)
+		#define CONFIG_ENV_IS_IN_NAND
+	#elif defined(CONFIG_MVEBU_MMC_BOOT)
+		#define CONFIG_ENV_IS_IN_MMC
+		#define CONFIG_SYS_MMC_ENV_PART	1
+		/* 0 - DATA, 1 - BOOT0, 2 - BOOT1 */
+	#endif
+#else
+	/* Need to define all these xxx_ENV_IS_IN_xxx for
+	* including the appropriate env_xxx.o modules in the
+	* final image, so the environment location can be
+	* selected dynamically at the boot time.
+	*/
+	#ifdef CONFIG_SPI_FLASH
+		#define CONFIG_ENV_IS_IN_SPI_FLASH
+	#endif
+	#define DEFAULT_BUBT_DST	"spi"
+#endif /* CONIFG_ENV_IS_IN_BOOTDEV */
+
 /* End of 16M scrubbed by training in bootrom */
 #define CONFIG_SYS_INIT_SP_ADDR         (CONFIG_SYS_TEXT_BASE + 0xFF0000)
 
@@ -118,18 +140,6 @@
 #define CONFIG_SF_DEFAULT_SPEED		1000000
 #define CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
 #define CONFIG_ENV_SPI_MODE		CONFIG_SF_DEFAULT_MODE
-
-/* Environment in SPI NOR flash */
-#ifdef CONFIG_MVEBU_SPI_BOOT
-#define CONFIG_ENV_IS_IN_SPI_FLASH
-/* Environment in NAND flash */
-#elif defined(CONFIG_MVEBU_NAND_BOOT)
-#define CONFIG_ENV_IS_IN_NAND
-/* Environment in MMC */
-#elif defined(CONFIG_MVEBU_MMC_BOOT)
-#define CONFIG_ENV_IS_IN_MMC
-#define CONFIG_SYS_MMC_ENV_PART		1 /* 0 - DATA, 1 - BOOT0, 2 - BOOT1 */
-#endif
 
 /* Assume minimum flash/eMMC boot partition size of 4MB
  * and save the environment at the end of the boot device

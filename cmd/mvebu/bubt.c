@@ -24,6 +24,10 @@
 #include <u-boot/sha1.h>
 #include <u-boot/sha256.h>
 
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+#include <mvebu/mvebu_chip_sar.h>
+#endif
+
 #ifndef CONFIG_SYS_MMC_ENV_DEV
 #define CONFIG_SYS_MMC_ENV_DEV	0
 #endif
@@ -710,6 +714,9 @@ int do_bubt_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	size_t image_size;
 	char src_dev_name[8];
 	char dst_dev_name[8];
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+	struct sar_val sar;
+#endif
 	char *name;
 	int  err;
 
@@ -724,7 +731,12 @@ int do_bubt_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (argc >= 3) {
 		strncpy(dst_dev_name, argv[2], 8);
 	} else {
+#ifdef CONFIG_ENV_IS_IN_BOOTDEV
+		mvebu_sar_value_get(SAR_BOOT_SRC, &sar);
+		name = mvebu_sar_bootsrc_to_name(sar.bootsrc.type);
+#else
 		name = DEFAULT_BUBT_DST;
+#endif
 		strncpy(dst_dev_name, name, 8);
 	}
 

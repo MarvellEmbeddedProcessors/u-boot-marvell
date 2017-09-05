@@ -5286,6 +5286,18 @@ void e1000_get_bus_type(struct e1000_hw *hw)
 static LIST_HEAD(e1000_hw_list);
 #endif
 
+#if defined(CONFIG_DM_ETH) && !defined(CONFIG_E1000_NO_NVM)
+int e1000_eth_read_rom_hwaddr(struct udevice *dev)
+{
+	struct eth_pdata *pdata = dev_get_platdata(dev);
+	struct e1000_hw *hw = dev_get_priv(dev);
+
+	e1000_read_mac_addr(hw, pdata->enetaddr);
+
+	return 0;
+}
+#endif
+
 #ifdef CONFIG_DM_ETH
 static int e1000_init_one(struct e1000_hw *hw, int cardnum,
 			  struct udevice *devno, unsigned char enetaddr[6])
@@ -5668,6 +5680,9 @@ static const struct eth_ops e1000_eth_ops = {
 	.recv	= e1000_eth_recv,
 	.stop	= e1000_eth_stop,
 	.free_pkt = e1000_free_pkt,
+#ifndef CONFIG_E1000_NO_NVM
+	.read_rom_hwaddr = e1000_eth_read_rom_hwaddr,
+#endif
 };
 
 static const struct udevice_id e1000_eth_ids[] = {

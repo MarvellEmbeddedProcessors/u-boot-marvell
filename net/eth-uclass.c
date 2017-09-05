@@ -222,6 +222,11 @@ static int on_ethaddr(const char *name, const char *value, enum env_op op,
 
 	retval = uclass_find_device_by_seq(UCLASS_ETH, index, false, &dev);
 	if (!retval) {
+		/* Check if the device has a MAC address in ROM,
+		 * If yes, then stick to it all the time.
+		 */
+		if (eth_get_ops(dev)->read_rom_hwaddr)
+			return 0;
 		struct eth_pdata *pdata = dev->platdata;
 		switch (op) {
 		case env_op_create:

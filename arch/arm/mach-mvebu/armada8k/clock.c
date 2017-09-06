@@ -17,22 +17,13 @@
  */
 
 #include <common.h>
-#include <asm/io.h>
 #include <mach/clock.h>
 #include <mvebu/mvebu_chip_sar.h>
-
-#define MSS_CLOCK_DIV	6
 
 #ifndef CONFIG_PALLADIUM
 #define CONFIG_MSS_FREQUENCY    (200 * 1000000)
 #else
 #define CONFIG_MSS_FREQUENCY    (384000)
-#endif
-
-#ifdef __ASSEMBLY__
-#define MVEBU_CP0_REGS_BASE     (0xF2000000)
-#else
-#define MVEBU_CP0_REGS_BASE     (0xF2000000UL)
 #endif
 
 u32 soc_ring_clk_get(void)
@@ -52,8 +43,6 @@ u32 soc_tclk_get(void)
 {
 	return soc_mss_clk_get();
 }
-
-
 
 u32 soc_cpu_clk_get(void)
 {

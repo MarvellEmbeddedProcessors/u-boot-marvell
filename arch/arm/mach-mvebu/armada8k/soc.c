@@ -16,15 +16,8 @@
  * ***************************************************************************
  */
 
-/* #define DEBUG */
-
 #include <common.h>
-#include <asm/io.h>
-#include <asm/arch-mvebu/soc.h>
 #include <mvebu/mvebu_chip_sar.h>
-
-#define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
-#define RFU_SW_RESET_OFFSET		0
 
 int soc_early_init_f(void)
 {

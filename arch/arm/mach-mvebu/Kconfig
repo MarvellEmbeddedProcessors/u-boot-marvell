@@ -15,10 +15,6 @@ config ARMADA_32BIT
 	select BOARD_EARLY_INIT_F
 	select ARCH_MISC_INIT
 
-config ARMADA_64BIT
-	bool
-	select ARM64
-
 # ARMv7 SoCs...
 config ARMADA_375
 	bool

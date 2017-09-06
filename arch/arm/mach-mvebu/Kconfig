@@ -1,9 +1,5 @@
 if ARCH_MVEBU
 
-config HAVE_MVEBU_EFUSE
-	bool
-	default n
-
 config ARMADA_32BIT
 	bool
 	select CPU_V7
@@ -27,7 +23,6 @@ config ARMADA_375
 config ARMADA_38X
 	bool
 	select ARMADA_32BIT
-	select HAVE_MVEBU_EFUSE
 
 config ARMADA_XP
 	bool
@@ -42,7 +37,6 @@ config ARMADA_3700
 config ARMADA_8K
 	bool
 	select ARM64
-	select HAVE_MVEBU_EFUSE
 
 # Armada PLL frequency (used for NAND clock generation)
 config SYS_MVEBU_PLL_CLOCK

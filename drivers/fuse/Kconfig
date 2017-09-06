@@ -7,7 +7,6 @@ menu "EFUSE Support"
 config MVEBU_EFUSE
 	bool "Enable eFuse support"
 	default n
-	depends on HAVE_MVEBU_EFUSE
 	help
 	  This enable mvebu efuse driver.
 	  It supports for reading and writing eFuses.

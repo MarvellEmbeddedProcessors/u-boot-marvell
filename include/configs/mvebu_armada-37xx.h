@@ -43,7 +43,6 @@
  * PCI configuration
  */
 #ifdef CONFIG_PCIE_ADVK
-#define CONFIG_E1000
 #define CONFIG_CMD_PCI
 #endif
 

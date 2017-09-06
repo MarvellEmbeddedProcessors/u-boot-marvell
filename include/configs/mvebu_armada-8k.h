@@ -47,7 +47,6 @@
  * PCI configuration
  */
 #ifdef CONFIG_PCIE_DW_MVEBU
-#define CONFIG_E1000
 #define CONFIG_CMD_PCI
 #endif
 

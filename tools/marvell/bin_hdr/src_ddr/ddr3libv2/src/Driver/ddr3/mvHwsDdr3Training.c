@@ -910,19 +910,12 @@ static GT_STATUS ddr3TipPadInv
             /* dqs swap */
             ddr3TipBusReadModifyWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, busCnt, DDR_PHY_DATA, PHY_CONTROL_PHY_REG, 0xC0,0xC0);
         }
-        if (topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].isCkSwap == GT_TRUE)
+        if (topologyMap->interfaceParams[interfaceId].asBusParams[busCnt].isCkSwap == GT_TRUE && busCnt == 0)
         {
-            if(busCnt <= 1)
-            {
-                dataValue = 0x5 << 2;
-            }
-            else
-            {
-                dataValue = 0xA << 2;
-            }
-            /* mask equals data */
-            /* ck swap pup is only control pup #0 ! */
-            ckSwapPupCtrl = 0;
+	    /*ck swap of both CS*/
+	    dataValue = 0x1d0;
+            /* ck swap pup is only control pup #2 */
+            ckSwapPupCtrl = 2;
             ddr3TipBusReadModifyWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ckSwapPupCtrl, DDR_PHY_CONTROL, PHY_CONTROL_PHY_REG, dataValue,dataValue);
         }
     }

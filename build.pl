@@ -8,7 +8,7 @@ sub HELP_MESSAGE
 	print "              [-p] [-r \"UART baudrate\"] [-u \"UART port\"] [-g \"MPP configuration\"] \\\n";
 	print "              [-z \"Private RSA KAK key file\" -a \"Private RSA CSK key file\" -k \"CSK array index\" \\\n";
 	print "              -x \"BOX ID\" -l \"Flash ID\"] [-j \"JTAG delay\"]\n";
-	print "Example: ./build.pl -f spi -v 14T2 -b avanta_lp -i spi:nand -c\n";
+	print "Example: ./build.pl -f spi -v 14T2 -b avanta_lp -i spi:nand\n";
 	print "\n";
 	print "Options:\n";
 	print "\t-f\tBoot device. Accepts spi, nor, nand, mmc\n";

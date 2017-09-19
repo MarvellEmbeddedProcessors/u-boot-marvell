@@ -116,6 +116,7 @@ Device-tree porting
 	- PCIe - pci/armada8k-pcie.txt
 	- I2C - i2c/mvebu-i2c.txt
 	- PPv2 - net/marvell-pp2x.txt
+	- Efuse - fuse/fuse-a7k.txt
 
    3. Armada-3700 SoC family:
 

@@ -1360,6 +1360,7 @@ The following options need to be configured:
 		CONFIG_BOOTP_NISDOMAIN
 		CONFIG_BOOTP_BOOTFILESIZE
 		CONFIG_BOOTP_NTPSERVER
+		CONFIG_BOOTP_TFTP_SERVERIP
 		CONFIG_BOOTP_TIMEOFFSET
 		CONFIG_BOOTP_VENDOREX
 		CONFIG_BOOTP_MAY_FAIL
@@ -1372,6 +1373,12 @@ The following options need to be configured:
 		instead of starting over.  This can be used to fail over
 		to Link-local IP address configuration if the DHCP server
 		is not available.
+
+		CONFIG_BOOTP_TFTP_SERVERIP - Some DHCP servers can send
+		the IP address of the TFTP server.  By setting this,
+		the DHCP client will automatically set the serverip
+		based on the response from the DHCP server via option
+		150.
 
 		CONFIG_BOOTP_DHCP_REQUEST_DELAY
 

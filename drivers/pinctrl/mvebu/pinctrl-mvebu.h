@@ -28,4 +28,10 @@ struct mvebu_pinctrl_priv {
 	const char	*bank_name;
 };
 
+/* Pin Ctrl driver definitions */
+#define BITS_PER_PIN		4
+#define PIN_FUNC_MASK		((1 << BITS_PER_PIN) - 1)
+#define PIN_REG_SHIFT		3
+#define PIN_FIELD_MASK		((1 << PIN_REG_SHIFT) - 1)
+
 #endif /* __PINCTRL_MVEBU_H_ */

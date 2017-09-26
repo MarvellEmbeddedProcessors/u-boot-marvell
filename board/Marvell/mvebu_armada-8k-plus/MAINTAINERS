@@ -1,0 +1,6 @@
+MVEBU_ARMADA_8K_PLUS BOARD
+M:	Hanna Hawa <hannah@marvell.com>
+S:	Maintained
+F:	board/Marvell/mvebu_armada-8k-plus/
+F:	include/configs/mvebu_armada-8k-plus.h
+F:	configs/mvebu_db_armada8kp_defconfig

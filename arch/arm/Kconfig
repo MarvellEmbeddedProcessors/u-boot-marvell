@@ -271,7 +271,7 @@ config KIRKWOOD
 	select ARCH_MISC_INIT
 
 config ARCH_MVEBU
-	bool "Marvell MVEBU family (Armada XP/375/38x/3700/7K/8K)"
+	bool "Marvell MVEBU family (Armada XP/375/38x/3700/7K/8K/8KP)"
 	select OF_CONTROL
 	select OF_SEPARATE
 	select DM

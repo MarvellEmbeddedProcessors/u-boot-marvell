@@ -8,6 +8,7 @@ ifdef CONFIG_ARM64
 
 obj-$(CONFIG_ARMADA_3700) += armada3700/
 obj-$(CONFIG_ARMADA_8K) += armada8k/
+obj-$(CONFIG_ARMADA_8K_PLUS) += armada8kp/
 obj-y += arm64-common.o
 obj-$(CONFIG_MVEBU_SCSI) += sata.o
 obj-$(CONFIG_MVEBU_SYS_INFO) += system_info.o

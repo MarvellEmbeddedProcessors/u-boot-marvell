@@ -49,6 +49,8 @@
 #define SOC_REGS_PHY_BASE	0xd0000000
 #elif defined(CONFIG_ARMADA_8K)
 #define SOC_REGS_PHY_BASE	0xf0000000
+#elif defined(CONFIG_ARMADA_8K_PLUS)
+#define SOC_REGS_PHY_BASE	0xec000000
 #else
 #define SOC_REGS_PHY_BASE	0xf1000000
 #endif

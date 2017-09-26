@@ -20,7 +20,7 @@
 #include <mach/clock.h>
 #include <mvebu/mvebu_chip_sar.h>
 
-#ifndef CONFIG_PALLADIUM
+#ifndef CONFIG_MVEBU_PALLADIUM
 #define CONFIG_MSS_FREQUENCY    (200 * 1000000)
 #else
 #define CONFIG_MSS_FREQUENCY    (384000)

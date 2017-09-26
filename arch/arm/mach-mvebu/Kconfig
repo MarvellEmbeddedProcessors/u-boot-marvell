@@ -145,6 +145,15 @@ config SYS_SOC
 menu "MVEBU Common SoC Utilities"
 	depends on ARCH_MVEBU
 
+config MVEBU_PALLADIUM
+	bool "Build image for Palladium emulation platform"
+	default false
+	help
+	  Build an image for Palladium emulation
+	  platform with different clock or
+	  address configuration.
+	  Supported for Armada-8k-plus
+
 config SECURED_MODE_IMAGE
 	bool "Build image for trusted boot"
 	default false

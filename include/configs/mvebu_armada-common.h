@@ -192,4 +192,43 @@
  */
 #define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS 10
 
+/* Emulation specific setting */
+#ifdef CONFIG_MVEBU_PALLADIUM
+
+#define CONFIG_ENV_IS_NOWHERE
+
+/* Overcome issue in emulation where writes
+ * to address 0x0 might sometimes fail.
+ */
+#undef CONFIG_SYS_TEXT_BASE
+#define	CONFIG_SYS_TEXT_BASE		0x00001000
+
+/* Size of malloc() pool */
+#undef CONFIG_SYS_MALLOC_LEN
+#define CONFIG_SYS_MALLOC_LEN		(1 << 20) /* 1MiB for malloc() */
+
+#undef CONFIG_BOOTDELAY
+#define CONFIG_BOOTDELAY		-1
+
+#undef CONFIG_BAUDRATE
+#define CONFIG_BAUDRATE			19200
+
+#undef CONFIG_BOOTARGS
+#define CONFIG_BOOTARGS			"console=ttyS0,19200 " \
+					"earlycon=uart8250,mmio32,0xe8512000 " \
+					"mem=256M init=/bin/sh root=/dev/ram0 rw"
+
+#undef CONFIG_EXTRA_ENV_SETTINGS
+#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x180000\0"	\
+					"fdt_addr=0x1000000\0"		\
+					"ramfs_addr=0x3000000\0"	\
+					"fdt_high=0xa0000000\0"		\
+					"initrd_high=0xffffffffffffffff\0"
+
+#undef CONFIG_BOOTCOMMAND
+#define CONFIG_BOOTCOMMAND		"booti $kernel_addr " \
+					"$ramfs_addr $fdt_addr"
+
+#endif /*CONFIG_MVEBU_PALLADIUM*/
+
 #endif /* _CONFIG_MVEBU_ARMADA_H */

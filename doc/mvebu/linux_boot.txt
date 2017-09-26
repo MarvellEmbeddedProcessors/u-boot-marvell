@@ -26,6 +26,11 @@ To mount the file-system via NFS:
 		# setenv netdev <NFS interface name, eth0 for example>
 		# setenv ramfs_name (optional)
 
+	Note:
+	  For the boards with Marvell SOHO switch, e.g., Espressobin,
+	  'netdev' should be set according to the port name defined by
+	  switch driver instead, i.e., lan0, lan1 or wan0.
+
 To load RAMFS:
 Run the following commands from the U-Boot prompt::
 

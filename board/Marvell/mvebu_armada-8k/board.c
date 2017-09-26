@@ -22,14 +22,12 @@ int __soc_early_init_f(void)
 }
 
 int soc_early_init_f(void)
-			__attribute__((weak, alias("__soc_early_init_f")));
+	__attribute__((weak, alias("__soc_early_init_f")));
 
 int board_early_init_f(void)
 {
-#ifdef CONFIG_MVEBU_SYS_INFO
-
 	soc_early_init_f();
-
+#ifdef CONFIG_MVEBU_SYS_INFO
 	/*
 	 * Call this function to transfer data from address 0x4000000
 	 * into a global struct, before code relocation.

@@ -19,8 +19,6 @@
 #include <common.h>
 #include <asm/arch/cpu.h>
 #include <asm/io.h>
-#include <asm/arch/soc.h>
-#include <mach/clock.h>
 
 #define NB_CLOCK_REGS_BASE	(MVEBU_REGISTER(0x13000))
 #define NB_PLL_BASE		(NB_CLOCK_REGS_BASE + 0x200)

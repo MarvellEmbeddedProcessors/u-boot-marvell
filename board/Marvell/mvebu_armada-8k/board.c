@@ -5,11 +5,6 @@
  */
 
 #include <common.h>
-#include <dm.h>
-#include <i2c.h>
-#include <asm/io.h>
-#include <asm/arch/cpu.h>
-#include <asm/arch/soc.h>
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
 #include <mvebu_cfg_eeprom.h>
 #endif
@@ -55,6 +50,5 @@ int board_init(void)
 int board_late_init(void)
 {
 	/* Pre-configure the USB ports (overcurrent, VBus) */
-
 	return 0;
 }

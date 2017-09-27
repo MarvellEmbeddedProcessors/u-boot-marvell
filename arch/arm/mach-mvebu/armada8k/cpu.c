@@ -6,12 +6,7 @@
 
 #include <common.h>
 #include <dm.h>
-#include <fdtdec.h>
-#include <libfdt.h>
 #include <asm/io.h>
-#include <asm/system.h>
-#include <asm/arch/cpu.h>
-#include <asm/arch/soc.h>
 #include <asm/armv8/mmu.h>
 #include <mach/clock.h>
 

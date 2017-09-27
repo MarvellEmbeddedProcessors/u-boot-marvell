@@ -7,10 +7,6 @@
 #include <common.h>
 #include <dm.h>
 #include <i2c.h>
-#include <phy.h>
-#include <asm/io.h>
-#include <asm/arch/cpu.h>
-#include <asm/arch/soc.h>
 #include <power/regulator.h>
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
 #include <mvebu_cfg_eeprom.h>

@@ -142,6 +142,9 @@ config SYS_VENDOR
 config SYS_SOC
 	default "mvebu"
 
+menu "MVEBU Common SoC Utilities"
+	depends on ARCH_MVEBU
+
 config SECURED_MODE_IMAGE
 	bool "Build image for trusted boot"
 	default false
@@ -165,7 +168,14 @@ config MVEBU_SYS_INFO
 	  from spl to u-boot, you need to choose
 	  this option.
 
-source "arch/arm/mach-mvebu/armada3700/Kconfig"
+config MVEBU_EFUSE_SUPPORT
+	bool "eFuse support"
+	depends on TARGET_MVEBU_ARMADA_37XX
+	default n
+	help
+	  Choose this option to add support
+	  for eFuse access driver and enable
+	  mailbox for eFuse read/write actions
 
 config ENV_IS_IN_BOOTDEV
 	bool "Boot-time Environment Selection"
@@ -176,4 +186,6 @@ config ENV_IS_IN_BOOTDEV
 	  the boot-time environment is decided
 	  according to the boot source value
 	  in sample at reset.
+
+endmenu
 endif

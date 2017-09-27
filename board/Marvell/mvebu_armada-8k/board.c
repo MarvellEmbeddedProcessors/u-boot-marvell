@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <power/regulator.h>
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
 #include <mvebu_cfg_eeprom.h>
 #endif
@@ -29,6 +30,16 @@ int board_early_init_f(void)
 	 */
 	sys_info_init();
 #endif
+	return 0;
+}
+
+int board_early_init_r(void)
+{
+#ifdef CONFIG_DM_REGULATOR
+	/* Check if any existing regulator should be turned down */
+	regulators_enable_boot_off(false);
+#endif
+
 	return 0;
 }
 

@@ -6,7 +6,6 @@
 
 #include <common.h>
 #include <dm.h>
-#include <power/regulator.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -133,12 +132,6 @@ int arch_early_init_r(void)
 	struct udevice *dev;
 	int ret;
 	int i;
-
-#ifdef CONFIG_DM_REGULATOR
-	/* Check if any existing regulator should be turned down */
-	if (!of_machine_is_compatible("marvell,armada3710"))
-		regulators_enable_boot_off(false);
-#endif
 
 	/*
 	 * Loop over all MISC uclass drivers to call the comphy code

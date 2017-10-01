@@ -919,7 +919,6 @@ int usb_alloc_device(struct usb_device *dev);
  * the USB emulation uclass about the features of the emulator.
  *
  * @dev:		Emulation device
- * @maxpacketsize:	Maximum packet size (e.g. PACKET_SIZE_64)
  * @strings:		List of USB string descriptors, terminated by a NULL
  *			entry
  * @desc_list:		List of points or USB descriptors, terminated by NULL.
@@ -927,8 +926,8 @@ int usb_alloc_device(struct usb_device *dev);
  *			and others follow on after that.
  * @return 0 if OK, -ve on error
  */
-int usb_emul_setup_device(struct udevice *dev, int maxpacketsize,
-			  struct usb_string *strings, void **desc_list);
+int usb_emul_setup_device(struct udevice *dev, struct usb_string *strings,
+			  void **desc_list);
 
 /**
  * usb_emul_control() - Send a control packet to an emulator

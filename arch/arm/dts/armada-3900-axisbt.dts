@@ -1,0 +1,29 @@
+/*
+ * Copyright (C) 2018 Marvell International Ltd.
+ *
+ * SPDX-License-Identifier:    GPL-2.0
+ * https://spdx.org/licenses
+ */
+
+#include "armada-3900-axis-common.dtsi"
+
+/ {
+	model = "Marvell Armada 3900 AXIS-BT board";
+};
+
+/*
+ * CP related configuration
+ */
+&cp0_pinctl {
+	cp0_mochi_enable_pins: cp0-mochi-enable-pins {
+		marvell,pins = <53>;
+		marvell,function = <0>;
+	};
+};
+
+&cp0_comphy {
+	phy1 {
+		phy-type = <COMPHY_TYPE_USB3_HOST0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+};

@@ -1,0 +1,33 @@
+/*
+ * Copyright (C) 2017 Marvell International Ltd.
+ *
+ * SPDX-License-Identifier:    GPL-2.0
+ * https://spdx.org/licenses
+ */
+
+/*
+ * Device Tree file for Marvell Armada 8xx0 Development board platform
+ */
+
+#include "armada-8xx0-db.dtsi"
+
+/ {
+	model = "Marvell Armada 8xx0 DB board";
+	compatible = "marvell,armada8xx0-db", "marvell,armada8xx0",
+		     "marvell,armada-ap810";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+
+
+};
+
+&uart0 {
+	status = "okay";
+};

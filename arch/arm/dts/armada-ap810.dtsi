@@ -1,0 +1,79 @@
+/*
+ * Copyright (C) 2017 Marvell International Ltd.
+ *
+ * SPDX-License-Identifier:    GPL-2.0
+ * https://spdx.org/licenses
+ */
+
+/*
+ * Device Tree file for Marvell Armada AP810.
+ */
+
+/dts-v1/;
+
+/ {
+	model = "Marvell Armada AP810";
+	compatible = "marvell,armada-ap810";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		serial0 = &uart0;
+		serial1 = &uart1;
+	};
+
+	psci {
+		compatible = "arm,psci-0.2";
+		method = "smc";
+	};
+
+	ap810 {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		compatible = "simple-bus";
+		ranges;
+
+		config-space {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			compatible = "simple-bus";
+			ranges = <0x0 0x0 0xec000000 0x2000000>;
+
+			ap_spi0: spi@510600 {
+				compatible = "marvell,armada-380-spi";
+				reg = <0x510600 0x50>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				cell-index = <0>;
+				status = "disabled";
+			};
+
+			ap_i2c0: i2c@511000 {
+				compatible = "marvell,mv78230-i2c";
+				reg = <0x511000 0x20>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				timeout-ms = <1000>;
+				status = "disabled";
+			};
+
+			uart0: serial@512000 {
+				compatible = "snps,dw-apb-uart";
+				reg = <0x512000 0x100>;
+				reg-shift = <2>;
+				reg-io-width = <1>;
+				status = "disabled";
+				clock-frequency = <200000000>;
+			};
+
+			uart1: serial@512100 {
+				compatible = "snps,dw-apb-uart";
+				reg = <0x512100 0x100>;
+				reg-shift = <2>;
+				reg-io-width = <1>;
+				status = "disabled";
+
+			};
+		};
+	};
+};

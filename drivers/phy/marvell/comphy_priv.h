@@ -124,7 +124,7 @@ static inline int comphy_a3700_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 }
 #endif
 
-#ifdef CONFIG_ARMADA_8K
+#ifdef CONFIG_ARMADA_CP110
 int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 		      struct comphy_map *serdes_map);
 int comphy_cp110_sfi_rx_training(struct chip_serdes_phy_config *ptr_chip_cfg,

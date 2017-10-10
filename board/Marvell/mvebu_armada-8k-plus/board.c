@@ -12,6 +12,7 @@
  */
 
 #include <common.h>
+#include <mvebu/cfg_eeprom.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

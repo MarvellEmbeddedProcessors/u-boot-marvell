@@ -33,11 +33,24 @@ config ARMADA_3700
 config ARMADA_8K
 	bool
 	select ARM64
+	select ARMADA_AP806
+	select ARMADA_CP110
 
 # Armada 8k plus
 config ARMADA_8K_PLUS
 	bool
 	select ARM64
+	select ARMADA_AP810
+	select ARMADA_CP110
+
+config ARMADA_AP806
+	bool
+
+config ARMADA_AP810
+	bool
+
+config ARMADA_CP110
+	bool
 
 # Armada PLL frequency (used for NAND clock generation)
 config SYS_MVEBU_PLL_CLOCK

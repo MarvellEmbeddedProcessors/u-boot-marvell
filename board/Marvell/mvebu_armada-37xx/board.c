@@ -9,7 +9,7 @@
 #include <i2c.h>
 #include <power/regulator.h>
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
-#include <mvebu_cfg_eeprom.h>
+#include <mvebu/cfg_eeprom.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;

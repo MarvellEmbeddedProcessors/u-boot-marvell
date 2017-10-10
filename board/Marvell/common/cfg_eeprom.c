@@ -17,7 +17,7 @@
  */
 
 #include <common.h>
-#include <mvebu_cfg_eeprom.h>
+#include <mvebu/cfg_eeprom.h>
 
 struct eeprom_struct board_config_val = CFG_DEFAULT_VALUE;
 struct config_types_info config_types_info[] = MV_EEPROM_CONFIG_INFO;

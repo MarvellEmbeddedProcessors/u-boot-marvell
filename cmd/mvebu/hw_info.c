@@ -19,7 +19,7 @@
 #include <command.h>
 #include <errno.h>
 #include <console.h>
-#include <mvebu_cfg_eeprom.h>
+#include <mvebu/cfg_eeprom.h>
 
 /* load the HW configuration from cfg_eeprom module and dump them */
 static int cmd_hw_info_dump(char *name)

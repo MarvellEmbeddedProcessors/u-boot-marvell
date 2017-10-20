@@ -223,7 +223,7 @@ void *ls_pcie_conf_address(struct ls_pcie *pcie, pci_dev_t bdf,
 	if (PCI_BUS(bdf) == bus->seq)
 		return pcie->dbi + offset;
 
-	busdev = PCIE_ATU_BUS(PCI_BUS(bdf)) |
+	busdev = PCIE_ATU_BUS(PCI_BUS(bdf) - bus->seq) |
 		 PCIE_ATU_DEV(PCI_DEV(bdf)) |
 		 PCIE_ATU_FUNC(PCI_FUNC(bdf));
 

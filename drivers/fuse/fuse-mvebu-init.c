@@ -5,9 +5,10 @@
  * https://spdx.org/licenses
  */
 
+#include <config.h>
+#include <common.h>
 #include <asm/arch/cpu.h>
 #include <linux/mbus.h>
-#include <common.h>
 #include <dm.h>
 #include <asm/io.h>
 #include <errno.h>
@@ -16,7 +17,7 @@
 #define MBUS_EFUSE_SIZE BIT(20)
 #define EFUSE_ADDR_MASK	0xFF000000
 
-int mvebu_efuse_init_hw(void)
+int mvebu_efuse_init_hw(struct udevice *dev)
 {
 	struct mvebu_fuse_block_data *priv = dev_get_priv(dev);
 	int ret = 0;

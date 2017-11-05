@@ -110,6 +110,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define PCIE_TPH_REQ_NEXT_PTR_OFFSET	20
 
 #define PCIE_GEN3_EQ_CONTROL_OFF_REG	0x8a8
+#define PCIE_GEN3_EQ_FB_MODE_MASK	0xf
+#define PCIE_GEN3_EQ_FB_MODE_OFFSET	0x0
 #define PCIE_GEN3_EQ_PSET_REQ_VEC_MASK	0xffff00
 #define PCIE_GEN3_EQ_PSET_REQ_VEC_OFFSET 8
 
@@ -397,13 +399,15 @@ static void pcie_dw_mvebu_pcie_config(const void *regs_base)
 	writel(reg, regs_base + PCIE_LINK_FLUSH_CONTROL_OFF_REG);
 
 	/*
-	 * According to the electrical measurmentrs, the best preset that our
-	 * receiver can handle is preset4, so we are changing the vector of
-	 * presets to evaluate during the link equalization training to preset4.
+	 * According to the electrical measurmentrs, the best presets for our
+	 * receiver are preset3 to preset8, so we are changing the vector of
+	 * presets to evaluate during the link equalization training preset3-8.
 	 */
 	reg = readl(regs_base + PCIE_GEN3_EQ_CONTROL_OFF_REG);
 	reg &= ~PCIE_GEN3_EQ_PSET_REQ_VEC_MASK;
-	reg |= 0x10 << PCIE_GEN3_EQ_PSET_REQ_VEC_OFFSET;
+	reg |= 0x3f0 << PCIE_GEN3_EQ_PSET_REQ_VEC_OFFSET;
+	reg &= ~PCIE_GEN3_EQ_FB_MODE_MASK;
+	reg |= 0x1 << PCIE_GEN3_EQ_FB_MODE_OFFSET;
 	writel(reg, regs_base + PCIE_GEN3_EQ_CONTROL_OFF_REG);
 
 	/*

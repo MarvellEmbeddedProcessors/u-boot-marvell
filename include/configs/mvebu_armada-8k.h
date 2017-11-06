@@ -17,6 +17,23 @@
 
 #include <configs/mvebu_armada-common.h>
 
+/* MVFS is only needed if has nand support */
+#ifdef CONFIG_NAND_PXA3XX
+#define CONFIG_SYS_MVFS		1
+#endif
+
+/*
+ * File system
+ */
+#ifdef CONFIG_SYS_MVFS
+#define CONFIG_CMD_UBIFS
+#define CONFIG_RBTREE
+#define CONFIG_MTD_DEVICE               /* needed for mtdparts commands */
+#define CONFIG_MTD_PARTITIONS
+#define CONFIG_CMD_MTDPARTS
+#define CONFIG_LZO
+#endif
+
 /*
  * High Level Configuration Options (easy to change)
  */

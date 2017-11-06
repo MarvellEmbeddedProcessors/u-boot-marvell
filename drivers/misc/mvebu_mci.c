@@ -318,7 +318,8 @@ static int mci_probe(struct udevice *dev)
 		return PTR_ERR(mci_base_reg);
 
 	if (fdtdec_get_bool(blob, node, "indirect_base_reg"))
-		mci_base = readl(mci_base_reg) << MVEBU_MCI_PHY_BASE_OFF;
+		mci_base = (unsigned long)readl(mci_base_reg)
+						<< MVEBU_MCI_PHY_BASE_OFF;
 	else
 		mci_base = (unsigned long)mci_base_reg;
 

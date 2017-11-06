@@ -53,12 +53,30 @@
  #define NB_CLOCK_DIV_SEL0_A53_CPU_CLK_PRSCL_OFFSET	28
  #define NB_CLOCK_DIV_SEL0_A53_CPU_CLK_PRSCL_MASK	0x7
 
+#define NB_CLOCK_DIV_SEL2_REG	(NB_CLOCK_REGS_BASE + 0xC)
+ #define NB_CLOCK_DIV_SEL2_WC_AHB_DIV_SEL_OFFSET	0
+ #define NB_CLOCK_DIV_SEL2_WC_AHB_DIV_SEL_MASK		0x7
+
 /* north bridge clock source register */
 #define NB_CLOCK_SELECT_REG	(NB_CLOCK_REGS_BASE + 0x10)
  #define NB_CLOCK_SEL_DDR_PHY_CLK_SEL_OFFSET		10
  #define NB_CLOCK_SEL_DDR_PHY_CLK_SEL_MASK		0x1
  #define NB_CLOCK_SEL_A53_CPU_CLK_OFFSET		15
  #define NB_CLOCK_SEL_A53_CPU_CLK_MASK			0x1
+
+/* south bridge clock registers */
+#define SB_CLOCK_REGS_BASE	(MVEBU_REGISTER(0x18000))
+#define SB_CLOCK_TBG_SELECT_REG	SB_CLOCK_REGS_BASE
+ #define SB_CLOCK_TBG_SEL_SB_AXI_PCLK_OFFSET		20
+ #define SB_CLOCK_TBG_SEL_SB_AXI_PCLK_MASK		0x3
+
+/* south bridge clock divider select registers */
+#define SB_CLOCK_DIV_SEL0_REG	(SB_CLOCK_REGS_BASE + 0x4)
+ #define SB_CLOCK_DIV_SEL0_SB_AXI_CLK_PRSCL1_OFFSET	24
+ #define SB_CLOCK_DIV_SEL0_SB_AXI_CLK_PRSCL1_MASK	0x7
+ #define SB_CLOCK_DIV_SEL0_SB_AXI_CLK_PRSCL2_OFFSET     21
+ #define SB_CLOCK_DIV_SEL0_SB_AXI_CLK_PRSCL2_MASK       0x7
+
 
 #define TBG_A_REFDIV_GET(reg_val)	((reg_val >> 0) &\
 					NB_TBG_CTRL7_TBG_A_REFDIV_MASK)
@@ -94,8 +112,19 @@
 #define DDR_PHY_CLK_SEL_GET(reg_val)	((reg_val >>\
 					NB_CLOCK_SEL_DDR_PHY_CLK_SEL_OFFSET) &\
 					NB_CLOCK_SEL_DDR_PHY_CLK_SEL_MASK)
+#define WC_AHB_DIV_SEL_GET(reg_val)	((reg_val >>\
+				NB_CLOCK_DIV_SEL2_WC_AHB_DIV_SEL_OFFSET) &\
+				NB_CLOCK_DIV_SEL2_WC_AHB_DIV_SEL_MASK)
+#define SB_AXI_PCLK_SEL_GET(reg_val)	((reg_val >>\
+					SB_CLOCK_TBG_SEL_SB_AXI_PCLK_OFFSET) &\
+					SB_CLOCK_TBG_SEL_SB_AXI_PCLK_MASK)
+#define SB_AXI_CLK_PRSCL1_GET(reg_val)	((reg_val >>\
+				SB_CLOCK_DIV_SEL0_SB_AXI_CLK_PRSCL1_OFFSET) &\
+				SB_CLOCK_DIV_SEL0_SB_AXI_CLK_PRSCL1_MASK)
+#define SB_AXI_CLK_PRSCL2_GET(reg_val)	((reg_val >>\
+				SB_CLOCK_DIV_SEL0_SB_AXI_CLK_PRSCL2_OFFSET) &\
+				SB_CLOCK_DIV_SEL0_SB_AXI_CLK_PRSCL1_MASK)
 
-#define TCLK		200
 #define L2_CLK		800
 #define TIMER_CLK	800
 
@@ -228,11 +257,6 @@ int get_cpu_clk_src_div(u32 *cpu_clk_sel, u32 *cpu_clk_prscl)
 	return 0;
 }
 
-u32 soc_tclk_get(void)
-{
-	return TCLK;
-}
-
 u32 soc_l2_clk_get(void)
 {
 	return L2_CLK;
@@ -243,10 +267,46 @@ u32 soc_timer_clk_get(void)
 	return TIMER_CLK;
 }
 
+u32 soc_nb_axi_clk_get(void)
+{
+	u32 nb_axi_div;
+
+	nb_axi_div = WC_AHB_DIV_SEL_GET(readl(NB_CLOCK_DIV_SEL2_REG));
+	if (nb_axi_div == 0)
+		return 0;
+
+	return soc_cpu_clk_get()/nb_axi_div;
+}
+
+u32 soc_sb_axi_clk_get(void)
+{
+	u32 tbg, sb_axi_prscl1, sb_axi_prscl2;
+	enum a3700_clock_line tbg_typ;
+
+	/* 1. get TBG select */
+	tbg_typ = SB_AXI_PCLK_SEL_GET(readl(SB_CLOCK_TBG_SELECT_REG));
+
+	/* 2. get TBG clock */
+	tbg = get_tbg_clk(tbg_typ);
+	if (tbg == 0)
+		return 0;
+
+	sb_axi_prscl1 = SB_AXI_CLK_PRSCL1_GET(readl(SB_CLOCK_DIV_SEL0_REG));
+	if (sb_axi_prscl1 == 0 || sb_axi_prscl1 == 7)
+		return 0;
+
+	sb_axi_prscl2 = SB_AXI_CLK_PRSCL2_GET(readl(SB_CLOCK_DIV_SEL0_REG));
+	if (sb_axi_prscl2 == 0 || sb_axi_prscl2 == 7)
+		return 0;
+
+	return tbg/(sb_axi_prscl1*sb_axi_prscl2);
+}
+
 void soc_print_clock_info(void)
 {
 	printf("       CPU    @ %d [MHz]\n", soc_cpu_clk_get());
 	printf("       L2     @ %d [MHz]\n", soc_l2_clk_get());
-	printf("       TClock @ %d [MHz]\n", soc_tclk_get());
+	printf("       NB AXI @ %d [MHz]\n", soc_nb_axi_clk_get());
+	printf("       SB AXI @ %d [MHz]\n", soc_sb_axi_clk_get());
 	printf("       DDR    @ %d [MHz]\n", soc_ddr_clk_get());
 }

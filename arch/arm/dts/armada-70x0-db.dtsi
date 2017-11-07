@@ -9,7 +9,7 @@
 	model = "DB-ARMADA-70x0";
 	compatible = "marvell,armada-70x0-db", "marvell,armada-70x0";
 
-	cp110-master {
+	cp0 {
 		config-space {
 			i2c@701000 {
 				expander0: pca953x@21 {

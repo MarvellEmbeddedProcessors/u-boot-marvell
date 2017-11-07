@@ -58,8 +58,8 @@
 	};
 
 	aliases {
-		i2c0 = &cpm_i2c0;
-		spi0 = &cpm_spi1;
+		i2c0 = &cp0_i2c0;
+		spi0 = &cp0_spi1;
 	};
 
 	memory@00000000 {
@@ -82,19 +82,18 @@
 	status = "okay";
 };
 
-
-&cpm_pcie2 {
+&cp0_pcie2 {
 	status = "okay";
 };
 
-&cpm_i2c0 {
+&cp0_i2c0 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_i2c0_pins>;
+	pinctrl-0 = <&cp0_i2c0_pins>;
 	status = "okay";
 	clock-frequency = <100000>;
 };
 
-&cpm_pinctl {
+&cp0_pinctl {
 		/* MPP Bus:
 		 * AUDIO   [0-5]
                  * GBE     [6-11]
@@ -122,9 +121,9 @@
 		      0xe 0xe 0x0>;
 };
 
-&cpm_spi1 {
+&cp0_spi1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_spi0_pins>;
+	pinctrl-0 = <&cp0_spi0_pins>;
 	status = "disabled";
 
 	spi-flash@0 {
@@ -152,19 +151,19 @@
 	};
 };
 
-&cpm_sata0 {
+&cp0_sata0 {
 	status = "okay";
 };
 
-&cpm_usb3_0 {
+&cp0_usb3_0 {
 	status = "okay";
 };
 
-&cpm_usb3_1 {
+&cp0_usb3_1 {
 	status = "okay";
 };
 
-&cpm_comphy {
+&cp0_comphy {
 	phy0 {
 		phy-type = <COMPHY_TYPE_SGMII2>;
 		phy-speed = <COMPHY_SPEED_3_125G>;
@@ -196,15 +195,15 @@
 	};
 };
 
-&cpm_nand {
+&cp0_nand {
 	status = "okay";
 };
 
-&cpm_utmi0 {
+&cp0_utmi0 {
 	status = "okay";
 };
 
-&cpm_utmi1 {
+&cp0_utmi1 {
 	status = "okay";
 };
 
@@ -215,7 +214,7 @@
 	non-removable;
 };
 
-&cpm_sdhci0 {
+&cp0_sdhci0 {
 	status = "okay";
 	bus-width = <4>;
 	no-1-8-v;

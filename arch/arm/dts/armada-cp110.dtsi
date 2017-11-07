@@ -1,0 +1,265 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Marvell International Ltd.
+ */
+
+/*
+ * Generic Device Tree describing Marvell Armada CP-110 device
+ */
+#include <dt-bindings/comphy/comphy_data.h>
+
+#define CP110_BASE_HIGH			((CP110_BASE >> 32) & 0xffffffff)
+#define CP110_BASE_LOW			(CP110_BASE & 0xffffffff)
+
+#define CP110_PCIEx_IO_BASE_H(iface)	((CP110_PCIE_IO_BASE >> 32) & 0xffffffff)
+#define CP110_PCIEx_IO_BASE_L(iface)	((CP110_PCIE_IO_BASE & 0xffffffff) + (iface *  0x10000))
+
+#define CP110_PCIEx_MEM_BASE_H(iface)	((CP110_PCIE_MEM_BASE >> 32) & 0xffffffff)
+#define CP110_PCIEx_MEM_BASE_L(iface)	((CP110_PCIE_MEM_BASE & 0xffffffff) + (iface *  0x1000000))
+
+#define CP110_PCIEx_REG0_BASE_H(iface)	(CP110_BASE_HIGH)
+#define CP110_PCIEx_REG0_BASE_L(iface)	(CP110_BASE_LOW + 0x600000 + (iface * 0x20000))
+
+#define CP110_PCIEx_REG1_BASE_H(iface)	(CP110_PCIEx_MEM_BASE_H(iface))
+#define CP110_PCIEx_REG1_BASE_L(iface)	(CP110_PCIEx_MEM_BASE_L(iface) + 0xf00000)
+
+#define CP110_PCIEx_IO_BASE(iface)	(CP110_PCIE_IO_BASE + (iface *  0x10000))
+#define CP110_PCIEx_MEM_BASE(iface)	(CP110_PCIE_MEM_BASE + (iface *  0x1000000))
+#define CP110_PCIEx_REG0_BASE(iface)	(CP110_BASE + 0x600000 + (iface) * 0x20000)
+#define CP110_PCIEx_REG1_BASE(iface)	(CP110_PCIEx_MEM_BASE(iface) + 0xf00000)
+
+/ {
+	CP110_NAME {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		compatible = "simple-bus";
+		ranges;
+
+		config-space {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			compatible = "simple-bus";
+			ranges = <0x0 CP110_BASE_HIGH CP110_BASE_LOW 0x2000000>;
+
+			CP110_LABEL(mdio): mdio@12a200 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "marvell,orion-mdio";
+				reg = <0x12a200 0x10>;
+			};
+
+			CP110_LABEL(pinctl): pinctl@440000 {
+				compatible = "marvell,mvebu-pinctrl";
+				reg = <0x440000 0x20>;
+				pin-count = <63>;
+				max-func = <0xf>;
+			};
+
+			CP110_LABEL(gpio0): gpio@440100 {
+				compatible = "marvell,orion-gpio";
+				reg = <0x440100 0x40>;
+				ngpios = <32>;
+				gpiobase = <20>;
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+
+			CP110_LABEL(gpio1): gpio@440140 {
+				compatible = "marvell,orion-gpio";
+				reg = <0x440140 0x40>;
+				ngpios = <31>;
+				gpiobase = <52>;
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+
+			CP110_LABEL(sata0): sata@540000 {
+				compatible = "marvell,armada-8k-ahci";
+				reg = <0x540000 0x30000>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(usb3_0): usb3@500000 {
+				compatible = "marvell,armada-8k-xhci",
+					     "generic-xhci";
+				reg = <0x500000 0x4000>;
+				dma-coherent;
+				status = "disabled";
+			};
+
+			CP110_LABEL(usb3_1): usb3@510000 {
+				compatible = "marvell,armada-8k-xhci",
+					     "generic-xhci";
+				reg = <0x510000 0x4000>;
+				dma-coherent;
+				status = "disabled";
+			};
+
+			CP110_LABEL(spi0): spi@700600 {
+				compatible = "marvell,armada-380-spi";
+				reg = <0x700600 0x50>;
+				#address-cells = <0x1>;
+				#size-cells = <0x0>;
+				cell-index = <1>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(spi1): spi@700680 {
+				compatible = "marvell,armada-380-spi";
+				reg = <0x700680 0x50>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				cell-index = <2>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(i2c0): i2c@701000 {
+				compatible = "marvell,mv78230-i2c";
+				reg = <0x701000 0x20>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(i2c1): i2c@701100 {
+				compatible = "marvell,mv78230-i2c";
+				reg = <0x701100 0x20>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(comphy): comphy@441000 {
+				compatible = "marvell,mvebu-comphy", "marvell,comphy-cp110";
+				reg = <0x441000 0x8>,
+				      <0x120000 0x8>;
+				mux-bitcount = <4>;
+				max-lanes = <6>;
+			};
+
+			CP110_LABEL(utmi0): utmi@580000 {
+				compatible = "marvell,mvebu-utmi-2.6.0";
+				reg = <0x580000 0x1000>,	/* utmi-unit */
+				      <0x440420 0x4>,		/* usb-cfg */
+				      <0x440440 0x4>;		/* utmi-cfg */
+				utmi-port = <UTMI_PHY_TO_USB3_HOST0>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(utmi1): utmi@581000 {
+				compatible = "marvell,mvebu-utmi-2.6.0";
+				reg = <0x581000 0x1000>,	/* utmi-unit */
+				      <0x440420 0x4>,		/* usb-cfg */
+				      <0x440444 0x4>;		/* utmi-cfg */
+				utmi-port = <UTMI_PHY_TO_USB3_HOST1>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(sdhci0): sdhci@780000 {
+				compatible = "marvell,armada-8k-sdhci";
+				reg = <0x780000 0x300>;
+				dma-coherent;
+				status = "disabled";
+			};
+
+			CP110_LABEL(nand): nand@720000 {
+				compatible = "marvell,mvebu-pxa3xx-nand";
+				reg = <0x720000 0x100>;
+				#address-cells = <1>;
+
+				nand-enable-arbiter;
+				num-cs = <1>;
+				nand-ecc-strength = <4>;
+				nand-ecc-step-size = <512>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(ethernet): ethernet@0 {
+				compatible = "marvell,armada-7k-pp22";
+				reg = <0x0 0x100000>, <0x129000 0xb000>;
+				status = "disabled";
+				dma-coherent;
+
+				CP110_LABEL(eth0): eth0 {
+					port-id = <0>;
+					gop-port-id = <0>;
+					status = "disabled";
+				};
+
+				CP110_LABEL(eth1): eth1 {
+					port-id = <1>;
+					gop-port-id = <2>;
+					status = "disabled";
+				};
+
+				CP110_LABEL(eth2): eth2 {
+					port-id = <2>;
+					gop-port-id = <3>;
+					status = "disabled";
+				};
+			};
+		};
+
+		CP110_LABEL(pcie0): pcie0@600000 {
+			compatible = "marvell,armada8k-pcie", "snps,dw-pcie";
+			reg = <CP110_PCIEx_REG0_BASE_H(0) CP110_PCIEx_REG0_BASE_L(0) 0 0x10000>,
+			      <CP110_PCIEx_REG1_BASE_H(0) CP110_PCIEx_REG1_BASE_L(0) 0 0x80000>;
+			reg-names = "ctrl", "config";
+			#address-cells = <3>;
+			#size-cells = <2>;
+			device_type = "pci";
+			dma-coherent;
+
+			bus-range = <0 0xff>;
+			ranges =
+				/* downstream I/O */
+				<0x81000000 0 CP110_PCIEx_IO_BASE_L(0) CP110_PCIEx_IO_BASE_H(0) CP110_PCIEx_IO_BASE_L(0) 0 0x10000
+				/* non-prefetchable memory */
+				 0x82000000 0 CP110_PCIEx_MEM_BASE_L(0) CP110_PCIEx_MEM_BASE_H(0) CP110_PCIEx_MEM_BASE_L(0) 0 0xf00000>;
+			num-lanes = <1>;
+			status = "disabled";
+		};
+
+		CP110_LABEL(pcie1): pcie1@620000 {
+			compatible = "marvell,armada8k-pcie", "snps,dw-pcie";
+			reg = <CP110_PCIEx_REG0_BASE_H(1) CP110_PCIEx_REG0_BASE_L(1) 0 0x10000>,
+			      <CP110_PCIEx_REG1_BASE_H(1) CP110_PCIEx_REG1_BASE_L(1) 0 0x80000>;	/* Last 512KB of mem space */
+			reg-names = "ctrl", "config";
+			#address-cells = <3>;
+			#size-cells = <2>;
+			device_type = "pci";
+			dma-coherent;
+
+			bus-range = <0 0xff>;
+			ranges =
+				/* downstream I/O */
+				<0x81000000 0 CP110_PCIEx_IO_BASE_L(1) CP110_PCIEx_IO_BASE_H(1) CP110_PCIEx_IO_BASE_L(1) 0 0x10000
+				/* non-prefetchable memory */
+				 0x82000000 0 CP110_PCIEx_MEM_BASE_L(1) CP110_PCIEx_MEM_BASE_H(1) CP110_PCIEx_MEM_BASE_L(1) 0 0xf00000>;
+
+			num-lanes = <1>;
+			status = "disabled";
+		};
+
+		CP110_LABEL(pcie2): pcie2@640000 {
+			compatible = "marvell,armada8k-pcie", "snps,dw-pcie";
+			reg = <CP110_PCIEx_REG0_BASE_H(2) CP110_PCIEx_REG0_BASE_L(2) 0 0x10000>,
+			      <CP110_PCIEx_REG1_BASE_H(2) CP110_PCIEx_REG1_BASE_L(2) 0 0x80000>;	/* Last 64KB of mem space */
+			reg-names = "ctrl", "config";
+			#address-cells = <3>;
+			#size-cells = <2>;
+			device_type = "pci";
+			dma-coherent;
+
+			bus-range = <0 0xff>;
+			ranges =
+				/* downstream I/O */
+				<0x81000000 0 CP110_PCIEx_IO_BASE_L(2) CP110_PCIEx_IO_BASE_H(2) CP110_PCIEx_IO_BASE_L(2) 0 0x10000
+				/* non-prefetchable memory */
+				 0x82000000 0 CP110_PCIEx_MEM_BASE_L(2) CP110_PCIEx_MEM_BASE_H(2) CP110_PCIEx_MEM_BASE_L(2) 0 0xf00000>;
+
+			num-lanes = <1>;
+			status = "disabled";
+		};
+	};
+};

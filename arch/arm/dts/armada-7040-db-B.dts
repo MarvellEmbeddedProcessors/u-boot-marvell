@@ -57,13 +57,13 @@
 	};
 
 	aliases {
-		i2c0 = &cpm_i2c0;
-		spi0 = &cpm_spi1;
+		i2c0 = &cp0_i2c0;
+		spi0 = &cp0_spi1;
 		fuse0 = &ap_hd_efuse0;
 		fuse1 = &ap_ld_efuse0;
 		fuse2 = &ap_ld_efuse1;
-		fuse3 = &cpm_ld_efuse0;
-		fuse4 = &cpm_ld_efuse1;
+		fuse3 = &cp0_ld_efuse0;
+		fuse4 = &cp0_ld_efuse1;
 	};
 
 	memory@00000000 {
@@ -98,22 +98,22 @@
 	status = "okay";
 };
 
-&cpm_pcie2 {
+&cp0_pcie2 {
 	status = "okay";
 };
 
-&cpm_pcie0 {
+&cp0_pcie0 {
 	status = "okay";
 };
 
-&cpm_i2c0 {
+&cp0_i2c0 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_i2c0_pins>;
+	pinctrl-0 = <&cp0_i2c0_pins>;
 	status = "okay";
 	clock-frequency = <100000>;
 };
 
-&cpm_pinctl {
+&cp0_pinctl {
 		/* MPP Bus:
 		 * RGMII1 [0-11]
 		 * SPI    [13-16]
@@ -136,9 +136,9 @@
 		     0xE 0xE 0>;
 };
 
-&cpm_spi1 {
+&cp0_spi1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_spi0_pins>;
+	pinctrl-0 = <&cp0_spi0_pins>;
 	status = "okay";
 
 	spi-flash@0 {
@@ -166,19 +166,19 @@
 	};
 };
 
-&cpm_ld_efuse0 {
+&cp0_ld_efuse0 {
 	status = "okay";
 };
 
-&cpm_ld_efuse1 {
+&cp0_ld_efuse1 {
 	status = "okay";
 };
 
-&cpm_usb3_1 {
+&cp0_usb3_1 {
 	status = "okay";
 };
 
-&cpm_comphy {
+&cp0_comphy {
 	phy0 {
 		phy-type = <COMPHY_TYPE_PEX0>;
 		phy-speed = <COMPHY_SPEED_5G>;
@@ -210,11 +210,11 @@
 	};
 };
 
-&cpm_utmi0 {
+&cp0_utmi0 {
 	status = "okay";
 };
 
-&cpm_utmi1 {
+&cp0_utmi1 {
 	status = "okay";
 };
 
@@ -225,14 +225,14 @@
 	non-removable;
 };
 
-&cpm_sdhci0 {
+&cp0_sdhci0 {
 	status = "okay";
 	bus-width = <4>;
 	no-1-8-v;
 	non-removable;
 };
 
-&cpm_mdio {
+&cp0_mdio {
 	phy0: ethernet-phy@0 {
 		reg = <0>;
 	};
@@ -241,17 +241,17 @@
 	};
 };
 
-&cpm_ethernet {
+&cp0_ethernet {
 	status = "okay";
 };
 
-&cpm_eth1 {
+&cp0_eth1 {
 	status = "okay";
 	phy = <&phy0>;
 	phy-mode = "rgmii-id";
 };
 
-&cpm_eth2 {
+&cp0_eth2 {
 	status = "okay";
 	phy = <&phy1>;
 	phy-mode = "rgmii-id";

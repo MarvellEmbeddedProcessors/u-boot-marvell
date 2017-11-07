@@ -29,7 +29,7 @@
 	};
 
 	aliases {
-		i2c0 = &cpm_i2c0;
+		i2c0 = &cp0_i2c0;
 		spi0 = &ap_spi0;
 	};
 
@@ -38,50 +38,50 @@
 		reg = <0x0 0x0 0x0 0x80000000>;
 	};
 
-	cp110-master {
+	cp110-0 {
 		config-space {
-			cpm_reg_usb3_vbus0: cpm_usb3_vbus@0 {
+			cp0_reg_usb3_vbus0: cp0_usb3_vbus@0 {
 				compatible = "regulator-fixed";
 				pinctrl-names = "default";
-				pinctrl-0 = <&cpm_xhci0_vbus_pins>;
-				regulator-name = "cpm-xhci0-vbus";
+				pinctrl-0 = <&cp0_xhci0_vbus_pins>;
+				regulator-name = "cp0-xhci0-vbus";
 				regulator-min-microvolt = <5000000>;
 				regulator-max-microvolt = <5000000>;
 				startup-delay-us = <100000>;
 				enable-active-high;
 				regulator-force-boot-off;
-				gpio = <&cpm_gpio1 12 GPIO_ACTIVE_HIGH>;
+				gpio = <&cp0_gpio1 12 GPIO_ACTIVE_HIGH>;
 			};
 
-			cpm_reg_usb3_vbus1: cpm_usb3_vbus@1 {
+			cp0_reg_usb3_vbus1: cp0_usb3_vbus@1 {
 				compatible = "regulator-fixed";
 				pinctrl-names = "default";
-				pinctrl-0 = <&cpm_xhci1_vbus_pins>;
-				regulator-name = "cpm-xhci1-vbus";
+				pinctrl-0 = <&cp0_xhci1_vbus_pins>;
+				regulator-name = "cp0-xhci1-vbus";
 				regulator-min-microvolt = <5000000>;
 				regulator-max-microvolt = <5000000>;
 				startup-delay-us = <100000>;
 				enable-active-high;
 				regulator-force-boot-off;
-				gpio = <&cpm_gpio1 13 GPIO_ACTIVE_HIGH>;
+				gpio = <&cp0_gpio1 13 GPIO_ACTIVE_HIGH>;
 			};
 
-			cpm_mochi_reset: cpm_mochi_reset {
+			cp0_mochi_reset: cp0_mochi_reset {
 				compatible = "regulator-fixed";
 				pinctrl-names = "default";
-				pinctrl-0 = <&cpm_mochi_reset_pins>;
-				regulator-name = "cpm-mochi-reset";
+				pinctrl-0 = <&cp0_mochi_reset_pins>;
+				regulator-name = "cp0-mochi-reset";
 				enable-active-high;
-				gpio = <&cpm_gpio1 24 GPIO_ACTIVE_HIGH>;
+				gpio = <&cp0_gpio1 24 GPIO_ACTIVE_HIGH>;
 			};
 
-			cpm_mochi_enable: cpm_mochi_enable {
+			cp0_mochi_enable: cp0_mochi_enable {
 				compatible = "regulator-fixed";
 				pinctrl-names = "default";
-				pinctrl-0 = <&cpm_mochi_enable_pins>;
-				regulator-name = "cpm-mochi-enable";
+				pinctrl-0 = <&cp0_mochi_enable_pins>;
+				regulator-name = "cp0-mochi-enable";
 				enable-active-high;
-				gpio = <&cpm_gpio1 25 GPIO_ACTIVE_HIGH>;
+				gpio = <&cp0_gpio1 25 GPIO_ACTIVE_HIGH>;
 			};
 		};
 	};
@@ -114,55 +114,55 @@
 /*
  * CP related configuration
  */
-&cpm_pinctl {
-	cpm_xhci0_vbus_pins: cpm-xhci0-vbus-pins {
+&cp0_pinctl {
+	cp0_xhci0_vbus_pins: cp0-xhci0-vbus-pins {
 		marvell,pins = <44>;
 		marvell,function = <0>;
 	};
 
-	cpm_xhci1_vbus_pins: cpm-xhci1-vbus-pins {
+	cp0_xhci1_vbus_pins: cp0-xhci1-vbus-pins {
 		marvell,pins = <45>;
 		marvell,function = <0>;
 	};
 
-	cpm_mochi_reset_pins: cpm-mochi-reset-pins {
+	cp0_mochi_reset_pins: cp0-mochi-reset-pins {
 		marvell,pins = <56>;
 		marvell,function = <0>;
 	};
 
-	cpm_mochi_enable_pins: cpm-mochi-enable-pins {
+	cp0_mochi_enable_pins: cp0-mochi-enable-pins {
 		marvell,pins = <57>;
 		marvell,function = <0>;
 	};
 };
 
-&cpm_i2c0 {
+&cp0_i2c0 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_i2c0_pins>;
+	pinctrl-0 = <&cp0_i2c0_pins>;
 	status = "okay";
 };
 
-&cpm_utmi0 {
+&cp0_utmi0 {
 	status = "okay";
 };
 
-&cpm_utmi1 {
+&cp0_utmi1 {
 	status = "okay";
 };
 
-&cpm_usb3_0 {
+&cp0_usb3_0 {
 	status = "okay";
-	vbus-supply = <&cpm_reg_usb3_vbus0>;
+	vbus-supply = <&cp0_reg_usb3_vbus0>;
 	vbus-disable-delay = <500>;
 };
 
-&cpm_usb3_1 {
+&cp0_usb3_1 {
 	status = "okay";
-	vbus-supply = <&cpm_reg_usb3_vbus1>;
+	vbus-supply = <&cp0_reg_usb3_vbus1>;
 	vbus-disable-delay = <500>;
 };
 
-&cpm_pcie0 {
+&cp0_pcie0 {
 	status = "okay";
 	ranges =
 		/* downstream I/O */
@@ -171,7 +171,7 @@
 		0x82000000 0 0xf6000000 0  0xf6000000 0 0xf00000>;
 };
 
-&cpm_pcie2 {
+&cp0_pcie2 {
 	status = "okay";
 	ranges =
 		/* downstream I/O */
@@ -180,7 +180,7 @@
 		0x82000000 0 0xf8000000 0  0xf8000000 0 0xf00000>;
 };
 
-&cpm_comphy {
+&cp0_comphy {
 	phy0 {
 		phy-type = <COMPHY_TYPE_PEX0>;
 		phy-speed = <COMPHY_SPEED_5G>;
@@ -212,7 +212,7 @@
 	};
 };
 
-&cpm_xmdio {
+&cp0_xmdio {
 	phy0: ethernet-phy@0 {
 		reg = <0>;
 	};
@@ -221,17 +221,17 @@
 	};
 };
 
-&cpm_ethernet {
+&cp0_ethernet {
 	status = "okay";
 };
 
-&cpm_eth0 {
+&cp0_eth0 {
 	status = "okay";
 	phy-mode = "sgmii";
 	phy = <&phy0>;
 };
 
-&cpm_eth1 {
+&cp0_eth1 {
 	status = "okay";
 	phy-mode = "sgmii";
 	phy = <&phy1>;

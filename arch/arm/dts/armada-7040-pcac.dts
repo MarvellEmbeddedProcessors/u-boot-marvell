@@ -56,13 +56,13 @@
 	};
 
 	aliases {
-		i2c0 = &cpm_i2c0;
-		spi0 = &cpm_spi1;
+		i2c0 = &cp0_i2c0;
+		spi0 = &cp0_spi1;
 		fuse0 = &ap_hd_efuse0;
 		fuse1 = &ap_ld_efuse0;
 		fuse2 = &ap_ld_efuse1;
-		fuse3 = &cpm_ld_efuse0;
-		fuse4 = &cpm_ld_efuse1;
+		fuse3 = &cp0_ld_efuse0;
+		fuse4 = &cp0_ld_efuse1;
 	};
 
 	memory@00000000 {
@@ -78,12 +78,12 @@
 		reg_usb3h1_current_limiter: usb3-current-limiter1 {
 			compatible = "regulator-fixed";
 			pinctrl-names = "default";
-			pinctrl-0 = <&cpm_xhci_vbus_pins>;
+			pinctrl-0 = <&cp0_xhci_vbus_pins>;
 			regulator-name = "reg-usb3h1-current-limiter";
 			regulator-min-microvolt = <900000>;
 			regulator-max-microvolt = <900000>;
 			regulator-force-boot-off;
-			gpio = <&cpm_gpio1 14 GPIO_ACTIVE_HIGH>; /* GPIO[46] */
+			gpio = <&cp0_gpio1 14 GPIO_ACTIVE_HIGH>; /* GPIO[46] */
 		};
 	};
 };
@@ -114,14 +114,14 @@
 	status = "okay";
 };
 
-&cpm_i2c0 {
+&cp0_i2c0 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_i2c0_pins>;
+	pinctrl-0 = <&cp0_i2c0_pins>;
 	status = "okay";
 	clock-frequency = <100000>;
 };
 
-&cpm_pinctl {
+&cp0_pinctl {
 		/* MPP Bus:
 		 * RGMII0[0-11]
 		 * SPI   [13-16]
@@ -144,15 +144,15 @@
 		     6   6   0   0   0   0   0   0   0   0
 		     0   0   0>;
 
-	cpm_xhci_vbus_pins: cpm-xhci-vbus-pins {
+	cp0_xhci_vbus_pins: cpm-xhci-vbus-pins {
 		marvell,pins = < 46 >;
 		marvell,function = <0>;
 	};
 };
 
-&cpm_spi1 {
+&cp0_spi1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_spi0_pins>;
+	pinctrl-0 = <&cp0_spi0_pins>;
 	status = "okay";
 
 	spi-flash@0 {
@@ -180,28 +180,28 @@
 	};
 };
 
-&cpm_ld_efuse0 {
+&cp0_ld_efuse0 {
 	status = "okay";
 };
 
-&cpm_ld_efuse1 {
+&cp0_ld_efuse1 {
 	status = "okay";
 };
 
-&cpm_sata0 {
+&cp0_sata0 {
 	status = "okay";
 };
 
-&cpm_scsi {
+&cp0_scsi {
 	status = "okay";
 };
 
-&cpm_usb3_1 {
+&cp0_usb3_1 {
 	vbus-supply = <&reg_usb3h1_current_limiter>;
 	status = "okay";
 };
 
-&cpm_comphy {
+&cp0_comphy {
 	phy0 {
 		phy-type = <COMPHY_TYPE_IGNORE>;
 	};
@@ -236,26 +236,26 @@
 	non-removable;
 };
 
-&cpm_utmi0 {
+&cp0_utmi0 {
 	status = "okay";
 };
 
-&cpm_mdio {
+&cp0_mdio {
 	phy0: ethernet-phy@0 {
 		reg = <1>;
 	};
 };
 
-&cpm_ethernet {
+&cp0_ethernet {
 	status = "okay";
 };
 
-&cpm_eth0 {
+&cp0_eth0 {
 	status = "okay";
 	phy-mode = "sfi"; /* lane-4*/
 };
 
-&cpm_eth1 {
+&cp0_eth1 {
         status = "okay";
 	phy = <&phy0>;
 	phy-mode = "rgmii-id"; /* rgmii-0*/

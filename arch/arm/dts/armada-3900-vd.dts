@@ -51,13 +51,13 @@
 		i2c1 = &ap_i2c0;
 	};
 
-	cp110-master {
+	cp110-0 {
 		config-space {
-			cpm_mochi_reset: cpm_mochi_reset {
+			cp0_mochi_reset: cp0_mochi_reset {
 				regulator-boot-on;
 			};
 
-			cpm_mochi_enable: cpm_mochi_enable {
+			cp0_mochi_enable: cp0_mochi_enable {
 				regulator-boot-on;
 			};
 		};
@@ -77,7 +77,7 @@
 /*
  * CP related configuration
  */
-&cpm_pinctl {
+&cp0_pinctl {
 		/* MPP Bus:
 		 *   SPI1	[13-16]
 		 *   SMI	[32,34]
@@ -98,9 +98,9 @@
 		     7   7   7>;
 };
 
-&cpm_spi1 {
+&cp0_spi1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_spi0_pins>;
+	pinctrl-0 = <&cp0_spi0_pins>;
 	status = "okay";
 };
 

@@ -58,8 +58,8 @@
 	};
 
 	aliases {
-		i2c0 = &cpm_i2c0;
-		i2c1 = &cpm_mss_i2c0;
+		i2c0 = &cp0_i2c0;
+		i2c1 = &cp0_mss_i2c0;
 		i2c2 = &ap_i2c0;
 		spi0 = &ap_spi0;
 	};
@@ -78,7 +78,7 @@
 			compatible = "regulator-fixed";
 			regulator-name = "reg-smi";
 			/* set GPIO[31] to 0 to connect SMI to main switch board */
-			gpio = <&cpm_gpio0 31 GPIO_ACTIVE_HIGH>;
+			gpio = <&cp0_gpio0 31 GPIO_ACTIVE_HIGH>;
 		};
 
 		reg_i2c0: reg_i2c {
@@ -86,7 +86,7 @@
 			regulator-name = "reg-i2c";
 			enable-active-high;
 			 /* set GPIO[44] to 1 to connect ap_i2c0 to main switch board */
-			gpio = <&cpm_gpio1 12 GPIO_ACTIVE_HIGH>;
+			gpio = <&cp0_gpio1 12 GPIO_ACTIVE_HIGH>;
 		};
 	};
 };
@@ -125,11 +125,11 @@
 	};
 };
 
-&cpm_nand {
+&cp0_nand {
 	status = "okay";
 };
 
-&cpm_pcie0 {
+&cp0_pcie0 {
 	num-lanes = <4>;
 	ranges =
 		/* downstream I/O */
@@ -140,19 +140,19 @@
 	status = "okay";
 };
 
-&cpm_i2c0 {
+&cp0_i2c0 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_i2c0_pins>;
+	pinctrl-0 = <&cp0_i2c0_pins>;
 	status = "okay";
 	clock-frequency = <100000>;
 };
 
-&cpm_mss_i2c0 {
+&cp0_mss_i2c0 {
 	status = "okay";
 	clock-frequency = <100000>;
 };
 
-&cpm_pinctl {
+&cp0_pinctl {
 		/* MPP Bus:
 		 * RGMII [0-11]
 		 * Device Bus [13-27]
@@ -174,15 +174,15 @@
 		     0xE  0xE  0>;
 };
 
-&cpm_sata0 {
+&cp0_sata0 {
 	status = "okay";
 };
 
-&cpm_scsi {
+&cp0_scsi {
 	status = "okay";
 };
 
-&cpm_comphy {
+&cp0_comphy {
 	phy0 {
 		phy-type = <COMPHY_TYPE_PEX0>;
 		phy-speed = <COMPHY_SPEED_5G>;
@@ -214,38 +214,38 @@
 	};
 };
 
-&cpm_usb3_0 {
+&cp0_usb3_0 {
 	status = "okay";
 };
 
-&cpm_utmi0 {
+&cp0_utmi0 {
 	status = "okay";
 };
 
-&cpm_sdhci0 {
+&cp0_sdhci0 {
 	status = "okay";
 	bus-width = <4>;
 	no-1-8-v;
 	non-removable;
 };
 
-&cpm_mdio {
+&cp0_mdio {
 	enable_gpios = <&reg_smi0>;
 	phy1: ethernet-phy@1 {
 		reg = <1>;
 	};
 };
 
-&cpm_ethernet {
+&cp0_ethernet {
 	status = "okay";
 };
 
-&cpm_eth0 {
+&cp0_eth0 {
 	status = "okay";
 	phy-mode = "sfi";
 };
 
-&cpm_eth1 {
+&cp0_eth1 {
 	status = "okay";
 	phy = <&phy1>;
 	phy-mode = "rgmii-id";

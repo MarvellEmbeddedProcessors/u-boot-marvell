@@ -22,15 +22,15 @@
 	};
 
 	aliases {
-		i2c0 = &cpm_i2c0;
-		spi0 = &cps_spi1;
+		i2c0 = &cp0_i2c0;
+		spi0 = &cp1_spi1;
 		fuse0 = &ap_hd_efuse0;
 		fuse1 = &ap_ld_efuse0;
 		fuse2 = &ap_ld_efuse1;
-		fuse3 = &cpm_ld_efuse0;
-		fuse4 = &cpm_ld_efuse1;
-		fuse5 = &cps_ld_efuse0;
-		fuse6 = &cps_ld_efuse1;
+		fuse3 = &cp0_ld_efuse0;
+		fuse4 = &cp0_ld_efuse1;
+		fuse5 = &cp1_ld_efuse0;
+		fuse6 = &cp1_ld_efuse1;
 	};
 
 	memory@00000000 {
@@ -38,7 +38,7 @@
 		reg = <0x0 0x0 0x0 0x80000000>;
 	};
 
-	cpm_reg_usb3_vbus0:cpm_usb3_vbus@0 {
+	cp0_reg_usb3_vbus0:cpm_usb3_vbus@0 {
 		compatible = "regulator-fixed";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
@@ -48,7 +48,7 @@
 		gpio = <&expander0 0 GPIO_ACTIVE_HIGH>;
 	};
 
-	cpm_reg_usb3_vbus1: cpm_usb3_vbus@1 {
+	cp0_reg_usb3_vbus1: cpm_usb3_vbus@1 {
 		compatible = "regulator-fixed";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
@@ -58,10 +58,10 @@
 		gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
 	};
 
-	/* even though this node used for enable/disable cps usb vbus-supply,
-	 * we use "cpm" prefix since the expander is connected to cpm.
+	/* even though this node used for enable/disable cp1 usb vbus-supply,
+	 * we use "cp0" prefix since the expander is connected to cpm.
 	 */
-	cpm_reg_usb3_vbus2: cpm_usb3_vbus@2 {
+	cp0_reg_usb3_vbus2: cpm_usb3_vbus@2 {
 		compatible = "regulator-fixed";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
@@ -106,7 +106,7 @@
 	status = "okay";
 };
 
-&cpm_pinctl {
+&cp0_pinctl {
 	/* MPP Bus:
 	 *	[0-31]	= 0xff: Keep default CP0_shared_pins
 	 *	[11]	CLKOUT_MPP_11 (out)
@@ -134,15 +134,15 @@
 		     0xe  0xe  0xe>;
 };
 
-&cpm_ld_efuse0 {
+&cp0_ld_efuse0 {
 	status = "okay";
 };
 
-&cpm_ld_efuse1 {
+&cp0_ld_efuse1 {
 	status = "okay";
 };
 
-&cpm_comphy {
+&cp0_comphy {
 	/* Serdes Configuration:
 	 *	Lane 0: PCIe0 (x1)
 	 *	Lane 1: SATA0
@@ -172,22 +172,22 @@
 };
 
 /* CON6 on CP0 expansion */
-&cpm_pcie0 {
+&cp0_pcie0 {
 	status = "okay";
 };
 
-&cpm_pcie1 {
+&cp0_pcie1 {
 	status = "disabled";
 };
 
 /* CON5 on CP0 expansion */
-&cpm_pcie2 {
+&cp0_pcie2 {
 	status = "okay";
 };
 
-&cpm_i2c0 {
+&cp0_i2c0 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_i2c0_pins>;
+	pinctrl-0 = <&cp0_i2c0_pins>;
 	status = "okay";
 	clock-frequency = <100000>;
 	expander0: pca953x@21 {
@@ -205,63 +205,63 @@
 };
 
 /* CON4 on CP0 expansion */
-&cpm_sata0 {
+&cp0_sata0 {
 	status = "okay";
 };
 
-&cpm_scsi {
+&cp0_scsi {
 	status = "okay";
 };
 
 /* CON9 on CP0 expansion */
-&cpm_usb3_0 {
-	vbus-supply = <&cpm_reg_usb3_vbus0>;
+&cp0_usb3_0 {
+	vbus-supply = <&cp0_reg_usb3_vbus0>;
 	status = "okay";
 };
 
 /* CON10 on CP0 expansion */
-&cpm_usb3_1 {
-	vbus-supply = <&cpm_reg_usb3_vbus1>;
+&cp0_usb3_1 {
+	vbus-supply = <&cp0_reg_usb3_vbus1>;
 	status = "okay";
 };
 
-&cpm_utmi0 {
+&cp0_utmi0 {
 	status = "okay";
 };
 
-&cpm_utmi1 {
+&cp0_utmi1 {
 	status = "okay";
 };
 
-&cpm_sdhci0 {
+&cp0_sdhci0 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_sdhci_pins>;
+	pinctrl-0 = <&cp0_sdhci_pins>;
 	bus-width = <4>;
 	status = "okay";
 };
 
-&cpm_mdio {
+&cp0_mdio {
 	phy1: ethernet-phy@1 {
 		reg = <1>;
 	};
 };
 
-&cpm_ethernet {
+&cp0_ethernet {
 	status = "okay";
 };
 
-&cpm_eth0 {
+&cp0_eth0 {
         status = "okay";
         phy-mode = "ap"; /* lane-2: left for auto-neg */
 };
 
-&cpm_eth2 {
+&cp0_eth2 {
 	status = "okay";
 	phy = <&phy1>;
 	phy-mode = "rgmii-id";
 };
 
-&cps_pinctl {
+&cp1_pinctl {
 	/* MPP Bus:
 	 *	[0-11]	RGMII0
 	 *	[13-16]	SPI1
@@ -280,15 +280,15 @@
 		     0xff 0xff 0xff>;
 };
 
-&cps_ld_efuse0 {
+&cp1_ld_efuse0 {
 	status = "okay";
 };
 
-&cps_ld_efuse1 {
+&cp1_ld_efuse1 {
 	status = "okay";
 };
 
-&cps_comphy {
+&cp1_comphy {
 	/* Serdes Configuration:
 	 *	Lane 0: PCIe0 (x1)
 	 *	Lane 1: SATA0
@@ -318,22 +318,22 @@
 };
 
 /* CON6 on CP1 expansion */
-&cps_pcie0 {
+&cp1_pcie0 {
 	status = "okay";
 };
 
-&cps_pcie1 {
+&cp1_pcie1 {
 	status = "okay";
 };
 
 /* CON5 on CP1 expansion */
-&cps_pcie2 {
+&cp1_pcie2 {
 	status = "okay";
 };
 
-&cps_spi1 {
+&cp1_spi1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&cps_spi1_pins>;
+	pinctrl-0 = <&cp1_spi1_pins>;
 	status = "okay";
 
 	spi-flash@0 {
@@ -361,40 +361,40 @@
 };
 
 /* CON4 on CP1 expansion */
-&cps_sata0 {
+&cp1_sata0 {
 	status = "okay";
 };
 
-&cps_scsi {
+&cp1_scsi {
 	status = "okay";
 };
 
 /* CON9 on CP1 expansion */
-&cps_usb3_0 {
-	vbus-supply = <&cpm_reg_usb3_vbus2>;
+&cp1_usb3_0 {
+	vbus-supply = <&cp0_reg_usb3_vbus2>;
 	status = "okay";
 };
 
-&cps_utmi0 {
+&cp1_utmi0 {
 	status = "okay";
 };
 
-&cps_mdio {
+&cp1_mdio {
         phy0: ethernet-phy@0 {
                 reg = <0>;
         };
 };
 
-&cps_ethernet {
+&cp1_ethernet {
 	status = "okay";
 };
 
-&cps_eth0 {
+&cp1_eth0 {
         status = "okay";
         phy-mode = "sfi"; /* lane-2 */
 };
 
-&cps_eth1 {
+&cp1_eth1 {
         status = "okay";
         phy = <&phy0>;
         phy-mode = "rgmii-id";

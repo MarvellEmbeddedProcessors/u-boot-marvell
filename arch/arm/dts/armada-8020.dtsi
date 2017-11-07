@@ -46,8 +46,8 @@
  */
 
 #include "armada-ap806-dual.dtsi"
-#include "armada-cp110-master.dtsi"
-#include "armada-cp110-slave.dtsi"
+#include "armada-cp110-0.dtsi"
+#include "armada-cp110-1.dtsi"
 
 / {
 	model = "Marvell Armada 8020";

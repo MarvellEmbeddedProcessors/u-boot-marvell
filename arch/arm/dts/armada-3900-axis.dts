@@ -48,24 +48,24 @@
 		     "marvell,armada-ap806-quad", "marvell,armada-ap806";
 
 	aliases {
-		i2c1 = &cpm_i2c1;
+		i2c1 = &cp0_i2c1;
 	};
 
-	cp110-master {
+	cp110-0 {
 		config-space {
-			cpm_reg_usb3_vbus0: cpm_usb3_vbus@0 {
-				gpio = <&cpm_gpio0 7 GPIO_ACTIVE_HIGH>;
+			cp0_reg_usb3_vbus0: cp0_usb3_vbus@0 {
+				gpio = <&cp0_gpio0 7 GPIO_ACTIVE_HIGH>;
 			};
 
-			cpm_reg_usb3_vbus1: cpm_usb3_vbus@1 {
-				gpio = <&cpm_gpio0 5 GPIO_ACTIVE_HIGH>;
+			cp0_reg_usb3_vbus1: cp0_usb3_vbus@1 {
+				gpio = <&cp0_gpio0 5 GPIO_ACTIVE_HIGH>;
 			};
 
-			cpm_mochi_reset: cpm_mochi_reset {
+			cp0_mochi_reset: cp0_mochi_reset {
 				regulator-boot-on;
 			};
 
-			cpm_mochi_enable: cpm_mochi_enable {
+			cp0_mochi_enable: cp0_mochi_enable {
 				regulator-force-boot-off;
 			};
 
@@ -76,7 +76,7 @@
 				regulator-name = "iot-radio-reset";
 				enable-active-high;
 				regulator-boot-on;
-				gpio = <&cpm_gpio0 0 GPIO_ACTIVE_HIGH>;
+				gpio = <&cp0_gpio0 0 GPIO_ACTIVE_HIGH>;
 			};
 
 			eth_phy_reset: eth-phy-reset {
@@ -86,7 +86,7 @@
 				regulator-name = "eth-phy-reset";
 				enable-active-high;
 				regulator-boot-on;
-				gpio = <&cpm_gpio0 1 GPIO_ACTIVE_HIGH>;
+				gpio = <&cp0_gpio0 1 GPIO_ACTIVE_HIGH>;
 			};
 
 			W9068_pps_reset: W9068-pps-reset {
@@ -96,7 +96,7 @@
 				regulator-name = "w9068-pps";
 				enable-active-high;
 				regulator-boot-on;
-				gpio = <&cpm_gpio0 29 GPIO_ACTIVE_HIGH>;
+				gpio = <&cp0_gpio0 29 GPIO_ACTIVE_HIGH>;
 			};
 		};
 	};
@@ -105,7 +105,7 @@
 /*
  * CP related configuration
  */
-&cpm_pinctl {
+&cp0_pinctl {
 		/* MPP Bus:
 		 *   I2C1    [2,3]
 		 *   USB     [5,7]
@@ -126,17 +126,17 @@
 		     0   0   0   0   0   0   0   0   7   7
 		     7   7   7>;
 
-	cpm_i2c1_pins: cpm-i2c-pins-1 {
+	cp0_i2c1_pins: cp0-i2c-pins-1 {
 		marvell,pins = < 2 3 >;
 		marvell,function = <7>;
 	};
 
-	cpm_xhci0_vbus_pins: cpm-xhci0-vbus-pins {
+	cp0_xhci0_vbus_pins: cp0-xhci0-vbus-pins {
 		marvell,pins = <7>;
 		marvell,function = <0>;
 	};
 
-	cpm_xhci1_vbus_pins: cpm-xhci1-vbus-pins {
+	cp0_xhci1_vbus_pins: cp0-xhci1-vbus-pins {
 		marvell,pins = <5>;
 		marvell,function = <0>;
 	};
@@ -157,18 +157,18 @@
 	};
 };
 
-&cpm_i2c1 {
+&cp0_i2c1 {
 	status = "okay";
 	pinctrl-names = "default";
-	pinctrl-0 = <&cpm_i2c1_pins>;
+	pinctrl-0 = <&cp0_i2c1_pins>;
 };
 
 
-&cpm_nand {
+&cp0_nand {
 	status = "okay";
 };
 
-&cpm_comphy {
+&cp0_comphy {
 	phy1 {
 		phy-type = <COMPHY_TYPE_USB3_HOST0>;
 		phy-speed = <COMPHY_SPEED_5G>;

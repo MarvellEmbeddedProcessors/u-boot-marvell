@@ -47,7 +47,7 @@
 
 #include <dt-bindings/gpio/gpio.h>
 #include "armada-ap806-quad.dtsi"
-#include "armada-cp110-master.dtsi"
+#include "armada-cp110-0.dtsi"
 
 / {
 	model = "Marvell Armada 70x0";
@@ -55,6 +55,6 @@
 		     "marvell,armada-ap806";
 };
 
-&cpm_rtc {
+&cp0_rtc {
 	status = "okay";
 };

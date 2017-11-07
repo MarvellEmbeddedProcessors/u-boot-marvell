@@ -44,7 +44,12 @@
  * Device Tree file for Marvell Armada CP110-1.
  */
 
-#include <dt-bindings/comphy/comphy_data.h>
+#include "armada-common.dtsi"
+
+#define CP110_NAME		cp1
+#define CP110_BASE		0xf4000000
+#define CP110_PCIE_IO_BASE	0xfd000000
+#define CP110_PCIE_MEM_BASE	0xfa000000
 
 / {
 	cp110-1 {
@@ -53,287 +58,29 @@
 		compatible = "simple-bus";
 		ranges;
 
-		config-space {
-			#address-cells = <1>;
-			#size-cells = <1>;
-			compatible = "simple-bus";
-			ranges = <0x0 0x0 0xf4000000 0x2000000>;
-
-			cp1_mdio: mdio@12a200 {
-				#address-cells = <1>;
-				#size-cells = <0>;
-				compatible = "marvell,orion-mdio";
-				reg = <0x12a200 0x10>;
-			};
-
-			cp1_xmdio: mdio@12a600 {
-				#address-cells = <1>;
-				#size-cells = <0>;
-				compatible = "marvell,xmdio";
-				reg = <0x12a600 0x200>;
-			};
-
-			sar-reg {
-				compatible = "marvell,sample-at-reset-common", "marvell,sample-at-reset-cp110";
-				reg = <0x400200 0x8>;
-				sar-driver = "cp110_sar";
-				sar-name = "cp1_sar";
-				status = "okay";
-			};
-
-			cp1_ld_efuse0: efuse-2@400F00 {
-				compatible = "marvell,mvebu-fuse-ld-user";
-				reg = <0x400008 0x4>;
-				otp-mem = <0xF2400F00>;
-				status = "disabled";
-			};
-
-			cp1_ld_efuse1: efuse-3@400F00 {
-				compatible = "marvell,mvebu-fuse-ld-prop";
-				reg = <0x400008 0x4>;
-				otp-mem = <0xF2400F00>;
-				status = "disabled";
-			};
-
-			cp1_pinctl: cp1-pinctl@440000 {
-				compatible = "marvell,mvebu-pinctrl",
-					     "marvell,a80x0-cp1-pinctrl";
-				bank-name ="cp1-110";
-				reg = <0x440000 0x20>;
-				pin-count = <63>;
-				max-func = <0xf>;
-
-				cp1_ge1_rgmii_pins: cp1-ge-rgmii-pins-0 {
-					marvell,pins = < 0  1  2  3  4  5  6  7
-							 8  9  10 11 >;
-					marvell,function = <3>;
-				};
-				cp1_spi1_pins: cp1-spi-pins-1 {
-					marvell,pins = < 13 14 15 16 >;
-					marvell,function = <3>;
-				};
-			};
-
-			thermal@400070 {
-				compatible = "marvell,mvebu-thermal", "marvell,thermal-sensor";
-				reg = <0x400070 0x12>;
-				gain = <4761>;
-				offset = <2791000>;
-				divisor = <10000>;
-				status = "okay";
-			};
-
-			cp1_gpio0: gpio@440100 {
-				compatible = "marvell,orion-gpio";
-				reg = <0x440100 0x40>;
-				ngpios = <32>;
-				gpiobase = <20>;
-				gpio-controller;
-				#gpio-cells = <2>;
-			};
-
-			cp1_gpio1: gpio@440140 {
-				compatible = "marvell,orion-gpio";
-				reg = <0x440140 0x40>;
-				ngpios = <31>;
-				gpiobase = <52>;
-				gpio-controller;
-				#gpio-cells = <2>;
-			};
-
-			cp1_scsi: scsi_1 {
-				compatible = "marvell,mvebu-scsi";
-				#address-cells = <1>;
-				#size-cells = <1>;
-				max-id = <2>;
-				max-lun = <1>;
-				status = "disabled";
-				cp1_sata0: sata@540000 {
-					compatible = "marvell,armada-8k-ahci";
-					reg = <0x540000 0x30000>;
-					status = "disabled";
-				};
-			};
-
-			cp1_usb3_0: usb3@500000 {
-				compatible = "marvell,armada-8k-xhci",
-					     "generic-xhci";
-				reg = <0x500000 0x4000>;
-				dma-coherent;
-				status = "disabled";
-			};
-
-			cp1_usb3_1: usb3@510000 {
-				compatible = "marvell,armada-8k-xhci",
-					     "generic-xhci";
-				reg = <0x510000 0x4000>;
-				dma-coherent;
-				status = "disabled";
-			};
-
-			cp1_spi0: spi@700600 {
-				compatible = "marvell,armada-380-spi";
-				reg = <0x700600 0x50>;
-				#address-cells = <0x1>;
-				#size-cells = <0x0>;
-				cell-index = <1>;
-				status = "disabled";
-			};
-
-			cp1_spi1: spi@700680 {
-				compatible = "marvell,armada-380-spi";
-				reg = <0x700680 0x50>;
-				#address-cells = <1>;
-				#size-cells = <0>;
-				cell-index = <2>;
-				status = "disabled";
-			};
-
-			cp1_i2c0: i2c@701000 {
-				compatible = "marvell,mv78230-i2c";
-				reg = <0x701000 0x20>;
-				#address-cells = <1>;
-				#size-cells = <0>;
-				status = "disabled";
-			};
-
-			cp1_i2c1: i2c@701100 {
-				compatible = "marvell,mv78230-i2c";
-				reg = <0x701100 0x20>;
-				#address-cells = <1>;
-				#size-cells = <0>;
-				status = "disabled";
-			};
-
-			cp1_comphy: comphy@441000 {
-				compatible = "marvell,mvebu-comphy", "marvell,comphy-cp110";
-				reg = <0x441000 0x8>,
-				      <0x120000 0x8>;
-				mux-bitcount = <4>;
-				max-lanes = <6>;
-			};
-
-			cp1_utmi0: utmi@580000 {
-				compatible = "marvell,mvebu-utmi-2.6.0";
-				reg = <0x580000 0x1000>,	/* utmi-unit */
-				      <0x440420 0x4>,		/* usb-cfg */
-				      <0x440440 0x4>;		/* utmi-cfg */
-				utmi-port = <UTMI_PHY_TO_USB3_HOST0>;
-				status = "disabled";
-			};
-
-			cp1_nand: nand@720000 {
-				compatible = "marvell,mvebu-pxa3xx-nand";
-				reg = <0x720000 0x100>;
-				#address-cells = <1>;
-
-				nand-enable-arbiter;
-				num-cs = <1>;
-				nand-ecc-strength = <4>;
-				nand-ecc-step-size = <512>;
-				status = "disabled";
-			};
-
-			cp1_rtc: rtc-reg@284000 {
-				compatible = "marvell,real-time-clock";
-				reg = <0x284000 104>;
-				status = "disabled";
-			};
-
-			cp1_mci1: mci1 {
-				compatible = "marvell,mvebu-mci";
-				reg = <0x1c3000 0x5>;
-				unit_id = <1>;
-				phy_unit_cp;
-				status = "okay";
-			};
-
-			cp1_ethernet: ethernet@0 {
-				compatible = "marvell,armada-7k-pp22";
-				reg = <0x0 0x100000>, <0x129000 0xb000>;
-				status = "disabled";
-				dma-coherent;
-
-				cp1_eth0: eth0 {
-					port-id = <0>;
-					gop-port-id = <0>;
-					status = "disabled";
-				};
-
-				cp1_eth1: eth1 {
-					port-id = <1>;
-					gop-port-id = <2>;
-					status = "disabled";
-				};
-
-				cp1_eth2: eth2 {
-					port-id = <2>;
-					gop-port-id = <3>;
-					status = "disabled";
-				};
-			};
-		};
-
-		cp1_pcie0: pcie@f4600000 {
-			compatible = "marvell,armada8k-pcie", "snps,dw-pcie";
-			reg = <0 0xf4600000 0 0x10000>,
-			      <0 0xfaf00000 0 0x80000>;
-			reg-names = "ctrl", "config";
-			#address-cells = <3>;
-			#size-cells = <2>;
-			device_type = "pci";
-			dma-coherent;
-
-			bus-range = <0 0xff>;
-			ranges =
-				/* downstream I/O */
-				<0x81000000 0 0xfd000000 0  0xfd000000 0 0x10000
-				/* non-prefetchable memory */
-				0x82000000 0 0xfa000000 0  0xfa000000 0 0xf00000>;
-			num-lanes = <1>;
-			status = "disabled";
-		};
-
-		cp1_pcie1: pcie@f4620000 {
-			compatible = "marvell,armada8k-pcie", "snps,dw-pcie";
-			reg = <0 0xf4620000 0 0x10000>,
-			      <0 0xfbf00000 0 0x80000>;
-			reg-names = "ctrl", "config";
-			#address-cells = <3>;
-			#size-cells = <2>;
-			device_type = "pci";
-			dma-coherent;
-
-			bus-range = <0 0xff>;
-			ranges =
-				/* downstream I/O */
-				<0x81000000 0 0xfd010000 0  0xfd010000 0 0x10000
-				/* non-prefetchable memory */
-				0x82000000 0 0xfb000000 0  0xfb000000 0 0xf00000>;
-
-			num-lanes = <1>;
-			status = "disabled";
-		};
-
-		cp1_pcie2: pcie@f4640000 {
-			compatible = "marvell,armada8k-pcie", "snps,dw-pcie";
-			reg = <0 0xf4640000 0 0x10000>,
-			      <0 0xfcf00000 0 0x80000>;
-			reg-names = "ctrl", "config";
-			#address-cells = <3>;
-			#size-cells = <2>;
-			device_type = "pci";
-			dma-coherent;
-
-			bus-range = <0 0xff>;
-			ranges =
-				/* downstream I/O */
-				<0x81000000 0 0xfd020000 0  0xfd020000 0 0x10000
-				/* non-prefetchable memory */
-				0x82000000 0 0xfc000000 0  0xfc000000 0 0xf00000>;
-
-			num-lanes = <1>;
-			status = "disabled";
-		};
+		#include "armada-cp110.dtsi"
 	};
+};
+
+#undef CP110_NAME
+#undef CP110_BASE
+#undef CP110_PCIE_IO_BASE
+#undef CP110_PCIE_MEM_BASE
+
+&cp1_pinctl {
+	compatible = "marvell,mvebu-pinctrl", "marvell,a80x0-cp1-pinctrl";
+	bank-name ="cp1-110";
+
+	cp1_ge1_rgmii_pins: cp1-ge-rgmii-pins-0 {
+		marvell,pins = < 0 1 2 3 4 5 6 7 8 9 10 11 >;
+		marvell,function = <3>;
+	};
+	cp1_spi1_pins: cp1-spi-pins-1 {
+		marvell,pins = < 13 14 15 16 >;
+		marvell,function = <3>;
+	};
+};
+
+&cp1_mci1 {
+	status = "okay";
 };

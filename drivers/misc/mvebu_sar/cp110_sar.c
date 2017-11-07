@@ -175,7 +175,7 @@ static int cp110_sar_dump(struct udevice *dev)
 	printf("\nCP110 SAR register 0 [0x%08x]:\n", reg);
 	printf("----------------------------------\n");
 
-	if (!strcmp(priv->sar_name, "cp0_sar"))
+	if (!strcmp(priv->sar_name, "cp0-sar"))
 		sar = cp110_sar_0;
 	else
 		sar = cp110_sar_1;
@@ -221,7 +221,7 @@ int cp110_sar_init(struct udevice *dev)
 		SAR_CP1_PCIE1_CLK,
 	};
 
-	if (!strcmp(priv->sar_name, "cp0_sar"))
+	if (!strcmp(priv->sar_name, "cp0-sar"))
 		ret = cp110_sar_register(dev, cp0_sar_list,
 				ARRAY_SIZE(cp0_sar_list));
 	else

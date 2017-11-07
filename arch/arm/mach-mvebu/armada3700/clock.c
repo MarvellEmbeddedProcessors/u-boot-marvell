@@ -125,9 +125,6 @@
 				SB_CLOCK_DIV_SEL0_SB_AXI_CLK_PRSCL2_OFFSET) &\
 				SB_CLOCK_DIV_SEL0_SB_AXI_CLK_PRSCL1_MASK)
 
-#define L2_CLK		800
-#define TIMER_CLK	800
-
 enum a3700_clock_line {
 	TBG_A_P = 0,
 	TBG_B_P = 1,
@@ -257,16 +254,6 @@ int get_cpu_clk_src_div(u32 *cpu_clk_sel, u32 *cpu_clk_prscl)
 	return 0;
 }
 
-u32 soc_l2_clk_get(void)
-{
-	return L2_CLK;
-}
-
-u32 soc_timer_clk_get(void)
-{
-	return TIMER_CLK;
-}
-
 u32 soc_nb_axi_clk_get(void)
 {
 	u32 nb_axi_div;
@@ -305,7 +292,7 @@ u32 soc_sb_axi_clk_get(void)
 void soc_print_clock_info(void)
 {
 	printf("       CPU    @ %d [MHz]\n", soc_cpu_clk_get());
-	printf("       L2     @ %d [MHz]\n", soc_l2_clk_get());
+	printf("       L2     @ %d [MHz]\n", soc_cpu_clk_get());
 	printf("       NB AXI @ %d [MHz]\n", soc_nb_axi_clk_get());
 	printf("       SB AXI @ %d [MHz]\n", soc_sb_axi_clk_get());
 	printf("       DDR    @ %d [MHz]\n", soc_ddr_clk_get());

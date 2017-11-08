@@ -869,7 +869,7 @@ static int orion_nfc_error_check(struct orion_nfc_info *info)
 		case MV_NFC_CMD_READ_LAST_NAKED:
 		case MV_NFC_CMD_READ_DISPATCH:
 			if (info->dscr & MV_NFC_UNCORR_ERR_INT) {
-				info->dscr = ERR_DBERR;
+				info->retcode = ERR_DBERR;
 				return 1;
 			}
 			break;

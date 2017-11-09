@@ -66,6 +66,13 @@ static inline void atomic_long_sub(long i, atomic_long_t *l)
 	atomic64_sub(i, v);
 }
 
+/*
+ * Currently, the atomic-long.h is only used for ubifs,
+ * and the functions below have not been used and also not
+ * been implemented in u-boot code.
+ * disable them to fix the build warnings.
+ */
+#if 0
 static inline int atomic_long_sub_and_test(long i, atomic_long_t *l)
 {
 	atomic64_t *v = (atomic64_t *)l;
@@ -128,6 +135,7 @@ static inline long atomic_long_add_unless(atomic_long_t *l, long a, long u)
 
 	return (long)atomic64_add_unless(v, a, u);
 }
+#endif
 
 #define atomic_long_inc_not_zero(l) atomic64_inc_not_zero((atomic64_t *)(l))
 

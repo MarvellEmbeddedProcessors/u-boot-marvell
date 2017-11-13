@@ -23,6 +23,10 @@
 #include <fdtdec.h>
 #include <mvebu/sar.h>
 
+#define EFUSE_FREQ_REG		SOC_REGS_PHY_BASE + 0x6f4410
+#define EFUSE_FREQ_OFFSET	24
+#define EFUSE_FREQ_MASK		(0x1 << EFUSE_FREQ_OFFSET)
+
 DECLARE_GLOBAL_DATA_PTR;
 
 struct sar_data  __attribute__((section(".data"))) sar_board;
@@ -444,9 +448,11 @@ void sar_init(void)
 	int i, var_default;
 	int node, var, len, lenp;
 	const char *str;
+	char *freq_mode;
 	const void *blob = gd->fdt_blob;
 	struct sar_var *sar_var;
 	struct sar_data *sar = board_get_sar();
+	unsigned int efuse_reg = 0;
 
 	/* Get sar node from the FDT blob */
 	node = fdt_node_offset_by_compatible(blob, -1,
@@ -482,6 +488,39 @@ void sar_init(void)
 			sar_var++;
 			continue;
 		}
+
+		/* field in sar-reg device-tree node, if exists means its ap810
+		 * frequencies node.
+		 */
+		freq_mode = (char *)fdt_stringlist_get(blob,
+						       var, "freq-mode",
+						       0, &lenp);
+		if (freq_mode) {
+			/* Get high-low mode for frequency node.
+			 * TODO: efuse driver (281-a8kplus in JIRA).
+			 */
+			efuse_reg = readl(EFUSE_FREQ_REG);
+			efuse_reg &= EFUSE_FREQ_MASK;
+			efuse_reg >>= EFUSE_FREQ_OFFSET;
+			/* skip freq_low node in case of high-mode frequency */
+			if (!efuse_reg &&
+			    (strcmp(freq_mode, "low") == 0)) {
+				/* Get the offset of the next subnode */
+				var = fdt_next_subnode(blob, var);
+				sar_var++;
+				continue;
+			}
+
+			/* skip freq_high node in case of high-mode frequency */
+			if (efuse_reg &&
+			    (strcmp(freq_mode, "high") == 0)) {
+				/* Get the offset of the next subnode */
+				var = fdt_next_subnode(blob, var);
+				sar_var++;
+				continue;
+			}
+		}
+
 		/* Get the key of the var option */
 		sar_var->key = (char *)fdt_stringlist_get(blob, var, "key",
 							  0, &lenp);

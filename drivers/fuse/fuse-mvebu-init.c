@@ -23,7 +23,7 @@ int mvebu_efuse_init_hw(struct udevice *dev)
 	int ret = 0;
 	phys_addr_t efuse_base;
 
-	efuse_base = priv->target_otp_mem && EFUSE_ADDR_MASK;
+	efuse_base = (phys_addr_t)priv->target_otp_mem & EFUSE_ADDR_MASK;
 	ret = mvebu_mbus_add_window_by_id(
 		CPU_TARGET_SATA23_DFX, 0xA, efuse_base, MBUS_EFUSE_SIZE);
 

@@ -170,8 +170,8 @@ static int fuse_probe(struct udevice *dev)
 		(struct mvebu_fuse_platform_data *)dev_get_driver_data(dev);
 #ifndef DRY_RUN
 	priv->target_otp_mem =
-		(void *)(((u64)fdtdec_get_int(blob, node, "otp-mem", 0)) &
-			 0xffffffff);
+		(void *)(((unsigned long)fdtdec_get_int(blob, node,
+			"otp-mem", 0)) & 0xffffffff);
 #else
 	priv->target_otp_mem = NULL;
 #endif

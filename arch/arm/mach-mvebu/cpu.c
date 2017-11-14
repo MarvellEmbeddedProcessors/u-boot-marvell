@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <dm.h>
 #include <ahci.h>
 #include <linux/mbus.h>
 #include <asm/io.h>
@@ -604,5 +605,20 @@ void v7_outer_cache_disable(void)
 
 int arch_early_init_r(void)
 {
+	struct udevice *dev;
+	int ret;
+	int i;
+
+	/* Loop over all MISC uclass drivers */
+	i = 0;
+	while (1) {
+		/* Call relevant driver code via the MISC uclass driver */
+		ret = uclass_get_device(UCLASS_MISC, i++, &dev);
+
+		/* We're done, once no further MISC device node is found */
+		if (ret)
+			break;
+	}
+
 	return 0;
 }

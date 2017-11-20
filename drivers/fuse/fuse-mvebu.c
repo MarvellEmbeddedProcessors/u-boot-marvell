@@ -39,8 +39,8 @@ int reg_fuse_ops(struct fuse_ops *ops)
 		fuse_ops.fuse_init = ops->fuse_init;
 	if (ops->fuse_hd_read)
 		fuse_ops.fuse_hd_read = ops->fuse_hd_read;
-	if (ops->fuse_ld_read)
-		fuse_ops.fuse_ld_read = ops->fuse_ld_read;
+	if (ops->fuse_hd_prog)
+		fuse_ops.fuse_hd_prog = ops->fuse_hd_prog;
 	if (ops->fuse_ld_read)
 		fuse_ops.fuse_ld_read = ops->fuse_ld_read;
 	if (ops->fuse_ld_prog)
@@ -161,6 +161,8 @@ static int fuse_probe(struct udevice *dev)
 	const void *blob = gd->fdt_blob;
 	int node = dev_of_offset(dev);
 	struct mvebu_fuse_block_data *priv = dev_get_priv(dev);
+	const struct fuse_ops *ops;
+	int res = 0;
 
 	priv->control_reg = (void *)dev_get_addr(dev);
 	if (IS_ERR(priv->control_reg))
@@ -185,7 +187,11 @@ static int fuse_probe(struct udevice *dev)
 	priv->row_base = row_index;
 	row_index = priv->row_num + row_index;
 
-	return 0;
+	ops = device_get_ops(dev);
+	if (ops->fuse_init)
+		res = ops->fuse_init(dev);
+
+	return res;
 }
 
 static struct mvebu_fuse_platform_data fuse_hd_pdata = {

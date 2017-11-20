@@ -601,3 +601,8 @@ void v7_outer_cache_disable(void)
 
 	clrbits_le32(&pl310->pl310_ctrl, L2X0_CTRL_EN);
 }
+
+int arch_early_init_r(void)
+{
+	return 0;
+}

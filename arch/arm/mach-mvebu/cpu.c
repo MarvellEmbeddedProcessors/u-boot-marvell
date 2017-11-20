@@ -456,6 +456,8 @@ int arch_cpu_init(void)
 	if (mvebu_soc_family() == MVEBU_SOC_A38X) {
 		struct fuse_ops a38x_ops;
 		a38x_ops.fuse_init = mvebu_efuse_init_hw;
+		a38x_ops.fuse_hd_read = NULL;
+		a38x_ops.fuse_hd_prog = NULL;
 		reg_fuse_ops(&a38x_ops);
 	}
 #endif

@@ -12,3 +12,5 @@
 #
 obj-y = cpu.o
 obj-y += cache_llc.o
+obj-y += clock.o
+obj-y += soc.o

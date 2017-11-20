@@ -14,6 +14,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/armv8/mmu.h>
+#include <mach/clock.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -112,7 +113,7 @@ void mvebu_dram_init_banksize(void)
 #if defined(CONFIG_DISPLAY_BOARDINFO)
 int print_cpuinfo(void)
 {
-	printf("No clock prints for now - not implemented yet\n");
+	soc_print_clock_info();
 	return 0;
 }
 #endif

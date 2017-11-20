@@ -586,7 +586,7 @@
 				compatible = "marvell,mvebu-fuse-hd";
 				reg = <0xE4008 0x4>;
 				otp-mem = <0xf60f9000>;
-				row-count = <64>;
+				rows-count = <64>;
 				status = "disabled";
 			};
 		};

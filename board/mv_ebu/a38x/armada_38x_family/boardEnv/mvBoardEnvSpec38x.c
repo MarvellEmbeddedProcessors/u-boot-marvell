@@ -296,8 +296,12 @@ void a38x_customer_board_1_gpp_callback(MV_BOARD_INFO *board) {
 	/* Toggle GPIO41 to reset onboard switch and phy */
 	MV_REG_BIT_RESET (0x18140, 0x200);
 	MV_REG_BIT_RESET (0x18144, 0x200);
+	/* GPIO 19 on ClearFog rev 2.1 controls the uSOM onboard phy reset */
+	MV_REG_BIT_RESET (0x18100, 0x00080000);
+	MV_REG_BIT_RESET (0x18104, 0x00080000);
 	mvOsDelay(1);
-	MV_REG_BIT_SET (0x18144, 0x200);
+	MV_REG_BIT_SET (0x18140, 0x200);
+	MV_REG_BIT_SET (0x18100, 0x00080000);
 	mvOsDelay(10);
 	for (i = 0; i < board->numIoExp; i++) {
 		if (MV_OK != mvBoardTwsiSet(BOARD_TWSI_IO_EXPANDER, board->pIoExp[i].addr,

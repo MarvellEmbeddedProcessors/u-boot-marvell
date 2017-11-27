@@ -521,6 +521,7 @@ MV_OP_PARAMS pexElectricalConfigSerdesRev2Params[] =
     { PCIE_REG3,                0x800,      0xFF00,     { 0xAF00    },      0,          0       }, /* Tx_Emph value for -3.5dB and -6dB */
     { LANE_CFG4_REG,            0x800,      0x8,        { 0x8       },      0,          0       }, /* CFG_DFE_EN_SEL */
     { VTHIMPCAL_CTRL_REG,       0x800,      0xFF00,     { 0x3000    },      0,          0       }, /* tximpcal_th and rximpcal_th */
+    { LANE_CFG0_REG,            0x800,      0x8000,     { 0x8000    },      0,          0       }, /* Bit[15]=0x1- Force receiver detected */
 };
 
 /* PEX - configuration seq for REF_CLOCK_25MHz */

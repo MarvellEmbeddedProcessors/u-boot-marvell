@@ -479,6 +479,12 @@ endif
 
 $(obj)u-boot.mmc: $(obj)u-boot.bin
 	echo y | $(obj)tools/marvell/doimage -T mmc -D 0x0 -E 0x0 -G $(obj)tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot.mmc
+	echo y | $(obj)tools/marvell/doimage -T uart -D 0x0 -E 0x0 -G $(obj)tools/marvell/bin_hdr/bin_hdr.uart.bin u-boot.bin u-boot-uart.mmc
+
+$(obj)u-boot.sata: $(obj)u-boot.bin
+	echo y | $(obj)tools/marvell/doimage -T sata -D 0x0 -E 0x0 -G $(obj)tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot.sata
+	echo y | $(obj)tools/marvell/doimage -T uart -D 0x0 -E 0x0 -G $(obj)tools/marvell/bin_hdr/bin_hdr.uart.bin u-boot.bin u-boot-uart.sata
+
 
 $(obj)u-boot.img:	$(obj)u-boot.bin
 		$(obj)tools/mkimage -A $(ARCH) -T firmware -C none \

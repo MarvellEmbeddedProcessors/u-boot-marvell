@@ -97,6 +97,16 @@ int arch_early_init_r(void)
 			break;
 	}
 
+	i = 0;
+	while (1) {
+		/* Call the pinctrl code via the PINCTRL uclass driver */
+		ret = uclass_get_device(UCLASS_PINCTRL, i++, &dev);
+
+		/* We're done, once no further CP110 device is found */
+		if (ret)
+			break;
+	}
+
 	/* Cause the SATA device to do its early init */
 	uclass_first_device(UCLASS_AHCI, &dev);
 

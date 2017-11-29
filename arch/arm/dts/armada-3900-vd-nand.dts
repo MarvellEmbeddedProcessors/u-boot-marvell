@@ -51,7 +51,7 @@
 		i2c1 = &ap_i2c0;
 	};
 
-	cp110-0 {
+	cp0 {
 		config-space {
 			cp0_mochi_reset: cp0_mochi_reset {
 				regulator-boot-on;

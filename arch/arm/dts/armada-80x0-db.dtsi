@@ -22,7 +22,7 @@
 	compatible = "marvell,armada-80x0-db", "marvell,armada-8040";
 	model = "DB-ARMADA-80x0";
 
-	cp110-0 {
+	cp0 {
 		config-space {
 			i2c@701000 {
 				expander0: pca953x@21 {
@@ -107,7 +107,7 @@
 		};
 	};
 
-	cp110-1 {
+	cp1 {
 		config-space {
 
 			cps_usb3_0: usb3@500000 {

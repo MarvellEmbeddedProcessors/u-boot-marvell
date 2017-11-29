@@ -38,7 +38,7 @@
 		reg = <0x0 0x0 0x0 0x80000000>;
 	};
 
-	cp110-0 {
+	cp0 {
 		config-space {
 			cp0_reg_usb3_vbus0: cp0_usb3_vbus@0 {
 				compatible = "regulator-fixed";

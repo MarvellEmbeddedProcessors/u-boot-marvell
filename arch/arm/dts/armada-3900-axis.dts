@@ -51,7 +51,7 @@
 		i2c1 = &cp0_i2c1;
 	};
 
-	cp110-0 {
+	cp0 {
 		config-space {
 			cp0_reg_usb3_vbus0: cp0_usb3_vbus@0 {
 				gpio = <&cp0_gpio0 7 GPIO_ACTIVE_HIGH>;

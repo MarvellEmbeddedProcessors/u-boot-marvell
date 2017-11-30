@@ -1,0 +1,76 @@
+/*
+ * Copyright (C) 2017 Marvell International Ltd.
+ *
+ * SPDX-License-Identifier:	GPL-2.0
+ * https://spdx.org/licenses
+ */
+
+/ {
+	/* This should go only into devel boards */
+	compatible = "marvell,ap810";
+	sar {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		sar_fields {
+
+			compatible = "marvell,sample-at-reset";
+			reg = <0x4c 0x4e>;
+			chip_count = <2>;
+			bit_width = <5>;
+
+			freq_high {
+				key = "freq";
+				freq-mode = "high";
+				description = "CPU/DDR and PIDI frequencies";
+				start-bit = <0>;
+				bit-length = <3>;
+				option-cnt = <8>;
+				options = "0x0", "CPU/DDR = 0x0: 1600/1600 Mhz, PIDI = 0: 1Ghz",
+					  "0x1", "CPU/DDR = 0x1: 2000/2400 Mhz, PIDI = 0: 1Ghz",
+					  "0x2", "CPU/DDR = 0x2: 2000/2667 Mhz, PIDI = 0: 1Ghz",
+					  "0x3", "CPU/DDR = 0x3: 2200/2400 Mhz, PIDI = 0: 1Ghz",
+					  "0x4", "CPU/DDR = 0x4: 2200/2667 Mhz, PIDI = 0: 1Ghz",
+					  "0x5", "CPU/DDR = 0x5: 2500/2667 Mhz, PIDI = 0: 1Ghz",
+					  "0x6", "CPU/DDR = 0x6: 2500/2933 Mhz, PIDI = 0: 1Ghz",
+					  "0x7", "CPU/DDR = 0x7: 2700/3200 Mhz, PIDI = 0: 1Ghz";
+				default = <0xe>;
+				status = "okay";
+			};
+
+			freq_low {
+				key = "freq";
+				freq-mode = "low";
+				description = "CPU/DDR and PIDI frequencies";
+				start-bit = <0>;
+				bit-length = <3>;
+				option-cnt = <8>;
+				options = "0x0", "CPU/DDR = 0x0: 1200/1600 Mhz, PIDI = 0: 1Ghz",
+					  "0x1", "CPU/DDR = 0x1: 1600/2400 Mhz, PIDI = 0: 1Ghz",
+					  "0x2", "CPU/DDR = 0x2: 1600/2667 Mhz, PIDI = 0: 1Ghz",
+					  "0x3", "CPU/DDR = 0x3: 1800/2400 Mhz, PIDI = 0: 1Ghz",
+					  "0x4", "CPU/DDR = 0x4: 1800/2667 Mhz, PIDI = 0: 1Ghz",
+					  "0x5", "CPU/DDR = 0x5: 2000/2400 Mhz, PIDI = 0: 1Ghz",
+					  "0x6", "CPU/DDR = 0x6: 2000/2667 Mhz, PIDI = 0: 1Ghz",
+					  "0x7", "CPU/DDR = 0x7: 2000/2667 Mhz, PIDI = 0: 1Ghz";
+				default = <0xe>;
+				status = "okay";
+			};
+
+			boot_mode {
+				key = "boot_mode";
+				description = "Boot mode options";
+				start-bit = <5>;
+				bit-length = <4>;
+				option-cnt = <5>;
+				options = "0x0", "CPN2 - MCI2",
+					  "0x1", "CPN3 - MCI3",
+ 					  "0x2", "AP0_SPI 24bits",
+					  "0x3", "AP0_SD",
+					  "0x7", "AP0_EMMC";
+				default = <0x2>;
+				status = "okay";
+			};
+		};
+	};
+};

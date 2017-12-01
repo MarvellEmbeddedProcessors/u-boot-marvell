@@ -33,7 +33,7 @@
 #define CONFIG_HAS_ETH2
 #define CONFIG_ETHPRIME			"eth0"
 #define CONFIG_ROOTPATH                 "/srv/nfs/" /* Default Dir for NFS */
-#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x5000000\0"	\
+#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr_r=0x5000000\0"	\
 					"initrd_addr=0xa00000\0"	\
 					"initrd_size=0x2000000\0"	\
 					"fdt_addr_r=0x4f00000\0"	\
@@ -55,7 +55,7 @@
 						"tftpboot $ramdisk_addr_r " \
 						"$ramfs_name; else setenv " \
 						"ramdisk_addr_r -;fi\0"	\
-					"get_images=tftpboot $kernel_addr " \
+					"get_images=tftpboot $kernel_addr_r " \
 						"$image_name; tftpboot " \
 						"$fdt_addr_r $fdt_name; " \
 						"run get_ramfs\0"	\

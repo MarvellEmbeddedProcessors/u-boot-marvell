@@ -36,7 +36,7 @@
 #define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x5000000\0"	\
 					"initrd_addr=0xa00000\0"	\
 					"initrd_size=0x2000000\0"	\
-					"fdt_addr=0x4f00000\0"		\
+					"fdt_addr_r=0x4f00000\0"	\
 					"loadaddr=0x5000000\0"		\
 					"fdt_high=0xffffffffffffffff\0"	\
 					"hostname=marvell\0"		\
@@ -57,7 +57,7 @@
 						"ramfs_addr -;fi\0"	\
 					"get_images=tftpboot $kernel_addr " \
 						"$image_name; tftpboot " \
-						"$fdt_addr $fdt_name; " \
+						"$fdt_addr_r $fdt_name; " \
 						"run get_ramfs\0"	\
 					"console=" CONFIG_DEFAULT_CONSOLE "\0"\
 					"root=root=/dev/nfs rw\0"	\

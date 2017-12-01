@@ -40,7 +40,7 @@
 					"loadaddr=0x5000000\0"		\
 					"fdt_high=0xffffffffffffffff\0"	\
 					"hostname=marvell\0"		\
-					"ramfs_addr=0x8000000\0"	\
+					"ramdisk_addr_r=0x8000000\0"	\
 					"ramfs_name=-\0"		\
 					"fdt_name=fdt.dtb\0"		\
 					"netdev=eth0\0"			\
@@ -51,10 +51,10 @@
 					"image_name=Image\0"		\
 					"get_ramfs=if test \"${ramfs_name}\"" \
 						" != \"-\"; then setenv " \
-						"ramfs_addr 0x8000000; " \
-						"tftpboot $ramfs_addr " \
+						"ramdisk_addr_r 0x8000000; " \
+						"tftpboot $ramdisk_addr_r " \
 						"$ramfs_name; else setenv " \
-						"ramfs_addr -;fi\0"	\
+						"ramdisk_addr_r -;fi\0"	\
 					"get_images=tftpboot $kernel_addr " \
 						"$image_name; tftpboot " \
 						"$fdt_addr_r $fdt_name; " \

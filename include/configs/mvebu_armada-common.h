@@ -35,45 +35,7 @@
 #define CONFIG_HAS_ETH2
 #define CONFIG_ETHPRIME			"eth0"
 #define CONFIG_ROOTPATH                 "/srv/nfs/" /* Default Dir for NFS */
-#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr_r=0x5000000\0"	\
-					"initrd_addr=0xa00000\0"	\
-					"initrd_size=0x2000000\0"	\
-					"fdt_addr_r=0x4f00000\0"	\
-					"loadaddr=0x5000000\0"		\
-					"fdt_high=0xffffffffffffffff\0"	\
-					"pxefile_addr_r=0x4e00000\0"	\
-					"scriptaddr=0x4d00000\0"	\
-					"hostname=marvell\0"		\
-					"ramdisk_addr_r=0x8000000\0"	\
-					"ramfs_name=-\0"		\
-					"fdt_name=fdt.dtb\0"		\
-					"netdev=eth0\0"			\
-					"ethaddr=00:51:82:11:22:00\0"	\
-					"eth1addr=00:51:82:11:22:01\0"	\
-					"eth2addr=00:51:82:11:22:02\0"	\
-					"eth3addr=00:51:82:11:22:03\0"	\
-					"image_name=Image\0"		\
-					"get_ramfs=if test \"${ramfs_name}\"" \
-						" != \"-\"; then setenv " \
-						"ramdisk_addr_r 0x8000000; " \
-						"tftpboot $ramfs_addr " \
-						"$ramfs_name; else setenv " \
-						"ramdisk_addr_r -;fi\0"	\
-					"get_images=tftpboot $kernel_addr_r " \
-						"$image_name; tftpboot " \
-						"$fdt_addr_r $fdt_name; " \
-						"run get_ramfs\0"	\
-					"console=" CONFIG_DEFAULT_CONSOLE "\0"\
-					"root=root=/dev/nfs rw\0"	\
-					"set_bootargs=setenv bootargs $console"\
-						" $root ip=$ipaddr:$serverip:" \
-						"$gatewayip:$netmask:$hostname"\
-						":$netdev:none nfsroot="\
-						"$serverip:$rootpath " \
-						"$extra_params"
-#define CONFIG_BOOTCOMMAND	"run get_images; run set_bootargs; " \
-				"booti $kernel_addr_r $ramdisk_addr_r "\
-					"$fdt_addr_r"
+
 #define CONFIG_ENV_OVERWRITE	/* ethaddr can be reprogrammed */
 /*
  * For booting Linux, the board info and command line data
@@ -176,5 +138,34 @@
 #define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS 10
 
 #include <config_distro_defaults.h>
+
+#define BOOT_TARGET_DEVICES(func) \
+	func(MMC, mmc, 1) \
+	func(MMC, mmc, 0) \
+	func(USB, usb, 0) \
+	func(SCSI, scsi, 0) \
+	func(PXE, pxe, na) \
+	func(DHCP, dhcp, na)
+
+#include <config_distro_bootcmd.h>
+
+#define CONFIG_EXTRA_ENV_SETTINGS		\
+	"kernel_addr_r=0x5000000\0"		\
+	"initrd_addr=0xa00000\0"		\
+	"initrd_size=0x2000000\0"		\
+	"fdt_addr_r=0x4f00000\0"		\
+	"loadaddr=0x5000000\0"			\
+	"fdt_high=0xffffffffffffffff\0"		\
+	"pxefile_addr_r=0x4e00000\0"		\
+	"scriptaddr=0x4d00000\0"		\
+	"hostname=marvell\0"			\
+	"ramdisk_addr_r=0x8000000\0"		\
+	"netdev=eth0\0"				\
+	"ethaddr=00:51:82:11:22:00\0"		\
+	"eth1addr=00:51:82:11:22:01\0"		\
+	"eth2addr=00:51:82:11:22:02\0"		\
+	"eth3addr=00:51:82:11:22:03\0"		\
+	"console=" CONFIG_DEFAULT_CONSOLE "\0"	\
+	BOOTENV
 
 #endif /* _CONFIG_MVEBU_ARMADA_H */

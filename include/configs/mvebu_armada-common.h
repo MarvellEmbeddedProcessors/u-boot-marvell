@@ -42,6 +42,7 @@
 					"loadaddr=0x5000000\0"		\
 					"fdt_high=0xffffffffffffffff\0"	\
 					"pxefile_addr_r=0x4e00000\0"	\
+					"scriptaddr=0x4d00000\0"	\
 					"hostname=marvell\0"		\
 					"ramdisk_addr_r=0x8000000\0"	\
 					"ramfs_name=-\0"		\

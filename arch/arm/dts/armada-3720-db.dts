@@ -86,6 +86,15 @@
 		gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
 	};
 
+	reg_usb2_vbus: usb2_vbus@0 {
+		compatible = "regulator-fixed";
+		regulator-name = "usb2-vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		shutdown-delay-us = <1000000>;
+		gpio = <&expander0 0 GPIO_ACTIVE_HIGH>;
+	};
+
 	vcc_sd_reg0: regulator@0 {
 		compatible = "regulator-gpio";
 		regulator-name = "vcc_sd0";
@@ -210,6 +219,7 @@
 
 /* CON29 */
 &usb2 {
+	vbus-supply = <&reg_usb2_vbus>;
 	status = "okay";
 };
 

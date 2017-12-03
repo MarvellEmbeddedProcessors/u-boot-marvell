@@ -44,9 +44,17 @@ static struct mm_region mvebu_mem_map[] = {
 	},
 	{
 		/* SRAM, MMIO regions - AP810 region */
-		.phys = 0xec000000UL,
-		.virt = 0xec000000UL,
-		.size = 0x04000000UL,	/* 32MiB internal registers */
+		.phys = 0xdc000000UL,
+		.virt = 0xdc000000UL,
+		.size = 0x24000000UL,
+		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
+			 PTE_BLOCK_NON_SHARE
+	},
+	{
+		/* SRAM, MMIO regions - AP810 CPx configurations */
+		.phys = 0x8100000000UL,
+		.virt = 0x8100000000UL,
+		.size = 0x7f00000000UL,
 		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
 			 PTE_BLOCK_NON_SHARE
 	},

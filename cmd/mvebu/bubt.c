@@ -32,7 +32,7 @@
 #define CONFIG_SYS_MMC_ENV_DEV	0
 #endif
 
-#if defined(CONFIG_ARMADA_8K)
+#if defined(CONFIG_ARMADA_8K) || defined(CONFIG_ARMADA_8K_PLUS)
 #define MAIN_HDR_MAGIC		0xB105B002
 
 struct mvebu_image_header {
@@ -478,7 +478,7 @@ static int bubt_write_file(struct bubt_dev *dst, size_t image_size)
 	return dst->write(image_size);
 }
 
-#if defined(CONFIG_ARMADA_8K)
+#if defined(CONFIG_ARMADA_8K) || defined(CONFIG_ARMADA_8K_PLUS)
 u32 do_checksum32(u32 *start, int32_t len)
 {
 	u32 sum = 0;

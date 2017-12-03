@@ -9,6 +9,7 @@
 #include <asm/io.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
+#include <dm.h>
 
 #include "comphy_priv.h"
 #include "comphy_hpipe.h"
@@ -116,6 +117,10 @@ static int comphy_get_pcie_clk_source(u32 lane, u32 cp_index)
 	int sar_node = -1; /* Set to -1 in order to read the first node */
 	void __iomem *sar_base = NULL;
 	int i;
+
+	/* Currently we support only input PCIe clock on A808x platform */
+	if (of_machine_is_compatible("marvell,armada-8k-plus"))
+		return 0;
 
 	for (i = 0; i < (cp_index + 1); i++)
 		sar_node = fdt_node_offset_by_compatible(gd->fdt_blob,

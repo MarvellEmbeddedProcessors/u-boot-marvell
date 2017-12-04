@@ -96,9 +96,6 @@
 /*
  * Other required minimal configurations
  */
-#define CONFIG_SYS_LONGHELP
-#define CONFIG_AUTO_COMPLETE
-#define CONFIG_CMDLINE_EDITING
 #define CONFIG_ARCH_CPU_INIT		/* call arch_cpu_init() */
 #define CONFIG_SYS_LOAD_ADDR	0x00800000	/* default load adr- 8M */
 #define CONFIG_SYS_MEMTEST_START 0x00800000	/* 8M */
@@ -177,5 +174,7 @@
  * The EEPROM ST M24C64 has 32 byte page write mode and takes up to 10 msec.
  */
 #define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS 10
+
+#include <config_distro_defaults.h>
 
 #endif /* _CONFIG_MVEBU_ARMADA_H */

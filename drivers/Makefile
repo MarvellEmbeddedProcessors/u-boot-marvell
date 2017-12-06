@@ -80,6 +80,7 @@ obj-y += pcmcia/
 obj-y += dfu/
 obj-$(CONFIG_X86) += pch/
 obj-y += phy/marvell/
+obj-y += mdio/
 obj-y += rtc/
 obj-y += scsi/
 obj-y += sound/

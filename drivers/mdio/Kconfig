@@ -1,0 +1,12 @@
+#
+# MDIO infrastructure and drivers
+#
+
+menu "MDIO Support"
+
+config DM_MDIO
+	bool "Enable Driver Model for MDIO drivers"
+	depends on DM
+	help
+	  Enable driver model for MDIO access.
+endmenu

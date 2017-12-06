@@ -1,0 +1,54 @@
+MDIO (Management Data Input/Output) busses
+
+MDIO busses can be described with a node for the MDIO master device
+and a set of child nodes for each phy on the bus.
+
+The MDIO node requires the following properties:
+- #address-cells  - number of cells required to define phy address on
+                    the MDIO bus.
+- #size-cells     - should be zero.
+- compatible      - name of MDIO bus controller following generic names
+                    recommended practice.
+- reg	          - address and length of the MDIO register.
+
+Optional property:
+- mdio-name       - MDIO bus name
+
+The child nodes of the MDIO driver are the individual PHY devices
+connected to this MDIO bus. They must have a "reg" property given the
+PHY address on the MDIO bus.
+- reg             - (required) phy address in MDIO bus.
+
+Example for cp110 MDIO node at the SoC level:
+	cp0_mdio: mdio@12a200 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "marvell,orion-mdio";
+		reg = <0x12a200 0x10>;
+		mdio-name = "cp0-mdio";
+	};
+
+	cp0_xmdio: mdio@12a600 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "marvell,xmdio";
+		reg = <0x12a600 0x200>;
+		mdio-name = "cp0-xmdio";
+	};
+
+And at the board level, example for armada-8040-mcbin board:
+	&cp0_mdio {
+		ge_phy: ethernet-phy@0 {
+			reg = <0>;
+		};
+	};
+
+	&cp0_xmdio {
+		phy0: ethernet-phy@0 {
+			reg = <0>;
+		};
+
+		phy8: ethernet-phy@8 {
+			reg = <8>;
+		};
+	};

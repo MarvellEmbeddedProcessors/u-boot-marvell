@@ -45,6 +45,7 @@ enum uclass_id {
 	UCLASS_LPC,		/* x86 'low pin count' interface */
 	UCLASS_MAILBOX,		/* Mailbox controller */
 	UCLASS_MASS_STORAGE,	/* Mass storage device */
+	UCLASS_MDIO,		/* MDIO device */
 	UCLASS_MISC,		/* Miscellaneous device */
 	UCLASS_MMC,		/* SD / MMC card or chip */
 	UCLASS_MOD_EXP,		/* RSA Mod Exp device */

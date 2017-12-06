@@ -652,6 +652,7 @@ libs-y += drivers/
 libs-y += drivers/dma/
 libs-y += drivers/gpio/
 libs-y += drivers/i2c/
+libs-y += drivers/mdio/
 libs-y += drivers/mmc/
 libs-y += drivers/mtd/
 libs-$(CONFIG_CMD_NAND) += drivers/mtd/nand/

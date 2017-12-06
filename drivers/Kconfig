@@ -38,6 +38,8 @@ source "drivers/led/Kconfig"
 
 source "drivers/mailbox/Kconfig"
 
+source "drivers/mdio/Kconfig"
+
 source "drivers/memory/Kconfig"
 
 source "drivers/misc/Kconfig"

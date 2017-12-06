@@ -9,4 +9,15 @@ config DM_MDIO
 	depends on DM
 	help
 	  Enable driver model for MDIO access.
+
+config MVMDIO
+	bool "Marvell MDIO interface support"
+	depends on DM_MDIO
+	select PHYLIB
+	---help---
+	  This driver supports the MDIO interface found in the network
+	  interface units of the Marvell EBU SoCs (Kirkwood, Orion5x,
+	  Dove, Armada 370, Armada XP, Armada 37xx and Armada7K/8K/8KP).
+
+	  This driver is used by the MVPP2 and MVNETA drivers.
 endmenu

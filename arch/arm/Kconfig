@@ -379,6 +379,7 @@ config ARCH_MVEBU
 	select DM_SERIAL
 	select DM_SPI
 	select DM_SPI_FLASH
+	select DM_MDIO
 
 config TARGET_DEVKIT3250
 	bool "Support devkit3250"

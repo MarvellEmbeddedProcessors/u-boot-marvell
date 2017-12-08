@@ -38,6 +38,8 @@
 				#size-cells = <0>;
 				compatible = "marvell,orion-mdio";
 				reg = <0x12a200 0x10>;
+				mdio-name = CP110_STRING_LABEL(mdio);
+				status = "disabled";
 			};
 
 			CP110_LABEL(xmdio): mdio@12a600 {
@@ -45,6 +47,8 @@
 				#size-cells = <0>;
 				compatible = "marvell,xmdio";
 				reg = <0x12a600 0x200>;
+				mdio-name = CP110_STRING_LABEL(xmdio);
+				status = "disabled";
 			};
 
 			CP110_LABEL(sar_reg): sar-reg@400200 {

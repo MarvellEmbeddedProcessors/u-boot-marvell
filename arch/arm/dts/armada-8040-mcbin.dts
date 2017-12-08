@@ -184,6 +184,14 @@
 	};
 };
 
+&cp0_mdio {
+	status = "okay";
+};
+
+&cp0_xmdio {
+	status = "okay";
+};
+
 &cp1_sata0 {
 	status = "okay";
 };

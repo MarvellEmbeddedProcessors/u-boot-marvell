@@ -234,6 +234,7 @@
 };
 
 &cpm_mdio {
+	status = "okay";
 	phy1: ethernet-phy@1 {
 		reg = <1>;
 	};

@@ -66,6 +66,8 @@
 				#size-cells = <0>;
 				compatible = "marvell,orion-mdio";
 				reg = <0x12a200 0x10>;
+				mdio-name = "cp0_mdio";
+				status = "disabled";
 			};
 
 			cpm_xmdio: mdio@12a600 {
@@ -73,6 +75,8 @@
 				#size-cells = <0>;
 				compatible = "marvell,xmdio";
 				reg = <0x12a600 0x200>;
+				mdio-name = "cp0_xmdio";
+				status = "disabled";
 			};
 
 			sar-reg {

@@ -183,9 +183,20 @@
 
 &cpm_mdio {
 	status = "okay";
-        phy0: ethernet-phy@0 {
-                reg = <0>;
-        };
+	ge_phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+};
+
+&cpm_xmdio {
+	status = "okay";
+	sfi_phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+
+	sfi_phy8: ethernet-phy@8 {
+		reg = <8>;
+	};
 };
 
 &cpm_ethernet {
@@ -199,6 +210,7 @@
         phy-mode = "sfi";
         phy-reset-gpios = <&cps_gpio0 31 GPIO_ACTIVE_HIGH>;
         marvell,sfp-tx-disable-gpio = <&cps_gpio0 29 GPIO_ACTIVE_HIGH>;
+	phy = <&sfi_phy0>;
 };
 
 &cps_scsi {
@@ -320,6 +332,7 @@
 &cps_eth0 {
 	status = "okay";
 	phy-mode = "sfi";
+	phy = <&sfi_phy8>;
 	phy-reset-gpios = <&cps_gpio0 9 GPIO_ACTIVE_HIGH>;
 	marvell,sfp-tx-disable-gpio = <&cps_gpio0 10 GPIO_ACTIVE_HIGH>;
 };
@@ -328,7 +341,7 @@
 &cps_eth1 {
 	status = "okay";
 	phy-mode = "sgmii";
-	phy = <&phy0>;
+	phy = <&ge_phy0>;
 };
 
 /* 2.5G copper */

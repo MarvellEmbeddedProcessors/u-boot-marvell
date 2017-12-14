@@ -287,4 +287,10 @@ U_BOOT_CMD(
 	"\teth1addr      second MAC address\n"
 	"\teth2addr      third MAC address\n"
 	"\teth3addr      fourth MAC address\n"
+	"\teth4addr      fifth MAC address\n"
+	"\teth5addr      sixth MAC address\n"
+	"\teth6addr      seventh MAC address\n"
+	"\teth7addr      eighth MAC address\n"
+	"\teth8addr      ninth MAC address\n"
+	"\teth9addr      tenth MAC address\n"
 );

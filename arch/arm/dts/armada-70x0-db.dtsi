@@ -34,6 +34,10 @@
 				};
 			};
 
+			sdhci@780000 {
+				vqmmc-supply = <&cpm_reg_sd_vccq>;
+			};
+
 			cpm_reg_usb3_vbus0:cpm_usb3_vbus@0 {
 				compatible = "regulator-fixed";
 				regulator-min-microvolt = <5000000>;
@@ -78,6 +82,16 @@
 			cpm_usb3_1: usb3@510000 {
 				vbus-supply = <&cpm_reg_usb3_vbus1>;
 				current-limiter = <&cpm_reg_usb3_current_limiter1>;
+			};
+
+			cpm_reg_sd_vccq: cpm_sd_vccq@0 {
+				compatible = "regulator-gpio";
+				regulator-name = "cpm_sd_vcc";
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3300000>;
+				gpios = <&expander0 15 GPIO_ACTIVE_HIGH>;
+				states = <1800000 0x1
+					  3300000 0x0>;
 			};
 		};
 	};

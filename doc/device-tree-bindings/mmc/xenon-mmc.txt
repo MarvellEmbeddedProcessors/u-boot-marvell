@@ -42,10 +42,11 @@ cpm_sdhci0: sdhci@780000 {
 	reg = <0x780000 0x300>;
 	interrupts = <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>;
 	dma-coherent;
+	vqmmc-supply = <&cpm_reg_sd_vccq>;
 	status = "disabled";
 };
 
-The vqmmc-supply example on sdio port0:
+The vqmmc-supply example on sdio port0 for armada3700:
 vcc_sd_reg0: regulator@0 {
 	compatible = "regulator-gpio";
 	regulator-name = "vcc_sd0";
@@ -55,4 +56,15 @@ vcc_sd_reg0: regulator@0 {
 	states = <1800000 0x1
 		  3300000 0x0>;
 	gpios = <&gpio1 23 GPIO_ACTIVE_HIGH>;
+};
+
+The vqmmc-supply example on CP0 for armada7/8K:
+cpm_reg_sd_vccq: cpm_sd_vccq@0 {
+	compatible = "regulator-gpio";
+	regulator-name = "cpm_sd_vcc";
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <3300000>;
+	gpios = <&expander0 15 GPIO_ACTIVE_HIGH>;
+	states = <1800000 0x1
+		  3300000 0x0>;
 };

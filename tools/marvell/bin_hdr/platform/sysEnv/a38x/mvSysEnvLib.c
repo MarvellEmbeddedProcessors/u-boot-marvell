@@ -82,17 +82,17 @@
 
 #ifdef CONFIG_ARMADA_38X
 MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
-/*                     6820    6810     6811     6828   6W22    6W23 */
-/*                     A385    A380     A381/2   A388   A383    A384 */
-/*                     ========= HW Flavors =========   == Virtual ==*/
-/* PEX_UNIT_ID      */ { 4,     3,       3,       4,	2,	2},
-/* SGMII_UNIT_ID*/     { 3,	2,       3,       3,	2,	2},
-/* USB3H_UNIT_ID    */ { 2,     2,       2,       2,	1,	1},
-/* USB3D_UNIT_ID    */ { 1,     1,       1,       1,	0,	0},
-/* SATA_UNIT_ID     */ { 2,     2,       2,       4,	1,	1},
-/* QSGMII_UNIT_ID   */ { 1,     0,       0,       1,	0,	0},
-/* XAUI_UNIT_ID     */ { 0,     0,       0,       0,	0,	0},
-/* RXAUI_UNIT_ID    */ { 0,     0,       0,       0,	0,	0}
+/*                     6820    6810     6811     6828   6W22    6W23 	6825 */
+/*                     A385    A380     A381/2   A388   A383    A384 	A385 */
+/*                     ========= HW Flavors =========   == Virtual ==========*/
+/* PEX_UNIT_ID      */ { 4,     3,       3,       4,	2,	2,	4},
+/* SGMII_UNIT_ID*/     { 3,	2,       3,       3,	2,	2,	3},
+/* USB3H_UNIT_ID    */ { 2,     2,       2,       2,	1,	1,	2},
+/* USB3D_UNIT_ID    */ { 1,     1,       1,       1,	0,	0,	1},
+/* SATA_UNIT_ID     */ { 2,     2,       2,       4,	1,	1,	2},
+/* QSGMII_UNIT_ID   */ { 1,     0,       0,       1,	0,	0,	1},
+/* XAUI_UNIT_ID     */ { 0,     0,       0,       0,	0,	0,	0},
+/* RXAUI_UNIT_ID    */ { 0,     0,       0,       0,	0,	0,	0}
 };
 #else  /* if (CONFIG_ARMADA_39X) */
 MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
@@ -605,6 +605,7 @@ MV_U16 mvSysEnvModelGet(MV_VOID)
 	/* Virtual flavors - not represented by dev ID bits in S@R @ 0x18600 */
 	case MV_6W22_DEV_ID: /* 6W22=A383 */
 	case MV_6W23_DEV_ID: /* 6W23=A384 */
+	case MV_6825_DEV_ID:
 		return ctrlId;
 	default: /*Device ID Default for A38x: 6820 , for A39x: 6920 */
 	#ifdef MV88F68XX
@@ -656,9 +657,9 @@ static MV_16 mvSysEnvIsFlavourReduced(MV_VOID)
 MV_U32 gDevId = -1;
 MV_U32 mvSysEnvDeviceIdGet(MV_VOID)
 {
-	char *deviceIdStr[11] = { "6810", "6820", "6811", "6828",
+	char *deviceIdStr[MV_MAX_DEV_ID] = { "6810", "6820", "6811", "6828",
 				"NONE", "6920", "6928", "6925", "MAX_HW_DEV_ID",
-				"6W22", "6W23"}; /* 6W22=A383, 6W23=A384 */
+				"6W22", "6W23", "6825"}; /* 6W22=A383, 6W23=A384 */
 #ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
 	MV_U32 boardId = mvBoardIdGet();
 #endif
@@ -699,6 +700,15 @@ MV_U32 mvSysEnvDeviceIdGet(MV_VOID)
 			gDevId = MV_6W22;
 	}
 #endif
+	/* Check is CESA disabled on */
+	if (gDevId < MV_NONE) {
+		MV_U32 cesa_en = MV_REG_READ(DEVICE_CONFIGURATION_REG0);
+
+		cesa_en = (cesa_en >> DEV_CFG0_CESA_OFFSET) & DEV_CFG0_CESA_MASK;
+		if (!cesa_en)
+			gDevId = MV_6825;
+	}
+
 	mvPrintf("Detected Device ID %s\n" ,deviceIdStr[gDevId]);
 	return gDevId;
 }

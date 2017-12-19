@@ -103,10 +103,13 @@
 #define DEV_ID_REG_DEVICE_ID_OFFS               16
 #define DEV_ID_REG_DEVICE_ID_MASK               0xFFFF0000
 
-#define SAR_FREQ_OFFSET 						10
-#define SAR_FREQ_MASK  							0x1F
+#define SAR_FREQ_OFFSET 			10
+#define SAR_FREQ_MASK  				0x1F
 #define SAR_DEV_ID_OFFS                         27
 #define SAR_DEV_ID_MASK                         0x7
+
+#define DEV_CFG0_CESA_OFFSET			4
+#define DEV_CFG0_CESA_MASK			0xF
 
 #define POWER_AND_PLL_CTRL_REG                  0xa0004
 #define CALIBRATION_CTRL_REG                    0xa0008
@@ -393,6 +396,7 @@
 #define MV_6828_DEV_ID		0x6828
 #define MV_6W22_DEV_ID		0x6823 /* 6W22 - A383: using device ID value 0f 0x6823 */
 #define MV_6W23_DEV_ID		0x6824 /* 6W23 - A384: using device ID value 0f 0x6824 */
+#define MV_6825_DEV_ID		0x6825
 /* Armada 39x Family */
 #define MV_6920_DEV_ID		0x6920
 #define MV_6925_DEV_ID		0x6925
@@ -409,8 +413,9 @@ typedef enum _mvDeviceId {
 /* 7 */	MV_6925,
 /* 8 */	MV_MAX_HW_DEV_ID,	/* Dummy entry to indicate end of HW device ID's */
 /* 9 */	MV_6W22,		/* A383: Virtual Device ID - not represented by dev id in S@R @ 0x18600 */
-/* 10*/MV_6W23,		/* A384: Virtual Device ID - not represented by dev id in S@R @ 0x18600 */
-/* 11*/	MV_MAX_DEV_ID,
+/* 10*/ MV_6W23,		/* A384: Virtual Device ID - not represented by dev id in S@R @ 0x18600 */
+/* 11*/	MV_6825,
+/* 12*/	MV_MAX_DEV_ID,
 } MV_DEVICE_ID;
 
 #define MV_6820_INDEX                         0
@@ -419,13 +424,14 @@ typedef enum _mvDeviceId {
 #define MV_6828_INDEX                         3
 #define MV_6W22_INDEX			      4 /* 6W22=A383 */
 #define MV_6W23_INDEX			      5 /* 6W23=A384 */
+#define MV_6825_INDEX                         6
 
 #define MV_6920_INDEX                         0
 #define MV_6925_INDEX                         1
 #define MV_6928_INDEX                         2
 
 #ifdef CONFIG_ARMADA_38X
-#define MAX_DEV_ID_NUM                        6
+#define MAX_DEV_ID_NUM                        7
 #else
 #define MAX_DEV_ID_NUM                        3
 #endif
@@ -472,6 +478,7 @@ typedef struct boardDeviceIdWoVal {
 /*MAX_HW_DEV_ID*/ {MV_MAX_HW_DEV_ID,	0x0,			0x0,		0x0  },\
 /* A383 */ {MV_6W22,	MV_6W22_DEV_ID,		0x77fffff,	0x00 },\
 /* A384 */ {MV_6W23,	MV_6W23_DEV_ID,		0x77fffff,	0x00 },\
+/* A385 */ {MV_6825,	MV_6825_DEV_ID,		0x77fdfff,	0x00 },\
 };
 
 typedef struct boardWakeupGPIO {
@@ -894,4 +901,3 @@ MV_VOID mvSysEnvUsbVbusReset(MV_VOID);
 MV_STATUS mvSysEnvReadPcieGenSetting(MV_BOOL *isForceGen1);
 
 #endif /* __INCmvSysEnvLibh */
-

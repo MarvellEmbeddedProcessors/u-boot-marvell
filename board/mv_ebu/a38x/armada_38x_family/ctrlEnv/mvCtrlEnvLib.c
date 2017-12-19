@@ -1498,6 +1498,7 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 	/* Virtual flavors */
 	case MV_6W22_DEV_ID: /* 6W22=A383 */
 	case MV_6W23_DEV_ID: /* 6W23=A384 */
+	case MV_6825_DEV_ID:
 		return ctrlId;
 	default:
 		/*Device ID Default for A38x: 6820 , for A39x: 6920 */
@@ -1535,6 +1536,7 @@ MV_U16 mvCtrlDeviceIdGet(MV_VOID)
 	case MV_6811_DEV_ID:
 		return 0x381;
 	case MV_6820_DEV_ID:
+	case MV_6825_DEV_ID:
 		return 0x385;
 	case MV_6828_DEV_ID:
 		return 0x388;

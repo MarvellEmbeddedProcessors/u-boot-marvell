@@ -136,6 +136,7 @@ MV_U32 mvHwsSerdesGetMaxLane(MV_VOID)
 	case MV_6810:
 		return 5;
 	case MV_6820:
+	case MV_6825:
 	case MV_6828:
 		return 6;
 	default:    /* not the right module */

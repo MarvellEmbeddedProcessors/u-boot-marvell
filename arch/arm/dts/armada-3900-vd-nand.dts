@@ -50,18 +50,6 @@
 	aliases {
 		i2c1 = &ap_i2c0;
 	};
-
-	cp0 {
-		config-space {
-			cp0_mochi_reset: cp0_mochi_reset {
-				regulator-boot-on;
-			};
-
-			cp0_mochi_enable: cp0_mochi_enable {
-				regulator-boot-on;
-			};
-		};
-	};
 };
 
 /*

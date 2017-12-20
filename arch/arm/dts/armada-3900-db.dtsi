@@ -65,24 +65,6 @@
 				regulator-force-boot-off;
 				gpio = <&cp0_gpio1 13 GPIO_ACTIVE_HIGH>;
 			};
-
-			cp0_mochi_reset: cp0_mochi_reset {
-				compatible = "regulator-fixed";
-				pinctrl-names = "default";
-				pinctrl-0 = <&cp0_mochi_reset_pins>;
-				regulator-name = "cp0-mochi-reset";
-				enable-active-high;
-				gpio = <&cp0_gpio1 24 GPIO_ACTIVE_HIGH>;
-			};
-
-			cp0_mochi_enable: cp0_mochi_enable {
-				compatible = "regulator-fixed";
-				pinctrl-names = "default";
-				pinctrl-0 = <&cp0_mochi_enable_pins>;
-				regulator-name = "cp0-mochi-enable";
-				enable-active-high;
-				gpio = <&cp0_gpio1 25 GPIO_ACTIVE_HIGH>;
-			};
 		};
 	};
 };

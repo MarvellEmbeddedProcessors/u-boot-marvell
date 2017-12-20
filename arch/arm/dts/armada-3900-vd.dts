@@ -51,18 +51,6 @@
 		i2c1 = &ap_i2c0;
 		spi1 = &cp0_spi1;
 	};
-
-	cp0 {
-		config-space {
-			cp0_mochi_reset: cp0_mochi_reset {
-				regulator-boot-on;
-			};
-
-			cp0_mochi_enable: cp0_mochi_enable {
-				regulator-boot-on;
-			};
-		};
-	};
 };
 
 /*

@@ -61,14 +61,6 @@
 				gpio = <&cp0_gpio0 5 GPIO_ACTIVE_HIGH>;
 			};
 
-			cp0_mochi_reset: cp0_mochi_reset {
-				regulator-boot-on;
-			};
-
-			cp0_mochi_enable: cp0_mochi_enable {
-				regulator-force-boot-off;
-			};
-
 			iot_radio_reset: iot-radio-reset {
 				compatible = "regulator-fixed";
 				pinctrl-names = "default";

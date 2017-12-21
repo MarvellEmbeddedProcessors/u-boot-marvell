@@ -8,17 +8,17 @@
 #define _COMPHY_DATA_H_
 
 #define COMPHY_SPEED_1_25G		0
-#define COMPHY_SPEED_1_5G		1
-#define COMPHY_SPEED_2_5G		2
-#define COMPHY_SPEED_3G			3
-#define COMPHY_SPEED_3_125G		4
-#define COMPHY_SPEED_5G			5
-#define COMPHY_SPEED_5_15625G		6
-#define COMPHY_SPEED_6G			7
-#define COMPHY_SPEED_6_25G		8
-#define COMPHY_SPEED_10_3125G		9
-#define COMPHY_SPEED_MAX		10
+#define COMPHY_SPEED_2_5G		1
+#define COMPHY_SPEED_3_125G		2
+#define COMPHY_SPEED_5G			3
+#define COMPHY_SPEED_5_15625G		4
+#define COMPHY_SPEED_6G			5
+#define COMPHY_SPEED_10_3125G		6
+#define COMPHY_SPEED_MAX		7
 #define COMPHY_SPEED_INVALID		0xff
+
+/* The  default speed for IO with fixed known speed */
+#define COMPHY_SPEED_DEFAULT		0x3F
 
 #define COMPHY_TYPE_UNCONNECTED		0
 #define COMPHY_TYPE_PEX0		1

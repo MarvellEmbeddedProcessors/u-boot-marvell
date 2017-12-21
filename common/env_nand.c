@@ -161,7 +161,7 @@ static int writeenv(size_t offset, u_char *buf)
 
 struct env_location {
 	const char *name;
-	const nand_erase_options_t erase_opts;
+	nand_erase_options_t erase_opts;
 };
 
 static int erase_and_write_env(const struct env_location *location,
@@ -195,12 +195,11 @@ int saveenv(void)
 	int	ret = 0;
 	ALLOC_CACHE_ALIGN_BUFFER(env_t, env_new, 1);
 	int	env_idx = 0;
-	static const struct env_location location[] = {
+	static struct env_location location[] = {
 		{
 			.name = "NAND",
 			.erase_opts = {
 				.length = CONFIG_ENV_RANGE,
-				.offset = CONFIG_ENV_OFFSET,
 			},
 		},
 #ifdef CONFIG_ENV_OFFSET_REDUND
@@ -214,6 +213,7 @@ int saveenv(void)
 #endif
 	};
 
+	location[0].erase_opts.offset = CONFIG_ENV_OFFSET;
 
 	if (CONFIG_ENV_RANGE < CONFIG_ENV_SIZE)
 		return 1;

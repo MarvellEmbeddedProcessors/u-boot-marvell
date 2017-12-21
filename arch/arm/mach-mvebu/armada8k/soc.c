@@ -158,6 +158,17 @@ void soc_print_system_cache_info(void)
 	       excl ? " (Exclusive Mode)" : "");
 }
 
+int boot_from_nand(void)
+{
+	struct sar_val sar;
+
+	mvebu_sar_value_get(SAR_BOOT_SRC, &sar);
+	if (sar.bootsrc.type == BOOTSRC_NAND)
+		return 1;
+	else
+		return 0;
+}
+
 int soc_early_init_f(void)
 {
 #ifdef CONFIG_MVEBU_SAR

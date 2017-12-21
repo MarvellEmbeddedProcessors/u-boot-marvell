@@ -113,11 +113,20 @@
 */
 #define CONFIG_ENV_SIZE			(64 << 10) /* 64KiB */
 #define CONFIG_ENV_SECT_SIZE		(64 << 10) /* 64KiB sectors */
+
+#ifndef CONFIG_ENV_IS_IN_BOOTDEV
 #if defined(CONFIG_ENV_IS_IN_NAND) || defined(CONFIG_ENV_IS_IN_SPI_NAND)
 #define CONFIG_ENV_OFFSET		0x400000
 #else
 #define CONFIG_ENV_OFFSET		(0x400000 - CONFIG_ENV_SIZE)
 #endif
+#elif !defined(__ASSEMBLY__)
+int boot_from_nand(void);
+#define CONFIG_ENV_OFFSET	(boot_from_nand() ? \
+		0x400000 : (0x400000 - CONFIG_ENV_SIZE))
+#else
+#define CONFIG_ENV_OFFSET		0x400000
+#endif /* CONFIG_ENV_IS_IN_BOOTDEV */
 
 #define CONFIG_USB_MAX_CONTROLLER_COUNT (CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS + \
 					 CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS)

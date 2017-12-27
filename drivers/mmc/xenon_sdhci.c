@@ -458,10 +458,10 @@ static int xenon_sdhci_probe(struct udevice *dev)
 
 	/* Get the vqmmc regulator if there is */
 	device_get_supply_regulator(dev, "vqmmc-supply", &priv->vqmmc);
-	/* Set the initial voltage value to 1.8V if there is regulator */
+	/* Set the initial voltage value to 3.3V if there is regulator */
 	if (priv->vqmmc) {
 		ret = regulator_set_value(priv->vqmmc,
-					  XENON_MMC_1V8_UV);
+					  XENON_MMC_3V3_UV);
 		if (ret)
 			return ret;
 	}

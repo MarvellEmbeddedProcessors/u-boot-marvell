@@ -26,7 +26,11 @@ static struct mm_region mvebu_mem_map[] = {
 		/* RAM */
 		.phys = 0x0UL,
 		.virt = 0x0UL,
+#ifdef CONFIG_MVEBU_PALLADIUM
+		.size = 0x20000000UL,
+#else
 		.size = 0x80000000UL,
+#endif
 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 			 PTE_BLOCK_INNER_SHARE
 	},
@@ -87,6 +91,9 @@ void mvebu_nand_select(void)
 
 int mvebu_dram_init(void)
 {
+#ifdef CONFIG_MVEBU_PALLADIUM
+	gd->ram_size = 0x20000000;
+#else
 	u32 cs;
 	gd->ram_size = 0;
 	for (cs = 0; cs < 4; cs++)
@@ -100,7 +107,7 @@ int mvebu_dram_init(void)
 		printf("\n Using temporary DRAM size of 256MB.\n\n");
 		gd->ram_size = SZ_256M;
 	}
-
+#endif
 	return 0;
 }
 

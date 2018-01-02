@@ -21,10 +21,8 @@
 #include <mvebu/mvebu_chip_sar.h>
 
 #ifndef CONFIG_MVEBU_PALLADIUM
+
 #define CONFIG_MSS_FREQUENCY    (200 * 1000000)
-#else
-#define CONFIG_MSS_FREQUENCY    (384000)
-#endif
 
 u32 soc_ring_clk_get(void)
 {
@@ -67,3 +65,5 @@ void soc_print_clock_info(void)
 	printf("\tFABRIC  %-4d [MHz]\n", soc_ring_clk_get() / MHz);
 	printf("\tMSS     %-4d [MHz]\n", soc_mss_clk_get() / MHz);
 }
+
+#endif

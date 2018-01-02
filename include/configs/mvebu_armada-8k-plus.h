@@ -63,4 +63,13 @@
 #define CONFIG_CMD_DATE
 #endif
 
+/* Emulation specific setting */
+#ifdef CONFIG_MVEBU_PALLADIUM
+#undef CONFIG_BOOTARGS
+#define CONFIG_BOOTARGS			"console=ttyS0,19200 " \
+					"earlycon=uart8250,mmio32,0xe8512000 " \
+					"mem=256M init=/bin/sh root=/dev/ram0 rw"
+
+#endif
+
 #endif /* _CONFIG_MVEBU_ARMADA_8K_PLUS_H */

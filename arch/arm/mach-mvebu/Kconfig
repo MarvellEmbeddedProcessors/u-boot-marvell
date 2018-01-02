@@ -174,12 +174,12 @@ menu "MVEBU Common SoC Utilities"
 config MVEBU_PALLADIUM
 	bool "Build image for Palladium emulation platform"
 	default false
-	depends on TARGET_MVEBU_ARMADA_8K_PLUS
+	depends on TARGET_MVEBU_ARMADA_8K_PLUS || TARGET_MVEBU_ARMADA_8K
 	help
 	  Build an image for Palladium emulation
 	  platform with different clock or
 	  address configuration.
-	  Supported for Armada-8k-plus
+	  Supported for Armada-8k-plus and Armada-8k
 
 config SECURED_MODE_IMAGE
 	bool "Build image for trusted boot"

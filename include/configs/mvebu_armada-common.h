@@ -215,11 +215,6 @@
 #undef CONFIG_BAUDRATE
 #define CONFIG_BAUDRATE			19200
 
-#undef CONFIG_BOOTARGS
-#define CONFIG_BOOTARGS			"console=ttyS0,19200 " \
-					"earlycon=uart8250,mmio32,0xe8512000 " \
-					"mem=256M init=/bin/sh root=/dev/ram0 rw"
-
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x180000\0"	\
 					"fdt_addr=0x1000000\0"		\

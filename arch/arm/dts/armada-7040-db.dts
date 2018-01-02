@@ -48,7 +48,7 @@
 #include "armada-7040.dtsi"
 
 / {
-	model = "Marvell Armada 7040 DB board";
+	model = "Marvell Armada 7040 Development Board DB-88FA7040";
 	compatible = "marvell,armada7040-db", "marvell,armada7040",
 		     "marvell,armada-ap806-quad", "marvell,armada-ap806";
 

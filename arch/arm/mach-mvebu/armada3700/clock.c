@@ -291,9 +291,9 @@ u32 soc_sb_axi_clk_get(void)
 
 void soc_print_clock_info(void)
 {
-	printf("       CPU    @ %d [MHz]\n", soc_cpu_clk_get());
-	printf("       L2     @ %d [MHz]\n", soc_cpu_clk_get());
-	printf("       NB AXI @ %d [MHz]\n", soc_nb_axi_clk_get());
-	printf("       SB AXI @ %d [MHz]\n", soc_sb_axi_clk_get());
-	printf("       DDR    @ %d [MHz]\n", soc_ddr_clk_get());
+	printf("       CPU     %d [MHz]\n", soc_cpu_clk_get());
+	printf("       L2      %d [MHz]\n", soc_cpu_clk_get());
+	printf("       NB AXI  %d [MHz]\n", soc_nb_axi_clk_get());
+	printf("       SB AXI  %d [MHz]\n", soc_sb_axi_clk_get());
+	printf("       DDR     %d [MHz]\n", soc_ddr_clk_get());
 }

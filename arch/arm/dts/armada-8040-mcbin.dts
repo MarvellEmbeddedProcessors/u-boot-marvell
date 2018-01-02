@@ -8,7 +8,7 @@
 #include "armada-80x0-db.dtsi" /* include SoC device tree */
 
 / {
-	model = "MACCHIATOBin-8040";
+	model = "Marvell Armada 8040 MACHIATOBin";
 	compatible = "marvell,armada8040-mcbin",
 		     "marvell,armada8040";
 

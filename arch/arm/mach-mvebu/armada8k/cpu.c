@@ -9,17 +9,19 @@
 #include <asm/io.h>
 #include <asm/armv8/mmu.h>
 #include <mach/clock.h>
+#include <linux/sizes.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
 /* Armada 7k/8k */
 #define MVEBU_RFU_BASE			(MVEBU_REGISTER(0x6f0000))
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
+#define SOC_DEV_MULTIPLEX_REG		(MVEBU_REGISTER(0x2440208))
+#define NAND_FLASH_CLK_CTRL		(MVEBU_REGISTER(0x2440700))
 #define RFU_SW_RESET_OFFSET		0
-#define SZ_1M				0x00100000
-#define SZ_256M				0x10000000
-#define SZ_1G				0x40000000
-#define SZ_4G				0x100000000
+#define NF_CLOCK_SEL_MASK		0x1
+#define SOC_MUX_NAND_EN_MASK		0x1
+#define CLOCK_1Mhz			1000000
 
 static struct mm_region mvebu_mem_map[] = {
 	{
@@ -27,18 +29,18 @@ static struct mm_region mvebu_mem_map[] = {
 		.phys = 0x0UL,
 		.virt = 0x0UL,
 #ifdef CONFIG_MVEBU_PALLADIUM
-		.size = 0x20000000UL,
+		.size = SZ_256M,
 #else
-		.size = 0x80000000UL,
+		.size = SZ_2G,
 #endif
 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 			 PTE_BLOCK_INNER_SHARE
 	},
 	{
 		/* MMIO regions */
-		.phys = 0xf0000000UL,
-		.virt = 0xf0000000UL,
-		.size = 0x10000000UL,
+		.phys = SOC_REGS_PHY_BASE,
+		.virt = SOC_REGS_PHY_BASE,
+		.size = SZ_1G,
 		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
 			 PTE_BLOCK_NON_SHARE
 	},
@@ -68,23 +70,18 @@ void reset_cpu(ulong ignored)
 /* Return NAND clock in Hz */
 u32 mvebu_get_nand_clock(void)
 {
-	unsigned long NAND_FLASH_CLK_CTRL = 0xF2440700UL;
-	unsigned long NF_CLOCK_SEL_MASK = 0x1;
 	u32 reg;
 
 	reg = readl(NAND_FLASH_CLK_CTRL);
 	if (reg & NF_CLOCK_SEL_MASK)
-		return 400 * 1000000;
+		return 400 * CLOCK_1Mhz;
 	else
-		return 250 * 1000000;
+		return 250 * CLOCK_1Mhz;
 }
 
 /* Select NAND in the device bus multiplexer */
 void mvebu_nand_select(void)
 {
-	unsigned long SOC_DEV_MULTIPLEX_REG = 0xf2440208;
-	unsigned long SOC_MUX_NAND_EN_MASK = 0x1;
-
 	setbits_le32(SOC_DEV_MULTIPLEX_REG, SOC_MUX_NAND_EN_MASK);
 }
 #endif
@@ -92,7 +89,7 @@ void mvebu_nand_select(void)
 int mvebu_dram_init(void)
 {
 #ifdef CONFIG_MVEBU_PALLADIUM
-	gd->ram_size = 0x20000000;
+	gd->ram_size = SZ_512M;
 #else
 	u32 cs;
 	gd->ram_size = 0;

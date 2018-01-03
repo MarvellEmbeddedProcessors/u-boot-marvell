@@ -44,8 +44,8 @@ Note that WtpDownload application (v3.3.11.15) is Linux host tool used
 to do the UART boot. The source code and binaries is provided as part
 of A3700 utility package, which is out of the bootloader source tree.
 The package is located in same folder of the bootloader source. Please
-refer to the readme.txt in wtptp_tool/src/Wtpdownloader_Linux folder
-for the prerequisitions of the tool.
+refer to the readme.txt in wtptp/src/Wtpdownloader_Linux folder for the
+prerequisitions of the tool.
 
 The following shows the detail steps of UART boot. The target board is
 connected to /dev/ttyUSB0 in this example, replace the port number
@@ -53,8 +53,8 @@ according to your set-up.
 
 1. The normal ATF build procedure for A3700 target creates a folder
    with all the images required for UART boot under ATF build output
-   folder (build/a3700/). Make sure u-boot was built before ATF, see
-   detail in build.txt.
+   folder (A.K.A., build/a3700/release or build/a3700/debug). Make
+   sure u-boot was built before ATF, see detail in build.txt.
 
 2. Make sure the target board is in UART mode and ">" prompt is
    presented on the connected terminal. Pressing "Enter" in this mode
@@ -63,7 +63,9 @@ according to your set-up.
    SPI flash for example, and switch to UART boot mode, by using the
    WtpDownload application::
 
+	(power down the board or hold the RESET button)
 	sudo stty -F /dev/ttyUSB0 clocal
+	(power up the board or release the RESET button)
 	./WtpDownload_linux -P UART -C 0 -R 115200 -Y
 
 3. Stop the terminal emulator program on the UART port attached to the

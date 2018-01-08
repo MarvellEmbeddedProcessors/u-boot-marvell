@@ -78,12 +78,15 @@ void reset_cpu(ulong ignored)
 
 int mvebu_dram_init(void)
 {
+#ifdef CONFIG_MVEBU_PALLADIUM
+	gd->ram_size = 0x20000000;
+#else
 	/*
 	 * For now use 512MiB, later need to read the DRAM size using DRAM
 	 * driver or from device tree that passed from ATF
 	 */
 	gd->ram_size = 0x20000000;
-
+#endif
 	return 0;
 }
 

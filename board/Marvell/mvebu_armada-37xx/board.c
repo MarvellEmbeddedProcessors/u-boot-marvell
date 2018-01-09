@@ -109,6 +109,28 @@ int board_early_init_f(void)
 	return 0;
 }
 
+int board_usb2_vbus_init(void)
+{
+#if defined(CONFIG_DM_REGULATOR)
+	struct udevice *regulator;
+	int ret;
+
+	/* lower usb vbus  */
+	ret = regulator_get_by_platname("usb2-vbus", &regulator);
+	if (ret) {
+		debug("Cannot get usb2-vbus regulator\n");
+		return 0;
+	}
+
+	ret = regulator_set_enable(regulator, false);
+	if (ret) {
+		error("Failed to turn OFF the VBUS regulator\n");
+		return ret;
+	}
+#endif
+	return 0;
+}
+
 int board_usb3_vbus_init(void)
 {
 #if defined(CONFIG_DM_REGULATOR)
@@ -133,6 +155,8 @@ int board_usb3_vbus_init(void)
 
 int board_init(void)
 {
+	board_usb2_vbus_init();
+
 	board_usb3_vbus_init();
 
 	/* adress of boot parameters */

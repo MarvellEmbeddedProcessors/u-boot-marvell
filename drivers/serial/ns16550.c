@@ -148,10 +148,22 @@ int ns16550_calc_divisor(NS16550_t port, int clock, int baudrate)
 
 static void NS16550_setbrg(NS16550_t com_port, int baud_divisor)
 {
+#ifdef CONFIG_MVEBU_PALLADIUM
+	/* Palladium WA */
+	for (int i = 0; i < 8; i++)
+		ns16550_writeb(com_port, 0x0, 0x8);
+#endif
+
 	serial_out(UART_LCR_BKSE | UART_LCRVAL, &com_port->lcr);
 	serial_out(baud_divisor & 0xff, &com_port->dll);
 	serial_out((baud_divisor >> 8) & 0xff, &com_port->dlm);
 	serial_out(UART_LCRVAL, &com_port->lcr);
+
+#ifdef CONFIG_MVEBU_PALLADIUM
+	/* Palladium WA */
+	for (int i = 0; i < 8; i++)
+		ns16550_writeb(com_port, 0x0, 0x8);
+#endif
 }
 
 void NS16550_init(NS16550_t com_port, int baud_divisor)

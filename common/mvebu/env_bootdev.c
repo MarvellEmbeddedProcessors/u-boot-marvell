@@ -40,6 +40,9 @@ int env_init(void)
 #ifdef CONFIG_SPI_FLASH
 		sf_env_init();
 #endif
+#ifdef CONFIG_SPI_NAND
+		spi_nand_env_init();
+#endif
 		break;
 	default:
 		error("Sample at reset boot source type %x is not supported\n",
@@ -75,6 +78,10 @@ void env_relocate_spec(void)
 #ifdef CONFIG_SPI_FLASH
 		sf_env_init();
 		env_name_spec = "SPI Flash";
+#endif
+#ifdef CONFIG_SPI_NAND
+		spi_nand_env_init();
+		env_name_spec = "SPI NAND Flash";
 #endif
 		break;
 	default:

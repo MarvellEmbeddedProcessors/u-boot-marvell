@@ -114,6 +114,8 @@
 		#define CONFIG_ENV_IS_IN_MMC
 		#define CONFIG_SYS_MMC_ENV_PART	1
 		/* 0 - DATA, 1 - BOOT0, 2 - BOOT1 */
+	#elif defined(CONFIG_MVEBU_SPINAND_BOOT)
+		#define CONFIG_ENV_IS_IN_SPI_NAND
 	#endif
 #else
 	/* Need to define all these xxx_ENV_IS_IN_xxx for
@@ -149,7 +151,7 @@
 */
 #define CONFIG_ENV_SIZE			(64 << 10) /* 64KiB */
 #define CONFIG_ENV_SECT_SIZE		(64 << 10) /* 64KiB sectors */
-#ifdef CONFIG_ENV_IS_IN_NAND
+#if defined(CONFIG_ENV_IS_IN_NAND) || defined(CONFIG_ENV_IS_IN_SPI_NAND)
 #define CONFIG_ENV_OFFSET		0x400000
 #else
 #define CONFIG_ENV_OFFSET		(0x400000 - CONFIG_ENV_SIZE)

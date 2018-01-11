@@ -49,7 +49,7 @@ int saveenv(void)
 {
 	env_t	env_new;
 	char	*saved_buffer = NULL, flag = OBSOLETE_FLAG;
-	u32	saved_size, saved_offset, sector = 1;
+	u32	saved_size = 0, saved_offset, sector = 1;
 	int	ret;
 
 	if (!env_flash) {
@@ -76,8 +76,8 @@ int saveenv(void)
 	}
 
 	/* Is the sector larger than the env (i.e. embedded) */
-	if (CONFIG_ENV_SECT_SIZE > CONFIG_ENV_SIZE) {
-		saved_size = CONFIG_ENV_SECT_SIZE - CONFIG_ENV_SIZE;
+	if (env_flash->block_size > CONFIG_ENV_SIZE) {
+		saved_size = env_flash->block_size - CONFIG_ENV_SIZE;
 		saved_offset = env_new_offset + CONFIG_ENV_SIZE;
 		saved_buffer = malloc(saved_size);
 		if (!saved_buffer) {
@@ -90,15 +90,15 @@ int saveenv(void)
 			goto done;
 	}
 
-	if (CONFIG_ENV_SIZE > CONFIG_ENV_SECT_SIZE) {
-		sector = CONFIG_ENV_SIZE / CONFIG_ENV_SECT_SIZE;
-		if (CONFIG_ENV_SIZE % CONFIG_ENV_SECT_SIZE)
+	if (CONFIG_ENV_SIZE > env_flash->block_size) {
+		sector = CONFIG_ENV_SIZE / env_flash->block_size;
+		if (CONFIG_ENV_SIZE % env_flash->block_size)
 			sector++;
 	}
 
 	puts("Erasing SPI NAND flash...");
 	ret = spi_nand_cmd_erase_ops(env_flash, env_new_offset,
-			sector * CONFIG_ENV_SECT_SIZE, true);
+			sector * env_flash->block_size, true);
 	if (ret)
 		goto done;
 
@@ -109,7 +109,7 @@ int saveenv(void)
 	if (ret)
 		goto done;
 
-	if (CONFIG_ENV_SECT_SIZE > CONFIG_ENV_SIZE) {
+	if (env_flash->block_size > CONFIG_ENV_SIZE) {
 		ret = spi_nand_cmd_write_ops(env_flash, saved_offset,
 					saved_size, saved_buffer);
 		if (ret)
@@ -222,7 +222,7 @@ out:
 #else
 int saveenv(void)
 {
-	u32	saved_size, saved_offset, sector = 1;
+	u32	saved_size = 0, saved_offset, sector = 1;
 	char	*saved_buffer = NULL;
 	int	ret = 1;
 	env_t	env_new;
@@ -238,8 +238,8 @@ int saveenv(void)
 	}
 
 	/* Is the sector larger than the env (i.e. embedded) */
-	if (CONFIG_ENV_SECT_SIZE > CONFIG_ENV_SIZE) {
-		saved_size = CONFIG_ENV_SECT_SIZE - CONFIG_ENV_SIZE;
+	if (env_flash->block_size > CONFIG_ENV_SIZE) {
+		saved_size = env_flash->block_size - CONFIG_ENV_SIZE;
 		saved_offset = CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE;
 		saved_buffer = malloc(saved_size);
 		if (!saved_buffer)
@@ -251,9 +251,9 @@ int saveenv(void)
 			goto done;
 	}
 
-	if (CONFIG_ENV_SIZE > CONFIG_ENV_SECT_SIZE) {
-		sector = CONFIG_ENV_SIZE / CONFIG_ENV_SECT_SIZE;
-		if (CONFIG_ENV_SIZE % CONFIG_ENV_SECT_SIZE)
+	if (CONFIG_ENV_SIZE > env_flash->block_size) {
+		sector = CONFIG_ENV_SIZE / env_flash->block_size;
+		if (CONFIG_ENV_SIZE % env_flash->block_size)
 			sector++;
 	}
 
@@ -263,7 +263,7 @@ int saveenv(void)
 
 	puts("Erasing SPI NAND flash...");
 	ret = spi_nand_cmd_erase_ops(env_flash, CONFIG_ENV_OFFSET,
-		sector * CONFIG_ENV_SECT_SIZE, true);
+		sector * env_flash->block_size, true);
 	if (ret)
 		goto done;
 
@@ -273,7 +273,7 @@ int saveenv(void)
 	if (ret)
 		goto done;
 
-	if (CONFIG_ENV_SECT_SIZE > CONFIG_ENV_SIZE) {
+	if (env_flash->block_size > CONFIG_ENV_SIZE) {
 		ret = spi_nand_cmd_write_ops(env_flash, saved_offset,
 			saved_size, saved_buffer);
 		if (ret)

@@ -1,0 +1,367 @@
+/*
+ * Copyright (C) 2018 Marvell International Ltd.
+ *
+ * SPDX-License-Identifier:    GPL-2.0
+ * https://spdx.org/licenses
+ */
+
+/*
+ * Device Tree file for Marvell Armada 8084 Development board platform
+ */
+
+#include "armada-8084-db.dtsi"
+
+/ {
+	model = "Marvell Armada 8084 DB board";
+	compatible = "marvell,armada8084-db", "marvell,armada8084",
+		     "marvell,armada-ap810", "marvell,armada-8k-plus";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		spi0 = &ap0_spi;
+		i2c0 = &ap0_i2c0;
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+};
+
+&ap0_uart0 {
+	status = "okay";
+};
+
+&ap0_spi {
+	status = "okay";
+};
+
+&ap0_i2c0 {
+	status = "okay";
+};
+
+&ap0_pinctl {
+	/* MPP Bus:
+	 * SPI	[6-10]
+	 * UART	[11,20]
+	 * I2C	[18-10]
+	 */
+		  /* 0 1 2 3 4 5 6 7 8 9 */
+	pin-func = < 0 0 0 0 0 0 2 2 2 2
+		     2 3 2 3 3 0 0 0 3 3
+		     3>;
+};
+
+&cp0_pinctl {
+		/* MPP Bus:
+		 * RGMII0 [0-11]
+		 * SPI1   [13-16]
+		 * SATA1  [28]
+		 * UART0  [29-30]
+		 * SMI	  [32,34]
+		 * XMDIO   [35-36]
+		 * I2C0   [37-38]
+		 * UART1  [40-41]
+		 * RGMII1 [44-55]
+		 * UART0  [50-51]
+		 * SD	  [56-61]
+		 * GPIO   [62]
+		 */
+		/*   0   1   2   3   4   5   6   7   8   9 */
+	pin-func = < 3   3   3   3   3   3   3   3   3   3
+		     3   3   0   3   3   3   3   0   0   0
+		     0   0   0   0   0   0   0   0   9   0xA
+		     0xA 0   7   0   7   5   5   2   2   0
+		     7   7   0   0   1   1   1   1   1   1
+		     1   1   1   1   1   1   0xE 0xE 0xE 0xE
+		     0xE 0xE 0>;
+};
+
+&cp0_comphy {
+	phy0 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+	phy1 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+	phy2 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+	phy3 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+	phy4 {
+		phy-type = <COMPHY_TYPE_SFI>;
+		phy-speed = <COMPHY_SPEED_10_3125G>;
+	};
+	phy5 {
+		phy-type = <COMPHY_TYPE_SATA1>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+};
+
+&cp0_spi1 {
+	pinctrl-names = "default";
+	status = "okay";
+
+	spi-flash@0 {
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		compatible = "jedec,spi-nor";
+		reg = <0x0>;
+		spi-max-frequency = <20000000>;
+	};
+};
+
+&cp0_sata0 {
+	status = "okay";
+};
+
+&cp0_scsi {
+	status = "okay";
+};
+
+&cp0_utmi0 {
+	status = "okay";
+};
+
+&cp0_utmi1 {
+	status = "okay";
+};
+
+&cp0_usb3_0 {
+	status = "okay";
+};
+
+&cp0_usb3_1 {
+	status = "okay";
+};
+
+&cp0_sdhci0 {
+	status = "okay";
+	bus-width = <4>;
+	no-1-8-v;
+	non-removable;
+};
+
+&cp0_pcie0 {
+	status = "okay";
+};
+
+&cp0_i2c0 {
+	pinctrl-names = "default";
+	status = "okay";
+	clock-frequency = <100000>;
+};
+
+
+&cp0_mdio {
+        phy0: ethernet-phy@0 {
+                reg = <0>;
+        };
+	phy1: ethernet-phy@1 {
+                reg = <1>;
+        };
+};
+
+&cp0_ethernet {
+        status = "okay";
+};
+
+&cp0_eth0 {
+        status = "okay";
+        phy-mode = "sfi"; /* lane-2 */
+};
+
+&cp0_eth1 {
+        status = "okay";
+        phy = <&phy0>;
+        phy-mode = "rgmii-id";
+};
+
+&cp0_eth2 {
+        status = "okay";
+        phy = <&phy1>;
+        phy-mode = "rgmii-id";
+};
+
+&cp1_comphy {
+	phy0 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+	phy1 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+	phy2 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+	phy3 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+	phy4 {
+		phy-type = <COMPHY_TYPE_SFI>;
+		phy-speed = <COMPHY_SPEED_10_3125G>;
+	};
+	phy5 {
+		phy-type = <COMPHY_TYPE_SATA1>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+};
+
+&cp1_pinctl {
+		/* MPP Bus:
+		 * SPI1   [13-16]
+		 * I2C0   [37-38]
+		 */
+		/*   0   1   2   3   4   5   6   7   8   9 */
+	pin-func = < 0   0   0   0   0   0   0   0   0   0
+		     0   0   0   3   3   3   3   0   0   0
+		     0   0   0   0   0   0   0   0   0   0
+		     0   0   0   0   0   0   0   2   2   0
+		     0   0   0   0   0   0   0   0   0   0
+		     0   0   0   0   0   0   0   0   0   0
+		     0   0   0>;
+};
+
+&cp1_sata0 {
+	status = "okay";
+};
+
+&cp1_scsi {
+	status = "okay";
+};
+
+&cp1_pcie0 {
+	status = "okay";
+};
+
+&cp1_ethernet {
+	status = "okay";
+};
+
+&cp1_eth0 {
+	status = "okay";
+	phy-mode = "sfi"; /* lane-2 */
+};
+
+&cp2_comphy {
+	phy0 {
+		phy-type = <COMPHY_TYPE_UNCONNECTED>;
+	};
+	phy1 {
+		phy-type = <COMPHY_TYPE_SATA0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+	phy2 {
+		phy-type = <COMPHY_TYPE_UNCONNECTED>;
+	};
+	phy3 {
+		phy-type = <COMPHY_TYPE_UNCONNECTED>;
+	};
+	phy4 {
+		phy-type = <COMPHY_TYPE_UNCONNECTED>;
+	};
+	phy5 {
+		phy-type = <COMPHY_TYPE_SATA1>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+};
+
+&cp2_pinctl {
+		/* MPP Bus:
+		 * SPI1   [13-16]
+		 * I2C0   [37-38]
+		 */
+		/*   0   1   2   3   4   5   6   7   8   9 */
+	pin-func = < 0   0   0   0   0   0   0   0   0   0
+		     0   0   0   3   3   3   3   0   0   0
+		     0   0   0   0   0   0   0   0   0   0
+		     0   0   0   0   0   0   0   2   2   0
+		     0   0   0   0   0   0   0   0   0   0
+		     0   0   0   0   0   0   0   0   0   0
+		     0   0   0>;
+};
+
+&cp2_sata0 {
+	status = "okay";
+};
+
+&cp2_scsi {
+	status = "okay";
+};
+
+&cp2_ethernet {
+	status = "disabled";
+};
+
+&cp2_eth0 {
+	status = "disabled";
+	phy-mode = "sfi"; /* lane-2 */
+};
+
+&cp3_comphy {
+	phy0 {
+		phy-type = <COMPHY_TYPE_UNCONNECTED>;
+	};
+	phy1 {
+		phy-type = <COMPHY_TYPE_SATA0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+	phy2 {
+		phy-type = <COMPHY_TYPE_UNCONNECTED>;
+	};
+	phy3 {
+		phy-type = <COMPHY_TYPE_UNCONNECTED>;
+	};
+	phy4 {
+		phy-type = <COMPHY_TYPE_UNCONNECTED>;
+	};
+	phy5 {
+		phy-type = <COMPHY_TYPE_SATA1>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+};
+
+&cp3_pinctl {
+		/* MPP Bus:
+		 * SPI1   [13-16]
+		 * I2C0   [37-38]
+		 */
+		/*   0   1   2   3   4   5   6   7   8   9 */
+	pin-func = < 0   0   0   0   0   0   0   0   0   0
+		     0   0   0   3   3   3   3   0   0   0
+		     0   0   0   0   0   0   0   0   0   0
+		     0   0   0   0   0   0   0   2   2   0
+		     0   0   0   0   0   0   0   0   0   0
+		     0   0   0   0   0   0   0   0   0   0
+		     0   0   0>;
+};
+
+&cp3_sata0 {
+	status = "okay";
+};
+
+&cp3_scsi {
+	status = "okay";
+};
+
+&cp3_ethernet {
+	status = "disabled";
+};
+
+&cp3_eth0 {
+	status = "disabled";
+	phy-mode = "sfi"; /* lane-2 */
+};
+

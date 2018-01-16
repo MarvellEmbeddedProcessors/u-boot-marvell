@@ -1,0 +1,168 @@
+/*
+ * Copyright (C) 2018 Marvell International Ltd.
+ *
+ * SPDX-License-Identifier:    GPL-2.0
+ * https://spdx.org/licenses
+ */
+
+/*
+ * Device Tree file for the Armada 8082 SoC, made of one AP810 and four CP110.
+ */
+
+#include "armada-common.dtsi"
+
+/dts-v1/;
+
+#define CP110_BASE				((AP_NUM * 0x1d00000000) + 0x8100000000 + (CP110_NUM * 0x0700000000))
+#define CP110_PCIE_MEM_SIZE			(0xfff00000)
+#define CP110_PCIEx_CPU_IO_BASE(iface)		(CP110_BASE + 0x01fffe0000 + (iface) * 0x0200000000)
+#define CP110_PCIEx_CPU_MEM_BASE(iface)		(CP110_BASE + 0x0100000000 + (iface) * 0x0200000000)
+#define CP110_PCIEx_BUS_IO_BASE(iface)		(CP110_PCIEx_CPU_IO_BASE(iface) - CP110_PCIEx_CPU_MEM_BASE(iface))
+#define CP110_PCIEx_BUS_MEM_BASE(iface)		(0x0)
+#define CP110_PCIE_BUS_MEM_CFG			(0x83000000)
+
+#define AP_NUM			0
+#define AP810_NAME		ap0
+#define AP810_BASE		0xe8000000
+
+#include "armada-ap810.dtsi"
+
+/* AP0 CP0 IO
+ * 0x81_0000_0000 - 0x81_ffff_ffff - internal CFG (4GB)
+ * 0x82_0000_0000 - 0x83_ffff_ffff - PEX0 (8GB)
+ * 0x84_0000_0000 - 0x85_ffff_ffff - PEX1 (8GB)
+ * 0x86_0000_0000 - 0x87_ffff_ffff - PEX2 (8GB)
+ */
+#define CP110_NAME		cp0
+#define CP110_NUM		0
+
+#include "armada-cp110.dtsi"
+
+#undef CP110_NAME
+#undef CP110_NUM
+
+/* AP0 CP1 IO
+ * 0x88_0000_0000 - 0x88_ffff_ffff - internal CFG (4GB)
+ * 0x89_0000_0000 - 0x8a_ffff_ffff - PEX0 (8GB)
+ * 0x8b_0000_0000 - 0x8c_ffff_ffff - PEX1 (8GB)
+ * 0x8d_0000_0000 - 0x8e_ffff_ffff - PEX2 (8GB)
+ */
+#define CP110_NAME		cp1
+#define CP110_NUM		1
+
+#include "armada-cp110.dtsi"
+
+#undef CP110_NAME
+#undef CP110_NUM
+
+/* AP0 CP2 IO
+ * 0x8f_0000_0000 - 0x8f_ffff_ffff - internal CFG (4GB)
+ * 0x90_0000_0000 - 0x91_ffff_ffff - PEX0 (8GB)
+ * 0x92_0000_0000 - 0x93_ffff_ffff - PEX1 (8GB)
+ * 0x94_0000_0000 - 0x95_ffff_ffff - PEX2 (8GB)
+ */
+#define CP110_NAME		cp2
+#define CP110_NUM		2
+
+#include "armada-cp110.dtsi"
+
+#undef CP110_NAME
+#undef CP110_NUM
+
+/* AP0 CP3 IO
+ * 0x96_0000_0000 - 0x96_ffff_ffff - internal CFG (4GB)
+ * 0x97_0000_0000 - 0x98_ffff_ffff - PEX0 (8GB)
+ * 0x99_0000_0000 - 0x9a_ffff_ffff - PEX1 (8GB)
+ * 0x9b_0000_0000 - 0x9c_ffff_ffff - PEX2 (8GB)
+ */
+#define CP110_NAME		cp3
+#define CP110_NUM		3
+
+#include "armada-cp110.dtsi"
+
+#undef CP110_NAME
+#undef CP110_NUM
+
+#undef AP_NUM
+#undef AP810_NAME
+#undef AP810_BASE
+
+/ {
+	model = "Marvell Armada AP810";
+	compatible = "marvell,armada-ap810";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		serial0 = &ap0_uart0;
+		serial1 = &ap0_uart1;
+	};
+
+	psci {
+		compatible = "arm,psci-0.2";
+		method = "smc";
+	};
+
+	/* Delete unsupported sar-reg nodes on cp2 and cp3 */
+
+	cp2 {
+		config-space {
+			/delete-node/ sar-reg@400200;
+		};
+	};
+
+	cp3 {
+		config-space {
+			/delete-node/ sar-reg@400200;
+		};
+	};
+};
+
+&cp0_pinctl {
+	compatible = "marvell,mvebu-pinctrl", "marvell,a80x0-cp0-pinctrl";
+	bank-name ="cp0-110";
+
+	cp0_i2c0_pins: cp0-i2c-pins-0 {
+		marvell,pins = < 37 38 >;
+		marvell,function = <2>;
+	};
+	cp0_i2c1_pins: cp0-i2c-pins-1 {
+		marvell,pins = < 35 36 >;
+		marvell,function = <2>;
+	};
+	cp0_ge1_rgmii_pins: cp0-ge-rgmii-pins-0 {
+		marvell,pins = < 0 1 2 3 4 5 6 7 8 9 10 11>;
+		marvell,function = <3>;
+	};
+	cp0_ge2_rgmii_pins: cp0-ge-rgmii-pins-1 {
+		marvell,pins = < 44 45 46 47 48 49 50 51
+				52 53 54 55 >;
+		marvell,function = <1>;
+	};
+	cp0_pca0_pins: cp0-pca0_pins {
+		marvell,pins = <62>;
+		marvell,function = <0>;
+	};
+	cp0_sdhci_pins: cp0-sdhi-pins-0 {
+		marvell,pins = < 56 57 58 59 60 61 >;
+		marvell,function = <14>;
+	};
+	cp0_spi0_pins: cp0-spi-pins-0 {
+		marvell,pins = < 13 14 15 16 >;
+		marvell,function = <3>;
+	};
+};
+
+&cp1_pinctl {
+	compatible = "marvell,mvebu-pinctrl", "marvell,a80x0-cp1-pinctrl";
+	bank-name ="cp1-110";
+
+	cp1_ge1_rgmii_pins: cp1-ge-rgmii-pins-0 {
+		marvell,pins = < 0 1 2 3 4 5 6 7 8 9 10 11 >;
+		marvell,function = <3>;
+	};
+	cp1_spi1_pins: cp1-spi-pins-1 {
+		marvell,pins = < 13 14 15 16 >;
+		marvell,function = <3>;
+	};
+};

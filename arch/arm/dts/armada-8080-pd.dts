@@ -6,14 +6,14 @@
  */
 
 /*
- * Device Tree file for Marvell Armada 8xx0 Development board platform
+ * Device Tree file for Marvell Armada 8080 Palladium.
  */
 
-#include "armada-8xx0-db.dtsi"
+#include "armada-8080-pd.dtsi"
 
 / {
-	model = "Marvell Armada 8xx0 DB board";
-	compatible = "marvell,armada8xx0-db", "marvell,armada8xx0",
+	model = "Marvell Armada 8xx0 PD board";
+	compatible = "marvell,armada8080-pd", "marvell,armada8080",
 		     "marvell,armada-ap810";
 
 	chosen {
@@ -28,6 +28,6 @@
 
 };
 
-&uart0 {
+&ap0_uart0 {
 	status = "okay";
 };

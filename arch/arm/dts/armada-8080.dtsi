@@ -1,0 +1,41 @@
+/*
+ * Copyright (C) 2017 Marvell International Ltd.
+ *
+ * SPDX-License-Identifier:    GPL-2.0
+ * https://spdx.org/licenses
+ */
+
+/*
+ * Device Tree file for the Armada 8080 SoC, made of one AP810 (for Palladium).
+ */
+
+#include "armada-common.dtsi"
+
+/dts-v1/;
+
+#define AP_NUM			0
+#define AP810_NAME		ap0
+#define AP810_BASE		0xe8000000
+
+#include "armada-ap810.dtsi"
+
+#undef AP_NUM
+#undef AP810_NAME
+#undef AP810_BASE
+
+/ {
+	model = "Marvell Armada AP810";
+	compatible = "marvell,armada-ap810";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		serial0 = &ap0_uart0;
+		serial1 = &ap0_uart1;
+	};
+
+	psci {
+		compatible = "arm,psci-0.2";
+		method = "smc";
+	};
+};

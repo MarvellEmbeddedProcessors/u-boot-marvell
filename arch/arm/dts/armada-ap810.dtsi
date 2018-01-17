@@ -6,28 +6,11 @@
  */
 
 /*
- * Device Tree file for Marvell Armada AP810.
+ * Device Tree file for Marvell Common Armada AP810.
  */
 
-/dts-v1/;
-
-/ {
-	model = "Marvell Armada AP810";
-	compatible = "marvell,armada-ap810";
-	#address-cells = <2>;
-	#size-cells = <2>;
-
-	aliases {
-		serial0 = &uart0;
-		serial1 = &uart1;
-	};
-
-	psci {
-		compatible = "arm,psci-0.2";
-		method = "smc";
-	};
-
-	ap810 {
+/{
+	AP810_NAME {
 		#address-cells = <2>;
 		#size-cells = <2>;
 		compatible = "simple-bus";
@@ -37,9 +20,9 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 			compatible = "simple-bus";
-			ranges = <0x0 0x0 0xec000000 0x2000000>;
+			ranges = <0x0 0x0 AP810_BASE 0x4000000>;
 
-			ap_spi0: spi@510600 {
+			AP810_LABEL(spi): spi@510600 {
 				compatible = "marvell,armada-380-spi";
 				reg = <0x510600 0x50>;
 				#address-cells = <1>;
@@ -48,7 +31,7 @@
 				status = "disabled";
 			};
 
-			ap_i2c0: i2c@511000 {
+			AP810_LABEL(i2c0): i2c@511000 {
 				compatible = "marvell,mv78230-i2c";
 				reg = <0x511000 0x20>;
 				#address-cells = <1>;
@@ -57,7 +40,7 @@
 				status = "disabled";
 			};
 
-			uart0: serial@512000 {
+			AP810_LABEL(uart0): serial@512000 {
 				compatible = "snps,dw-apb-uart";
 				reg = <0x512000 0x100>;
 				reg-shift = <2>;
@@ -66,13 +49,44 @@
 				clock-frequency = <200000000>;
 			};
 
-			uart1: serial@512100 {
+			AP810_LABEL(uart1): serial@512100 {
 				compatible = "snps,dw-apb-uart";
 				reg = <0x512100 0x100>;
 				reg-shift = <2>;
 				reg-io-width = <1>;
 				status = "disabled";
+			};
 
+			AP810_LABEL(pinctl): pinctl@6F4000 {
+				compatible = "marvell,armada-ap806-pinctrl";
+				bank-name ="apn-810";
+				reg = <0x6f4000 0x10>;
+				pin-count = <21>;
+				max-func = <3>;
+			};
+
+			AP810_LABEL(thermal): thermal@6f8084 {
+				compatible = "marvell,mvebu-thermal", "marvell,thermal-ext-sensor";
+				reg = <0x6f8084 0x12>;
+				gain = <394>;
+				offset = <128900>;
+				divisor = <1000>;
+				status = "okay";
+			};
+
+			AP810_LABEL(sar_reg): sar-reg@6F8200 {
+				compatible = "marvell,sample-at-reset-common", "marvell,sample-at-reset-ap810";
+				reg = <0x6F8200 0x8>;
+				sar-driver = "ap810_sar";
+				sar-name = "ap810_sar";
+				status = "okay";
+			};
+
+			AP810_LABEL(sdhci0): sdhci@6e0000 {
+				compatible = "marvell,armada-8k-sdhci";
+				reg = <0x6e0000 0x300>;
+				dma-coherent;
+				status = "disabled";
 			};
 		};
 	};

@@ -1,0 +1,14 @@
+/*
+ * Copyright (C) 2017 Marvell International Ltd.
+ *
+ * SPDX-License-Identifier:    GPL-2.0
+ * https://spdx.org/licenses
+ */
+
+#include "armada-8080.dtsi" /* include SoC device tree */
+
+/ {
+	model = "ARMADA-8080-PD";
+	compatible = "marvell,armada-8080-pd", "marvell,armada-8080";
+
+};

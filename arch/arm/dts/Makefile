@@ -112,7 +112,8 @@ dtb-$(CONFIG_ARCH_MVEBU) +=			\
 	armada-8080-pd.dtb			\
 	armada-8082-db.dtb			\
 	armada-8084-db.dtb			\
-	armada-8162-db.dtb
+	armada-8162-db.dtb			\
+	armada-8164-db.dtb
 
 dtb-$(CONFIG_ARCH_UNIPHIER_LD11) += \
 	uniphier-ld11-ref.dtb

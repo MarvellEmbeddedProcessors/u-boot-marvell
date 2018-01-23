@@ -275,7 +275,8 @@
 		phy-type = <COMPHY_TYPE_SATA0>;
 	};
 	phy2 {
-		phy-type = <COMPHY_TYPE_SFI>;
+		phy-type = <COMPHY_TYPE_SGMII0>;
+		phy-speed = <COMPHY_SPEED_3_125G>;
 	};
 	phy3 {
 		phy-type = <COMPHY_TYPE_SATA1>;
@@ -362,7 +363,7 @@
 
 &cp1_eth0 {
         status = "okay";
-        phy-mode = "sfi"; /* lane-2 */
+        phy-mode = "sgmii"; /* lane-2 */
 };
 
 &cp1_eth1 {

@@ -26,14 +26,14 @@
 				start-bit = <0>;
 				bit-length = <3>;
 				option-cnt = <8>;
-				options = "0x0", "CPU/DDR = 0x0: 1600/1600 Mhz, PIDI = 0: 1Ghz",
-					  "0x1", "CPU/DDR = 0x1: 2000/2400 Mhz, PIDI = 0: 1Ghz",
-					  "0x2", "CPU/DDR = 0x2: 2000/2667 Mhz, PIDI = 0: 1Ghz",
-					  "0x3", "CPU/DDR = 0x3: 2200/2400 Mhz, PIDI = 0: 1Ghz",
-					  "0x4", "CPU/DDR = 0x4: 2200/2667 Mhz, PIDI = 0: 1Ghz",
-					  "0x5", "CPU/DDR = 0x5: 2500/2667 Mhz, PIDI = 0: 1Ghz",
-					  "0x6", "CPU/DDR = 0x6: 2500/2933 Mhz, PIDI = 0: 1Ghz",
-					  "0x7", "CPU/DDR = 0x7: 2700/3200 Mhz, PIDI = 0: 1Ghz";
+				options = "0x0", "CPU/DDR/RCLK = 0x0: 1600/1600/1200 Mhz, PIDI = 0: 1Ghz",
+					  "0x1", "CPU/DDR/RCLK = 0x1: 2000/2400/1200 Mhz, PIDI = 0: 1Ghz",
+					  "0x2", "CPU/DDR/RCLK = 0x2: 2000/2400/1400 Mhz, PIDI = 0: 1Ghz",
+					  "0x3", "CPU/DDR/RCLK = 0x3: 2200/2400/1400 Mhz, PIDI = 0: 1Ghz",
+					  "0x4", "CPU/DDR/RCLK = 0x4: 2200/2667/1400 Mhz, PIDI = 0: 1Ghz",
+					  "0x5", "CPU/DDR/RCLK = 0x5: 2500/2400/1400 Mhz, PIDI = 0: 1Ghz",
+					  "0x6", "CPU/DDR/RCLK = 0x6: 2500/2933/1400 Mhz, PIDI = 0: 1Ghz",
+					  "0x7", "CPU/DDR/RCLK = 0x7: 2700/3200/1400 Mhz, PIDI = 0: 1Ghz";
 				default = <0xe>;
 				status = "okay";
 			};
@@ -45,14 +45,14 @@
 				start-bit = <0>;
 				bit-length = <3>;
 				option-cnt = <8>;
-				options = "0x0", "CPU/DDR = 0x0: 1200/1600 Mhz, PIDI = 0: 1Ghz",
-					  "0x1", "CPU/DDR = 0x1: 1600/2400 Mhz, PIDI = 0: 1Ghz",
-					  "0x2", "CPU/DDR = 0x2: 1600/2667 Mhz, PIDI = 0: 1Ghz",
-					  "0x3", "CPU/DDR = 0x3: 1800/2400 Mhz, PIDI = 0: 1Ghz",
-					  "0x4", "CPU/DDR = 0x4: 1800/2667 Mhz, PIDI = 0: 1Ghz",
-					  "0x5", "CPU/DDR = 0x5: 2000/2400 Mhz, PIDI = 0: 1Ghz",
-					  "0x6", "CPU/DDR = 0x6: 2000/2667 Mhz, PIDI = 0: 1Ghz",
-					  "0x7", "CPU/DDR = 0x7: 2000/2667 Mhz, PIDI = 0: 1Ghz";
+				options = "0x0", "CPU/DDR/RCLK = 0x0: 1200/1600/800 Mhz, PIDI = 0: 1Ghz",
+					  "0x1", "CPU/DDR/RCLK = 0x1: 1800/2400/1000 Mhz, PIDI = 0: 1Ghz",
+					  "0x2", "CPU/DDR/RCLK = 0x2: 1800/2400/1100 Mhz, PIDI = 0: 1Ghz",
+					  "0x3", "CPU/DDR/RCLK = 0x3: 1800/2400/1200 Mhz, PIDI = 0: 1Ghz",
+					  "0x4", "CPU/DDR/RCLK = 0x4: 1800/2400/1400 Mhz, PIDI = 0: 1Ghz",
+					  "0x5", "CPU/DDR/RCLK = 0x5: 2000/2400/1100 Mhz, PIDI = 0: 1Ghz",
+					  "0x6", "CPU/DDR/RCLK = 0x6: 2000/2400/1200 Mhz, PIDI = 0: 1Ghz",
+					  "0x7", "CPU/DDR/RCLK = 0x7: 2000/2400/1300 Mhz, PIDI = 0: 1Ghz";
 				default = <0xe>;
 				status = "okay";
 			};

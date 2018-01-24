@@ -271,7 +271,8 @@
 		phy-type = <COMPHY_TYPE_UNCONNECTED>;
 	};
 	phy4 {
-		phy-type = <COMPHY_TYPE_UNCONNECTED>;
+		phy-type = <COMPHY_TYPE_SFI>;
+		phy-speed = <COMPHY_SPEED_10_3125G>;
 	};
 	phy5 {
 		phy-type = <COMPHY_TYPE_SATA1>;
@@ -326,7 +327,8 @@
 		phy-type = <COMPHY_TYPE_UNCONNECTED>;
 	};
 	phy4 {
-		phy-type = <COMPHY_TYPE_UNCONNECTED>;
+		phy-type = <COMPHY_TYPE_SFI>;
+		phy-speed = <COMPHY_SPEED_10_3125G>;
 	};
 	phy5 {
 		phy-type = <COMPHY_TYPE_SATA1>;

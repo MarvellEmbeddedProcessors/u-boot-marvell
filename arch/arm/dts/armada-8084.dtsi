@@ -13,14 +13,6 @@
 
 /dts-v1/;
 
-#define CP110_BASE				((AP_NUM * 0x1d00000000) + 0x8100000000 + (CP110_NUM * 0x0700000000))
-#define CP110_PCIE_MEM_SIZE			(0xfff00000)
-#define CP110_PCIEx_CPU_IO_BASE(iface)		(CP110_BASE + 0x01fffe0000 + (iface) * 0x0200000000)
-#define CP110_PCIEx_CPU_MEM_BASE(iface)		(CP110_BASE + 0x0100000000 + (iface) * 0x0200000000)
-#define CP110_PCIEx_BUS_IO_BASE(iface)		(CP110_PCIEx_CPU_IO_BASE(iface) - CP110_PCIEx_CPU_MEM_BASE(iface))
-#define CP110_PCIEx_BUS_MEM_BASE(iface)		(0x0)
-#define CP110_PCIE_BUS_MEM_CFG			(0x83000000)
-
 #define AP_NUM			0
 #define AP810_NAME		ap0
 #define AP810_BASE		0xe8000000
@@ -36,6 +28,7 @@
 #define CP110_NAME		cp0
 #define CP110_NUM		0
 
+#include "armada-8kp.dtsi"
 #include "armada-cp110.dtsi"
 
 #undef CP110_NAME
@@ -50,6 +43,7 @@
 #define CP110_NAME		cp1
 #define CP110_NUM		1
 
+#include "armada-8kp.dtsi"
 #include "armada-cp110.dtsi"
 
 #undef CP110_NAME
@@ -64,6 +58,7 @@
 #define CP110_NAME		cp2
 #define CP110_NUM		2
 
+#include "armada-8kp.dtsi"
 #include "armada-cp110.dtsi"
 
 #undef CP110_NAME
@@ -78,6 +73,7 @@
 #define CP110_NAME		cp3
 #define CP110_NUM		3
 
+#include "armada-8kp.dtsi"
 #include "armada-cp110.dtsi"
 
 #undef CP110_NAME

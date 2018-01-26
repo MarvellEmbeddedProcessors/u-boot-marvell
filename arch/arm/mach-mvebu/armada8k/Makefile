@@ -5,4 +5,5 @@
 #
 
 obj-y = cpu.o
+obj-y += soc.o
 obj-y += cache_llc.o

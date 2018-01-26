@@ -13,6 +13,7 @@
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
 #include <asm/armv8/mmu.h>
+#include <mach/soc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -128,3 +129,11 @@ u32 mvebu_get_nand_clock(void)
 	else
 		return 250 * 1000000;
 }
+
+#if defined(CONFIG_DISPLAY_BOARDINFO)
+int print_cpuinfo(void)
+{
+	soc_print_device_info();
+	return 0;
+}
+#endif

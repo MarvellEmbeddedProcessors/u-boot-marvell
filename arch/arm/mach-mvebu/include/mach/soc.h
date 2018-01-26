@@ -169,4 +169,7 @@
 #define BOOT_FROM_SPI		0x3
 #endif
 
+#ifndef __ASSEMBLY__
+void soc_print_device_info(void);
+#endif /* __ASSEMBLY__ */
 #endif /* _MVEBU_SOC_H */

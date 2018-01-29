@@ -10,6 +10,7 @@
  */
 
 #include "armada-common.dtsi"
+#include "armada-8kp.dtsi"
 
 /dts-v1/;
 
@@ -28,7 +29,6 @@
 #define CP110_NAME		cp0
 #define CP110_NUM		0
 
-#include "armada-8kp.dtsi"
 #include "armada-cp110.dtsi"
 
 #undef CP110_NAME
@@ -43,7 +43,6 @@
 #define CP110_NAME		cp1
 #define CP110_NUM		1
 
-#include "armada-8kp.dtsi"
 #include "armada-cp110.dtsi"
 
 #undef CP110_NAME
@@ -58,7 +57,6 @@
 #define CP110_NAME		cp2
 #define CP110_NUM		2
 
-#include "armada-8kp.dtsi"
 #include "armada-cp110.dtsi"
 
 #undef CP110_NAME
@@ -73,7 +71,6 @@
 #define CP110_NAME		cp3
 #define CP110_NUM		3
 
-#include "armada-8kp.dtsi"
 #include "armada-cp110.dtsi"
 
 #undef CP110_NAME

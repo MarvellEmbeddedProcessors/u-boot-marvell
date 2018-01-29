@@ -12,6 +12,7 @@
  */
 
 #include <common.h>
+#include <linux/sizes.h>
 #include <asm/io.h>
 #include <asm/armv8/mmu.h>
 #include <mach/clock.h>
@@ -21,16 +22,11 @@ DECLARE_GLOBAL_DATA_PTR;
 #define MVEBU_AR_RFU_BASE		(MVEBU_REGISTER(0x6F0000))
 #define MVEBU_RFU_GLOBL_SW_RST		(MVEBU_AR_RFU_BASE + 0x184)
 
-#define SZ_1M				0x00100000
-#define SZ_256M				0x10000000
-#define SZ_1G				0x40000000
-#define SZ_4G				0x100000000
-
 /*
  * The following table includes all memory regions for Armada 8k Plus.
  */
 static struct mm_region mvebu_mem_map[] = {
-	/* Armada 8080 and 70x0 common memory regions start here */
+	/* Armada common memory regions start here */
 	{
 		/* RAM */
 		.phys = 0x0UL,
@@ -38,8 +34,15 @@ static struct mm_region mvebu_mem_map[] = {
 #ifdef CONFIG_MVEBU_PALLADIUM
 		.size = 0x20000000UL,
 #else
-		.size = 0x80000000UL,
+		.size = SZ_4G - SZ_1G,
 #endif
+		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+			 PTE_BLOCK_INNER_SHARE
+	},
+	{
+		.phys = 0x100000000UL,
+		.virt = 0x100000000UL,
+		.size = SZ_8G - (SZ_4G - SZ_1G),
 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 			 PTE_BLOCK_INNER_SHARE
 	},
@@ -86,7 +89,7 @@ int mvebu_dram_init(void)
 	 * For now use 512MiB, later need to read the DRAM size using DRAM
 	 * driver or from device tree that passed from ATF
 	 */
-	gd->ram_size = 0x20000000;
+	gd->ram_size = SZ_8G;
 #endif
 	return 0;
 }

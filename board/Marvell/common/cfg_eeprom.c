@@ -34,7 +34,11 @@ static char hw_info_param_list[][HW_INFO_MAX_NAME_LEN] = {
 	"eth2addr",
 	"eth3addr",
 	"eth4addr",
-	"eth5addr"
+	"eth5addr",
+	"eth6addr",
+	"eth7addr",
+	"eth8addr",
+	"eth9addr"
 };
 static int hw_info_param_num = (sizeof(hw_info_param_list) /
 				sizeof(hw_info_param_list[0]));

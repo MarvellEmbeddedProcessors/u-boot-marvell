@@ -16,9 +16,10 @@
  * ***************************************************************************
  */
 
+#include <asm/arch-armada8k/cache_llc.h>
+#include <asm/io.h>
 #include <common.h>
 #include <mvebu/mvebu_chip_sar.h>
-#include <asm/io.h>
 
 #define CP_DEV_ID_STATUS_REG		(MVEBU_REGISTER(0x2400240))
 #define DEVICE_ID_STATUS_MASK		0xffff
@@ -138,6 +139,23 @@ void soc_print_device_info(void)
 		printf("%dx CP%x-A%d\n", cp_num, cp_type, cp_rev);
 	else
 		printf("CP%x-A%d\n", cp_type, cp_rev);
+}
+
+/* Print System cache (LLC) status and mode */
+void soc_print_system_cache_info(void)
+{
+	u32 val;
+	int llc_en = 0, excl = 0;
+
+	val = readl(MVEBU_LLC_BASE + LLC_CTRL_REG_OFFSET);
+	if (val & LLC_EN) {
+		llc_en = 1;
+		if (val & LLC_EXCL_EN)
+			excl = 1;
+	}
+
+	printf("LLC %s%s\n", llc_en ? "Enabled" : "Disabled",
+	       excl ? " (Exclusive Mode)" : "");
 }
 
 int soc_early_init_f(void)

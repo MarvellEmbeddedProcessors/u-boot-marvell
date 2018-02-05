@@ -117,6 +117,8 @@ void mvebu_dram_init_banksize(void)
 int print_cpuinfo(void)
 {
 	soc_print_clock_info();
+	soc_print_system_cache_info();
+
 	return 0;
 }
 #endif

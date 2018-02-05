@@ -140,6 +140,8 @@ int print_cpuinfo(void)
 {
 	soc_print_device_info();
 	soc_print_clock_info();
+	soc_print_system_cache_info();
+
 	return 0;
 }
 #endif

@@ -203,5 +203,6 @@
 #ifndef __ASSEMBLY__
 void soc_print_device_info(void);
 int soc_get_ap_cp_num(void *ap_num, void *cp_num);
+void soc_print_system_cache_info(void);
 #endif /* __ASSEMBLY__ */
 #endif /* _MVEBU_SOC_H */

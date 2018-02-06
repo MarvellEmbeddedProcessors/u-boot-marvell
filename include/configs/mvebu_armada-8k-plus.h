@@ -28,7 +28,7 @@
  * High Level Configuration Options (easy to change)
  */
 #define CONFIG_SYS_TCLK		250000000	/* 250MHz */
-#define CONFIG_NR_DRAM_BANKS	2
+#define CONFIG_NR_DRAM_BANKS	5
 
 /*
  * SPI Flash configuration

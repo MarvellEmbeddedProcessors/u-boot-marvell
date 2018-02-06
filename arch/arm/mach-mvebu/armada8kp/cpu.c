@@ -22,6 +22,18 @@ DECLARE_GLOBAL_DATA_PTR;
 #define MVEBU_AR_RFU_BASE		(MVEBU_REGISTER(0x6F0000))
 #define MVEBU_RFU_GLOBL_SW_RST		(MVEBU_AR_RFU_BASE + 0x184)
 
+#define MVEBU_MC_MMAP_REG_L(iface, cs)	(0xfe0200ULL + \
+						(iface) * 0x10000 + (cs) * 0x8)
+#define MVEBU_MC_AREA_LEN_OFFS		16
+#define MVEBU_MC_AREA_LEN_MASK		(0x1f << MVEBU_MC_AREA_LEN_OFFS)
+#define MVEBU_MC_CS_VALID_MASK		0x1
+
+#define MVEBU_AP_ADDR_RANGE		(0x04000000ULL)
+#define MVEBU_AP_BASE_ADDR(ap)		(0xe8000000ULL - \
+						(ap) * MVEBU_AP_ADDR_RANGE)
+#define MVEBU_MAX_DRAM_IFACE		2
+#define MVEBU_MAX_DRAM_IFACE_CS		2
+
 /*
  * The following table includes all memory regions for Armada 8k Plus.
  */
@@ -32,17 +44,10 @@ static struct mm_region mvebu_mem_map[] = {
 		.phys = 0x0UL,
 		.virt = 0x0UL,
 #ifdef CONFIG_MVEBU_PALLADIUM
-		.size = 0x20000000UL,
+		.size = SZ_512M,
 #else
 		.size = SZ_4G - SZ_1G,
 #endif
-		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
-			 PTE_BLOCK_INNER_SHARE
-	},
-	{
-		.phys = 0x100000000UL,
-		.virt = 0x100000000UL,
-		.size = SZ_8G - (SZ_4G - SZ_1G),
 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 			 PTE_BLOCK_INNER_SHARE
 	},
@@ -80,37 +85,108 @@ void reset_cpu(ulong ignored)
 	writel(0x0, MVEBU_RFU_GLOBL_SW_RST);
 }
 
+static u64 mvebu_dram_scan_ap_sz(u32 base)
+{
+	int iface, cs;
+	u64 size = 0;
+	u32 reg_val, *reg_addr;
+		/* Area size is encoded by 5 bit field */
+	static u64 area_sz_decode[] = {
+		SZ_256M + SZ_128M, SZ_256M + SZ_512M, SZ_1G + SZ_512M,
+		3ULL * SZ_1G, 3ULL * SZ_2G, 0, 0, SZ_8M, SZ_16M, SZ_32M,
+		SZ_64M, SZ_128M, SZ_256M, SZ_512M, SZ_1G, SZ_2G, SZ_4G,
+		SZ_8G, SZ_16G, 2ULL * SZ_16G, 4ULL * SZ_16G, 8ULL * SZ_16G,
+		16ULL * SZ_16G, 32ULL * SZ_16G, 64ULL * SZ_16G, 128ULL * SZ_16G,
+		0, 0, 0, 0, 0, 0
+	};
+
+	for (iface = 0; iface < MVEBU_MAX_DRAM_IFACE; iface++) {
+		for (cs = 0; cs < MVEBU_MAX_DRAM_IFACE_CS; cs++) {
+			/* DRAM area per AP, DRAM interface and CS */
+			reg_addr =
+				(u32 *)(MVEBU_MC_MMAP_REG_L(iface, cs) + base);
+			reg_val = readl(reg_addr);
+			/* Count the area if CS is active */
+			if (reg_val & MVEBU_MC_CS_VALID_MASK) {
+				reg_val &= MVEBU_MC_AREA_LEN_MASK;
+				reg_val >>= MVEBU_MC_AREA_LEN_OFFS;
+				debug("%p: DRAM if %d, CS%d: area 0x%x\n",
+				      reg_addr, iface, cs, reg_val);
+				size += area_sz_decode[reg_val];
+			}
+		}
+	}
+
+	return size;
+}
+
 int mvebu_dram_init(void)
 {
 #ifdef CONFIG_MVEBU_PALLADIUM
-	gd->ram_size = 0x20000000;
+	gd->ram_size = SZ_512M;
 #else
-	/*
-	 * For now use 512MiB, later need to read the DRAM size using DRAM
-	 * driver or from device tree that passed from ATF
-	 */
-	gd->ram_size = SZ_8G;
+	gd->ram_size = SZ_2G;
 #endif
 	return 0;
 }
 
 void mvebu_dram_init_banksize(void)
 {
-	/*
-	 * Config 2 DRAM banks:
-	 * Bank 0 - max size 4G - 1G
-	 * Bank 1 - ram size - 4G + 1G
+	int idx, ap;
+	int ap_num, cp_num;
+	u64 ap_sz[] = {0, 0, 0, 0};
+
+	soc_get_ap_cp_num(&ap_num, &cp_num);
+
+	gd->ram_size = 0;
+	for (ap = 0; ap < ap_num; ap++) {
+		ap_sz[ap] = mvebu_dram_scan_ap_sz(MVEBU_AP_BASE_ADDR(ap));
+		debug("Detected %lldMB memory on AP-%d\n",
+		      ap_sz[ap] / SZ_1M, ap);
+		gd->ram_size += ap_sz[ap];
+	}
+
+	for (idx = 0; idx < CONFIG_NR_DRAM_BANKS; idx++)
+		gd->bd->bi_dram[idx].size = 0;
+
+	/* Only remap internal registers if the memory connected to AP0
+	 * is greater than 3G, so there is a region overlapping and it is
+	 * smaller than 255G, when there is still a 1G space for remapping
+	 * exists in the AP0 DRAM address range.
 	 */
-	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
-	if (gd->ram_size <= SZ_4G - SZ_1G) {
-		gd->bd->bi_dram[0].size = min(gd->ram_size,
-					      (phys_size_t)(SZ_4G - SZ_1G));
+	idx = 0;
+	gd->bd->bi_dram[idx].start = 0;
+	if ((ap_sz[idx] > (SZ_4G - SZ_1G)) &&
+	    (ap_sz[idx] < (8 * SZ_32G - SZ_1G))) {
+		/* Bypass internal registers region between
+		 * 3G and 4G boundaries
+		 */
+		gd->bd->bi_dram[idx].size = SZ_4G - SZ_1G;
+		idx++;
+		gd->bd->bi_dram[idx].start = SZ_4G;
+		gd->bd->bi_dram[idx].size = ap_sz[0] - SZ_4G + SZ_1G;
+	} else {
+		gd->bd->bi_dram[idx].size = ap_sz[0];
+	}
+
+	idx++;
+	if (ap_num == 2) {
+		/* Dual AP only */
+		gd->bd->bi_dram[idx].size = ap_sz[1];
+		gd->bd->bi_dram[idx].start = 256ULL * SZ_1G;
 		return;
 	}
 
-	gd->bd->bi_dram[0].size = SZ_4G - SZ_1G;
-	gd->bd->bi_dram[1].start = SZ_4G;
-	gd->bd->bi_dram[1].size = gd->ram_size - SZ_4G + SZ_1G;
+	/* Quad AP support */
+	if (ap_num > 2) {
+		gd->bd->bi_dram[idx].start = 128ULL * SZ_1G;
+		idx++;
+		gd->bd->bi_dram[idx].start = 256ULL * SZ_1G;
+		gd->bd->bi_dram[idx].size = ap_sz[2];
+		idx++;
+		gd->bd->bi_dram[idx].start = 384ULL * SZ_1G;
+		gd->bd->bi_dram[idx].size = ap_sz[3];
+	}
 }
 
 #if defined(CONFIG_DISPLAY_BOARDINFO)

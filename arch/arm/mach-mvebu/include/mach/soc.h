@@ -36,6 +36,26 @@
 
 /* SOC specific definations */
 #define INTREG_BASE		0xd0000000
+
+#if defined(CONFIG_ARMADA_8K_PLUS)
+/*=============== A8K+ =================*/
+#define MVEBU_REGS_BASE_AP(ap)		(0xe8000000ULL - (ap) * 0x04000000)
+#define MVEBU_REGS_BASE_CP(ap, cp)	(0x8100000000ULL + \
+						(ap) * 0x1d00000000ULL + \
+						(cp) * 0x700000000ULL)
+#define MVEBU_CCU_MAX_WINS		(5)
+#define MVEBU_IO_WIN_MAX_WINS		(11)
+#define MVEBU_IO_WIN_GCR_OFFSET		(0xF0)
+#define MVEBU_GWIN_MAX_WINS		(16)
+#elif defined(CONFIG_ARMADA_8K)
+/*=============== A8K =================*/
+#define MVEBU_REGS_BASE_AP(ap)		(0xf0000000ULL)
+#define MVEBU_REGS_BASE_CP(ap, cp)	(0xf2000000ULL + (cp) * 0x02000000)
+#define MVEBU_CCU_MAX_WINS		(8)
+#define MVEBU_IO_WIN_MAX_WINS		(7)
+#define MVEBU_IO_WIN_GCR_OFFSET		(0x70)
+#endif
+
 #define INTREG_BASE_ADDR_REG	(INTREG_BASE + 0x20080)
 
 #if defined(CONFIG_ARMADA_8K)

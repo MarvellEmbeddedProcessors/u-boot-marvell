@@ -128,4 +128,12 @@ config CMD_MVEBU_RX_TRAINING
 	help
 	  Perform RX training sequence
 
+config CMD_MVEBU_MAP
+	bool "map"
+	depends on TARGET_MVEBU_ARMADA_8K || TARGET_MVEBU_ARMADA_8K_PLUS
+	default y
+	help
+	  Dump address translation tables
+
+
 endmenu

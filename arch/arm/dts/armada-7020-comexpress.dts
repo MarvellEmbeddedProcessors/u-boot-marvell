@@ -1,0 +1,49 @@
+/*
+ * Copyright (C) 2018 Marvell International Ltd.
+ *
+ * SPDX-License-Identifier:	GPL-2.0
+ * https://spdx.org/licenses
+ */
+
+/*
+ * Device Tree file for Marvell Armada 7020 COMEXPRESS board
+ * Boot device: NAND
+ */
+
+#include "armada-7020-amc.dts"
+
+/ {
+	model = "Marvell Armada 7020 COMEXPRESS";
+	compatible = "marvell,armada7020-comexpress", "marvell,armada7020",
+		     "marvell,armada-ap806";
+
+};
+
+&cpm_pinctl {
+		/* MPP Bus:
+		 * RGMII [0-11]
+		 * Device Bus [13-27]
+		 * SATA1 [28]
+		 * UART0 [29-30]
+		 * SMI	 [32,34]
+		 * XSMI  [35-36]
+		 * I2C0	 [37-38]
+		 * I2C1	 [50-51]
+		 * SD	 [49, 55-61]
+		 */
+		/*   0    1    2    3    4    5    6    7    8    9 */
+	pin-func = < 3    3    3    3    3    3    3    3    3    3
+		     3    3    0    2    0    1    1    1    1    1
+		     1    1    1    1    1    1    1    1    9    0xA
+		     0xA  0    7    0    7    7    7    2    2    0xFF
+		     0xFF 0xFF 0xFF 0xFF 0    0    0    0    0    0xFF
+		     2    2    0    0    0    0xB  0xE  0xE  0xE  0xE
+		     0xE  0xE  0>;
+};
+
+&cpm_mdio {
+	phy1: ethernet-phy@1 {
+		reg = <0x10>;
+	};
+};
+

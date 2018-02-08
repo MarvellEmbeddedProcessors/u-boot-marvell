@@ -86,13 +86,13 @@ static int get_soc_name(char **soc_name)
 	return 0;
 }
 
-static int get_ap_cp_num(u32 *ap_num, u32 *cp_num)
+int soc_get_ap_cp_num(void *ap_num, void *cp_num)
 {
 	u32 index;
 
 	get_soc_table_index(&index);
-	*ap_num = soc_info_table[index].ap_num;
-	*cp_num = soc_info_table[index].cp_num;
+	*((u32 *)ap_num) = soc_info_table[index].ap_num;
+	*((u32 *)cp_num) = soc_info_table[index].cp_num;
 
 	return 0;
 }
@@ -127,7 +127,7 @@ void soc_print_device_info(void)
 	u32 ap_num, cp_num, ap_type, ap_rev, cp_type, cp_rev;
 	char *soc_name = NULL;
 
-	get_ap_cp_num(&ap_num, &cp_num);
+	soc_get_ap_cp_num(&ap_num, &cp_num);
 
 	get_soc_name(&soc_name);
 	get_ap_type_rev(&ap_type, &ap_rev);

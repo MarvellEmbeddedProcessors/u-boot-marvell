@@ -8,7 +8,29 @@
 #include <asm/arch-armada8k/cache_llc.h>
 #include <asm/io.h>
 #include <common.h>
+#include <dm.h>
 #include <mvebu/mvebu_chip_sar.h>
+
+int soc_get_ap_cp_num(void *ap_num, void *cp_num)
+{
+	/* TODO: Handle Quad AP case */
+	if (of_machine_is_compatible("marvell,armada8162") ||
+	    of_machine_is_compatible("marvell,armada8164"))
+		*((u32 *)ap_num) = 2;
+	else
+		*((u32 *)ap_num) = 1;
+
+	if (of_machine_is_compatible("marvell,armada8082") ||
+	    of_machine_is_compatible("marvell,armada8162"))
+		*((u32 *)cp_num) = 2;
+	else if (of_machine_is_compatible("marvell,armada8084") ||
+		 of_machine_is_compatible("marvell,armada8164"))
+		*((u32 *)cp_num) = 4;
+	else
+		*((u32 *)cp_num) = 0;
+
+	return 0;
+}
 
 /* Print System cache (LLC) status and mode */
 void soc_print_system_cache_info(void)

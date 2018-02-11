@@ -213,18 +213,18 @@ int boot_from_nand(void);
 #include <config_distro_bootcmd.h>
 
 #define CONFIG_EXTRA_ENV_SETTINGS		\
-	"ramfs_name=-\0"			\
+	"ramdisk_name=-\0"			\
 	"fdt_name=fdt.dtb\0"			\
 	"image_name=Image\0"			\
 	"root=root=/dev/nfs rw\0"		\
 	"rootpath=/srv/nfs\0"			\
 	"extra_params_a8k=earlycon=uart8250,mmio32,0xf0512000\0"	\
 	"extra_params_a8k_plus=earlycon=uart8250,mmio32,0xe8512000\0"	\
-	"get_ramfs=if test \"${ramfs_name}\" != \"-\"; then "		\
-		"tftpboot $ramfs_addr_r $ramfs_name; else "		\
+	"get_ramdisk=if test \"${ramdisk_name}\" != \"-\"; then "	\
+		"tftpboot $ramdisk_addr_r $ramdisk_name; else "		\
 		"setenv ramdisk_addr_r -;fi\0"				\
 	"get_images=tftpboot $kernel_addr_r $image_name; "		\
-		"tftpboot $fdt_addr_r $fdt_name; run get_ramfs\0"	\
+		"tftpboot $fdt_addr_r $fdt_name; run get_ramdisk\0"	\
 	"set_bootargs=setenv bootargs $console $root ip=$ipaddr:"	\
 		"$serverip:$gatewayip:$netmask:$hostname:$netdev:none "	\
 		"nfsroot=$serverip:$rootpath $extra_params\0"		\

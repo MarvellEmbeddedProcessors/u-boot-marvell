@@ -175,9 +175,10 @@ A8K platforms
 3. Burn all required efuses to each efuse rows using "fuse prog" commands. The trusted boot enable
    efuse should be burned last since any further modifications to the SoC efuses will not be possible
    afterwards.
-   See the efuse programming example for A8K device below.
+   See the efuse programming example(HD and LD efuse rows) for A8K device below.
    uboot fuse command::
 
+		/* HD efuse rows(64bits width) programming */
 		/* prog KAK_DIGEST key to efuse */
 		fuse prog -y 25 0 <KAK_DIGEST bits 31-0> <KAK_DIGEST bits 55-32> <0x1>
 		fuse prog -y 26 0 <KAK_DIGEST bits 95-56> <KAK_DIGEST bits 111-96> <0x1>
@@ -208,27 +209,48 @@ A8K platforms
 		fuse prog -y 36 0 0x90785634 0x0 0x1
 		/* prog efuse row to select CSK valid - the first empty row specifies the
 		CSK index */
-		fuse prog -y 37~50 0 <0x1> <0x0> <0x1>
+		fuse prog -y 37~50 0 <0x00000001> <0x00000000> <0x1>
 		For example:
 		/* prog efuse row to select CSK 3 valid,need to set bit[0] in the efuse
 		rows 37, 38 and 39 to non zero values and leave the efuse row 40 intact */
-		fuse prog -y 37 0 <0x1> <0x0> <0x1>
-		fuse prog -y 38 0 <0x1> <0x0> <0x1>
-		fuse prog -y 39 0 <0x1> <0x0> <0x1>
+		fuse prog -y 37 0 <0x00000001> <0x00000000> <0x1>
+		fuse prog -y 38 0 <0x00000001> <0x00000000> <0x1>
+		fuse prog -y 39 0 <0x00000001> <0x00000000> <0x1>
 		/* prog flash ID to efuse row 30 */
-		fuse prog -y 30 0 <0xbaddf00d> <0x0> <0x1>
+		fuse prog -y 30 0 <0xbaddf00d> <0x00000000> <0x1>
 		/* prog flash ID to efuse row 31 */
-		fuse prog -y 31 0 <0xdeadbeef> <0x0> <0x1>
+		fuse prog -y 31 0 <0xdeadbeef> <0x00000000> <0x1>
 
-		/* enable trusted and enable JTAG permanent, select boot device, enable CPU
-		Wakeup/Enable in AP LD1*/
-		fuse prog -y 65 0 <0x1> <0xC000> <0x0> <0x0> <0x0> <0x0> <0x0> <0x0>
-		/* enable trusted/JTAG permanent select boot device, disable ICU
-		message LD1 in SB0 */
-		fuse prog -y 67 0 <0xc9> <0x1> <0x0> <0x0> <0x0> <0x0> <0x0> <0x0>
-		/* enable trusted/JTAG permanent select boot device, disable ICU
-		message LD1 in SB1 */
-		fuse prog -y 69 0 <0xc9> <0x1> <0x0> <0x0> <0x0> <0x0> <0x0> <0x0>
+		/* LD efuse rows(256bits width) programming */
+		/* For A8k SoCs, both AP and SB0/1 have LD0 and LD1 efuse rows. Only LD1 rows could
+		 * be programmed. Efuse row 65 is AP LD1 while row 67 is SB0 LD1. Row 69 is SB1 LD1.
+		 * /
+		fuse prog -y <RowIndex> 0 <bits 31-0> <bits 63-32> <bits 95-64> <bits 127-96>
+		<bits 159-128> <bits 191-160> <bits 223-192> <bits 255-224>
+
+		Below example showing secure boot fusing to select CP0_SPI as boot device.
+
+		/* enable trusted boot and disable JTAG permanent, select boot device(from AP perspective,
+		 * here the value is 0x0 which means IHB to select device. Please see Table(Boot Source
+		 * Options) for boot device selection in functional specifications document), enable CPU
+		 * Wakeup/Enable in AP LD1.
+		 */
+		fuse prog -y 65 0 <0x00000001> <0x0000C000> <0x000000000> <0x00000000> <0x00000000>
+		<0x00000000> <0x00000000> <0x00000000>
+
+		/* enable trusted boot and disable JTAG permanent, select boot device(from SB perspective,
+		 * the value is 0x32 which means boot from CP0_SPI. Please see the HW sepcificaiton document
+		 * for a list of supported values), disable ICU message LD1 in SB0
+		 */
+		fuse prog -y 67 0 <0x000000c9> <0x00000001> <0x00000000> <0x00000000> <0x00000000>
+		<0x00000000> <0x00000000> <0x00000000>
+
+		/* enable trusted boot and disable JTAG permanent, select boot device(from SB perspective,
+		 * the value is 0x32 which means boot from CP0_SPI. Please see the HW sepcificaiton document
+		 * for a list of supported values), disable ICU message LD1 in SB0
+		 */
+		fuse prog -y 69 0 <0x0000000c9> <0x00000001> <0x00000000> <0x00000000> <0x00000000>
+		<0x00000000> <0x00000000> <0x00000000>
 
    .. Note::
 	HD_efuse (bank ID 0~63's bit56-63 must be 0x0 according to Functional

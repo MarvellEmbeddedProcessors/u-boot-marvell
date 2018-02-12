@@ -85,6 +85,7 @@ void reset_cpu(ulong ignored)
 	writel(0x0, MVEBU_RFU_GLOBL_SW_RST);
 }
 
+#ifndef CONFIG_MVEBU_PALLADIUM
 static u64 mvebu_dram_scan_ap_sz(u32 base)
 {
 	int iface, cs;
@@ -119,6 +120,7 @@ static u64 mvebu_dram_scan_ap_sz(u32 base)
 
 	return size;
 }
+#endif
 
 int mvebu_dram_init(void)
 {
@@ -132,6 +134,10 @@ int mvebu_dram_init(void)
 
 void mvebu_dram_init_banksize(void)
 {
+#ifdef CONFIG_MVEBU_PALLADIUM
+	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
+	gd->bd->bi_dram[0].size = gd->ram_size;
+#else
 	int idx, ap;
 	int ap_num, cp_num;
 	u64 ap_sz[] = {0, 0, 0, 0};
@@ -187,6 +193,7 @@ void mvebu_dram_init_banksize(void)
 		gd->bd->bi_dram[idx].start = 384ULL * SZ_1G;
 		gd->bd->bi_dram[idx].size = ap_sz[3];
 	}
+#endif
 }
 
 #if defined(CONFIG_DISPLAY_BOARDINFO)

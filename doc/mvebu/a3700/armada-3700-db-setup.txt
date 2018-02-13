@@ -27,7 +27,7 @@ This document describes the board modifications required to setup each configura
 interfaces supported (or disabled in each one).
 
 To switch to a different configuration, follow the instructions in the "board setup" section.
-Once completed, change the FDT file used by U-BOOT by running the U-BOOT command "fdt_config".
+Once completed, build u-boot image with dts file of target configuration.
 
 Board Setup Options
 -------------------
@@ -35,18 +35,16 @@ Board Setup Options
 +---------------+---------------------------------------+---------------------------------------+---------------------------------------+
 | Connector	| Setup-1: Default			| Setup-2: SGMII1			| Setup-3: SGMII1-SFP2.5G		|
 +===============+=======================================+=======================================+=======================================+
-| CON8		| eMMC_NAND module 	(SLM1506-v1)	| eMMC_NAND module 	(SLM1506-v1)	| eMMC_NAND module 	(SLM1506-v1)	|
+| CON14		| SDcard module		(SLM1505-v1)	| SDcard module		(SLM1505-v1)	| SDcard module		(SLM1505-v1)	|
 +---------------+---------------------------------------+---------------------------------------+---------------------------------------+
-| CON15		| SDcard module		(SLM1505-v1)	| SDcard module		(SLM1505-v1)	| SDcard module		(SLM1505-v1)	|
+| CON15(PCIe)	| PCIe-mPCIe-Jumper: SLM-1496(Optional*)| PCIe-mPCIe-Jumper: SLM-1496(Optional*)| PCIe-mPCIe-Jumper: SLM-1496(Optional*)|
 +---------------+---------------------------------------+---------------------------------------+---------------------------------------+
-| CON17(PCIe)	| PCIe-mPCIe-Jumper: SLM-1496(Optional*)| PCIe-mPCIe-Jumper: SLM-1496(Optional*)| PCIe-mPCIe-Jumper: SLM-1496(Optional*)|
+| CON17		| SerDes-Jumper 	(SLM1502-v1)	| 88E1512 Module 	(SLM-1496-v1)	| 88F3720-2xSFP Module 	(SLM-1504-v1)	|
 +---------------+---------------------------------------+---------------------------------------+---------------------------------------+
-| CON19		| SerDes-Jumper 	(SLM1502-v1)	| 88E1512 Module 	(SLM-1496-v1)	| 88F3720-2xSFP Module 	(SLM-1504-v1)	|
-+---------------+---------------------------------------+---------------------------------------+---------------------------------------+
-| CON21		| 88E1512 Module 	(SLM-1496-v1)	| 88E1512 Module 	(SLM-1496-v1)	| 88E1512 Module 	(SLM-1496-v1)	|
+| CON19		| 88E1512 Module 	(SLM-1496-v1)	| 88E1512 Module 	(SLM-1496-v1)	| 88E1512 Module 	(SLM-1496-v1)	|
 +---------------+---------------------------------------+---------------------------------------+---------------------------------------+
 
-  * PCIe-mPCIe-Jumper is used to enable mini PCIe0 port (CON12)
+  * PCIe-mPCIe-Jumper is used to enable mini PCIe0 port (CON11)
 
 The table below summarizes the interface configuration of each setup.
 
@@ -61,15 +59,15 @@ The table below summarizes the interface configuration of each setup.
 +---------------+-------------------------------+-----------------------+-------------------------------+
 | SerDes PHY2	| SATA				| SATA			| SATA				|
 +---------------+-------------------------------+-----------------------+-------------------------------+
-| SATA		| CON6				| CON6			| CON6				|
+| SATA		| CON3				| CON3			| CON3				|
 +---------------+-------------------------------+-----------------------+-------------------------------+
-| PCIe		| CON12/17			| CON12/17		| CON12/17			|
+| PCIe		| CON15				| CON15			| CON15				|
 +---------------+-------------------------------+-----------------------+-------------------------------+
-| USB3		| CON13				| N/A			| N/A				|
+| USB3		| CON29				| N/A			| N/A				|
 +---------------+-------------------------------+-----------------------+-------------------------------+
-| SGMII1	| N/A				| PHY1 (CON19)		| PHY1 (CON19)			|
+| SGMII1	| N/A				| PHY1 (CON17)		| PHY1 (CON17)			|
 +---------------+-------------------------------+-----------------------+-------------------------------+
-| RGMII		| PHY0 (CON21)			| PHY0 (CON21)		| PHY0 (CON21)			|
+| RGMII		| PHY0 (CON19)			| PHY0 (CON19)		| PHY0 (CON19)			|
 +---------------+-------------------------------+-----------------------+-------------------------------+
 
 

@@ -900,7 +900,9 @@ static const init_fnc_t init_sequence_f[] = {
 	init_timebase,
 #endif
 	init_baud_rate,		/* initialze baudrate settings */
+#ifndef CONFIG_MVEBU_PALLADIUM
 	serial_init,		/* serial communications setup */
+#endif
 	console_init_f,		/* stage 1 init of console */
 #ifdef CONFIG_SANDBOX
 	sandbox_early_getopt_check,

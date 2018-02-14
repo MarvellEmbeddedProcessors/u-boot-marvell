@@ -1,0 +1,56 @@
+/*
+ * Copyright (C) 2018 Marvell International Ltd.
+ *
+ * SPDX-License-Identifier:    GPL-2.0
+ * https://spdx.org/licenses
+ */
+
+/*
+ * Device Tree file for Marvell Armada 8160 PD board platform
+ */
+
+#include "armada-8160-pd.dtsi"
+
+/ {
+	model = "Marvell Armada 8160 PD board";
+	compatible = "marvell,armada8160-pd", "marvell,armada8160",
+		     "marvell,armada-ap810", "marvell,armada-8k-plus";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		spi0 = &ap0_spi;
+		i2c0 = &ap0_i2c0;
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+};
+
+&ap0_uart0 {
+	status = "okay";
+};
+
+&ap0_spi {
+	status = "okay";
+};
+
+&ap0_i2c0 {
+	status = "okay";
+};
+
+&ap0_pinctl {
+	/* MPP Bus:
+	 * SPI	[6-10]
+	 * UART	[11,20]
+	 * I2C	[18-10]
+	 */
+		  /* 0 1 2 3 4 5 6 7 8 9 */
+	pin-func = < 0 0 0 0 0 0 2 2 2 2
+		     2 3 2 3 3 0 0 0 3 3
+		     3>;
+};

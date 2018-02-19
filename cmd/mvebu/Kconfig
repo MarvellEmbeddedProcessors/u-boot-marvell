@@ -135,5 +135,12 @@ config CMD_MVEBU_MAP
 	help
 	  Dump address translation tables
 
+config CMD_MVEBU_AVS
+	bool "avs"
+	depends on TARGET_MVEBU_ARMADA_8K || TARGET_MVEBU_ARMADA_8K_PLUS
+	default y
+	help
+	  Set/Get the Adaptive Voltage Scaling (AVS) value
+
 
 endmenu

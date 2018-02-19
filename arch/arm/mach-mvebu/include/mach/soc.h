@@ -37,6 +37,12 @@
 /* SOC specific definations */
 #define INTREG_BASE		0xd0000000
 #define INTREG_BASE_ADDR_REG	(INTREG_BASE + 0x20080)
+
+#if defined(CONFIG_ARMADA_8K)
+/*=============== A8K =================*/
+#define MVEBU_REGS_BASE_AP(ap)		(0xf0000000ULL)
+#endif
+
 #if defined(CONFIG_SPL_BUILD) || defined(CONFIG_ARMADA_3700)
 /*
  * The SPL U-Boot version still runs with the default
@@ -176,5 +182,6 @@
 
 #ifndef __ASSEMBLY__
 void soc_print_device_info(void);
+int soc_get_ap_cp_num(void *ap_num, void *cp_num);
 #endif /* __ASSEMBLY__ */
 #endif /* _MVEBU_SOC_H */

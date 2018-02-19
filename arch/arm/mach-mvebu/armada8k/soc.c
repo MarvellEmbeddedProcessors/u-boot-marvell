@@ -85,6 +85,17 @@ static int get_ap_cp_num(u32 *ap_num, u32 *cp_num)
 	return 0;
 }
 
+int soc_get_ap_cp_num(void *ap_num, void *cp_num)
+{
+	u32 index;
+
+	get_soc_table_index(&index);
+	*((u32 *)ap_num) = soc_info_table[index].ap_num;
+	*((u32 *)cp_num) = soc_info_table[index].cp_num;
+
+	return 0;
+}
+
 /* Get SoC's Application Processor (AP) module type and revision */
 static int get_ap_type_rev(u32 *type, u32 *rev)
 {

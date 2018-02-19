@@ -7,3 +7,4 @@
 
 obj-$(CONFIG_CMD_MVEBU_BUBT) += bubt.o
 obj-$(CONFIG_CMD_MVEBU_RX_TRAINING) += rx_training.o
+obj-$(CONFIG_CMD_MVEBU_AVS) += avs.o

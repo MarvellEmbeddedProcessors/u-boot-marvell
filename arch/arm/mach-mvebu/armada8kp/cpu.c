@@ -34,6 +34,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define MVEBU_MAX_DRAM_IFACE		2
 #define MVEBU_MAX_DRAM_IFACE_CS		2
 
+#define CCU_MC_RAR_IF0_REG		(0x000040e0ULL)
+#define MC_RAR_ENABLE			1
+
 /*
  * The following table includes all memory regions for Armada 8k Plus.
  */
@@ -120,6 +123,19 @@ static u64 mvebu_dram_scan_ap_sz(u32 base)
 
 	return size;
 }
+
+static u32 mvebu_dram_is_in_rar_mode(u32 base)
+{
+	u32 reg_val, *reg_addr;
+
+	/* Read the "RAR enable" flag for interface-0 only
+	 * When RAR is enabled both interfaces have this flag set.
+	 */
+	reg_addr = (u32 *)(CCU_MC_RAR_IF0_REG + base);
+	reg_val = readl(reg_addr);
+
+	return !!(reg_val & MC_RAR_ENABLE);
+}
 #endif
 
 int mvebu_dram_init(void)
@@ -146,9 +162,13 @@ void mvebu_dram_init_banksize(void)
 
 	gd->ram_size = 0;
 	for (ap = 0; ap < ap_num; ap++) {
+		u32 dram_mode =
+			mvebu_dram_is_in_rar_mode(MVEBU_AP_BASE_ADDR(ap));
+
 		ap_sz[ap] = mvebu_dram_scan_ap_sz(MVEBU_AP_BASE_ADDR(ap));
-		debug("Detected %lldMB memory on AP-%d\n",
-		      ap_sz[ap] / SZ_1M, ap);
+		printf("\tAP-%d DDR size = %lldMB %s\n", ap,
+		       ap_sz[ap] / SZ_1M,
+		       dram_mode == 1 ? "interleave mode" : "");
 		gd->ram_size += ap_sz[ap];
 	}
 

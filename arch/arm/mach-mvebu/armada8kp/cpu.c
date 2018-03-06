@@ -134,7 +134,7 @@ static u32 mvebu_dram_is_in_rar_mode(u32 base)
 	reg_addr = (u32 *)(CCU_MC_RAR_IF0_REG + base);
 	reg_val = readl(reg_addr);
 
-	return !!(reg_val & MC_RAR_ENABLE);
+	return reg_val & MC_RAR_ENABLE;
 }
 #endif
 
@@ -166,11 +166,12 @@ void mvebu_dram_init_banksize(void)
 			mvebu_dram_is_in_rar_mode(MVEBU_AP_BASE_ADDR(ap));
 
 		ap_sz[ap] = mvebu_dram_scan_ap_sz(MVEBU_AP_BASE_ADDR(ap));
-		printf("\tAP-%d DDR size = %lldMB %s\n", ap,
-		       ap_sz[ap] / SZ_1M,
-		       dram_mode == 1 ? "interleave mode" : "");
+		printf("\tAP-%d DDR - %3lld GiB %s\n", ap,
+		       ap_sz[ap] / SZ_1G,
+		       dram_mode == 1 ? "- interleave mode" : "");
 		gd->ram_size += ap_sz[ap];
 	}
+	printf("\tTotal mem - ");
 
 	for (idx = 0; idx < CONFIG_NR_DRAM_BANKS; idx++)
 		gd->bd->bi_dram[idx].size = 0;

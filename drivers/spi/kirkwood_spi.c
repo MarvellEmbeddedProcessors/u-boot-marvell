@@ -293,6 +293,7 @@ struct mvebu_spi_dev {
 struct mvebu_spi_platdata {
 	struct kwspi_registers		*spireg;
 	struct mvebu_spi_direct_acc	direct_access[CHIPSELECTS_NUM];
+	bool is_errata_50mhz_ac;
 };
 
 struct mvebu_spi_priv {
@@ -405,7 +406,6 @@ static int mvebu_spi_set_mode(struct udevice *bus, uint mode)
 {
 	struct mvebu_spi_platdata *plat = dev_get_platdata(bus);
 	struct kwspi_registers *reg = plat->spireg;
-	const struct mvebu_spi_dev *drvdata;
 	u32 data = readl(&reg->cfg);
 
 	data &= ~(KWSPI_CPHA | KWSPI_CPOL | KWSPI_RXLSBF | KWSPI_TXLSBF);
@@ -419,8 +419,7 @@ static int mvebu_spi_set_mode(struct udevice *bus, uint mode)
 
 	writel(data, &reg->cfg);
 
-	drvdata = (struct mvebu_spi_dev *)dev_get_driver_data(bus);
-	if (drvdata->is_errata_50mhz_ac)
+	if (plat->is_errata_50mhz_ac)
 		mvebu_spi_50mhz_ac_timing_erratum(bus, mode);
 
 	return 0;
@@ -472,8 +471,11 @@ static int mvebu_spi_ofdata_to_platdata(struct udevice *bus)
 {
 	struct mvebu_spi_platdata *plat = dev_get_platdata(bus);
 	struct udevice *child_dev;
+	const struct mvebu_spi_dev *drvdata =
+		(struct mvebu_spi_dev *)dev_get_driver_data(bus);
 
 	plat->spireg = (struct kwspi_registers *)devfdt_get_addr(bus);
+	plat->is_errata_50mhz_ac = drvdata->is_errata_50mhz_ac;
 
 	list_for_each_entry(child_dev, &bus->child_head, sibling_node) {
 		int cs;

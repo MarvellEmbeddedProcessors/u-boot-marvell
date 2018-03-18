@@ -2230,8 +2230,6 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 			break;
 		case COMPHY_TYPE_SATA0:
 		case COMPHY_TYPE_SATA1:
-		case COMPHY_TYPE_SATA2:
-		case COMPHY_TYPE_SATA3:
 			ret = comphy_sata_power_up(
 				lane, hpipe_base_addr, comphy_base_addr,
 				ptr_chip_cfg->cp_index);
@@ -2245,7 +2243,6 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 		case COMPHY_TYPE_SGMII0:
 		case COMPHY_TYPE_SGMII1:
 		case COMPHY_TYPE_SGMII2:
-		case COMPHY_TYPE_SGMII3:
 			if (ptr_comphy_map->speed == COMPHY_SPEED_INVALID) {
 				debug("Warning: SGMII PHY speed in lane %d is invalid, set PHY speed to 1.25G\n",
 				      lane);

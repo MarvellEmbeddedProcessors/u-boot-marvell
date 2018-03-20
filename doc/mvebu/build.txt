@@ -87,16 +87,6 @@ If "menuconfig" is used, navigate to the following location::
 
 and select "eMMC flash boot".
 
-If select SDIO eMMC as boot device, the Macro parameters should be::
-
-	#define CONFIG_SYS_MMC_ENV_DEV		0
-	#define CONFIG_SYS_MMC_ENV_PART		0
-
-If select eMMC as boot device, the Macro parameters should be::
-
-	#define CONFIG_SYS_MMC_ENV_DEV		1
-	#define CONFIG_SYS_MMC_ENV_PART		1/2
-
 The eMMC has 2 boot partitions (BOOT0 and BOOT1) and a user data partition (DATA).
 The boot partitions are numbered as partition 1 and 2 in MMC driver.
 Number 0 is used for user data partition and should not be utilized for storing
@@ -107,6 +97,30 @@ The default boot partition is BOOT0. It is selected by the following parameter:
 CONFIG_SYS_MMC_ENV_PART=1
 Valid values for this parameter are 1 for BOOT0 and 2 for BOOT1.
 Never use partition number 0 here!
+
+If select SD card as boot device, the Macro parameter should be::
+
+	#define CONFIG_SYS_MMC_ENV_PART		0
+
+If select eMMC as boot device, the Macro parameter should be::
+
+	#define CONFIG_SYS_MMC_ENV_PART		1
+or::
+
+	#define CONFIG_SYS_MMC_ENV_PART         2
+
+The parameter CONFIG_SYS_MMC_ENV_DEV depends on total number of enabled eMMC interfaces
+on board, the AP interface is enumerated first, then CP interface.
+
+For example on board with eMMC interface on both AP and CP::
+
+If select AP's SD card/eMMC as boot device, the Macro parameter should be::
+
+	#define CONFIG_SYS_MMC_ENV_DEV         0
+
+If select CP's SD card/eMMC as boot device, the Macro parameter should be::
+
+	#define CONFIG_SYS_MMC_ENV_DEV         1
 
 Both parameters can be changed in the "include/configs/mvebu_armada-37xx.h"
 or "include/configs/mvebu_armada-8k.h" depend on the device.

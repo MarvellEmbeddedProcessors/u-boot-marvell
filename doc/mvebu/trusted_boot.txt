@@ -15,6 +15,10 @@ The trusted boot document describes the following components:
 - Authentication Keys Generation and selection - Provides method to generate
   and select authentication keys.
 
+A38x platforms
+~~~~~~~~~~~~~~
+Please refer to Application Note - AN-383: ARMADA 38x/39x Families Secure Boot Mode Support
+
 eFuses
 -------
 The eFuse command module and driver provides RW access to SoC eFuses through

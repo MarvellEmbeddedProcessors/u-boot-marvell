@@ -93,3 +93,7 @@
 	status = "okay";
 };
 
+&cp0_xmdio {
+	status = "okay";
+};
+

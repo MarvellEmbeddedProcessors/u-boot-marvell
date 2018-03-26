@@ -99,7 +99,7 @@
 
 /* Defines for SPL */
 #define CONFIG_SPL_FRAMEWORK
-#define CONFIG_SPL_SIZE			(140 << 10)
+#define CONFIG_SPL_SIZE			(150 << 10)
 #define CONFIG_SPL_TEXT_BASE		0x40000030
 #define CONFIG_SPL_MAX_SIZE		(CONFIG_SPL_SIZE - 0x0030)
 

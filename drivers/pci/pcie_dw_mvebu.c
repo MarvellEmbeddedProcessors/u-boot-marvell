@@ -448,7 +448,7 @@ static void pcie_dw_mvebu_pcie_config(const void *regs_base)
 	 */
 	reg = readl(regs_base + PCIE_GEN3_EQ_CONTROL_OFF_REG);
 	reg &= ~PCIE_GEN3_EQ_PSET_REQ_VEC_MASK;
-	reg |= 0x3f0 << PCIE_GEN3_EQ_PSET_REQ_VEC_OFFSET;
+	reg |= 0x1f8 << PCIE_GEN3_EQ_PSET_REQ_VEC_OFFSET;
 	reg &= ~PCIE_GEN3_EQ_FB_MODE_MASK;
 	reg |= 0x1 << PCIE_GEN3_EQ_FB_MODE_OFFSET;
 	writel(reg, regs_base + PCIE_GEN3_EQ_CONTROL_OFF_REG);

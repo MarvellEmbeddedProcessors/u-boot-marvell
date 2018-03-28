@@ -92,8 +92,3 @@
 	pinctrl-0 = <&cp0_spi0_pins>;
 	status = "okay";
 };
-
-&cp0_xmdio {
-	status = "okay";
-};
-

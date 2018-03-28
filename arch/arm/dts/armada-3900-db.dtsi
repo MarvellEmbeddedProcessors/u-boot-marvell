@@ -195,6 +195,7 @@
 };
 
 &cp0_xmdio {
+	status = "okay";
 	phy0: ethernet-phy@0 {
 		reg = <0>;
 	};

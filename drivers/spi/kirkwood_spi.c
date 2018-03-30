@@ -29,6 +29,33 @@ static void _spi_cs_deactivate(struct kwspi_registers *reg)
 	clrbits_le32(&reg->ctrl, KWSPI_CSN_ACT);
 }
 
+static int _spi_direct_write(struct kwspi_registers *reg, unsigned int bitlen,
+			     const void *dout, void *din, unsigned long flags,
+			     void *direct_addr)
+{
+	unsigned int count = bitlen / 8;
+	unsigned int words = count / 4;
+	unsigned int rem = count % 4;
+
+	if (flags & SPI_XFER_BEGIN)
+		_spi_cs_activate(reg);
+
+	clrsetbits_le32(&reg->cfg, KWSPI_XFERLEN_MASK, KWSPI_XFERLEN_1BYTE);
+
+	if (words)
+		writesl(direct_addr, dout, words);
+	if (rem) {
+		u32 *buf = (u32 *)dout;
+
+		writesb(direct_addr, &buf[words], rem);
+	}
+
+	if (flags & SPI_XFER_END)
+		_spi_cs_deactivate(reg);
+
+	return 0;
+}
+
 static int _spi_xfer(struct kwspi_registers *reg, unsigned int bitlen,
 		     const void *dout, void *din, unsigned long flags)
 {
@@ -240,15 +267,23 @@ int spi_xfer(struct spi_slave *slave, unsigned int bitlen,
 }
 
 #else
+DECLARE_GLOBAL_DATA_PTR;
 
 /* Here now the DM part */
+#define CHIPSELECTS_NUM		8
+
+struct mvebu_spi_direct_acc {
+	void __iomem		*addr;
+	u32			size;
+};
 
 struct mvebu_spi_dev {
 	bool			is_errata_50mhz_ac;
 };
 
 struct mvebu_spi_platdata {
-	struct kwspi_registers *spireg;
+	struct kwspi_registers		*spireg;
+	struct mvebu_spi_direct_acc	direct_access[CHIPSELECTS_NUM];
 };
 
 struct mvebu_spi_priv {
@@ -386,8 +421,13 @@ static int mvebu_spi_xfer(struct udevice *dev, unsigned int bitlen,
 {
 	struct udevice *bus = dev->parent;
 	struct mvebu_spi_platdata *plat = dev_get_platdata(bus);
+	void *direct_addr = plat->direct_access[spi_chip_select(dev)].addr;
 
-	return _spi_xfer(plat->spireg, bitlen, dout, din, flags);
+	if (dout && direct_addr)
+		return _spi_direct_write(plat->spireg, bitlen, dout,
+					 din, flags, direct_addr);
+	else
+		return _spi_xfer(plat->spireg, bitlen, dout, din, flags);
 }
 
 static int mvebu_spi_claim_bus(struct udevice *dev)
@@ -412,14 +452,54 @@ static int mvebu_spi_probe(struct udevice *bus)
 	writel(KWSPI_SMEMRDIRQ, &reg->irq_cause);
 	writel(KWSPI_IRQMASK, &reg->irq_mask);
 
+	/* Don't deassert CS between the direct mapped SPI transfers */
+	writel(0, &reg->dw_cfg);
+
 	return 0;
 }
 
 static int mvebu_spi_ofdata_to_platdata(struct udevice *bus)
 {
 	struct mvebu_spi_platdata *plat = dev_get_platdata(bus);
+	struct udevice *child_dev;
 
 	plat->spireg = (struct kwspi_registers *)devfdt_get_addr(bus);
+
+	list_for_each_entry(child_dev, &bus->child_head, sibling_node) {
+		int cs;
+		fdt_addr_t direct_addr;
+		fdt_size_t size;
+
+		/* Get chip-select number from the "reg" property */
+		cs = fdtdec_get_int(gd->fdt_blob, dev_of_offset(child_dev),
+				    "reg", -1);
+		if (cs == -1) {
+			printf("%s has no valid 'reg' property\n",
+			       child_dev->name);
+			continue;
+		}
+
+		/*
+		 * Check if an address is configured for this SPI device. If
+		 * not, the MBus mapping via the 'ranges' property in the 'soc'
+		 * node is not configured and this device should not use the
+		 * direct mode. In this case, just continue with the next
+		 * device.
+		 */
+		direct_addr = devfdt_get_addr_size_index(bus, cs + 1, &size);
+		if (direct_addr == FDT_ADDR_T_NONE) {
+			printf("Bus %s CS%d address is not set correct.\n",
+			       bus->name, cs);
+			plat->direct_access[cs].addr = NULL;
+			continue;
+		}
+		plat->direct_access[cs].addr = (void *)direct_addr;
+		plat->direct_access[cs].size = size;
+		printf("Bus %s CS%d configured for direct access %p:0x%x\n",
+		       bus->name, cs,
+		       plat->direct_access[cs].addr,
+		       plat->direct_access[cs].size);
+	}
 
 	return 0;
 }

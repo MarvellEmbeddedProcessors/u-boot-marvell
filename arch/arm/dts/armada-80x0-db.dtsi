@@ -121,14 +121,21 @@
 		};
 	};
 
+#define CP110_NUM				1
+#define SPI_DIRECT_BASE				(0xf9000000)
+
 	cp1 {
 		config-space {
 
+			ranges = <0x0 U64_TO_U32_H(CP110_BASE) U64_TO_U32_L(CP110_BASE) 0x2000000>,			/* internal regs */
+				 <0x2000000 U64_TO_U32_H(SPI_DIRECT_BASE) U64_TO_U32_L(SPI_DIRECT_BASE) 0x1000000>;	/* SPI1-DEV0 */
 			cps_usb3_0: usb3@500000 {
 				vbus-supply = <&cpm_reg_usb3_vbus2>;
 				current-limiter = <&cpm_reg_usb3_current_limiter2>;
 			};
 		};
 	};
+
+#undef CP110_NUM
 
 };

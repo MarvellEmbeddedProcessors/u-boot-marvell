@@ -32,9 +32,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define COMPHY_FW_FORMAT(mode, idx, speeds)	\
 			(((mode) << 12) | ((idx) << 8) | ((speeds) << 2))
 
-#define COMPHY_FW_PCIE_FORMAT(pcie_width, clk_src, mode, idx, speeds)	\
+#define COMPHY_FW_PCIE_FORMAT(pcie_width, clk_src, mode, speeds)	\
 			(((pcie_width) << 18) | ((clk_src) << 17) |	\
-			 COMPHY_FW_FORMAT(mode, idx, speeds))
+			 COMPHY_FW_FORMAT(mode, 0, speeds))
 
 #define COMPHY_SATA_MODE	0x1
 #define COMPHY_SGMII_MODE	0x2	/* SGMII 1G */
@@ -652,30 +652,19 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 		case COMPHY_TYPE_PEX1:
 		case COMPHY_TYPE_PEX2:
 		case COMPHY_TYPE_PEX3:
-			/*
-			 * UINIT_ID not relevant for PCIe - will be ignored by
-			 * firmware
-			 */
 			ret = comphy_smc(MV_SIP_COMPHY_POWER_ON,
 				ptr_chip_cfg->comphy_base_addr, lane,
 				COMPHY_FW_PCIE_FORMAT(pcie_width,
 						      ptr_comphy_map->clk_src,
 						      COMPHY_PCIE_MODE,
-						      COMPHY_UNIT_ID0,
 						      ptr_comphy_map->speed));
 			break;
 		case COMPHY_TYPE_SATA0:
 		case COMPHY_TYPE_SATA1:
-			/*
-			 * UINIT_ID not relevant for SATA - will be ignored by
-			 * firmware
-			 */
 			ret = comphy_sata_power_up(
 				lane, hpipe_base_addr, comphy_base_addr,
 				ptr_chip_cfg->cp_index,
-				COMPHY_FW_FORMAT(COMPHY_SATA_MODE,
-						 COMPHY_UNIT_ID0,
-						 COMPHY_SPEED_DEFAULT));
+				COMPHY_FW_MODE_FORMAT(COMPHY_SATA_MODE));
 			break;
 		case COMPHY_TYPE_USB3_HOST0:
 		case COMPHY_TYPE_USB3_HOST1:

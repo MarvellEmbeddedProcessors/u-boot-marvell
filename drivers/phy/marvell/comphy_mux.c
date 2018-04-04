@@ -8,7 +8,6 @@
 #include <asm/io.h>
 
 #include "comphy_priv.h"
-#include "comphy_hpipe.h"
 
 /*
  * comphy_mux_check_config()

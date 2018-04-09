@@ -189,7 +189,7 @@ int boot_from_nand(void);
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x180000\0"	\
 					"fdt_addr=0x1000000\0"		\
-					"ramfs_addr=0x3000000\0"	\
+					"ramfs_addr=0x5000000\0"	\
 					"fdt_high=0xa0000000\0"		\
 					"initrd_high=0xffffffffffffffff\0"
 

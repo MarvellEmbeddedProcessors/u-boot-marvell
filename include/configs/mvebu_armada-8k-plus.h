@@ -68,7 +68,7 @@
 #undef CONFIG_BOOTARGS
 #define CONFIG_BOOTARGS			"console=ttyS0,19200 " \
 					"earlycon=uart8250,mmio32,0xe8512000 " \
-					"mem=256M init=/bin/sh root=/dev/ram0 rw"
+					"init=/bin/sh root=/dev/ram0 rw"
 
 #endif
 

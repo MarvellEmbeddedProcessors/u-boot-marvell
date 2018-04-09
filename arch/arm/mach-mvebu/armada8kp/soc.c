@@ -15,6 +15,7 @@ int soc_get_ap_cp_num(void *ap_num, void *cp_num)
 {
 	/* TODO: Handle Quad AP case */
 	if (of_machine_is_compatible("marvell,armada8162") ||
+	    of_machine_is_compatible("marvell,armada8160") ||
 	    of_machine_is_compatible("marvell,armada8164"))
 		*((u32 *)ap_num) = 2;
 	else

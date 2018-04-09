@@ -92,6 +92,11 @@
 	status = "okay";
 };
 
+&thermal {
+	gain = <394>;
+	offset = <128900>;
+	divisor = <1000>;
+};
 
 /*
  * CP related configuration

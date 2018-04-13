@@ -338,6 +338,7 @@ int spi_get_bus_and_cs(int busnum, int cs, int speed, int mode,
 		return ret;
 	}
 	ret = spi_find_chip_select(bus, cs, &dev);
+	spi = dev_get_uclass_priv(bus);
 
 	/*
 	 * If there is no such device, create one automatically. This means
@@ -391,6 +392,13 @@ int spi_get_bus_and_cs(int busnum, int cs, int speed, int mode,
 		if (ret)
 			goto err;
 	}
+
+	if (slave->max_hz)
+		speed = min(speed, (int)slave->max_hz);
+
+	ret = spi_set_speed_mode(bus, speed, mode);
+	if (ret)
+		goto err;
 
 	*busp = bus;
 	*devp = slave;

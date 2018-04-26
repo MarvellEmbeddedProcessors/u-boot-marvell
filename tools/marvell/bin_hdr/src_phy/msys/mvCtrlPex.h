@@ -72,10 +72,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* Sample at Reset */
 #define MPP_SAMPLE_AT_RESET(id)		            (0xE4200 + (id * 4))
+
+#if defined CONFIG_ALLEYCAT3
+
+#define DEV_ID_REG			0x1823C
+#define DEVICE_ID_OFFS			0
+#define DEVICE_ID_MASK			0xFFFF
+
+#define DEVICE_STEP_OFFS		8
+#define DEVICE_STEP_MASK		0x3
+/* for BobK devID, Cetus: 0xBE00 Caelum:0xBC00, the higher 6bits are the same.
+so update mask to 0x3FF, for BC2 flavor(0xF4XX), and AC3 flavor(0xFC00),
+the higher 6bits are also the same, so can work normally */
+#define DEVICE_FLAVOR_MASK		0x3FF
+
+#else
 #define DEV_ID_REG			                    0x18238
 
 #define DEVICE_ID_OFFS			                16
 #define DEVICE_ID_MASK			                0xFFFF0000
+#endif
 
 #define SATR_DEVICE_ID_2_0_OFFS		            21
 #define SATR_DEVICE_ID_2_0_MASK		            (3 << SATR_DEVICE_ID_2_0_OFFS)

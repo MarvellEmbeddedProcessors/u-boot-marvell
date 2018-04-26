@@ -63,6 +63,7 @@
 #include "mvHighSpeedTopologySpec.h"
 #include "config_marvell.h"
 #include "printf.h"
+#include "mvSysEnvLib.h"
 
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 
@@ -149,6 +150,26 @@ SERDES_MAP* marvellBoardAc3SerdesTopology[] =
 	ac3SerdesRd24_Topology,
 };
 
+/****************************************/
+/*  Marvell AC3S DB/RD Topology		    */
+/****************************************/
+
+/* Configuration options */
+SERDES_MAP ac3sSerdesDbTopology[MAX_SERDES_LANES] =
+{ /* DB_MISL_24G4XG */
+	/* Type		Serdes		Speed			Mode			SwapRX		SwapTX */
+	{ PEX0,		0,			0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_TRUE,	MV_FALSE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_TRUE },
+};
+
+
+/* Alleycat-3S boards */
+SERDES_MAP* marvellBoardAc3sSerdesTopology[] =
+{
+	ac3sSerdesDbTopology,
+};
+
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 
 /*************************** Functions implementation *************************/
@@ -162,8 +183,16 @@ SERDES_MAP* mvHwsSerdesTopologyGet(MV_U32 boardIdIndex)
 	topologyArr = customerAc3BoardSerdesTopology;
 	arrSize = sizeof(customerAc3BoardSerdesTopology)/sizeof(SERDES_MAP*);
 #else
-	topologyArr = marvellBoardAc3SerdesTopology;
-	arrSize = sizeof(marvellBoardAc3SerdesTopology)/sizeof(SERDES_MAP*);
+	if (mvSysEnvCtrlStepGet()) {
+		/* AC3S boards */
+		topologyArr = marvellBoardAc3sSerdesTopology;
+		arrSize = sizeof(marvellBoardAc3sSerdesTopology)/sizeof(SERDES_MAP*);
+	} else {
+		/* AC3 boards */
+		topologyArr = marvellBoardAc3SerdesTopology;
+		arrSize = sizeof(marvellBoardAc3SerdesTopology)/sizeof(SERDES_MAP*);
+	}
+
 #endif
 
 	if (boardIdIndex >= arrSize)

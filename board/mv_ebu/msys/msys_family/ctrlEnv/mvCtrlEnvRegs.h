@@ -365,9 +365,11 @@ extern "C" {
 #define CPLD_REV_REG		2
 #define CPLD_REV_MASK		0x1f
 
-#define DEV_ID_REG				0x1823C
+#define DEV_ID_REG			0x1823C
 #define DEVICE_ID_OFFS			0
 #define DEVICE_ID_MASK			0xFFFF
+#define DEVICE_STEP_OFFS		8
+#define DEVICE_STEP_MASK		0x3
 
 /* for BobK devID, Cetus: 0xBE00 Caelum:0xBC00, the higher 6bits are the same.
 so update mask to 0x3FF, for BC2 flavor(0xF4XX), and AC3 flavor(0xFC00),

@@ -225,6 +225,12 @@ static int do_sar_list(int mode)
 #if defined(CONFIG_ALLEYCAT3) || defined(CONFIG_BOBK)
 	MV_U32 revId = mvCtrlRevGet();
 #endif
+	MV_U32 stepping =
+#if defined CONFIG_ALLEYCAT3
+		mvCtrlStepGet();
+#else
+		0;
+#endif
 
 	switch (mode) {
 	case CMD_CORE_CLK_FREQ:
@@ -259,7 +265,8 @@ static int do_sar_list(int mode)
 		printf("\t| ID  | CPU Freq (MHz) | DDR Freq (MHz) |\n");
 		printf("\t-----------------------------------------\n");
 		for (i = 0; i < cpuDdrClkTblSize; i++) {
-			if (cpuDdrClkTbl[i].internalFreq)
+			if (cpuDdrClkTbl[i].internalFreq ||
+			   (stepping && (cpuDdrClkTbl[i].ddrFreq >= 800)))
 				continue;
 			printf("\t| %2d  |      %4d      |      %4d      |\n",
 			       i, cpuDdrClkTbl[i].cpuFreq, cpuDdrClkTbl[i].ddrFreq);

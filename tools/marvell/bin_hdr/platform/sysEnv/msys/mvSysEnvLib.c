@@ -337,6 +337,35 @@ MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID)
 }
 
 /*******************************************************************************
+* mvSysEnvDevStepGet - Get Marvell controller stepping ID
+*
+* DESCRIPTION:
+*       This function returns 2bit describing the device stepping as defined
+*       in PCI Device and Vendor ID configuration register offset 0x0.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       2bit desscribing Marvell controller stepping ID
+*
+*******************************************************************************/
+MV_U8 mvSysEnvCtrlStepGet(MV_VOID)
+{
+#if defined CONFIG_ALLEYCAT3
+	MV_U32	ctrlId = MV_REG_READ(DEV_ID_REG);
+
+	ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
+	return (ctrlId >> DEVICE_STEP_OFFS) & DEVICE_STEP_MASK;
+#else
+	return 0;
+#endif
+}
+
+/*******************************************************************************
 * mvSysEnvGetTopologyUpdateInfo
 *
 * DESCRIPTION: Read TWSI fields to update DDR topology structure
@@ -359,6 +388,14 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 #if defined CONFIG_ALLEYCAT3
 	if (mvBoardIdGet() != DB_AC3_ID)
 		return 0;
+
+	/* Alleycat-3S does not support ECC */
+	if (mvSysEnvCtrlStepGet()) {
+		mvPrintf("Running on AC3S board, DDR ECC is not supported\n");
+		topologyUpdateInfo->mvUpdateECC = MV_TRUE;
+		topologyUpdateInfo->mvECC = MV_TOPOLOGY_UPDATE_ECC_OFF;
+		return 0;
+	}
 #elif defined CONFIG_BOBK
 	return 0;
 #endif

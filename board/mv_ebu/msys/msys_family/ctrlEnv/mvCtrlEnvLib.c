@@ -132,12 +132,12 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_MSYS_AXP_INDEX_MAX] = {
 /* PNC_UNIT_ID		*/ { 0,		0,		1,		0,},
 };
 
-MV_U32  mvDev2CpuMapTable[21][2] = {
+MV_U32  mvDev2CpuMapTable[][2] = {
 /*	Dev ID			cores#   */
-	{MV_BOBCAT2_DEV_ID,		2},
+	{MV_BOBCAT2_DEV_ID,			2},
 	{MV_BOBK_CETUS_98DX4235_DEV_ID,		2},
 	{MV_BOBK_CAELUM_98DX4203_DEV_ID,	2},
-	{MV_BOBK_LEWIS_98DX8212_DEV_ID,	2},
+	{MV_BOBK_LEWIS_98DX8212_DEV_ID,		2},
 	{MV_BOBK_CYGNUS_98DX4211_DEV_ID,	2},
 	{MV_ALLEYCAT3_98DX3336_DEV_ID,	2},
 	{MV_ALLEYCAT3_98DX3335_DEV_ID,	2},
@@ -153,6 +153,20 @@ MV_U32  mvDev2CpuMapTable[21][2] = {
 	{MV_ALLEYCAT3_98DX1333_DEV_ID,	2},
 	{MV_ALLEYCAT3_98DX1335_DEV_ID,	2},
 	{MV_ALLEYCAT3_98DX1336_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX336S_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX335S_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX334S_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX333S_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX123S_DEV_ID,	1},
+	{MV_ALLEYCAT3_98DX125S_DEV_ID,	1},
+	{MV_ALLEYCAT3_98DX223S_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX224S_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX225S_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX226S_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX233S_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX234S_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX235S_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX236S_DEV_ID,	2},
 	{MV_78460_DEV_ID,		4},
 	{MV_MAX_DEV_ID,			0},
 };
@@ -761,6 +775,38 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 }
 
 /*******************************************************************************
+* mvCtrlStepGet - Get Marvell controller stepping ID
+*
+* DESCRIPTION:
+*       This function returns 2bit describing the device stepping as defined
+*       in PCI Device and Vendor ID configuration register offset 0x0.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       16bit desscribing Marvell controller ID
+*
+*******************************************************************************/
+MV_U8 mvCtrlStepGet(MV_VOID)
+{
+	MV_U32	ctrlId = MV_REG_READ(DEV_ID_REG);
+
+	ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
+
+	switch (ctrlId & ~DEVICE_FLAVOR_MASK) {
+	case MV_ALLEYCAT3_DEV_ID:
+		return (ctrlId >> DEVICE_STEP_OFFS) & DEVICE_STEP_MASK;
+	default:
+		mvOsPrintf("%s: Error: Failed to obtain Controller Stepping ID\n", __func__);
+		return mvCtrlDevFamilyIdGet(0);
+	}
+}
+
+/*******************************************************************************
 * mvCtrlRevGet - Get Marvell controller device revision number
 *
 * DESCRIPTION:
@@ -823,8 +869,12 @@ MV_U8 mvCtrlRevGet(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvCtrlNameGet(char *pNameBuff)
 {
-	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+	MV_U32 family = mvCtrlDevFamilyIdGet(0);
+
+	if (family == MV_78460_DEV_ID)
 		mvOsSPrintf(pNameBuff, "%s", "");
+	else if ((family == MV_ALLEYCAT3_DEV_ID) && mvCtrlStepGet())
+		mvOsSPrintf(pNameBuff, "%s", "Alleycat3S");
 	else
 		mvOsSPrintf(pNameBuff, "%s", SOC_NAME_PREFIX);
 

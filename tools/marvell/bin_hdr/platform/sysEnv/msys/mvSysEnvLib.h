@@ -452,6 +452,25 @@ MV_U8 mvSysEnvDeviceRevGet(MV_VOID);
 MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID);
 
 /*******************************************************************************
+* mvSysEnvDevStepGet - Get Marvell controller stepping ID
+*
+* DESCRIPTION:
+*       This function returns 2bit describing the device stepping as defined
+*       in PCI Device and Vendor ID configuration register offset 0x0.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       2bit desscribing Marvell controller stepping ID
+*
+*******************************************************************************/
+MV_U8 mvSysEnvCtrlStepGet(MV_VOID);
+
+/*******************************************************************************
 * mvSysEnvGetTopologyUpdateInfo
 *
 * DESCRIPTION: Read TWSI fields to update DDR topology structure

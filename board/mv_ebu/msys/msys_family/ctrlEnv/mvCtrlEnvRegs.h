@@ -602,14 +602,14 @@ typedef struct {
 }
 
 #define MV_CPU_DDR_CLK_TBL_AC3 {	\
-	{ 533, 533,  533, MV_TRUE},	\
-	{ 667, 667, 2000, MV_FALSE},	\
-	{ 400, 400,  400, MV_FALSE},	\
-	{ 800, 800,  800, MV_FALSE},	\
-	{   0,   0, 2000, MV_TRUE},	\
-	{ 800, 400,  800, MV_FALSE},	\
-	{ 800, 400,  800, MV_TRUE},	\
-	{ 0,     0,  800, MV_TRUE}	\
+	{ 400, 400, 400, MV_FALSE},	\
+	{   0,   0, 800, MV_TRUE},	\
+	{ 667, 667, 667, MV_FALSE},	\
+	{ 800, 800, 800, MV_FALSE},	\
+	{   0,   0, 800, MV_TRUE},	\
+	{ 800, 400, 400, MV_FALSE},	\
+	{   0,   0, 800, MV_TRUE},	\
+	{   0,   0, 800, MV_TRUE}	\
 }
 
 #define MV_TM_CLK_TBL	{	\

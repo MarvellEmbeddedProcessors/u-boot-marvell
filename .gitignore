@@ -51,6 +51,17 @@
 /include/u-boot.lst
 
 tools/marvell/bin_hdr/src_ddr/mv_ddr/*
+tools/marvell/doimage_mv/polarssl/programs/*
+tools/marvell/bin_hdr/*.scr
+tools/marvell/bin_hdr/*.raw
+tools/marvell/bin_hdr/platform/setparams
+tools/marvell/bin_hdr/setparams
+tools/marvell/bin_hdr/src_ddr/ddr3libv2/*.lib
+tools/marvell/bin_hdr/src_ddr/lib/*.lib
+tools/marvell/doimage
+tools/marvell/doimage_mv/doimage
+tools/marvell/doimage_mv/hdrparser
+examples/api/marvell/mon_ext/monext
 
 #
 # Generated files

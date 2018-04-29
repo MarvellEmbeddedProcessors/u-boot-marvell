@@ -218,8 +218,6 @@ int boot_from_nand(void);
 	"image_name=Image\0"			\
 	"root=root=/dev/nfs rw\0"		\
 	"rootpath=/srv/nfs\0"			\
-	"extra_params_a8k=earlycon=uart8250,mmio32,0xf0512000\0"	\
-	"extra_params_a8k_plus=earlycon=uart8250,mmio32,0xe8512000\0"	\
 	"get_ramdisk=if test \"${ramdisk_name}\" != \"-\"; then "	\
 		"tftpboot $ramdisk_addr_r $ramdisk_name; else "		\
 		"setenv ramdisk_addr_r -;fi\0"				\

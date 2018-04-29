@@ -7,7 +7,8 @@
 #ifndef _CONFIG_MVEBU_ARMADA_8K_H
 #define _CONFIG_MVEBU_ARMADA_8K_H
 
-#define CONFIG_DEFAULT_CONSOLE		"console=ttyS0,115200"
+#define CONFIG_DEFAULT_CONSOLE		"console=ttyS0,115200 "\
+					"earlycon=uart8250,mmio32,0xf0512000"
 
 /* USB 2.0 */
 #define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 3

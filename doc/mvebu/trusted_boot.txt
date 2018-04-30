@@ -282,7 +282,7 @@ A3700 platforms
 	d. efuse write KAK_DIGEST <otphash_value>
 	e. efuse write CSK_INDEX <key_index>
 	f. efuse write OPER_MODE <mode_type> (mode_type should be always 2).
-	g. efuse DEV_DEPLOY <deploy_value> (1 - enable/0 - disable), this command
+	g. efuse write DEV_DEPLOY <deploy_value> (1 - enable/0 - disable), this command
 	   will set the chip into trusted mode. It will also hide the AES-256 key.
 5. Burn the TRUSTED boot image using regular "bubt" command.
 6. Reset the board and verify that the trusted boot mode works.
@@ -344,22 +344,22 @@ A3700 platforms
    previous chapter for detailed description.
    For instance, the following sample content is from timnsign.txt::
 
-      DSA Algorithm ID:                7			; Signed with CSK6
+      DSA Algorithm ID:                7			; Signed with CSK3
       Hash Algorithm ID:               32
       Key Size in bits:                2048
       RSA Public Exponent
-	  ... ... ... ...(aligned with CSK6 file)
+	  ... ... ... ...(aligned with CSK3 file)
 	  ... ... ... ...
 	  RSA System Modulus:
-	  ... ... ... ...(aligned with CSK6 file)
+	  ... ... ... ...(aligned with CSK3 file)
 	  ... ... ... ...
 	  RSA Private Key:
-	  ... ... ... ...(aligned with CSK6 file)
+	  ... ... ... ...(aligned with CSK3 file)
 	  ... ... ... ...
 
    The key_index will be used in the following form in eFuse CSK_INDEX write command::
 
-      efuse write CSK_INDEX 6
+      efuse write CSK_INDEX 3
 
 i.e.
 
@@ -369,7 +369,7 @@ Default commands before bubt Secure Trusted boot image::
 	efuse write AES256_KEY 0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF
 	efuse write BOOT_DEVICE SPINOR
 	efuse write KAK_DIGEST C27B72422C69997A33CC58B13CDB7EED25CD518B6E814E3459C9AFD91887C298
-	efuse write CSK_INDEX 6
+	efuse write CSK_INDEX 3
 	efuse write OPER_MODE 2
 
 

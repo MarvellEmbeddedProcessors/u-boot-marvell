@@ -23,6 +23,8 @@
 
 #define CP_DEV_ID_STATUS_REG		(MVEBU_REGISTER(0x2400240))
 #define DEVICE_ID_STATUS_MASK		0xffff
+#define AP_DEV_ID_STATUS_REG		(SOC_REGS_PHY_BASE + 0x6F8240)
+#define AP_DEV_ID_STATUS_MASK		0xfff
 #define SW_REV_STATUS_OFFSET		16
 #define SW_REV_STATUS_MASK		0xf
 
@@ -56,22 +58,36 @@ static int get_soc_type_rev(u32 *type, u32 *rev)
 	return 0;
 }
 
+static int get_ap_soc_type(u32 *type)
+{
+	*type = readl(AP_DEV_ID_STATUS_REG) & AP_DEV_ID_STATUS_MASK;
+
+	return 0;
+}
+
 static int get_soc_table_index(u32 *index)
 {
 	u32 soc_type;
 	u32 rev, i, ret = 1;
+	u32 ap_type;
 
 	*index = 0;
 	get_soc_type_rev(&soc_type, &rev);
+	get_ap_soc_type(&ap_type);
 
 	for (i = 0; i < sizeof(soc_info_table) / sizeof(struct soc_info); i++) {
 		if ((soc_type ==
 			soc_info_table[i].soc.module_type) &&
-		   (rev == soc_info_table[i].soc.module_rev)) {
+		   (rev == soc_info_table[i].soc.module_rev) &&
+		    ap_type == soc_info_table[i].ap.module_type) {
 			*index = i;
 			ret = 0;
 		}
 	}
+
+	if (ret)
+		error("using default SoC info: %s\n",
+		      soc_info_table[*index].soc_name);
 
 	return ret;
 }

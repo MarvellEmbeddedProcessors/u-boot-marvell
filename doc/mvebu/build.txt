@@ -24,6 +24,7 @@ Build Procedure
 		# make <defconfig_file>
 
    - For the Armada-70x0/80x0 DB board and Armada-7020 AMC use "mvebu_db_armada8k_defconfig"
+   - For the Armada-8xxy DB board use "mvebu_db_armada8kp_defconfig"
    - For the Armada-80x0 MacchiatoBin use "make mvebu_mcbin-88f8040_defconfig"
    - For the Armada-3700 DB board use "make mvebu_db-88f3720_defconfig"
    - For the Armada-3700 EsspressoBin use "make mvebu_espressobin-88f3720_defconfig"
@@ -37,6 +38,7 @@ Build Procedure
 	- For A37x0: ./doc/mvebu/a3700/armada-3700-db-setup.txt
 	- For A70x0: ./doc/mvebu/a7k-a8k/armada70x0-db-setup.txt
 	- For A80x0: ./doc/mvebu/a7k-a8k/armada80x0-db-setup.txt
+	- For A8xxy: ./doc/mvebu/a8xxy/armada8082-db-setup.txt
 
 	In order to compile u-boot with a specific device-tree, use the following::
 
@@ -46,9 +48,11 @@ Build Procedure
 	- For the Armada-7020 AMC use "make DEVICE_TREE=armada-7020-amc"
 	- For the Armada-80x0 DB use "make DEVICE_TREE=armada-8040-db[-X]"
 	- For the Armada-80x0 MacchiatoBin use "make DEVICE_TREE=armada-8040-mcbin"
+	- For the Armada-808y DB (single AP) use "make DEVICE_TREE=armada-808y-db[-X]"
+	- For the Armada-816y DB (dual AP) use "make DEVICE_TREE=armada-816y-db[-X]"
 	- For the Armada-37x0 DB use "make DEVICE_TREE=armada-3720-ddrX-db[-X]"
 	- For the Armada-37x0 EsspressoBin use "make DEVICE_TREE=armada-3720-espressobin"
-	  (X represents possible configuration)
+	  (X represents possible configuration and y - the number of connected south bridge chips per AP)
 
 	The U-Boot compilation generates u-boot.bin - the U-Boot image
 
@@ -71,7 +75,7 @@ The following options are available:
 
 eMMC Boot Device
 -----------------
-The Armada-3700 and armada-8k supports eMMC as the boot device on the target.
+The Armada-3700, armada-8k and armada-8kp support eMMC as the boot device on the target.
 The default boot device on this platform is SPI NOR flash.
 In order to change the boot device to eMMC, set the following parameter
 the default configuration::

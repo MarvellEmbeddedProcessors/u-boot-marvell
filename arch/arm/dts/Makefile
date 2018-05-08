@@ -111,6 +111,7 @@ dtb-$(CONFIG_ARCH_MVEBU) +=			\
 	armada-8040-ocp.dtb			\
 	armada-8080-pd.dtb			\
 	armada-8082-db.dtb			\
+	armada-8082-db-B.dtb			\
 	armada-8084-db.dtb			\
 	armada-8160-pd.dtb			\
 	armada-8162-db.dtb			\

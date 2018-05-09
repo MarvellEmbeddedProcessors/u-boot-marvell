@@ -515,7 +515,7 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 {
 	struct comphy_map *ptr_comphy_map;
 	void __iomem *comphy_base_addr, *hpipe_base_addr;
-	u32 comphy_max_count, lane, ret = 0;
+	u32 comphy_max_count, lane, id, ret = 0;
 	u32 pcie_width = 0;
 
 	debug_enter();
@@ -579,23 +579,10 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 			break;
 		case COMPHY_TYPE_SGMII0:
 		case COMPHY_TYPE_SGMII1:
-			if (ptr_comphy_map->speed == COMPHY_SPEED_INVALID) {
-				debug("Warning: SGMII PHY speed in lane %d is invalid, set PHY speed to 1.25G\n",
-				      lane);
-				ptr_comphy_map->speed = COMPHY_SPEED_1_25G;
-			}
-
-			/*
-			 * UINIT_ID not relevant for SGMII0 and SGMII1 - will be
-			 * ignored by firmware
-			 */
-			ret = comphy_smc(MV_SIP_COMPHY_POWER_ON,
-				ptr_chip_cfg->comphy_base_addr, lane,
-				COMPHY_FW_FORMAT(COMPHY_SGMII_MODE,
-						 COMPHY_UNIT_ID0,
-						 ptr_comphy_map->speed));
-			break;
 		case COMPHY_TYPE_SGMII2:
+			/* Calculate SGMII ID */
+			id = ptr_comphy_map->type - COMPHY_TYPE_SGMII0;
+
 			if (ptr_comphy_map->speed == COMPHY_SPEED_INVALID) {
 				debug("Warning: SGMII PHY speed in lane %d is invalid, set PHY speed to 1.25G\n",
 				      lane);
@@ -604,8 +591,7 @@ int comphy_cp110_init(struct chip_serdes_phy_config *ptr_chip_cfg,
 
 			ret = comphy_smc(MV_SIP_COMPHY_POWER_ON,
 				ptr_chip_cfg->comphy_base_addr, lane,
-				COMPHY_FW_FORMAT(COMPHY_SGMII_MODE,
-						 COMPHY_UNIT_ID2,
+				COMPHY_FW_FORMAT(COMPHY_SGMII_MODE, id,
 						 ptr_comphy_map->speed));
 			break;
 		case COMPHY_TYPE_SFI:

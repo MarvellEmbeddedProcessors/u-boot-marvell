@@ -22,20 +22,15 @@ DECLARE_GLOBAL_DATA_PTR;
 #define MVEBU_AR_RFU_BASE		(MVEBU_REGISTER(0x6F0000))
 #define MVEBU_RFU_GLOBL_SW_RST		(MVEBU_AR_RFU_BASE + 0x184)
 
-#define MVEBU_MC_MMAP_REG_L(iface, cs)	(0xfe0200ULL + \
-						(iface) * 0x10000 + (cs) * 0x8)
-#define MVEBU_MC_AREA_LEN_OFFS		16
-#define MVEBU_MC_AREA_LEN_MASK		(0x1f << MVEBU_MC_AREA_LEN_OFFS)
-#define MVEBU_MC_CS_VALID_MASK		0x1
-
 #define MVEBU_AP_ADDR_RANGE		(0x04000000ULL)
 #define MVEBU_AP_BASE_ADDR(ap)		(0xe8000000ULL - \
 						(ap) * MVEBU_AP_ADDR_RANGE)
-#define MVEBU_MAX_DRAM_IFACE		2
-#define MVEBU_MAX_DRAM_IFACE_CS		2
 
 #define CCU_MC_RAR_IF0_REG		(0x000040e0ULL)
 #define MC_RAR_ENABLE			1
+
+/* Firmware related definition used for SMC calls */
+#define MV_SIP_DRAM_SIZE		0x82000010
 
 /*
  * The following table includes all memory regions for Armada 8k Plus.
@@ -91,37 +86,17 @@ void reset_cpu(ulong ignored)
 #ifndef CONFIG_MVEBU_PALLADIUM
 static u64 mvebu_dram_scan_ap_sz(u32 base)
 {
-	int iface, cs;
-	u64 size = 0;
-	u32 reg_val, *reg_addr;
-		/* Area size is encoded by 5 bit field */
-	static u64 area_sz_decode[] = {
-		SZ_256M + SZ_128M, SZ_256M + SZ_512M, SZ_1G + SZ_512M,
-		3ULL * SZ_1G, 3ULL * SZ_2G, 0, 0, SZ_8M, SZ_16M, SZ_32M,
-		SZ_64M, SZ_128M, SZ_256M, SZ_512M, SZ_1G, SZ_2G, SZ_4G,
-		SZ_8G, SZ_16G, 2ULL * SZ_16G, 4ULL * SZ_16G, 8ULL * SZ_16G,
-		16ULL * SZ_16G, 32ULL * SZ_16G, 64ULL * SZ_16G, 128ULL * SZ_16G,
-		0, 0, 0, 0, 0, 0
-	};
+	struct pt_regs pregs = {0};
 
-	for (iface = 0; iface < MVEBU_MAX_DRAM_IFACE; iface++) {
-		for (cs = 0; cs < MVEBU_MAX_DRAM_IFACE_CS; cs++) {
-			/* DRAM area per AP, DRAM interface and CS */
-			reg_addr =
-				(u32 *)(MVEBU_MC_MMAP_REG_L(iface, cs) + base);
-			reg_val = readl(reg_addr);
-			/* Count the area if CS is active */
-			if (reg_val & MVEBU_MC_CS_VALID_MASK) {
-				reg_val &= MVEBU_MC_AREA_LEN_MASK;
-				reg_val >>= MVEBU_MC_AREA_LEN_OFFS;
-				debug("%p: DRAM if %d, CS%d: area 0x%x\n",
-				      reg_addr, iface, cs, reg_val);
-				size += area_sz_decode[reg_val];
-			}
-		}
-	}
+	pregs.regs[0] = MV_SIP_DRAM_SIZE;
+	pregs.regs[1] = (unsigned long)base;
 
-	return size;
+	smc_call(&pregs);
+
+	if (!pregs.regs[0])
+		error("Failed to get ddr size\n");
+
+	return pregs.regs[0];
 }
 
 static u32 mvebu_dram_is_in_rar_mode(u32 base)
@@ -171,6 +146,15 @@ void mvebu_dram_init_banksize(void)
 		       dram_mode == 1 ? "- interleave mode" : "");
 		gd->ram_size += ap_sz[ap];
 	}
+
+	/* If total DRAM size == 0, print error message and try to
+	 * continue with 256MB */
+	if (gd->ram_size == 0) {
+		error("DRAM size not initialized - check DRAM configuration\n");
+		printf("\n Using temporary DRAM size of 256MB.\n\n");
+		gd->ram_size = SZ_256M;
+	}
+
 	printf("\tTotal mem - ");
 
 	for (idx = 0; idx < CONFIG_NR_DRAM_BANKS; idx++)

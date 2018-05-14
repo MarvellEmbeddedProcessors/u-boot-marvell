@@ -24,14 +24,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define SOC_MUX_NAND_EN_MASK		0x1
 #define CLOCK_1Mhz			1000000
 
-#define MVEBU_MAX_DRAM_IFACE_CS		2
-
-#define MVEBU_MC_MMAP_REG_L(cs)		(MVEBU_REGISTER(0x20200) + \
-							(cs) * 0x8ULL)
-#define MVEBU_MC_AREA_LEN_OFFS		16
-#define MVEBU_MC_AREA_LEN_MASK		(0x1f << MVEBU_MC_AREA_LEN_OFFS)
-#define MVEBU_MC_CS_VALID_MASK		0x1
-
+/* Firmware related definition used for SMC calls */
+#define MV_SIP_DRAM_SIZE		0x82000010
 
 static struct mm_region mvebu_mem_map[] = {
 	{
@@ -98,34 +92,17 @@ void mvebu_nand_select(void)
 
 static u64 mvebu_dram_scan_ap_sz(void)
 {
-	int cs;
-	u64 size = 0;
-	u32 reg_val, *reg_addr;
-		/* Area size is encoded by 5 bit field */
-	static u64 area_sz_decode[] = {
-		SZ_256M + SZ_128M, SZ_256M + SZ_512M, SZ_1G + SZ_512M,
-		3ULL * SZ_1G, 3ULL * SZ_2G, 0, 0, SZ_8M, SZ_16M, SZ_32M,
-		SZ_64M, SZ_128M, SZ_256M, SZ_512M, SZ_1G, SZ_2G, SZ_4G,
-		SZ_8G, SZ_16G, 2ULL * SZ_16G, 4ULL * SZ_16G, 8ULL * SZ_16G,
-		16ULL * SZ_16G, 32ULL * SZ_16G, 64ULL * SZ_16G, 128ULL * SZ_16G,
-		0, 0, 0, 0, 0, 0
-	};
+	struct pt_regs pregs = {0};
 
-	for (cs = 0; cs < MVEBU_MAX_DRAM_IFACE_CS; cs++) {
-		/* DRAM area per AP, DRAM interface and CS */
-		reg_addr = (u32 *)(MVEBU_MC_MMAP_REG_L(cs));
-		reg_val = readl(reg_addr);
-		/* Count the area if CS is active */
-		if (reg_val & MVEBU_MC_CS_VALID_MASK) {
-			reg_val &= MVEBU_MC_AREA_LEN_MASK;
-			reg_val >>= MVEBU_MC_AREA_LEN_OFFS;
-			debug("%p: CS%d: area 0x%x\n",
-			      reg_addr, cs, reg_val);
-			size += area_sz_decode[reg_val];
-		}
-	}
+	pregs.regs[0] = MV_SIP_DRAM_SIZE;
+	pregs.regs[1] = (unsigned long)SOC_REGS_PHY_BASE;
 
-	return size;
+	smc_call(&pregs);
+
+	if (!pregs.regs[0])
+		error("Failed to get ddr size\n");
+
+	return pregs.regs[0];
 }
 
 int mvebu_dram_init(void)

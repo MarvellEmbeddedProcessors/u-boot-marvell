@@ -158,7 +158,7 @@
 		phy-type = <COMPHY_TYPE_SATA0>;
 	};
 	phy2 {
-		phy-type = <COMPHY_TYPE_SFI>;
+		phy-type = <COMPHY_TYPE_SFI0>;
 	};
 	phy3 {
 		phy-type = <COMPHY_TYPE_SATA1>;
@@ -265,7 +265,7 @@
 		phy-type = <COMPHY_TYPE_SATA0>;
 	};
 	phy2 {
-		phy-type = <COMPHY_TYPE_SFI>;
+		phy-type = <COMPHY_TYPE_SFI0>;
 	};
 	phy3 {
 		phy-type = <COMPHY_TYPE_SATA1>;

@@ -11,6 +11,7 @@
 #include <asm/io.h>
 #include <asm/system.h>
 #include <asm/arch/cpu.h>
+#include <linux/sizes.h>
 #include <asm/arch/soc.h>
 #include <asm/armv8/mmu.h>
 #include <mach/soc.h>
@@ -21,6 +22,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define MVEBU_RFU_BASE			(MVEBU_REGISTER(0x6f0000))
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
+
+/* Firmware related definition used for SMC calls */
+#define MV_SIP_DRAM_SIZE		0x82000010
 
 /*
  * The following table includes all memory regions for Armada 7k and
@@ -137,3 +141,53 @@ int print_cpuinfo(void)
 	return 0;
 }
 #endif
+
+static u64 mvebu_dram_scan_ap_sz(void)
+{
+	struct pt_regs pregs = {0};
+
+	pregs.regs[0] = MV_SIP_DRAM_SIZE;
+	pregs.regs[1] = (unsigned long)SOC_REGS_PHY_BASE;
+
+	smc_call(&pregs);
+
+	if (!pregs.regs[0])
+		pr_err("Failed to get ddr size\n");
+
+	return pregs.regs[0];
+}
+
+int mvebu_dram_init(void)
+{
+	gd->ram_size = mvebu_dram_scan_ap_sz();
+
+	/* if DRAM size == 0, print error message */
+	if (gd->ram_size == 0) {
+		pr_err("DRAM size not initialized - check DRAM configuration\n");
+		printf("\n Using temporary DRAM size of 256MB.\n\n");
+		gd->ram_size = SZ_256M;
+	}
+
+	return 0;
+}
+
+int mvebu_dram_init_banksize(void)
+{
+	/*
+	 * Config 2 DRAM banks:
+	 * Bank 0 - max size 4G - 1G
+	 * Bank 1 - ram size - 4G + 1G
+	 */
+	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
+	if (gd->ram_size <= SZ_4G - SZ_1G) {
+		gd->bd->bi_dram[0].size = min(gd->ram_size,
+					      (phys_size_t)(SZ_4G - SZ_1G));
+		return 0;
+	}
+
+	gd->bd->bi_dram[0].size = SZ_4G - SZ_1G;
+	gd->bd->bi_dram[1].start = SZ_4G;
+	gd->bd->bi_dram[1].size = gd->ram_size - SZ_4G + SZ_1G;
+
+	return 0;
+}

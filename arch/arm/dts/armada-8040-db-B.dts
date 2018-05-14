@@ -287,7 +287,7 @@
 		phy-speed = <COMPHY_SPEED_5G>;
 	};
 	phy2 {
-		phy-type = <COMPHY_TYPE_SFI>;
+		phy-type = <COMPHY_TYPE_SFI0>;
 		phy-speed = <COMPHY_SPEED_10_3125G>;
 	};
 	phy3 {

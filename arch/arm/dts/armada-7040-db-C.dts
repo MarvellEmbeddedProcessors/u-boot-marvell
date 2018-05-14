@@ -206,7 +206,7 @@
 	};
 
 	phy2 {
-		phy-type = <COMPHY_TYPE_SFI>;
+		phy-type = <COMPHY_TYPE_SFI0>;
 	};
 
 	phy3 {

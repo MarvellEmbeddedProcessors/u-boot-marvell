@@ -35,8 +35,8 @@ static char *get_type_string(u32 type)
 	char *type_strings[] = {"UNCONNECTED", "PEX0", "PEX1", "PEX2", "PEX3",
 				"SATA0", "SATA1", "SGMII0", "SGMII1", "SGMII2",
 				"USB3", "USB3_HOST0", "USB3_HOST1",
-				"USB3_DEVICE", "RXAUI0", "RXAUI1", "SFI", "AP",
-				"IGNORE"};
+				"USB3_DEVICE", "RXAUI0", "RXAUI1", "SFI0",
+				"SFI1", "AP", "IGNORE"};
 
 	if (type < 0 || type > COMPHY_TYPE_MAX)
 		return "invalid";

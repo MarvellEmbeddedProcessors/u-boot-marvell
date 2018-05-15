@@ -1,0 +1,95 @@
+/*
+ * Copyright (C) 2018 Marvell International Ltd.
+ *
+ * SPDX-License-Identifier:    GPL-2.0
+ * https://spdx.org/licenses
+ */
+
+#include "armada-3900-db.dtsi"
+
+/ {
+	model = "Marvell Armada 3900 Validation Development board(CP NOR) setup(B)";
+	compatible = "marvell,armada3900-vd", "marvell,armada7040",
+		     "marvell,armada-ap806-quad", "marvell,armada-ap806";
+
+	aliases {
+		i2c1 = &ap_i2c0;
+		spi1 = &cp0_spi1;
+	};
+};
+
+/*
+ * AP related configuration
+ */
+&ap_i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ap_i2c0_pins>;
+	status = "okay";
+};
+
+
+/*
+ * CP related configuration
+ */
+&cp0_pinctl {
+		/* MPP Bus:
+		 *   SPI1	[13-16]
+		 *   SMI	[32,34]
+		 *   XSMI	[35-36]
+		 *   I2C0	[37-38]
+		 *   USB	[44-45]
+		 *   UART1	[46-47,49,58]
+		 *   IHB	[56-57]
+		 *   UART0	[59-62]
+		 */
+		/*   0   1   2   3   4   5   6   7   8   9 */
+	pin-func = < 0   0   0   0   0   0   0   0   0   0
+		     0   0   0   3   3   3   3   0   0   0
+		     0   0   0   0   0   0   0   0   0   0
+		     0   0   7   0   7   7   7   2   2   0
+		     0   0   0   0   0   0   7   7   0   7
+		     0   0   0   0   0   0   0   0   7   7
+		     7   7   7>;
+};
+
+&cp0_comphy {
+
+	phy0 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		/delete-property/phy-speed;
+	};
+
+	phy1 {
+		phy-type = <COMPHY_TYPE_USB3_HOST0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+
+	phy2 {
+		phy-type = <COMPHY_TYPE_SFI0>;
+		phy-speed = <COMPHY_SPEED_5_15625G>;
+	};
+
+	phy3 {
+		phy-type = <COMPHY_TYPE_UNCONNECTED>;
+		/delete-property/phy-speed;
+	};
+
+	phy4 {
+		phy-type = <COMPHY_TYPE_SGMII1>;
+		phy-speed = <COMPHY_SPEED_1_25G>;
+	};
+};
+
+&cp0_spi1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cp0_spi0_pins>;
+	status = "okay";
+};
+
+&cp0_eth0 {
+	phy-mode = "sfi";
+};
+
+&cp0_eth1 {
+	phy-mode = "sgmii";
+};

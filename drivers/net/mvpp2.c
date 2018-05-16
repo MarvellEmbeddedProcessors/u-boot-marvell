@@ -529,8 +529,9 @@ do {									\
 /* Net Complex */
 enum mv_netc_topology {
 	MV_NETC_GE_MAC2_SGMII		=	BIT(0),
-	MV_NETC_GE_MAC3_SGMII		=	BIT(1),
-	MV_NETC_GE_MAC3_RGMII		=	BIT(2),
+	MV_NETC_GE_MAC2_RGMII		=	BIT(1),
+	MV_NETC_GE_MAC3_SGMII		=	BIT(2),
+	MV_NETC_GE_MAC3_RGMII		=	BIT(3),
 };
 
 enum mv_netc_phase {
@@ -3255,56 +3256,31 @@ static int gop_gpcs_reset(struct mvpp2_port *port, int reset)
 	return 0;
 }
 
-/* Set the internal mux's to the required PCS in the PI */
-static int gop_xpcs_mode(struct mvpp2_port *port, int num_of_lanes)
-{
-	u32 val;
-	int lane;
-
-	switch (num_of_lanes) {
-	case 1:
-		lane = 0;
-		break;
-	case 2:
-		lane = 1;
-		break;
-	case 4:
-		lane = 2;
-		break;
-	default:
-		return -1;
-	}
-
-	/* configure XG MAC mode */
-	val = readl(port->priv->xpcs_base + MVPP22_XPCS_GLOBAL_CFG_0_REG);
-	val &= ~MVPP22_XPCS_PCSMODE_MASK;
-	val &= ~MVPP22_XPCS_LANEACTIVE_MASK;
-	val |= (2 * lane) << MVPP22_XPCS_LANEACTIVE_OFFS;
-	writel(val, port->priv->xpcs_base + MVPP22_XPCS_GLOBAL_CFG_0_REG);
-
-	return 0;
-}
-
 static int gop_mpcs_mode(struct mvpp2_port *port)
 {
 	u32 val;
 
 	/* configure PCS40G COMMON CONTROL */
-	val = readl(port->priv->mpcs_base + PCS40G_COMMON_CONTROL);
+	val = readl(port->priv->mpcs_base + port->gop_id * MVPP22_PORT_OFFSET +
+		    PCS40G_COMMON_CONTROL);
 	val &= ~FORWARD_ERROR_CORRECTION_MASK;
-	writel(val, port->priv->mpcs_base + PCS40G_COMMON_CONTROL);
+	writel(val, port->priv->mpcs_base + port->gop_id * MVPP22_PORT_OFFSET +
+	       PCS40G_COMMON_CONTROL);
 
 	/* configure PCS CLOCK RESET */
-	val = readl(port->priv->mpcs_base + PCS_CLOCK_RESET);
+	val = readl(port->priv->mpcs_base + port->gop_id * MVPP22_PORT_OFFSET +
+		    PCS_CLOCK_RESET);
 	val &= ~CLK_DIVISION_RATIO_MASK;
 	val |= 1 << CLK_DIVISION_RATIO_OFFS;
-	writel(val, port->priv->mpcs_base + PCS_CLOCK_RESET);
+	writel(val, port->priv->mpcs_base + port->gop_id * MVPP22_PORT_OFFSET +
+	       PCS_CLOCK_RESET);
 
 	val &= ~CLK_DIV_PHASE_SET_MASK;
 	val |= MAC_CLK_RESET_MASK;
 	val |= RX_SD_CLK_RESET_MASK;
 	val |= TX_SD_CLK_RESET_MASK;
-	writel(val, port->priv->mpcs_base + PCS_CLOCK_RESET);
+	writel(val, port->priv->mpcs_base + port->gop_id * MVPP22_PORT_OFFSET +
+	       PCS_CLOCK_RESET);
 
 	return 0;
 }
@@ -3343,22 +3319,6 @@ static int gop_xlg_mac_mode_cfg(struct mvpp2_port *port, int num_of_act_lanes)
 	val |= MVPP22_XLG_INTERRUPT_LINK_CHANGE;
 	val |= 1; /* unmask summary bit */
 	writel(val, port->base + MVPP22_XLG_INTERRUPT_MASK_REG);
-
-	return 0;
-}
-
-/* Set PCS to reset or exit from reset */
-static int gop_xpcs_reset(struct mvpp2_port *port, int reset)
-{
-	u32 val;
-
-	/* read - modify - write */
-	val = readl(port->priv->xpcs_base + MVPP22_XPCS_GLOBAL_CFG_0_REG);
-	if (reset)
-		val &= ~MVPP22_XPCS_PCSRESET;
-	else
-		val |= MVPP22_XPCS_PCSRESET;
-	writel(val, port->priv->xpcs_base + MVPP22_XPCS_GLOBAL_CFG_0_REG);
 
 	return 0;
 }
@@ -3436,13 +3396,9 @@ static int gop_port_init(struct mvpp2_port *port)
 		num_of_act_lanes = 2;
 		mac_num = 0;
 		/* configure PCS */
-		gop_xpcs_mode(port, num_of_act_lanes);
 		gop_mpcs_mode(port);
 		/* configure MAC */
 		gop_xlg_mac_mode_cfg(port, num_of_act_lanes);
-
-		/* pcs unreset */
-		gop_xpcs_reset(port, 0);
 
 		/* mac unreset */
 		gop_xlg_mac_reset(port, 0);
@@ -3521,6 +3477,9 @@ static u32 mvpp2_netc_cfg_create(int gop_id, phy_interface_t phy_type)
 		if (phy_type == PHY_INTERFACE_MODE_SGMII ||
 		    phy_type == PHY_INTERFACE_MODE_1000BASEX)
 			val |= MV_NETC_GE_MAC2_SGMII;
+		else if (phy_type == PHY_INTERFACE_MODE_RGMII ||
+			 phy_type == PHY_INTERFACE_MODE_RGMII_ID)
+			val |= MV_NETC_GE_MAC2_RGMII;
 	}
 
 	if (gop_id == 3) {
@@ -3713,7 +3672,7 @@ static int gop_netc_init(struct mvpp2 *priv, enum mv_netc_phase phase)
 
 	if (c & MV_NETC_GE_MAC2_SGMII)
 		gop_netc_mac_to_sgmii(priv, 2, phase);
-	else
+	else if (c & MV_NETC_GE_MAC2_RGMII)
 		gop_netc_mac_to_xgmii(priv, 2, phase);
 
 	if (c & MV_NETC_GE_MAC3_SGMII) {

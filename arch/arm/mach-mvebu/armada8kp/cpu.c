@@ -42,7 +42,7 @@ static struct mm_region mvebu_mem_map[] = {
 		.phys = 0x0UL,
 		.virt = 0x0UL,
 #ifdef CONFIG_MVEBU_PALLADIUM
-		.size = SZ_512M,
+		.size = SZ_2G,
 #else
 		.size = SZ_4G - SZ_1G,
 #endif
@@ -116,7 +116,7 @@ static u32 mvebu_dram_is_in_rar_mode(u32 base)
 int mvebu_dram_init(void)
 {
 #ifdef CONFIG_MVEBU_PALLADIUM
-	gd->ram_size = SZ_512M;
+	gd->ram_size = SZ_2G;
 #else
 	gd->ram_size = SZ_2G;
 #endif

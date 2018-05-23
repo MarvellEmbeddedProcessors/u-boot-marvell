@@ -22,14 +22,30 @@ Please refer to Application Note - AN-383: ARMADA 38x/39x Families Secure Boot M
 eFuses
 -------
 The eFuse command module and driver provides RW access to SoC eFuses through
-the "efuse" command.
+the "efuse" command for A3700 platform or "fuse" command for A7K/8K platform.
 In order to enable this SW component, the following configuration entry should
 be set by using "make menuconfig"::
 
+A8K platforms
+~~~~~~~~~~~~~
+Command Location:
 	-> command line interface
-		-> Misc commands
-			-> MVEBU commands
-				-> efuse
+		-> Device access commands
+			-> fuse
+Driver Location:
+	-> Device Drivers
+		-> EFUSE Support
+
+A3700 platforms
+~~~~~~~~~~~~~~~
+Command Location:
+	-> Command line interface
+		-> MVEBU commands
+			-> efuse
+Driver Location:
+	-> ARM architecture
+		-> MVEBU Common SoC Utilities
+			-> eFuse support
 
 The above configuration enables the eFuse driver and eFuse command module.
 Refer to SoC and BootROM manuals for details about supported eFuses

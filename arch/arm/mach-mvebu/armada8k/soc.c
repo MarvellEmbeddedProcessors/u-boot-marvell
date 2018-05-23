@@ -43,7 +43,8 @@ struct soc_info {
 };
 
 static struct soc_info soc_info_table[] = {
-	{ {0x6025, 0}, "Armada3900-A0", {0x807, 0}, {0x115, 0}, 1, 1 },
+	{ {0x6025, 0}, "Armada3900-A1", {0x807, 1}, {0x115, 0}, 1, 1 },
+	{ {0x7045, 0}, "Armada3900-A0", {0x807, 0}, {0x115, 0}, 1, 1 },
 	{ {0x7040, 2}, "Armada3900-Z2", {0x807, 0}, {0x110, 2}, 1, 1 },
 	{ {0x7040, 1}, "Armada7040-A1", {0x806, 1}, {0x110, 1}, 1, 1 },
 	{ {0x7040, 2}, "Armada7040-A2", {0x806, 1}, {0x110, 2}, 1, 1 },
@@ -153,10 +154,14 @@ void soc_print_device_info(void)
 	get_ap_type_rev(&ap_type, &ap_rev);
 	get_cp_type_rev(&cp_type, &cp_rev);
 
-	printf("SoC: %s; AP%x-A%d; ", soc_name, ap_type, ap_rev);
+	if (ap_rev > 1)
+		printf("SoC: %s; AP%x-B0; ", soc_name, ap_type);
+	else
+		printf("SoC: %s; AP%x-A%d; ", soc_name, ap_type, ap_rev);
+
 	/* more than one cp module */
 	if (cp_num > 1)
-		printf("%dx CP%x-A%d\n", cp_num, cp_type, cp_rev);
+		printf("%dxCP%x-A%d\n", cp_num, cp_type, cp_rev);
 	else
 		printf("CP%x-A%d\n", cp_type, cp_rev);
 }

@@ -100,7 +100,7 @@
 				#gpio-cells = <2>;
 			};
 
-			spi0: spi@510600 {
+			ap_spi0: spi@510600 {
 				compatible = "marvell,armada-380-spi";
 				reg = <0x510600 0x50>;
 				#address-cells = <1>;
@@ -109,7 +109,7 @@
 				status = "disabled";
 			};
 
-			i2c0: i2c@511000 {
+			ap_i2c0: i2c@511000 {
 				compatible = "marvell,mv78230-i2c";
 				reg = <0x511000 0x20>;
 				#address-cells = <1>;

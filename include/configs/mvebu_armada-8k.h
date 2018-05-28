@@ -26,11 +26,4 @@
 
 #define CONFIG_USB_MAX_CONTROLLER_COUNT (3 + 3)
 
-/*
- * PCI configuration
- */
-#ifdef CONFIG_PCIE_DW_MVEBU
-#define CONFIG_E1000
-#endif
-
 #endif /* _CONFIG_MVEBU_ARMADA_8K_H */

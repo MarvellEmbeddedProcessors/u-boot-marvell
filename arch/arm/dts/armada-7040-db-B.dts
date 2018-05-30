@@ -22,6 +22,11 @@
 	aliases {
 		i2c0 = &cp0_i2c0;
 		spi0 = &cp0_spi1;
+		fuse0 = &ap_hd_efuse0;
+		fuse1 = &ap_ld_efuse0;
+		fuse2 = &ap_ld_efuse1;
+		fuse3 = &cp0_ld_efuse0;
+		fuse4 = &cp0_ld_efuse1;
 	};
 
 	memory@00000000 {
@@ -41,6 +46,18 @@
 };
 
 &uart0 {
+	status = "okay";
+};
+
+&ap_hd_efuse0 {
+	status = "okay";
+};
+
+&ap_ld_efuse0 {
+	status = "okay";
+};
+
+&ap_ld_efuse1 {
 	status = "okay";
 };
 
@@ -110,6 +127,14 @@
 			};
 		};
 	};
+};
+
+&cp0_ld_efuse0 {
+	status = "okay";
+};
+
+&cp0_ld_efuse1 {
+	status = "okay";
 };
 
 &cp0_usb3_1 {

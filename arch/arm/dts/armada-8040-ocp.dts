@@ -21,6 +21,12 @@
 		gpio0 = &ap_gpio0;
 		gpio1 = &cp0_gpio0;
 		gpio2 = &cp0_gpio1;
+		fuse1 = &ap_ld_efuse0;
+		fuse2 = &ap_ld_efuse1;
+		fuse3 = &cp0_ld_efuse0;
+		fuse4 = &cp0_ld_efuse1;
+		fuse5 = &cp1_ld_efuse0;
+		fuse6 = &cp1_ld_efuse1;
 	};
 
 	memory@00000000 {
@@ -54,6 +60,18 @@
  * 1-GND, 2-8040 SoC RX, 3-8040 SoC TX.
  */
 &uart0 {
+	status = "okay";
+};
+
+&ap_hd_efuse0 {
+	status = "okay";
+};
+
+&ap_ld_efuse0 {
+	status = "okay";
+};
+
+&ap_ld_efuse1 {
 	status = "okay";
 };
 
@@ -120,6 +138,14 @@
 	pinctrl-0 = <&cp0_i2c1_pins>;
 	status = "okay";
 	clock-frequency = <100000>;
+};
+
+&cp0_ld_efuse0 {
+	status = "okay";
+};
+
+&cp0_ld_efuse1 {
+	status = "okay";
 };
 
 &cp0_comphy {
@@ -239,6 +265,14 @@
 			};
 		};
 	};
+};
+
+&cp1_ld_efuse0 {
+	status = "okay";
+};
+
+&cp1_ld_efuse1 {
+	status = "okay";
 };
 
 &cp1_comphy {

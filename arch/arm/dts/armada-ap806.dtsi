@@ -151,6 +151,29 @@
 				dma-coherent;
 				status = "disabled";
 			};
+
+			ap_ld_efuse0: efuse-0@6F8F00 {
+				compatible = "marvell,mvebu-fuse-ld-user";
+				reg = <0x6F8008 0x4>;
+				otp-mem = <0xF06F8F00>;
+				status = "disabled";
+			};
+
+			ap_ld_efuse1: efuse-1@6F8F00 {
+				compatible = "marvell,mvebu-fuse-ld-prop";
+				reg = <0x6F8008 0x4>;
+				otp-mem = <0xF06F8F00>;
+				status = "disabled";
+			};
+
+			ap_hd_efuse0: efuse@6F9000  {
+				compatible = "marvell,mvebu-fuse-hd";
+				reg = <0x6F8008 0x4>;
+				otp-mem = <0xF06F9000>;
+				rows-count = <64>;
+				status = "disabled";
+			};
+
 		};
 	};
 };

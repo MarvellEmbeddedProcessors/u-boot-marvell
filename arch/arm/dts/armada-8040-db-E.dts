@@ -263,7 +263,7 @@
 	/* Serdes Configuration:
 	 *	Lane 0: PCIe0 (x1)
 	 *	Lane 1: SATA0
-	 *	Lane 2: SFI (10G)
+	 *	Lane 2: SGMII (3.125G)
 	 *	Lane 3: SATA1
 	 *	Lane 4: PCIe1 (x1)
 	 *	Lane 5: PCIe2 (x1)

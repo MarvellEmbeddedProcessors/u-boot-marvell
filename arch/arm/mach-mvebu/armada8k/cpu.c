@@ -33,7 +33,7 @@ static struct mm_region mvebu_mem_map[] = {
 		.phys = 0x0UL,
 		.virt = 0x0UL,
 #ifdef CONFIG_MVEBU_PALLADIUM
-		.size = SZ_256M,
+		.size = SZ_512M,
 #else
 		.size = SZ_2G,
 #endif
@@ -90,6 +90,7 @@ void mvebu_nand_select(void)
 }
 #endif
 
+#ifndef CONFIG_MVEBU_PALLADIUM
 static u64 mvebu_dram_scan_ap_sz(void)
 {
 	struct pt_regs pregs = {0};
@@ -104,6 +105,7 @@ static u64 mvebu_dram_scan_ap_sz(void)
 
 	return pregs.regs[0];
 }
+#endif
 
 int mvebu_dram_init(void)
 {

@@ -75,6 +75,15 @@
 				#gpio-cells = <2>;
 			};
 
+			CP110_LABEL(thermal): thermal@400070 {
+				compatible = "marvell,mvebu-thermal", "marvell,thermal-sensor";
+				reg = <0x400070 0x12>;
+				gain = <4761>;
+				offset = <2791000>;
+				divisor = <10000>;
+				status = "okay";
+			};
+
 			CP110_LABEL(gpio1): gpio@440140 {
 				compatible = "marvell,orion-gpio";
 				reg = <0x440140 0x40>;

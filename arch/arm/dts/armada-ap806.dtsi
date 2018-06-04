@@ -92,6 +92,15 @@
 				};
 			};
 
+			thermal: thermal@6f8084 {
+				compatible = "marvell,mvebu-thermal", "marvell,thermal-ext-sensor";
+				reg = <0x6f8084 0x12>;
+				gain = <425>;
+				offset = <153400>;
+				divisor = <1000>;
+				status = "okay";
+			};
+
 			ap_gpio0: gpio@6F5040 {
 				compatible = "marvell,orion-gpio";
 				reg = <0x6F5040 0x40>;

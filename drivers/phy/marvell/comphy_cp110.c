@@ -75,6 +75,7 @@ static u32 polling_with_timeout(void __iomem *addr, u32 val,
 static int comphy_smc(u32 function_id, void __iomem *comphy_base_addr,
 							     u32 lane, u32 mode)
 {
+#ifndef CONFIG_MVEBU_PALLADIUM
 	struct pt_regs pregs = {0};
 
 	pregs.regs[0] = function_id;
@@ -88,6 +89,9 @@ static int comphy_smc(u32 function_id, void __iomem *comphy_base_addr,
 	 * convention, but after all comphy will be reworked the convention in
 	 * u-boot should be change and this conversion removed */
 	return pregs.regs[0] ? 0 : 1;
+#else
+	return 1;
+#endif
 }
 
 static int comphy_sata_power_up(u32 lane, void __iomem *hpipe_base,

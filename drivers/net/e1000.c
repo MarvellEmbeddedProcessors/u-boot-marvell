@@ -1551,9 +1551,9 @@ e1000_initialize_hardware_bits(struct e1000_hw *hw)
 		reg_txdctl1 |= E1000_TXDCTL_COUNT_DESC;
 		E1000_WRITE_REG(hw, TXDCTL1, reg_txdctl1);
 
-	/* IGB is cool */
-	if (hw->mac_type == e1000_igb)
-		return;
+		/* IGB is cool */
+		if (hw->mac_type == e1000_igb)
+			return;
 
 		switch (hw->mac_type) {
 		case e1000_82571:
@@ -1591,14 +1591,14 @@ e1000_initialize_hardware_bits(struct e1000_hw *hw)
 			E1000_WRITE_REG(hw, CTRL, reg_ctrl);
 			break;
 		case e1000_80003es2lan:
-	/* improve small packet performace for fiber/serdes */
+			/* improve small packet performace for fiber/serdes */
 			if ((hw->media_type == e1000_media_type_fiber)
 			|| (hw->media_type ==
 				e1000_media_type_internal_serdes)) {
 				reg_tarc0 &= ~(1 << 20);
 			}
 
-		/* Multiple read bit is reversed polarity */
+			/* Multiple read bit is reversed polarity */
 			reg_tctl = E1000_READ_REG(hw, TCTL);
 			reg_tarc1 = E1000_READ_REG(hw, TARC1);
 			if (reg_tctl & E1000_TCTL_MULR)

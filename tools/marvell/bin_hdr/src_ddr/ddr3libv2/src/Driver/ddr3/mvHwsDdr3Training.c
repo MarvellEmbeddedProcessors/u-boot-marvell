@@ -631,7 +631,7 @@ GT_STATUS    mvHwsDdr3TipInitController
             tFAW = (pageSize == 1) ? speedBinTable(speedBinIndex, speedBinTableElements_tFAW1K) : speedBinTable(speedBinIndex, speedBinTableElements_tFAW2K);
 
 #ifdef CONFIG_DDR4
-				tFAW = GET_MAX_VALUE(tCKCLK * (pageSize == 1)?(20):(28),tFAW);
+				tFAW = GET_MAX_VALUE(tCKCLK * (pageSize == 1 ? 20 : 28),tFAW);
 #endif
 
 			dataValue = TIME_2_CLOCK_CYCLES(tFAW, tCKCLK);

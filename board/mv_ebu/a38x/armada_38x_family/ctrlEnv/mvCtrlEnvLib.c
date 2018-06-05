@@ -197,9 +197,9 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
  *       1. mvCtrlEnvInit:            initialized according to SoC
  *       2. mvCtrlEnvInit:            updated according to NAND existance
  *       3. mvCtrlSerdesConfigDetect: updated according to SerDes status (Q/SGMII & R/XAUI). */
-#define ON_BOARD_RGMII(x)	(0x1 << x)	/* bits 0,1,2,3 : RGMII port 0,1,2,3 indication */
-#define SERDES_SGMII(x)		(0x10 << x)	/* bits 4,5,6,7 : SGMII port 0,1,2,3 indication */
-#define SERDES_RXAUI(x)		(0x100 << x)	/* bits 8       : RXAUI port 0 indication */
+#define ON_BOARD_RGMII(x)	(0x1 << (x))	/* bits 0,1,2,3 : RGMII port 0,1,2,3 indication */
+#define SERDES_SGMII(x)		(0x10 << (x))	/* bits 4,5,6,7 : SGMII port 0,1,2,3 indication */
+#define SERDES_RXAUI(x)		(0x100 << (x))	/* bits 8       : RXAUI port 0 indication */
 static MV_U32 ethComPhy;
 
 /* usbComPhy: bit description for USB port per SerDes Lane,
@@ -533,7 +533,7 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 				mvOsPrintf("\tError: SGMII-%d is not supported on current device\n\n", ifNo);
 			else {
 				/* detected SGMII will replace the same On-Board compatible port */
-				if (ON_BOARD_RGMII(ifNo))
+				if (ethComPhy & ON_BOARD_RGMII(ifNo))
 					ethComPhy &= ~(ON_BOARD_RGMII(ifNo));
 				ethComPhy |= SERDES_SGMII(ifNo);
 				DB(printf("SGMII, if=%d\n", ifNo));

@@ -16,8 +16,7 @@
  * ***************************************************************************
  */
 
-#include "armada-70x0.dtsi" /* include SoC device tree */
-#include "armada-70x0-dev-info.dtsi" /* include Marvell specific info (S@R, MPP cmd) */
+#include "armada-3900.dtsi" /* include SoC device tree */
 
 / {
 	model = "DB-ARMADA-3900";
@@ -90,12 +89,6 @@
 
 &uart0 {
 	status = "okay";
-};
-
-&thermal {
-	gain = <394>;
-	offset = <128900>;
-	divisor = <1000>;
 };
 
 /*

@@ -3,7 +3,7 @@
  * Copyright (C) 2018 Marvell International Ltd.
  */
 
-#include "armada-70x0.dtsi" /* include SoC device tree */
+#include "armada-3900.dtsi" /* include SoC device tree */
 
 / {
 	model = "DB-ARMADA-3900";

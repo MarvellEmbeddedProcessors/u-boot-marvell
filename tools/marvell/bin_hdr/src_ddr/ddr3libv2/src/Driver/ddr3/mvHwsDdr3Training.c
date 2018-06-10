@@ -1938,9 +1938,8 @@ static GT_STATUS ddr3TipWriteOdt
 {
     /*ODT TIMING */
     GT_U32 dataValue = (clValue-cwlValue+6) ;
-    dataValue = ((clValue-cwlValue+1) << 4) |  ((dataValue & 0xf) << 8) |  (((clValue-1)&0xF) << 12) |  (((clValue+6)&0xF) << 16) | (((dataValue & 0x10) >> 4) << 21);
-
-	dataValue |= (((clValue-1)>>4) << 22) |  (((clValue+6)>>4) << 23);
+    dataValue = ((clValue-cwlValue+1) << 4) |  ((dataValue & 0xf) << 8) |  (((clValue-1)&0xF) << 12) |  (((clValue+6)&0x1F) << 16) | (((dataValue & 0x10) >> 4) << 21);
+    dataValue |= (((clValue-1)>>4) << 22) |  (((clValue+6) >> 5) << 23);
 
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, ODT_TIMING_LOW, dataValue, 0xFFFF0));
     dataValue = 0x91 | ((cwlValue - 1) << 8) | ((cwlValue+5) << 12);

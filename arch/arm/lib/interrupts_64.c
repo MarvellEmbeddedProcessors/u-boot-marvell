@@ -86,6 +86,9 @@ void do_bad_error(struct pt_regs *pt_regs, unsigned int esr)
 	panic("Resetting CPU ...\n");
 }
 
+__weak void plat_do_sync(void)
+{
+}
 /*
  * do_sync handles the Synchronous Abort exception.
  */
@@ -93,6 +96,8 @@ void do_sync(struct pt_regs *pt_regs, unsigned int esr)
 {
 	efi_restore_gd();
 	printf("\"Synchronous Abort\" handler, esr 0x%08x\n", esr);
+
+	plat_do_sync();
 	show_regs(pt_regs);
 	panic("Resetting CPU ...\n");
 }

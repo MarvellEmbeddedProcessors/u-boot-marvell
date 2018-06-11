@@ -15,6 +15,7 @@
 #include <asm/arch/soc.h>
 #include <asm/armv8/mmu.h>
 #include <power/regulator.h>
+#include <mach/fw_info.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -105,4 +106,25 @@ int arch_early_init_r(void)
 #endif
 
 	return 0;
+}
+
+void plat_do_sync(void)
+{
+	u32 far, el;
+
+	el = current_el();
+
+	if (el == 1)
+		asm volatile("mrs %0, far_el1" : "=r" (far));
+	else if (el == 2)
+		asm volatile("mrs %0, far_el2" : "=r" (far));
+	else
+		asm volatile("mrs %0, far_el3" : "=r" (far));
+
+	if (far >= ATF_REGION_START && far <= ATF_REGION_END) {
+		pr_err("\n\tAttempt to access RT service or TEE region (addr: 0x%x, el%d)\n",
+		       far, el);
+		pr_err("\tDo not use address range 0x%x-0x%x\n\n",
+		       ATF_REGION_START, ATF_REGION_END);
+	}
 }

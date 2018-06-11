@@ -16,6 +16,7 @@
 #include <asm/io.h>
 #include <asm/armv8/mmu.h>
 #include <mach/clock.h>
+#include <mach/fw_info.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -38,9 +39,18 @@ DECLARE_GLOBAL_DATA_PTR;
 static struct mm_region mvebu_mem_map[] = {
 	/* Armada common memory regions start here */
 	{
-		/* RAM */
+		/* RAM 0-64MB */
 		.phys = 0x0UL,
 		.virt = 0x0UL,
+		.size = ATF_REGION_START,
+		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+			 PTE_BLOCK_INNER_SHARE
+	},
+	/* ATF and TEE region 0x4000000-0x5400000 not mapped */
+	{
+		/* RAM */
+		.phys = ATF_REGION_END,
+		.virt = ATF_REGION_END,
 #ifdef CONFIG_MVEBU_PALLADIUM
 		.size = SZ_2G,
 #else

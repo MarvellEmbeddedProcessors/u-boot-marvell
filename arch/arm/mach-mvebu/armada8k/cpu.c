@@ -11,6 +11,7 @@
 #include <mach/clock.h>
 #include <linux/sizes.h>
 #include <mach/soc.h>
+#include <mach/fw_info.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -19,14 +20,24 @@ DECLARE_GLOBAL_DATA_PTR;
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
 
+
 /* Firmware related definition used for SMC calls */
 #define MV_SIP_DRAM_SIZE		0x82000010
 
 static struct mm_region mvebu_mem_map[] = {
 	{
-		/* RAM */
+		/* RAM 0-64MB */
 		.phys = 0x0UL,
 		.virt = 0x0UL,
+		.size = ATF_REGION_START,
+		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+			 PTE_BLOCK_INNER_SHARE
+	},
+	/* ATF and TEE region 0x4000000-0x5400000 not mapped */
+	{
+		/* RAM 66MB-2GB */
+		.phys = ATF_REGION_END,
+		.virt = ATF_REGION_END,
 #ifdef CONFIG_MVEBU_PALLADIUM
 		.size = SZ_512M,
 #else

@@ -6,7 +6,14 @@ Implementation of the NAND controller device driver for Marvell SoCs
 Mandatory properties:
 SoC specific:
 - compatible:		Should be set to: marvell,mvebu-pxa3xx-nand
-- reg:			Register base for the controller
+- reg:			Registers for the controller:
+			0. reg base for the controller (mandatory, should be the first reg)
+			1. reg offset for the flash clock (optional, should be called "flash_clock")
+			2. reg offset for the device mux (optional, should be called "dev_mux")
+- reg-names: 		Should contain the reg names (mandatory if using the optional regs)
+			0. "ctrl_base": Should contain the ctrl base register address (the first reg)
+			1. "flash_clock": Should contain the flash clock register address
+			2. "dev_mux": Should contain the soc device mux register address
 - clocks:		phandle to system controller clock driving this unit
 - #address-cells:	Set to <1> if the node includes partitions
 
@@ -27,7 +34,8 @@ The following ECC strength and step sizes are currently supported:
 Example:
 	cpm_nand: nand@720000 {
 		compatible = "marvell,mvebu-pxa3xx-nand";
-		reg = <0x720000 0x100>;
+		reg = <0x720000 0x100>, <0x440700 0x20>, <0x440208 0x20>;
+		reg-names = "ctrl_base", "flash_clock", "dev_mux";
 		#address-cells = <1>;
 
 		clocks = <&cpm_syscon0 1 2>;

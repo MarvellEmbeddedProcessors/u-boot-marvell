@@ -40,6 +40,11 @@
 #define DEVICE_ID_SUB_REV_OFFSET	7
 #define DEVICE_ID_SUB_REV_MASK		(0xffff << DEVICE_ID_SUB_REV_OFFSET)
 
+#define NF_CLOCK_SEL_MASK		0x1
+#define SOC_MUX_NAND_EN_MASK		0x1
+#define CLOCK_1Mhz			1000000
+
+
 struct mochi_module {
 	u32 module_type;
 	u32 module_rev;
@@ -237,6 +242,32 @@ int boot_from_nand(void)
 	else
 		return 0;
 }
+
+#ifdef CONFIG_NAND_PXA3XX
+/* Return NAND clock in Hz */
+u32 mvebu_get_nand_clock(void __iomem *nand_flash_clk_ctrl_reg)
+{
+	u32 reg;
+
+	if (nand_flash_clk_ctrl_reg == NULL)
+		return 0;
+
+	reg = readl(nand_flash_clk_ctrl_reg);
+	if (reg & NF_CLOCK_SEL_MASK)
+		return 400 * CLOCK_1Mhz;
+	else
+		return 250 * CLOCK_1Mhz;
+}
+
+/* Select NAND in the device bus multiplexer */
+void mvebu_nand_select(void __iomem *soc_dev_multiplex_reg)
+{
+	if (soc_dev_multiplex_reg == NULL)
+		return;
+
+	setbits_le32(soc_dev_multiplex_reg, SOC_MUX_NAND_EN_MASK);
+}
+#endif
 
 int soc_early_init_f(void)
 {

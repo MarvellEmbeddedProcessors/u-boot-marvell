@@ -17,12 +17,7 @@ DECLARE_GLOBAL_DATA_PTR;
 /* Armada 7k/8k */
 #define MVEBU_RFU_BASE			(MVEBU_REGISTER(0x6f0000))
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
-#define SOC_DEV_MULTIPLEX_REG		(MVEBU_REGISTER(0x2440208))
-#define NAND_FLASH_CLK_CTRL		(MVEBU_REGISTER(0x2440700))
 #define RFU_SW_RESET_OFFSET		0
-#define NF_CLOCK_SEL_MASK		0x1
-#define SOC_MUX_NAND_EN_MASK		0x1
-#define CLOCK_1Mhz			1000000
 
 /* Firmware related definition used for SMC calls */
 #define MV_SIP_DRAM_SIZE		0x82000010
@@ -69,26 +64,6 @@ void reset_cpu(ulong ignored)
 	reg &= ~(1 << RFU_SW_RESET_OFFSET);
 	writel(reg, RFU_GLOBAL_SW_RST);
 }
-
-#ifdef CONFIG_NAND_PXA3XX
-/* Return NAND clock in Hz */
-u32 mvebu_get_nand_clock(void)
-{
-	u32 reg;
-
-	reg = readl(NAND_FLASH_CLK_CTRL);
-	if (reg & NF_CLOCK_SEL_MASK)
-		return 400 * CLOCK_1Mhz;
-	else
-		return 250 * CLOCK_1Mhz;
-}
-
-/* Select NAND in the device bus multiplexer */
-void mvebu_nand_select(void)
-{
-	setbits_le32(SOC_DEV_MULTIPLEX_REG, SOC_MUX_NAND_EN_MASK);
-}
-#endif
 
 #ifndef CONFIG_MVEBU_PALLADIUM
 static u64 mvebu_dram_scan_ap_sz(void)

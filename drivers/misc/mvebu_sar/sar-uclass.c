@@ -72,6 +72,12 @@ int mvebu_sar_init(void)
 		sar_drivers[i].name = sar_driver;
 		ret = device_bind_by_name(parent, false,
 					  &sar_drivers[i], &sar_chip[i]);
+
+		if (!sar_chip[i]) {
+			pr_err("SAR driver binding failed\n");
+			return 0;
+		}
+
 		/* fetch driver info from device-tree */
 		sar_base = (void *)fdtdec_get_addr_size_auto_noparent(blob,
 				node, "reg", 0, NULL, true);

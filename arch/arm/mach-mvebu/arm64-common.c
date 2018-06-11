@@ -6,6 +6,7 @@
 
 #include <common.h>
 #include <dm.h>
+#include <mach/fw_info.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -172,4 +173,25 @@ int arch_early_init_r(void)
 #endif
 
 	return 0;
+}
+
+void plat_do_sync(void)
+{
+	uint32_t far, el;
+
+	el = current_el();
+
+	if (el == 1)
+		asm volatile("mrs %0, far_el1" : "=r" (far));
+	else if (el == 2)
+		asm volatile("mrs %0, far_el2" : "=r" (far));
+	else
+		asm volatile("mrs %0, far_el3" : "=r" (far));
+
+	if (far >= ATF_REGION_START && far <= ATF_REGION_END) {
+		printf("\n\tAttemp to access RT service or TEE region (addr: 0x%x, el%d)\n",
+		       far, el);
+		printf("\tDo not use address range 0x%x-0x%x\n\n",
+		       ATF_REGION_START, ATF_REGION_END);
+	}
 }

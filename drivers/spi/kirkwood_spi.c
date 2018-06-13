@@ -60,36 +60,29 @@ static int _spi_xfer(struct kwspi_registers *reg, unsigned int bitlen,
 		     const void *dout, void *din, unsigned long flags)
 {
 	unsigned int tmpdout, tmpdin;
-	int tm;
+	int tm, isread = 0;
 
 	debug("spi_xfer: dout %p din %p bitlen %u\n", dout, din, bitlen);
 
 	if (flags & SPI_XFER_BEGIN)
 		_spi_cs_activate(reg);
 
-	/* Handle data in 2 bytes xfer mode by default */
-	clrsetbits_le32(&reg->cfg, KWSPI_XFERLEN_MASK, KWSPI_XFERLEN_2BYTE);
+	/*
+	 * handle data in 8-bit chunks
+	 * TBD: 2byte xfer mode to be enabled
+	 */
+	clrsetbits_le32(&reg->cfg, KWSPI_XFERLEN_MASK, KWSPI_XFERLEN_1BYTE);
 
 	while (bitlen > 4) {
 		debug("loopstart bitlen %d\n", bitlen);
 		tmpdout = 0;
 
 		/* Shift data so it's msb-justified */
-		if (dout) {
-			if (bitlen <= 8) {
-				/* 1 byte xfer mode for the last one byte */
-				clrsetbits_le32(&reg->cfg,
-						KWSPI_XFERLEN_MASK,
-						KWSPI_XFERLEN_1BYTE);
-				tmpdout = (*(u8 *)dout);
-			} else {
-				tmpdout = __cpu_to_le16(*(u16 *)dout);
-			}
-		}
+		if (dout)
+			tmpdout = *(u32 *)dout & 0xff;
 
 		clrbits_le32(&reg->irq_cause, KWSPI_SMEMRDIRQ);
 		writel(tmpdout, &reg->dout);	/* Write the data out */
-
 		debug("*** spi_xfer: ... %08x written, bitlen %d\n",
 		      tmpdout, bitlen);
 
@@ -98,43 +91,23 @@ static int _spi_xfer(struct kwspi_registers *reg, unsigned int bitlen,
 		 * or time out (1 second = 1000 ms)
 		 * The NE event must be read and cleared first
 		 */
-		for (tm = 0; tm < KWSPI_TIMEOUT; ++tm) {
+		for (tm = 0, isread = 0; tm < KWSPI_TIMEOUT; ++tm) {
 			if (readl(&reg->irq_cause) & KWSPI_SMEMRDIRQ) {
-				u8 *p;
+				isread = 1;
+				tmpdin = readl(&reg->din);
+				debug("spi_xfer: din %p..%08x read\n",
+				      din, tmpdin);
 
 				if (din) {
-					tmpdin = readl(&reg->din);
-					debug("spi_xfer: din %p..%08x read\n",
-					      din, tmpdin);
-
-					p = (u8 *)din;
-					if (bitlen <= 8) {
-						*p = (u8)tmpdin;
-						p += 1;
-						bitlen -= 8;
-					} else {
-						*(u16 *)p =
-							__le16_to_cpu(tmpdin);
-						p += 2;
-						bitlen -= 16;
-					}
-					din = p;
+					*((u8 *)din) = (u8)tmpdin;
+					din += 1;
 				}
-
-				if (dout) {
-					p = (u8 *)dout;
-					if (bitlen <= 8) {
-						p += 1;
-						bitlen -= 8;
-					} else {
-						p += 2;
-						bitlen -= 16;
-					}
-					dout = p;
-				}
-
-				break;
+				if (dout)
+					dout += 1;
+				bitlen -= 8;
 			}
+			if (isread)
+				break;
 		}
 		if (tm >= KWSPI_TIMEOUT)
 			printf("*** spi_xfer: Time out during SPI transfer\n");

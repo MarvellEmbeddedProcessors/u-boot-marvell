@@ -66,7 +66,8 @@
 						"$gatewayip:$netmask:$hostname"\
 						":$netdev:none nfsroot="\
 						"$serverip:$rootpath " \
-						"$extra_params"
+						"$extra_params " \
+						"$cpuidle"
 
 /*
  * For booting Linux, the board info and command line data

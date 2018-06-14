@@ -14,6 +14,8 @@
 #define SW_REV_STATUS_OFFSET		16
 #define SW_REV_STATUS_MASK		0xf
 
+#define A8040_DEVICE_ID			0x8040
+
 struct mochi_module {
 	u32 module_type;
 	u32 module_rev;
@@ -139,3 +141,31 @@ void soc_print_device_info(void)
 	else
 		printf("CP%x-A%d\n", cp_type, cp_rev);
 }
+
+#ifdef CONFIG_ARCH_MISC_INIT
+int arch_misc_init(void)
+{
+	u32 type, rev;
+
+	get_soc_type_rev(&type, &rev);
+
+	/* A8040 A1/A2 doesn't support linux kernel cpuidle feautre,
+	 * so U-boot needs to update Linux bootargs according
+	 * to the device id:
+	 *
+	 * Device	Device_ID
+	 * -------------------------------
+	 * A8040 A1	0x18040
+	 * A8040 A2	0x28040
+	 * A8040 B0	0x08045
+	 *
+	 * So we need to check if 16 LSB bits are 0x8040.
+	 * The variable 'type', which is returned by
+	 * get_soc_type_rev() holds these bits.
+	 */
+	if (type == A8040_DEVICE_ID)
+		env_set("cpuidle", "cpuidle.off=1");
+
+	return 0;
+}
+#endif

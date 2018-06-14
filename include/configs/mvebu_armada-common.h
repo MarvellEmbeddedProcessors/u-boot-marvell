@@ -226,7 +226,7 @@ int boot_from_nand(void);
 		"tftpboot $fdt_addr_r $fdt_name; run get_ramdisk\0"	\
 	"set_bootargs=setenv bootargs $console $root ip=$ipaddr:"	\
 		"$serverip:$gatewayip:$netmask:$hostname:$netdev:none "	\
-		"nfsroot=$serverip:$rootpath $extra_params\0"		\
+		"nfsroot=$serverip:$rootpath $extra_params $cpuidle\0"	\
 	"bootcmd_nfs=run get_images; run set_bootargs; "		\
 		"booti $kernel_addr_r $ramdisk_addr_r $fdt_addr_r\0"	\
 	"kernel_addr_r=0x5000000\0"		\

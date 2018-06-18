@@ -40,7 +40,8 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "armada-3900-db.dtsi"
+#include "armada-70x0.dtsi" /* include SoC device tree */
+#include "armada-70x0-dev-info.dtsi"
 
 / {
 	model = "Marvell Armada 3900 Validation Development board(CP NAND)";
@@ -48,7 +49,48 @@
 		     "marvell,armada-ap806-quad", "marvell,armada-ap806";
 
 	aliases {
+		i2c0 = &cp0_i2c0;
+		spi0 = &ap_spi0;
 		i2c1 = &ap_i2c0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+
+	cp0 {
+		config-space {
+			cp0_reg_usb3_vbus0: cp0_usb3_vbus@0 {
+				compatible = "regulator-fixed";
+				pinctrl-names = "default";
+				pinctrl-0 = <&cp0_xhci0_vbus_pins>;
+				regulator-name = "cp0-xhci0-vbus";
+				regulator-min-microvolt = <5000000>;
+				regulator-max-microvolt = <5000000>;
+				startup-delay-us = <100000>;
+				enable-active-high;
+				regulator-force-boot-off;
+				gpio = <&cp0_gpio1 12 GPIO_ACTIVE_HIGH>;
+			};
+
+			cp0_reg_usb3_vbus1: cp0_usb3_vbus@1 {
+				compatible = "regulator-fixed";
+				pinctrl-names = "default";
+				pinctrl-0 = <&cp0_xhci1_vbus_pins>;
+				regulator-name = "cp0-xhci1-vbus";
+				regulator-min-microvolt = <5000000>;
+				regulator-max-microvolt = <5000000>;
+				startup-delay-us = <100000>;
+				enable-active-high;
+				regulator-force-boot-off;
+				gpio = <&cp0_gpio1 13 GPIO_ACTIVE_HIGH>;
+			};
+		};
 	};
 };
 
@@ -59,6 +101,31 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&ap_i2c0_pins>;
 	status = "okay";
+};
+
+&ap_pinctl {
+		/* MPP Bus:
+		 * SPI   [0-3]
+		 * I2C   [4-5]
+		 * UART0 [11,19]
+		 */
+		/*   0 1 2 3 4 5 6 7 8 9 */
+	pin-func = < 3 3 3 3 3 3 0 0 0 0
+		     0 3 0 0 0 0 0 0 0 3 >;
+};
+
+&ap_spi0 {
+	status = "okay";
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&thermal {
+	gain = <394>;
+	offset = <128900>;
+	divisor = <1000>;
 };
 
 /*
@@ -87,4 +154,128 @@
 
 &cp0_nand {
 	status = "okay";
+};
+
+&cp0_pinctl {
+	cp0_xhci0_vbus_pins: cp0-xhci0-vbus-pins {
+		marvell,pins = <44>;
+		marvell,function = <0>;
+	};
+
+	cp0_xhci1_vbus_pins: cp0-xhci1-vbus-pins {
+		marvell,pins = <45>;
+		marvell,function = <0>;
+	};
+
+	cp0_mochi_reset_pins: cp0-mochi-reset-pins {
+		marvell,pins = <56>;
+		marvell,function = <0>;
+	};
+
+	cp0_mochi_enable_pins: cp0-mochi-enable-pins {
+		marvell,pins = <57>;
+		marvell,function = <0>;
+	};
+};
+
+&cp0_i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cp0_i2c0_pins>;
+	status = "okay";
+};
+
+&cp0_utmi0 {
+	status = "okay";
+};
+
+&cp0_utmi1 {
+	status = "okay";
+};
+
+&cp0_usb3_0 {
+	status = "okay";
+	vbus-supply = <&cp0_reg_usb3_vbus0>;
+	vbus-disable-delay = <500>;
+};
+
+&cp0_usb3_1 {
+	status = "okay";
+	vbus-supply = <&cp0_reg_usb3_vbus1>;
+	vbus-disable-delay = <500>;
+};
+
+&cp0_pcie0 {
+	status = "okay";
+	ranges =
+		/* downstream I/O */
+		<0x81000000 0 0xf7000000 0  0xf7000000 0 0x10000
+		/* non-prefetchable memory */
+		0x82000000 0 0xf6000000 0  0xf6000000 0 0xf00000>;
+};
+
+&cp0_pcie2 {
+	status = "okay";
+	ranges =
+		/* downstream I/O */
+		<0x81000000 0 0xf7020000 0  0xf7020000 0 0x10000
+		/* non-prefetchable memory */
+		0x82000000 0 0xf8000000 0  0xf8000000 0 0xf00000>;
+};
+
+&cp0_comphy {
+	phy0 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+
+	phy1 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+
+	phy2 {
+		phy-type = <COMPHY_TYPE_SGMII0>;
+		phy-speed = <COMPHY_SPEED_1_25G>;
+	};
+
+	phy3 {
+		phy-type = <COMPHY_TYPE_SGMII1>;
+		phy-speed = <COMPHY_SPEED_1_25G>;
+	};
+
+	phy4 {
+		phy-type = <COMPHY_TYPE_USB3_HOST1>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+
+	phy5 {
+		phy-type = <COMPHY_TYPE_PEX2>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+};
+
+&cp0_xmdio {
+	status = "okay";
+	phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+	phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+};
+
+&cp0_ethernet {
+	status = "okay";
+};
+
+&cp0_eth0 {
+	status = "okay";
+	phy-mode = "sgmii";
+	phy = <&phy0>;
+};
+
+&cp0_eth1 {
+	status = "okay";
+	phy-mode = "sgmii";
+	phy = <&phy1>;
 };

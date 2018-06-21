@@ -229,16 +229,16 @@ int boot_from_nand(void);
 		"nfsroot=$serverip:$rootpath $extra_params $cpuidle\0"	\
 	"bootcmd_nfs=run get_images; run set_bootargs; "		\
 		"booti $kernel_addr_r $ramdisk_addr_r $fdt_addr_r\0"	\
-	"kernel_addr_r=0x5000000\0"		\
+	"kernel_addr_r=0x7000000\0"		\
 	"initrd_addr=0xa00000\0"		\
 	"initrd_size=0x2000000\0"		\
-	"fdt_addr_r=0x4f00000\0"		\
-	"loadaddr=0x5000000\0"			\
+	"fdt_addr_r=0x6f00000\0"		\
+	"loadaddr=0x7000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
-	"pxefile_addr_r=0x4e00000\0"		\
-	"scriptaddr=0x4d00000\0"		\
+	"pxefile_addr_r=0x6e00000\0"		\
+	"scriptaddr=0x6d00000\0"		\
 	"hostname=marvell\0"			\
-	"ramdisk_addr_r=0x8000000\0"		\
+	"ramdisk_addr_r=0xa000000\0"		\
 	"netdev=eth0\0"				\
 	"ethaddr=00:51:82:11:22:00\0"		\
 	"eth1addr=00:51:82:11:22:01\0"		\

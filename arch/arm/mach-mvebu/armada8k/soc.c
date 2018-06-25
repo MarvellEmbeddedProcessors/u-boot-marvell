@@ -19,6 +19,7 @@
 #include <asm/arch-armada8k/cache_llc.h>
 #include <asm/io.h>
 #include <common.h>
+#include <mach/clock.h>
 #include <mvebu/mvebu_chip_sar.h>
 
 #define CP_DEV_ID_STATUS_REG		(MVEBU_REGISTER(0x2400240))
@@ -27,6 +28,12 @@
 #define AP_DEV_ID_STATUS_MASK		0xfff
 #define SW_REV_STATUS_OFFSET		16
 #define SW_REV_STATUS_MASK		0xf
+
+#define SSCG_CTRL_REG(num)		(MVEBU_REGISTER(0x6F41B0 + (num * 0x4)))
+#define SSCG_CTRL_800MHZ_VAL(num)	(num == 0 ? 0xCA3E017 : 0x3)
+#define SSCG_CTRL_1200MHZ_VAL(num)	(num == 0 ? 0x13E5E000 : 0x3)
+#define CLOCK_800MHZ			(800 * MHz)
+#define CLOCK_1200MHZ			(1200 * MHz)
 
 #define A8040_DEVICE_ID			0x8040
 
@@ -269,12 +276,44 @@ void mvebu_nand_select(void __iomem *soc_dev_multiplex_reg)
 }
 #endif
 
+void enable_sscg_ssc(void)
+{
+	u32 type, rev, sub_rev, soc_ddr_clk;
+
+	get_soc_type_rev(&type, &rev);
+
+	/* Enable this feature only on Armada3900-A1 */
+	if (type == AP807_SHARED_DEVICE_ID_A1) {
+		get_soc_sub_rev(&sub_rev);
+		if (sub_rev == 0) {
+			soc_ddr_clk = soc_ddr_clk_get();
+			switch (soc_ddr_clk) {
+			case CLOCK_800MHZ:
+				writel(SSCG_CTRL_800MHZ_VAL(0),
+				       SSCG_CTRL_REG(0));
+				writel(SSCG_CTRL_800MHZ_VAL(1),
+				       SSCG_CTRL_REG(1));
+				break;
+			case CLOCK_1200MHZ:
+				writel(SSCG_CTRL_1200MHZ_VAL(0),
+				       SSCG_CTRL_REG(0));
+				writel(SSCG_CTRL_1200MHZ_VAL(1),
+				       SSCG_CTRL_REG(1));
+				break;
+			default:
+				break;
+			}
+		}
+	}
+}
+
 int soc_early_init_f(void)
 {
 #ifdef CONFIG_MVEBU_SAR
 	/* Sample at reset register init */
 	mvebu_sar_init();
 #endif
+	enable_sscg_ssc();
 
 	return 0;
 }

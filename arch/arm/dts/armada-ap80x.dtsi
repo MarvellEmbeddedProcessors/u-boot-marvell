@@ -63,15 +63,6 @@
 				#gpio-cells = <2>;
 			};
 
-			sar-reg {
-				compatible = "marvell,sample-at-reset-common",
-					     "marvell,sample-at-reset-ap806";
-				reg = <0x6F8200 0x8>;
-				sar-driver = "ap806_sar";
-				sar-name = "ap806_sar";
-				status = "okay";
-			};
-
 			ap_spi0: spi@510600 {
 				compatible = "marvell,armada-380-spi";
 				reg = <0x510600 0x50>;

@@ -30,6 +30,8 @@
 
 #define A8040_DEVICE_ID			0x8040
 
+#define AP807_ID			0x807
+
 /* to differentiate differnet SOC with similar DEVICE_ID */
 #define AP807_SHARED_DEVICE_ID_A0	0x7045
 #define AP807_SHARED_DEVICE_ID_A1	0x6025
@@ -54,13 +56,13 @@ struct soc_info {
 };
 
 static struct soc_info soc_info_table[] = {
-	{ {0x7025, 0}, "Armada7640-A1", {0x807, 1}, {0x115, 0}, 1, 1},
+	{ {0x7025, 0}, "Armada7640-A1", {0x807, 1}, {0x115, 0}, 1, 1, 0},
 	{ {0x6025, 0}, "Armada3940-A1", {0x807, 1}, {0x115, 0}, 1, 1, 2},
 	{ {0x6025, 0}, "Armada3920-A1", {0x807, 1}, {0x115, 0}, 1, 1, 1},
 	{ {0x6025, 0}, "Armada3900-A1", {0x807, 1}, {0x115, 0}, 1, 1, 0},
 	{ {0x7045, 0}, "Armada3920-A0", {0x807, 0}, {0x115, 0}, 1, 1, 1},
 	{ {0x7045, 0}, "Armada3900-A0", {0x807, 0}, {0x115, 0}, 1, 1, 0},
-	{ {0x7040, 2}, "Armada3900-Z2", {0x807, 0}, {0x110, 2}, 1, 1 },
+	{ {0x7040, 2}, "Armada3900-Z2", {0x807, 0}, {0x110, 2}, 1, 1, 0},
 	{ {0x7040, 1}, "Armada7040-A1", {0x806, 1}, {0x110, 1}, 1, 1 },
 	{ {0x7040, 2}, "Armada7040-A2", {0x806, 1}, {0x110, 2}, 1, 1 },
 	{ {0x7045, 0}, "Armada7040-B0", {0x806, 2}, {0x115, 0}, 1, 1 },
@@ -85,6 +87,24 @@ static int get_ap_soc_type(u32 *type)
 	return 0;
 }
 
+static int get_soc_sub_rev(u32 *sub_rev)
+{
+	u32 soc_type, rev, ap_type;
+
+	get_soc_type_rev(&soc_type, &rev);
+	get_ap_soc_type(&ap_type);
+
+	if (ap_type == AP807_ID) {
+		*sub_rev = readl(DEVICE_ID_SUB_REV) & DEVICE_ID_SUB_REV_MASK;
+		*sub_rev >>= DEVICE_ID_SUB_REV_OFFSET;
+		return 0;
+	}
+
+	*sub_rev = 0;
+
+	return -1;
+}
+
 static int get_soc_table_index(u32 *index)
 {
 	u32 soc_type;
@@ -94,16 +114,13 @@ static int get_soc_table_index(u32 *index)
 	*index = 0;
 	get_soc_type_rev(&soc_type, &rev);
 	get_ap_soc_type(&ap_type);
-	sub_rev = readl(DEVICE_ID_SUB_REV) & DEVICE_ID_SUB_REV_MASK;
-	sub_rev >>= DEVICE_ID_SUB_REV_OFFSET;
 
 	for (i = 0; i < sizeof(soc_info_table) / sizeof(struct soc_info); i++) {
 		if ((soc_type ==
 			soc_info_table[i].soc.module_type) &&
 		   (rev == soc_info_table[i].soc.module_rev) &&
 		    ap_type == soc_info_table[i].ap.module_type) {
-			if (soc_type == AP807_SHARED_DEVICE_ID_A0 ||
-			    soc_type == AP807_SHARED_DEVICE_ID_A1) {
+			if (!get_soc_sub_rev(&sub_rev)) {
 				if (sub_rev == soc_info_table[i].sub_rev) {
 					*index = i;
 					ret = 0;

@@ -13,10 +13,20 @@
 
 #define CP_DEV_ID_STATUS_REG		(MVEBU_REGISTER(0x2400240))
 #define DEVICE_ID_STATUS_MASK		0xffff
+#define AP_DEV_ID_STATUS_REG		(SOC_REGS_PHY_BASE + 0x6F8240)
+#define AP_DEV_ID_STATUS_MASK		0xfff
 #define SW_REV_STATUS_OFFSET		16
 #define SW_REV_STATUS_MASK		0xf
 
 #define A8040_DEVICE_ID			0x8040
+
+/* to differentiate differnet SOC with similar DEVICE_ID */
+#define AP807_SHARED_DEVICE_ID_A0	0x7045
+#define AP807_SHARED_DEVICE_ID_A1	0x6025
+
+#define DEVICE_ID_SUB_REV		(MVEBU_REGISTER(0x2400230))
+#define DEVICE_ID_SUB_REV_OFFSET	7
+#define DEVICE_ID_SUB_REV_MASK		(0xffff << DEVICE_ID_SUB_REV_OFFSET)
 
 struct mochi_module {
 	u32 module_type;
@@ -30,13 +40,23 @@ struct soc_info {
 	struct mochi_module cp;
 	u32 ap_num;
 	u32 cp_num;
+	u32 sub_rev;
 };
 
 static struct soc_info soc_info_table[] = {
+	{ {0x7025, 0}, "Armada7640-A0", {0x807, 1}, {0x115, 0}, 1, 1},
+	{ {0x6025, 0}, "Armada7440-A0", {0x807, 1}, {0x115, 0}, 1, 1, 2},
+	{ {0x6025, 0}, "Armada3920-A0", {0x807, 1}, {0x115, 0}, 1, 1, 1},
+	{ {0x6025, 0}, "Armada3900-A1", {0x807, 1}, {0x115, 0}, 1, 1, 0},
+	{ {0x7045, 0}, "Armada3920-A0", {0x807, 0}, {0x115, 0}, 1, 1, 1},
+	{ {0x7045, 0}, "Armada3900-A0", {0x807, 0}, {0x115, 0}, 1, 1, 0},
+	{ {0x7040, 2}, "Armada3900-Z2", {0x807, 0}, {0x110, 2}, 1, 1 },
 	{ {0x7040, 1}, "Armada7040-A1", {0x806, 1}, {0x110, 1}, 1, 1 },
 	{ {0x7040, 2}, "Armada7040-A2", {0x806, 1}, {0x110, 2}, 1, 1 },
+	{ {0x7045, 0}, "Armada7040-B0", {0x806, 2}, {0x115, 0}, 1, 1 },
 	{ {0x8040, 1}, "Armada8040-A1", {0x806, 1}, {0x110, 1}, 1, 2 },
 	{ {0x8040, 2}, "Armada8040-A2", {0x806, 1}, {0x110, 2}, 1, 2 },
+	{ {0x8045, 0}, "Armada8040-B0", {0x806, 2}, {0x115, 0}, 1, 2 },
 };
 
 static int get_soc_type_rev(u32 *type, u32 *rev)
@@ -48,20 +68,42 @@ static int get_soc_type_rev(u32 *type, u32 *rev)
 	return 0;
 }
 
+static int get_ap_soc_type(u32 *type)
+{
+	*type = readl(AP_DEV_ID_STATUS_REG) & AP_DEV_ID_STATUS_MASK;
+
+	return 0;
+}
+
 static int get_soc_table_index(u32 *index)
 {
 	u32 soc_type;
 	u32 rev, i, ret = 1;
+	u32 ap_type, sub_rev;
 
 	*index = 0;
 	get_soc_type_rev(&soc_type, &rev);
+	get_ap_soc_type(&ap_type);
+	sub_rev = readl(DEVICE_ID_SUB_REV) & DEVICE_ID_SUB_REV_MASK;
+	sub_rev >>= DEVICE_ID_SUB_REV_OFFSET;
 
 	for (i = 0; i < sizeof(soc_info_table) / sizeof(struct soc_info); i++) {
 		if ((soc_type ==
 			soc_info_table[i].soc.module_type) &&
-		   (rev == soc_info_table[i].soc.module_rev)) {
-			*index = i;
-			ret = 0;
+		   (rev == soc_info_table[i].soc.module_rev) &&
+		    ap_type == soc_info_table[i].ap.module_type) {
+			if (soc_type == AP807_SHARED_DEVICE_ID_A0 ||
+			    soc_type == AP807_SHARED_DEVICE_ID_A1) {
+				if (sub_rev == soc_info_table[i].sub_rev) {
+					*index = i;
+					ret = 0;
+				} else {
+					continue;
+				}
+			} else {
+				*index = i;
+				ret = 0;
+			}
 		}
 	}
 

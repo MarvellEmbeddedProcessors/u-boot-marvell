@@ -65,6 +65,10 @@ static int get_soc_table_index(u32 *index)
 		}
 	}
 
+	if (ret)
+		pr_err("using default SoC info: %s\n",
+		       soc_info_table[*index].soc_name);
+
 	return ret;
 }
 
@@ -74,17 +78,6 @@ static int get_soc_name(char **soc_name)
 
 	get_soc_table_index(&index);
 	*soc_name = soc_info_table[index].soc_name;
-
-	return 0;
-}
-
-static int get_ap_cp_num(u32 *ap_num, u32 *cp_num)
-{
-	u32 index;
-
-	get_soc_table_index(&index);
-	*ap_num = soc_info_table[index].ap_num;
-	*cp_num = soc_info_table[index].cp_num;
 
 	return 0;
 }
@@ -130,16 +123,20 @@ void soc_print_device_info(void)
 	u32 ap_num, cp_num, ap_type, ap_rev, cp_type, cp_rev;
 	char *soc_name = NULL;
 
-	get_ap_cp_num(&ap_num, &cp_num);
+	soc_get_ap_cp_num(&ap_num, &cp_num);
 
 	get_soc_name(&soc_name);
 	get_ap_type_rev(&ap_type, &ap_rev);
 	get_cp_type_rev(&cp_type, &cp_rev);
 
-	printf("SoC: %s; AP%x-A%d; ", soc_name, ap_type, ap_rev);
+	if (ap_rev > 1)
+		printf("SoC: %s; AP%x-B0; ", soc_name, ap_type);
+	else
+		printf("SoC: %s; AP%x-A%d; ", soc_name, ap_type, ap_rev);
+
 	/* more than one cp module */
 	if (cp_num > 1)
-		printf("%dx CP%x-A%d\n", cp_num, cp_type, cp_rev);
+		printf("%dxCP%x-A%d\n", cp_num, cp_type, cp_rev);
 	else
 		printf("CP%x-A%d\n", cp_type, cp_rev);
 }

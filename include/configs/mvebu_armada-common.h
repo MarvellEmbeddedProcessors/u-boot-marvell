@@ -33,11 +33,11 @@
 #define CONFIG_HAS_ETH2
 #define CONFIG_ETHPRIME			"eth0"
 #define CONFIG_ROOTPATH                 "/srv/nfs/" /* Default Dir for NFS */
-#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr_r=0x5000000\0"	\
+#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr_r=0x7000000\0"	\
 					"initrd_addr=0xa00000\0"	\
 					"initrd_size=0x2000000\0"	\
-					"fdt_addr_r=0x4f00000\0"	\
-					"loadaddr=0x5000000\0"		\
+					"fdt_addr_r=0x6f00000\0"	\
+					"loadaddr=0x6000000\0"		\
 					"fdt_high=0xffffffffffffffff\0"	\
 					"hostname=marvell\0"		\
 					"ramdisk_addr_r=0x8000000\0"	\

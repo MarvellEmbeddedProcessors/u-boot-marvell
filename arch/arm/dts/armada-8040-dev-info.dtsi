@@ -40,7 +40,7 @@
 					  "0x3", "CPU/DDR = 0x3: 1800/1050 Mhz, PIDI = 0: 1Ghz",
 					  "0x4", "CPU/DDR = 0x4: 1600/1050 Mhz, PIDI = 0: 1Ghz",
 					  "0xe", "CPU/DDR = 0x6: 1300/800 Mhz,  PIDI = 1: 500Mhz";
-				default = <0xe>;
+				default = <0x1>;
 				status = "okay";
 			};
 			boot_mode {

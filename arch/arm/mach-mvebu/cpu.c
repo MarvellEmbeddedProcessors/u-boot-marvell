@@ -21,6 +21,8 @@
 #define DDR_BASE_CS_OFF(n)	(0x0000 + ((n) << 3))
 #define DDR_SIZE_CS_OFF(n)	(0x0004 + ((n) << 3))
 
+#define SOC_MUX_NAND_EN_MASK		0x1
+
 static struct mbus_win windows[] = {
 	/* SPI */
 	{ MBUS_SPI_BASE, MBUS_SPI_SIZE,
@@ -482,7 +484,7 @@ int arch_cpu_init(void)
 }
 #endif /* CONFIG_ARCH_CPU_INIT */
 
-u32 mvebu_get_nand_clock(void)
+u32 mvebu_get_nand_clock(void __iomem *unused)
 {
 	u32 reg;
 
@@ -494,6 +496,14 @@ u32 mvebu_get_nand_clock(void)
 	return CONFIG_SYS_MVEBU_PLL_CLOCK /
 		((readl(reg) &
 		  NAND_ECC_DIVCKL_RATIO_MASK) >> NAND_ECC_DIVCKL_RATIO_OFFS);
+}
+
+void mvebu_nand_select(void __iomem *soc_dev_multiplex_reg)
+{
+	if (!soc_dev_multiplex_reg)
+		return;
+
+	setbits_le32(soc_dev_multiplex_reg, SOC_MUX_NAND_EN_MASK);
 }
 
 /*

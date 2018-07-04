@@ -250,6 +250,10 @@ struct pxa3xx_nand_info {
 	uint32_t		ndcb1;
 	uint32_t		ndcb2;
 	uint32_t		ndcb3;
+
+	/* SOC related registers for nand */
+	void __iomem		*nand_flash_clk_ctrl_reg;
+	void __iomem		*soc_dev_multiplex_reg;
 };
 
 static struct pxa3xx_nand_timing timing[] = {
@@ -350,12 +354,19 @@ static enum pxa3xx_nand_variant pxa3xx_nand_get_variant(void)
 	return PXA3XX_NAND_VARIANT_ARMADA370;
 }
 
-static void pxa3xx_nand_set_timing(struct pxa3xx_nand_host *host,
-				   const struct pxa3xx_nand_timing *t)
+static int pxa3xx_nand_set_timing(struct pxa3xx_nand_host *host,
+				  const struct pxa3xx_nand_timing *t)
 {
 	struct pxa3xx_nand_info *info = host->info_data;
-	unsigned long nand_clk = mvebu_get_nand_clock();
+	unsigned long nand_clk;
 	uint32_t ndtr0, ndtr1;
+
+	nand_clk = mvebu_get_nand_clock(info->nand_flash_clk_ctrl_reg);
+	if (!nand_clk) {
+		dev_err(&host->info->pdev->dev,
+			"Missinig flash clock register\n");
+		return -EINVAL;
+	}
 
 	ndtr0 = NDTR0_tCH(ns2cycle(t->tCH, nand_clk)) |
 		NDTR0_tCS(ns2cycle(t->tCS, nand_clk)) |
@@ -372,14 +383,16 @@ static void pxa3xx_nand_set_timing(struct pxa3xx_nand_host *host,
 	info->ndtr1cs0 = ndtr1;
 	nand_writel(info, NDTR0CS0, ndtr0);
 	nand_writel(info, NDTR1CS0, ndtr1);
+
+	return 0;
 }
 
-static void pxa3xx_nand_set_sdr_timing(struct pxa3xx_nand_host *host,
-				       const struct nand_sdr_timings *t)
+static int pxa3xx_nand_set_sdr_timing(struct pxa3xx_nand_host *host,
+				      const struct nand_sdr_timings *t)
 {
 	struct pxa3xx_nand_info *info = host->info_data;
 	struct nand_chip *chip = &host->chip;
-	unsigned long nand_clk = mvebu_get_nand_clock();
+	unsigned long nand_clk;
 	uint32_t ndtr0, ndtr1;
 
 	u32 tCH_min = DIV_ROUND_UP(t->tCH_min, 1000);
@@ -391,6 +404,13 @@ static void pxa3xx_nand_set_sdr_timing(struct pxa3xx_nand_host *host,
 	u32 tR = chip->chip_delay * 1000;
 	u32 tWHR_min = DIV_ROUND_UP(t->tWHR_min, 1000);
 	u32 tAR_min = DIV_ROUND_UP(t->tAR_min, 1000);
+
+	nand_clk = mvebu_get_nand_clock(info->nand_flash_clk_ctrl_reg);
+	if (!nand_clk) {
+		dev_err(&host->info->pdev->dev,
+			"Missinig flash clock register\n");
+		return -EINVAL;
+	}
 
 	/* fallback to a default value if tR = 0 */
 	if (!tR)
@@ -411,6 +431,8 @@ static void pxa3xx_nand_set_sdr_timing(struct pxa3xx_nand_host *host,
 	info->ndtr1cs0 = ndtr1;
 	nand_writel(info, NDTR0CS0, ndtr0);
 	nand_writel(info, NDTR1CS0, ndtr1);
+
+	return 0;
 }
 
 static int pxa3xx_nand_init_timings(struct pxa3xx_nand_host *host)
@@ -420,7 +442,7 @@ static int pxa3xx_nand_init_timings(struct pxa3xx_nand_host *host)
 	struct pxa3xx_nand_info *info = host->info_data;
 	const struct pxa3xx_nand_flash *f = NULL;
 	struct mtd_info *mtd = nand_to_mtd(&host->chip);
-	int mode, id, ntypes, i;
+	int mode, id, ntypes, i, ret;
 
 	mode = onfi_get_async_timing_mode(chip);
 	if (mode == ONFI_TIMING_MODE_UNKNOWN) {
@@ -443,7 +465,9 @@ static int pxa3xx_nand_init_timings(struct pxa3xx_nand_host *host)
 			return -EINVAL;
 		}
 
-		pxa3xx_nand_set_timing(host, f->timing);
+		ret = pxa3xx_nand_set_timing(host, f->timing);
+		if (ret)
+			return ret;
 
 		if (f->flash_width == 16) {
 			info->reg_ndcr |= NDCR_DWIDTH_M;
@@ -460,7 +484,9 @@ static int pxa3xx_nand_init_timings(struct pxa3xx_nand_host *host)
 		if (IS_ERR(timings))
 			return PTR_ERR(timings);
 
-		pxa3xx_nand_set_sdr_timing(host, timings);
+		ret = pxa3xx_nand_set_sdr_timing(host, timings);
+		if (ret)
+			return ret;
 	}
 
 	return 0;
@@ -1597,6 +1623,8 @@ static int pxa3xx_nand_probe_dt(struct pxa3xx_nand_info *info)
 	struct pxa3xx_nand_platform_data *pdata;
 	const void *blob = gd->fdt_blob;
 	int node = -1;
+	int index;
+	fdt_addr_t addr;
 
 	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
 	if (!pdata)
@@ -1617,6 +1645,26 @@ static int pxa3xx_nand_probe_dt(struct pxa3xx_nand_info *info)
 		info->mmio_base =
 			(void __iomem *)fdtdec_get_addr_size_auto_noparent(
 					blob, node, "reg", 0, NULL, true);
+
+		index = fdt_stringlist_search(blob, node, "reg-names",
+					      "flash_clock");
+		if (index > 0) {
+			addr = fdtdec_get_addr_size_auto_noparent(
+					blob, node, "reg", index, NULL, true);
+			if (addr != FDT_ADDR_T_NONE)
+				info->nand_flash_clk_ctrl_reg =
+					(void __iomem *)addr;
+		}
+
+		index = fdt_stringlist_search(blob, node, "reg-names",
+					      "dev_mux");
+		if (index > 0) {
+			addr = fdtdec_get_addr_size_auto_noparent(
+					blob, node, "reg", index, NULL, true);
+			if (addr != FDT_ADDR_T_NONE)
+				info->soc_dev_multiplex_reg =
+					(void __iomem *)addr;
+		}
 
 		pdata->num_cs = fdtdec_get_int(blob, node, "num-cs", 1);
 		if (pdata->num_cs != 1) {
@@ -1663,6 +1711,14 @@ static int pxa3xx_nand_probe(struct pxa3xx_nand_info *info)
 		return ret;
 
 	pdata = info->pdata;
+
+	/* If the NAND flash is enabled in DT, but the boot image is not
+	 * running from NAND, it may be needed to enable NAND on SOC
+	 * DEVBUS MUX level.
+	 * When the boot device is NAND, such configuration is done
+	 * in the BootROM.
+	 */
+	mvebu_nand_select(info->soc_dev_multiplex_reg);
 
 	ret = alloc_nand_resource(info);
 	if (ret) {

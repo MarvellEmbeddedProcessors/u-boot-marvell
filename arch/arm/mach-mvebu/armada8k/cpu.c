@@ -117,24 +117,6 @@ void reset_cpu(ulong ignored)
 	writel(reg, RFU_GLOBAL_SW_RST);
 }
 
-/*
- * TODO - implement this functionality using platform
- *        clock driver once it gets available
- * Return NAND clock in Hz
- */
-u32 mvebu_get_nand_clock(void)
-{
-	unsigned long NAND_FLASH_CLK_CTRL = 0xF2440700UL;
-	unsigned long NF_CLOCK_SEL_MASK = 0x1;
-	u32 reg;
-
-	reg = readl(NAND_FLASH_CLK_CTRL);
-	if (reg & NF_CLOCK_SEL_MASK)
-		return 400 * 1000000;
-	else
-		return 250 * 1000000;
-}
-
 #if defined(CONFIG_DISPLAY_BOARDINFO)
 int print_cpuinfo(void)
 {

@@ -40,10 +40,10 @@
 			};
 
 			sdhci@780000 {
-				vqmmc-supply = <&cpm_reg_sd_vccq>;
+				vqmmc-supply = <&cp0_reg_sd_vccq>;
 			};
 
-			cpm_reg_usb3_vbus0:cpm_usb3_vbus@0 {
+			cp0_reg_usb3_vbus0:cp0_usb3_vbus@0 {
 				compatible = "regulator-fixed";
 				regulator-min-microvolt = <5000000>;
 				regulator-max-microvolt = <5000000>;
@@ -53,7 +53,7 @@
 				gpio = <&expander0 0 GPIO_ACTIVE_HIGH>;
 			};
 
-			cpm_reg_usb3_vbus1: cpm_usb3_vbus@1 {
+			cp0_reg_usb3_vbus1: cp0_usb3_vbus@1 {
 				compatible = "regulator-fixed";
 				regulator-min-microvolt = <5000000>;
 				regulator-max-microvolt = <5000000>;
@@ -63,7 +63,7 @@
 				gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
 			};
 
-			cpm_reg_usb3_current_limiter0:cpm_usb3_current_limiter@0 {
+			cp0_reg_usb3_current_limiter0:cp0_usb3_current_limiter@0 {
 				compatible = "regulator-fixed";
 				regulator-min-microamp = <900000>;
 				regulator-max-microamp = <900000>;
@@ -71,7 +71,7 @@
 				gpio = <&expander0 4 GPIO_ACTIVE_HIGH>;
 			};
 
-			cpm_reg_usb3_current_limiter1: cpm_usb3_current_limiter@1 {
+			cp0_reg_usb3_current_limiter1: cp0_usb3_current_limiter@1 {
 				compatible = "regulator-fixed";
 				regulator-min-microamp = <900000>;
 				regulator-max-microamp = <900000>;
@@ -79,10 +79,10 @@
 				gpio = <&expander0 5 GPIO_ACTIVE_HIGH>;
 			};
 
-			/* even though this node used for enable/disable cps usb vbus-supply,
-			 * we use "cpm" prefix since the expander is connected to cpm.
+			/* even though this node used for enable/disable cp1 usb vbus-supply,
+			 * we use "cp0" prefix since the expander is connected to cp0.
 			 */
-			cpm_reg_usb3_vbus2: cpm_usb3_vbus@2 {
+			cp0_reg_usb3_vbus2: cp0_usb3_vbus@2 {
 				compatible = "regulator-fixed";
 				regulator-min-microvolt = <5000000>;
 				regulator-max-microvolt = <5000000>;
@@ -92,7 +92,7 @@
 				gpio = <&expander1 0 GPIO_ACTIVE_HIGH>;
 			};
 
-			cpm_reg_usb3_current_limiter2: cpm_usb3_current_limiter@2 {
+			cp0_reg_usb3_current_limiter2: cp0_usb3_current_limiter@2 {
 				compatible = "regulator-fixed";
 				regulator-min-microamp = <900000>;
 				regulator-max-microamp = <900000>;
@@ -100,18 +100,18 @@
 				gpio = <&expander1 4 GPIO_ACTIVE_HIGH>;
 			};
 
-			cpm_usb3_0: usb3@500000 {
-				vbus-supply = <&cpm_reg_usb3_vbus0>;
-				current-limiter = <&cpm_reg_usb3_current_limiter0>;
+			cp0_usb3_0: usb3@500000 {
+				vbus-supply = <&cp0_reg_usb3_vbus0>;
+				current-limiter = <&cp0_reg_usb3_current_limiter0>;
 			};
-			cpm_usb3_1: usb3@510000 {
-				vbus-supply = <&cpm_reg_usb3_vbus1>;
-				current-limiter = <&cpm_reg_usb3_current_limiter1>;
+			cp0_usb3_1: usb3@510000 {
+				vbus-supply = <&cp0_reg_usb3_vbus1>;
+				current-limiter = <&cp0_reg_usb3_current_limiter1>;
 			};
 
-			cpm_reg_sd_vccq: cpm_sd_vccq@0 {
+			cp0_reg_sd_vccq: cp0_sd_vccq@0 {
 				compatible = "regulator-gpio";
-				regulator-name = "cpm_sd_vcc";
+				regulator-name = "cp0_sd_vcc";
 				regulator-min-microvolt = <1800000>;
 				regulator-max-microvolt = <3300000>;
 				gpios = <&expander0 15 GPIO_ACTIVE_HIGH>;
@@ -129,9 +129,9 @@
 
 			ranges = <0x0 U64_TO_U32_H(CP110_BASE) U64_TO_U32_L(CP110_BASE) 0x2000000>,			/* internal regs */
 				 <0x2000000 U64_TO_U32_H(SPI_DIRECT_BASE) U64_TO_U32_L(SPI_DIRECT_BASE) 0x1000000>;	/* SPI1-DEV0 */
-			cps_usb3_0: usb3@500000 {
-				vbus-supply = <&cpm_reg_usb3_vbus2>;
-				current-limiter = <&cpm_reg_usb3_current_limiter2>;
+			cp1_usb3_0: usb3@500000 {
+				vbus-supply = <&cp0_reg_usb3_vbus2>;
+				current-limiter = <&cp0_reg_usb3_current_limiter2>;
 			};
 		};
 	};

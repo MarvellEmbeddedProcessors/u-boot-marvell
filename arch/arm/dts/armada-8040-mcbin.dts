@@ -109,7 +109,7 @@
 		     0    0    0    0    0    0    0xe  0xe  0xe  0xe
 		     0xe  0xe  0 >;
 
-	cp0_xhci_vbus_pins: cpm-xhci-vbus-pins {
+	cp0_xhci_vbus_pins: cp0-xhci-vbus-pins {
 		marvell,pins = < 47 >;
 		marvell,function = <0>;
 	};

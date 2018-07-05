@@ -8,7 +8,7 @@
 #include "armada-80x0-db.dtsi" /* include SoC device tree */
 
 / {
-	model = "Marvell Armada 8040 MACHIATOBin";
+	model = "Marvell Armada 8040 MACCHIATOBin";
 	compatible = "marvell,armada8040-mcbin",
 		     "marvell,armada8040";
 
@@ -87,7 +87,7 @@
 &ap_sdhci0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&ap_emmc_pins>;
-	bus-width= <8>;
+	bus-width = <8>;
 	status = "okay";
 };
 

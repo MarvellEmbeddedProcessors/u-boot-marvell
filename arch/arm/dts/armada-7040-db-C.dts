@@ -148,7 +148,7 @@
 	};
 
 	phy1 {
-		phy-type = <COMPHY_TYPE_USB3_HOST0>;
+		phy-type = <COMPHY_TYPE_SATA0>;
 	};
 
 	phy2 {

@@ -257,7 +257,7 @@
 &cp0_eth1 {
 	status = "okay";
 	phy = <&phy0>;
-	phy-mode = "sgmii";
+	phy-mode = "sgmii"; /* lane-0 */
 };
 
 &cp0_eth2 {

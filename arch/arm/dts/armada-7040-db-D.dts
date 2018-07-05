@@ -179,9 +179,6 @@
 
 &cp0_mdio {
 	status = "okay";
-	phy0: ethernet-phy@0 {
-		reg = <0>;
-	};
 	phy1: ethernet-phy@1 {
 		reg = <1>;
 	};
@@ -191,10 +188,9 @@
 	status = "okay";
 };
 
-&cp0_eth1 {
+&cp0_eth0 {
 	status = "okay";
-	phy = <&phy0>;
-	phy-mode = "sgmii";
+	phy-mode = "sfi"; /* lane-2 */
 };
 
 &cp0_eth2 {

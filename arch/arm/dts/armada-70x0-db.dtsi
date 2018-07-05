@@ -21,7 +21,7 @@
 				};
 			};
 
-			cpm_reg_usb3_vbus0:cpm_usb3_vbus@0 {
+			cp0_reg_usb3_vbus0:cp0_usb3_vbus@0 {
 				compatible = "regulator-fixed";
 				regulator-min-microvolt = <5000000>;
 				regulator-max-microvolt = <5000000>;
@@ -30,7 +30,7 @@
 				gpio = <&expander0 0 GPIO_ACTIVE_HIGH>;
 			};
 
-			cpm_reg_usb3_vbus1: cpm_usb3_vbus@1 {
+			cp0_reg_usb3_vbus1: cp0_usb3_vbus@1 {
 				compatible = "regulator-fixed";
 				regulator-min-microvolt = <5000000>;
 				regulator-max-microvolt = <5000000>;
@@ -39,13 +39,13 @@
 				gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
 			};
 
-			cpm_usb3_0: usb3@500000 {
-				vbus-supply = <&cpm_reg_usb3_vbus0>;
+			cp0_usb3_0: usb3@500000 {
+				vbus-supply = <&cp0_reg_usb3_vbus0>;
 				vbus-disable-delay = <500>;
 			};
 
-			cpm_usb3_1: usb3@510000 {
-				vbus-supply = <&cpm_reg_usb3_vbus1>;
+			cp0_usb3_1: usb3@510000 {
+				vbus-supply = <&cp0_reg_usb3_vbus1>;
 				vbus-disable-delay = <500>;
 			};
 		};

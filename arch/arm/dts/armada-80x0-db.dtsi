@@ -45,6 +45,21 @@
 				gpio = <&expander0 1 GPIO_ACTIVE_HIGH>;
 			};
 
+			cp0_reg_usb3_current_limiter0:cp0_usb3_current_limiter@0 {
+				compatible = "regulator-fixed";
+				regulator-min-microamp = <900000>;
+				regulator-max-microamp = <900000>;
+				regulator-force-boot-off;
+				gpio = <&expander0 4 GPIO_ACTIVE_HIGH>;
+			};
+
+			cp0_reg_usb3_current_limiter1: cp0_usb3_current_limiter@1 {
+				compatible = "regulator-fixed";
+				regulator-min-microamp = <900000>;
+				regulator-max-microamp = <900000>;
+				regulator-force-boot-off;
+				gpio = <&expander0 5 GPIO_ACTIVE_HIGH>;
+			};
 			/*
 			 * Even though this node used for enable/disable
 			 * cp1 usb vbus-supply, we use "cp0" prefix since
@@ -59,12 +74,22 @@
 				gpio = <&expander1 0 GPIO_ACTIVE_HIGH>;
 			};
 
+			cp0_reg_usb3_current_limiter2: cp0_usb3_current_limiter@2 {
+				compatible = "regulator-fixed";
+				regulator-min-microamp = <900000>;
+				regulator-max-microamp = <900000>;
+				regulator-force-boot-off;
+				gpio = <&expander1 4 GPIO_ACTIVE_HIGH>;
+			};
+
 			cp0_usb3_0: usb3@500000 {
 				vbus-supply = <&cp0_reg_usb3_vbus0>;
+				current-limiter = <&cp0_reg_usb3_current_limiter0>;
 				vbus-disable-delay = <500>;
 			};
 			cp0_usb3_1: usb3@510000 {
 				vbus-supply = <&cp0_reg_usb3_vbus1>;
+				current-limiter = <&cp0_reg_usb3_current_limiter1>;
 				vbus-disable-delay = <500>;
 			};
 		};
@@ -75,6 +100,7 @@
 
 			cp1_usb3_0: usb3@500000 {
 				vbus-supply = <&cp0_reg_usb3_vbus2>;
+				current-limiter = <&cp0_reg_usb3_current_limiter2>;
 				vbus-disable-delay = <500>;
 			};
 		};

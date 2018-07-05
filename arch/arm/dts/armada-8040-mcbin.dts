@@ -256,6 +256,7 @@
 
 &cp1_usb3_0 {
 	vbus-supply = <&reg_usb3h0_vbus>;
+	/delete-property/ current-limiter;
 	status = "okay";
 };
 

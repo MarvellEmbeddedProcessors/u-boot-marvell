@@ -236,7 +236,7 @@
 	/* Serdes Configuration:
 	 *	Lane 0: PCIe0 (x1)
 	 *	Lane 1: USB3_HOST0
-	 *	Lane 2: SGMII0 (1.25G)
+	 *	Lane 2: SFI0 (10G)
 	 *	Lane 3: SATA1
 	 *	Lane 4: PCIe1 (x1)
 	 *	Lane 5: PCIe2 (x1)
@@ -249,8 +249,8 @@
 		phy-speed = <COMPHY_SPEED_5G>;
 	};
 	phy2 {
-		phy-type = <COMPHY_TYPE_SGMII0>;
-		phy-speed = <COMPHY_SPEED_1_25G>;
+		phy-type = <COMPHY_TYPE_SFI0>;
+		phy-speed = <COMPHY_SPEED_10_3125G>;
 	};
 	phy3 {
 		phy-type = <COMPHY_TYPE_SATA1>;
@@ -333,7 +333,7 @@
 
 &cp1_eth0 {
 	status = "okay";
-	phy-mode = "sgmii"; /* lane-2 */
+	phy-mode = "sfi"; /* lane-2 */
 };
 
 &cp1_eth1 {

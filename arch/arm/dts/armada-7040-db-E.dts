@@ -220,6 +220,7 @@
 
 	phy2 {
 		phy-type = <COMPHY_TYPE_SGMII0>;
+		phy-speed = <COMPHY_SPEED_1_25G>;
 	};
 
 	phy3 {

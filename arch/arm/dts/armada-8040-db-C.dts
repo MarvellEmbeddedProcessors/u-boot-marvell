@@ -160,6 +160,7 @@
 	};
 	phy2 {
 		phy-type = <COMPHY_TYPE_SFI0>;
+		phy-speed = <COMPHY_SPEED_10_3125G>;
 	};
 	phy3 {
 		phy-type = <COMPHY_TYPE_SATA1>;
@@ -292,6 +293,7 @@
 	};
 	phy2 {
 		phy-type = <COMPHY_TYPE_SFI0>;
+		phy-speed = <COMPHY_SPEED_10_3125G>;
 	};
 	phy3 {
 		phy-type = <COMPHY_TYPE_SATA1>;

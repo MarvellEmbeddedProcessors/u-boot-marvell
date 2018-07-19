@@ -24,6 +24,5 @@
 &cp0_comphy {
 	phy1 {
 		phy-type = <COMPHY_TYPE_USB3_HOST0>;
-		phy-speed = <COMPHY_SPEED_5G>;
 	};
 };

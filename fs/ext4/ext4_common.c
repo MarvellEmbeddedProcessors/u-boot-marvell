@@ -109,6 +109,15 @@ static inline void ext4fs_bg_itable_unused_dec
 		bg->bg_itable_unused_high = cpu_to_le16(free_inodes >> 16);
 }
 
+static inline void ext4fs_bg_itable_unused_set(struct ext2_block_group *bg,
+					       const struct ext_filesystem *fs,
+					       uint32_t free_inodes)
+{
+	bg->bg_itable_unused = cpu_to_le16(free_inodes & 0xffff);
+	if (fs->gdsize == 64)
+		bg->bg_itable_unused_high = cpu_to_le16(free_inodes >> 16);
+}
+
 uint64_t ext4fs_sb_get_free_blocks(const struct ext2_sblock *sb)
 {
 	uint64_t free_blocks = le32_to_cpu(sb->free_blocks);
@@ -1136,7 +1145,8 @@ int ext4fs_get_new_inode_no(void)
 				uint64_t i_bitmap_blk =
 					ext4fs_bg_get_inode_id(bgd, fs);
 				if (has_gdt_chksum)
-					bgd->bg_itable_unused = free_inodes;
+					ext4fs_bg_itable_unused_set(bgd, fs,
+								free_inodes);
 				if (bg_flags & EXT4_BG_INODE_UNINIT) {
 					put_ext4(i_bitmap_blk * fs->blksz,
 						 zero_buffer, fs->blksz);

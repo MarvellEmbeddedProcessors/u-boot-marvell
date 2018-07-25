@@ -1,3 +1,5 @@
+.. _uboot_cmd:
+
 U-Boot Commands
 ===============
 
@@ -298,6 +300,42 @@ Afterwards, we can dump what was buffered by FreeRTOS as described earlier by:
 - Enter new command followed by 'Enter' key (this will dump log which is direct
   results of entered command)
 
+
+rx_training command
+-------------------
+
+RX training allows to improve link quality (for SFI/XFI mode) by running training
+sequence, this allows to reach better link quality then using static configuration.
+
+To perform rx_training there is need to connect the loopback module (rx and tx
+is physically looped using one fiber lane) first.
+
+.. _fig_rx_loopback_module:
+
+.. figure:: /images/rx_loopback_module.*
+   :align: center
+
+   Rx loopback module
+
+.. Note::
+        The "rx loopback module" is simple fiber patchcord but modified in way that
+        the same fiber lane goes to both rx and tx.
+
+When running rx_training sequence, the user must state CP index (0/1) and comphy ID (0/5).
+
+If after rx training procedure the kernel will be booted (without
+resetting/rebooting the board), Linux will skip comphy power off and power on
+sequence, so the user can test the link quality in Linux.
+
+After board reset/reboot the comphy parameters for SFI/XFI are the default one
+(the training results are not valid anymore after reset). If the user want to
+use values from training there are two options:
+        1) perform rx_training from u-boot after board reset
+        2) perform rx_training from u-boot and then apply the new parameters
+           using comphy porting layer.
+
+.. seealso::
+        Please refer to :ref:`porting` section: Comphy Porting.
 
 SAR (Sample at Reset) commands
 -------------------------------

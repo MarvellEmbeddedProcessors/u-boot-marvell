@@ -369,3 +369,16 @@ The list of the Sample At Reset possible fields and values is defined in the
 device tree. For more information, please refer to
 doc/device-tree-bindings/misc/mvebu-sar.txt.
 
+
+tsen command
+-------------
+tsen command is used to display the SoC thermal sensor readout.
+When tsen command is executed, AP's and CP's temperature is sampled:
+
+Example::
+
+	Running 'tsen' on Armada-7040:
+
+	Marvell>> tsen
+	Thermal.f06f8084 = 49
+	Thermal.f2400070 = 53

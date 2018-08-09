@@ -136,8 +136,8 @@ static int mmc_burn_image(size_t image_size)
 	}
 
 #ifdef CONFIG_SYS_MMC_ENV_PART
-	if (mmc->part_num != CONFIG_SYS_MMC_ENV_PART) {
-		err = mmc_switch_part(mmc_dev_num, CONFIG_SYS_MMC_ENV_PART);
+	if (mmc_get_blk_desc(mmc)->hwpart != CONFIG_SYS_MMC_ENV_PART) {
+		err = mmc_switch_part(mmc, CONFIG_SYS_MMC_ENV_PART);
 		if (err) {
 			printf("MMC partition switch failed\n");
 			return err;
@@ -177,8 +177,8 @@ static int mmc_burn_image(size_t image_size)
 	printf("Done!\n");
 
 #ifdef CONFIG_SYS_MMC_ENV_PART
-	if (mmc->part_num != CONFIG_SYS_MMC_ENV_PART)
-		mmc_switch_part(mmc_dev_num, mmc->part_num);
+	if (mmc_get_blk_desc(mmc)->hwpart != CONFIG_SYS_MMC_ENV_PART)
+		mmc_switch_part(mmc, mmc_get_blk_desc(mmc)->hwpart);
 #endif
 
 	return 0;

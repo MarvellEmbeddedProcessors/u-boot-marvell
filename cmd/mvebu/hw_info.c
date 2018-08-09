@@ -5,6 +5,7 @@
 
 #include <config.h>
 #include <command.h>
+#include <common.h>
 #include <errno.h>
 #include <console.h>
 #include <environment.h>

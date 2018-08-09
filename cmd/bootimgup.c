@@ -198,21 +198,25 @@ static int do_bootu_spi(int argc, char * const argv[])
 	if ((argc < 1) || (argc > 3))
 		return -1;
 
-	offset = 0;
-
-	debug("%s argv0 %s argv1 %s\n", __func__, argv[0], argv[1]);
-
 	if (argc == 1) {
-		env1 = getenv("kernel_addr");
-		env2 = getenv("filesize");
-	} else {
-		if (!argv[1] || !argv[2])
+		env1 = env_get("loadaddr");
+		env2 = env_get("filesize");
+		if (!env1 || !env2) {
+			printf("Missing env variables loadaddr/filesize\n");
 			return -1;
+		}
+	} else {
+		if (!argv[1] || !argv[2]) {
+			printf("Missing args - image addr or image size\n");
+			return -1;
+		}
+		debug("%s argv0 %s argv1 %s\n", __func__, argv[0], argv[1]);
 		env1 = argv[1];
 		env2 = argv[2];
 	}
+	debug("%s loadaddr %s filesize %s\n", __func__, env1, env2);
 
-	debug("%s kernel_addr %s filesize %s\n", __func__, env1, env2);
+	offset = 0;
 
 	ret = strict_strtoul(env1, 16, &addr);
 	if (ret)
@@ -223,6 +227,11 @@ static int do_bootu_spi(int argc, char * const argv[])
 	if (ret)
 		return -1;
 	debug("%s len %ld\n", __func__, len);
+
+	if( !addr || !len) {
+		printf("image address or length is 0\n");
+		return -1;
+	}
 
 	if (validate_bootimg_header(addr)) {
 		printf("\n No valid boot image header found \n");
@@ -266,32 +275,47 @@ static int validate_partition_table(unsigned char *buf)
 {
 	struct dos_partition *p;
 
-	if ((buf[510] != 0x55) || (buf[511] != 0xaa))
+	if ((buf[510] != 0x55) || (buf[511] != 0xaa)) {
+		printf("No valid MBR signature in first sector\n");
 		return 1; /* no DOS Signature at all */
+	}
 
 	/* checks for FAT12 as partition 1 */
 	p = (struct dos_partition *)&buf[446];
-	if (p->sys_ind != 0x01)
+	if (p->sys_ind != 0x01) {
+		printf("%s Invalid first partition type %x"
+			 " expected FAT12 \n", __func__, p->sys_ind);
 		return 1;
-
+	}
 	/* check for second partition start <16MB */
 	p = (struct dos_partition *)&buf[446 + 16];
 	if (p->sys_ind != 0)
-		if (__swab32p(&p->start4) < 0x8000)
+		if (p->start4 < 0x8000) {
+			printf("%s partition type %x start sector at %d "
+				"below 16MB(reserved for boot image)\n",
+				 __func__, p->sys_ind, p->start4);
 			return 1;
+		}
 
+	// FIXME below checks really needed?
 	/* check for third partition start <16MB */
 	p = (struct dos_partition *)&buf[446 + 16 * 2];
 	if (p->sys_ind != 0)
-		if (__swab32p(&p->start4) < 0x8000)
+		if (p->start4 < 0x8000) {
+			printf("%s partition type %x start sector at %d "
+				"below 16MB(reserved for boot image)\n",
+				 __func__, p->sys_ind, p->start4);
 			return 1;
-
+		}
 	/* check for fourth partition start <16MB */
 	p = (struct dos_partition *)&buf[446 + 16 * 3];
 	if (p->sys_ind != 0)
-		if (__swab32p(&p->start4) < 0x8000)
+		if (p->start4 < 0x8000) {
+			printf("%s partition type %x start sector at %d "
+				"below 16MB(reserved for boot image)\n",
+				 __func__, p->sys_ind, p->start4);
 			return 1;
-
+		}
 	return 0;
 }
 
@@ -321,21 +345,30 @@ static int do_bootu_mmc(int argc, char * const argv[])
 	unsigned long addr;
 	int ret;
 
-	if ((argc < 1) || (argc > 3))
+	if ((argc < 1) || (argc > 3)) {
+		printf("Invalid # args \n");
 		return -1;
-	debug("%s argv0 %s argv1 %s\n", __func__, argv[0], argv[1]);
+	}
 
-	blk = 0;
 	if (argc == 1) {
-		env1 = getenv("kernel_addr");
-		env2 = getenv("filesize");
-	} else {
-		if (!argv[1] || !argv[2])
+		env1 = env_get("loadaddr");
+		env2 = env_get("filesize");
+		if (!env1 || !env2) {
+			printf("Missing env variables loadaddr/filesize\n");
 			return -1;
+		}
+	} else {
+		if (!argv[1] || !argv[2]) {
+			printf("Missing args - image addr or image size\n");
+			return -1;
+		}
+		debug("%s argv0 %s argv1 %s\n", __func__, argv[0], argv[1]);
 		env1 = argv[1];
 		env2 = argv[2];
 	}
-	debug("%s kernel_addr %s filesize %s\n", __func__, env1, env2);
+	debug("%s loadaddr %s filesize %s\n", __func__, env1, env2);
+
+	blk = 0;
 
 	ret = strict_strtoul(env1, 16, &addr);
 	if (ret)
@@ -346,6 +379,10 @@ static int do_bootu_mmc(int argc, char * const argv[])
 	if (ret)
 		return -1;
 	debug("%s len %ld\n", __func__, len);
+	if( !addr || !len) {
+		printf("image address or length is 0\n");
+		return -1;
+	}
 	if (len % 512)
 		len = len / 512 + 1;
 	else
@@ -448,12 +485,14 @@ usage:
 
 U_BOOT_CMD(
 	bootimgup, 5, 1, do_bootimgup, "Updates Boot Image",
-	" <mmc | spi> [image_address] [image_size] \n"
+	" <mmc | spi> [image_address image_size] \n"
 	" where: \n"
 	" spi - updates boot image on spi flash \n"
 	" mmc - updates boot image on mmc card/chip \n"
-	" image_address - address image is located in RAM \n"
+	" image_address - address at which image is located in RAM \n"
 	" image_size    - size of image in hex \n"
-	" If image_address, image_size are not specified, \n"
-	" then $kernel_addr and $filesize values are used \n"
+	" image_address, image_size should be passed together, \n"
+	" passing only one of them treated as invalid. \n"
+	" If not given, then $loadaddr and $filesize values in \n"
+	" environment are used, otherwise fail to update. \n"
 );

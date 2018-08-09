@@ -39,6 +39,7 @@
 						"booti $kernel_addr_r " \
 						"$ramdisk_addr_r " \
 						"$fdt_addr_r\0" \
+					"extra_params=pci=pcie_bus_safe\0" \
 					"kernel_addr_r=0x7000000\0"	\
 					"initrd_addr=0xa00000\0"	\
 					"initrd_size=0x2000000\0"	\

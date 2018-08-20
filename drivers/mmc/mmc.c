@@ -169,6 +169,7 @@ const char *mmc_mode_name(enum bus_mode mode)
 	      [MMC_HS_52]	= "MMC High Speed (52MHz)",
 	      [MMC_DDR_52]	= "MMC DDR52 (52MHz)",
 	      [MMC_HS_200]	= "HS200 (200MHz)",
+	      [MMC_HS_400]	= "HS400 (400MHz)",
 	};
 
 	if (mode >= MMC_MODES_END)
@@ -193,6 +194,7 @@ static uint mmc_mode2freq(struct mmc *mmc, enum bus_mode mode)
 	      [UHS_DDR50]	= 50000000,
 	      [UHS_SDR104]	= 208000000,
 	      [MMC_HS_200]	= 200000000,
+	      [MMC_HS_400]	= 400000000,
 	};
 
 	if (mode == MMC_LEGACY)
@@ -1788,6 +1790,11 @@ static inline int mmc_set_lowest_voltage(struct mmc *mmc, enum bus_mode mode,
 
 static const struct mode_width_tuning mmc_modes_by_pref[] = {
 #if CONFIG_IS_ENABLED(MMC_HS200_SUPPORT)
+	{
+		.mode = MMC_HS_200,
+		.widths = MMC_MODE_8BIT | MMC_MODE_8BIT,
+		.tuning = MMC_CMD_SEND_TUNING_BLOCK_HS200
+	},
 	{
 		.mode = MMC_HS_200,
 		.widths = MMC_MODE_8BIT | MMC_MODE_4BIT,

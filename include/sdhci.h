@@ -237,6 +237,10 @@ struct sdhci_ops {
 	void	(*set_control_reg)(struct sdhci_host *host);
 	void	(*set_ios_post)(struct sdhci_host *host);
 	void	(*set_clock)(struct sdhci_host *host, u32 div);
+#ifdef MMC_SUPPORTS_TUNING
+	int	(*execute_tuning_pre)(struct sdhci_host *host, u32 opcode);
+	int	(*execute_tuning_post)(struct sdhci_host *host, u32 opcode);
+#endif
 };
 
 struct sdhci_host {

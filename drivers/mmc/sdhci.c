@@ -504,6 +504,42 @@ static int sdhci_init(struct mmc *mmc)
 }
 
 #ifdef CONFIG_DM_MMC
+
+#ifdef MMC_SUPPORTS_TUNING
+static int sdhci_execute_tuning(struct udevice *dev, uint32_t opcode)
+{
+	struct mmc *mmc = mmc_get_mmc_dev(dev);
+	struct sdhci_host *host = mmc->priv;
+	int err = 0;
+
+	if (host->ops->execute_tuning_pre) {
+		err = (*host->ops->execute_tuning_pre)(host, opcode);
+		if (err) {
+			printf("%s: error encountered running tuning_pre\n",
+			       __func__);
+			return err;
+		}
+	}
+
+	err = mmc_send_tuning(mmc, opcode, NULL);
+	if (err) {
+		printf("%s: error encountered during tuning\n", __func__);
+		return err;
+	}
+
+	if (host->ops->execute_tuning_post) {
+		err = (*host->ops->execute_tuning_post)(host, opcode);
+		if (err) {
+			printf("%s: error encountered running tuning_post\n",
+			       __func__);
+			return err;
+		}
+	}
+
+	return err;
+}
+#endif
+
 int sdhci_probe(struct udevice *dev)
 {
 	struct mmc *mmc = mmc_get_mmc_dev(dev);
@@ -514,6 +550,9 @@ int sdhci_probe(struct udevice *dev)
 const struct dm_mmc_ops sdhci_ops = {
 	.send_cmd	= sdhci_send_command,
 	.set_ios	= sdhci_set_ios,
+#ifdef MMC_SUPPORTS_TUNING
+	.execute_tuning	= sdhci_execute_tuning,
+#endif
 };
 #else
 static const struct mmc_ops sdhci_ops = {

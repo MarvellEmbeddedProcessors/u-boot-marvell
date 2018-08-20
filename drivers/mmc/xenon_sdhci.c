@@ -44,6 +44,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define SDHC_SLOT_EMMC_CTRL			0x0130
 #define ENABLE_DATA_STROBE_SHIFT		24
+#define ENABLE_DATA_STROBE			BIT(ENABLE_DATA_STROBE_SHIFT)
 #define SET_EMMC_RSTN_SHIFT			16
 #define EMMC_VCCQ_MASK				0x3
 #define EMMC_VCCQ_1_8V				0x1
@@ -63,6 +64,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define OUTPUT_QSN_PHASE_SELECT			BIT(17)
 #define SAMPL_INV_QSP_PHASE_SELECT		BIT(18)
 #define SAMPL_INV_QSP_PHASE_SELECT_SHIFT	18
+#define EMMC_PHY_SDIO_MODE			BIT(28)
 #define EMMC_PHY_SLOW_MODE			BIT(29)
 #define PHY_INITIALIZAION			BIT(31)
 #define WAIT_CYCLE_BEFORE_USING_MASK		0xf
@@ -89,6 +91,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define FC_QSN_RECEN				BIT(27)
 #define OEN_QSN					BIT(28)
 #define AUTO_RECEN_CTRL				BIT(30)
+#define FC_ALL_CMOS_RECEIVER			(REC_EN_MASK << REC_EN_SHIFT)
 
 #define EMMC_PHY_PAD_CONTROL1			(EMMC_PHY_REG_BASE + 0xc)
 #define EMMC5_1_FC_QSP_PD			BIT(9)
@@ -98,10 +101,71 @@ DECLARE_GLOBAL_DATA_PTR;
 #define EMMC5_1_FC_DQ_PD			0xff
 #define EMMC5_1_FC_DQ_PU			(0xff << 16)
 
+#define EMMC_PHY_PAD_CONTROL2			(EMMC_PHY_REG_BASE + 0x10)
+#define ZNR_MASK				0x1F
+#define ZNR_SHIFT				8
+#define ZPR_MASK				0x1F
+
 #define SDHCI_RETUNE_EVT_INTSIG			0x00001000
+
+#define SDHCI_HOST_CONTROL2		0x3E
+#define  SDHCI_CTRL_UHS_MASK		0x0007
+#define   SDHCI_CTRL_UHS_SDR12		0x0000
+#define   SDHCI_CTRL_UHS_SDR25		0x0001
+#define   SDHCI_CTRL_UHS_SDR50		0x0002
+#define   SDHCI_CTRL_UHS_SDR104		0x0003
+#define   SDHCI_CTRL_UHS_DDR50		0x0004
+#define   SDHCI_CTRL_HS400		0x0005 /* Non-standard */
+#define   SDHCI_CTRL_HS200_ONLY		0x0005 /* Non-standard */
+#define   SDHCI_CTRL_HS400_ONLY		0x0006 /* Non-standard */
+#define  SDHCI_CTRL_VDD_180		0x0008
+#define  SDHCI_CTRL_DRV_TYPE_MASK	0x0030
+#define   SDHCI_CTRL_DRV_TYPE_B		0x0000
+#define   SDHCI_CTRL_DRV_TYPE_A		0x0010
+#define   SDHCI_CTRL_DRV_TYPE_C		0x0020
+#define   SDHCI_CTRL_DRV_TYPE_D		0x0030
+#define  SDHCI_CTRL_EXEC_TUNING		0x0040
+#define  SDHCI_CTRL_TUNED_CLK		0x0080
+#define  SDHCI_CTRL_PRESET_VAL_ENABLE	0x8000
+
+/*
+ * Config to eMMC PHY to prepare for tuning.
+ * Enable HW DLL and set the TUNING_STEP
+ */
+#define XENON_SLOT_DLL_CUR_DLY_VAL		0x0150
+
+#define XENON_SLOT_OP_STATUS_CTRL		0x0128
+#define XENON_TUN_CONSECUTIVE_TIMES_SHIFT	16
+#define XENON_TUN_CONSECUTIVE_TIMES_MASK	0x7
+#define XENON_TUN_CONSECUTIVE_TIMES		0x4
+#define XENON_TUNING_STEP_SHIFT			12
+#define XENON_TUNING_STEP_MASK			0xF
+#define XENON_TUNING_STEP_DIVIDER		BIT(6)
+
+#define XENON_EMMC_PHY_DLL_CONTROL		(EMMC_PHY_REG_BASE + 0x14)
+#define XENON_EMMC_5_0_PHY_DLL_CONTROL		\
+	(XENON_EMMC_5_0_PHY_REG_BASE + 0x10)
+#define XENON_DLL_ENABLE			BIT(31)
+#define XENON_DLL_UPDATE_STROBE_5_0		BIT(30)
+#define XENON_DLL_REFCLK_SEL			BIT(30)
+#define XENON_DLL_UPDATE			BIT(23)
+#define XENON_DLL_PHSEL1_SHIFT			24
+#define XENON_DLL_PHSEL0_SHIFT			16
+#define XENON_DLL_PHASE_MASK			0x3F
+#define XENON_DLL_PHASE_90_DEGREE		0x1F
+#define XENON_DLL_FAST_LOCK			BIT(5)
+#define XENON_DLL_GAIN2X			BIT(3)
+#define XENON_DLL_BYPASS_EN			BIT(0)
+
+#define XENON_SLOT_EXT_PRESENT_STATE		0x014C
+#define XENON_DLL_LOCK_STATE			0x1
 
 /* Hyperion only have one slot 0 */
 #define XENON_MMC_SLOT_ID_HYPERION		0
+#define SLOT_MASK(slot)				BIT(slot)
+
+#define XENON_EMMC_PHY_LOGIC_TIMING_ADJUST	(EMMC_PHY_REG_BASE + 0x18)
+#define XENON_LOGIC_TIMING_VALUE		0x00AA8977
 
 #define MMC_TIMING_LEGACY	0
 #define MMC_TIMING_MMC_HS	1
@@ -265,6 +329,176 @@ static int xenon_mmc_start_signal_voltage_switch(struct sdhci_host *host)
 	return ret;
 }
 
+/*
+ * Xenon defines different values for HS200 and HS400
+ * in Host_Control_2
+ */
+static void xenon_set_uhs_signaling(struct sdhci_host *host,
+				    unsigned int timing)
+{
+	u16 ctrl_2;
+
+	ctrl_2 = sdhci_readw(host, SDHCI_HOST_CONTROL2);
+	/* Select Bus Speed Mode for host */
+	ctrl_2 &= ~SDHCI_CTRL_UHS_MASK;
+	if (timing == MMC_TIMING_MMC_HS200)
+		ctrl_2 |= SDHCI_CTRL_HS200_ONLY;
+	else if (timing == MMC_TIMING_UHS_SDR104)
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR104;
+	else if (timing == MMC_TIMING_UHS_SDR12)
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR12;
+	else if (timing == MMC_TIMING_UHS_SDR25)
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR25;
+	else if (timing == MMC_TIMING_UHS_SDR50)
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR50;
+	else if ((timing == MMC_TIMING_UHS_DDR50) ||
+		 (timing == MMC_TIMING_MMC_DDR52))
+		ctrl_2 |= SDHCI_CTRL_UHS_DDR50;
+	else if (timing == MMC_TIMING_MMC_HS400)
+		ctrl_2 |= SDHCI_CTRL_HS400_ONLY;
+	sdhci_writew(host, ctrl_2, SDHCI_HOST_CONTROL2);
+}
+
+/*
+ * If eMMC PHY Slow Mode is required in lower speed mode (SDCLK < 55MHz)
+ * in SDR mode, enable Slow Mode to bypass eMMC PHY.
+ * SDIO slower SDR mode also requires Slow Mode.
+ *
+ * If Slow Mode is enabled, return 0.
+ * Otherwise, return -EINVAL.
+ */
+static int xenon_emmc_phy_slow_mode(struct sdhci_host *host,
+				    unsigned char timing)
+{
+	u32 reg;
+	int ret = -EINVAL;
+
+	if (host->mmc->tran_speed > 52000000)
+		return -EINVAL;
+
+	reg = sdhci_readl(host, EMMC_PHY_TIMING_ADJUST);
+	/* When in slower SDR mode, enable Slow Mode for SDIO */
+	switch (timing) {
+	case MMC_TIMING_LEGACY:
+		/*
+		 * If Slow Mode is required, enable Slow Mode by default
+		 * in early init phase to avoid any potential issue.
+		 */
+		reg |= EMMC_PHY_SLOW_MODE;
+		ret = 0;
+		break;
+	case MMC_TIMING_UHS_SDR25:
+	case MMC_TIMING_UHS_SDR12:
+	case MMC_TIMING_SD_HS:
+	case MMC_TIMING_MMC_HS:
+		if (IS_SD(host->mmc)) {
+			reg |= EMMC_PHY_SLOW_MODE;
+			ret = 0;
+			break;
+		}
+	default:
+		reg &= ~EMMC_PHY_SLOW_MODE;
+		ret = -EINVAL;
+	}
+
+	sdhci_writel(host, reg, EMMC_PHY_TIMING_ADJUST);
+	return ret;
+}
+
+static void xenon_emmc_phy_disable_data_strobe(struct sdhci_host *host)
+{
+	u32 reg;
+
+	/* Disable SDHC Data Strobe */
+	reg = sdhci_readl(host, SDHC_SLOT_EMMC_CTRL);
+	reg &= ~ENABLE_DATA_STROBE;
+	sdhci_writel(host, reg, SDHC_SLOT_EMMC_CTRL);
+}
+
+/*
+ * Enable eMMC PHY HW DLL
+ * DLL should be enabled and stable before HS200/SDR104 tuning,
+ * and before HS400 data strobe setting.
+ */
+static int xenon_emmc_phy_enable_dll(struct sdhci_host *host)
+{
+	u32 reg;
+	u32 timeout;
+
+	if (host->mmc->tran_speed <= 52000000)
+		return -EINVAL;
+
+	reg = sdhci_readl(host, XENON_EMMC_PHY_DLL_CONTROL);
+	if (reg & XENON_DLL_ENABLE)
+		return 0;
+
+	/* Enable DLL */
+	reg = sdhci_readl(host, XENON_EMMC_PHY_DLL_CONTROL);
+	reg |= (XENON_DLL_ENABLE | XENON_DLL_FAST_LOCK);
+
+	/*
+	 * Set Phase as 90 degree, which is most common value.
+	 * Might set another value if necessary.
+	 * The granularity is 1 degree.
+	 */
+	reg &= ~((XENON_DLL_PHASE_MASK << XENON_DLL_PHSEL0_SHIFT) |
+		 (XENON_DLL_PHASE_MASK << XENON_DLL_PHSEL1_SHIFT));
+	reg |= ((XENON_DLL_PHASE_90_DEGREE << XENON_DLL_PHSEL0_SHIFT) |
+		(XENON_DLL_PHASE_90_DEGREE << XENON_DLL_PHSEL1_SHIFT));
+
+	reg &= ~(XENON_DLL_BYPASS_EN | XENON_DLL_REFCLK_SEL);
+	reg |= XENON_DLL_UPDATE;
+	sdhci_writel(host, reg, XENON_EMMC_PHY_DLL_CONTROL);
+
+	/* Wait max 32 ms */
+	timeout = 32;
+	while (!(sdhci_readw(host, XENON_SLOT_EXT_PRESENT_STATE) &
+		XENON_DLL_LOCK_STATE)) {
+		if (timeout > 32) {
+			printf("Wait for DLL Lock time-out\n");
+			return -ETIMEDOUT;
+		}
+		udelay(1000);
+		timeout++;
+	}
+	return 0;
+}
+
+static int xenon_emmc_phy_config_tuning(struct sdhci_host *host)
+{
+	u32 reg, tuning_step;
+	int ret;
+
+	if (host->mmc->tran_speed <= 52000000)
+		return -EINVAL;
+
+	ret = xenon_emmc_phy_enable_dll(host);
+	if (ret)
+		return ret;
+
+	/* Achieve TUNING_STEP with HW DLL help */
+	reg = sdhci_readl(host, XENON_SLOT_DLL_CUR_DLY_VAL);
+	tuning_step = reg / XENON_TUNING_STEP_DIVIDER;
+	if (unlikely(tuning_step > XENON_TUNING_STEP_MASK)) {
+		dev_warn(mmc_dev(host->mmc),
+			 "HS200 TUNING_STEP %d is larger than MAX value\n",
+			 tuning_step);
+		tuning_step = XENON_TUNING_STEP_MASK;
+	}
+
+	/* Set TUNING_STEP for later tuning */
+	reg = sdhci_readl(host, XENON_SLOT_OP_STATUS_CTRL);
+	reg &= ~(XENON_TUN_CONSECUTIVE_TIMES_MASK <<
+		 XENON_TUN_CONSECUTIVE_TIMES_SHIFT);
+	reg |= (XENON_TUN_CONSECUTIVE_TIMES <<
+		XENON_TUN_CONSECUTIVE_TIMES_SHIFT);
+	reg &= ~(XENON_TUNING_STEP_MASK << XENON_TUNING_STEP_SHIFT);
+	reg |= (tuning_step << XENON_TUNING_STEP_SHIFT);
+	sdhci_writel(host, reg, XENON_SLOT_OP_STATUS_CTRL);
+
+	return 0;
+}
+
 static void xenon_mmc_phy_set(struct sdhci_host *host)
 {
 	struct xenon_sdhci_priv *priv = host->mmc->priv;
@@ -272,8 +506,8 @@ static void xenon_mmc_phy_set(struct sdhci_host *host)
 
 	/* Setup pad, set bit[30], bit[28] and bits[26:24] */
 	var = sdhci_readl(host, EMMC_PHY_PAD_CONTROL);
-	var |= AUTO_RECEN_CTRL | OEN_QSN | FC_QSP_RECEN |
-		FC_CMD_RECEN | FC_DQ_RECEN;
+	var |= OEN_QSN | FC_QSP_RECEN | FC_CMD_RECEN | FC_DQ_RECEN |
+		FC_ALL_CMOS_RECEIVER;
 	sdhci_writel(host, var, EMMC_PHY_PAD_CONTROL);
 
 	/* Set CMD and DQ Pull Up */
@@ -283,20 +517,45 @@ static void xenon_mmc_phy_set(struct sdhci_host *host)
 	sdhci_writel(host, var, EMMC_PHY_PAD_CONTROL1);
 
 	/*
-	 * If timing belongs to high speed, set bit[17] of
+	 * If Timing belongs to high speed, clear bit[17] of
 	 * EMMC_PHY_TIMING_ADJUST register
 	 */
+	var = sdhci_readl(host, EMMC_PHY_TIMING_ADJUST);
 	if ((priv->timing == MMC_TIMING_MMC_HS400) ||
 	    (priv->timing == MMC_TIMING_MMC_HS200) ||
+	    (priv->timing == MMC_TIMING_MMC_DDR52) ||
 	    (priv->timing == MMC_TIMING_UHS_SDR50) ||
 	    (priv->timing == MMC_TIMING_UHS_SDR104) ||
 	    (priv->timing == MMC_TIMING_UHS_DDR50) ||
-	    (priv->timing == MMC_TIMING_UHS_SDR25) ||
-	    (priv->timing == MMC_TIMING_MMC_DDR52)) {
-		var = sdhci_readl(host, EMMC_PHY_TIMING_ADJUST);
-		var |= OUTPUT_QSN_PHASE_SELECT;
+	    (priv->timing == MMC_TIMING_UHS_SDR25)) {
+		var &= ~OUTPUT_QSN_PHASE_SELECT;
 		sdhci_writel(host, var, EMMC_PHY_TIMING_ADJUST);
 	}
+	if (priv->timing == MMC_TIMING_LEGACY) {
+		xenon_emmc_phy_slow_mode(host, priv->timing);
+		goto phy_init;
+	}
+
+	/*
+	 * If SDIO card, set SDIO Mode
+	 * Otherwise, clear SDIO Mode
+	 */
+	var = sdhci_readl(host, EMMC_PHY_TIMING_ADJUST);
+	if (IS_SD(host->mmc))
+		var |= EMMC_PHY_SDIO_MODE;
+	else
+		var &= ~EMMC_PHY_SDIO_MODE;
+	sdhci_writel(host, var, EMMC_PHY_TIMING_ADJUST);
+
+	/*
+	 * Set preferred ZNR and ZPR value
+	 * The ZNR and ZPR value vary between different boards.
+	 * Define them both in sdhci-xenon-emmc-phy.h.
+	 */
+	var = sdhci_readl(host, EMMC_PHY_PAD_CONTROL2);
+	var &= ~((ZNR_MASK << ZNR_SHIFT) | ZPR_MASK);
+	var |= ((0xf << ZNR_SHIFT) | 0xf);
+	sdhci_writel(host, var, EMMC_PHY_PAD_CONTROL2);
 
 	/*
 	 * When setting EMMC_PHY_FUNC_CONTROL register,
@@ -307,11 +566,21 @@ static void xenon_mmc_phy_set(struct sdhci_host *host)
 	sdhci_writew(host, var, SDHCI_CLOCK_CONTROL);
 
 	var = sdhci_readl(host, EMMC_PHY_FUNC_CONTROL);
-	if (host->mmc->ddr_mode) {
-		var |= (DQ_DDR_MODE_MASK << DQ_DDR_MODE_SHIFT) | CMD_DDR_MODE;
-	} else {
+	switch (priv->timing) {
+	case MMC_TIMING_MMC_HS400:
+		var |= (DQ_DDR_MODE_MASK << DQ_DDR_MODE_SHIFT) |
+		       CMD_DDR_MODE;
+		var &= ~DQ_ASYNC_MODE;
+		break;
+	case MMC_TIMING_UHS_DDR50:
+	case MMC_TIMING_MMC_DDR52:
+		var |= (DQ_DDR_MODE_MASK << DQ_DDR_MODE_SHIFT) |
+		       CMD_DDR_MODE | DQ_ASYNC_MODE;
+		break;
+	default:
 		var &= ~((DQ_DDR_MODE_MASK << DQ_DDR_MODE_SHIFT) |
 			 CMD_DDR_MODE);
+		var |= DQ_ASYNC_MODE;
 	}
 	sdhci_writel(host, var, EMMC_PHY_FUNC_CONTROL);
 
@@ -320,7 +589,26 @@ static void xenon_mmc_phy_set(struct sdhci_host *host)
 	var |= SDHCI_CLOCK_CARD_EN;
 	sdhci_writew(host, var, SDHCI_CLOCK_CONTROL);
 
+	udelay(1000);
+
+	/* Quirk, value suggested by hardware team */
+	if (priv->timing == MMC_TIMING_MMC_HS400)
+		/* Hardware team recommend a value for HS400 */
+		sdhci_writel(host, XENON_EMMC_PHY_LOGIC_TIMING_ADJUST,
+			     XENON_LOGIC_TIMING_VALUE);
+	else
+		xenon_emmc_phy_disable_data_strobe(host);
+
+phy_init:
+
+	xenon_set_uhs_signaling(host, priv->timing);
 	xenon_mmc_phy_init(host);
+
+	if ((priv->timing == MMC_TIMING_MMC_HS400) ||
+	    (priv->timing == MMC_TIMING_MMC_HS200)) {
+		if (xenon_emmc_phy_config_tuning(host) != 0)
+			printf("Error, failed to tune MMC PHY\n");
+	}
 }
 
 /* Enable/Disable the Auto Clock Gating function of this slot */
@@ -336,8 +624,6 @@ static void xenon_mmc_set_acg(struct sdhci_host *host, bool enable)
 
 	sdhci_writel(host, var, SDHC_SYS_OP_CTRL);
 }
-
-#define SLOT_MASK(slot)		BIT(slot)
 
 /* Enable specific slot */
 static void xenon_mmc_enable_slot(struct sdhci_host *host, u8 slot)
@@ -390,6 +676,7 @@ static void xenon_sdhci_set_ios_post(struct sdhci_host *host)
 	struct xenon_sdhci_priv *priv = host->mmc->priv;
 	uint speed = host->mmc->tran_speed;
 	int pwr_18v = 0;
+	u32 reg;
 
 	/*
 	 * Signal Voltage Switching is only applicable for Host Controllers
@@ -422,10 +709,20 @@ static void xenon_sdhci_set_ios_post(struct sdhci_host *host)
 		/* eMMC */
 		if (host->mmc->ddr_mode)
 			priv->timing = MMC_TIMING_MMC_DDR52;
+		else if (speed == 200000000)
+			priv->timing = MMC_TIMING_MMC_HS200;
 		else if (speed <= 26000000)
 			priv->timing = MMC_TIMING_LEGACY;
 		else
 			priv->timing = MMC_TIMING_MMC_HS;
+	}
+
+	if ((priv->timing == MMC_TIMING_MMC_HS400) ||
+	    (priv->timing == MMC_TIMING_MMC_HS200) ||
+	    (priv->timing == MMC_TIMING_MMC_HS)) {
+		reg = sdhci_readw(host, SDHCI_HOST_CONTROL2);
+		reg &= ~SDHCI_CTRL_PRESET_VAL_ENABLE;
+		sdhci_writew(host, reg, SDHCI_HOST_CONTROL2);
 	}
 
 	/* Re-init the PHY */
@@ -444,6 +741,7 @@ static int xenon_sdhci_probe(struct udevice *dev)
 	struct xenon_sdhci_priv *priv = dev_get_priv(dev);
 	struct sdhci_host *host = dev_get_priv(dev);
 	int ret;
+	int len;
 
 	host->mmc = &plat->mmc;
 	host->mmc->priv = host;
@@ -495,6 +793,18 @@ static int xenon_sdhci_probe(struct udevice *dev)
 	default:
 		printf("Invalid \"bus-width\" value\n");
 		return -EINVAL;
+	}
+
+	/* Support for High Speed modes */
+	if (fdt_getprop(gd->fdt_blob,
+			dev_of_offset(dev), "mmc-hs400-1_8v", &len) != NULL) {
+		host->host_caps |= (MMC_MODE_HS400 | MMC_MODE_HS200);
+		sdhci_writeb(host,  SDHCI_POWER_180 |
+			     SDHCI_POWER_ON, SDHCI_POWER_CONTROL);
+	}
+	if (fdt_getprop(gd->fdt_blob,
+			dev_of_offset(dev), "mmc-hs200-1_8v", &len) != NULL) {
+		host->host_caps |= MMC_MODE_HS200;
 	}
 
 	host->ops = &xenon_sdhci_ops;

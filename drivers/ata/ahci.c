@@ -653,6 +653,17 @@ static int ahci_device_data_io(struct ahci_uc_priv *uc_priv, u8 port, u8 *fis,
 		return -1;
 	}
 
+	/*
+	 * If the device was plugged after boot, the port is not initialized
+	 * Try to restart the port for supporting device hot plug-in
+	 */
+	if (pp->cmd_tbl == 0) {
+		if (ahci_port_start(uc_priv, port)) {
+			printf("Cannot restart port %d\n", port);
+			return -1;
+		}
+	}
+
 	memcpy((unsigned char *)pp->cmd_tbl, fis, fis_len);
 
 	sg_count = ahci_fill_sg(uc_priv, port, buf, buf_len);

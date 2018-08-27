@@ -18,6 +18,15 @@
 #include <asm/arch/mpp.h>
 #endif
 #include <asm/arch-mvebu/spi.h>
+#include <mach/clock.h>
+
+/* This weak implementation is for handling older platforms (A38x, A39x)
+ * with pre-defined core clock value
+ */
+__weak u32 soc_tclk_get(void)
+{
+	return CONFIG_SYS_TCLK;
+}
 
 static void _spi_cs_activate(struct kwspi_registers *reg)
 {
@@ -307,7 +316,7 @@ static int mvebu_spi_set_speed(struct udevice *bus, uint hz)
 	 * follows:
 	 * SPI actual frequency = core_clk / (SPR * (2 ^ SPPR))
 	 */
-	divider = DIV_ROUND_UP(CONFIG_SYS_TCLK, hz);
+	divider = DIV_ROUND_UP(soc_tclk_get(), hz);
 	if (divider < 16) {
 		/* This is the easy case, divider is less than 16 */
 		spr = divider;
@@ -353,7 +362,8 @@ static int mvebu_spi_set_speed(struct udevice *bus, uint hz)
 
 	/* program spi clock prescaler using max_hz */
 	writel(KWSPI_ADRLEN_3BYTE | data, &reg->cfg);
-	debug("data = 0x%08x\n", data);
+	debug("Core clock %d Hz, SPI CTRL data = 0x%08x\n",
+	      soc_tclk_get(), data);
 
 	return 0;
 }

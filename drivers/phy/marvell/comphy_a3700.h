@@ -48,9 +48,6 @@
 /*
  * PCIe/USB/SGMII definitions
  */
-#define PCIE_BASE			MVEBU_REG(0x070000)
-#define PCIETOP_BASE			MVEBU_REG(0x080000)
-#define PCIE_RAMBASE			MVEBU_REG(0x08C000)
 #define PCIEPHY_BASE			MVEBU_REG(0x01F000)
 #define PCIEPHY_SHFT			2
 
@@ -199,8 +196,6 @@
 #define bf_cfg_sel_20b			BIT(15)
 
 #define PWR_MGM_TIM1_ADDR(u)		(0x1d0 * PHY_SHFT(u) + PHY_BASE(u))
-
-#define PHY_REF_CLK_ADDR		(0x4814 + PCIE_BASE)
 
 #define USB3_CTRPUL_VAL_REG		(0x20 + USB32_BASE)
 #define USB3_TOP_INT_STATUS_REG		(0xd8 + USB32_BASE)

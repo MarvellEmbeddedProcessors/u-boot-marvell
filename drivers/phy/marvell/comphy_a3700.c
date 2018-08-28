@@ -208,9 +208,9 @@ static int comphy_pcie_power_up(u32 speed, u32 invert)
 		  0xA00D | rb_clk500m_en | rb_clk100m_125m_en, 0xFFFF);
 
 	/*
-	 * 7. Enable TX
+	 * 7. Enable TX, PCIE global register, 0xd0074814, it is done in
+	 * PCI-E driver
 	 */
-	reg_set((void __iomem *)PHY_REF_CLK_ADDR, 0x1342, 0xFFFFFFFF);
 
 	/*
 	 * 8. Check crystal jumper setting and program the Power and PLL

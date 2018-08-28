@@ -84,6 +84,33 @@ struct mvebu_image_info {
 	u32	encrypt_start_offset;
 	u32	encrypt_size;
 };
+
+#else /* Older Armada SoCs - A38x, A39x, ... */
+
+#define	LEGACY_HDR_VERSION	1
+
+struct legacy_image_header {
+/*	type	name			byte order */
+	u8	block_id;		/*   0   */
+	u8	flags;			/*   1   */
+	u16	nand_pge_size;		/*  2-3  */
+	u32	block_size;		/*  4-7  */
+	u8	version;		/*   8   */
+	u8	hdr_size_msb;		/*   9   */
+	u16	hdr_size_lsb;		/* 10-11 */
+	u32	source_addr;		/* 12-15 */
+	u32	destination_addr;	/* 16-19 */
+	u32	execution_addr;		/* 20-23 */
+	u8	options;		/*  24   */
+	u8	nand_block_size;	/*  25   */
+	u8	nand_technology;	/*  26   */
+	u8	rsvd4;			/*  27   */
+	u16	rsvd2;			/* 28-29 */
+	u8	ext;			/*  30   */
+	u8	checksum;		/*  31   */
+
+};
+
 #endif /* CONFIG_ARMADA_XXX */
 
 struct bubt_dev {
@@ -619,11 +646,53 @@ static int check_image_header(void)
 	return 0;
 }
 
-#else /* Not ARMADA? */
+#else /* Legacy SoCs */
+u8 do_checksum8(u8 *start, u32 len)
+{
+	u8 sum = 0;
+	u8 *startp = start;
+
+	do {
+		sum += *startp;
+		startp++;
+	} while (--len);
+
+	return sum;
+}
+
 static int check_image_header(void)
 {
-	printf("bubt cmd does not support this SoC device or family!\n");
-	return -ENOEXEC;
+	struct legacy_image_header *hdr =
+			(struct legacy_image_header *)get_load_addr();
+	u32 header_len = hdr->hdr_size_lsb + (hdr->hdr_size_msb << 16);
+	u8 checksum;
+	u8 checksum_ref = hdr->checksum;
+
+	/*
+	 * For now compare checksum, and header version. Later we can
+	 * verify more stuff on the header like interface type, etc
+	 */
+	if (hdr->version != LEGACY_HDR_VERSION) {
+		printf("ERROR: Bad HDR Version 0x%x != 0x%x\n",
+		       hdr->version, LEGACY_HDR_VERSION);
+		return -ENOEXEC;
+	}
+
+	/* The checksum value is discarded from checksum calculation */
+	hdr->checksum = 0;
+
+	checksum = do_checksum8((u8 *)hdr, header_len);
+	if (checksum != checksum_ref) {
+		printf("Error: Bad Image checksum. 0x%x != 0x%x\n",
+		       checksum, checksum_ref);
+		return -ENOEXEC;
+	}
+
+	/* Restore the checksum before writing */
+	hdr->checksum = checksum_ref;
+	printf("Image checksum...OK!\n");
+
+	return 0;
 }
 #endif
 

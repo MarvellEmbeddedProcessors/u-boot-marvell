@@ -22,16 +22,6 @@
 #define MAX_LANE_OPTIONS			10
 #define MAX_UTMI_PHY_COUNT			3
 
-struct comphy_mux_options {
-	u32 type;
-	u32 mux_value;
-};
-
-struct comphy_mux_data {
-	u32 max_lane_values;
-	struct comphy_mux_options mux_values[MAX_LANE_OPTIONS];
-};
-
 struct comphy_map {
 	u32 type;
 	u32 speed;
@@ -41,7 +31,6 @@ struct comphy_map {
 };
 
 struct chip_serdes_phy_config {
-	struct comphy_mux_data *mux_data;
 	int (*ptr_comphy_chip_init)(struct chip_serdes_phy_config *,
 				    struct comphy_map *);
 	int (*rx_training)(struct chip_serdes_phy_config *, u32);

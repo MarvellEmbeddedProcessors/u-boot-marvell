@@ -5,16 +5,11 @@
  */
 
 #include <common.h>
-#include <dm.h>
-#include <fdtdec.h>
-#include <linux/libfdt.h>
-#include <asm/io.h>
-#include <asm/system.h>
-#include <asm/arch/cpu.h>
-#include <asm/arch/soc.h>
 #include <asm/armv8/mmu.h>
-#include <mach/fw_info.h>
+#include <asm/io.h>
+#include <linux/sizes.h>
 #include <mach/clock.h>
+#include <mach/fw_info.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -107,3 +102,54 @@ int print_cpuinfo(void)
 	return 0;
 }
 #endif
+
+static u64 mvebu_dram_scan_ap_sz(void)
+{
+	struct pt_regs pregs = {0};
+
+	pregs.regs[0] = MV_SIP_DRAM_SIZE;
+
+	smc_call(&pregs);
+
+	if (!pregs.regs[0])
+		pr_err("Failed to get ddr size\n");
+
+	return pregs.regs[0];
+}
+
+int mvebu_dram_init(void)
+{
+	gd->ram_size = mvebu_dram_scan_ap_sz();
+
+	if (gd->ram_size == 0) {
+		pr_err("DRAM size not initialized - check DRAM configuration\n");
+		printf("\n Using temporary DRAM size of 512MB.\n\n");
+		gd->ram_size = SZ_512M;
+	}
+
+	return 0;
+}
+
+int mvebu_dram_init_banksize(void)
+{
+	/* If ddr size is bellow 2GB there is only one ddr bank used */
+	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
+	if (gd->ram_size <= SZ_2G) {
+		gd->bd->bi_dram[0].size = gd->ram_size;
+		return 0;
+	}
+
+	/*
+	 * If ddr size is above 2GB there is only one case 4GB but the firmware
+	 * uses 4 decoding windows for describing it in way reflected below.
+	 */
+	gd->bd->bi_dram[0].size = SZ_2G;
+	gd->bd->bi_dram[1].start = SZ_2G;
+	gd->bd->bi_dram[1].size = SZ_1G;
+	gd->bd->bi_dram[2].start = SZ_2G + SZ_1G;
+	gd->bd->bi_dram[2].size = SZ_256M;
+	gd->bd->bi_dram[3].start = 0xe0000000;
+	gd->bd->bi_dram[3].size = SZ_128M;
+
+	return 0;
+}

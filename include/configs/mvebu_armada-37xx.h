@@ -15,7 +15,7 @@
 /*
  * High Level Configuration Options (easy to change)
  */
-#define CONFIG_NR_DRAM_BANKS	1
+#define CONFIG_NR_DRAM_BANKS	4
 
 /*
  * I2C

@@ -1,0 +1,115 @@
+UART boot
+=========
+
+UART boot for Armada-70x0/80x0
+------------------------------
+
+UART boot is used to load flash-image.bin using the Xmodem interface
+when the board boots for the first time or when the board fails to
+boot.
+
+1. Set the board to receiving mode using either of the following
+   methods:
+
+	- Start a terminal application (e.g. minicom), and send the
+	  Xmodem_boot_pattern.bin file in ASCII (located under
+          /tools/marvell/xmodem/xmodem_boot.pattern),
+	  (for minicom do: Ctrl+A, then S, then select ASCII), and
+	  reset the board at the same time.
+	- This option is only relevant for Marvell development boards:
+	  Set the boot source to UART, using boot source DIP-switch
+	  pins, and then reset the board.
+
+2. After booting from UART, or sending the pattern file, characters
+   are displayed on the screen every second. These are the Xmodem
+   NACKs that indicate readiness to send the new ATF with the Xmodem
+   protocol.
+
+3. Start the TTY transfer using the Xmodem protocol
+   (for minicom do: Ctrl+A, then S, and select the Xmodem protocol).
+
+4. Select flash-image.bin file, and start the transfer.
+
+5. When the transfer is done, U-Boot will start and you should hit
+   'return' to get the U-Boot prompt.
+
+6. Refer to "doc/mvebu/cmd/bubt.txt" for instructions how to burn
+   flash-image.bin to the boot device
+
+
+UART boot for Armada-3700 platform
+----------------------------------
+
+Note that WtpDownload application (v3.3.11.15) is Linux host tool used
+to do the UART boot. The source code and binaries is provided as part
+of A3700 utility package, which is out of the bootloader source tree.
+The package is located in same folder of the bootloader source. Please
+refer to the readme.txt in wtptp/src/Wtpdownloader_Linux folder for the
+prerequisitions of the tool.
+
+The following shows the detail steps of UART boot. The target board is
+connected to /dev/ttyUSB0 in this example, replace the port number
+according to your set-up.
+
+1. The normal ATF build procedure for A3700 target creates a folder
+   with all the images required for UART boot under ATF build output
+   folder (A.K.A., build/a3700/release or build/a3700/debug). Make
+   sure u-boot was built before ATF, see detail in build.txt.
+
+2. Make sure the target board is in UART mode and ">" prompt is
+   presented on the connected terminal. Pressing "Enter" in this mode
+   will show "E" and then ">" again.
+   There is a way to stop the target board booting from other sources,
+   SPI flash for example, and switch to UART boot mode, by using the
+   WtpDownload application::
+
+	(power down the board or hold the RESET button)
+	sudo stty -F /dev/ttyUSB0 clocal
+	(power up the board or release the RESET button)
+	./WtpDownload_linux -P UART -C 0 -R 115200 -Y
+
+3. Stop the terminal emulator program on the UART port attached to the
+   target board (minicom) for releasing the serial port and allowing
+   an application to use it for image download.
+
+4. Disable the TTY modem control signals::
+
+	sudo stty -F /dev/ttyUSB0 clocal
+
+5. Start the image download application in the ATF build folder using
+   the following parameters.
+
+   WTP downloader usage example - non-secure boot::
+
+	./WtpDownload_linux -P UART -C 0 -R 115200 \
+		-B ./uart-images/TIM_ATF.bin \
+		-I ./uart-images/boot-image_h.bin \
+		-I ./uart-images/wtmi_h.bin -E
+
+   WTP downloader usage example - secure boot::
+
+	./WtpDownload_linux -P UART -C 0 -R 115200 \
+		-B ./uart-images/TIM_ATF_TRUSTED.bin \
+		-B ./uart-images/TIMN_ATF_TRUSTED.bin \
+		-I ./uart-images/boot-image_h.bin \
+		-I ./uart-images/wtmi_h.bin -E
+
+   Note that "-E" parameter can be dropped from the above commands.
+   If you do this, check that the BootROM UART download mode is
+   selected in paragraph 2, type in terminal "wtp" without quotes and
+   press Enter. Then follow the procedure described in paragraph 3.
+   This command will switch the BootROM to WTP download mode. The same is
+   archieved by "-E" parameter in latest downloader SW.
+
+6. After the process is finished, start the terminal emulator
+   program (minicom) on that the UART port attached to the target
+   board and ensure the U-Boot prompt is reached.
+
+Note that steps 2-5 can be simplified with a single command as below::
+
+	sudo stty -F /dev/ttyUSB0 clocal
+	./WtpDownload_linux -P UART -C 0 -R 115200 \
+		-B ./uart-images/TIM_ATF.bin \
+		-I ./uart-images/boot-image_h.bin \
+		-I ./uart-images/wtmi_h.bin -E -O
+

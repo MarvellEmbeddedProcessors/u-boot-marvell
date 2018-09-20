@@ -38,7 +38,7 @@ static struct spi_flash *flash;
 static int validate_bootimg_header(unsigned long addr)
 {
 	char flash_hdr[] = {"CVM_CLIB"};
-	char bdk_magic[] = {"THUNDERX"};
+	char bdk_magic[] = {"OCTEONTX"};
 	char *buf1 = (char *)(addr + 0x10000); /* flash hdr offset */
 	char *buf2 = (char *)(addr + 0x20008); /* bdk magic offset */
 	char *buf3 = (char *)(addr + 0x50008); /* sec bdk magic offset */

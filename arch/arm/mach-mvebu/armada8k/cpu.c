@@ -25,9 +25,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define RFU_GLOBAL_SW_RST		(MVEBU_RFU_BASE + 0x84)
 #define RFU_SW_RESET_OFFSET		0
 
-/* Firmware related definition used for SMC calls */
-#define MV_SIP_DRAM_SIZE		0x82000010
-
 static struct mm_region mvebu_mem_map[] = {
 	/* Armada 80x0 memory regions include the CP1 (slave) units */
 	{

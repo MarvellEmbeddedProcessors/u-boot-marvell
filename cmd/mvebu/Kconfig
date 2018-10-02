@@ -97,5 +97,40 @@ config CMD_MVEBU_MAP
 	default y
 	help
 	  Dump address translation tables
+config CMD_MVEBU_NAND_OEM
+	bool "nand"
+	depends on (TARGET_MVEBU_ARMADA_8K || TARGET_MVEBU_ARMADA_8K_PLUS || TARGET_DB_88F6820_AP) && CMD_NAND
+	default y
+	help
+	  Introduction: NAND vendors conducts tests to verify if all blocks are
+	  OK. In case of failure block, the NAND manufacturer will mark this
+	  block as bad (BBM) by setting 0x00 somewhere in the spare area.
+	  Moreover NAND manufacturer can pre-programmed the chip with provided
+	  image using external burner.
+
+	  Issue: Marvell NFC employ optimized cost/performance ECC mechanism.
+	  This results in an unique ECC layout implementation. Marvell NFC sets
+	  different layouts according to page size/ECC strength combinations.
+
+	  Therefore after preparing image for the NAND manufacturer for board
+	  with Marvell NFC, due to the layout differences used by Marvell NFC
+	  and physical NAND chip layout, some valid data will be put on BBM
+	  position.  This will result on false bad block indicator and will
+	  affect the BBT which is created automatically (by U-Boot or Linux)
+	  during first run.
+
+	  To prevent from that kind of situations, the NAND oem command was
+	  introduced.
+
+	  The "prepare" part of the command runs once per device data partition
+	  in NAND and prepares image which is next send to manufacturer. It
+	  checks if under BBM position there is no data which could be then
+	  mistakenly taken as a BBM. If so the data together with tracking
+	  information is copied to "meta-data" partition and BBM position is
+	  overwritten with good indicator.
+
+	  The "restore" part of the command runs once per "prepared" partition
+	  and restores its original data. It supposed to run on new boards, on
+	  which the NAND manufacturer pre-programmed earlier prepared image.
 
 endmenu

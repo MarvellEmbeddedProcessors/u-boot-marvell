@@ -78,6 +78,15 @@
 				gpio = <&expander1 0 GPIO_ACTIVE_HIGH>;
 			};
 
+			cp0_reg_usb3_vbus3: cp0_usb3_vbus@3 {
+				compatible = "regulator-fixed";
+				regulator-min-microvolt = <5000000>;
+				regulator-max-microvolt = <5000000>;
+				startup-delay-us = <100000>;
+				regulator-force-boot-off;
+				gpio = <&expander1 1 GPIO_ACTIVE_HIGH>;
+			};
+
 			cp0_reg_usb3_current_limiter2: cp0_usb3_current_limiter@2 {
 				compatible = "regulator-fixed";
 				regulator-min-microamp = <900000>;
@@ -122,6 +131,12 @@
 				current-limiter = <&cp0_reg_usb3_current_limiter2>;
 				vbus-disable-delay = <500>;
 			};
+
+			cp1_usb3_1: usb3@510000 {
+				vbus-supply = <&cp0_reg_usb3_vbus3>;
+				vbus-disable-delay = <500>;
+			};
+
 		};
 	};
 #undef CP110_NUM

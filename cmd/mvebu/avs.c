@@ -15,6 +15,9 @@
 #define MV_TO_AVS_VAL(mv)	((mv) * 1024 / 1189)
 #define AVS_VAL_TO_MV(avs)	((avs) * 1189 / 1024)
 
+#define MIN_AVS_VAL_MV		600
+#define MAX_AVS_VAL_MV		1000
+
 #define AVS_VAL_MASK		(0x3ff)
 #define AVS_LOW_LIMIT_SHIFT	(3)
 #define AVS_HIGH_LIMIT_SHIFT	(13)
@@ -75,7 +78,7 @@ int do_avs_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 	} else if ((argc == 3) && (strncmp(argv[1], "set", 3) == 0)) {
 		unsigned long val_mv = simple_strtoul(argv[2], NULL, 10);
 
-		if ((val_mv < 700) || (val_mv > 1100)) {
+		if ((val_mv < MIN_AVS_VAL_MV) || (val_mv > MAX_AVS_VAL_MV)) {
 			printf("Requested value %ldmV is ",  val_mv);
 			printf("out of the supported range\n");
 			return 0;
@@ -95,5 +98,5 @@ U_BOOT_CMD(
 	"[operation] [value]\n"
 	"\t-operation     Either \"set\" or \"get\"\n"
 	"\t-value         AVS value in mV. Valid only for \"set\" operation\n"
-	"\t               Valid AVS range is 700mV - 1100mV\n"
+	"\t               Valid AVS range is 600mV - 1000mV\n"
 );

@@ -15,6 +15,12 @@
 #include <mvebu/cfg_eeprom.h>
 #endif
 
+#define CP_USB20_BASE_REG(cp, p)	(MVEBU_REGS_BASE_CP(0, cp) + \
+						0x00580000 + 0x1000 * (p))
+#define CP_USB20_TX_CTRL_REG(cp, p)	(CP_USB20_BASE_REG(cp, p) + 0xC)
+#define CP_USB20_TX_OUT_AMPL_MASK	(0x7 << 20)
+#define CP_USB20_TX_OUT_AMPL_VALUE	(0x3 << 20)
+
 DECLARE_GLOBAL_DATA_PTR;
 
 int __soc_early_init_f(void)
@@ -44,7 +50,7 @@ int board_early_init_r(void)
 
 int board_init(void)
 {
-	/* adress of boot parameters */
+	/* address of boot parameters */
 	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
 
 #ifdef CONFIG_BOARD_CONFIG_EEPROM
@@ -57,6 +63,18 @@ int board_init(void)
 int board_late_init(void)
 {
 	/* Pre-configure the USB ports (overcurrent, VBus) */
+
+	/* Adjust the USB 2.0 port TX output driver amplitude
+	 * for passing compatibility tests
+	 */
+	if (of_machine_is_compatible("marvell,armada3900-vd")) {
+		u32 port;
+
+		for (port = 0; port < 2; port++)
+			clrsetbits_le32(CP_USB20_TX_CTRL_REG(0, port),
+					CP_USB20_TX_OUT_AMPL_MASK,
+					CP_USB20_TX_OUT_AMPL_VALUE);
+	}
 
 	return 0;
 }

@@ -47,6 +47,7 @@
 #define REG_FIBER_SERDES			0x0f
 #define PAGE_FIBER_SERDES			0x01
 
+#define REG_PORT_BASE_UNDEFINED			0xFFFF
 #define REG_PORT_BASE_LEGACY			0x10
 #define REG_PORT_BASE_PERIDOT			0
 #define REG_PORT(p)				(REG_PORT_BASE + (p))

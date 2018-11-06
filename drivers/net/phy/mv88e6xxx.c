@@ -17,7 +17,7 @@
 
 static struct mv88e6xxx_dev soho_dev;
 static struct mv88e6xxx_dev *soho_dev_handle;
-static int REG_PORT_BASE = REG_PORT_BASE_LEGACY;
+static int REG_PORT_BASE = REG_PORT_BASE_UNDEFINED;
 
 static int mv88e6xxx_reg_wait_ready(struct mv88e6xxx_dev *dev)
 {
@@ -296,7 +296,22 @@ int mv88e6xxx_get_switch_id(struct mv88e6xxx_dev *dev)
 {
 	int id, product_num;
 
-	id = mv88e6xxx_read_register(dev, REG_PORT(0), PORT_SWITCH_ID);
+	/* Peridot switch port device address starts from 0
+	 * Legacy switch port device address starts from 0x10
+	 *
+	 * In order to determine which switch is used, we need to
+	 * read the ID, but inorder to read the ID, we need to know
+	 * the port device address - classic chicken or the egg case.
+	 *
+	 * Let's read with both port device addresses, if we get 0xFFFF,
+	 * the address is incorrect and we need to ready with the second
+	 * address.
+	 */
+	id = mv88e6xxx_read_register(dev, REG_PORT_BASE_LEGACY, PORT_SWITCH_ID);
+	if (id == 0xFFFF)
+		id = mv88e6xxx_read_register(dev, REG_PORT_BASE_PERIDOT,
+					     PORT_SWITCH_ID);
+
 	if (id < 0)
 		return id;
 
@@ -310,6 +325,7 @@ int mv88e6xxx_get_switch_id(struct mv88e6xxx_dev *dev)
 	} else if (product_num == PORT_SWITCH_ID_PROD_NUM_6141 ||
 		   product_num == PORT_SWITCH_ID_PROD_NUM_6341) {
 		/* Legacy switch port device address starts from 0x10 */
+		REG_PORT_BASE = REG_PORT_BASE_LEGACY;
 		return id;
 	} else {
 		return -ENODEV;

@@ -237,6 +237,7 @@ void mv88e6xxx_display_switch_info(struct mv88e6xxx_dev *dev)
 
 	product_num = ((unsigned int)dev->id) >> 4;
 	if (product_num == PORT_SWITCH_ID_PROD_NUM_6390 ||
+	    product_num == PORT_SWITCH_ID_PROD_NUM_6390X ||
 	    product_num == PORT_SWITCH_ID_PROD_NUM_6290 ||
 	    product_num == PORT_SWITCH_ID_PROD_NUM_6190) {
 		printf("Switch    : SOHO\n");
@@ -286,6 +287,8 @@ int mv88e6xxx_get_link_status(struct mv88e6xxx_dev *dev, int port)
 		printf("Speed: 100 Mbps\n");
 	else if ((ret & PORT_STATUS_SPEED_MASK) == PORT_STATUS_SPEED_1000)
 		printf("Speed: 1000 Mbps\n");
+	else if ((ret & PORT_STATUS_SPEED_MASK) == PORT_STATUS_SPEED_2500_10G)
+		printf("Speed: 10 Gb or 2500 Mbps\n");
 	else
 		printf("Speed: Unknown\n");
 
@@ -318,7 +321,8 @@ int mv88e6xxx_get_switch_id(struct mv88e6xxx_dev *dev)
 	product_num = id >> 4;
 	if ((product_num == PORT_SWITCH_ID_PROD_NUM_6190) ||
 	    (product_num == PORT_SWITCH_ID_PROD_NUM_6290) ||
-	    (product_num == PORT_SWITCH_ID_PROD_NUM_6390)) {
+	    (product_num == PORT_SWITCH_ID_PROD_NUM_6390) ||
+	    (product_num == PORT_SWITCH_ID_PROD_NUM_6390X)) {
 		/* Peridot switch port device address starts from 0 */
 		REG_PORT_BASE = REG_PORT_BASE_PERIDOT;
 		return id;
@@ -367,25 +371,45 @@ int mv88e6xxx_initialize(const void *blob)
 	if (soho_dev.cpu_port != -1) {
 		u16 reg;
 
-		reg = mv88e6xxx_read_register(&soho_dev,
-					      REG_PORT(soho_dev.cpu_port),
-					      PORT_PCS_CTRL);
-		/* CPU port is forced link-up, duplex and 1GB speed */
-		reg &= ~PORT_PCS_CTRL_UNFORCED;
-		reg |= PORT_PCS_CTRL_FORCE_LINK |
-		       PORT_PCS_CTRL_LINK_UP |
-		       PORT_PCS_CTRL_DUPLEX_FULL |
-		       PORT_PCS_CTRL_FORCE_DUPLEX |
-		       PORT_PCS_CTRL_1000;
-		if ((soho_dev.id >> 4) == PORT_SWITCH_ID_PROD_NUM_6341) {
-			/* Configure RGMII Delay on cpu port */
-			reg |= PORT_PCS_CTRL_FORCE_SPEED |
-			       PORT_PCS_CTRL_RGMII_DELAY_TXCLK |
-			       PORT_PCS_CTRL_RGMII_DELAY_RXCLK;
+		/* For 88e6390X switch we need to configure C_MODE field
+		 * in Port Status Register to 0xb (2500 base-x).
+		 * NOTE: Port Status Register is generally RO, but it can
+		 * be written for port9 and port10 (cpu ports).
+		 */
+		if ((soho_dev.id >> 4) == PORT_SWITCH_ID_PROD_NUM_6390X) {
+			reg = mv88e6xxx_read_register(
+				&soho_dev, REG_PORT(soho_dev.cpu_port),
+				PORT_STATUS);
+			reg &= ~PORT_STATUS_CMODE_MASK;
+			reg |= PORT_STATUS_CMODE_2500BASE_X;
+			ret = mv88e6xxx_write_register(
+				&soho_dev, REG_PORT(soho_dev.cpu_port),
+				PORT_STATUS, reg);
+		} else {
+			reg = mv88e6xxx_read_register(
+				&soho_dev, REG_PORT(soho_dev.cpu_port),
+				PORT_PCS_CTRL);
+			/* CPU port is forced link-up, duplex and 1GB speed */
+			reg &= ~PORT_PCS_CTRL_UNFORCED;
+			reg |= PORT_PCS_CTRL_FORCE_LINK |
+			       PORT_PCS_CTRL_LINK_UP |
+			       PORT_PCS_CTRL_DUPLEX_FULL |
+			       PORT_PCS_CTRL_FORCE_DUPLEX |
+			       PORT_PCS_CTRL_1000;
+
+			if ((soho_dev.id >> 4) ==
+			    PORT_SWITCH_ID_PROD_NUM_6341) {
+				/* Configure RGMII Delay on cpu port */
+				reg |= PORT_PCS_CTRL_FORCE_SPEED |
+				       PORT_PCS_CTRL_RGMII_DELAY_TXCLK |
+				       PORT_PCS_CTRL_RGMII_DELAY_RXCLK;
+			}
+
+			ret = mv88e6xxx_write_register(
+				&soho_dev, REG_PORT(soho_dev.cpu_port),
+				PORT_PCS_CTRL, reg);
 		}
-		ret = mv88e6xxx_write_register(&soho_dev,
-					       REG_PORT(soho_dev.cpu_port),
-					       PORT_PCS_CTRL, reg);
+
 		if (ret)
 			return ret;
 	}

@@ -104,6 +104,7 @@ dtb-$(CONFIG_ARCH_MVEBU) +=			\
 	armada-385-amc.dtb			\
 	armada-3900-vd-A.dtb			\
 	armada-3900-vd-B.dtb			\
+	marvell-CN9x30-demo-B.dtb		\
 	armada-7020-amc.dtb			\
 	armada-7040-pcac.dtb	                \
 	armada-7040-db.dtb			\

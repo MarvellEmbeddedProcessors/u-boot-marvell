@@ -5,10 +5,11 @@
  * https://spdx.org/licenses
  */
 
-#include <common.h>
 #include <asm/arch-armada8k/cache_llc.h>
 #include <asm/io.h>
 #include <asm/arch/soc.h>
+#include <common.h>
+#include <dm/device.h>
 #include <mvebu/mvebu_chip_sar.h>
 
 #define CP_DEV_ID_STATUS_REG		(MVEBU_REGISTER(0x2400240))
@@ -63,6 +64,15 @@ static struct soc_info soc_info_table[] = {
 	{ {0x8040, 1}, "Armada8040-A1", {0x806, 1}, {0x110, 1}, 1, 2 },
 	{ {0x8040, 2}, "Armada8040-A2", {0x806, 1}, {0x110, 2}, 1, 2 },
 	{ {0x8045, 0}, "Armada8040-B0", {0x806, 2}, {0x115, 0}, 1, 2 },
+	/*****************WARNING*********************
+	 * Keep the below entry as last in this array!
+	 * This entry is for SoC demo purpose only!
+	 * There is no way to distinguish between A3900
+	 * and cn9x30 on demo board until the device ID
+	 * is changed in the SoC HW.
+	 *****************WARNING*********************
+	 */
+	{ {0x6025, 0}, "CN9X30_DEMO", {0x807, 1}, {0x115, 0}, 1, 1, 0},
 };
 
 static int get_soc_type_rev(u32 *type, u32 *rev)
@@ -109,17 +119,23 @@ static int get_soc_table_index(u32 *index)
 	get_soc_type_rev(&soc_type, &rev);
 	get_ap_soc_type(&ap_type);
 
-	for (i = 0; i < ARRAY_SIZE(soc_info_table) && ret != 0; i++) {
-		if ((soc_type != soc_info_table[i].soc.module_type) ||
-		    (rev != soc_info_table[i].soc.module_rev) ||
-		    ap_type != soc_info_table[i].ap.module_type)
-			continue;
+	if (!of_machine_is_compatible("marvell,cn9x30-demo")) {
+		for (i = 0; i < ARRAY_SIZE(soc_info_table) && ret != 0; i++) {
+			if ((soc_type != soc_info_table[i].soc.module_type) ||
+			    (rev != soc_info_table[i].soc.module_rev) ||
+			    ap_type != soc_info_table[i].ap.module_type)
+				continue;
 
-		if (!get_soc_sub_rev(&sub_rev) &&
-		    (sub_rev != soc_info_table[i].sub_rev))
-			continue;
+			if (!get_soc_sub_rev(&sub_rev) &&
+			    (sub_rev != soc_info_table[i].sub_rev))
+				continue;
 
-		*index = i;
+			*index = i;
+			ret = 0;
+		}
+	} else {
+		/* For demo board just use the last table entry */
+		*index = ARRAY_SIZE(soc_info_table) - 1;
 		ret = 0;
 	}
 

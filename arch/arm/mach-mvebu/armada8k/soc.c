@@ -109,23 +109,18 @@ static int get_soc_table_index(u32 *index)
 	get_soc_type_rev(&soc_type, &rev);
 	get_ap_soc_type(&ap_type);
 
-	for (i = 0; i < sizeof(soc_info_table) / sizeof(struct soc_info); i++) {
-		if ((soc_type ==
-			soc_info_table[i].soc.module_type) &&
-		   (rev == soc_info_table[i].soc.module_rev) &&
-		    ap_type == soc_info_table[i].ap.module_type) {
-			if (!get_soc_sub_rev(&sub_rev)) {
-				if (sub_rev == soc_info_table[i].sub_rev) {
-					*index = i;
-					ret = 0;
-				} else {
-					continue;
-				}
-			} else {
-				*index = i;
-				ret = 0;
-			}
-		}
+	for (i = 0; i < ARRAY_SIZE(soc_info_table) && ret != 0; i++) {
+		if ((soc_type != soc_info_table[i].soc.module_type) ||
+		    (rev != soc_info_table[i].soc.module_rev) ||
+		    ap_type != soc_info_table[i].ap.module_type)
+			continue;
+
+		if (!get_soc_sub_rev(&sub_rev) &&
+		    (sub_rev != soc_info_table[i].sub_rev))
+			continue;
+
+		*index = i;
+		ret = 0;
 	}
 
 	if (ret)

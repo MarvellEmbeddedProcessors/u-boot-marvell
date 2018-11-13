@@ -50,8 +50,9 @@
 				description = "Boot mode options";
 				start-bit = <4>;
 				bit-length = <6>;
-				option-cnt = <13>;
+				option-cnt = <14>;
 				options = "0xE", "NAND IHB BW-8bit, PS-4KB, ECC-4bit",
+					  "0xF", "NAND IHB BW-8bit, PS-4KB, ECC-8bit",
 					  "0x28", "AP_SD",
 					  "0x29", "CP_SD",
 					  "0x2A", "AP_EMMC",

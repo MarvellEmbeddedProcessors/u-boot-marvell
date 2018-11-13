@@ -48,8 +48,9 @@
 				description = "Boot mode options";
 				start-bit = <4>;
 				bit-length = <6>;
-				option-cnt = <6>;
+				option-cnt = <7>;
 				options = "0xE", "CP1_NAND IHB BW-8bit, PS-4KB, ECC-4bit\t(supported configuration: D)",
+					  "0xF", "CP1_NAND IHB BW-8bit, PS-4KB, ECC-8bit\t(supported configuration: D)",
 					  "0x29", "CP0_SD\t\t\t\t\t(supported configurations: C, D and E)",
 					  "0x2A", "AP_EMMC\t\t\t\t\t(supported configurations: A, B, C and D)",
 					  "0x2B", "CP0_EMMC\t\t\t\t\t(supported configurations: A and B)",

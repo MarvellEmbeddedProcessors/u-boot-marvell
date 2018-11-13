@@ -13,3 +13,4 @@ obj-$(CONFIG_CMD_MVEBU_MAP) += map.o
 obj-$(CONFIG_CMD_MVEBU_TSEN) += thermal.o
 obj-$(CONFIG_CMD_MVEBU_HW_INFO) += hw_info.o
 obj-$(CONFIG_CMD_MVEBU_NAND_OEM) += pxa3xx_nand_oem.o
+obj-$(CONFIG_CMD_MVEBU_SAR) += sar.o

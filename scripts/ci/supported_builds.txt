@@ -25,6 +25,7 @@ uboot_2018_a80x0_pm
 uboot_2018_a80x0_mcbin
 uboot_2018_a80x0_mcbin_cve_2018_3639
 uboot_2018_a80x0_mcbin_pm
+uboot_2018_a80x0_ucpe
 
 uboot_2018_a3900_A
 uboot_2018_a3900_B

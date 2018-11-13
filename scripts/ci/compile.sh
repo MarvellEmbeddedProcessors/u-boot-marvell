@@ -83,6 +83,7 @@ case $build_name in
 	*_a70x0* )       defconfig="mvebu_db_armada8k_defconfig"; ;;
 	*_a7020_amc )    defconfig="mvebu_db_armada8k_defconfig"; ;;
 	*_a80x0_mcbin* ) defconfig="mvebu_mcbin-88f8040_defconfig"; ;;
+	*_a80x0_ucpe* )  defconfig="mvebu_ucpe-88f8040_defconfig"; ;;
 	*_a80x0* )       defconfig="mvebu_db_armada8k_defconfig"; ;;
 	*_a3900* )       defconfig="mvebu_db_armada8k_defconfig"; ;;
 	*_a37xx_espressobin_* )
@@ -112,6 +113,7 @@ case $build_name in
 	uboot_2018_a80x0_kr ) device_tree="armada-8040-db"; ;;
 	uboot_2018_a80x0_pm ) device_tree="armada-8040-db"; ;;
 	uboot_2018_a80x0_mcbin* ) device_tree=""; ;;
+	uboot_2018_a80x0_ucpe* ) device_tree=""; ;;
 
 	uboot_2018_a3900_A ) device_tree="armada-3900-vd-A"; ;;
 	uboot_2018_a3900_B ) device_tree="armada-3900-vd-B"; ;;

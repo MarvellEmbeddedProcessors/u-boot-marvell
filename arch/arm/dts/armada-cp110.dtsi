@@ -214,7 +214,7 @@
 
 				nand-enable-arbiter;
 				num-cs = <1>;
-				nand-ecc-strength = <4>;
+				nand-ecc-strength = <8>;
 				nand-ecc-step-size = <512>;
 				status = "disabled";
 			};

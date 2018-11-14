@@ -4728,7 +4728,7 @@ static int phy_info_parse(struct udevice *dev, struct mvpp2_port *port)
 	fixed_link = fdt_subnode_offset(gd->fdt_blob, port_node, "fixed-link");
 
 	if (phy_node > 0) {
-		if (fixed_link != FDT_ERR_NOTFOUND) {
+		if (fixed_link != -FDT_ERR_NOTFOUND) {
 			/* phy_addr is set to invalid value for fixed links */
 			phyaddr = PHY_MAX_ADDR;
 		} else {

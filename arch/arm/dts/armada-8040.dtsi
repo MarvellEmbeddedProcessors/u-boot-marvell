@@ -122,4 +122,16 @@
 		marvell,pins = < 13 14 15 16 >;
 		marvell,function = <3>;
 	};
+
+	cp1_nand_pins: cp1-nand-pins {
+		marvell,pins = < 0  1  2  3  4  5  6  7  8
+				 9  10 11 14 15 16 17 18 19
+				 20 21 22 23 24 25 26 27 >;
+		marvell,function = <1>;
+	};
+
+	cp1_nand_rb: cp1-nand-rb {
+		marvell,pins = < 12 13 >;
+		marvell,function = <2>;
+	};
 };

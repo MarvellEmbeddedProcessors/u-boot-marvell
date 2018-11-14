@@ -81,10 +81,28 @@
 	};
 };
 
+&cp0_xmdio {
+	status = "okay";
+	phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+	phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+};
+
+&cp0_ethernet {
+	status = "okay";
+};
+
 &cp0_eth0 {
+	status = "okay";
 	phy-mode = "sfi";
+	phy = <&phy0>;
 };
 
 &cp0_eth1 {
+	status = "okay";
 	phy-mode = "sgmii";
+	phy = <&phy1>;
 };

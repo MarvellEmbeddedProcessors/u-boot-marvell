@@ -84,8 +84,12 @@ Manual build procedure
 	- For the Armada-80x0 DB use "make DEVICE_TREE=armada-8040-db[-X]"
 	- For the Armada-37x0 DB use "make DEVICE_TREE=armada-3720-ddrX-db[-X]"
 	  (X represents possible board configuration)
+	- For the EspressoBin board without soldered eMMC device use
+	  "make DEVICE_TREE=armada-3720-espressobin"
+	- For the EspressoBin board with populated eMMC device use
+	  "make DEVICE_TREE=armada-3720-espressobin-emmc"
 
-	No need to set this for Armada-80x0 MacchiatoBin and Armada-37x0 EsspressoBin.
+	No need to set this for Armada-80x0 MacchiatoBin.
 
 	The U-Boot compilation generates u-boot.bin - the U-Boot image
 

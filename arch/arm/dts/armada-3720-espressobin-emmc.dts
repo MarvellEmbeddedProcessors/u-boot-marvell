@@ -50,8 +50,9 @@
 #include "armada-372x.dtsi"
 
 / {
-	model = "Marvell Armada 3720 Community Board ESPRESSOBin";
-	compatible = "marvell,armada-3720-espressobin", "marvell,armada3720", "marvell,armada3710";
+	model = "Marvell Armada 3720 Community Board ESPRESSOBin (eMMC)";
+	compatible = "marvell,armada-3720-espressobin",
+		     "marvell,armada3720", "marvell,armada3710";
 
 	chosen {
 		stdout-path = "serial0:115200n8";
@@ -155,7 +156,7 @@
 	marvell,pad-type = "fixed-1-8v";
 	pinctrl-names = "default";
 	pinctrl-0 = <&mmc_pins>;
-	status = "disabled";
+	status = "okay";
 
 	#address-cells = <1>;
 	#size-cells = <0>;

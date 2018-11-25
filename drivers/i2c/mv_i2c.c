@@ -586,9 +586,18 @@ static int mv_i2c_probe(struct udevice *bus)
 	return 0;
 }
 
+static int mv_i2c_reset(struct udevice *bus)
+{
+	struct mv_i2c_priv *priv = dev_get_priv(bus);
+
+	i2c_reset(priv->base);
+	return 0;
+}
+
 static const struct dm_i2c_ops mv_i2c_ops = {
 	.xfer		= mv_i2c_xfer,
 	.set_bus_speed	= mv_i2c_set_bus_speed,
+	.deblock	= mv_i2c_reset,
 };
 
 static const struct udevice_id mv_i2c_ids[] = {

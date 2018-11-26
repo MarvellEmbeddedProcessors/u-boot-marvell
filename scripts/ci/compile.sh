@@ -132,7 +132,14 @@ case $build_name in
 		device_tree="armada-3720-ddr4-db-v3-B"; ;;
 	uboot_2018_a37xx_espressobin_ddr3_* )
 		device_tree="armada-3720-espressobin"; ;;
-
+	uboot_2018_a37xx_espressobin_ddr4_v7_1G_emmc* )
+		device_tree="armada-3720-espressobin-emmc"; ;;
+	uboot_2018_a37xx_espressobin_ddr4_v7_2G_emmc* )
+		device_tree="armada-3720-espressobin-emmc"; ;;
+	uboot_2018_a37xx_espressobin_ddr4_v7_1G* )
+		device_tree="armada-3720-espressobin"; ;;
+	uboot_2018_a37xx_espressobin_ddr4_v7_2G* )
+		device_tree="armada-3720-espressobin"; ;;
 	* ) echo "Error: Could not configure device_tree." \
 		" Unsupported build ${build_name}"; exit -1;	;;
 esac

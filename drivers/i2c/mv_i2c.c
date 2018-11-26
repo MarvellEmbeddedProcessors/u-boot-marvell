@@ -568,10 +568,18 @@ static int mv_i2c_set_bus_speed(struct udevice *bus, unsigned int speed)
 	struct mv_i2c_priv *priv = dev_get_priv(bus);
 	u32 val;
 
-	if (speed > 100000)
-		val = ICR_FM;
-	else
+	switch (speed) {
+	case 100000:
 		val = ICR_SM;
+		break;
+	case 400000:
+		val = ICR_FM;
+		break;
+	default:
+		printf("Only 100k and 400k modes supported\n");
+		return -EOPNOTSUPP;
+	}
+
 	clrsetbits_le32(&priv->base->icr, ICR_MODE_MASK, val);
 
 	return 0;

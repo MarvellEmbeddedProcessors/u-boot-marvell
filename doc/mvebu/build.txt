@@ -118,6 +118,8 @@ In order to change the boot device to eMMC, set the following parameter
 the default configuration::
 
 	- CONFIG_MVEBU_MMC_BOOT=y
+	- CONFIG_ENV_IS_IN_MMC=y
+	- Remove any other CONFIG_ENV_IS_IN_* occurrences in defconfig file
 
 If "menuconfig" is used, navigate to the following location::
 
@@ -126,7 +128,12 @@ If "menuconfig" is used, navigate to the following location::
 	    -> MVEBU commands
 	      -> Flash for image
 
-and select "eMMC flash boot".
+and select "eMMC flash boot" for the boot device, then select the device for the
+environment location):
+
+	-> Command line interface
+	  -> Environment
+	    -> Environment in an MMC device
 
 The eMMC has 2 boot partitions (BOOT0 and BOOT1) and a user data partition
 (DATA).
@@ -164,8 +171,7 @@ If select CP's SD card/eMMC as boot device, the Macro parameter should be::
 
 	#define CONFIG_SYS_MMC_ENV_DEV         1
 
-Both parameters can be changed in the "include/configs/mvebu_armada-37xx.h"
-or "include/configs/mvebu_armada-8k.h" depend on the device.
+Both parameters can be changed in the "include/configs/mvebu_armadacommon.h".
 
 Note that this configuration is only available when "Flash for image"
 selects "eMMC flash boot" device as described above.

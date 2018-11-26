@@ -25,7 +25,11 @@
 #include <u-boot/sha256.h>
 
 #ifndef CONFIG_SYS_MMC_ENV_DEV
+#ifdef CONFIG_TARGET_MVEBU_ARMADA_37XX
+#define CONFIG_SYS_MMC_ENV_DEV	1
+#else
 #define CONFIG_SYS_MMC_ENV_DEV	0
+#endif
 #endif
 
 #if defined(CONFIG_ARMADA_8K)
@@ -767,7 +771,7 @@ struct bubt_dev *find_bubt_dev(char *dev_name)
 #define DEFAULT_BUBT_DST "nand"
 #elif defined(CONFIG_MVEBU_MMC_BOOT)
 #define DEFAULT_BUBT_DST "mmc"
-else
+#else
 #define DEFAULT_BUBT_DST "error"
 #endif
 #endif /* DEFAULT_BUBT_DST */

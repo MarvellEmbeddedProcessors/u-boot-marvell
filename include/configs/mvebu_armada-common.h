@@ -133,8 +133,13 @@
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
+#ifdef CONFIG_TARGET_MVEBU_ARMADA_37XX
+#define CONFIG_SYS_MMC_ENV_DEV		1 /* A3700 emmc is on sdhci-1*/
+#define CONFIG_SYS_MMC_ENV_PART		1 /* 0-DATA, 1-BOOT0, 2-BOOT1 */
+#else
 #define CONFIG_SYS_MMC_ENV_DEV		0
 #define CONFIG_SYS_MMC_ENV_PART		0 /* 0-DATA, 1-BOOT0, 2-BOOT1 */
+#endif
 #endif
 
 /*

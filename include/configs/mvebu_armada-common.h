@@ -122,14 +122,25 @@
 /*
  * Assume minimum flash/eMMC boot partition size of 4MB
  * and save the environment at the end of the boot device
+ * There is one exclusion from this rule - the EspressoBIN board with eMMC.
+ * The eMMC device found on some EspressoBIN V7 boards has 2MB boot partition.
  */
 #define CONFIG_ENV_SIZE			(64 << 10) /* 64KiB */
 #define CONFIG_ENV_SECT_SIZE		(64 << 10) /* 64KiB sectors */
 
 #ifdef CONFIG_MVEBU_NAND_BOOT
+/* In case of NAND, we want to start the environment on page boundary */
 #define CONFIG_ENV_OFFSET		0x400000
 #else
+#if defined(CONFIG_ENV_IS_IN_MMC) && \
+defined(CONFIG_TARGET_MVEBU_ARMADA_37XX) && defined(CONFIG_MV88E6XXX_SWITCH)
+/* This one should be EspressoBin, since A3700 DB does not have
+ * MV88E6XXX switch enabled. Is there any other way to detect it?
+ */
+#define CONFIG_ENV_OFFSET		(0x200000 - CONFIG_ENV_SIZE)
+#else
 #define CONFIG_ENV_OFFSET		(0x400000 - CONFIG_ENV_SIZE)
+#endif
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC

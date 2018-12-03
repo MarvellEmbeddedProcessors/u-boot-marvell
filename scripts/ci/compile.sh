@@ -112,7 +112,9 @@ case $build_name in
 	uboot_2018_a80x0_H ) device_tree="armada-8040-db-H"; ;;
 	uboot_2018_a80x0_kr ) device_tree="armada-8040-db"; ;;
 	uboot_2018_a80x0_pm ) device_tree="armada-8040-db"; ;;
-	uboot_2018_a80x0_mcbin* ) device_tree=""; ;;
+	uboot_2018_a80x0_mcbin_single_shot* )
+		device_tree="armada-8040-mcbin-single-shot"; ;;
+	uboot_2018_a80x0_mcbin* ) device_tree="armada-8040-mcbin"; ;;
 	uboot_2018_a80x0_ucpe* ) device_tree=""; ;;
 
 	uboot_2018_a3900_A ) device_tree="armada-3900-vd-A"; ;;

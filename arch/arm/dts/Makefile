@@ -122,6 +122,7 @@ dtb-$(CONFIG_ARCH_MVEBU) +=			\
 	armada-8040-db-G.dtb			\
 	armada-8040-db-H.dtb			\
 	armada-8040-mcbin.dtb			\
+	armada-8040-mcbin-single-shot.dtb	\
 	armada-8040-ocp.dtb			\
 	armada-8040-ucpe.dtb			\
 	armada-xp-gp.dtb			\

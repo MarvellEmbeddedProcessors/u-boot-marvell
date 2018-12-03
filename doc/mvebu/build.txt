@@ -88,8 +88,10 @@ Manual build procedure
 	  "make DEVICE_TREE=armada-3720-espressobin"
 	- For the EspressoBin board with populated eMMC device use
 	  "make DEVICE_TREE=armada-3720-espressobin-emmc"
-
-	No need to set this for Armada-80x0 MacchiatoBin.
+	- For the Armada-80x0 MacchiatoBin use
+	  "make DEVICE_TREE=armada-8040-mcbin"
+	- For the Armada-80x0 MacchiatoBin Single Shot use
+	  "make DEVICE_TREE=armada-8040-mcbin-single-shot"
 
 	The U-Boot compilation generates u-boot.bin - the U-Boot image
 

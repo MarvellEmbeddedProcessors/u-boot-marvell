@@ -132,6 +132,8 @@ case $build_name in
 		device_tree="armada-3720-ddr4-db-v3-A"; ;;
 	uboot_2018_a37xx_ddr4_v3_B_* )
 		device_tree="armada-3720-ddr4-db-v3-B"; ;;
+	uboot_2018_a37xx_ddr4_v3_C_* )
+		device_tree="armada-3720-ddr4-db-v3-C"; ;;
 	uboot_2018_a37xx_espressobin_ddr3_* )
 		device_tree="armada-3720-espressobin"; ;;
 	uboot_2018_a37xx_espressobin_ddr4_v7_1G_emmc* )

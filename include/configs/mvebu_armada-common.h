@@ -72,7 +72,7 @@
 						" $root ip=$ipaddr:$serverip:" \
 						"$gatewayip:$netmask:$hostname"\
 						":$netdev:none nfsroot="\
-						"$serverip:$rootpath " \
+						"$serverip:$rootpath,tcp,v3 " \
 						"$extra_params " \
 						"$cpuidle"
 /*

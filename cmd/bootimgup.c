@@ -160,10 +160,8 @@ static int spi_flash_update(struct spi_flash *flash, u32 offset,
 	return 0;
 }
 
-static int do_spi_flash_probe(int argc, char * const argv[])
+static int do_spi_flash_probe(unsigned int bus, unsigned int cs)
 {
-	unsigned int bus = CONFIG_SF_DEFAULT_BUS;
-	unsigned int cs = CONFIG_SF_DEFAULT_CS;
 	unsigned int speed = CONFIG_SF_DEFAULT_SPEED;
 	unsigned int mode = CONFIG_SF_DEFAULT_MODE;
 	struct udevice *new, *bus_dev;
@@ -193,28 +191,63 @@ static int do_bootu_spi(int argc, char * const argv[])
 	unsigned long addr, offset, len;
 	void *buf;
 	char *env1, *env2;
+	char *endp;
 	int ret = 1;
+	unsigned int bus = 0, cs;
 
-	if ((argc < 1) || (argc > 3))
+	if ((argc < 1) || (argc > 4))
 		return -1;
 
 	if (argc == 1) {
+		bus = cs = 0;
 		env1 = env_get("loadaddr");
 		env2 = env_get("filesize");
 		if (!env1 || !env2) {
 			printf("Missing env variables loadaddr/filesize\n");
 			return -1;
 		}
-	} else {
-		if (!argv[1] || !argv[2]) {
-			printf("Missing args - image addr or image size\n");
+	} else if (argc == 2) {
+		cs = simple_strtoul(argv[1], &endp, 0);
+		if (*argv[1] == 0 || (*endp != 0 && *endp != ':'))
+			return -1;
+		if (*endp == ':') {
+			if (endp[1] == 0)
+				return -1;
+
+			bus = cs;
+			cs = simple_strtoul(endp + 1, &endp, 0);
+			if (*endp != 0)
+				return -1;
+		}
+		env1 = env_get("loadaddr");
+		env2 = env_get("filesize");
+		if (!env1 || !env2) {
+			printf("Missing env variables loadaddr/filesize\n");
 			return -1;
 		}
+	} else if (argc == 4) {
+		cs = simple_strtoul(argv[1], &endp, 0);
+		if (*argv[1] == 0 || (*endp != 0 && *endp != ':'))
+			return -1;
+		if (*endp == ':') {
+			if (endp[1] == 0)
+				return -1;
+
+			bus = cs;
+			cs = simple_strtoul(endp + 1, &endp, 0);
+			if (*endp != 0)
+				return -1;
+		}
 		debug("%s argv0 %s argv1 %s\n", __func__, argv[0], argv[1]);
-		env1 = argv[1];
-		env2 = argv[2];
+		debug("%s argv2 %s argv3 %s\n", __func__, argv[2], argv[3]);
+		env1 = argv[2];
+		env2 = argv[3];
+	} else {
+		printf("Missing args\n");
+		return -1;
 	}
 	debug("%s loadaddr %s filesize %s\n", __func__, env1, env2);
+	debug("%s bus %d cs %d\n", __func__, bus, cs);
 
 	offset = 0;
 
@@ -241,7 +274,7 @@ static int do_bootu_spi(int argc, char * const argv[])
 	/* The remaining commands require a selected device */
 	if (!flash) {
 		debug("No SPI flash selected.  Executing 'sf probe'\n");
-		ret = do_spi_flash_probe(0, NULL);
+		ret = do_spi_flash_probe(bus, cs);
 		if (ret)
 			return 1;
 	}
@@ -340,34 +373,43 @@ static int do_bootu_mmc(int argc, char * const argv[])
 	static int curr_device = -1;
 	struct mmc *mmc;
 	struct blk_desc *desc;
-	char *env1, *env2;
+	char *env1, *env2, *endp;
 	unsigned long blk, len, n;
 	unsigned long addr;
 	int ret;
 
-	if ((argc < 1) || (argc > 3)) {
+	if ((argc < 1) || (argc > 4)) {
 		printf("Invalid # args \n");
 		return -1;
 	}
 
 	if (argc == 1) {
+		curr_device = 0;
 		env1 = env_get("loadaddr");
 		env2 = env_get("filesize");
 		if (!env1 || !env2) {
 			printf("Missing env variables loadaddr/filesize\n");
 			return -1;
 		}
-	} else {
-		if (!argv[1] || !argv[2]) {
-			printf("Missing args - image addr or image size\n");
+	} else if (argc == 2) {
+		curr_device = simple_strtoul(argv[1], &endp, 0);
+		env1 = env_get("loadaddr");
+		env2 = env_get("filesize");
+		if (!env1 || !env2) {
+			printf("Missing env variables loadaddr/filesize\n");
 			return -1;
 		}
+	} else if (argc == 3) {
+			printf("Missing args - image addr or image size\n");
+			return -1;
+	} else if (argc == 4) {
+		curr_device = simple_strtoul(argv[1], &endp, 0);
 		debug("%s argv0 %s argv1 %s\n", __func__, argv[0], argv[1]);
-		env1 = argv[1];
-		env2 = argv[2];
+		env1 = argv[2];
+		env2 = argv[3];
 	}
 	debug("%s loadaddr %s filesize %s\n", __func__, env1, env2);
-
+	debug("%s curr_device %d\n", __func__, curr_device);
 	blk = 0;
 
 	ret = strict_strtoul(env1, 16, &addr);
@@ -399,13 +441,9 @@ static int do_bootu_mmc(int argc, char * const argv[])
 		return 1;
 	}
 
-	if (curr_device < 0) {
-		if (get_mmc_num() > 0) {
-			curr_device = 0;
-		} else {
-			puts("No MMC device available\n");
-			return CMD_RET_FAILURE;
-		}
+	if (get_mmc_num() < curr_device) {
+		puts("No MMC device available\n");
+		return CMD_RET_FAILURE;
 	}
 
 	mmc = init_mmc_device(curr_device, false);
@@ -485,14 +523,28 @@ usage:
 
 U_BOOT_CMD(
 	bootimgup, 5, 1, do_bootimgup, "Updates Boot Image",
-	" <mmc | spi> [image_address image_size] \n"
+	" <mmc | spi> <[devid] | [bus:cs]> [image_address image_size] \n"
 	" where: \n"
 	" spi - updates boot image on spi flash \n"
+	" bus and cs should be passed together, passing only one \n"
+	" of them treated as invalid. If [bus:cs] not given, 0:0 is used \n"
+	" image_address - address at which image is located in RAM \n"
+	" image_size    - size of image in hex \n"
+	" eg. to load on spi0 chipselect 0 \n"
+	" bootimgup spi 0:0 $loadaddr $filesize \n"
+	" eg. to load on spi1 chipselect 1 \n"
+	" bootimgup spi 1:1 $loadaddr $filesize \n"
+	" \n"
 	" mmc - updates boot image on mmc card/chip \n"
+	" eg. to load on device 0 \n"
+	" bootimgup mmc 0 $loadaddr $filesize \n"
+	" eg. to load on device 1. If device id not given, 0 is used \n"
+	" bootimgup mmc 1 $loadaddr $filesize \n"
 	" image_address - address at which image is located in RAM \n"
 	" image_size    - size of image in hex \n"
 	" image_address, image_size should be passed together, \n"
 	" passing only one of them treated as invalid. \n"
+	" \n"
 	" If not given, then $loadaddr and $filesize values in \n"
 	" environment are used, otherwise fail to update. \n"
 );

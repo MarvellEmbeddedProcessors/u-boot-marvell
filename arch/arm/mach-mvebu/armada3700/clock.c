@@ -237,8 +237,8 @@ u32 soc_timer_clk_get(void)
 
 void soc_print_clock_info(void)
 {
-	printf("       CPU    @ %d [MHz]\n", soc_cpu_clk_get());
-	printf("       L2     @ %d [MHz]\n", soc_l2_clk_get());
-	printf("       TClock @ %d [MHz]\n", soc_tclk_get());
-	printf("       DDR    @ %d [MHz]\n", soc_ddr_clk_get());
+	printf("       CPU     %d [MHz]\n", soc_cpu_clk_get());
+	printf("       L2      %d [MHz]\n", soc_l2_clk_get());
+	printf("       TClock  %d [MHz]\n", soc_tclk_get());
+	printf("       DDR     %d [MHz]\n", soc_ddr_clk_get());
 }

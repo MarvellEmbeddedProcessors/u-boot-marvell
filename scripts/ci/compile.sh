@@ -161,6 +161,14 @@ if [[ $build_name == "uboot_2018_a70x0_D" ||
 	./scripts/config -d CONFIG_ENV_IS_IN_SPI_FLASH
 	./scripts/config -e CONFIG_ENV_IS_IN_NAND
 	"""
+elif [[ $build_name == "uboot_2018_a37xx_espressobin_ddr4_v7_1G_emmc" ||
+	$build_name == "uboot_2018_a37xx_espressobin_ddr4_v7_2G_emmc" ]]; then
+	config_cmd="""
+	./scripts/config -d CONFIG_MVEBU_SPI_BOOT
+	./scripts/config -e CONFIG_MVEBU_MMC_BOOT
+	./scripts/config -d CONFIG_ENV_IS_IN_SPI_FLASH
+	./scripts/config -e CONFIG_ENV_IS_IN_MMC
+	"""
 fi
 
 build_flags="" # not used in u-boot-2018

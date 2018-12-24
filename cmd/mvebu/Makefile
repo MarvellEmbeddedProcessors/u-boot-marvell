@@ -6,3 +6,4 @@
 
 
 obj-$(CONFIG_CMD_MVEBU_BUBT) += bubt.o
+obj-$(CONFIG_CMD_MVEBU_MV_GET_COUNTERS) += mv_get_counters.o

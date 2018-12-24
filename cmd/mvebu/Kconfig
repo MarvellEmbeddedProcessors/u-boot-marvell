@@ -49,4 +49,14 @@ config MVEBU_UBOOT_DFLT_NAME
 	  This option should contain a default file name to be used with
 	  MVEBU "bubt" command if the source file name is omitted
 
+config CMD_MVEBU_MV_GET_COUNTERS
+	bool "mv_get_counters"
+	depends on TARGET_MVEBU_ARMADA_8K || TARGET_OCTEONTX2_CN913x
+	default y
+	help
+	  mv_get_counters print MIB Counters.
+	  First argument select eth port to print.
+	  When no argument is given default port is Ethact.
+	  Wrong port being selected could cause crash.
+
 endmenu

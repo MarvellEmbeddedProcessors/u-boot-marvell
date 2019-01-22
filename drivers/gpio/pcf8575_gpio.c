@@ -17,11 +17,9 @@
 
 /*
  * NOTE: The driver and devicetree bindings are borrowed from Linux
- * Kernel, but driver does not support all PCF857x devices. It currently
- * supports PCF8575 16-bit expander by TI and NXP.
- *
- * TODO(vigneshr@ti.com):
- * Support 8 bit PCF857x compatible expanders.
+ * Kernel, but driver does support only a few PCF857x devices. 
+ * To use 8-bit support set the gpio-count parameter to 8 - 
+ * default is 16bit.
  */
 
 #include <common.h>
@@ -55,10 +53,11 @@ struct pcf8575_chip {
 static int pcf8575_i2c_write_le16(struct udevice *dev, unsigned int word)
 {
 	struct dm_i2c_chip *chip = dev_get_parent_platdata(dev);
+	struct gpio_dev_priv *uc_priv = dev_get_uclass_priv(dev);
 	u8 buf[2] = { word & 0xff, word >> 8, };
 	int ret;
 
-	ret = dm_i2c_write(dev, 0, buf, 2);
+	ret = dm_i2c_write(dev, 0, buf, uc_priv->gpio_count);
 	if (ret)
 		printf("%s i2c write failed to addr %x\n", __func__,
 		       chip->chip_addr);
@@ -69,10 +68,11 @@ static int pcf8575_i2c_write_le16(struct udevice *dev, unsigned int word)
 static int pcf8575_i2c_read_le16(struct udevice *dev)
 {
 	struct dm_i2c_chip *chip = dev_get_parent_platdata(dev);
-	u8 buf[2];
+	struct gpio_dev_priv *uc_priv = dev_get_uclass_priv(dev);
+	u8 buf[2] = {};
 	int ret;
 
-	ret = dm_i2c_read(dev, 0, buf, 2);
+	ret = dm_i2c_read(dev, 0, buf, uc_priv->gpio_count);
 	if (ret) {
 		printf("%s i2c read failed from addr %x\n", __func__,
 		       chip->chip_addr);
@@ -139,6 +139,9 @@ static int pcf8575_ofdata_platdata(struct udevice *dev)
 		uc_priv->bank_name = fdt_get_name(gd->fdt_blob,
 						  dev_of_offset(dev), NULL);
 
+	uc_priv->num_of_bytes = 16;
+	
+
 	n_latch = fdtdec_get_uint(gd->fdt_blob, dev_of_offset(dev),
 				  "lines-initial-states", 0);
 	plat->out = ~n_latch;
@@ -164,7 +167,17 @@ static const struct dm_gpio_ops pcf8575_gpio_ops = {
 };
 
 static const struct udevice_id pcf8575_gpio_ids[] = {
+	{ .compatible = "nxp,pcf8574" },
+	{ .compatible = "nxp,pcf8574a" },
+	{ .compatible = "nxp,pca8574" },
+	{ .compatible = "nxp,pca9670" },
+	{ .compatible = "nxp,pca9672" },
+	{ .compatible = "nxp,pca9674" },
 	{ .compatible = "nxp,pcf8575" },
+	{ .compatible = "nxp,pca8575" },
+	{ .compatible = "nxp,pca9671" },
+	{ .compatible = "nxp,pca9673" },
+	{ .compatible = "nxp,pca9675" },
 	{ .compatible = "ti,pcf8575" },
 	{ }
 };

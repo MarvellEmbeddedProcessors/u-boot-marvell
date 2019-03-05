@@ -487,4 +487,15 @@ config NX_GPIO
 	  The GPIOs for a device are defined in the device tree with one node
 	  for each bank.
 
+config I2C_GPIO
+	bool  "Generic I2C->GPIO no-irq expander"
+	depends on DM_GPIO
+	help
+	  Select this option to enable GPIO for simple I2C devices,
+	  parameterized by device-tree, and having no interrupts.
+	  Developed to model a custom board's CPLD, but may be useful
+	  for various hardware where i2c-poking flips external pins.
+
+	  If unsure, say N.
+
 endmenu

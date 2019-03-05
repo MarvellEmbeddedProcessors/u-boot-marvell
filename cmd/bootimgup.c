@@ -450,7 +450,7 @@ static int do_bootu_mmc(int argc, char * const argv[])
 	if (!mmc)
 		return CMD_RET_FAILURE;
 
-	desc = mmc_get_blk_desc(mmc, curr_device);
+	desc = mmc_get_blk_desc(mmc);
 	if (!desc)
 		return CMD_RET_FAILURE;
 

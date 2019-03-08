@@ -1685,7 +1685,8 @@ endif
 menu "Misc commands"
 
 config CMD_BOOTIMGUP
-	depends on MMC_CAVIUM
+	depends on ARCH_OCTEONTX || ARCH_OCTEONTX2
+	depends on MMC_OCTEONTX || SPI_FLASH
 	bool "bootimgup"
 	help
 	  bootimgup command support

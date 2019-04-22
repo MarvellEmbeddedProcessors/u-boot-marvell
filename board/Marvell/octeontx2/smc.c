@@ -56,3 +56,13 @@ ssize_t smc_flsf_fw_booted(void)
 
 	return regs.regs[0];
 }
+
+ssize_t smc_flsf_clr_force_2ndry(void)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = OCTEONTX2_FSAFE_CLR_FORCE_SEC;
+	smc_call(&regs);
+
+	return regs.regs[0];
+}

@@ -1,0 +1,10 @@
+menu "Marvell specific command line interface"
+
+config CMD_FAILSAFE
+	bool "command for supporting fail safe boot"
+	help
+	   Support for fail safe boot on Marvell's OcteonTX2 platforms.
+	   Disables forced secondary boot and reports if boot from
+	   primary device was successful.
+
+endmenu

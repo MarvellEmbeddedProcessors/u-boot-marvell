@@ -14,5 +14,6 @@ ssize_t smc_configure_ooo(unsigned int val);
 ssize_t smc_dram_size(unsigned int node);
 ssize_t smc_disable_rvu_lfs(unsigned int node);
 ssize_t smc_flsf_fw_booted(void);
+ssize_t smc_flsf_clr_force_2ndry(void);
 
 #endif

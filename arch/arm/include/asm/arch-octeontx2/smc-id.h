@@ -28,5 +28,6 @@
 
 /* fail safe */
 #define OCTEONTX2_FSAFE_PR_BOOT_SUCCESS	0xc2000b02
+#define OCTEONTX2_FSAFE_CLR_FORCE_SEC   0xc2000b06
 
 #endif /* __SMC_ID_H__ */

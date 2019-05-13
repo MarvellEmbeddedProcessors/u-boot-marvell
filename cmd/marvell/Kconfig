@@ -1,4 +1,5 @@
 menu "Marvell specific command line interface"
+depends on ARCH_OCTEONTX2
 
 config CMD_FAILSAFE
 	bool "command for supporting fail safe boot"

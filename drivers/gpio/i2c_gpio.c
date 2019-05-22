@@ -164,8 +164,17 @@ static int i2c_gpio_probe(struct udevice *dev)
 	char name[32], label[16], *str;
 	const char *tmp;
 	int size;
+	const char *status;
 
 	debug("%s(%s)\n", __func__, dev->name);
+
+	status = ofnode_read_string(dev->node, "status");
+	if (status && !strncmp(status, "ok", 2)) {
+		debug("%s(%s): GPIO device disabled in device tree\n",
+		      __func__, dev->name);
+		return -ENODEV;
+	}
+
 	chip->addr = ofnode_read_u32_default(dev->node, "reg", 0);
 	if (!chip->addr) {
 		pr_err("%s(%s): Missing reg property\n",

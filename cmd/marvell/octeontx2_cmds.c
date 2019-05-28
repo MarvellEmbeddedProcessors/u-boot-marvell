@@ -9,13 +9,13 @@
 #include <command.h>
 #include <asm/arch/smc.h>
 
-static int mrvl_otx2_fsafe_clr_sec_boot(
+static int do_fsafe_clr(
 	cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 {
 	return smc_flsf_clr_force_2ndry();
 }
 
 U_BOOT_CMD(
-	mrvl_otx2_fsafe_clr_sec_boot, 1, 1, mrvl_otx2_fsafe_clr_sec_boot,
+	fsafe_clr, 1, 0, do_fsafe_clr,
 	"Marvell OcteonTX2 Fail Safe: clear secondary boot", ""
 );

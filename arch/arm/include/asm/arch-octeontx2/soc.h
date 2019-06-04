@@ -13,6 +13,7 @@
 #define CN83XX	0xA3
 #define CN96XX	0xB2
 #define CN95XX	0xB3
+#define LOKI	0xB4
 
 /* Register defines */
 

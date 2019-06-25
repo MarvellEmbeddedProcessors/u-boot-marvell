@@ -2,10 +2,18 @@ menu "Marvell specific command line interface"
 depends on ARCH_OCTEONTX2
 
 config CMD_FAILSAFE
-	bool "command for supporting fail safe boot"
+	bool "Command for supporting fail safe boot"
 	help
 	   Support for fail safe boot on Marvell's OcteonTX2 platforms.
 	   Disables forced secondary boot and reports if boot from
 	   primary device was successful.
+
+config CMD_ETH
+	depends on NET_OCTEONTX2
+	bool "Command to change fec and phy-mod type"
+	help
+	   Support for change of fec and phy-mod type for some specific
+	   LMAC modes on RVU PF [CGX] network interfaces on Marvell
+	   OcteonTX2 platforms.
 
 endmenu

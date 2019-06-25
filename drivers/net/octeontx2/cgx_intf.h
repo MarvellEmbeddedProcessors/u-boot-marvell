@@ -105,6 +105,7 @@ enum cgx_cmd_id {
 	CGX_CMD_GET_PERSIST_IGNORE,
 	CGX_CMD_SET_PERSIST_IGNORE,
 	CGX_CMD_SET_MAC_ADDR,
+	CGX_CMD_SET_PHY_MOD_TYPE,
 };
 
 /* async event ids */
@@ -421,6 +422,26 @@ struct cgx_display_eye_args {
 	u64 reserved1:8; /* start from bit 8 */
 	u64 qlm:8;
 	u64 lane:47;
+};
+
+/* command argument to be passed for cmd ID - CGX_CMD_SET_LINK_MODE */
+struct cgx_set_mode_args {
+	uint64_t reserved1:8;
+	uint64_t mode:56;
+};
+
+/* command argument to be passed for cmd ID - CGX_CMD_SET_FEC */
+struct cgx_set_fec_args {
+	uint64_t reserved1:8;
+	uint64_t fec:2;
+	uint64_t reserved2:54;
+};
+
+/* command argument to be passed for cmd ID - CGX_CMD_SET_PHY_MOD_TYPE */
+struct cgx_set_phy_mod_args {
+	uint64_t reserved1:8;
+	uint64_t mod:1;		/* 0=NRZ, 1=PAM4 */
+	uint64_t reserved2:55;
 };
 
 union cgx_cmd_s {

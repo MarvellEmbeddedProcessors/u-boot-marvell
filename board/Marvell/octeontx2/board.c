@@ -139,6 +139,11 @@ int board_late_init(void)
 	long val;
 	bool save_env = false;
 	const char *str;
+#ifdef CONFIG_OCTEONTX_SERIAL_BOOTCMD
+	struct udevice *bootcmd_dev;
+	int ret;
+	char *stdinname = env_get("stdin");
+#endif
 
 	debug("%s()\n", __func__);
 
@@ -179,6 +184,22 @@ int board_late_init(void)
 
 	if (save_env)
 		env_save();
+
+#ifdef CONFIG_OCTEONTX_SERIAL_BOOTCMD
+	/* This will cause the pci-bootcmd driver to be probed. */
+	ret = uclass_get_device_by_name(UCLASS_SERIAL, "pci-bootcmd",
+					&bootcmd_dev);
+	if (!ret && bootcmd_dev)
+		debug("%s: %s found!\n", __func__, bootcmd_dev->name);
+#if CONFIG_IS_ENABLED(CONSOLE_MUX)
+	if (stdinname) {
+		ret = iomux_doenv(stdin, stdinname);
+		if (ret)
+			printf("%s: Error setting stdin to %s\n",
+			       __func__, stdinname);
+	}
+#endif
+#endif
 
 	return 0;
 }

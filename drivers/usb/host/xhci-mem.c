@@ -182,6 +182,9 @@ void xhci_cleanup(struct xhci_ctrl *ctrl)
 	free(ctrl->dcbaa);
 	if (reset_valid(&ctrl->reset))
 		reset_free(&ctrl->reset);
+#if defined(CONFIG_ARCH_OCTEONTX2)
+	free(ctrl->rx_bounce_buffer);
+#endif
 	memset(ctrl, '\0', sizeof(struct xhci_ctrl));
 }
 
@@ -518,6 +521,13 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
 	int i;
 	struct xhci_segment *seg;
 
+#if defined(CONFIG_ARCH_OCTEONTX2)
+	ctrl->rx_bounce_buffer = memalign(65536, 65536);
+	if (!ctrl->rx_bounce_buffer) {
+		puts("unable to allocate OcteonTX2 RX bounce buffer\n");
+		return -ENOMEM;
+	}
+#endif
 	/* DCBAA initialization */
 	ctrl->dcbaa = (struct xhci_device_context_array *)
 			xhci_malloc(sizeof(struct xhci_device_context_array));

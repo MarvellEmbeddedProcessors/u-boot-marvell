@@ -67,7 +67,7 @@ static int do_ethparam_common(cmd_tbl_t *cmdtp, int flag, int argc,
 			return CMD_RET_FAILURE;
 		type = simple_strtol(argv[2], &endp, 0);
 		if (type < 0 || type > 2)
-			return CMD_RET_FAILURE;
+			return CMD_RET_USAGE;
 		ret = cgx_intf_set_fec(dev, type);
 	} else if (strcmp(cmd, "get_fec") == 0) {
 		ret = cgx_intf_get_fec(dev);
@@ -76,7 +76,7 @@ static int do_ethparam_common(cmd_tbl_t *cmdtp, int flag, int argc,
 			return CMD_RET_FAILURE;
 		type = simple_strtol(argv[2], &endp, 0);
 		if (type < 0 || type > 1)
-			return CMD_RET_FAILURE;
+			return CMD_RET_USAGE;
 		ret = cgx_intf_set_phy_mod_type(dev, type);
 	} else if (strcmp(cmd, "get_phymod") == 0) {
 		ret = cgx_intf_get_phy_mod_type(dev);

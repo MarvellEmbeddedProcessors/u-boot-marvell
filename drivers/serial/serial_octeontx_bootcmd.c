@@ -180,7 +180,7 @@ static int octeontx_bootcmd_getc(struct udevice *dev)
  */
 static int bootcmd_stdio_getc(struct stdio_dev *dev)
 {
-	struct dm_serial_ops *ops;
+	const struct dm_serial_ops *ops;
 
 	if (!bootcmd_dev) {
 		printf("%s(%s): Error: bootcmd_dev NULL!\n",
@@ -200,7 +200,7 @@ static int bootcmd_stdio_getc(struct stdio_dev *dev)
  */
 static int bootcmd_stdio_tstc(struct stdio_dev *dev)
 {
-	struct dm_serial_ops *ops;
+	const struct dm_serial_ops *ops;
 
 	if (!bootcmd_dev) {
 		printf("%s(%s): Error: bootcmd_dev NULL!\n",

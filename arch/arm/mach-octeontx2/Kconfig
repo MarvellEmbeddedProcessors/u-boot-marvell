@@ -13,6 +13,9 @@ config TARGET_OCTEONTX2_96XX
 config TARGET_OCTEONTX2_LOKI
 	bool "Marvell OcteonTX2 LOKI"
 
+config TARGET_OCTEONTX2_98XX
+	bool "Marvell OcteonTX2 CN98XX"
+
 endchoice
 
 config SYS_SOC

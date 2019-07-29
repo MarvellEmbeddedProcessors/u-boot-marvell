@@ -16,4 +16,11 @@ config CMD_ETH
 	   LMAC modes on RVU PF [CGX] network interfaces on Marvell
 	   OcteonTX2 platforms.
 
+config CMD_MDIO_DBG
+	bool "PHY registers read/write support on mdio bus"
+	help
+	   Support to debug phy registers over MDIO bus using SMC interface
+	   to ATF for RVU PF [CGX] network interfaces on Marvell OcteonTX2
+	   platforms.
+
 endmenu

@@ -20,6 +20,12 @@
 #include <asm/io.h>
 #include <linux/mtd/mtd.h>
 
+#define SCP_ROM_START	0x5000
+#define SCP_ROM_END	0x9000
+#define SCP_ROM_SIZE	(SCP_ROM_END - SCP_ROM_START)
+#define SCP_ROM_BLOCKS	(SCP_ROM_SIZE / 512)
+#define MIN_SIZE	0x50008
+
 struct dos_partition {
 	unsigned char boot_ind;		/* 0x80 - active			*/
 	unsigned char head;		/* starting head			*/
@@ -77,7 +83,6 @@ static ulong bytes_per_second(unsigned int len, ulong start_ms)
  * @param offset	flash offset to write
  * @param len		number of bytes to write
  * @param buf		buffer to write from
- * @param cmp_buf	read buffer to use to compare data
  * @return NULL if OK, else a string containing the stage which failed
  */
 static const char *spi_flash_update_block(struct spi_flash *flash, u32 offset,
@@ -85,25 +90,67 @@ static const char *spi_flash_update_block(struct spi_flash *flash, u32 offset,
 {
 	char *ret = NULL;
 	char *ptr = (char *)buf;
-	char *rbuf = memalign(ARCH_DMA_MINALIGN, len);
+	char *rbuf = malloc(len);
 
+	debug("%s(%p, %#x, %#zx, %p)\n", __func__, flash, offset, len, buf);
+	if (!rbuf) {
+		printf("%s: Out of memory\n", __func__);
+		return "no memory";
+	}
 	debug("\n offset=%#x, sector_size=%#x, len=%#zx\n",
 	      offset, flash->sector_size, len);
 
+	/* Read the entire sector so to allow for rewriting */
+	if (spi_flash_read(flash, offset, flash->sector_size, rbuf)) {
+		ret = "read";
+		debug("%s: Read at offset %#x, len: %#lx\n",
+		      __func__, offset, len);
+		goto error;
+	}
+	/* Compare only what is meaningful (len) */
+	if (memcmp(rbuf, buf, len) == 0) {
+		debug("Skip region %x size %zx: no change\n",
+		      offset, len);
+		free(rbuf);
+		return NULL;
+	}
+
 	/* Erase the entire sector */
-	if (spi_flash_erase(flash, offset, flash->sector_size))
+	if (spi_flash_erase(flash, offset, flash->sector_size)) {
 		ret = "erase";
+		debug("%s: Erase at offset %#x, len: %#lx\n",
+		      __func__, offset, len);
+		goto error;
+	}
 
 	/* Write one complete sector */
-	if (spi_flash_write(flash, offset, len, ptr))
+	if (spi_flash_write(flash, offset, len, ptr)) {
 		ret = "write";
+		debug("%s: Write at offset %#x, len: %#lx\n",
+		      __func__, offset, len);
+		goto error;
+	}
 
-	if (spi_flash_read(flash, offset, len, rbuf))
+	if (spi_flash_read(flash, offset, len, rbuf)) {
 		ret = "read";
+		debug("%s: Read at offset %#x, len: %#lx\n",
+		      __func__, offset, len);
+		goto error;
+	}
 
-	if (memcmp(ptr, rbuf, len))
+	if (memcmp(ptr, rbuf, len)) {
 		ret = "compare";
+		debug("%s: Comparison at offset %#x, len: %#lx\n",
+		      __func__, offset, len);
+#ifdef DEBUG
+		debug("Written values:\n");
+		print_buffer(offset, ptr, 1, min(len, 1024UL), 0);
+		debug("Read values:\n");
+		print_buffer(offset, rbuf, 1, min(len, 1024UL), 0);
+#endif
+	}
 
+error:
 	free(rbuf);
 	return ret;
 }
@@ -186,7 +233,7 @@ static int do_spi_flash_probe(unsigned int bus, unsigned int cs)
 	return 0;
 }
 
-static int do_bootu_spi(int argc, char * const argv[])
+static int do_bootu_spi(int argc, char * const argv[], bool update_scp)
 {
 	unsigned long addr, offset, len;
 	void *buf;
@@ -194,17 +241,20 @@ static int do_bootu_spi(int argc, char * const argv[])
 	char *endp;
 	int ret = 1;
 	unsigned int bus = 0, cs;
+	unsigned long bytes_written = 0;
+	u8 scp_rom_buf[SCP_ROM_SIZE];
+	u8 old_buf_data[SCP_ROM_SIZE];
 
 	if ((argc < 1) || (argc > 4))
 		return -1;
 
 	if (argc == 1) {
 		bus = cs = 0;
-		env1 = env_get("loadaddr");
+		env1 = env_get("fileaddr");
 		env2 = env_get("filesize");
 		if (!env1 || !env2) {
-			printf("Missing env variables loadaddr/filesize\n");
-			return -1;
+			printf("Missing env variables fileaddr/filesize\n");
+			return CMD_RET_USAGE;
 		}
 	} else if (argc == 2) {
 		cs = simple_strtoul(argv[1], &endp, 0);
@@ -212,18 +262,18 @@ static int do_bootu_spi(int argc, char * const argv[])
 			return -1;
 		if (*endp == ':') {
 			if (endp[1] == 0)
-				return -1;
+				return CMD_RET_USAGE;
 
 			bus = cs;
 			cs = simple_strtoul(endp + 1, &endp, 0);
 			if (*endp != 0)
-				return -1;
+				return CMD_RET_USAGE;
 		}
-		env1 = env_get("loadaddr");
+		env1 = env_get("fileaddr");
 		env2 = env_get("filesize");
 		if (!env1 || !env2) {
-			printf("Missing env variables loadaddr/filesize\n");
-			return -1;
+			printf("Missing env variables fileaddr/filesize\n");
+			return CMD_RET_USAGE;
 		}
 	} else if (argc == 4) {
 		cs = simple_strtoul(argv[1], &endp, 0);
@@ -231,12 +281,12 @@ static int do_bootu_spi(int argc, char * const argv[])
 			return -1;
 		if (*endp == ':') {
 			if (endp[1] == 0)
-				return -1;
+				return CMD_RET_USAGE;
 
 			bus = cs;
 			cs = simple_strtoul(endp + 1, &endp, 0);
 			if (*endp != 0)
-				return -1;
+				return CMD_RET_USAGE;
 		}
 		debug("%s argv0 %s argv1 %s\n", __func__, argv[0], argv[1]);
 		debug("%s argv2 %s argv3 %s\n", __func__, argv[2], argv[3]);
@@ -244,31 +294,32 @@ static int do_bootu_spi(int argc, char * const argv[])
 		env2 = argv[3];
 	} else {
 		printf("Missing args\n");
-		return -1;
+		return CMD_RET_USAGE;
 	}
-	debug("%s loadaddr %s filesize %s\n", __func__, env1, env2);
+	debug("%s update SCP: %s\n", __func__, update_scp ? "yes" : "no");
+	debug("%s fileaddr %s filesize %s\n", __func__, env1, env2);
 	debug("%s bus %d cs %d\n", __func__, bus, cs);
 
 	offset = 0;
 
 	ret = strict_strtoul(env1, 16, &addr);
 	if (ret)
-		return -1;
-	debug("%s addr %ld\n", __func__, addr);
+		return CMD_RET_USAGE;
+	debug("%s addr %#lx\n", __func__, addr);
 
 	ret = strict_strtoul(env2, 16, &len);
 	if (ret)
-		return -1;
-	debug("%s len %ld\n", __func__, len);
+		return CMD_RET_USAGE;
+	debug("%s len %#lx\n", __func__, len);
 
 	if( !addr || !len) {
 		printf("image address or length is 0\n");
-		return -1;
+		return CMD_RET_USAGE;
 	}
 
 	if (validate_bootimg_header(addr)) {
 		printf("\n No valid boot image header found \n");
-		return 1;
+		return CMD_RET_FAILURE;
 	}
 
 	/* The remaining commands require a selected device */
@@ -276,32 +327,58 @@ static int do_bootu_spi(int argc, char * const argv[])
 		debug("No SPI flash selected.  Executing 'sf probe'\n");
 		ret = do_spi_flash_probe(bus, cs);
 		if (ret)
-			return 1;
+			return CMD_RET_FAILURE;
 	}
 	/* Consistency checking */
 	if (offset + len > flash->size) {
 		printf("ERROR: attempting %s past flash size (%#x)\n",
 		       argv[0], flash->size);
-		return 1;
+		return CMD_RET_FAILURE;
 	}
 
 	buf = map_physmem(addr, len, MAP_WRBACK);
 	if (!buf) {
 		puts("Failed to map physical memory\n");
-		return 1;
+		return CMD_RET_FAILURE;
 	}
 
+	if (!update_scp) {
+		/*
+		 * If we're preserving the SCP ROM data then we first read
+		 * this section from the SPI NOR and copy it to the buffer
+		 * after preserving the original contents of the buffer
+		 * before writing it.
+		 */
+		ret = spi_flash_read(flash, SCP_ROM_START, SCP_ROM_SIZE,
+				     scp_rom_buf);
+		if (ret) {
+			printf("%s: Error reading SFP ROM area!\n", __func__);
+			return CMD_RET_FAILURE;
+		}
+		memcpy(old_buf_data, buf + SCP_ROM_START, SCP_ROM_SIZE);
+		memcpy(buf + SCP_ROM_START, scp_rom_buf, SCP_ROM_SIZE);
+	}
 	ret = spi_flash_update(flash, offset, len, buf);
 
-	printf("bootu SPI : %zu bytes @ %#x Written ", (size_t)len, (u32)offset);
+	if (!update_scp)
+		/* Restore SCP ROM in image in RAM */
+		memcpy(buf + SCP_ROM_START, old_buf_data, SCP_ROM_SIZE);
+
+	printf("bootu SPI : %zu bytes @ %#x Written ",
+	       (size_t)len - (update_scp ? 0 : SCP_ROM_SIZE),
+	       (u32)offset);
 	if (ret)
-		printf("ERROR %d\n", ret);
+		printf("ERROR %d", ret);
 	else
-		printf("OK\n");
+		printf("OK");
+	if (!ret && !update_scp)
+		printf(", %u bytes skipped for SCP ROM\n", SCP_ROM_SIZE);
+	else
+		putc('\n');
 
 	unmap_physmem(buf, len);
 
-	return ret == 0 ? 0 : 1;
+	return ret == 0 ? CMD_RET_SUCCESS : CMD_RET_FAILURE;
 }
 
 static int validate_partition_table(unsigned char *buf)
@@ -368,46 +445,51 @@ static struct mmc *init_mmc_device(int dev, bool force_init)
 	return mmc;
 }
 
-static int do_bootu_mmc(int argc, char * const argv[])
+static int do_bootu_mmc(int argc, char * const argv[],
+			bool update_scp, bool overwrite_part)
 {
 	static int curr_device = -1;
 	struct mmc *mmc;
 	struct blk_desc *desc;
 	char *env1, *env2, *endp;
-	unsigned long blk, len, n;
+	unsigned long blk, len, n, blk_cnt = 0;
 	unsigned long addr;
 	int ret;
+	u32 num_blks;
+	u8 buffer[512];
 
 	if ((argc < 1) || (argc > 4)) {
 		printf("Invalid # args \n");
-		return -1;
+		return CMD_RET_USAGE;
 	}
-
 	if (argc == 1) {
 		curr_device = 0;
-		env1 = env_get("loadaddr");
+		env1 = env_get("fileaddr");
 		env2 = env_get("filesize");
 		if (!env1 || !env2) {
-			printf("Missing env variables loadaddr/filesize\n");
-			return -1;
+			printf("Missing env variables fileaddr/filesize\n");
+			return CMD_RET_USAGE;
 		}
 	} else if (argc == 2) {
 		curr_device = simple_strtoul(argv[1], &endp, 0);
-		env1 = env_get("loadaddr");
+		env1 = env_get("fileaddr");
 		env2 = env_get("filesize");
 		if (!env1 || !env2) {
-			printf("Missing env variables loadaddr/filesize\n");
-			return -1;
+			printf("Missing env variables fileaddr/filesize\n");
+			return CMD_RET_USAGE;
 		}
 	} else if (argc == 3) {
 			printf("Missing args - image addr or image size\n");
-			return -1;
+			return CMD_RET_USAGE;
 	} else if (argc == 4) {
 		curr_device = simple_strtoul(argv[1], &endp, 0);
 		debug("%s argv0 %s argv1 %s\n", __func__, argv[0], argv[1]);
 		env1 = argv[2];
 		env2 = argv[3];
 	}
+	debug("%s update scp: %s, overwrite partition table: %s\n",
+	      __func__, update_scp ? "yes" : "no",
+	      overwrite_part ? "yes" : "no");
 	debug("%s loadaddr %s filesize %s\n", __func__, env1, env2);
 	debug("%s curr_device %d\n", __func__, curr_device);
 	blk = 0;
@@ -423,22 +505,19 @@ static int do_bootu_mmc(int argc, char * const argv[])
 	debug("%s len %ld\n", __func__, len);
 	if( !addr || !len) {
 		printf("image address or length is 0\n");
-		return -1;
+		return CMD_RET_USAGE;
 	}
-	if (len % 512)
-		len = len / 512 + 1;
-	else
-		len /= 512;
+	len = DIV_ROUND_UP(len, 512);
 	debug("%s len %ld\n", __func__, len);
 
 	if ((blk + 512 * len) > 0x1000000) {
 		printf("\nBoot Image size exceeding 16MB\n");
-		return 1;
+		return CMD_RET_FAILURE;
 	}
 
 	if (validate_bootimg_header(addr)) {
 		printf("\nNo valid boot image header found\n");
-		return 1;
+		return CMD_RET_FAILURE;
 	}
 
 	if (get_mmc_num() < curr_device) {
@@ -454,18 +533,15 @@ static int do_bootu_mmc(int argc, char * const argv[])
 	if (!desc)
 		return CMD_RET_FAILURE;
 
-	ALLOC_CACHE_ALIGN_BUFFER(unsigned char, buffer, desc->blksz);
 	n = blk_dread(desc, 0, 1, buffer);
-	/* flush cache after read */
-	flush_cache((ulong)addr, 512);
 	if (n != 1) {
 		printf("ERROR: read partition table failed\n");
-		return 1;
+		return CMD_RET_FAILURE;
 	}
 
-	if (validate_partition_table(buffer)) {
+	if (!overwrite_part && validate_partition_table(buffer)) {
 		printf("Invalid partition setup, can't write bootimg\n");
-		return 1;
+		return CMD_RET_FAILURE;
 	}
 
 	printf("\nMMC write: dev # %d, block # %ld, count %ld ... ",
@@ -476,21 +552,62 @@ static int do_bootu_mmc(int argc, char * const argv[])
 		return CMD_RET_FAILURE;
 	}
 
-	n = blk_dwrite(desc, blk, len, (void *)addr);
-	printf("%ld blocks written: %s\n", n, (n == len) ? "OK" : "ERROR");
-	if (n != len)
+	if (len <= MIN_SIZE / 512) {
+		printf("\nError: Image size is too small, missing SCP section\n");
+		return CMD_RET_FAILURE;
+	}
+	num_blks = SCP_ROM_START / 512 - blk;
+	n = blk_dwrite(desc, blk, num_blks, (void *)addr);
+	blk_cnt = n;
+	if (n != num_blks)
+		goto error;
+
+	blk += blk_cnt;
+
+	if (update_scp) {
+		/* Write SCP ROM */
+		num_blks = len - blk;
+		n = blk_dwrite(desc, blk, num_blks,
+			       (void *)(addr + SCP_ROM_START));
+		blk_cnt += n;
+		if (n != num_blks)
+			goto error;
+	} else {
+		num_blks = SCP_ROM_BLOCKS;
+		blk_cnt += num_blks;
+		blk += num_blks;
+
+		num_blks = len - blk;
+		blk = SCP_ROM_END / 512;
+		n = blk_dwrite(desc, blk, num_blks,
+			       (void *)(addr + SCP_ROM_END));
+		blk_cnt += num_blks;
+		if (n != num_blks)
+			goto error;
+	}
+error:
+	printf("%u blocks written: %s",
+	       update_scp ? blk_cnt : blk_cnt - SCP_ROM_BLOCKS,
+	       (blk_cnt == len) ? "OK" : "ERROR");
+	if (!update_scp)
+		printf(", %u blocks skipped", SCP_ROM_BLOCKS);
+	putc('\n');
+	if (blk_cnt != len)
 		return CMD_RET_FAILURE;
 
-	/* Update partition table with FAT entry of boot image */
-	memcpy(&buffer[446], (void *) (addr + 446), 16);
+	if (!overwrite_part) {
+		/* Update partition table with FAT entry of boot image */
+		memcpy(&buffer[446], (void *)(addr + 446), 16);
 
-	/* Update partition table with read boot sector */
-	n = blk_dwrite(desc, 0, 1, (void *)buffer);
-	printf("%ld blocks written: %s\n", n, (n == 1) ? "OK" : "ERROR");
-	if (n != 1)
-		return CMD_RET_FAILURE;
+		/* Update partition table with read boot sector */
+		n = blk_dwrite(desc, 0, 1, (void *)buffer);
+		printf("%lu blocks written: %s\n", n,
+		       (n == 1) ? "OK" : "ERROR");
+		if (n != 1)
+			return CMD_RET_FAILURE;
+	}
 
-	return 0;
+	return CMD_RET_SUCCESS;
 }
 
 static int do_bootimgup(cmd_tbl_t *cmdtp, int flag, int argc,
@@ -498,6 +615,32 @@ static int do_bootimgup(cmd_tbl_t *cmdtp, int flag, int argc,
 {
 	const char *cmd;
 	int ret;
+	int i;
+	bool overwrite_part = false;
+#ifdef CONFIG_ARCH_OCTEONTX
+	/* OcteonTX does not have a SCP section so it is always updated */
+	const bool update_scp = true;
+#else
+	bool update_scp = false;
+#endif
+
+	/* Check flags at the beginning */
+	if (argc > 1) {
+		for (i = 1; i < min(argc, 3); i++) {
+#ifndef CONFIG_ARCH_OCTEONTX
+			if (!strcmp(argv[1], "-s")) {
+				update_scp = true;
+				argv++;
+				argc--;
+			}
+#endif
+			if (!strcmp(argv[1], "-p")) {
+				overwrite_part = true;
+				argv++;
+				argc--;
+			}
+		}
+	}
 
 	/* need at least two arguments */
 	if (argc < 2)
@@ -507,10 +650,13 @@ static int do_bootimgup(cmd_tbl_t *cmdtp, int flag, int argc,
 	--argc;
 	++argv;
 
-	if (strcmp(cmd, "spi") == 0)
-		ret = do_bootu_spi(argc, argv);
+	if (strcmp(cmd, "spi") == 0) {
+		if (overwrite_part)
+			puts("-p is ignored for SPI\n");
+		ret = do_bootu_spi(argc, argv, update_scp);
+	}
 	else if (strcmp(cmd, "mmc") == 0)
-		ret = do_bootu_mmc(argc, argv);
+		ret = do_bootu_mmc(argc, argv, update_scp, overwrite_part);
 	else
 		ret = -1;
 
@@ -522,9 +668,16 @@ usage:
 }
 
 U_BOOT_CMD(
-	bootimgup, 5, 1, do_bootimgup, "Updates Boot Image",
-	" <mmc | spi> <[devid] | [bus:cs]> [image_address image_size] \n"
+#ifndef CONFIG_ARCH_OCTEONTX
+	bootimgup, 7, 1, do_bootimgup, "Updates Boot Image",
+	" <[-s]> <[-p]> <mmc | spi> <[devid] | [bus:cs]> [image_address] [image_size]\n"
 	" where: \n"
+	" -s - overwrite SCP ROM area\n"
+#else
+	bootimgup, 6, 1, do_bootimgup, "Updates Boot Image",
+	" <[-p]> <mmc | spi> <[devid] | [bus:cs]> [image_address] [image_size]\n"
+#endif
+	" -p - (MMC only) overwrite the partition table\n"
 	" spi - updates boot image on spi flash \n"
 	" bus and cs should be passed together, passing only one \n"
 	" of them treated as invalid. If [bus:cs] not given, 0:0 is used \n"

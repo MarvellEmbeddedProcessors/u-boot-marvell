@@ -241,7 +241,6 @@ static int do_bootu_spi(int argc, char * const argv[], bool update_scp)
 	char *endp;
 	int ret = 1;
 	unsigned int bus = 0, cs;
-	unsigned long bytes_written = 0;
 	u8 scp_rom_buf[SCP_ROM_SIZE];
 	u8 old_buf_data[SCP_ROM_SIZE];
 
@@ -586,7 +585,7 @@ static int do_bootu_mmc(int argc, char * const argv[],
 			goto error;
 	}
 error:
-	printf("%u blocks written: %s",
+	printf("%lu blocks written: %s",
 	       update_scp ? blk_cnt : blk_cnt - SCP_ROM_BLOCKS,
 	       (blk_cnt == len) ? "OK" : "ERROR");
 	if (!update_scp)

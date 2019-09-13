@@ -235,7 +235,9 @@ union mio_emm_debug {
 		u64 reserved_20_63                   : 44;
 	} cn96xxp1;
 	/* struct mio_emm_debug_s cn96xxp3; */
+	/* struct mio_emm_debug_s cn98xx; */
 	/* struct mio_emm_debug_cn96xxp1 cnf95xx; */
+	/* struct mio_emm_debug_s loki; */
 };
 
 static inline u64 MIO_EMM_DEBUG(void)
@@ -801,7 +803,9 @@ union mio_emm_modex {
 		u64 reserved_51_63                   : 13;
 	} cn96xxp1;
 	/* struct mio_emm_modex_s cn96xxp3; */
+	/* struct mio_emm_modex_s cn98xx; */
 	/* struct mio_emm_modex_s cnf95xx; */
+	/* struct mio_emm_modex_s loki; */
 };
 
 static inline u64 MIO_EMM_MODEX(u64 a)
@@ -1107,7 +1111,9 @@ union mio_emm_switch {
 		u64 reserved_62_63                   : 2;
 	} cn96xxp1;
 	/* struct mio_emm_switch_s cn96xxp3; */
+	/* struct mio_emm_switch_s cn98xx; */
 	/* struct mio_emm_switch_s cnf95xx; */
+	/* struct mio_emm_switch_s loki; */
 };
 
 static inline u64 MIO_EMM_SWITCH(void)

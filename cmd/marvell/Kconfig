@@ -23,4 +23,10 @@ config CMD_MDIO_DBG
 	   to ATF for RVU PF [CGX] network interfaces on Marvell OcteonTX2
 	   platforms.
 
+config CMD_ATTEST
+	bool "Command for supporting Software Attestation"
+	help
+	   Support for Software Attestation on Marvell's OcteonTX2 platforms.
+	   Displays Secure Boot software component version information.
+
 endmenu

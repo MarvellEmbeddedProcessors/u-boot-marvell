@@ -15,6 +15,47 @@
 
 #define CPC_BOOT_OWNERX(a)	0x86D000000160ULL + (8 * (a))
 
+/* attestation definitions shared with ATF (see 'plat_octeontx.h') */
+
+#define ATTESTATION_MAGIC_ID 0x5f415454 /* "_ATT" */
+
+enum sw_attestation_tlv_type {
+	ATT_IMG_INIT_BIN,
+	ATT_IMG_ATF_BL1,
+	ATT_IMG_BOARD_DT,
+	ATT_IMG_LINUX_DT,
+	ATT_IMG_SCP_TBL1FW,
+	ATT_IMG_MCP_TBL1FW,
+	ATT_IMG_AP_TBL1FW,
+	ATT_IMG_ATF_BL2,
+	ATT_IMG_ATF_BL31,
+	ATT_IMG_ATF_BL33,
+	ATT_SIG_NONCE,
+	ATT_IMG_FIT_KERNEL,
+
+	ATT_TLV_TYPE_COUNT,
+};
+
+typedef struct sw_attestation_tlv {
+	u16 type_be;   /* sw_attestation_tlv_type */
+	u16 length_be;
+	u8 value[0];   /* array of 'length_be' bytes */
+} sw_attestation_tlv_t;
+
+#define SW_ATT_INFO_NONCE_MAX_LEN  256
+
+typedef struct sw_attestation_info_hdr {
+	u32 magic_be;
+	u16 tlv_len_be;
+	u16 total_len_be;
+	u16 certificate_len_be;
+	u16 signature_len_be;
+	union {
+		sw_attestation_tlv_t tlv_list[0];
+		s8 input_nonce[0];
+	};
+} __packed sw_attestation_info_hdr_t;
+
 /** Structure definitions */
 /**
  * Register (NCB32b) cpc_boot_owner#

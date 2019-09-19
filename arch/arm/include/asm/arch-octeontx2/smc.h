@@ -19,5 +19,6 @@ ssize_t smc_mdio_dbg_read(int cgx_lmac, int mode, int phyaddr, int devad,
 			  int reg);
 ssize_t smc_mdio_dbg_write(int cgx_lmac, int mode, int phyaddr, int devad,
 			   int reg, int val);
+ssize_t smc_attest(long nonce_len);
 
 #endif

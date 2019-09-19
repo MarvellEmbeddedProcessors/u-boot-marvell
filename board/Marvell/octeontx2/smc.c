@@ -99,3 +99,41 @@ ssize_t smc_mdio_dbg_write(int cgx_lmac, int mode, int phyaddr, int devad,
 
 	return regs.regs[0];
 }
+
+/*
+ * on entry,
+ *   subcmd:  one of OCTEONTX_ATTESTATION_QUERY_SUBCMD_xxx
+ *   ctx_arg: subcmd-specific argument
+ *
+ * returns,
+ *   signed value: <0 - error code
+ *                  0 - success
+ */
+#ifdef CONFIG_CMD_ATTEST
+ssize_t smc_attest(long subcmd, long ctx_arg)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = OCTEONTX_ATTESTATION_QUERY;
+	regs.regs[1] = ctx_arg;
+	regs.regs[2] = subcmd;
+
+	switch (subcmd) {
+	/* deprecated sub-command */
+	case OCTEONTX_ATTESTATION_QUERY_SUBCMD_LEGACY:
+		return -1;
+
+	case OCTEONTX_ATTESTATION_QUERY_SUBCMD_BUFFER:
+	case OCTEONTX_ATTESTATION_QUERY_SUBCMD_INFO:
+		/* no args */
+		break;
+
+	default:
+		return -1;
+	}
+
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+#endif // CONFIG_CMD_ATTEST

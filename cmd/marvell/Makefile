@@ -4,7 +4,7 @@
 #
 
 ifdef CONFIG_ARCH_OCTEONTX2
-obj-$(CONFIG_CMD_FAILSAFE) += octeontx2_cmds.o
+obj-$(CONFIG_CMD_FAILSAFE) += octeontx2_failsafe_cmds.o
 obj-$(CONFIG_CMD_ETH) += eth_cmds.o
 obj-$(CONFIG_CMD_MDIO_DBG) += mdio_dbg.o
 obj-$(CONFIG_OCTEONTX2_CGX_INTF) += octeontx2_qlm_cmds.o

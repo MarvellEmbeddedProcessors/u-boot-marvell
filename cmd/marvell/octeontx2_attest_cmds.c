@@ -8,8 +8,8 @@
 #include <common.h>
 #include <command.h>
 #include <malloc.h>
-#include <asm/arch/atf.h>
-#include <asm/arch/octeontx2.h>
+#include <asm/arch/smc.h>
+#include <asm/arch/board.h>
 
 static void hexdump(const char *prefix, unsigned char *buf, int len)
 {
@@ -68,7 +68,7 @@ static int do_attest(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 	}
 
 	/* query for buffer address */
-	attest_ret = atf_attest(0);
+	attest_ret = smc_attest(0);
 
 	if ((ssize_t)attest_ret <= 0) {
 		printf("Error: unable to obtain buffer address.\n");
@@ -80,7 +80,7 @@ static int do_attest(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 	/* Pass nonce data to service in buffer */
 	memcpy(att_info->input_nonce, argv[1], nonce_len);
 
-	attest_ret = atf_attest(nonce_len);
+	attest_ret = smc_attest(nonce_len);
 
 	if ((ssize_t)attest_ret != 0) {
 		printf("Error %ld from attest command\n", attest_ret);

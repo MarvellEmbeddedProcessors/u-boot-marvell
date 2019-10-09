@@ -8,7 +8,7 @@
 #include <common.h>
 #include <command.h>
 #include <dm.h>
-#include <asm/arch/atf.h>
+#include <asm/arch/smc.h>
 
 extern void nix_get_cgx_lmac_id(struct udevice *dev, int *cgxid, int *lmacid);
 
@@ -52,7 +52,7 @@ static int do_mdio_dbg(cmd_tbl_t *cmdtp, int flag, int argc,
 		if (mode)
 			devaddr = simple_strtol(argv[5], &endp, 0);
 		regaddr = simple_strtol(argv[6], &endp, 0);
-		ret = atf_mdio_dbg_read(cgx_lmac, mode, phyaddr, devaddr,
+		ret = smc_mdio_dbg_read(cgx_lmac, mode, phyaddr, devaddr,
 					regaddr);
 		printf("Read register 0x%x devad[%d] of PHY@0x%x => 0x%x\n",
 		       regaddr, devaddr, phyaddr, ret);
@@ -61,7 +61,7 @@ static int do_mdio_dbg(cmd_tbl_t *cmdtp, int flag, int argc,
 			devaddr = simple_strtol(argv[5], &endp, 0);
 		regaddr = simple_strtol(argv[6], &endp, 0);
 		data = simple_strtol(argv[7], &endp, 0);
-		ret = atf_mdio_dbg_write(cgx_lmac, mode, phyaddr, devaddr,
+		ret = smc_mdio_dbg_write(cgx_lmac, mode, phyaddr, devaddr,
 					 regaddr, data);
 		printf("Write register 0x%x devad[%d] of PHY@0x%x <= 0x%x\n",
 		       regaddr, devaddr, phyaddr, data);

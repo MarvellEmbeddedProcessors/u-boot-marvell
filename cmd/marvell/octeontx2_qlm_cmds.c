@@ -7,7 +7,6 @@
 
 #include <common.h>
 #include <command.h>
-#include <asm/arch/atf.h>
 
 extern int cgx_intf_prbs(u8 qlm, u8 mode, u32 time);
 extern int cgx_intf_display_eye(u8 qlm, u8 lane);

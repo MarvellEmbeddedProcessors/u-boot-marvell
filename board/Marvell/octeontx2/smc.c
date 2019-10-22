@@ -109,7 +109,6 @@ ssize_t smc_mdio_dbg_write(int cgx_lmac, int mode, int phyaddr, int devad,
  *   signed value: <0 - error code
  *                  0 - success
  */
-#ifdef CONFIG_CMD_ATTEST
 ssize_t smc_attest(long subcmd, long ctx_arg)
 {
 	struct pt_regs regs;
@@ -136,4 +135,3 @@ ssize_t smc_attest(long subcmd, long ctx_arg)
 
 	return regs.regs[0];
 }
-#endif // CONFIG_CMD_ATTEST

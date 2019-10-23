@@ -15,6 +15,7 @@ extern int cgx_intf_set_fec(struct udevice *ethdev, int type);
 extern int cgx_intf_get_fec(struct udevice *ethdev);
 extern int cgx_intf_get_phy_mod_type(struct udevice *ethdev);
 extern int cgx_intf_set_phy_mod_type(struct udevice *ethdev, int type);
+extern int cgx_intf_set_mode(struct udevice *ethdev, int mode);
 extern void nix_print_mac_info(struct udevice *dev);
 
 static int do_ethlist(cmd_tbl_t *cmdtp, int flag, int argc,
@@ -44,7 +45,7 @@ static int do_ethparam_common(cmd_tbl_t *cmdtp, int flag, int argc,
 	const char *cmd;
 	char *endp;
 	const char *devname;
-	int ret = -1, type;
+	int ret = -1, type, mode;
 	struct udevice *dev;
 
 	if (argc < 2)
@@ -80,6 +81,13 @@ static int do_ethparam_common(cmd_tbl_t *cmdtp, int flag, int argc,
 		ret = cgx_intf_set_phy_mod_type(dev, type);
 	} else if (strcmp(cmd, "get_phymod") == 0) {
 		ret = cgx_intf_get_phy_mod_type(dev);
+	} else if (strcmp(cmd, "set_mode") == 0) {
+		if (argc < 3)
+			return CMD_RET_FAILURE;
+		mode = simple_strtol(argv[2], &endp, 0);
+		if (mode < 0 || mode > 6)
+			return CMD_RET_USAGE;
+		ret = cgx_intf_set_mode(dev, mode);
 	}
 	return (ret == 0) ? CMD_RET_SUCCESS : CMD_RET_FAILURE;
 }
@@ -116,5 +124,21 @@ U_BOOT_CMD(
 	"Example - get_phymod <ethX>\n"
 	"Get PHY MOD type for any of RVU PF based network interfaces\n"
 	"Use 'ethlist' command to display network interface names\n"
+);
+
+U_BOOT_CMD(set_mode, 3, 1, do_ethparam_common,
+	   "Modify Interface mode for selected ethernet interface",
+	   "Example - set_mode <ethX> [mode]\n"
+	   "Change mode of selected network interface\n"
+	   "\n"
+	   "mode encoding -\n"
+	   "	0 - 10G_C2C\n"
+	   "	1 - 10G_C2M\n"
+	   "	2 - 10G_KR\n"
+	   "	3 - 25G_C2C\n"
+	   "	4 - 25G_2_C2C\n"
+	   "	5 - 50G_C2C\n"
+	   "	6 - 50G_4_C2C\n"
+	   "Use 'ethlist' command to display network interface names\n"
 );
 

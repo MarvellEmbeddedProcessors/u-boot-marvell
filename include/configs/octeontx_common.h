@@ -40,6 +40,8 @@
 
 /* AHCI support Definitions */
 #ifdef CONFIG_DM_SCSI
+/** Maximum number of SATA devices per controller*/
+#define CONFIG_SYS_SCSI_MAX_SCSI_ID	16
 /** Enable 48-bit SATA addressing */
 # define CONFIG_LBA48
 /** Enable 64-bit addressing */

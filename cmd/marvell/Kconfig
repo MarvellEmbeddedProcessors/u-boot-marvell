@@ -1,7 +1,7 @@
 menu "Marvell specific command line interface"
-depends on ARCH_OCTEONTX2
 
 config CMD_FAILSAFE
+	depends on ARCH_OCTEONTX2
 	bool "Command for supporting fail safe boot"
 	help
 	   Support for fail safe boot on Marvell's OcteonTX2 platforms.
@@ -17,6 +17,7 @@ config CMD_ETH
 	   OcteonTX2 platforms.
 
 config CMD_MDIO_DBG
+	depends on ARCH_OCTEONTX2
 	bool "PHY registers read/write support on mdio bus"
 	help
 	   Support to debug phy registers over MDIO bus using SMC interface
@@ -24,6 +25,7 @@ config CMD_MDIO_DBG
 	   platforms.
 
 config CMD_ATTEST
+	depends on ARCH_OCTEONTX2
 	bool "Command for supporting Software Attestation"
 	help
 	   Support for Software Attestation on Marvell's OcteonTX2 platforms.

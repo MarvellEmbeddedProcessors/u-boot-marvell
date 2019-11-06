@@ -126,7 +126,7 @@ struct octeontx_pcie_console {
 	octeontx_spinlock_t	excl_lock;
 	void			*user;
 	struct octeontx_pcie_lock	pcie_lock;
-	u32			pad[7];
+	u32			pad[8];
 } __packed;
 
 /**

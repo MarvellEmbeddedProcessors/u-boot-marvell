@@ -29,7 +29,7 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 #define BOOTCMD_NAME	"pci-bootcmd"
-#define CONSOLE_NAME	"pci-console@0"
+#define CONSOLE_NAME	"pci-console"
 
 void cleanup_env_ethaddr(void)
 {
@@ -201,9 +201,8 @@ static int init_bootcmd_console(void)
 		stdinname = env_get("stdin");
 	}
 	stdin_set = !!strstr(stdinname, BOOTCMD_NAME);
-	ret = uclass_get_device_by_driver(UCLASS_SERIAL,
-					  DM_GET_DRIVER(octeontx_bootcmd),
-					  &bootcmd_dev);
+	ret = uclass_get_device_by_name(UCLASS_SERIAL, BOOTCMD_NAME,
+					&bootcmd_dev);
 	if (ret) {
 		pr_err("%s: Error getting %s serial class\n", __func__,
 		       BOOTCMD_NAME);

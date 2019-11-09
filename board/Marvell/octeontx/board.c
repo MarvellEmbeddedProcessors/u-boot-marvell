@@ -68,6 +68,8 @@ int dram_init(void)
 	gd->ram_size -= CONFIG_SYS_SDRAM_BASE;
 	mem_map_fill();
 
+	mem_map_fill();
+
 	return 0;
 }
 

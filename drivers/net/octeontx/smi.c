@@ -11,6 +11,7 @@
 #include <pci_ids.h>
 #include <phy.h>
 #include <asm/io.h>
+#include <env.h>
 #include <linux/ctype.h>
 #include <linux/delay.h>
 

@@ -16,6 +16,7 @@ extern int cgx_intf_get_fec(struct udevice *ethdev);
 extern int cgx_intf_get_phy_mod_type(struct udevice *ethdev);
 extern int cgx_intf_set_phy_mod_type(struct udevice *ethdev, int type);
 extern int cgx_intf_set_mode(struct udevice *ethdev, int mode);
+extern int cgx_intf_get_mode(struct udevice *ethdev);
 extern void nix_print_mac_info(struct udevice *dev);
 
 static int do_ethlist(cmd_tbl_t *cmdtp, int flag, int argc,
@@ -81,6 +82,8 @@ static int do_ethparam_common(cmd_tbl_t *cmdtp, int flag, int argc,
 		ret = cgx_intf_set_phy_mod_type(dev, type);
 	} else if (strcmp(cmd, "get_phymod") == 0) {
 		ret = cgx_intf_get_phy_mod_type(dev);
+	} else if (strcmp(cmd, "get_mode") == 0) {
+		ret = cgx_intf_get_mode(dev);
 	} else if (strcmp(cmd, "set_mode") == 0) {
 		if (argc < 3)
 			return CMD_RET_FAILURE;
@@ -124,6 +127,12 @@ U_BOOT_CMD(
 	"Example - get_phymod <ethX>\n"
 	"Get PHY MOD type for any of RVU PF based network interfaces\n"
 	"Use 'ethlist' command to display network interface names\n"
+);
+
+U_BOOT_CMD(get_mode, 2, 1, do_ethparam_common,
+	   "Display Interface mode for selected ethernet interface",
+	   "Example - get_mode <ethX>\n"
+	   "Use 'ethlist' command to display network interface names\n"
 );
 
 U_BOOT_CMD(set_mode, 3, 1, do_ethparam_common,

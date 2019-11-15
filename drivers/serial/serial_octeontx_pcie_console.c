@@ -423,20 +423,11 @@ static int octeontx_pcie_console_pending(struct udevice *dev, bool input)
 	struct octeontx_pcie_console *console = priv->console;
 	bool ret;
 
-#ifdef DEBUG
-	if (in_debug)
-		return 0;
-#endif
-
 	if (input)
 		ret = octeontx_pcie_console_read_avail(console);
 	else
 		ret = octeontx_pcie_console_write_avail(console);
 
-#ifdef DEBUG
-	if (!in_debug)
-		debug("%s(%s, %d): %d\n", __func__, dev->name, input, ret);
-#endif
 	return ret;
 }
 
@@ -840,11 +831,8 @@ static int octeontx_pcie_console_remove(struct udevice *dev)
 		cons->owner_id = OCTEONTX_PCIE_CONSOLE_OWNER_UNUSED;
 
 	/* Remove console from being in-use atomically */
-#ifdef __LITTLE_ENDIAN
-	__atomic_fetch_nand((u64 *)&(desc->in_use), mask, __ATOMIC_SEQ_CST);
-#else
-	__atomic_fetch_nand((u64 *)&(desc->exclusive), mask, __ATOMIC_SEQ_CST);
-#endif
+	__atomic_fetch_and((u64 *)&desc->in_use, ~mask, __ATOMIC_SEQ_CST);
+
 	return 0;
 }
 

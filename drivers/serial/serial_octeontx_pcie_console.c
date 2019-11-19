@@ -920,8 +920,10 @@ int octeontx_pcie_console_init_nexus(struct udevice *dev)
 	new_hi = cpu_to_le64(OCTEONTX_PCIE_CONSOLE_NEXUS_MAGIC);
 	new_lo = ((u64)OCTEONTX_PCIE_CONSOLE_MAJOR << 56) |
 		  (u64)OCTEONTX_PCIE_CONSOLE_MINOR << 48 |
+		  (u64)0 /*i.e. flags */ << 40 |
 		  (u64)num_consoles << 32;
-	new_lo = cpu_to_le64(new_lo);
+	/* these struct fields are declared as bytes, which corresponds to BE */
+	new_lo = cpu_to_be64(new_lo);
 
 	debug("%s: Writing %#llx %#llx to %p\n", __func__, new_hi, new_lo, pcd);
 	/* Now fill in the header atomically */

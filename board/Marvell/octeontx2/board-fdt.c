@@ -146,7 +146,7 @@ int arch_fixup_memory_node(void *blob)
 
 int ft_board_setup(void *blob, struct bd_info *bd)
 {
-	int nodeoff, node, bdk_node, ret;
+	int nodeoff, node, ret;
 	const char *board_model, *board_rev;
 	const char *board_mac_addr, *board_serial;
 	char temp_brd_mdl[32], temp_brd_mac[32];

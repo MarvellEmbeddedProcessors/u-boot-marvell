@@ -383,6 +383,7 @@ static int spi_flash_update(struct spi_flash *flash, u32 offset,
 		if (err_oper)
 			break;
 	}
+	free(cmp_buf);
 	putc('\r');
 	if (err_oper) {
 		printf("SPI flash failed in %s step\n", err_oper);

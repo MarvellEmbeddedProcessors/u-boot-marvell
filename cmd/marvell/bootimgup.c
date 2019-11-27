@@ -286,16 +286,12 @@ static ulong bytes_per_second(unsigned int len, ulong start_ms)
  * @return NULL if OK, else a string containing the stage which failed
  */
 static const char *spi_flash_update_block(struct spi_flash *flash, u32 offset,
-					  size_t len, const char *buf)
+					  size_t len, const char *buf,
+					  char *cmp_buf)
 {
 	char *ret = NULL;
 	char *ptr = (char *)buf;
-	char *rbuf = malloc(len);
-
-	if (!rbuf) {
-		printf("%s: Out of memory\n", __func__);
-		return "no memory";
-	}
+	char *rbuf = cmp_buf;
 
 	/* Read the entire sector so to allow for rewriting */
 	if (spi_flash_read(flash, offset, flash->sector_size, rbuf)) {
@@ -306,8 +302,7 @@ static const char *spi_flash_update_block(struct spi_flash *flash, u32 offset,
 	}
 	/* Compare only what is meaningful (len) */
 	if (memcmp(rbuf, buf, len) == 0) {
-		free(rbuf);
-		return NULL;
+		return ret;
 	}
 
 	/* Erase the entire sector */
@@ -340,7 +335,6 @@ static const char *spi_flash_update_block(struct spi_flash *flash, u32 offset,
 	}
 
 error:
-	free(rbuf);
 	return ret;
 }
 
@@ -363,10 +357,16 @@ static int spi_flash_update(struct spi_flash *flash, u32 offset,
 	const ulong start_time = get_timer(0);
 	size_t scale = 1;
 	const char *start_buf = buf;
+	char *cmp_buf;
 	ulong delta;
 
 	if (end - buf >= 200)
 		scale = (end - buf) / 100;
+	cmp_buf = memalign(ARCH_DMA_MINALIGN, flash->sector_size);
+	if (!cmp_buf) {
+		printf("%s: Out of memory\n", __func__);
+		return 1;
+	}
 	ulong last_update = get_timer(0);
 
 	for (; (buf < end) && (!err_oper); buf += todo, offset += todo) {
@@ -378,7 +378,8 @@ static int spi_flash_update(struct spi_flash *flash, u32 offset,
 						 start_time));
 			last_update = get_timer(0);
 		}
-		err_oper = spi_flash_update_block(flash, offset, todo, buf);
+		err_oper = spi_flash_update_block(flash, offset, todo, buf,
+						  cmp_buf);
 		if (err_oper)
 			break;
 	}

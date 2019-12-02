@@ -1016,21 +1016,6 @@ static int octeontx_pcie_console_nexus_probe(struct udevice *dev)
 	return 0;
 }
 
-static int octeontx_pcie_console_nexus_bind(struct udevice *parent)
-{
-	int ret;
-
-	debug("%s(%s): bind\n", __func__, parent->name);
-
-	ret = dm_scan_fdt_dev(parent);
-	if (ret) {
-		dev_err(parent, "Error scanning child nodes\n");
-		return ret;
-	}
-
-	return 0;
-}
-
 /**
  * Read device tree data for the platform data
  *
@@ -1082,7 +1067,6 @@ U_BOOT_DRIVER(octeontx_pcie_console_nexus) = {
 	.ofdata_to_platdata = octeontx_pcie_console_nexus_ofdata_to_platdata,
 	.platdata_auto_alloc_size =
 				sizeof(struct octeontx_pcie_console_plat_data),
-	.bind = octeontx_pcie_console_nexus_bind,
 	.probe = octeontx_pcie_console_nexus_probe,
 	.priv_auto_alloc_size = sizeof(struct octeontx_pcie_console_nexus_priv),
 	.child_pre_probe = octeontx_pcie_console_nexus_child_pre_probe,

@@ -52,6 +52,9 @@ void mem_map_fill(void)
 	int banks = OTX2_MEM_MAP_USED;
 	u32 dram_start = CONFIG_SYS_TEXT_BASE;
 
+	/* Add 4K pci bootcmd buffer range for 96xx boards */
+	if (otx_is_soc(CN96XX))
+		dram_start -= 0x1000;
 	for (int i = 0; i < CONFIG_NR_DRAM_BANKS; i++) {
 		otx2_mem_map[banks].virt = dram_start;
 		otx2_mem_map[banks].phys = dram_start;

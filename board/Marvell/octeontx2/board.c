@@ -201,8 +201,9 @@ static int init_bootcmd_console(void)
 		stdinname = env_get("stdin");
 	}
 	stdin_set = !!strstr(stdinname, BOOTCMD_NAME);
-	ret = uclass_get_device_by_name(UCLASS_SERIAL, BOOTCMD_NAME,
-					&bootcmd_dev);
+	ret = uclass_get_device_by_driver(UCLASS_SERIAL,
+					  DM_GET_DRIVER(octeontx_bootcmd),
+					  &bootcmd_dev);
 	if (ret) {
 		pr_err("%s: Error getting %s serial class\n", __func__,
 		       BOOTCMD_NAME);

@@ -20,7 +20,6 @@
 #include <linux/err.h>
 #include <linux/ioport.h>
 #include <linux/libfdt.h>
-#include <linux/mtd/mtd.h>
 #include <linux/mtd/nand_bch.h>
 #include <linux/mtd/nand_ecc.h>
 #include <asm/io.h>
@@ -1966,11 +1965,7 @@ static int octeontx_nfc_chip_init(struct octeontx_nfc *tn, struct udevice *dev,
 	nand->setup_data_interface = octeontx_nand_setup_dat_intf;
 
 	mtd = nand_to_mtd(nand);
-	debug("%s: mtd: %p\n", __func__, mtd);
-	mtd->dev->parent = dev;
-
-	debug("%s: NDF_MISC: 0x%llx\n", __func__,
-	      readq(tn->base + NDF_MISC));
+	mtd->dev = dev;
 
 	/* TODO: support more then 1 chip */
 	debug("%s: Scanning identification\n", __func__);
@@ -2221,7 +2216,7 @@ U_BOOT_DRIVER(octeontx_pci_nand) = {
 	.probe = octeontx_pci_nand_probe,
 	.priv_auto_alloc_size = sizeof(struct octeontx_nfc),
 	.remove = octeontx_pci_nand_disable,
-	.flags = DM_FLAG_OS_PREPARE,
+	.flags = DM_FLAG_OS_PREPARE | DM_FLAG_ACTIVE_DMA,
 };
 
 U_BOOT_PCI_DEVICE(octeontx_pci_nand, octeontx_nfc_pci_id_table);

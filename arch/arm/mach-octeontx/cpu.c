@@ -48,6 +48,8 @@ void mem_map_fill(void)
 	u32 dram_start = CONFIG_SYS_TEXT_BASE;
 
 	if (otx_is_soc(CN83XX)) {
+		/* Add 4K pci bootcmd buffer range */
+		dram_start -= 0x1000;
 		otx_mem_map[banks].virt = 0x8c0000000000UL;
 		otx_mem_map[banks].phys = 0x8c0000000000UL;
 		otx_mem_map[banks].size = 0x40000000000UL;

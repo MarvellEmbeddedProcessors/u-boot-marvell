@@ -5,6 +5,8 @@
  * https://spdx.org/licenses
  */
 
+#include <common.h>
+#include <console.h>
 #include <dm.h>
 #include <malloc.h>
 #include <errno.h>
@@ -243,6 +245,52 @@ static int init_pcie_console(void)
 	      __func__, env_get("stdin"), env_get("stdout"),
 	      env_get("stderr"), ret);
 
+	return ret;
+}
+#endif
+
+#if (CONFIG_IS_ENABLED(OCTEONTX_SERIAL_BOOTCMD) &&	\
+	!CONFIG_IS_ENABLED(CONSOLE_MUX))
+# error CONFIG_CONSOLE_MUX must be enabled!
+#endif
+
+#if CONFIG_IS_ENABLED(OCTEONTX_SERIAL_BOOTCMD)
+static int init_bootcmd_console(void)
+{
+	int ret = 0;
+	char *stdinname = env_get("stdin");
+	struct udevice *bootcmd_dev = NULL;
+	bool stdin_set;
+	char iomux_name[128];
+
+	debug("%s: stdin before: %s\n", __func__,
+	      stdinname ? stdinname : "NONE");
+	if (!stdinname) {
+		env_set("stdin", "serial");
+		stdinname = env_get("stdin");
+	}
+	stdin_set = !!strstr(stdinname, BOOTCMD_NAME);
+	ret = uclass_get_device_by_driver(UCLASS_SERIAL,
+					  DM_GET_DRIVER(octeontx_bootcmd),
+					  &bootcmd_dev);
+	if (ret) {
+		pr_err("%s: Error getting %s serial class\n", __func__,
+		       BOOTCMD_NAME);
+	} else if (bootcmd_dev) {
+		if (stdin_set)
+			strncpy(iomux_name, stdinname, sizeof(iomux_name));
+		else
+			snprintf(iomux_name, sizeof(iomux_name), "%s,%s",
+				 stdinname, bootcmd_dev->name);
+		ret = iomux_doenv(stdin, iomux_name);
+		if (ret)
+			pr_err("%s: Error %d enabling the PCI bootcmd input console \"%s\"\n",
+			       __func__, ret, iomux_name);
+		if (!stdin_set)
+			env_set("stdin", iomux_name);
+	}
+	debug("%s: Set iomux and stdin to %s (ret: %d)\n",
+	      __func__, iomux_name, ret);
 	return ret;
 }
 #endif

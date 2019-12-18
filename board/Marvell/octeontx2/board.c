@@ -29,7 +29,7 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 #define BOOTCMD_NAME	"pci-bootcmd"
-#define CONSOLE_NAME	"pci-console"
+#define CONSOLE_NAME	"pci-console@0"
 
 void cleanup_env_ethaddr(void)
 {

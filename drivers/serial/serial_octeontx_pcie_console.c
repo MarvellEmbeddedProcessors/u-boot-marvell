@@ -806,8 +806,12 @@ int octeontx_pcie_console_ofdata_to_platdata(struct udevice *dev)
 		dev_err(dev, "Address and/or size not found in reg field\n");
 		return -EINVAL;
 	}
-	pplat = dev_get_parent_platdata(dev);
-
+	pplat = dev_get_platdata(dev_get_parent(dev));
+	if (!pplat) {
+		dev_err(dev, "%s(%s): Error: parent platdata is NULL!\n",
+			__func__, dev->name);
+		return -EINVAL;
+	}
 	plat->nexus = pplat->nexus;
 	plat->addr = ofnode_get_addr_size_index(node, 0, &plat->size);
 	plat->base = (void *)plat->addr;

@@ -166,6 +166,7 @@ struct octeontx_pcie_console_priv {
 	struct resource res;
 	struct octeontx_pcie_console *console;
 	struct octeontx_pcie_console_nexus *nexus;
+	struct stdio_dev *sdev;
 	int console_num;
 };
 

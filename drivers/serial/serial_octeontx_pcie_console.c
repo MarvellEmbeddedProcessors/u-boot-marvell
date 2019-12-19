@@ -19,6 +19,8 @@
 #include <input.h>
 #include <asm/arch/lock.h>
 #include "serial_octeontx_pcie_console.h"
+#include <string.h>
+#include <iomux.h>
 
 /* This driver provides a PCIe console for OcteonTX processors.  It behaves
  * similar to a serial console but it works by using shared memory between
@@ -301,8 +303,9 @@ static int octeontx_pcie_console_stdio_stop(struct stdio_dev *dev)
 	if (!(le32_to_cpu(desc->exclusive) & 1 << priv->console_num))
 		if (le32_to_cpu(console->owner_id) !=
 					OCTEONTX_PCIE_CONSOLE_OWNER_UBOOT) {
-			debug("Console %d is shared, not shutting it down\n",
-			      priv->console_num);
+			dev_dbg(dev,
+				"Console %d is shared, not shutting it down\n",
+				priv->console_num);
 			return 0;
 		}
 
@@ -667,13 +670,13 @@ static int octeontx_pcie_console_probe(struct udevice *dev)
 	fdt_addr_t addr, size;
 	struct stdio_dev sdev;
 	int console_num;
-#ifdef DEBUG
-	struct stdio_dev *_sdev;
-#endif
 	u64 old_mask, new_mask;
 	bool ok;
 	ulong start;
 	int ret;
+#ifdef DEBUG
+	struct stdio_dev *_sdev;
+#endif
 
 	debug("%s(%s), parent: %p, ppriv: %p\n", __func__, dev->name,
 	      parent, ppriv);
@@ -760,10 +763,9 @@ static int octeontx_pcie_console_probe(struct udevice *dev)
 	sdev.tstc = octeontx_pcie_console_stdio_tstc;
 	sdev.priv = dev;
 	debug("%s: Registering stdio driver %s\n", __func__, sdev.name);
-#ifndef DEBUG
-	ret = stdio_register(&sdev);
-#else
-	ret = stdio_register_dev(&sdev, &_sdev);
+	ret = stdio_register_dev(&sdev, &priv->sdev);
+#ifdef DEBUG
+	_sdev = priv->sdev;
 	debug("%s: stdio_register_dev returned %d, output: %p\n", __func__,
 	      ret, _sdev);
 	if (!ret) {
@@ -822,12 +824,61 @@ int octeontx_pcie_console_ofdata_to_platdata(struct udevice *dev)
 	return ret;
 }
 
+static int modify_env(const char *name, const char *remove_name)
+{
+	char *env, *start, *end;
+	char new_env[128];
+	char temp[128];
+	int len = strlen(remove_name);
+	int dev;
+
+	env = env_get(name);
+	if (!env)
+		return -1;
+
+	strncpy(temp, env, sizeof(temp));
+	new_env[0] = '\0';
+	start = temp;
+	do {
+		end = strchr(start, ',');
+		if (end)
+			*end = '\0';
+
+		if (strncmp(start, remove_name, len)) {
+			if (start != temp)
+				strncat(new_env, ",", sizeof(new_env));
+			strncat(new_env, start, sizeof(new_env));
+		}
+		if (end)
+			start = end + 1;
+	} while (end && *start);
+	if (!strcmp(name, "stdin"))
+		dev = stdin;
+	else if (!strcmp(name, "stdout"))
+		dev = stdout;
+	else if (!strcmp(name, "stderr"))
+		dev = stderr;
+	else
+		return -ENODEV;
+
+	return iomux_doenv(dev, new_env);
+}
+
 static int octeontx_pcie_console_remove(struct udevice *dev)
 {
 	struct octeontx_pcie_console_priv *priv = dev_get_priv(dev);
 	struct octeontx_pcie_console *cons = priv->console;
 	struct octeontx_pcie_console_nexus *desc = priv->nexus;
 	u64 mask = (1ULL << priv->console_num);
+
+	dev_dbg(dev, "%s(%s): Performing cleanup\n", __func__, dev->name);
+
+	/* We first need to remove ourselves from stdin, stdout and stderr */
+	modify_env("stdin", DRIVER_NAME);
+	modify_env("stdout", DRIVER_NAME);
+	modify_env("stderr", DRIVER_NAME);
+
+	stdio_deregister_dev(priv->sdev, 1);
 
 	mask |= mask << 32;
 	memset(cons->name, 0, sizeof(cons->name));
@@ -837,6 +888,7 @@ static int octeontx_pcie_console_remove(struct udevice *dev)
 	/* Remove console from being in-use atomically */
 	__atomic_fetch_and((u64 *)&desc->in_use, ~mask, __ATOMIC_SEQ_CST);
 
+	dev_dbg(dev, "%s(%s): Performing cleanup done\n", __func__, dev->name);
 	return 0;
 }
 
@@ -1100,5 +1152,5 @@ U_BOOT_DRIVER(octeontx_pcie_console) = {
 	.priv_auto_alloc_size = sizeof(struct octeontx_pcie_console_priv),
 	.platdata_auto_alloc_size =
 				sizeof(struct octeontx_pcie_console_plat_data),
-	.flags = DM_FLAG_OS_PREPARE | DM_FLAG_PRE_RELOC,
+	.flags = DM_FLAG_OS_PREPARE | DM_FLAG_PRE_RELOC | DM_FLAG_ACTIVE_DMA,
 };

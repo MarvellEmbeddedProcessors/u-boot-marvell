@@ -17,6 +17,8 @@ extern int cgx_intf_get_phy_mod_type(struct udevice *ethdev);
 extern int cgx_intf_set_phy_mod_type(struct udevice *ethdev, int type);
 extern int cgx_intf_set_mode(struct udevice *ethdev, int mode);
 extern int cgx_intf_set_an_lbk(struct udevice *ethdev, int enable);
+extern int cgx_intf_set_ignore(struct udevice *ethdev, int ignore);
+extern int cgx_intf_get_ignore(struct udevice *ethdev);
 extern int cgx_intf_get_mode(struct udevice *ethdev);
 extern void nix_print_mac_info(struct udevice *dev);
 
@@ -47,11 +49,11 @@ static int do_ethparam_common(cmd_tbl_t *cmdtp, int flag, int argc,
 	const char *cmd;
 	char *endp;
 	const char *devname;
-	int ret = -1, type, mode;
+	int ret = CMD_RET_USAGE, arg;
 	struct udevice *dev;
 
 	if (argc < 2)
-		return CMD_RET_USAGE;
+		return ret;
 
 	cmd = argv[0];
 	devname = argv[1];
@@ -68,26 +70,35 @@ static int do_ethparam_common(cmd_tbl_t *cmdtp, int flag, int argc,
 	if (strcmp(cmd, "set_fec") == 0) {
 		if (argc < 3)
 			return CMD_RET_FAILURE;
-		type = simple_strtol(argv[2], &endp, 0);
-		if (type < 0 || type > 2)
-			return CMD_RET_USAGE;
-		ret = cgx_intf_set_fec(dev, type);
+		arg = simple_strtol(argv[2], &endp, 0);
+		if (arg < 0 || arg > 2)
+			return ret;
+		ret = cgx_intf_set_fec(dev, arg);
 	} else if (strcmp(cmd, "get_fec") == 0) {
 		ret = cgx_intf_get_fec(dev);
 	} else if (strcmp(cmd, "set_an_lbk") == 0) {
 		if (argc < 3)
 			return CMD_RET_FAILURE;
-		type = simple_strtol(argv[2], &endp, 0);
-		if (type < 0 || type > 1)
+		arg = simple_strtol(argv[2], &endp, 0);
+		if (arg < 0 || arg > 1)
 			return CMD_RET_USAGE;
-		ret = cgx_intf_set_an_lbk(dev, type);
+		ret = cgx_intf_set_an_lbk(dev, arg);
+	} else if (strcmp(cmd, "set_ignore") == 0) {
+		if (argc < 3)
+			return CMD_RET_FAILURE;
+		arg = simple_strtol(argv[2], &endp, 0);
+		if (arg < 0 || arg > 1)
+			return ret;
+		ret = cgx_intf_set_ignore(dev, arg);
+	} else if (strcmp(cmd, "get_ignore") == 0) {
+		ret = cgx_intf_get_ignore(dev);
 	} else if (strcmp(cmd, "set_phymod") == 0) {
 		if (argc < 3)
 			return CMD_RET_FAILURE;
-		type = simple_strtol(argv[2], &endp, 0);
-		if (type < 0 || type > 1)
-			return CMD_RET_USAGE;
-		ret = cgx_intf_set_phy_mod_type(dev, type);
+		arg = simple_strtol(argv[2], &endp, 0);
+		if (arg < 0 || arg > 1)
+			return ret;
+		ret = cgx_intf_set_phy_mod_type(dev, arg);
 	} else if (strcmp(cmd, "get_phymod") == 0) {
 		ret = cgx_intf_get_phy_mod_type(dev);
 	} else if (strcmp(cmd, "get_mode") == 0) {
@@ -95,10 +106,10 @@ static int do_ethparam_common(cmd_tbl_t *cmdtp, int flag, int argc,
 	} else if (strcmp(cmd, "set_mode") == 0) {
 		if (argc < 3)
 			return CMD_RET_FAILURE;
-		mode = simple_strtol(argv[2], &endp, 0);
-		if (mode < 0 || mode > 6)
-			return CMD_RET_USAGE;
-		ret = cgx_intf_set_mode(dev, mode);
+		arg = simple_strtol(argv[2], &endp, 0);
+		if (arg < 0 || arg > 6)
+			return ret;
+		ret = cgx_intf_set_mode(dev, arg);
 	}
 	return (ret == 0) ? CMD_RET_SUCCESS : CMD_RET_FAILURE;
 }
@@ -124,6 +135,21 @@ U_BOOT_CMD(set_an_lbk, 3, 1, do_ethparam_common,
 	   "Set or clear Auto-neg loopback for ethernet interface",
 	   "Example - set_an_lbk <ethX> [value]\n"
 	   "0 [clear] or 1 [set]\n"
+	   "Use 'ethlist' command to display network interface names\n"
+);
+
+U_BOOT_CMD(set_ignore, 3, 1, do_ethparam_common,
+	   "Set or clear ignore param in persist storage for eth interface",
+	   "Example - set_ignore <ethX> [value]\n"
+	   "0 [clear ignore] or 1 [set ignore]\n"
+	   "Helps to ignore all persist settings for selected ethernet\n"
+	   "interface on next boot\n"
+	   "Use 'ethlist' command to display network interface names\n"
+);
+
+U_BOOT_CMD(get_ignore, 2, 1, do_ethparam_common,
+	   "Display ignore param in persist storage for ethernet interface",
+	   "Example - get_ignore <ethX>\n"
 	   "Use 'ethlist' command to display network interface names\n"
 );
 

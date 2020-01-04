@@ -1692,11 +1692,11 @@ static void octeontx_mmc_set_emm_timing(struct mmc *mmc,
 		udelay(1);
 		emm_debug.s.rdsync_rst = 1;
 		write_csr(mmc, MIO_EMM_DEBUG(), emm_debug.u);
+	} else {
+		emm_cfg.u = read_csr(mmc, MIO_EMM_CFG());
+		emm_cfg.s.bus_ena = 1 << 3;
+		write_csr(mmc, MIO_EMM_CFG(), emm_cfg.u);
 	}
-	emm_cfg.u = read_csr(mmc, MIO_EMM_CFG());
-	emm_cfg.s.bus_ena = 1 << 3;
-	write_csr(mmc, MIO_EMM_CFG(), emm_cfg.u);
-
 	udelay(1);
 	write_csr(mmc, MIO_EMM_TIMING(), emm_timing.u);
 	udelay(1);
@@ -1709,9 +1709,10 @@ static void octeontx_mmc_set_emm_timing(struct mmc *mmc,
 		emm_debug.s.emmc_clk_disable = 0;
 		write_csr(mmc, MIO_EMM_DEBUG(), emm_debug.u);
 		udelay(1);
+	} else {
+		emm_cfg.s.bus_ena = 1 << mmc_to_slot(mmc)->bus_id;
+		write_csr(mmc, MIO_EMM_CFG(), emm_cfg.u);
 	}
-	emm_cfg.s.bus_ena = 1 << mmc_to_slot(mmc)->bus_id;
-	write_csr(mmc, MIO_EMM_CFG(), emm_cfg.u);
 }
 
 static const u8 octeontx_hs400_tuning_block[512] = {

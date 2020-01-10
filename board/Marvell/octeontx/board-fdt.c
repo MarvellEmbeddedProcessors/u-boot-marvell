@@ -177,6 +177,32 @@ static int fdt_get_bdk_node(void)
 	return node;
 }
 
+u64 fdt_get_preserved_mem_size(unsigned int node)
+{
+	const void *fdt = gd->fdt_blob;
+	int bdk_node, len = 64;
+	const char *str = NULL;
+	char prop_name[34] = {};
+	u64 preserved_mem_size = 0;
+
+	bdk_node = fdt_get_bdk_node();
+	if (!bdk_node)
+		return 0;
+
+	snprintf(prop_name, 34, "DDR-CONFIG-PRESERVE-NON-SECURE.N%d", node);
+	str = fdt_getprop(fdt, bdk_node, prop_name, &len);
+	if (str)
+		preserved_mem_size += (strtoul(str, NULL, 16) << 20);
+
+	snprintf(prop_name, 34, "DDR-CONFIG-PRESERVE-SECURE.N%d", node);
+	str = fdt_getprop(fdt, bdk_node, prop_name, &len);
+	if (str)
+		preserved_mem_size += (strtoul(str, NULL, 16) << 20);
+
+	printf("Total memory preserved region: 0x%llx bytes\n", preserved_mem_size);
+	return preserved_mem_size;
+}
+
 const char *fdt_get_board_serial(void)
 {
 	const void *fdt = gd->fdt_blob;

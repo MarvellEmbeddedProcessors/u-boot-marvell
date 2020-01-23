@@ -199,7 +199,8 @@ u64 fdt_get_preserved_mem_size(unsigned int node)
 	if (str)
 		preserved_mem_size += (strtoul(str, NULL, 16) << 20);
 
-	printf("Total memory preserved region: 0x%llx bytes\n", preserved_mem_size);
+	if (preserved_mem_size)
+		printf("Total memory preserved region: 0x%llx bytes\n", preserved_mem_size);
 	return preserved_mem_size;
 }
 

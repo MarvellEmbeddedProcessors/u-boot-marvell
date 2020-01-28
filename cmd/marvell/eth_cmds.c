@@ -16,6 +16,7 @@ extern int cgx_intf_get_fec(struct udevice *ethdev);
 extern int cgx_intf_get_phy_mod_type(struct udevice *ethdev);
 extern int cgx_intf_set_phy_mod_type(struct udevice *ethdev, int type);
 extern int cgx_intf_set_mode(struct udevice *ethdev, int mode);
+extern int cgx_intf_set_an_lbk(struct udevice *ethdev, int enable);
 extern int cgx_intf_get_mode(struct udevice *ethdev);
 extern void nix_print_mac_info(struct udevice *dev);
 
@@ -73,6 +74,13 @@ static int do_ethparam_common(cmd_tbl_t *cmdtp, int flag, int argc,
 		ret = cgx_intf_set_fec(dev, type);
 	} else if (strcmp(cmd, "get_fec") == 0) {
 		ret = cgx_intf_get_fec(dev);
+	} else if (strcmp(cmd, "set_an_lbk") == 0) {
+		if (argc < 3)
+			return CMD_RET_FAILURE;
+		type = simple_strtol(argv[2], &endp, 0);
+		if (type < 0 || type > 1)
+			return CMD_RET_USAGE;
+		ret = cgx_intf_set_an_lbk(dev, type);
 	} else if (strcmp(cmd, "set_phymod") == 0) {
 		if (argc < 3)
 			return CMD_RET_FAILURE;
@@ -110,6 +118,13 @@ U_BOOT_CMD(
 	"Example - get_fec <ethX>\n"
 	"Get FEC type for any of RVU PF based network interfaces\n"
 	"Use 'ethlist' command to display network interface names\n"
+);
+
+U_BOOT_CMD(set_an_lbk, 3, 1, do_ethparam_common,
+	   "Set or clear Auto-neg loopback for ethernet interface",
+	   "Example - set_an_lbk <ethX> [value]\n"
+	   "0 [clear] or 1 [set]\n"
+	   "Use 'ethlist' command to display network interface names\n"
 );
 
 U_BOOT_CMD(

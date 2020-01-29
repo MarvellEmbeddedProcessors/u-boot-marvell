@@ -57,6 +57,7 @@ struct octeontx_mmc_slot {
 	int			hs200_tap_adj;
 	int			hs400_tap_adj;
 	int			hs400_tuning_block;
+	u64			clock;
 	struct gpio_desc	cd_gpio;
 	struct gpio_desc	wp_gpio;
 	struct gpio_desc	power_gpio;
@@ -97,6 +98,7 @@ struct octeontx_mmc_slot {
 	bool			wp_inverted:1;
 	bool			disable_ddr:1;
 	bool			non_removable:1;
+	bool			read_after_tune:1;
 };
 
 struct octeontx_mmc_cr_mods {

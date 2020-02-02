@@ -1692,11 +1692,11 @@ static void octeontx_mmc_set_emm_timing(struct mmc *mmc,
 		udelay(1);
 		emm_debug.s.rdsync_rst = 1;
 		write_csr(mmc, MIO_EMM_DEBUG(), emm_debug.u);
-	} else {
-		emm_cfg.u = read_csr(mmc, MIO_EMM_CFG());
-		emm_cfg.s.bus_ena = 1 << 3;
-		write_csr(mmc, MIO_EMM_CFG(), emm_cfg.u);
 	}
+	emm_cfg.u = read_csr(mmc, MIO_EMM_CFG());
+	emm_cfg.s.bus_ena = 1 << 3;
+	write_csr(mmc, MIO_EMM_CFG(), emm_cfg.u);
+
 	udelay(1);
 	write_csr(mmc, MIO_EMM_TIMING(), emm_timing.u);
 	udelay(1);
@@ -1709,10 +1709,234 @@ static void octeontx_mmc_set_emm_timing(struct mmc *mmc,
 		emm_debug.s.emmc_clk_disable = 0;
 		write_csr(mmc, MIO_EMM_DEBUG(), emm_debug.u);
 		udelay(1);
-	} else {
-		emm_cfg.s.bus_ena = 1 << mmc_to_slot(mmc)->bus_id;
-		write_csr(mmc, MIO_EMM_CFG(), emm_cfg.u);
 	}
+	emm_cfg.s.bus_ena = 1 << mmc_to_slot(mmc)->bus_id;
+	write_csr(mmc, MIO_EMM_CFG(), emm_cfg.u);
+}
+
+static const u8 octeontx_hs400_tuning_block[512] = {
+	0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00, 0x00,
+	0xff, 0xff, 0xcc, 0xcc, 0xcc, 0x33, 0xcc, 0xcc,
+	0xcc, 0x33, 0x33, 0xcc, 0xcc, 0xcc, 0xff, 0xff,
+	0xff, 0xee, 0xff, 0xff, 0xff, 0xee, 0xee, 0xff,
+	0xff, 0xff, 0xdd, 0xff, 0xff, 0xff, 0xdd, 0xdd,
+	0xff, 0xff, 0xff, 0xbb, 0xff, 0xff, 0xff, 0xbb,
+	0xbb, 0xff, 0xff, 0xff, 0x77, 0xff, 0xff, 0xff,
+	0x77, 0x77, 0xff, 0x77, 0xbb, 0xdd, 0xee, 0xff,
+	0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00,
+	0x00, 0xff, 0xff, 0xcc, 0xcc, 0xcc, 0x33, 0xcc,
+	0xcc, 0xcc, 0x33, 0x33, 0xcc, 0xcc, 0xcc, 0xff,
+	0xff, 0xff, 0xee, 0xff, 0xff, 0xff, 0xee, 0xee,
+	0xff, 0xff, 0xff, 0xdd, 0xff, 0xff, 0xff, 0xdd,
+	0xdd, 0xff, 0xff, 0xff, 0xbb, 0xff, 0xff, 0xff,
+	0xbb, 0xbb, 0xff, 0xff, 0xff, 0x77, 0xff, 0xff,
+	0xff, 0x77, 0x77, 0xff, 0x77, 0xbb, 0xdd, 0xee,
+	0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00, 0x00,
+	0xff, 0xff, 0xcc, 0xcc, 0xcc, 0x33, 0xcc, 0xcc,
+	0xcc, 0x33, 0x33, 0xcc, 0xcc, 0xcc, 0xff, 0xff,
+	0xff, 0xee, 0xff, 0xff, 0xff, 0xee, 0xee, 0xff,
+	0xff, 0xff, 0xdd, 0xff, 0xff, 0xff, 0xdd, 0xdd,
+	0xff, 0xff, 0xff, 0xbb, 0xff, 0xff, 0xff, 0xbb,
+	0xbb, 0xff, 0xff, 0xff, 0x77, 0xff, 0xff, 0xff,
+	0x77, 0x77, 0xff, 0x77, 0xbb, 0xdd, 0xee, 0xff,
+	0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00,
+	0x00, 0xff, 0xff, 0xcc, 0xcc, 0xcc, 0x33, 0xcc,
+	0xcc, 0xcc, 0x33, 0x33, 0xcc, 0xcc, 0xcc, 0xff,
+	0xff, 0xff, 0xee, 0xff, 0xff, 0xff, 0xee, 0xee,
+	0xff, 0xff, 0xff, 0xdd, 0xff, 0xff, 0xff, 0xdd,
+	0xdd, 0xff, 0xff, 0xff, 0xbb, 0xff, 0xff, 0xff,
+	0xbb, 0xbb, 0xff, 0xff, 0xff, 0x77, 0xff, 0xff,
+	0xff, 0x77, 0x77, 0xff, 0x77, 0xbb, 0xdd, 0xee,
+	0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00, 0x00,
+	0xff, 0xff, 0xcc, 0xcc, 0xcc, 0x33, 0xcc, 0xcc,
+	0xcc, 0x33, 0x33, 0xcc, 0xcc, 0xcc, 0xff, 0xff,
+	0xff, 0xee, 0xff, 0xff, 0xff, 0xee, 0xee, 0xff,
+	0xff, 0xff, 0xdd, 0xff, 0xff, 0xff, 0xdd, 0xdd,
+	0xff, 0xff, 0xff, 0xbb, 0xff, 0xff, 0xff, 0xbb,
+	0xbb, 0xff, 0xff, 0xff, 0x77, 0xff, 0xff, 0xff,
+	0x77, 0x77, 0xff, 0x77, 0xbb, 0xdd, 0xee, 0xff,
+	0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00,
+	0x00, 0xff, 0xff, 0xcc, 0xcc, 0xcc, 0x33, 0xcc,
+	0xcc, 0xcc, 0x33, 0x33, 0xcc, 0xcc, 0xcc, 0xff,
+	0xff, 0xff, 0xee, 0xff, 0xff, 0xff, 0xee, 0xee,
+	0xff, 0xff, 0xff, 0xdd, 0xff, 0xff, 0xff, 0xdd,
+	0xdd, 0xff, 0xff, 0xff, 0xbb, 0xff, 0xff, 0xff,
+	0xbb, 0xbb, 0xff, 0xff, 0xff, 0x77, 0xff, 0xff,
+	0xff, 0x77, 0x77, 0xff, 0x77, 0xbb, 0xdd, 0xee,
+	0xff, 0x00, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00,
+	0x00, 0xff, 0x00, 0xff, 0x55, 0xaa, 0x55, 0xaa,
+	0xcc, 0x33, 0x33, 0xcc, 0xcc, 0xcc, 0xff, 0xff,
+	0xff, 0xee, 0xff, 0xff, 0xff, 0xee, 0xee, 0xff,
+	0xff, 0xff, 0xdd, 0xff, 0xff, 0xff, 0xdd, 0xdd,
+	0xff, 0xff, 0xff, 0xbb, 0xff, 0xff, 0xff, 0xbb,
+	0xbb, 0xff, 0xff, 0xff, 0x77, 0xff, 0xff, 0xff,
+	0x77, 0x77, 0xff, 0x77, 0xbb, 0xdd, 0xee, 0xff,
+	0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00,
+	0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff,
+	0x01, 0xfe, 0x01, 0xfe, 0xcc, 0xcc, 0xcc, 0xff,
+	0xff, 0xff, 0xee, 0xff, 0xff, 0xff, 0xee, 0xee,
+	0xff, 0xff, 0xff, 0xdd, 0xff, 0xff, 0xff, 0xdd,
+	0xdd, 0xff, 0xff, 0xff, 0xbb, 0xff, 0xff, 0xff,
+	0xbb, 0xbb, 0xff, 0xff, 0xff, 0x77, 0xff, 0xff,
+	0xff, 0x77, 0x77, 0xff, 0x77, 0xbb, 0xdd, 0xee,
+
+};
+
+/**
+ * Perform tuning in HS400 mode
+ *
+ * @param[in]	mmc	mmc data structure
+ *
+ * @ret		0 for success, otherwise error
+ */
+static int octeontx_tune_hs400(struct mmc *mmc)
+{
+	struct octeontx_mmc_slot *slot = mmc_to_slot(mmc);
+	struct mmc_cmd cmd;
+	struct mmc_data data;
+	union mio_emm_timing emm_timing;
+	u8 buffer[mmc->read_bl_len];
+	int tap_adj;
+	int err = -1;
+	int tap;
+	int run = 0;
+	int start_run = -1;
+	int best_run = 0;
+	int best_start = -1;
+	bool prev_ok = false;
+	char env_name[64];
+	char how[MAX_NO_OF_TAPS + 1] = "";
+
+	if (slot->hs400_tuning_block == -1)
+		return 0;
+
+	/* The eMMC standard disables all tuning support when operating in
+	 * DDR modes like HS400.  The problem with this is that there are
+	 * many cases where the HS200 tuning does not work for HS400 mode.
+	 * In order to perform this tuning, while in HS200 a block is written
+	 * to a block specified in the device tree (marvell,hs400-tuning-block)
+	 * which is used for tuning in this function by repeatedly reading
+	 * this block and comparing the data and return code.  This function
+	 * chooses the data input tap in the middle of the longest run of
+	 * successful read operations.
+	 */
+
+	emm_timing = slot->hs200_taps;
+	debug("%s(%s): Start ci: %d, co: %d, di: %d, do: %d\n",
+	      __func__, mmc->dev->name, emm_timing.s.cmd_in_tap,
+	      emm_timing.s.cmd_out_tap, emm_timing.s.data_in_tap,
+	      emm_timing.s.data_out_tap);
+	memset(buffer, 0xdb, sizeof(buffer));
+
+	snprintf(env_name, sizeof(env_name), "emmc%d_data_in_tap_hs400",
+		 slot->bus_id);
+	tap = env_get_ulong(env_name, 10, -1L);
+	if (tap >= 0 && tap < MAX_NO_OF_TAPS) {
+		printf("Overriding data input tap for HS400 mode to %d\n", tap);
+		emm_timing.s.data_in_tap = tap;
+		octeontx_mmc_set_emm_timing(mmc, emm_timing);
+		return 0;
+	}
+
+	for (tap = 0; tap <= MAX_NO_OF_TAPS; tap++, prev_ok = !err) {
+		if (tap < MAX_NO_OF_TAPS) {
+			debug("%s: Testing data in tap %d\n", __func__, tap);
+			emm_timing.s.data_in_tap = tap;
+			octeontx_mmc_set_emm_timing(mmc, emm_timing);
+
+			cmd.cmdidx = MMC_CMD_READ_SINGLE_BLOCK;
+			cmd.cmdarg = slot->hs400_tuning_block;
+			cmd.resp_type = MMC_RSP_R1;
+			data.dest = (void *)buffer;
+			data.blocks = 1;
+			data.blocksize = mmc->read_bl_len;
+			data.flags = MMC_DATA_READ;
+			err = !octeontx_mmc_read_blocks(mmc, &cmd, &data,
+							false);
+			if (err || memcmp(buffer, octeontx_hs400_tuning_block,
+					  sizeof(buffer))) {
+#ifdef DEBUG
+				if (!err) {
+					debug("%s: data mismatch.  Read:\n",
+					      __func__);
+					print_buffer(0, buffer, 1,
+						     sizeof(buffer), 0);
+					debug("\nExpected:\n");
+					print_buffer(0,
+					    octeontx_hs400_tuning_block, 1,
+					    sizeof(octeontx_hs400_tuning_block),
+					    0);
+				} else {
+					debug("%s: Error %d reading block\n",
+					      __func__, err);
+				}
+#endif
+				err = -EINVAL;
+			} else {
+				debug("%s: tap %d good\n", __func__, tap);
+			}
+			how[tap] = "-+"[!err];
+		} else {
+			err = -EINVAL;
+		}
+
+		if (!err) {
+			if (!prev_ok)
+				start_run = tap;
+		} else if (prev_ok) {
+			run = tap - 1 - start_run;
+			if (start_run >= 0 && run > best_run) {
+				best_start = start_run;
+				best_run = run;
+			}
+		}
+	}
+	how[tap - 1] = '\0';
+	if (best_start < 0) {
+		printf("%s(%s): %lldMHz tuning failed for HS400\n",
+		       __func__, mmc->dev->name, slot->clock / 1000000);
+		return -EINVAL;
+	}
+	tap = best_start + best_run / 2;
+
+	snprintf(env_name, sizeof(env_name), "emmc%d_data_in_tap_adj_hs400",
+		 slot->bus_id);
+	tap_adj = env_get_ulong(env_name, 10, slot->hs400_tap_adj);
+	/*
+	 * Keep it in range and if out of range force it back in with a small
+	 * buffer.
+	 */
+	if (best_run > 3) {
+		tap = tap + tap_adj;
+		if (tap >= best_start + best_run)
+			tap = best_start + best_run - 2;
+		if (tap <= best_start)
+			tap = best_start + 2;
+	}
+	how[tap] = '@';
+	debug("Tuning: %s\n", how);
+	debug("%s(%s): HS400 tap: best run start: %d, length: %d, tap: %d\n",
+	      __func__, mmc->dev->name, best_start, best_run, tap);
+	slot->hs400_taps = slot->hs200_taps;
+	slot->hs400_taps.s.data_in_tap = tap;
+	slot->hs400_tuned = true;
+	if (env_get_yesno("emmc_export_hs400_taps") > 0) {
+		snprintf(env_name, sizeof(env_name), "emmc%d_data_in_tap_debug",
+			 slot->bus_id);
+		env_set(env_name, how);
+		snprintf(env_name, sizeof(env_name), "emmc%d_data_in_tap_val",
+			 slot->bus_id);
+		env_set_ulong(env_name, tap);
+		snprintf(env_name, sizeof(env_name), "emmc%d_data_in_tap_start",
+			 slot->bus_id);
+		env_set_ulong(env_name, best_start);
+		snprintf(env_name, sizeof(env_name), "emmc%d_data_in_tap_end",
+			 slot->bus_id);
+		env_set_ulong(env_name, best_start + best_run);
+	}
+	octeontx_mmc_set_timing(mmc);
+
+	return 0;
 }
 
 static const u8 octeontx_hs400_tuning_block[512] = {
@@ -2150,18 +2374,17 @@ static int octeontx_mmc_adjust_tuning(struct mmc *mmc, struct adj *adj,
 	}
 
 	tap = best_start + best_run / 2;
-	if (adj->hs200_only && (tap + tap_adj >= 0) && (tap + tap_adj < 64) &&
+	if (is_hs200 && (tap + tap_adj >= 0) && (tap + tap_adj < 64) &&
 	    tap_status & (1ULL << (tap + tap_adj))) {
 		debug("Adjusting tap from %d by %d to %d\n",
 		      tap, tap_adj, tap + tap_adj);
 		tap += tap_adj;
 	}
-	if (adj->test == mmc_send_tuning && tap < 58 && how[tap + 5] == '+')
-		tap += 5;
+#ifdef DEBUG
 	how[tap] = '@';
 	debug("%s/%s %d/%d/%d %s\n", mmc->dev->name,
 	      adj->name, best_start, tap, best_start + best_run, how);
-
+#endif
 	if (is_hs200) {
 		slot->hs200_taps.u &= ~(0x3full << adj->mask_shift);
 		slot->hs200_taps.u |= (u64)tap << adj->mask_shift;
@@ -2287,10 +2510,12 @@ static int octeontx_mmc_execute_tuning(struct udevice *dev, u32 opcode)
 			in_tap = env_get_ulong(env_name, 10, (ulong)-1);
 			if (in_tap != (ulong)-1) {
 				if (mmc->selected_mode == MMC_HS_200 ||
-				    a->hs200_only)
+				    a->hs200_only) {
 					slot->hs200_taps.s.cmd_in_tap = in_tap;
-				else
+					slot->hs400_taps.s.cmd_in_tap = in_tap;
+				} else {
 					slot->taps.s.cmd_in_tap = in_tap;
+				}
 				continue;
 			}
 		} else if (a->hs200_only &&
@@ -2358,9 +2583,7 @@ static int octeontx_mmc_execute_tuning(struct udevice *dev, u32 opcode)
 	else
 		slot->tuned = true;
 
-	snprintf(env_name, sizeof(env_name), "emmc%d_read_after_tune",
-		 slot->bus_id);
-	if (slot->read_after_tune || env_get_yesno(env_name)) {
+	if (slot->hs400_tuning_block != -1) {
 		struct mmc_cmd cmd;
 		struct mmc_data data;
 		u8 buffer[mmc->read_bl_len];
@@ -2495,7 +2718,7 @@ static int octeontx_mmc_set_ios(struct udevice *dev)
 		break;
 	case MMC_HS_400:
 		is_hs400 = true;
-		fallthrough;
+		/* fall through */
 	case UHS_DDR50:
 	case MMC_DDR_52:
 		emm_switch.s.hs400_timing = 1;
@@ -2538,12 +2761,10 @@ static int octeontx_mmc_set_ios(struct udevice *dev)
 
 	err = octeontx_mmc_configure_delay(mmc);
 
-#ifdef MMC_SUPPORTS_TUNING
 	if (!err && mmc->selected_mode == MMC_HS_400 && !slot->hs400_tuned) {
 		debug("%s: Tuning HS400 mode\n", __func__);
 		err = octeontx_tune_hs400(mmc);
 	}
-#endif
 
 	return err;
 }
@@ -2622,116 +2843,82 @@ static int octeontx_mmc_configure_delay(struct mmc *mmc)
 		emm_sample.s.cmd_cnt = slot->cmd_cnt;
 		emm_sample.s.dat_cnt = slot->dat_cnt;
 		write_csr(mmc, MIO_EMM_SAMPLE(), emm_sample.u);
+	}
+	is_hs200 = (mmc->selected_mode == MMC_HS_200);
+	is_hs400 = (mmc->selected_mode == MMC_HS_400);
+
+	if ((is_hs200 && slot->hs200_tuned) ||
+	    (is_hs400 && slot->hs400_tuned) ||
+	    (!is_hs200 && !is_hs400 && slot->tuned)) {
+		octeontx_mmc_set_output_bus_timing(mmc);
 	} else {
 		is_hs200 = (mmc->selected_mode == MMC_HS_200);
 		is_hs400 = (mmc->selected_mode == MMC_HS_400);
 
-		if ((is_hs200 && slot->hs200_tuned) ||
-		    (is_hs400 && slot->hs400_tuned) ||
-		    (!is_hs200 && !is_hs400 && slot->tuned)) {
-			octeontx_mmc_set_output_bus_timing(mmc);
+		switch (mmc->selected_mode) {
+		case MMC_LEGACY:
+			cout = MMC_LEGACY_DEFAULT_CMD_OUT_TAP;
+			dout = MMC_LEGACY_DEFAULT_DATA_OUT_TAP;
+			break;
+		case SD_LEGACY:
+			cout = MMC_SD_LEGACY_DEFAULT_CMD_OUT_TAP;
+			dout = MMC_SD_LEGACY_DEFAULT_DATA_OUT_TAP;
+			break;
+		case MMC_HS:
+			cout = MMC_HS_CMD_OUT_TAP;
+			dout = MMC_HS_DATA_OUT_TAP;
+			break;
+		case SD_HS:
+		case UHS_SDR12:
+		case UHS_SDR25:
+		case UHS_SDR50:
+			cout = MMC_SD_HS_CMD_OUT_TAP;
+			dout = MMC_SD_HS_DATA_OUT_TAP;
+			break;
+		case UHS_SDR104:
+		case UHS_DDR50:
+		case MMC_HS_52:
+		case MMC_DDR_52:
+			cout = MMC_DEFAULT_CMD_OUT_TAP;
+			dout = MMC_DEFAULT_DATA_OUT_TAP;
+			break;
+		case MMC_HS_200:
+			cout = MMC_DEFAULT_HS200_CMD_OUT_TAP;
+			dout = MMC_DEFAULT_HS200_DATA_OUT_TAP;
+			is_hs200 = true;
+			break;
+		case MMC_HS_400:
+			cout = MMC_DEFAULT_HS200_CMD_OUT_TAP;
+			dout = MMC_DEFAULT_HS200_DATA_OUT_TAP;
+			is_hs400 = true;
+			break;
+		default:
+			pr_err("%s(%s): Invalid mode %d\n", __func__,
+			       mmc->dev->name, mmc->selected_mode);
+			return -1;
+		}
+		debug("%s(%s): Not tuned, hs200: %d, hs200 tuned: %d, tuned: %d\n",
+		      __func__, mmc->dev->name, is_hs200, slot->hs200_tuned,
+		      slot->tuned);
+		/* Set some defaults */
+		if (is_hs200) {
+			slot->hs200_taps.u = 0;
+			slot->hs200_taps.s.cmd_out_tap = cout;
+			slot->hs200_taps.s.data_out_tap = dout;
+			slot->hs200_taps.s.cmd_in_tap = half;
+			slot->hs200_taps.s.data_in_tap = half;
+		} else if (is_hs400) {
+			slot->hs400_taps.u = 0;
+			slot->hs400_taps.s.cmd_out_tap = cout;
+			slot->hs400_taps.s.data_out_tap = dout;
+			slot->hs400_taps.s.cmd_in_tap = half;
+			slot->hs400_taps.s.data_in_tap = half;
 		} else {
-			int half = MAX_NO_OF_TAPS / 2;
-			int dout, cout;
-
-			switch (mmc->selected_mode) {
-			case MMC_LEGACY:
-				if (IS_SD(mmc)) {
-					cout = MMC_SD_LEGACY_DEFAULT_CMD_OUT_TAP;
-					dout = MMC_SD_LEGACY_DEFAULT_DATA_OUT_TAP;
-				} else {
-					cout = MMC_LEGACY_DEFAULT_CMD_OUT_TAP;
-					dout = MMC_LEGACY_DEFAULT_DATA_OUT_TAP;
-				}
-				break;
-			case MMC_HS:
-				cout = MMC_HS_CMD_OUT_TAP;
-				dout = MMC_HS_DATA_OUT_TAP;
-				break;
-			case SD_HS:
-			case UHS_SDR12:
-			case UHS_SDR25:
-			case UHS_SDR50:
-				cout = MMC_SD_HS_CMD_OUT_TAP;
-				dout = MMC_SD_HS_DATA_OUT_TAP;
-				break;
-			case UHS_SDR104:
-			case UHS_DDR50:
-			case MMC_HS_52:
-			case MMC_DDR_52:
-				cout = MMC_DEFAULT_CMD_OUT_TAP;
-				dout = MMC_DEFAULT_DATA_OUT_TAP;
-				break;
-			case MMC_HS_200:
-				cout = -1;
-				dout = -1;
-				if (host->timing_calibrated) {
-					cout = octeontx2_mmc_calc_delay(
-						mmc, slot->cmd_out_hs200_delay);
-					dout = octeontx2_mmc_calc_delay(
-						mmc,
-						slot->data_out_hs200_delay);
-					debug("%s(%s): Calibrated HS200/HS400 cmd out delay: %dps tap: %d, data out delay: %d, tap: %d\n",
-					      __func__, mmc->dev->name,
-					      slot->cmd_out_hs200_delay, cout,
-					      slot->data_out_hs200_delay, dout);
-				} else {
-					cout = MMC_DEFAULT_HS200_CMD_OUT_TAP;
-					dout = MMC_DEFAULT_HS200_DATA_OUT_TAP;
-				}
-				is_hs200 = true;
-				break;
-			case MMC_HS_400:
-				cout = -1;
-				dout = -1;
-				if (host->timing_calibrated) {
-					if (slot->cmd_out_hs400_delay)
-						cout = octeontx2_mmc_calc_delay(
-							mmc,
-							slot->cmd_out_hs400_delay);
-					if (slot->data_out_hs400_delay)
-						dout = octeontx2_mmc_calc_delay(
-							mmc,
-							slot->data_out_hs400_delay);
-					debug("%s(%s): Calibrated HS200/HS400 cmd out delay: %dps tap: %d, data out delay: %d, tap: %d\n",
-					      __func__, mmc->dev->name,
-					      slot->cmd_out_hs400_delay, cout,
-					      slot->data_out_hs400_delay, dout);
-				} else {
-					cout = MMC_DEFAULT_HS400_CMD_OUT_TAP;
-					dout = MMC_DEFAULT_HS400_DATA_OUT_TAP;
-				}
-				is_hs400 = true;
-				break;
-			default:
-				pr_err("%s(%s): Invalid mode %d\n", __func__,
-				       mmc->dev->name, mmc->selected_mode);
-				return -1;
-			}
-			debug("%s(%s): Not tuned, hs200: %d, hs200 tuned: %d, hs400: %d, hs400 tuned: %d, tuned: %d\n",
-			      __func__, mmc->dev->name, is_hs200,
-			      slot->hs200_tuned,
-			      is_hs400, slot->hs400_tuned, slot->tuned);
-			/* Set some defaults */
-			if (is_hs200) {
-				slot->hs200_taps.u = 0;
-				slot->hs200_taps.s.cmd_out_tap = cout;
-				slot->hs200_taps.s.data_out_tap = dout;
-				slot->hs200_taps.s.cmd_in_tap = half;
-				slot->hs200_taps.s.data_in_tap = half;
-			} else if (is_hs400) {
-				slot->hs400_taps.u = 0;
-				slot->hs400_taps.s.cmd_out_tap = cout;
-				slot->hs400_taps.s.data_out_tap = dout;
-				slot->hs400_taps.s.cmd_in_tap = half;
-				slot->hs400_taps.s.data_in_tap = half;
-			} else {
-				slot->taps.u = 0;
-				slot->taps.s.cmd_out_tap = cout;
-				slot->taps.s.data_out_tap = dout;
-				slot->taps.s.cmd_in_tap = half;
-				slot->taps.s.data_in_tap = half;
-			}
+			slot->taps.u = 0;
+			slot->taps.s.cmd_out_tap = cout;
+			slot->taps.s.data_out_tap = dout;
+			slot->taps.s.cmd_in_tap = half;
+			slot->taps.s.data_in_tap = half;
 		}
 
 		if (is_hs200)
@@ -3058,7 +3245,25 @@ static int octeontx_mmc_set_input_bus_timing(struct mmc *mmc)
 			timing.s.cmd_in_tap = MMC_DEFAULT_CMD_IN_TAP;
 			timing.s.data_in_tap = MMC_DEFAULT_DATA_IN_TAP;
 		}
-		octeontx_mmc_set_emm_timing(mmc, timing);
+	} else if (mmc->selected_mode == MMC_HS_400) {
+		if (slot->hs400_tuned) {
+			timing.s.cmd_in_tap = slot->hs400_taps.s.cmd_in_tap;
+			timing.s.data_in_tap = slot->hs400_taps.s.data_in_tap;
+		} else if (slot->hs200_tuned) {
+			timing.s.cmd_in_tap = slot->hs200_taps.s.cmd_in_tap;
+			timing.s.data_in_tap = slot->hs200_taps.s.data_in_tap;
+		} else {
+			pr_warn("%s(%s): Warning: hs400 timing not tuned\n",
+				__func__, mmc->dev->name);
+			timing.s.cmd_in_tap = MMC_DEFAULT_HS200_CMD_IN_TAP;
+			timing.s.data_in_tap = MMC_DEFAULT_HS200_DATA_IN_TAP;
+		}
+	} else if (slot->tuned) {
+		timing.s.cmd_in_tap = slot->taps.s.cmd_in_tap;
+		timing.s.data_in_tap = slot->taps.s.data_in_tap;
+	} else {
+		timing.s.cmd_in_tap = MMC_DEFAULT_CMD_IN_TAP;
+		timing.s.data_in_tap = MMC_DEFAULT_DATA_IN_TAP;
 	}
 
 	return 0;
@@ -3476,7 +3681,7 @@ static int octeontx_mmc_get_config(struct udevice *dev)
 		 slot->bus_id);
 
 	new_max_freq = env_get_ulong(env_name, 10, slot->cfg.f_max);
-	debug("Reading %s, got %lu\n", env_name, new_max_freq);
+	dev_dbg(dev, "Reading %s, got %lu\n", env_name, new_max_freq);
 
 	if (new_max_freq != slot->cfg.f_max) {
 		printf("Overriding device tree MMC maximum frequency %u to %lu\n",
@@ -3486,12 +3691,22 @@ static int octeontx_mmc_get_config(struct udevice *dev)
 	slot->cfg.f_min = 400000;
 	slot->cfg.b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
 
+	slot->hs400_tuning_block =
+		ofnode_read_s32_default(dev->node,
+					"marvell,hs400-tuning-block", -1);
+	debug("%s(%s): mmc HS400 tuning block: %d\n", __func__, dev->name,
+	      slot->hs400_tuning_block);
+
 	slot->hs200_tap_adj =
 		ofnode_read_s32_default(dev->node,
 					"marvell,hs200-tap-adjust", 0);
-	dev_dbg(dev, "hs200-tap-adjust: %d\n", slot->hs200_tap_adj);
-	slot->read_after_tune =
-		ofnode_read_bool(dev->node, "marvell,read-after-tune");
+	debug("%s(%s): hs200-tap-adjust: %d\n", __func__, dev->name,
+	      slot->hs200_tap_adj);
+	slot->hs400_tap_adj =
+		ofnode_read_s32_default(dev->node,
+					"marvell,hs400-tap-adjust", 0);
+	debug("%s(%s): hs400-tap-adjust: %d\n", __func__, dev->name,
+	      slot->hs400_tap_adj);
 	err = ofnode_read_u32_array(dev->node, "voltage-ranges", voltages, 2);
 	if (err) {
 		slot->cfg.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;

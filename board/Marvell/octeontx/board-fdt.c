@@ -291,6 +291,39 @@ void fdt_board_get_ethaddr(int bgx, int lmac, unsigned char *eth)
 	}
 }
 
+#ifdef ALLOW_USER_MAC_ADDR
+void fdt_board_update_macaddr(int bgxid, int lmacid, char *mac)
+{
+	void *fdt = (void *)gd->fdt_blob;
+	int offset = 0, node;
+	int subnode, i = 0;
+	char bgxname[24], macaddr[ARP_HLEN];
+
+	offset = fdt_node_offset_by_compatible(fdt, -1, "pci-bridge");
+	if (offset < 0) {
+		printf("%s couldn't find mrml bridge node in fdt\n",
+		       __func__);
+		return;
+	}
+	if (bgxid == 2 && otx_is_soc(CN81XX)) {
+		snprintf(bgxname, sizeof(bgxname), "rgx%d", 0);
+		lmacid = 0;
+	} else {
+		snprintf(bgxname, sizeof(bgxname), "bgx%d", bgxid);
+	}
+
+	node = fdt_subnode_offset(fdt, offset, bgxname);
+
+	memcpy(macaddr, mac, ARP_HLEN);
+	fdt_for_each_subnode(subnode, fdt, node) {
+		/* update lmac node's local-mac-address */
+		if (i++ == lmacid)
+			fdt_setprop(fdt, subnode, "local-mac-address",
+				    (void *)macaddr, sizeof(macaddr));
+	}
+}
+#endif
+
 int arch_fixup_memory_node(void *blob)
 {
 	return 0;

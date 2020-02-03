@@ -118,6 +118,9 @@ const char *fdt_get_board_serial(void);
 const char *fdt_get_board_revision(void);
 void fdt_parse_phy_info(void);
 void fdt_board_get_ethaddr(int bgx, int lmac, unsigned char *eth);
+#ifdef ALLOW_USER_MAC_ADDR
+void fdt_board_update_macaddr(int bgx_idx, int lmacid, char *mac);
+#endif
 void bgx_set_board_info(int bgx_id, int *mdio_bus, int *phy_addr,
 			bool *autoneg_dis, bool *lmac_reg, bool *lmac_enable);
 u64 fdt_get_preserved_mem_size(unsigned int node);

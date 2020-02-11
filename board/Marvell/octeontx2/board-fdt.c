@@ -99,6 +99,7 @@ u64 fdt_get_preserved_mem_size(unsigned int node)
 	const char *str = NULL;
 	char prop_name[34] = {};
 	u64 preserved_mem_size = 0;
+	u64 total_preserved_mem_size = 0;
 
 	bdk_node = fdt_get_bdk_node();
 	if (!bdk_node)
@@ -106,17 +107,25 @@ u64 fdt_get_preserved_mem_size(unsigned int node)
 
 	snprintf(prop_name, 34, "DDR-CONFIG-PRESERVE-NON-SECURE.N%d", node);
 	str = fdt_getprop(fdt, bdk_node, prop_name, &len);
-	if (str)
-		preserved_mem_size += (strtoul(str, NULL, 16) << 20);
+	if (str) {
+		preserved_mem_size = (strtoul(str, NULL, 16) << 20);
+		total_preserved_mem_size += preserved_mem_size;
+		if (preserved_mem_size)
+			printf("Preserved non-secure memory: 0x%llx bytes\n",
+			       preserved_mem_size);
+	}
 
 	snprintf(prop_name, 34, "DDR-CONFIG-PRESERVE-SECURE.N%d", node);
 	str = fdt_getprop(fdt, bdk_node, prop_name, &len);
-	if (str)
-		preserved_mem_size += (strtoul(str, NULL, 16) << 20);
+	if (str) {
+		preserved_mem_size = (strtoul(str, NULL, 16) << 20);
+		total_preserved_mem_size += preserved_mem_size;
+		if (preserved_mem_size)
+			printf("Preserved secure memory: 0x%llx bytes\n",
+			       preserved_mem_size);
+	}
 
-	if (preserved_mem_size)
-		printf("Total memory preserved region: 0x%llx bytes\n", preserved_mem_size);
-	return preserved_mem_size;
+	return total_preserved_mem_size;
 }
 
 const char *fdt_get_board_serial(void)

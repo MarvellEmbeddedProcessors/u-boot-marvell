@@ -1933,6 +1933,21 @@ static int octeontx_tune_hs400(struct mmc *mmc)
 		snprintf(env_name, sizeof(env_name), "emmc%d_data_in_tap_end",
 			 slot->bus_id);
 		env_set_ulong(env_name, best_start + best_run);
+		snprintf(env_name, sizeof(env_name), "emmc%d_cmd_in_tap",
+			 slot->bus_id);
+		env_set_ulong(env_name, slot->hs400_taps.s.cmd_in_tap);
+		snprintf(env_name, sizeof(env_name), "emmc%d_cmd_out_tap",
+			 slot->bus_id);
+		env_set_ulong(env_name, slot->hs400_taps.s.cmd_out_tap);
+		snprintf(env_name, sizeof(env_name), "emmc%d_cmd_out_delay",
+			 slot->bus_id);
+		env_set_ulong(env_name, slot->cmd_out_hs200_delay);
+		snprintf(env_name, sizeof(env_name), "emmc%d_data_out_tap",
+			 slot->bus_id);
+		env_set_ulong(env_name, slot->hs400_taps.s.data_out_tap);
+		snprintf(env_name, sizeof(env_name), "emmc%d_data_out_delay",
+			 slot->bus_id);
+		env_set_ulong(env_name, slot->data_out_hs200_delay);
 	}
 	octeontx_mmc_set_timing(mmc);
 
@@ -2885,14 +2900,29 @@ static int octeontx_mmc_configure_delay(struct mmc *mmc)
 			dout = MMC_DEFAULT_DATA_OUT_TAP;
 			break;
 		case MMC_HS_200:
-			cout = MMC_DEFAULT_HS200_CMD_OUT_TAP;
-			dout = MMC_DEFAULT_HS200_DATA_OUT_TAP;
-			is_hs200 = true;
-			break;
 		case MMC_HS_400:
-			cout = MMC_DEFAULT_HS200_CMD_OUT_TAP;
-			dout = MMC_DEFAULT_HS200_DATA_OUT_TAP;
-			is_hs400 = true;
+			cout = -1;
+			dout = -1;
+			if (host->timing_calibrated) {
+				if (slot->cmd_out_hs200_delay)
+					cout = octeontx2_mmc_calc_delay(mmc,
+						slot->cmd_out_hs200_delay);
+				if (slot->data_out_hs200_delay)
+					dout = octeontx2_mmc_calc_delay(mmc,
+						slot->data_out_hs200_delay);
+				debug("%s(%s): Calibrated HS200/HS400 cmd out delay: %dps tap: %d, data out delay: %d, tap: %d\n",
+				      __func__, mmc->dev->name,
+				      slot->cmd_out_hs200_delay, cout,
+				      slot->data_out_hs200_delay, dout);
+			}
+			if (cout < 0)
+				cout = MMC_DEFAULT_HS200_CMD_OUT_TAP;
+			if (dout < 0)
+				dout = MMC_DEFAULT_HS200_DATA_OUT_TAP;
+			if (mmc->selected_mode == MMC_HS_200)
+				is_hs200 = true;
+			else
+				is_hs400 = true;
 			break;
 		default:
 			pr_err("%s(%s): Invalid mode %d\n", __func__,
@@ -3307,481 +3337,6 @@ static int octeontx_mmc_set_output_bus_timing(struct mmc *mmc)
 	} else {
 		cout_delay = slot->cmd_out_hs400_delay;
 		dout_delay = slot->data_out_hs400_delay;
-	}
-
-	snprintf(env_name, sizeof(env_name), "mmc%d_hs200_dout_delay_ps",
-		 slot->bus_id);
-	dout_delay = env_get_ulong(env_name, 10, dout_delay);
-	debug("%s: dout_delay: %u\n", __func__, dout_delay);
-
-	cout_bdelay = octeontx2_mmc_calc_delay(mmc, cout_delay);
-	dout_bdelay = octeontx2_mmc_calc_delay(mmc, dout_delay);
-
-	debug("%s: cmd output delay: %u, data output delay: %u, cmd bdelay: %d, data bdelay: %d, clock: %d\n",
-	      __func__, cout_delay, dout_delay, cout_bdelay, dout_bdelay,
-	      mmc->clock);
-	if (cout_bdelay < 0 || dout_bdelay < 0) {
-		pr_err("%s: Error: could not calculate command and/or data clock skew\n",
-		       __func__);
-		return -1;
-	}
-	timing.u = read_csr(mmc, MIO_EMM_TIMING());
-	timing.s.cmd_out_tap = cout_bdelay;
-	timing.s.data_out_tap = dout_bdelay;
-	if (mmc->selected_mode == MMC_HS_200) {
-		slot->hs200_taps.s.cmd_out_tap = cout_bdelay;
-		slot->hs200_taps.s.data_out_tap = dout_bdelay;
-	} else if (mmc->selected_mode == MMC_HS_400) {
-		slot->hs400_taps.s.cmd_out_tap = cout_bdelay;
-		slot->hs400_taps.s.data_out_tap = dout_bdelay;
-	} else {
-		slot->taps.s.cmd_out_tap = cout_bdelay;
-		slot->taps.s.data_out_tap = dout_bdelay;
-	}
-	octeontx_mmc_set_emm_timing(mmc, timing);
-	debug("%s(%s): bdelay: %d/%d, clock: %d, ddr: %s, timing taps: %llu, do: %d, di: %d, co: %d, ci: %d\n",
-	      __func__, mmc->dev->name, cout_bdelay, dout_bdelay, mmc->clock,
-	      mmc->ddr_mode ? "yes" : "no",
-	      mmc_to_host(mmc)->timing_taps,
-	      timing.s.data_out_tap,
-	      timing.s.data_in_tap,
-	      timing.s.cmd_out_tap,
-	      timing.s.cmd_in_tap);
-
-	return 0;
-}
-
-static void octeontx_mmc_set_clock(struct mmc *mmc)
-{
-	struct octeontx_mmc_slot *slot = mmc_to_slot(mmc);
-	uint clock;
-
-	clock = min(mmc->cfg->f_max, (uint)slot->clock);
-	clock = max(mmc->cfg->f_min, clock);
-	debug("%s(%s): f_min: %u, f_max: %u, clock: %u\n", __func__,
-	      mmc->dev->name, mmc->cfg->f_min, mmc->cfg->f_max, clock);
-	slot->clock = clock;
-	mmc->clock = clock;
-}
-
-/**
- * This switches I/O power as needed when switching between slots.
- *
- * @param	mmc	mmc data structure
- */
-static void octeontx_mmc_switch_io(struct mmc *mmc)
-{
-	struct octeontx_mmc_slot *slot = mmc_to_slot(mmc);
-	struct octeontx_mmc_host *host = slot->host;
-	struct mmc *last_mmc = host->last_mmc;
-	static struct udevice *last_reg;
-	union mio_emm_cfg emm_cfg;
-	int bus;
-	static bool initialized;
-
-	/* First time? */
-	if (!initialized || mmc != host->last_mmc) {
-		struct mmc *ommc;
-
-		/* Switch to bus 3 which is unused */
-		emm_cfg.u = read_csr(mmc, MIO_EMM_CFG());
-		emm_cfg.s.bus_ena = 1 << 3;
-		write_csr(mmc, MIO_EMM_CFG(), emm_cfg.u);
-
-		/* Turn off all other I/O interfaces with first initialization
-		 * if at least one supply was found.
-		 */
-		for (bus = 0; bus <= OCTEONTX_MAX_MMC_SLOT; bus++) {
-			ommc = &host->slots[bus].mmc;
-
-			/* Handle self case later */
-			if (ommc == mmc || !ommc->vqmmc_supply)
-				continue;
-
-			/* Skip if we're not switching regulators */
-			if (last_reg == mmc->vqmmc_supply)
-				continue;
-
-			/* Turn off other regulators */
-			if (ommc->vqmmc_supply != mmc->vqmmc_supply)
-				regulator_set_enable(ommc->vqmmc_supply, false);
-		}
-		/* Turn ourself on */
-		if (mmc->vqmmc_supply && last_reg != mmc->vqmmc_supply)
-			regulator_set_enable(mmc->vqmmc_supply, true);
-		mdelay(1);	/* Settle time */
-		/* Switch to new bus */
-		emm_cfg.s.bus_ena = 1 << slot->bus_id;
-		write_csr(mmc, MIO_EMM_CFG(), emm_cfg.u);
-		last_reg = mmc->vqmmc_supply;
-		initialized = true;
-		return;
-	}
-
-	/* No change in device */
-	if (last_mmc == mmc)
-		return;
-
-	if (!last_mmc) {
-		pr_warn("%s(%s): No previous slot detected in IO slot switch!\n",
-			__func__, mmc->dev->name);
-		return;
-	}
-
-	debug("%s(%s): last: %s, supply: %p\n", __func__, mmc->dev->name,
-	      last_mmc->dev->name, mmc->vqmmc_supply);
-
-	/* The supply is the same so we do nothing */
-	if (last_mmc->vqmmc_supply == mmc->vqmmc_supply)
-		return;
-
-	/* Turn off the old slot I/O supply */
-	if (last_mmc->vqmmc_supply) {
-		debug("%s(%s): Turning off IO to %s, supply: %s\n",
-		      __func__, mmc->dev->name, last_mmc->dev->name,
-		      last_mmc->vqmmc_supply->name);
-		regulator_set_enable(last_mmc->vqmmc_supply, false);
-	}
-	/* Turn on the new slot I/O supply */
-	if (mmc->vqmmc_supply)  {
-		debug("%s(%s): Turning on IO to slot %d, supply: %s\n",
-		      __func__, mmc->dev->name, slot->bus_id,
-		      mmc->vqmmc_supply->name);
-		regulator_set_enable(mmc->vqmmc_supply, true);
-	}
-	/* Allow power to settle */
-	mdelay(1);
-}
-
-/**
- * Called to switch between mmc devices
- *
- * @param	mmc	new mmc device
- */
-static void octeontx_mmc_switch_to(struct mmc *mmc)
-{
-	struct octeontx_mmc_slot *slot = mmc_to_slot(mmc);
-	struct octeontx_mmc_slot *old_slot;
-	struct octeontx_mmc_host *host = slot->host;
-	union mio_emm_switch emm_switch;
-	union mio_emm_sts_mask emm_sts_mask;
-	union mio_emm_rca emm_rca;
-
-	if (slot->bus_id == host->last_slotid)
-		return;
-
-	debug("%s(%s) switching from slot %d to slot %d\n", __func__,
-	      mmc->dev->name, host->last_slotid, slot->bus_id);
-	octeontx_mmc_switch_io(mmc);
-
-	if (host->last_slotid >= 0 && slot->valid) {
-		old_slot = &host->slots[host->last_slotid];
-		old_slot->cached_switch.u = read_csr(mmc, MIO_EMM_SWITCH());
-		old_slot->cached_rca.u = read_csr(mmc, MIO_EMM_RCA());
-	}
-	if (mmc->rca)
-		write_csr(mmc, MIO_EMM_RCA(), mmc->rca);
-	emm_switch = slot->cached_switch;
-	do_switch(mmc, emm_switch);
-	emm_rca.u = 0;
-	emm_rca.s.card_rca = mmc->rca;
-	write_csr(mmc, MIO_EMM_RCA(), emm_rca.u);
-	mdelay(100);
-
-	set_wdog(mmc, 100000);
-	if (octeontx_mmc_set_output_bus_timing(mmc) ||
-	    octeontx_mmc_set_input_bus_timing(mmc))
-		pr_err("%s(%s): Error setting bus timing\n", __func__,
-		       mmc->dev->name);
-	octeontx_mmc_io_drive_setup(mmc);
-
-	emm_sts_mask.u = 0;
-	emm_sts_mask.s.sts_msk = 1 << 7 | 1 << 22 | 1 << 23 | 1 << 19;
-	write_csr(mmc, MIO_EMM_STS_MASK(), emm_sts_mask.u);
-	host->last_slotid = slot->bus_id;
-	host->last_mmc = mmc;
-	mdelay(10);
-}
-
-/**
- * Perform initial timing configuration
- *
- * @param mmc	mmc device
- *
- * @return 0 for success
- *
- * NOTE: This will need to be updated when new silicon comes out
- */
-static int octeontx_mmc_init_timing(struct mmc *mmc)
-{
-	union mio_emm_timing timing;
-
-	if (mmc_to_slot(mmc)->is_asim || mmc_to_slot(mmc)->is_emul)
-		return 0;
-
-	debug("%s(%s)\n", __func__, mmc->dev->name);
-	timing.u = 0;
-	timing.s.cmd_out_tap = MMC_DEFAULT_CMD_OUT_TAP;
-	timing.s.data_out_tap = MMC_DEFAULT_DATA_OUT_TAP;
-	timing.s.cmd_in_tap = MMC_DEFAULT_CMD_IN_TAP;
-	timing.s.data_in_tap = MMC_DEFAULT_DATA_IN_TAP;
-	octeontx_mmc_set_emm_timing(mmc, timing);
-	return 0;
-}
-
-/**
- * Perform low-level initialization
- *
- * @param	mmc	mmc device
- *
- * @return	0 for success, error otherwise
- */
-static int octeontx_mmc_init_lowlevel(struct mmc *mmc)
-{
-	struct octeontx_mmc_slot *slot = mmc_to_slot(mmc);
-	struct octeontx_mmc_host *host = slot->host;
-	union mio_emm_switch emm_switch;
-	u32 clk_period;
-
-	debug("%s(%s): lowlevel init for slot %d\n", __func__,
-	      mmc->dev->name, slot->bus_id);
-	host->emm_cfg.s.bus_ena &= ~(1 << slot->bus_id);
-	write_csr(mmc, MIO_EMM_CFG(), host->emm_cfg.u);
-	udelay(100);
-	host->emm_cfg.s.bus_ena |= 1 << slot->bus_id;
-	write_csr(mmc, MIO_EMM_CFG(), host->emm_cfg.u);
-	udelay(10);
-	slot->clock = mmc->cfg->f_min;
-	octeontx_mmc_set_clock(&slot->mmc);
-
-	if (IS_ENABLED(CONFIG_ARCH_OCTEONTX2)) {
-		if (host->cond_clock_glitch) {
-			union mio_emm_debug emm_debug;
-
-			emm_debug.u = read_csr(mmc, MIO_EMM_DEBUG());
-			emm_debug.s.clk_on = 1;
-			write_csr(mmc, MIO_EMM_DEBUG(), emm_debug.u);
-		}
-		octeontx_mmc_calibrate_delay(&slot->mmc);
-	}
-
-	clk_period = octeontx_mmc_calc_clk_period(mmc);
-	emm_switch.u = 0;
-	emm_switch.s.power_class = 10;
-	emm_switch.s.clk_lo = clk_period / 2;
-	emm_switch.s.clk_hi = clk_period / 2;
-
-	emm_switch.s.bus_id = slot->bus_id;
-	debug("%s: Performing switch\n", __func__);
-	do_switch(mmc, emm_switch);
-	slot->cached_switch.u = emm_switch.u;
-
-	if (!IS_ENABLED(CONFIG_ARCH_OCTEONTX))
-		octeontx_mmc_init_timing(mmc);
-
-	set_wdog(mmc, 1000000); /* Set to 1 second */
-	write_csr(mmc, MIO_EMM_STS_MASK(), 0xe4390080ull);
-	write_csr(mmc, MIO_EMM_RCA(), 1);
-	mdelay(10);
-	debug("%s: done\n", __func__);
-	return 0;
-}
-
-/**
- * Translates a voltage number to bits in MMC register
- *
- * @param	voltage	voltage in microvolts
- *
- * @return	MMC register value for voltage
- */
-static u32 xlate_voltage(u32 voltage)
-{
-	u32 volt = 0;
-
-	/* Convert to millivolts */
-	voltage /= 1000;
-	if (voltage >= 1650 && voltage <= 1950)
-		volt |= MMC_VDD_165_195;
-	if (voltage >= 2000 && voltage <= 2100)
-		volt |= MMC_VDD_20_21;
-	if (voltage >= 2100 && voltage <= 2200)
-		volt |= MMC_VDD_21_22;
-	if (voltage >= 2200 && voltage <= 2300)
-		volt |= MMC_VDD_22_23;
-	if (voltage >= 2300 && voltage <= 2400)
-		volt |= MMC_VDD_23_24;
-	if (voltage >= 2400 && voltage <= 2500)
-		volt |= MMC_VDD_24_25;
-	if (voltage >= 2500 && voltage <= 2600)
-		volt |= MMC_VDD_25_26;
-	if (voltage >= 2600 && voltage <= 2700)
-		volt |= MMC_VDD_26_27;
-	if (voltage >= 2700 && voltage <= 2800)
-		volt |= MMC_VDD_27_28;
-	if (voltage >= 2800 && voltage <= 2900)
-		volt |= MMC_VDD_28_29;
-	if (voltage >= 2900 && voltage <= 3000)
-		volt |= MMC_VDD_29_30;
-	if (voltage >= 3000 && voltage <= 3100)
-		volt |= MMC_VDD_30_31;
-	if (voltage >= 3100 && voltage <= 3200)
-		volt |= MMC_VDD_31_32;
-	if (voltage >= 3200 && voltage <= 3300)
-		volt |= MMC_VDD_32_33;
-	if (voltage >= 3300 && voltage <= 3400)
-		volt |= MMC_VDD_33_34;
-	if (voltage >= 3400 && voltage <= 3500)
-		volt |= MMC_VDD_34_35;
-	if (voltage >= 3500 && voltage <= 3600)
-		volt |= MMC_VDD_35_36;
-
-	return volt;
-}
-
-/**
- * Check if a slot is valid in the device tree
- *
- * @param	dev	slot device to check
- *
- * @return	true if status reports "ok" or "okay" or if no status,
- *		false otherwise.
- */
-static bool octeontx_mmc_get_valid(struct udevice *dev)
-{
-	const char *stat = ofnode_read_string(dev->node, "status");
-
-	if (!stat || !strncmp(stat, "ok", 2))
-		return true;
-	else
-		return false;
-}
-
-/**
- * Reads slot configuration from the device tree
- *
- * @param	dev	slot device
- *
- * @return	0 on success, otherwise error
- */
-static int octeontx_mmc_get_config(struct udevice *dev)
-{
-	struct octeontx_mmc_slot *slot = dev_to_mmc_slot(dev);
-	uint voltages[2];
-	uint low, high;
-	char env_name[32];
-	int err;
-	ofnode node = dev->node;
-	int bus_width = 1;
-	ulong new_max_freq;
-
-	debug("%s(%s)", __func__, dev->name);
-	slot->cfg.name = dev->name;
-
-	slot->cfg.f_max = ofnode_read_s32_default(dev->node, "max-frequency",
-						  26000000);
-	snprintf(env_name, sizeof(env_name), "mmc_max_frequency%d",
-		 slot->bus_id);
-
-	new_max_freq = env_get_ulong(env_name, 10, slot->cfg.f_max);
-	dev_dbg(dev, "Reading %s, got %lu\n", env_name, new_max_freq);
-
-	if (new_max_freq != slot->cfg.f_max) {
-		printf("Overriding device tree MMC maximum frequency %u to %lu\n",
-		       slot->cfg.f_max, new_max_freq);
-		slot->cfg.f_max = new_max_freq;
-	}
-	slot->cfg.f_min = 400000;
-	slot->cfg.b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
-
-	slot->hs400_tuning_block =
-		ofnode_read_s32_default(dev->node,
-					"marvell,hs400-tuning-block", -1);
-	debug("%s(%s): mmc HS400 tuning block: %d\n", __func__, dev->name,
-	      slot->hs400_tuning_block);
-
-	slot->hs200_tap_adj =
-		ofnode_read_s32_default(dev->node,
-					"marvell,hs200-tap-adjust", 0);
-	debug("%s(%s): hs200-tap-adjust: %d\n", __func__, dev->name,
-	      slot->hs200_tap_adj);
-	slot->hs400_tap_adj =
-		ofnode_read_s32_default(dev->node,
-					"marvell,hs400-tap-adjust", 0);
-	debug("%s(%s): hs400-tap-adjust: %d\n", __func__, dev->name,
-	      slot->hs400_tap_adj);
-	err = ofnode_read_u32_array(dev->node, "voltage-ranges", voltages, 2);
-	if (err) {
-		slot->cfg.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
-	} else {
-		low = xlate_voltage(voltages[0]);
-		high = xlate_voltage(voltages[1]);
-		debug("  low voltage: 0x%x (%u), high: 0x%x (%u)\n",
-		      low, voltages[0], high, voltages[1]);
-		if (low > high || !low || !high) {
-			pr_err("Invalid MMC voltage range [%u-%u] specified for %s\n",
-			       low, high, dev->name);
-			return -1;
-		}
-		slot->cfg.voltages = 0;
-		do {
-			slot->cfg.voltages |= low;
-			low <<= 1;
-		} while (low <= high);
-	}
-	debug("%s: config voltages: 0x%x\n", __func__, slot->cfg.voltages);
-	slot->slew = ofnode_read_s32_default(node, "cavium,clk-slew", -1);
-	slot->drive = ofnode_read_s32_default(node, "cavium,drv-strength", -1);
-	gpio_request_by_name(dev, "cd-gpios", 0, &slot->cd_gpio, GPIOD_IS_IN);
-	slot->cd_inverted = ofnode_read_bool(node, "cd-inverted");
-	gpio_request_by_name(dev, "wp-gpios", 0, &slot->wp_gpio, GPIOD_IS_IN);
-	slot->wp_inverted = ofnode_read_bool(node, "wp-inverted");
-	if (slot->cfg.voltages & MMC_VDD_165_195) {
-		slot->is_1_8v = true;
-		slot->is_3_3v = false;
-	} else if (slot->cfg.voltages & (MMC_VDD_30_31 | MMC_VDD_31_32 |
-					 MMC_VDD_33_34 | MMC_VDD_34_35 |
-					 MMC_VDD_35_36)) {
-		slot->is_1_8v = false;
-		slot->is_3_3v = true;
-	}
-
-	bus_width = ofnode_read_u32_default(node, "bus-width", 1);
-	/* Note fall-through */
-	switch (bus_width) {
-	case 8:
-		slot->cfg.host_caps |= MMC_MODE_8BIT;
-	case 4:
-		slot->cfg.host_caps |= MMC_MODE_4BIT;
-	case 1:
-		slot->cfg.host_caps |= MMC_MODE_1BIT;
-		break;
-	}
-	if (ofnode_read_bool(node, "no-1-8-v")) {
-		slot->is_3_3v = true;
-		slot->is_1_8v = false;
-		if (!(slot->cfg.voltages & (MMC_VDD_32_33 | MMC_VDD_33_34)))
-			pr_warn("%s(%s): voltages indicate 3.3v but 3.3v not supported\n",
-				__func__, dev->name);
-	}
-	if (ofnode_read_bool(node, "mmc-ddr-3-3v")) {
-		slot->is_3_3v = true;
-		slot->is_1_8v = false;
-		if (!(slot->cfg.voltages & (MMC_VDD_32_33 | MMC_VDD_33_34)))
-			pr_warn("%s(%s): voltages indicate 3.3v but 3.3v not supported\n",
-				__func__, dev->name);
-	}
-	if (ofnode_read_bool(node, "cap-sd-highspeed") ||
-	    ofnode_read_bool(node, "cap-mmc-highspeed") ||
-	    ofnode_read_bool(node, "sd-uhs-sdr25"))
-		slot->cfg.host_caps |= MMC_MODE_HS;
-	if (slot->cfg.f_max >= 50000000 &&
-	    slot->cfg.host_caps & MMC_MODE_HS)
-		slot->cfg.host_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
-	if (ofnode_read_bool(node, "sd-uhs-sdr50"))
-		slot->cfg.host_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
-	if (ofnode_read_bool(node, "sd-uhs-ddr50"))
-		slot->cfg.host_caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz |
-				       MMC_MODE_DDR_52MHz;
 
 	if (IS_ENABLED(CONFIG_ARCH_OCTEONTX2)) {
 		if (!slot->is_asim && !slot->is_emul) {

@@ -1921,6 +1921,8 @@ static int octeontx_tune_hs400(struct mmc *mmc)
 	slot->hs400_taps.s.data_in_tap = tap;
 	slot->hs400_tuned = true;
 	if (env_get_yesno("emmc_export_hs400_taps") > 0) {
+		debug("%s(%s): Exporting HS400 taps\n",
+		      __func__, mmc->dev->name);
 		snprintf(env_name, sizeof(env_name), "emmc%d_data_in_tap_debug",
 			 slot->bus_id);
 		env_set(env_name, how);
@@ -1941,13 +1943,16 @@ static int octeontx_tune_hs400(struct mmc *mmc)
 		env_set_ulong(env_name, slot->hs400_taps.s.cmd_out_tap);
 		snprintf(env_name, sizeof(env_name), "emmc%d_cmd_out_delay",
 			 slot->bus_id);
-		env_set_ulong(env_name, slot->cmd_out_hs200_delay);
+		env_set_ulong(env_name, slot->cmd_out_hs400_delay);
 		snprintf(env_name, sizeof(env_name), "emmc%d_data_out_tap",
 			 slot->bus_id);
 		env_set_ulong(env_name, slot->hs400_taps.s.data_out_tap);
 		snprintf(env_name, sizeof(env_name), "emmc%d_data_out_delay",
 			 slot->bus_id);
-		env_set_ulong(env_name, slot->data_out_hs200_delay);
+		env_set_ulong(env_name, slot->data_out_hs400_delay);
+	} else {
+		debug("%s(%s): HS400 environment export disabled\n",
+		      __func__, mmc->dev->name);
 	}
 	octeontx_mmc_set_timing(mmc);
 
@@ -2047,8 +2052,10 @@ static int octeontx_tune_hs400(struct mmc *mmc)
 	char env_name[64];
 	char how[MAX_NO_OF_TAPS + 1] = "";
 
-	if (slot->hs400_tuning_block == -1)
-		return 0;
+	debug("%s(%s, %s, %d), hs200: %d\n", __func__, mmc->dev->name,
+	      adj->name, opcode, is_hs200);
+	octeontx_mmc_set_emm_timing(mmc,
+				    is_hs200 ? slot->hs200_taps : slot->taps);
 
 	/* The eMMC standard disables all tuning support when operating in
 	 * DDR modes like HS400.  The problem with this is that there are
@@ -2900,38 +2907,51 @@ static int octeontx_mmc_configure_delay(struct mmc *mmc)
 			dout = MMC_DEFAULT_DATA_OUT_TAP;
 			break;
 		case MMC_HS_200:
-		case MMC_HS_400:
 			cout = -1;
 			dout = -1;
 			if (host->timing_calibrated) {
-				if (slot->cmd_out_hs200_delay)
-					cout = octeontx2_mmc_calc_delay(mmc,
+				cout = octeontx2_mmc_calc_delay(mmc,
 						slot->cmd_out_hs200_delay);
-				if (slot->data_out_hs200_delay)
-					dout = octeontx2_mmc_calc_delay(mmc,
+				dout = octeontx2_mmc_calc_delay(mmc,
 						slot->data_out_hs200_delay);
 				debug("%s(%s): Calibrated HS200/HS400 cmd out delay: %dps tap: %d, data out delay: %d, tap: %d\n",
 				      __func__, mmc->dev->name,
 				      slot->cmd_out_hs200_delay, cout,
 				      slot->data_out_hs200_delay, dout);
-			}
-			if (cout < 0)
+			} else {
 				cout = MMC_DEFAULT_HS200_CMD_OUT_TAP;
-			if (dout < 0)
 				dout = MMC_DEFAULT_HS200_DATA_OUT_TAP;
-			if (mmc->selected_mode == MMC_HS_200)
-				is_hs200 = true;
-			else
-				is_hs400 = true;
+			}
+			is_hs200 = true;
+			break;
+		case MMC_HS_400:
+			cout = -1;
+			dout = -1;
+			if (host->timing_calibrated) {
+				if (slot->cmd_out_hs400_delay)
+					cout = octeontx2_mmc_calc_delay(mmc,
+						slot->cmd_out_hs400_delay);
+				if (slot->data_out_hs400_delay)
+					dout = octeontx2_mmc_calc_delay(mmc,
+						slot->data_out_hs400_delay);
+				debug("%s(%s): Calibrated HS200/HS400 cmd out delay: %dps tap: %d, data out delay: %d, tap: %d\n",
+				      __func__, mmc->dev->name,
+				      slot->cmd_out_hs400_delay, cout,
+				      slot->data_out_hs400_delay, dout);
+			} else {
+				cout = MMC_DEFAULT_HS400_CMD_OUT_TAP;
+				dout = MMC_DEFAULT_HS400_DATA_OUT_TAP;
+			}
+			is_hs400 = true;
 			break;
 		default:
 			pr_err("%s(%s): Invalid mode %d\n", __func__,
 			       mmc->dev->name, mmc->selected_mode);
 			return -1;
 		}
-		debug("%s(%s): Not tuned, hs200: %d, hs200 tuned: %d, tuned: %d\n",
+		debug("%s(%s): Not tuned, hs200: %d, hs200 tuned: %d, hs400: %d, hs400 tuned: %d, tuned: %d\n",
 		      __func__, mmc->dev->name, is_hs200, slot->hs200_tuned,
-		      slot->tuned);
+		      is_hs400, slot->hs400_tuned, slot->tuned);
 		/* Set some defaults */
 		if (is_hs200) {
 			slot->hs200_taps.u = 0;
@@ -3337,7 +3357,7 @@ static int octeontx_mmc_set_output_bus_timing(struct mmc *mmc)
 	} else {
 		cout_delay = slot->cmd_out_hs400_delay;
 		dout_delay = slot->data_out_hs400_delay;
-
+	}
 	if (IS_ENABLED(CONFIG_ARCH_OCTEONTX2)) {
 		if (!slot->is_asim && !slot->is_emul) {
 			if (ofnode_read_bool(node, "mmc-hs200-1_8v"))

@@ -678,6 +678,31 @@ int cgx_intf_set_macaddr(struct udevice *ethdev)
 	return 0;
 }
 
+int cgx_intf_set_macaddr(struct udevice *ethdev)
+{
+	struct rvu_pf *rvu = dev_get_priv(ethdev);
+	struct nix *nix = rvu->nix;
+	union cgx_scratchx0 scr0;
+	int ret;
+	union cgx_cmd_s cmd;
+	u64 mac, tmp;
+
+	memcpy((void *)&tmp, nix->lmac->mac_addr, 6);
+	mac = swab64(tmp) >> 16;
+	cmd.cmd.id = CGX_CMD_SET_MAC_ADDR;
+	cmd.mac_args.addr = mac;
+	cmd.mac_args.pf_id = rvu->pfid;
+
+	ret = cgx_intf_req(nix->lmac->cgx->cgx_id, nix->lmac->lmac_id,
+			   cmd, &scr0.u, 0);
+	if (ret) {
+		printf("Set user mac addr failed for %s\n", ethdev->name);
+		return -1;
+	}
+
+	return 0;
+}
+
 int cgx_intf_display_eye(u8 qlm, u8 lane)
 {
 	union cgx_scratchx0 scr0;

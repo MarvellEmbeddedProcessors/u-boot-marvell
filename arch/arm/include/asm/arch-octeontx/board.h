@@ -123,5 +123,4 @@ void fdt_board_update_macaddr(int bgx_idx, int lmacid, char *mac);
 #endif
 void bgx_set_board_info(int bgx_id, int *mdio_bus, int *phy_addr,
 			bool *autoneg_dis, bool *lmac_reg, bool *lmac_enable);
-u64 fdt_get_preserved_mem_size(unsigned int node);
 #endif /* __BOARD_H__ */

@@ -92,39 +92,6 @@ int fdt_get_board_mac_cnt(void)
 	return mac_count;
 }
 
-u64 fdt_get_preserved_mem_size(unsigned int node)
-{
-	const void *fdt = gd->fdt_blob;
-	int bdk_node, len = 64;
-	const char *str = NULL;
-	u64 preserved_mem_size = 0;
-	u64 total_preserved_mem_size = 0;
-
-	bdk_node = fdt_get_bdk_node();
-	if (!bdk_node)
-		return 0;
-
-	str = fdt_getprop(fdt, bdk_node, "DDR-CONFIG-PRESERVE-NON-SECURE", &len);
-	if (str) {
-		preserved_mem_size = (strtoul(str, NULL, 16) << 20);
-		total_preserved_mem_size += preserved_mem_size;
-		if (preserved_mem_size)
-			printf("Preserved non-secure memory: 0x%llx bytes\n",
-			       preserved_mem_size);
-	}
-
-	str = fdt_getprop(fdt, bdk_node, "DDR-CONFIG-PRESERVE-SECURE", &len);
-	if (str) {
-		preserved_mem_size = (strtoul(str, NULL, 16) << 20);
-		total_preserved_mem_size += preserved_mem_size;
-		if (preserved_mem_size)
-			printf("Preserved secure memory: 0x%llx bytes\n",
-			       preserved_mem_size);
-	}
-
-	return total_preserved_mem_size;
-}
-
 const char *fdt_get_board_serial(void)
 {
 	const void *fdt = gd->fdt_blob;

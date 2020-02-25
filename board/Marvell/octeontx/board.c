@@ -69,8 +69,6 @@ int dram_init(void)
 {
 	gd->ram_size = smc_dram_size(0);
 	gd->ram_size -= CONFIG_SYS_SDRAM_BASE;
-
-	gd->ram_size -= fdt_get_preserved_mem_size(0);
 	mem_map_fill();
 
 	return 0;

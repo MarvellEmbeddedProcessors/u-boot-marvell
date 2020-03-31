@@ -10,6 +10,7 @@
 
 extern int cgx_intf_prbs(u8 qlm, u8 mode, u32 time);
 extern int cgx_intf_display_eye(u8 qlm, u8 lane);
+extern int cgx_intf_display_serdes(u8 qlm, u8 lane);
 
 static int do_prbs(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
@@ -58,3 +59,24 @@ U_BOOT_CMD(eye,    3,    1,     do_eye,
 	   "    - run eye by 'lane'  'qlm'\n"
 );
 
+static int do_serdes(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	ulong lane;
+	ulong qlm;
+
+	if (argc != 3)
+		return CMD_RET_USAGE;
+
+	qlm = simple_strtoul(argv[1], NULL, 10);
+	lane = simple_strtoul(argv[2], NULL, 10);
+
+	cgx_intf_display_serdes(qlm, lane);
+
+	return CMD_RET_SUCCESS;
+}
+
+U_BOOT_CMD(serdes,    3,    1,     do_serdes,
+	   "command to display serdes state of a lane in a given QLM",
+	   "<qlm> <lane>\n"
+	   "    - display serdes state of 'lane' in 'qlm'\n"
+);

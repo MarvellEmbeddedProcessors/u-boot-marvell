@@ -1237,7 +1237,8 @@ static void bgx_init_hw(struct bgx *bgx)
 						       PCS_MISC_CTL_MODE);
 				}
 
-				if (!bgx_board_info[bgx->bgx_id].phy_info[lmacid].autoneg_dis) {
+				if (!bgx_board_info[bgx->bgx_id].
+						phy_info[lmacid].autoneg_dis) {
 					/* The Linux DTS does not disable
 					 * autoneg for this LMAC (in SGMII or
 					 * 1000BASE-X mode), so that means

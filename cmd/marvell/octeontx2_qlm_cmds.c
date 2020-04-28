@@ -8,7 +8,7 @@
 #include <common.h>
 #include <command.h>
 
-extern int cgx_intf_prbs(u8 qlm, u8 mode, u32 time);
+extern int cgx_intf_prbs(u8 qlm, u8 mode, u32 time, u32 lane);
 extern int cgx_intf_display_eye(u8 qlm, u8 lane);
 extern int cgx_intf_display_serdes(u8 qlm, u8 lane);
 
@@ -17,24 +17,33 @@ static int do_prbs(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	ulong time;
 	ulong mode;
 	ulong qlm;
+	ulong lane;
 
-	if (argc != 4)
+	if (argc == 5) {
+		qlm = simple_strtoul(argv[1], NULL, 10);
+		mode = simple_strtoul(argv[2], NULL, 10);
+		time = simple_strtoul(argv[3], NULL, 10);
+		lane = simple_strtoul(argv[4], NULL, 10);
+	} else if (argc == 4) {
+		qlm = simple_strtoul(argv[1], NULL, 10);
+		mode = simple_strtoul(argv[2], NULL, 10);
+		time = simple_strtoul(argv[3], NULL, 10);
+		lane = -1;
+	} else {
 		return CMD_RET_USAGE;
+	}
 
-	qlm = simple_strtoul(argv[1], NULL, 10);
-	mode = simple_strtoul(argv[2], NULL, 10);
-	time = simple_strtoul(argv[3], NULL, 10);
-
-	cgx_intf_prbs(qlm, mode, time);
+	cgx_intf_prbs(qlm, mode, time, lane);
 
 	return CMD_RET_SUCCESS;
 }
 
-U_BOOT_CMD(prbs,    4,    1,     do_prbs,
+U_BOOT_CMD(prbs,    5,    1,     do_prbs,
 	   "command to run PRBS on slected QLM",
-	   "<qlm> <mode> <time>\n"
+	   "<qlm> <mode> <time> [lane]\n"
 	   "    - run PRBS with pattern indicated by 'mode' on selected 'qlm'\n"
-	   "      PRBS will be enabled by 'time' seconds"
+	   "      PRBS will be enabled by 'time' seconds\n"
+	   "      PRBS is performed on a particular LANE if passed"
 );
 
 static int do_eye(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])

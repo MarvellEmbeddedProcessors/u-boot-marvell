@@ -98,7 +98,7 @@ int cgx_intf_get_link_sts(u8 cgx, u8 lmac, u64 *lnk_sts);
 int cgx_intf_link_up_dwn(u8 cgx, u8 lmac, u8 up_dwn, u64 *lnk_sts);
 int cgx_intf_get_mac_addr(u8 cgx, u8 lmac, u8 *mac);
 int cgx_intf_set_macaddr(struct udevice *dev);
-int cgx_intf_prbs(u8 qlm, u8 mode, u32 time);
+int cgx_intf_prbs(u8 qlm, u8 mode, u32 time, u8 lane);
 int cgx_intf_display_eye(u8 qlm, u8 lane);
 int cgx_intf_display_serdes(u8 qlm, u8 lane);
 

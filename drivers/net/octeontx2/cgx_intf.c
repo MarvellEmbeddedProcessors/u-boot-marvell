@@ -649,31 +649,21 @@ int cgx_intf_set_ignore(struct udevice *ethdev, int cgx, int lmac, int ignore)
 			       cgx_id, lmac_id);
 		return -1;
 	}
-
-	return 0;
-}
-
-int cgx_intf_set_macaddr(struct udevice *ethdev)
-{
-	struct rvu_pf *rvu = dev_get_priv(ethdev);
-	struct nix *nix = rvu->nix;
-	union cgx_scratchx0 scr0;
-	int ret;
-	union cgx_cmd_s cmd;
-	u64 mac, tmp;
-
-	memcpy((void *)&tmp, nix->lmac->mac_addr, 6);
-	mac = swab64(tmp) >> 16;
-	cmd.cmd.id = CGX_CMD_SET_MAC_ADDR;
-	cmd.mac_args.addr = mac;
-	cmd.mac_args.pf_id = rvu->pfid;
-
-	ret = cgx_intf_req(nix->lmac->cgx->cgx_id, nix->lmac->lmac_id,
-			   cmd, &scr0.u, 0);
 	if (ret) {
-		printf("Set user mac addr failed for %s\n", ethdev->name);
+		if (ethdev)
+			printf("Get ignore command failed for %s\n",
+			       ethdev->name);
+		else
+			printf("Get ignore command failed for CGX%d LMAC%d\n",
+			       cgx_id, lmac_id);
 		return -1;
 	}
+	if (ethdev)
+		printf("Persist settings %signored for %s\n",
+		       scr0.s.persist.ignore ? "" : "not ", ethdev->name);
+	else
+		printf("Persist settings %signored for CGX%d LMAC%d\n",
+		       scr0.s.persist.ignore ? "" : "not ", cgx_id, lmac_id);
 
 	return 0;
 }

@@ -41,7 +41,8 @@ int npa_attach_aura(struct nix_af *nix_af, int lf,
 	u64 head;
 	ulong start;
 
-	debug("%s(%p, %d, %p, %u)\n", __func__, nix_af, lf, desc, aura_id);
+	debug("%s(%p, lf %d, %p, aura id %u)\n", __func__, nix_af, lf, desc,
+	      aura_id);
 	aq_stat.u = npa_af_reg_read(npa, NPA_AF_AQ_STATUS());
 	head = aq_stat.s.head_ptr;
 	inst = (union npa_aq_inst_s *)(npa->aq.inst.base) + head;

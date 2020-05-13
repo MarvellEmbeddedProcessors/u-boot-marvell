@@ -17,13 +17,13 @@
 
 extern struct udevice *rvu_af_dev;
 
-int rvu_pf_init(struct rvu_pf *rvu)
+int rvu_pf_init(struct rvu_pf *rvu, int nix_id)
 {
 	struct nix *nix;
 	struct eth_pdata *pdata = dev_get_platdata(rvu->dev);
 
-	debug("%s: Allocating nix lf\n", __func__);
-	nix = nix_lf_alloc(rvu->dev);
+	debug("%s: Allocating nix%d lf\n", __func__, nix_id);
+	nix = nix_lf_alloc(rvu->dev, nix_id);
 	if (!nix) {
 		printf("%s: Error allocating lf for pf %d\n",
 		       __func__, rvu->pfid);
@@ -53,7 +53,8 @@ static const struct eth_ops nix_eth_ops = {
 int rvu_pf_probe(struct udevice *dev)
 {
 	struct rvu_pf *rvu = dev_get_priv(dev);
-	int err;
+	struct lmac *cgx_lmac;
+	int err, nix_id;
 	char name[16];
 
 	debug("%s: name: %s\n", __func__, dev->name);
@@ -68,11 +69,30 @@ int rvu_pf_probe(struct udevice *dev)
 	}
 	rvu->afdev = rvu_af_dev;
 
-	debug("RVU PF %u BAR2 %p\n", rvu->pfid, rvu->pf_base);
+	/* Retrieve the NIX ID from the LMAC pointer. */
+	cgx_lmac = nix_get_cgx_lmac(rvu->pfid);
+	if (!cgx_lmac) {
+		printf("RVU PF%d: cannot locate LMAC, unknown NIX ID\n",
+		       rvu->pfid);
+		return -1;
+	}
 
-	rvu_get_lfid_for_pf(rvu->pfid, &rvu->nix_lfid, &rvu->npa_lfid);
+	switch (cgx_lmac->p2x_sel) {
+	case P2X1_NIX0:
+	case P2X2_NIX1:
+		nix_id = cgx_lmac->p2x_sel - P2X1_NIX0;
+		break;
+	default:
+		printf("RVU PF%d: invalid LMAC P2X_SEL %d, unknown NIX ID\n",
+		       rvu->pfid, (int)cgx_lmac->p2x_sel);
+		return -1;
+	}
 
-	err = rvu_pf_init(rvu);
+	debug("RVU PF%d: using NIX%d\n", rvu->pfid, nix_id);
+
+	rvu_get_lfid_for_pf(rvu->pfid, nix_id, &rvu->nix_lfid, &rvu->npa_lfid);
+
+	err = rvu_pf_init(rvu, nix_id);
 	if (err)
 		printf("%s: Error %d adding nix\n", __func__, err);
 

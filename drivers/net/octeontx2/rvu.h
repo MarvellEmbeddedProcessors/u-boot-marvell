@@ -10,6 +10,9 @@
 
 #define ALIGNED		__aligned(CONFIG_SYS_CACHELINE_SIZE)
 
+/* Maximum number of NIX blocks supported */
+#define MAX_RVU_NIX             2
+
 #define Q_SIZE_16		0ULL /* 16 entries */
 #define Q_SIZE_64		1ULL /* 64 entries */
 #define Q_SIZE_256		2ULL
@@ -50,7 +53,7 @@ struct admin_queue {
 struct rvu_af {
 	struct udevice *dev;
 	void __iomem *af_base;
-	struct nix_af *nix_af;
+	struct nix_af *nix_af[MAX_RVU_NIX];
 };
 
 struct rvu_pf {
@@ -113,7 +116,21 @@ int rvu_aq_alloc(struct admin_queue *aq, unsigned int qsize,
  */
 void rvu_aq_free(struct admin_queue *aq);
 
-void rvu_get_lfid_for_pf(int pf, int *nixid, int *npaid);
+void rvu_get_lfid_for_pf(int pf, int nix_id, int *nix_lfid, int *npa_lfid);
+
+/**
+ * Reads an RVU PF (BAR2) register.
+ *
+ * @param       base    RVU PF BAR2 base
+ * @param       offset  register address to read (offset into RVU PF BAR2)
+ */
+static inline u64 rvu_bar2_reg_read(void __iomem *bar2_base, u64 offset)
+{
+	u64 val = readq(bar2_base + offset);
+
+	debug("%s reg %p val %llx\n", __func__, bar2_base + offset, val);
+	return val;
+}
 
 #endif /* __RVU_H__ */
 

@@ -337,7 +337,7 @@ int nix_af_setup(struct nix_af *nix_af);
 int nix_af_shutdown(struct nix_af *nix_af);
 int nix_lf_setup(struct nix *nix);
 int nix_lf_shutdown(struct nix *nix);
-struct nix *nix_lf_alloc(struct udevice *dev);
+struct nix *nix_lf_alloc(struct udevice *dev, int nix_id);
 int nix_lf_admin_setup(struct nix *nix);
 int nix_lf_admin_shutdown(struct nix_af *nix_af, int lf,
 			  u32 cq_count, u32 rq_count, u32 sq_count);

@@ -26,6 +26,11 @@ enum lmac_type {
 	LMAC_MODE_USXGMII	= 10,
 };
 
+enum p2x_select {
+	P2X1_NIX0 = 1,
+	P2X2_NIX1 = 2,
+};
+
 extern char lmac_type_to_str[][8];
 
 extern char lmac_speed_to_str[][8];
@@ -48,6 +53,7 @@ struct lmac {
 	struct nix	*nix;
 	char		name[16];
 	enum lmac_type	lmac_type;
+	enum p2x_select p2x_sel;
 	bool		init_pend;
 	u8		instance;
 	u8		lmac_id;

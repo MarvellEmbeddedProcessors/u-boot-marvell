@@ -230,6 +230,7 @@ static int cgx_lmac_init(struct cgx *cgx)
 		/* Get LMAC type */
 		cmrx_cfg.u = cgx_read(cgx, i, CGXX_CMRX_CONFIG(0));
 		lmac->lmac_type = cmrx_cfg.s.lmac_type;
+		lmac->p2x_sel = cmrx_cfg.s.p2x_select;
 
 		lmac->lmac_id = i;
 		lmac->cgx = cgx;

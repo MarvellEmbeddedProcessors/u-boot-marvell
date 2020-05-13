@@ -376,7 +376,7 @@ int nix_lf_shutdown(struct nix *nix)
 	return 0;
 }
 
-struct nix *nix_lf_alloc(struct udevice *dev)
+struct nix *nix_lf_alloc(struct udevice *dev, int nix_id)
 {
 	union rvu_func_addr_s block_addr;
 	struct nix *nix;
@@ -392,10 +392,10 @@ struct nix *nix_lf_alloc(struct udevice *dev)
 		printf("%s: Out of memory for nix instance\n", __func__);
 		return NULL;
 	}
-	nix->nix_af = rvu_af->nix_af;
+	nix->nix_af = rvu_af->nix_af[nix_id];
 
 	block_addr.u = 0;
-	block_addr.s.block = RVU_BLOCK_ADDR_E_NIXX(0);
+	block_addr.s.block = RVU_BLOCK_ADDR_E_NIXX(nix_id);
 	nix->nix_base = rvu->pf_base + block_addr.u;
 	block_addr.u = 0;
 	block_addr.s.block = RVU_BLOCK_ADDR_E_NPC;
@@ -415,6 +415,9 @@ struct nix *nix_lf_alloc(struct udevice *dev)
 	nix->rss_grps = 1;
 	nix->cq_cnt = 2;
 	nix->xqe_sz = NIX_CQE_SIZE_W16;
+
+	debug("NIX%d lf %d nix_base %p pf_func 0x%x nix_af %p\n", nix_id,
+	      nix->lf, nix->nix_base, nix->pf_func, nix->nix_af);
 
 	nix->lmac = nix_get_cgx_lmac(nix->pf);
 	if (!nix->lmac) {

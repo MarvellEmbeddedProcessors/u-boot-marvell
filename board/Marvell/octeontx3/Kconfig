@@ -1,0 +1,14 @@
+if TARGET_OCTEONTX3_106XX
+
+config SYS_VENDOR
+	string
+	default	"Marvell"
+
+config SYS_BOARD
+	string
+	default "octeontx3"
+
+config SYS_CONFIG_NAME
+	default "octeontx3_common"
+
+endif

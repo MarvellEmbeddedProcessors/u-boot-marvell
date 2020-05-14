@@ -11,7 +11,7 @@
 #define PCI_DEVICE_ID_OCTEONTX2_CGX	0xA059
 
 #define MAX_LMAC_PER_CGX		4
-#define CGX_PER_NODE			3
+#define CGX_PER_NODE			5
 
 enum lmac_type {
 	LMAC_MODE_SGMII		= 0,

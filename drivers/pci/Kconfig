@@ -152,7 +152,7 @@ config PCI_TEGRA
 
 config PCI_OCTEONTX
 	bool "OcteonTX PCI support"
-	depends on (ARCH_OCTEONTX || ARCH_OCTEONTX2)
+	depends on (ARCH_OCTEONTX || ARCH_OCTEONTX2 || ARCH_OCTEONTX3)
 	help
 	  Enable support for the OcteonTX/TX2 SoC family ECAM/PEM controllers.
 	  These controllers provide PCI configuration access to all on-board

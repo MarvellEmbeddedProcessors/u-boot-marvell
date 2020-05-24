@@ -100,6 +100,20 @@ int dram_init(void)
 	return 0;
 }
 
+#ifdef CONFIG_NET_OCTEONTX3
+#define	PCI_DEVID_OCTEONTX2_RVU_AF		0xA065
+#define	PCI_DEVID_OCTEONTX2_RVU_PF		0xA063
+void board_late_probe_devices(void)
+{
+	struct udevice *dev;
+	int err;
+
+	err = dm_pci_find_device(PCI_VENDOR_ID_CAVIUM,
+				 PCI_DEVID_OCTEONTX2_RVU_AF, 0, &dev);
+	if (err)
+		debug("RVU AF device not found\n");
+}
+#endif
 /**
  * Board late initialization routine.
  */
@@ -140,6 +154,10 @@ int board_late_init(void)
 			save_env = true;
 		env_set("serial#", boardserial);
 	}
+
+#ifdef CONFIG_NET_OCTEONTX3
+	board_late_probe_devices();
+#endif
 
 	if (save_env)
 		env_save();

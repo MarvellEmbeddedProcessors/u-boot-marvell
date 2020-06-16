@@ -423,13 +423,13 @@ config NET_OCTEONTX2
 	  You must select Y to enable network device support for
 	  OcteonTX2 SoCs. If unsure, say n
 
-config NET_OCTEONTX3
-	bool "OcteonTX3 Ethernet support"
-	depends on ARCH_OCTEONTX3
+config NET_CN10K
+	bool "CN10K Ethernet support"
+	depends on ARCH_CN10K
 	help
-	  This will enable all necessary modules for OcteonTX3 network support.
+	  This will enable all necessary modules for CN10K network support.
 	  You must select Y to enable network device support for
-	  OcteonTX3 SoCs.
+	  CN10K SoCs.
 	  If unsure, say n.
 
 config OCTEONTX_SMI

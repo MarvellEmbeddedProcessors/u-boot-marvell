@@ -100,7 +100,7 @@ int dram_init(void)
 	return 0;
 }
 
-#ifdef CONFIG_NET_OCTEONTX3
+#ifdef CONFIG_NET_CN10K
 #define	PCI_DEVID_OCTEONTX2_RVU_AF		0xA065
 #define	PCI_DEVID_OCTEONTX2_RVU_PF		0xA063
 void board_late_probe_devices(void)
@@ -114,6 +114,7 @@ void board_late_probe_devices(void)
 		debug("RVU AF device not found\n");
 }
 #endif
+
 /**
  * Board late initialization routine.
  */
@@ -155,7 +156,7 @@ int board_late_init(void)
 		env_set("serial#", boardserial);
 	}
 
-#ifdef CONFIG_NET_OCTEONTX3
+#ifdef CONFIG_NET_CN10K
 	board_late_probe_devices();
 #endif
 
@@ -174,7 +175,7 @@ int show_board_info(void)
 
 	if (otx_is_soc(CN106XX))
 		str = "CN106XX";
-	printf("OcteonTX3 %s ARM V8 Core\n", str);
+	printf("Marvell CN10K %s ARM V8 Core\n", str);
 
 	printf("Board: %s\n", fdt_get_board_model());
 

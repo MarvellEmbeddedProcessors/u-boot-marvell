@@ -9,12 +9,12 @@ config CMD_FAILSAFE
 	   primary device was successful.
 
 config CMD_ETH
-	depends on NET_OCTEONTX2 || NET_OCTEONTX3
+	depends on NET_OCTEONTX2
 	bool "Command to change fec and phy-mod type"
 	help
 	   Support for change of fec and phy-mod type for some specific
 	   LMAC modes on RVU PF [CGX] network interfaces on Marvell
-	   OcteonTX2/TX3 platforms.
+	   OcteonTX2 platforms.
 
 config CMD_MDIO_DBG
 	depends on ARCH_OCTEONTX2

@@ -12,12 +12,12 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#define OTX3_MEM_MAP_USED 4
+#define CN10K_MEM_MAP_USED 4
 
 /* +1 is end of list which needs to be empty */
-#define OTX3_MEM_MAP_MAX (OTX3_MEM_MAP_USED + CONFIG_NR_DRAM_BANKS + 1)
+#define CN10K_MEM_MAP_MAX (CN10K_MEM_MAP_USED + CONFIG_NR_DRAM_BANKS + 1)
 
-static struct mm_region otx2_mem_map[OTX3_MEM_MAP_MAX] = {
+static struct mm_region cn10k_mem_map[CN10K_MEM_MAP_MAX] = {
 	{
 		.virt = 0x800000000000UL,
 		.phys = 0x800000000000UL,
@@ -45,18 +45,18 @@ static struct mm_region otx2_mem_map[OTX3_MEM_MAP_MAX] = {
 	}
 };
 
-struct mm_region *mem_map = otx2_mem_map;
+struct mm_region *mem_map = cn10k_mem_map;
 
 void mem_map_fill(void)
 {
-	int banks = OTX3_MEM_MAP_USED;
+	int banks = CN10K_MEM_MAP_USED;
 	u32 dram_start = CONFIG_SYS_TEXT_BASE;
 
 	for (int i = 0; i < CONFIG_NR_DRAM_BANKS; i++) {
-		otx2_mem_map[banks].virt = dram_start;
-		otx2_mem_map[banks].phys = dram_start;
-		otx2_mem_map[banks].size = gd->ram_size;
-		otx2_mem_map[banks].attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+		cn10k_mem_map[banks].virt = dram_start;
+		cn10k_mem_map[banks].phys = dram_start;
+		cn10k_mem_map[banks].size = gd->ram_size;
+		cn10k_mem_map[banks].attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 					    PTE_BLOCK_NON_SHARE;
 		banks = banks + 1;
 	}

@@ -5,8 +5,8 @@
  * https://spdx.org/licenses
  */
 
-#ifndef __OCTEONTX3_106XX_H__
-#define __OCTEONTX3_106XX_H__
+#ifndef __CN10K_106XX_H__
+#define __CN10K_106XX_H__
 
 #define CONFIG_SUPPORT_RAW_INITRD
 
@@ -75,4 +75,4 @@
 #define CONFIG_SUPPORT_EMMC_RPMB
 #define CONFIG_CMD_BKOPS_ENABLE
 #define MMC_SUPPORTS_TUNING
-#endif /* __OCTEONTX3_106XX_H__ */
+#endif /* __CN10K_106XX_H__ */

@@ -1,0 +1,20 @@
+if ARCH_CN10K
+
+choice
+	prompt "CN10K board select"
+	optional
+
+config TARGET_CN10K_106XX
+	bool "Marvell CN10K CN106XX"
+
+endchoice
+
+config SYS_SOC
+	string
+	default "cn10k"
+
+config SYS_PCI_64BIT
+	bool
+	default y
+
+endif

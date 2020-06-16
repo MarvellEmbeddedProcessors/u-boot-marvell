@@ -141,7 +141,7 @@ config WDT_MTK
 
 config WDT_OCTEONTX
 	bool "OcteonTX core watchdog support"
-	depends on WDT && (ARCH_OCTEONTX || ARCH_OCTEONTX2 || ARCH_OCTEONTX3)
+	depends on WDT && (ARCH_OCTEONTX || ARCH_OCTEONTX2 || ARCH_CN10K)
 	default y
 	imply WATCHDOG
 	help

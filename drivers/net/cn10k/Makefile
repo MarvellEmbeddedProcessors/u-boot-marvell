@@ -6,5 +6,5 @@
 # */
 
 
-obj-$(CONFIG_NET_OCTEONTX3) += nix_af.o rvu_af.o rvu_common.o
+obj-$(CONFIG_NET_CN10K) += nix_af.o rvu_af.o rvu_common.o
 

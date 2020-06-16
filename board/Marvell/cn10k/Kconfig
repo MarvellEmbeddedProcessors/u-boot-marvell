@@ -1,4 +1,4 @@
-if TARGET_OCTEONTX3_106XX
+if TARGET_CN10K_106XX
 
 config SYS_VENDOR
 	string
@@ -6,9 +6,9 @@ config SYS_VENDOR
 
 config SYS_BOARD
 	string
-	default "octeontx3"
+	default "cn10k"
 
 config SYS_CONFIG_NAME
-	default "octeontx3_common"
+	default "cn10k_common"
 
 endif

@@ -854,12 +854,24 @@ int npc_lf_admin_setup(struct nix *nix)
 	union nix_rx_action_s rx_action;
 	union nix_tx_action_s tx_action;
 
+	union rvu_af_addr_s af_addr;
 	struct nix_af *nix_af = nix->nix_af;
 	u32 kpus;
 	int pkind = nix->lmac->link_num;
 	int index;
 	u64 offset;
+	int nix_id;
 
+	af_addr.u = (u64)nix_af->nix_af_base;
+	switch (af_addr.s.block) {
+	case RVU_BLOCK_ADDR_E_NIXX(1):
+		nix_id = 1;
+		break;
+	case RVU_BLOCK_ADDR_E_NIXX(0):
+	default:
+		nix_id = 0;
+		break;
+	}
 	debug("%s(%p, pkind 0x%x)\n", __func__, nix_af, pkind);
 	af_const.u = npc_af_reg_read(nix_af, NPC_AF_CONST());
 	kpus = af_const.s.kpus;
@@ -875,24 +887,24 @@ int npc_lf_admin_setup(struct nix *nix)
 	kex_cfg.s.keyw = NPC_MCAMKEYW_E_X1;
 	kex_cfg.s.parse_nibble_ena = 0x7;
 	npc_af_reg_write(nix_af,
-			 NPC_AF_INTFX_KEX_CFG(NPC_INTF_E_NIXX_RX(0)),
+			 NPC_AF_INTFX_KEX_CFG(NPC_INTF_E_NIXX_RX(nix_id)),
 			 kex_cfg.u);
 
 	/* HW Issue */
 	kex_cfg.u = 0;
 	kex_cfg.s.parse_nibble_ena = 0x7;
 	npc_af_reg_write(nix_af,
-			 NPC_AF_INTFX_KEX_CFG(NPC_INTF_E_NIXX_TX(0)),
+			 NPC_AF_INTFX_KEX_CFG(NPC_INTF_E_NIXX_TX(nix_id)),
 			 kex_cfg.u);
 
 	camx_intf.u = 0;
-	camx_intf.s.intf = ~NPC_INTF_E_NIXX_RX(0);
+	camx_intf.s.intf = ~NPC_INTF_E_NIXX_RX(nix_id);
 	npc_af_reg_write(nix_af,
 			 NPC_AF_MCAMEX_BANKX_CAMX_INTF(pkind, 0, 0),
 			 camx_intf.u);
 
 	camx_intf.u = 0;
-	camx_intf.s.intf = NPC_INTF_E_NIXX_RX(0);
+	camx_intf.s.intf = NPC_INTF_E_NIXX_RX(nix_id);
 	npc_af_reg_write(nix_af,
 			 NPC_AF_MCAMEX_BANKX_CAMX_INTF(pkind, 0, 1),
 			 camx_intf.u);
@@ -926,7 +938,7 @@ int npc_lf_admin_setup(struct nix *nix)
 	intfx_stat_act.u = 0;
 	intfx_stat_act.s.ena = 1;
 	intfx_stat_act.s.stat_sel = 16;
-	offset = NPC_AF_INTFX_MISS_STAT_ACT(NPC_INTF_E_NIXX_RX(0));
+	offset = NPC_AF_INTFX_MISS_STAT_ACT(NPC_INTF_E_NIXX_RX(nix_id));
 	npc_af_reg_write(nix_af, offset, intfx_stat_act.u);
 	rx_action.u = 0;
 	rx_action.s.pf_func = nix->pf_func;
@@ -941,7 +953,7 @@ int npc_lf_admin_setup(struct nix *nix)
 	rx_action.s.pf_func = nix->pf_func;
 	rx_action.s.op = NIX_RX_ACTIONOP_E_DROP;
 	npc_af_reg_write(nix_af,
-			 NPC_AF_INTFX_MISS_ACT(NPC_INTF_E_NIXX_RX(0)),
+			 NPC_AF_INTFX_MISS_ACT(NPC_INTF_E_NIXX_RX(nix_id)),
 			 rx_action.u);
 	bankx_cfg.u = 0;
 	bankx_cfg.s.ena = 1;
@@ -951,7 +963,7 @@ int npc_lf_admin_setup(struct nix *nix)
 	tx_action.u = 0;
 	tx_action.s.op = NIX_TX_ACTIONOP_E_UCAST_DEFAULT;
 	npc_af_reg_write(nix_af,
-			 NPC_AF_INTFX_MISS_ACT(NPC_INTF_E_NIXX_TX(0)),
+			 NPC_AF_INTFX_MISS_ACT(NPC_INTF_E_NIXX_TX(nix_id)),
 			 tx_action.u);
 
 #ifdef DEBUG

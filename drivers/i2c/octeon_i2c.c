@@ -16,6 +16,9 @@
 #define TWSI_TWSI_SW		0x08
 #define TWSI_INT		0x10
 #define TWSI_SW_TWSI_EXT	0x18
+#define TWSI_MODE		0x38
+
+#define FREQ_400KHZ		400000
 
 #define TWSI_SW_DATA_MASK	GENMASK_ULL(31, 0)
 #define TWSI_SW_EOP_IA_MASK	GENMASK_ULL(34, 32)
@@ -38,6 +41,7 @@
 enum {
 	TWSI_OP_WRITE	= 0,
 	TWSI_OP_READ	= 1,
+	TWSI_OP_MCLK  = 4,
 };
 
 enum {
@@ -63,6 +67,14 @@ enum {
 	TWSI_CTL_STA	= BIT(5),
 	TWSI_CTL_ENAB	= BIT(6),
 	TWSI_CTL_CE	= BIT(7),
+};
+
+enum {
+	TWSI_MODE_HS_MODE	= BIT(0),
+	TWSI_MODE_STRETCH	= BIT(1),
+	TWSI_MODE_BLK_MODE	= BIT(2),
+	TWSI_MODE_BUS_MON_RST	= BIT(3),
+	TWSI_MODE_REFCLK_SRC	= BIT(4),
 };
 
 /*
@@ -605,21 +617,28 @@ static int twsi_read_data(void __iomem *base, u8 slave_addr,
  * @speed	Speed to set
  * @m_div	Pointer to M divisor
  * @n_div	Pointer to N divisor
+ * @thp		Pointer to THP divisor
  * @return	0 for success, otherwise error
  */
 static void twsi_calc_div(struct udevice *bus, ulong sclk, unsigned int speed,
-			  int *m_div, int *n_div)
+			  int *m_div, int *n_div, int *thp_div)
 {
 	struct octeon_twsi *twsi = dev_get_priv(bus);
 	int thp = twsi->data->thp;
-	int tclk, fsamp;
-	int ndiv, mdiv;
+	int tclk, fsamp, act_speed;
+	int ds = 10, ndiv, mdiv;
+	int delta = 1000000, calc_delta;
 
 	if (twsi->data->clk_method == CLK_METHOD_OCTEON) {
 		tclk = sclk / (2 * (thp + 1));
 	} else {
 		/* Refclk src in mode register defaults to 100MHz clock */
-		sclk = 100000000; /* 100 Mhz */
+		if (speed <= FREQ_400KHZ) {
+			sclk = 100000000; /* 100 Mhz */
+		} else {
+			ds = 15; /* High-speed Mode settings */
+			thp = 2;
+		}
 		tclk = sclk / (thp + 2);
 	}
 	debug("%s( io_clock %lu tclk %u)\n", __func__, sclk, tclk);
@@ -636,14 +655,21 @@ static void twsi_calc_div(struct udevice *bus, ulong sclk, unsigned int speed,
 	 */
 	for (ndiv = 0; ndiv < 8; ndiv++) {
 		fsamp = tclk / (1 << ndiv);
-		mdiv = fsamp / speed / 10;
-		mdiv -= 1;
-		if (mdiv < 16)
-			break;
-	}
+		for (mdiv = 0; mdiv < 16; mdiv++) {
+			act_speed = fsamp / ds;
+			act_speed /= (mdiv + 1);
 
-	*m_div = mdiv;
-	*n_div = ndiv;
+			if (act_speed > speed)
+				continue;
+			calc_delta = speed - act_speed;
+			if (calc_delta < delta) {
+				delta = calc_delta;
+				*m_div = mdiv;
+				*n_div = ndiv;
+				*thp_div = thp;
+			}
+		}
+	}
 }
 
 /**
@@ -723,7 +749,7 @@ static int octeon_i2c_xfer(struct udevice *bus, struct i2c_msg *msg,
 static int octeon_i2c_set_bus_speed(struct udevice *bus, unsigned int speed)
 {
 	struct octeon_twsi *twsi = dev_get_priv(bus);
-	int m_div, n_div;
+	int m_div, n_div, thp;
 	ulong clk_rate;
 	u64 val;
 
@@ -733,9 +759,19 @@ static int octeon_i2c_set_bus_speed(struct udevice *bus, unsigned int speed)
 	if (IS_ERR_VALUE(clk_rate))
 		return -EINVAL;
 
-	twsi_calc_div(bus, clk_rate, speed, &m_div, &n_div);
+	twsi_calc_div(bus, clk_rate, speed, &m_div, &n_div, &thp);
 	if (m_div >= 16)
 		return -1;
+
+	val = readq(twsi->base + TWSI_MODE);
+	if (speed > FREQ_400KHZ) {
+		val |= TWSI_MODE_HS_MODE | TWSI_MODE_REFCLK_SRC;
+	else
+		val &= (~(TWSI_MODE_HS_MODE | TWSI_MODE_REFCLK_SRC));
+	writeq(val, twsi->base + TWSI_MODE);
+
+	val = (u32)thp | FIELD_PREP(TWSI_SW_OP_MASK, TWSI_OP_MCLK) | TWSI_SW_V;
+	writeq(val, twsi->base + TWSI_SW_TWSI);
 
 	val = (u32)(((m_div & 0xf) << 3) | ((n_div & 0x7) << 0)) |
 		FIELD_PREP(TWSI_SW_EOP_IA_MASK, TWSI_CLKCTL) |

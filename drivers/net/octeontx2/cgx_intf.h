@@ -14,7 +14,7 @@
 #define CGX_CMR_SCRATCH0	0x87e0e0001050
 #define CGX_CMR_SCRATCH1	0x87e0e0001058
 
-#define CGX_SHIFT(x)		(0x1000000 * ((x) & 0x3))
+#define CGX_SHIFT(x)		(0x1000000 * ((x) & 0x7))
 #define CMR_SHIFT(x)		(0x40000 * ((x) & 0x3))
 
 /* CGX error types. set for cmd response status as CGX_STAT_FAIL */

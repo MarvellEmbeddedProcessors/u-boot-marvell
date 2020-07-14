@@ -20,6 +20,7 @@
 #include <asm/io.h>
 #include <u-boot/crc.h>
 #include <linux/mtd/mtd.h>
+#include <asm/arch/smc.h>
 
 /* Offsets and sizes to various structures in the image */
 #define SCR_MAX_SIZE			0x40000
@@ -800,10 +801,9 @@ static int do_bootu_spi(int argc, char * const argv[], bool update_scr)
 	char *endp;
 	int ret = 1;
 	unsigned int bus = 0, cs;
-#if !CONFIG_IS_ENABLED(ARCH_OCTEONTX)
+#if CONFIG_IS_ENABLED(ARCH_OCTEONTX2)
 	struct rom_scr_info si;
 #endif
-
 	if ((argc < 1) || (argc > 4))
 		return -1;
 
@@ -876,8 +876,15 @@ static int do_bootu_spi(int argc, char * const argv[], bool update_scr)
 	}
 	buf = (u8 *)addr;
 
+#if CONFIG_IS_ENABLED(ARCH_CN10K)
+
+	debug("%s Probing Secure SPI..\n", __func__);
+	ret = smc_spi_update((uint64_t)buf, len, bus, cs);
+	goto done;
+#endif
+
 	if (validate_bootimg_header(addr)) {
-		printf("\n No valid boot image header found \n");
+		printf("\n No valid boot image header found\n");
 		return CMD_RET_FAILURE;
 	}
 
@@ -894,7 +901,7 @@ static int do_bootu_spi(int argc, char * const argv[], bool update_scr)
 		return CMD_RET_FAILURE;
 	}
 
-#if !CONFIG_IS_ENABLED(ARCH_OCTEONTX)
+#if CONFIG_IS_ENABLED(ARCH_OCTEONTX2)
 	if (!update_scr) {
 		si.desc = NULL;
 		si.flash = flash;
@@ -909,6 +916,7 @@ static int do_bootu_spi(int argc, char * const argv[], bool update_scr)
 
 	ret = spi_flash_update(flash, offset, len, buf);
 
+done:
 	printf("bootu SPI : %zu bytes @ %#x Written ",
 	       (size_t)len, (u32)offset);
 	if (ret)
@@ -916,7 +924,7 @@ static int do_bootu_spi(int argc, char * const argv[], bool update_scr)
 	else
 		printf("OK\n");
 
-#if !CONFIG_IS_ENABLED(ARCH_OCTEONTX)
+#if CONFIG_IS_ENABLED(ARCH_OCTEONTX2)
 	if (!update_scr)
 		ret = finish_rom_scr(&si, buf);
 error:

@@ -22,4 +22,18 @@
 /* x1 - node number */
 #define OCTEONTX2_DRAM_SIZE		0xc2000301
 #define OCTEONTX2_DISABLE_RVU_LFS	0xc2000b01
+
+/*
+ * x1 - user_buffer
+ * x2 - size
+ * x3 - bus
+ * x4 - chip select
+ *
+ * Return:
+ *	x0:
+ *		0x0 -- Success
+ *		0x2 -- Fail
+ */
+#define PLAT_OCTEONTX_SPI_SECURE_UPDATE		0xc2000d08
+
 #endif /* __SMC_ID_H__ */

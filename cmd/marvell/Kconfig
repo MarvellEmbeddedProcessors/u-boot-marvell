@@ -32,7 +32,7 @@ config CMD_ATTEST
 	   Displays Secure Boot software component version information.
 
 config CMD_BOOTIMGUP
-	depends on ARCH_OCTEONTX || ARCH_OCTEONTX2
+	depends on ARCH_OCTEONTX || ARCH_OCTEONTX2 || ARCH_CN10K
 	depends on MMC_OCTEONTX || SPI_FLASH
 	bool "bootimgup"
 	help

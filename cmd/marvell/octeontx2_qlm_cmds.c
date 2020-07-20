@@ -129,7 +129,7 @@ static int do_serdes(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	qlm = simple_strtoul(argv[1], NULL, 10);
 	lane = simple_strtoul(argv[2], NULL, 10);
 
-	arm_smccc_smc(OCTEONTX_SERDES_DBG_GET_EYE, qlm, lane, 1, 0, 0, 0, 0, &res);
+	arm_smccc_smc(OCTEONTX_SERDES_DBG_GET_CONF, qlm, lane, 1, 0, 0, 0, 0, &res);
 	waitforresult(&res);
 
         if (res.a0 != SMCCC_RET_SUCCESS) {

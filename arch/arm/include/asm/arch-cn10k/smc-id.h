@@ -36,4 +36,5 @@
  */
 #define PLAT_OCTEONTX_SPI_SECURE_UPDATE		0xc2000b05
 
+#define PLAT_OCTEONTX_SWITCH_FW_LOAD		0xc2000b06
 #endif /* __SMC_ID_H__ */

@@ -40,6 +40,32 @@ ssize_t smc_disable_rvu_lfs(unsigned int node)
 }
 
 /*
+ * Perform Switch Firmware load to DRAM in ATF
+ *
+ * x1 - super image location
+ * x2 - cm3 image location
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ *		-2 -- SPI_CONFIG_ERR
+ *		-3 -- SPI_MMAP_ERR
+ *		-5 -- EIO
+ */
+int smc_switch_fw_load(u64 super_img_addr, u64 cm3_img_addr)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SWITCH_FW_LOAD;
+	regs.regs[1] = super_img_addr;
+	regs.regs[2] = cm3_img_addr;
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+
+/*
  * Perform SPI Update from ATF
  *
  * x1 - user_buffer

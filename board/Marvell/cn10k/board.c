@@ -171,10 +171,12 @@ int board_late_init(void)
  */
 int show_board_info(void)
 {
-	char *str = NULL;
+	char *str;
 
 	if (otx_is_soc(CN106XX))
 		str = "CN106XX";
+	else
+		str = "UNKNOWN";
 	printf("Marvell CN10K %s ARM V8 Core\n", str);
 
 	printf("Board: %s\n", fdt_get_board_model());

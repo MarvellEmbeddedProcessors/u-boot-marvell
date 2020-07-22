@@ -159,52 +159,60 @@ int ft_board_setup(void *blob, bd_t *bd)
 					};
 	char nodes[ARRAY_SIZE(octeontx_brd_nodes)][32];
 
+	if (!blob) {
+		printf("ERROR: NULL FDT pointer\n");
+		return -1;
+	}
 	ret = fdt_check_header(blob);
 	if (ret < 0) {
 		printf("ERROR: %s\n", fdt_strerror(ret));
 		return ret;
 	}
 
-	if (blob) {
-		nodeoff = fdt_path_offset(blob, "/cavium,bdk");
-		if (nodeoff < 0) {
-			printf("ERROR: FDT BDK node not found\n");
-			return nodeoff;
-		}
+	nodeoff = fdt_path_offset(blob, "/cavium,bdk");
+	if (nodeoff < 0) {
+		printf("ERROR: FDT BDK node not found\n");
+		return nodeoff;
+	}
 
-		/* Read properties in temporary variables */
-		for (i = 0; i < ARRAY_SIZE(octeontx_brd_nodes); i++) {
-			temp = fdt_getprop(blob, nodeoff,
-					   octeontx_brd_nodes[i], NULL);
+	/* Read properties in temporary variables */
+	for (i = 0; i < ARRAY_SIZE(octeontx_brd_nodes); i++) {
+		temp = fdt_getprop(blob, nodeoff,
+				   octeontx_brd_nodes[i], NULL);
+		if (!temp) {
 			strncpy(nodes[i], temp, sizeof(nodes[i]));
+		} else {
+			strncpy(nodes[i], "UNKNOWN", sizeof(nodes[i]));
+			printf("ERROR: FDT field %s is missing\n",
+			       octeontx_brd_nodes[i]);
 		}
+	}
 
-		/* Delete cavium,bdk node */
-		ret = fdt_del_node(blob, nodeoff);
-		if (ret < 0) {
-			printf("WARNING : could not remove cavium, bdk node\n");
-			return ret;
-		}
-		debug("%s deleted 'cavium,bdk' node\n", __func__);
-		/*
-		 * Add a new node at root level which would have
-		 * necessary info
-		 */
-		node = fdt_add_subnode(blob, 0, "octeontx_brd");
-		if (node < 0) {
-			printf("Cannot create node octeontx_brd: %s\n",
-			       fdt_strerror(node));
+	/* Delete cavium,bdk node */
+	ret = fdt_del_node(blob, nodeoff);
+	if (ret < 0) {
+		printf("WARNING : could not remove cavium, bdk node\n");
+		return ret;
+	}
+	debug("%s deleted 'cavium,bdk' node\n", __func__);
+	/*
+	 * Add a new node at root level which would have
+	 * necessary info
+	 */
+	node = fdt_add_subnode(blob, 0, "octeontx_brd");
+	if (node < 0) {
+		printf("Cannot create node octeontx_brd: %s\n",
+		       fdt_strerror(node));
+		return -EIO;
+	}
+
+	/* Populate properties in node */
+	for (i = 0; i < ARRAY_SIZE(octeontx_brd_nodes); i++) {
+		if (fdt_setprop_string(blob, node,
+				       octeontx_brd_nodes[i],
+				       nodes[i])) {
+			printf("Can't set %s\n", nodes[i]);
 			return -EIO;
-		}
-
-		/* Populate properties in node */
-		for (i = 0; i < ARRAY_SIZE(octeontx_brd_nodes); i++) {
-			if (fdt_setprop_string(blob, node,
-					       octeontx_brd_nodes[i],
-					       nodes[i])) {
-				printf("Can't set %s\n", nodes[i]);
-				return -EIO;
-			}
 		}
 	}
 

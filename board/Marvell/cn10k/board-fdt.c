@@ -179,7 +179,7 @@ int ft_board_setup(void *blob, bd_t *bd)
 	for (i = 0; i < ARRAY_SIZE(octeontx_brd_nodes); i++) {
 		temp = fdt_getprop(blob, nodeoff,
 				   octeontx_brd_nodes[i], NULL);
-		if (!temp) {
+		if (temp) {
 			strncpy(nodes[i], temp, sizeof(nodes[i]));
 		} else {
 			strncpy(nodes[i], "UNKNOWN", sizeof(nodes[i]));

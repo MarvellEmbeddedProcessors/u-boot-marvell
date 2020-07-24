@@ -14,6 +14,12 @@
  * @device_id:     Driver-defined device identifier
  * @family:        DMTF CPU Family identifier
  * @id:            DMTF CPU Processor identifier
+ * @voltage:	   DMTF CPU voltage identifier
+ * proc_type:	   DMTF CPU processor type
+ * core_count:	   DMTF CPU no of processor cores
+ * core_enabled:   DMTF CPU no of enabled cores
+ * thread_count:   DMTF CPU no of threads supported
+ * proc_char:      DMTF CPU porcessor charactorstics
  * @timebase_freq: the current frequency at which the cpu timer timebase
  *		   registers are updated (in Hz)
  *
@@ -24,7 +30,20 @@ struct cpu_platdata {
 	int cpu_id;
 	int ucode_version;
 	ulong device_id;
+	u8 status;
+	u8 proc_type;
+	u8 voltage;
+	u8 core_count;
+	u8 core_enabled;
+	u8 thread_count;
 	u16 family;
+	u16 proc_char;
+	u16 max_speed;
+	char processor_version[48];
+	char serial_number[32];
+	char asset_tag[32];
+	char part_number[32];
+	char socket_designation[32];
 	u32 id[2];
 	u32 timebase_freq;
 };
@@ -50,6 +69,7 @@ struct cpu_info {
 	ulong cpu_freq;
 	ulong features;
 	uint address_width;
+	char cpu_type[16];
 };
 
 struct cpu_ops {

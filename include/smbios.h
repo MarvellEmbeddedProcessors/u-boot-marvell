@@ -12,6 +12,19 @@
 #define SMBIOS_MAJOR_VER	3
 #define SMBIOS_MINOR_VER	0
 
+#define DMTF_PROC_ARMV7		0x100
+#define DMTF_PROC_ARMV8		0x101
+#define DMTF_CHECK_FAMILY2	0xFE
+
+enum {
+	L1_D_CACHE = 0,
+	L1_I_CACHE,
+	L2_CACHE,
+	CACHE_MAX,
+};
+
+#define NO_OF_CACHE CACHE_MAX
+
 /* SMBIOS structure types */
 enum {
 	SMBIOS_BIOS_INFORMATION = 0,
@@ -196,6 +209,24 @@ struct __packed smbios_header {
 	u8 length;
 	u16 handle;
 };
+
+/*
+ * is_proc_arm() - Findout if cpu is arm
+ *
+ * Findout if cpu is arm.
+ *
+ * @cpu:	cpu name
+ */
+static inline u16 is_proc_arm(char *cpu)
+{
+	if (!strcmp(cpu, "ARMv7"))
+		return DMTF_PROC_ARMV7;
+
+	if (!strcmp(cpu, "ARMv8"))
+		return DMTF_PROC_ARMV8;
+
+	return 0;
+}
 
 /**
  * fill_smbios_header() - Fill the header of an SMBIOS table

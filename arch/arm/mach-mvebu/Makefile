@@ -7,6 +7,7 @@ ifdef CONFIG_ARM64
 obj-$(CONFIG_ARMADA_3700) += armada3700/
 obj-$(CONFIG_ARMADA_8K) += armada8k/
 obj-y += arm64-common.o
+obj-y += cpu_armada.o
 
 else # CONFIG_ARM64
 

@@ -145,11 +145,11 @@ int arch_fixup_memory_node(void *blob)
 	return 0;
 }
 
-int ft_board_setup(void *blob, bd_t *bd)
+/**
+ * Remove all properties other than the ones we want and rename the node
+ */
+static int ft_board_clean_props(void *blob, int node)
 {
-	int nodeoff, node, ret, i;
-	const char *temp;
-
 	static const char * const
 		octeontx_brd_nodes[] = {"BOARD-MODEL",
 					"BOARD-SERIAL",
@@ -157,12 +157,73 @@ int ft_board_setup(void *blob, bd_t *bd)
 					"BOARD-REVISION",
 					"BOARD-MAC-ADDRESS-NUM"
 					};
-	char nodes[ARRAY_SIZE(octeontx_brd_nodes)][32];
+	int offset;
+	const char *name;
+	const char *data;
+	int len;
+	int i;
+	int ret;
+	bool found;
+	int off_idx = 0;
+	int prop_offsets[1000];
+
+	fdt_for_each_property_offset(offset, blob, node) {
+		if (off_idx == ARRAY_SIZE(prop_offsets)) {
+			printf("Too many properties!\n");
+			return -1;
+		}
+		prop_offsets[off_idx++] = offset;
+	}
+
+	while (--off_idx >= 0) {
+		offset = prop_offsets[off_idx];
+		data = fdt_getprop_by_offset(blob, offset, &name, &len);
+		if (!data || !name) {
+			printf("Error: could not obtain property data or name at offset 0x%x\n",
+			       offset);
+			return -1;
+		}
+		debug("Found property %s at offset 0x%x\n", name, offset);
+		/* Delete all properties that are not in our list */
+		found = false;
+		for (i = 0; i < ARRAY_SIZE(octeontx_brd_nodes); i++) {
+			if (!strcmp(name, octeontx_brd_nodes[i])) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			debug("Deleting cavium,bdk/%s\n", name);
+			ret = fdt_delprop(blob, node, name);
+			if (ret) {
+				printf("Error: could not delete property %s: %s\n",
+				       name, fdt_strerror(ret));
+				return -1;
+			}
+		} else {
+			debug("Keeping cavium,bdk/%s\n", name);
+		}
+	}
+
+	ret = fdt_set_name(blob, node, "octeontx_brd");
+	if (ret) {
+		printf("Error: could not rename cavium,bdk to octeontx_brd: %s\n",
+		       fdt_strerror(ret));
+		return -1;
+	}
+	debug("Changed name to octeontx_brd, last offset: 0x%x\n", offset);
+	return 0;
+}
+
+int ft_board_setup(void *blob, bd_t *bd)
+{
+	int nodeoff, ret;
 
 	if (!blob) {
 		printf("ERROR: NULL FDT pointer\n");
 		return -1;
 	}
+	debug("%s: FDT pointer: %p\n", __func__, blob);
 	ret = fdt_check_header(blob);
 	if (ret < 0) {
 		printf("ERROR: %s\n", fdt_strerror(ret));
@@ -171,53 +232,21 @@ int ft_board_setup(void *blob, bd_t *bd)
 
 	nodeoff = fdt_path_offset(blob, "/cavium,bdk");
 	if (nodeoff < 0) {
+		/*
+		 * It is possible that the FDT has already been processed if
+		 * the fdt boardsetup command is entered.
+		 */
+		if (fdt_path_offset(blob, "/octeontx_brd") >= 0)
+			return 0;
+
 		printf("ERROR: FDT BDK node not found\n");
 		return nodeoff;
 	}
-
-	/* Read properties in temporary variables */
-	for (i = 0; i < ARRAY_SIZE(octeontx_brd_nodes); i++) {
-		temp = fdt_getprop(blob, nodeoff,
-				   octeontx_brd_nodes[i], NULL);
-		if (temp) {
-			strncpy(nodes[i], temp, sizeof(nodes[i]));
-		} else {
-			strncpy(nodes[i], "UNKNOWN", sizeof(nodes[i]));
-			printf("ERROR: FDT field %s is missing\n",
-			       octeontx_brd_nodes[i]);
-		}
-	}
-
-	/* Delete cavium,bdk node */
-	ret = fdt_del_node(blob, nodeoff);
-	if (ret < 0) {
-		printf("WARNING : could not remove cavium, bdk node\n");
-		return ret;
-	}
-	debug("%s deleted 'cavium,bdk' node\n", __func__);
-	/*
-	 * Add a new node at root level which would have
-	 * necessary info
-	 */
-	node = fdt_add_subnode(blob, 0, "octeontx_brd");
-	if (node < 0) {
-		printf("Cannot create node octeontx_brd: %s\n",
-		       fdt_strerror(node));
-		return -EIO;
-	}
-
-	/* Populate properties in node */
-	for (i = 0; i < ARRAY_SIZE(octeontx_brd_nodes); i++) {
-		if (fdt_setprop_string(blob, node,
-				       octeontx_brd_nodes[i],
-				       nodes[i])) {
-			printf("Can't set %s\n", nodes[i]);
-			return -EIO;
-		}
-	}
-
-	return 0;
+	debug("/cavium,bdk node: 0x%x\n", nodeoff);
+	ret = ft_board_clean_props(blob, nodeoff);
+	return ret;
 }
+
 /**
  * Return the FDT base address that was passed by ATF
  *

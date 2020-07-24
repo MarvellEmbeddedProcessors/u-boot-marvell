@@ -39,6 +39,11 @@ struct smbios_type8 type8_data[3] = {
 	},
 };
 
+struct type9_data plat_type9_data[MAX_SLOTS] = {
+	{"PCIe Slot 1", DMTF_TYPE9_SLOT_TYPE_PCIE, DMTF_TYPE9_SLOT_DATA_BUS_WIDTH_X4, DMTF_TYPE9_CURRENT_USAGE_AVAILABLE, DMTF_TYPE9_SLOT_LENGTH_LONG, 1, DMTF_TYPE9_SLOT_CHAR_1_3_3V},
+	{"PCIe Slot 2", DMTF_TYPE9_SLOT_TYPE_PCIE, DMTF_TYPE9_SLOT_DATA_BUS_WIDTH_X4, DMTF_TYPE9_CURRENT_USAGE_AVAILABLE, DMTF_TYPE9_SLOT_LENGTH_LONG, 2, DMTF_TYPE9_SLOT_CHAR_1_3_3V},
+};
+
 /**
  * smbios_add_string() - add a string to the string area
  *
@@ -372,6 +377,42 @@ static int smbios_write_type8(ulong *current, int handle)
 	return len;
 }
 
+static int smbios_write_type9_dm(ulong *current, int handle, int index)
+{
+	struct smbios_type9 *t;
+	int len = sizeof(struct smbios_type9);
+
+	t = map_sysmem(*current, len);
+	memset(t, 0, sizeof(struct smbios_type9));
+	fill_smbios_header(t, SMBIOS_SYSTEM_SLOTS, len, handle + index);
+
+	t->slot_designation = smbios_add_string(t->eos, plat_type9_data[index].slot_designation);
+
+	t->slot_id = plat_type9_data[index].slot_id;
+	t->slot_length = plat_type9_data[index].slot_length;
+	t->slot_type = plat_type9_data[index].slot_type;
+	t->slot_data_bus_width = plat_type9_data[index].slot_data_bus_width;
+
+	t->current_usage = plat_type9_data[index].current_usage;
+	t->slot_characteristics_1 = plat_type9_data[index].slot_characteristics_1;
+
+	len = t->length + smbios_string_table_len(t->eos);
+	*current += len;
+	unmap_sysmem(t);
+
+	return len;
+}
+
+static int smbios_write_type9(ulong *current, int handle)
+{
+	u32 no_of_handles = MAX_SLOTS, i = 0, len = 0;
+
+	for (; i < no_of_handles; i++)
+		len += smbios_write_type9_dm(current, handle, i);
+
+	return len;
+}
+
 static int smbios_write_type32(ulong *current, int handle)
 {
 	struct smbios_type32 *t;
@@ -410,6 +451,7 @@ static smbios_write_type smbios_write_funcs[] = {
 	smbios_write_type4,
 	smbios_write_type7,
 	smbios_write_type8,
+	smbios_write_type9,
 	smbios_write_type32,
 	smbios_write_type127
 };

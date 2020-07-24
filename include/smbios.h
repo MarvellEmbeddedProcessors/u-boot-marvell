@@ -25,6 +25,7 @@ enum {
 
 #define NO_OF_CACHE CACHE_MAX
 #define MAX_PORTS 3
+#define MAX_SLOTS 2
 
 /* SMBIOS structure types */
 enum {
@@ -255,6 +256,45 @@ struct __packed smbios_type8 {
 	u8 external_reference_designator;
 	u8 external_connector_type;
 	u8 port_type;
+	char eos[SMBIOS_STRUCT_EOS_BYTES];
+};
+
+/* Type 9 */
+#define DMTF_TYPE9_SLOT_TYPE_PCI			0x06
+#define DMTF_TYPE9_SLOT_TYPE_PCIE			0xA8
+#define DMTF_TYPE9_CURRENT_USAGE_AVAILABLE	0x03
+#define DMTF_TYPE9_SLOT_LENGTH_LONG			0x04
+#define DMTF_TYPE9_SLOT_CHAR_1_3_3V			BIT(2)
+#define DMTF_TYPE9_SLOT_DATA_BUS_WIDTH_X4	0x0A
+
+struct type9_data {
+	char slot_designation[16];
+	u8 slot_type;
+	u8 slot_data_bus_width;
+	u8 current_usage;
+	u8 slot_length;
+	u16 slot_id;
+	u8 slot_characteristics_1;
+};
+
+struct __packed smbios_type9 {
+	u8 type;
+	u8 length;
+	u16 handle;
+	u8 slot_designation;
+	u8 slot_type;
+	u8 slot_data_bus_width;
+	u8 current_usage;
+	u8 slot_length;
+	u16 slot_id;
+	u8 slot_characteristics_1;
+	u8 slot_characteristics_2;
+	u16 segment_group_number;
+	u8 bus_number;
+	u8 device_function_number_base;
+	u8 data_bus_width_base;
+	u8 peer_grouping_count;
+	u8 peer_groups;
 	char eos[SMBIOS_STRUCT_EOS_BYTES];
 };
 

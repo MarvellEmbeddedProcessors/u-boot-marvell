@@ -24,6 +24,7 @@ enum {
 };
 
 #define NO_OF_CACHE CACHE_MAX
+#define MAX_PORTS 3
 
 /* SMBIOS structure types */
 enum {
@@ -33,6 +34,7 @@ enum {
 	SMBIOS_SYSTEM_ENCLOSURE = 3,
 	SMBIOS_PROCESSOR_INFORMATION = 4,
 	SMBIOS_CACHE_INFORMATION = 7,
+	SMBIOS_PORT_INFORMATION = 8,
 	SMBIOS_SYSTEM_SLOTS = 9,
 	SMBIOS_PHYS_MEMORY_ARRAY = 16,
 	SMBIOS_MEMORY_DEVICE = 17,
@@ -234,6 +236,25 @@ struct __packed smbios_type7 {
 	u8 associativity;
 	u32 maximum_cache_size2;
 	u32 installed_cache_size2;
+	char eos[SMBIOS_STRUCT_EOS_BYTES];
+};
+
+/* Type 8 */
+#define DMTF_TYPE8_OTHER			0xFF
+#define DMTF_TYPE8_RJ45				0x0B
+#define DMTF_TYPE8_NETWORK_PORT		0x1F
+#define DMTF_TYPE8_USB				0x10
+#define DMTF_TYPE8_ACCESS_BUS		0x12
+
+struct __packed smbios_type8 {
+	u8 type;
+	u8 length;
+	u16 handle;
+	u8 internal_reference_designator;
+	u8 internal_connector_type;
+	u8 external_reference_designator;
+	u8 external_connector_type;
+	u8 port_type;
 	char eos[SMBIOS_STRUCT_EOS_BYTES];
 };
 

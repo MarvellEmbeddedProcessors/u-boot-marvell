@@ -188,6 +188,55 @@ struct __packed smbios_type4 {
 	char eos[SMBIOS_STRUCT_EOS_BYTES];
 };
 
+/* Type 7 */
+#define DMTF_TYPE7_SOCKETED					BIT(3)
+#define DMTF_TYPE7_CACHE_ENABLED			BIT(7)
+#define DMTF_TYPE7_CACHE_L1					(0)
+#define DMTF_TYPE7_CACHE_L2					(1)
+#define DMTF_TYPE7_OP_MODE					BIT(8)
+#define DMTF_TYPE7_1K_GRANULARITY			BIT(15)
+#define DMTF_TYPE7_32K						(32)
+#define DMTF_TYPE7_48K						(48)
+#define DMTF_TYPE7_512K						(512)
+#define DMTF_TYPE7_SRAM_TYPE_UNKNOWN		BIT(1)
+#define DMTF_TYPE7_PARITY					(0x04)
+#define DMTF_TYPE7_SINGLE_BIT_ECC			(0x05)
+#define DMTF_TYPE7_MULTI_BIT_ECC			(0x06)
+#define DMTF_TYPE7_INST_CACHE				(0x03)
+#define DMTF_TYPE7_INSTRUCTION_CACHE		(0x03)
+#define DMTF_TYPE7_DATA_CACHE				(0x04)
+#define DMTF_TYPE7_DATA_UNIFIED				(0x05)
+#define DMTF_TYPE7_2_WAY_SET_ASSOCIATIVE	(0x04)
+#define DMTF_TYPE7_16_WAY_SET_ASSOCIATIVE	(0x08)
+
+struct cache_details {
+	char name[16];
+	u8 level;
+	u8 error_control;
+	u8 associativity;
+	u8 type;
+	u32 size;
+};
+
+struct __packed smbios_type7 {
+	u8 type;
+	u8 length;
+	u16 handle;
+	u8 socket_designation;
+	u16 cache_configuration;
+	u16 maximum_cache_size;
+	u16 installed_size;
+	u16 supported_sram_type;
+	u16 current_sram_type;
+	u8 cache_speed;
+	u8 error_correction_type;
+	u8 system_cache_type;
+	u8 associativity;
+	u32 maximum_cache_size2;
+	u32 installed_cache_size2;
+	char eos[SMBIOS_STRUCT_EOS_BYTES];
+};
+
 struct __packed smbios_type32 {
 	u8 type;
 	u8 length;

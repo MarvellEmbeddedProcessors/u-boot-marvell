@@ -16,6 +16,14 @@
 #include <dm.h>
 #include <dm/uclass-internal.h>
 #endif
+#include <linux/bitops.h>
+
+/* cache details in needed in type 7 */
+struct cache_details cache_data[NO_OF_CACHE] = {
+	{"CACHE-D-L1", DMTF_TYPE7_CACHE_L1, DMTF_TYPE7_SINGLE_BIT_ECC, DMTF_TYPE7_2_WAY_SET_ASSOCIATIVE, DMTF_TYPE7_DATA_CACHE, DMTF_TYPE7_32K},
+	{"CACHE-I-L1", DMTF_TYPE7_CACHE_L1,  DMTF_TYPE7_PARITY, DMTF_TYPE7_2_WAY_SET_ASSOCIATIVE, DMTF_TYPE7_INSTRUCTION_CACHE, DMTF_TYPE7_48K},
+	{"CACHE-L2", DMTF_TYPE7_CACHE_L2, DMTF_TYPE7_SINGLE_BIT_ECC, DMTF_TYPE7_16_WAY_SET_ASSOCIATIVE, DMTF_TYPE7_DATA_UNIFIED, DMTF_TYPE7_512K},
+};
 
 /**
  * smbios_add_string() - add a string to the string area
@@ -275,6 +283,44 @@ static int smbios_write_type4(ulong *current, int handle)
 	return len;
 }
 
+static int smbios_write_type7_dm(ulong *current, int handle, int index)
+{
+	struct smbios_type7 *t;
+	int len = sizeof(struct smbios_type7);
+
+	t = map_sysmem(*current, len);
+	memset(t, 0, sizeof(struct smbios_type7));
+	fill_smbios_header(t, SMBIOS_CACHE_INFORMATION, len, handle + index);
+
+	t->socket_designation = smbios_add_string(t->eos, cache_data[index].name);
+	t->error_correction_type = cache_data[index].error_control;
+	t->system_cache_type = cache_data[index].type;
+	t->associativity = cache_data[index].associativity;
+	t->maximum_cache_size2 = cache_data[index].size;
+	t->installed_cache_size2 = cache_data[index].size;
+	t->cache_configuration = DMTF_TYPE7_CACHE_ENABLED |
+							cache_data[index].level | DMTF_TYPE7_OP_MODE;
+
+	t->supported_sram_type = DMTF_TYPE7_SRAM_TYPE_UNKNOWN;
+	t->current_sram_type = DMTF_TYPE7_SRAM_TYPE_UNKNOWN;
+
+	len = t->length + smbios_string_table_len(t->eos);
+	*current += len;
+	unmap_sysmem(t);
+
+	return len;
+}
+
+static int smbios_write_type7(ulong *current, int handle)
+{
+	u32 i = 0, len = 0;
+
+	for (; i < NO_OF_CACHE; i++)
+		len += smbios_write_type7_dm(current, handle, i);
+
+	return len;
+}
+
 static int smbios_write_type32(ulong *current, int handle)
 {
 	struct smbios_type32 *t;
@@ -311,6 +357,7 @@ static smbios_write_type smbios_write_funcs[] = {
 	smbios_write_type2,
 	smbios_write_type3,
 	smbios_write_type4,
+	smbios_write_type7,
 	smbios_write_type32,
 	smbios_write_type127
 };

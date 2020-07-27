@@ -27,6 +27,7 @@ enum {
 #define MAX_PORTS 3
 #define MAX_SLOTS 2
 #define MAX_MEMORY_DEV 1
+#define MAX_MEMORY_ARRAY 1
 
 /* SMBIOS structure types */
 enum {
@@ -372,6 +373,19 @@ struct __packed smbios_type17 {
 	u32 volatile_size;
 	u32 cache_size;
 	u32 logical_size;
+	char eos[SMBIOS_STRUCT_EOS_BYTES];
+};
+
+struct __packed smbios_type19 {
+	u8 type;
+	u8 length;
+	u16 handle;
+	u32 starting_address;
+	u32 ending_address;
+	u16 memory_array_handle;
+	u8 partition_width;
+	u64 extended_starting_address;
+	u64 extended_ending_address;
 	char eos[SMBIOS_STRUCT_EOS_BYTES];
 };
 

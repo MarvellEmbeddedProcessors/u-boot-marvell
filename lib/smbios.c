@@ -457,6 +457,43 @@ static int smbios_write_type16(ulong *current, int handle)
 	return len;
 }
 
+static int smbios_write_type17_dm(ulong *current, int handle, int index)
+{
+	struct smbios_type17 *t;
+	int len = sizeof(struct smbios_type17);
+	const char *manufacturer = "UNKNOWN";
+
+	t = map_sysmem(*current, len);
+	memset(t, 0, sizeof(struct smbios_type17));
+	fill_smbios_header(t, SMBIOS_MEMORY_DEVICE, len, handle + index);
+
+	/* Data to be filled by OEM */
+	/* ...
+	 * ...
+	 * ...
+	 */
+	t->physical_memory_array_handle = 0x0800;
+	t->size = DMTF_TYPE17_4GB;
+	t->form_factor = DMTF_TYPE17_DIMM;
+	t->manufacturer = smbios_add_string(t->eos, manufacturer);
+
+	len = t->length + smbios_string_table_len(t->eos);
+	*current += len;
+	unmap_sysmem(t);
+
+	return len;
+}
+
+static int smbios_write_type17(ulong *current, int handle)
+{
+	u32 no_of_handles = MAX_MEMORY_DEV, i = 0, len = 0;
+
+	for (; i < no_of_handles; i++)
+		len += smbios_write_type17_dm(current, handle, i);
+
+	return len;
+}
+
 static int smbios_write_type32(ulong *current, int handle)
 {
 	struct smbios_type32 *t;
@@ -498,6 +535,7 @@ static smbios_write_type smbios_write_funcs[] = {
 	smbios_write_type9,
 	smbios_write_type13,
 	smbios_write_type16,
+	smbios_write_type17,
 	smbios_write_type32,
 	smbios_write_type127
 };

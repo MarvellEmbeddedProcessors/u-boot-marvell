@@ -10,7 +10,7 @@
 
 /* SMBIOS spec version implemented */
 #define SMBIOS_MAJOR_VER	3
-#define SMBIOS_MINOR_VER	0
+#define SMBIOS_MINOR_VER	2
 
 #define DMTF_PROC_ARMV7		0x100
 #define DMTF_PROC_ARMV8		0x101

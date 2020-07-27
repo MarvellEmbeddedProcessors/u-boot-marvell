@@ -100,6 +100,10 @@ static int smbios_string_table_len(char *start)
 		len += i;
 	}
 
+	/* if there is no strings, return soze of eos which is 2 */
+	if (!len)
+		return 2;
+
 	return len + 1;
 }
 

@@ -413,6 +413,50 @@ static int smbios_write_type9(ulong *current, int handle)
 	return len;
 }
 
+static int smbios_write_type13(ulong *current, int handle)
+{
+	struct smbios_type13 *t;
+	int len = sizeof(struct smbios_type13);
+	const char *language = "en|US|iso8859-1";
+
+	t = map_sysmem(*current, len);
+	memset(t, 0, sizeof(struct smbios_type13));
+	fill_smbios_header(t, SMBIOS_BIOS_LANGUAGE_INFORMATION, len, handle);
+
+	t->installable_languages = 1;
+	t->flags = 0;
+	t->current_language = smbios_add_string(t->eos, language);
+
+	len = t->length + smbios_string_table_len(t->eos);
+	*current += len;
+	unmap_sysmem(t);
+
+	return len;
+}
+
+static int smbios_write_type16(ulong *current, int handle)
+{
+	struct smbios_type16 *t;
+	int len = sizeof(struct smbios_type16);
+
+	t = map_sysmem(*current, len);
+	memset(t, 0, sizeof(struct smbios_type16));
+	fill_smbios_header(t, SMBIOS_PHYS_MEMORY_ARRAY, len, handle);
+
+	t->location = DMTF_TYPE16_LOCATION_SYSTEM_BOARD_OR_MOTHERBOARD;
+	t->use = DMTF_TYPE16_USE_SYSTEM_MEMORY;
+	t->memory_error_correction = DMTF_TYPE16_ERROR_CORRECTION_SINGLE_BIT_ECC;
+	t->maximum_capacity = DMTF_TYPE16_MAXIMUM_CAPACITY_64GB;
+	t->number_of_memory_devices = 1;
+	t->memory_error_information_handle = 0xFFFE;
+
+	len = t->length + smbios_string_table_len(t->eos);
+	*current += len;
+	unmap_sysmem(t);
+
+	return len;
+}
+
 static int smbios_write_type32(ulong *current, int handle)
 {
 	struct smbios_type32 *t;
@@ -452,6 +496,8 @@ static smbios_write_type smbios_write_funcs[] = {
 	smbios_write_type7,
 	smbios_write_type8,
 	smbios_write_type9,
+	smbios_write_type13,
+	smbios_write_type16,
 	smbios_write_type32,
 	smbios_write_type127
 };

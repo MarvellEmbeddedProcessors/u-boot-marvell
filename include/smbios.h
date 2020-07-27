@@ -37,6 +37,7 @@ enum {
 	SMBIOS_CACHE_INFORMATION = 7,
 	SMBIOS_PORT_INFORMATION = 8,
 	SMBIOS_SYSTEM_SLOTS = 9,
+	SMBIOS_BIOS_LANGUAGE_INFORMATION = 13,
 	SMBIOS_PHYS_MEMORY_ARRAY = 16,
 	SMBIOS_MEMORY_DEVICE = 17,
 	SMBIOS_MEMORY_ARRAY_MAPPED_ADDRESS = 19,
@@ -295,6 +296,37 @@ struct __packed smbios_type9 {
 	u8 data_bus_width_base;
 	u8 peer_grouping_count;
 	u8 peer_groups;
+	char eos[SMBIOS_STRUCT_EOS_BYTES];
+};
+
+struct __packed smbios_type13 {
+	u8 type;
+	u8 length;
+	u16 handle;
+	u8 installable_languages;
+	u8 flags;
+	u8 reserved[15];
+	u8 current_language;
+	char eos[SMBIOS_STRUCT_EOS_BYTES];
+};
+
+/* Type 16 */
+#define DMTF_TYPE16_LOCATION_SYSTEM_BOARD_OR_MOTHERBOARD 0x03
+#define	DMTF_TYPE16_USE_SYSTEM_MEMORY 0x03
+#define	DMTF_TYPE16_ERROR_CORRECTION_SINGLE_BIT_ECC 0x05
+#define	DMTF_TYPE16_MAXIMUM_CAPACITY_64GB BIT(26)
+
+struct __packed smbios_type16 {
+	u8 type;
+	u8 length;
+	u16 handle;
+	u8 location;
+	u8 use;
+	u8 memory_error_correction;
+	u32 maximum_capacity;
+	u16 memory_error_information_handle;
+	u16 number_of_memory_devices;
+	u64 extended_maximum_capacity;
 	char eos[SMBIOS_STRUCT_EOS_BYTES];
 };
 

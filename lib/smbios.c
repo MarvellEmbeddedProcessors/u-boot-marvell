@@ -558,6 +558,38 @@ static int smbios_write_type20(ulong *current, int handle)
 	return len;
 }
 
+static int smbios_write_type41_dm(ulong *current, int handle, int index)
+{
+	struct smbios_type41 *t;
+	int len = sizeof(struct smbios_type41);
+
+	t = map_sysmem(*current, len);
+	memset(t, 0, sizeof(struct smbios_type41));
+	fill_smbios_header(t, SMBIOS_ONBOARD_EVICES_EXTENDED_INFORMATION, len, handle + index);
+
+	/* Data to be filled by OEM */
+	/* ...
+	 * ...
+	 * ...
+	 */
+
+	len = t->length + smbios_string_table_len(t->eos);
+	*current += len;
+	unmap_sysmem(t);
+
+	return len;
+}
+
+static int smbios_write_type41(ulong *current, int handle)
+{
+	u32 no_of_handles = MAX_MEMORY_MAPPED_DEV, i = 0, len = 0;
+
+	for (; i < no_of_handles; i++)
+		len += smbios_write_type41_dm(current, handle, i);
+
+	return len;
+}
+
 static int smbios_write_type32(ulong *current, int handle)
 {
 	struct smbios_type32 *t;
@@ -602,6 +634,7 @@ static smbios_write_type smbios_write_funcs[] = {
 	smbios_write_type17,
 	smbios_write_type19,
 	smbios_write_type20,
+	smbios_write_type41,
 	smbios_write_type32,
 	smbios_write_type127
 };

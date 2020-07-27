@@ -46,6 +46,7 @@ enum {
 	SMBIOS_MEMORY_ARRAY_MAPPED_ADDRESS = 19,
 	SMBIOS_MEMORY_DEVICE_MAPPED_ADDRESS = 20,
 	SMBIOS_SYSTEM_BOOT_INFORMATION = 32,
+	SMBIOS_ONBOARD_EVICES_EXTENDED_INFORMATION = 41,
 	SMBIOS_END_OF_TABLE = 127
 };
 
@@ -404,6 +405,19 @@ struct __packed smbios_type20 {
 	u8 interleaved_data_depth;
 	u64 extended_starting_address;
 	u64 extended_ending_address;
+	char eos[SMBIOS_STRUCT_EOS_BYTES];
+};
+
+struct __packed smbios_type41 {
+	u8 type;
+	u8 length;
+	u16 handle;
+	u8 reference_designation;
+	u8 device_type;
+	u8 device_type_instance;
+	u16 segment_group_number;
+	u8 bus_number;
+	u8 device_function_number;
 	char eos[SMBIOS_STRUCT_EOS_BYTES];
 };
 

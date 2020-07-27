@@ -28,6 +28,7 @@ enum {
 #define MAX_SLOTS 2
 #define MAX_MEMORY_DEV 1
 #define MAX_MEMORY_ARRAY 1
+#define MAX_MEMORY_MAPPED_DEV 1
 
 /* SMBIOS structure types */
 enum {
@@ -43,6 +44,7 @@ enum {
 	SMBIOS_PHYS_MEMORY_ARRAY = 16,
 	SMBIOS_MEMORY_DEVICE = 17,
 	SMBIOS_MEMORY_ARRAY_MAPPED_ADDRESS = 19,
+	SMBIOS_MEMORY_DEVICE_MAPPED_ADDRESS = 20,
 	SMBIOS_SYSTEM_BOOT_INFORMATION = 32,
 	SMBIOS_END_OF_TABLE = 127
 };
@@ -384,6 +386,22 @@ struct __packed smbios_type19 {
 	u32 ending_address;
 	u16 memory_array_handle;
 	u8 partition_width;
+	u64 extended_starting_address;
+	u64 extended_ending_address;
+	char eos[SMBIOS_STRUCT_EOS_BYTES];
+};
+
+struct __packed smbios_type20 {
+	u8 type;
+	u8 length;
+	u16 handle;
+	u32 starting_address;
+	u32 ending_address;
+	u16 memory_device_handle;
+	u16 memory_array_mapped_address_handle;
+	u8 partition_row_position;
+	u8 interleave_position;
+	u8 interleaved_data_depth;
 	u64 extended_starting_address;
 	u64 extended_ending_address;
 	char eos[SMBIOS_STRUCT_EOS_BYTES];

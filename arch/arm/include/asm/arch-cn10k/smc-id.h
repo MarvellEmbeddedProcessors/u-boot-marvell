@@ -34,6 +34,6 @@
  *		0x0 -- Success
  *		0x2 -- Fail
  */
-#define PLAT_OCTEONTX_SPI_SECURE_UPDATE		0xc2000d08
+#define PLAT_OCTEONTX_SPI_SECURE_UPDATE		0xc2000b05
 
 #endif /* __SMC_ID_H__ */

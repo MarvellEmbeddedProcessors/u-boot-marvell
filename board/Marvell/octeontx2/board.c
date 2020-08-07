@@ -376,8 +376,8 @@ int board_late_init(void)
 	if (IS_ENABLED(CONFIG_NET_OCTEONTX2))
 		board_late_probe_devices();
 
-	if (save_env)
-		env_save();
+	val = env_get_hex("enable_wfe", 0);
+	smc_configure_wfe(val);
 
 #if CONFIG_IS_ENABLED(OCTEONTX_SERIAL_BOOTCMD)
 	if (init_bootcmd_console())
@@ -387,6 +387,9 @@ int board_late_init(void)
 	if (init_pcie_console())
 		printf("Failed to init pci console\n");
 #endif
+
+	if (save_env)
+		env_save();
 
 	return 0;
 }

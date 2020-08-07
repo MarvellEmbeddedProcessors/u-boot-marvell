@@ -47,6 +47,17 @@ ssize_t smc_configure_ooo(unsigned int val)
 	return regs.regs[0];
 }
 
+ssize_t smc_configure_wfe(unsigned int val)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = OCTEONTX2_CONFIG_WFE;
+	regs.regs[1] = val;
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+
 ssize_t smc_flsf_fw_booted(void)
 {
 	struct pt_regs regs;

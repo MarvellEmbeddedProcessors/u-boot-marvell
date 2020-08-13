@@ -432,6 +432,14 @@ config NET_CN10K
 	  CN10K SoCs.
 	  If unsure, say n.
 
+config CN10K_ETH_INTF
+	bool "CN10K ETH ATF interface support"
+	depends on ARCH_CN10K
+	default y if ARCH_CN10K
+	help
+	  You must select Y to enable Ethernet ATF interface support for
+	  CN10K SoCs. If unsure, say n
+
 config OCTEONTX_SMI
 	bool "OcteonTX SMI Device support"
 	depends on ARCH_OCTEONTX || ARCH_OCTEONTX2

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier:    GPL-2.0
 /*
- * Copyright (C) 2018 Marvell International Ltd.
+ * Copyright (C) 2020 Marvell International Ltd.
  *
  * https://spdx.org/licenses
  */
@@ -99,19 +99,16 @@ struct nix_af *rvu_af_init(struct rvu_af *rvu_af)
 	block_addr.s.block = RVU_BLOCK_ADDR_E_NPC;
 	nix_af->npc_af_base = rvu_af->af_base + block_addr.u;
 
-	debug("%s: Setting up npa admin\n", __func__);
 	err = npa_af_setup(nix_af->npa_af);
 	if (err) {
 		printf("%s: Error %d setting up NPA admin\n", __func__, err);
 		goto error;
 	}
-	debug("%s: Setting up nix af\n", __func__);
 	err = nix_af_setup(nix_af);
 	if (err) {
 		printf("%s: Error %d setting up NIX admin\n", __func__, err);
 		goto error;
 	}
-	debug("%s: nix_af: %p\n", __func__, nix_af);
 	return nix_af;
 
 error:
@@ -152,7 +149,6 @@ int rvu_af_remove(struct udevice *dev)
 	npa_af_shutdown(rvu_af->nix_af->npa_af);
 	npc_af_shutdown(rvu_af->nix_af);
 
-	debug("%s: rvu af down --\n", __func__);
 	return 0;
 }
 

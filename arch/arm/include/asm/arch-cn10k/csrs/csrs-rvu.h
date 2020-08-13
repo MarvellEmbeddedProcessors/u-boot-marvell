@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier:    GPL-2.0
  *
- * Copyright (C) 2019 Marvell International Ltd.
+ * Copyright (C) 2020 Marvell International Ltd.
  *
  * https://spdx.org/licenses
  */
@@ -55,6 +55,7 @@
  * Software can read RVU_PF/RVU_VF_BLOCK_ADDR()_DISC[IMP] to discover
  * which blocks are implemented and enabled.
  */
+#define RVU_BLOCK_ADDR_E_APR (0x16)
 #define RVU_BLOCK_ADDR_E_CPTX(a) (0xa + (a))
 #define RVU_BLOCK_ADDR_E_LMT (1)
 #define RVU_BLOCK_ADDR_E_NDCX(a) (0xc + (a))
@@ -74,6 +75,7 @@
  * RVU Block Type Enumeration Enumerates values of
  * RVU_PF/RVU_VF_BLOCK_ADDR()_DISC[BTYPE].
  */
+#define RVU_BLOCK_TYPE_E_APR (0xf)
 #define RVU_BLOCK_TYPE_E_CPT (9)
 #define RVU_BLOCK_TYPE_E_DDF (0xb)
 #define RVU_BLOCK_TYPE_E_LMT (2)
@@ -142,6 +144,15 @@
  * RVU bus. Internal: This is an enum used in csr3 virtual equations.
  */
 #define RVU_BUSDID_E_RVU_BUSDID (0x840000000000ll)
+
+/**
+ * Enumeration rvu_mbox_e
+ *
+ * RVU PF/VF MBOX Address Range Enumeration Enumerates VF BAR2 address
+ * range for accessing PF/VF mailbox memory region.
+ */
+#define RVU_MBOX_E_RVU_PFX_FUNCX_MBOX(a, b)	\
+	(0x8402000c0000ll + 0x1000000000ll * (a) + 0x2000000ll * (b))
 
 /**
  * Enumeration rvu_pf_int_vec_e
@@ -257,10 +268,9 @@ static inline u64 RVU_AF_AFPFX_MBOXX(u64 a, u64 b)
 /**
  * Register (RVU_PF_BAR0) rvu_af_bar2_alias#
  *
- * INTERNAL: RVU Admin Function  BAR2 Alias Registers  These registers
- * alias to the RVU BAR2 registers for the PF and function selected by
- * RVU_AF_BAR2_SEL[PF_FUNC].  Internal: Not implemented. Placeholder for
- * bug33464.
+ * RVU Admin Function  BAR2 Alias Registers These registers alias to the
+ * RVU BAR2 registers for the PF and function selected by
+ * RVU_AF_BAR2_SEL[PF_FUNC].
  */
 union rvu_af_bar2_aliasx {
 	u64 u;
@@ -280,9 +290,8 @@ static inline u64 RVU_AF_BAR2_ALIASX(u64 a)
 /**
  * Register (RVU_PF_BAR0) rvu_af_bar2_sel
  *
- * INTERNAL: RVU Admin Function BAR2 Select Register  This register
- * configures BAR2 accesses from the RVU_AF_BAR2_ALIAS() registers in
- * BAR0. Internal: Not implemented. Placeholder for bug33464.
+ * RVU Admin Function BAR2 Select Register This register configures BAR2
+ * accesses from the RVU_AF_BAR2_ALIAS() registers in BAR0.
  */
 union rvu_af_bar2_sel {
 	u64 u;
@@ -379,17 +388,10 @@ union rvu_af_gen_int {
 	struct rvu_af_gen_int_s {
 		u64 unmapped                         : 1;
 		u64 msix_fault                       : 1;
-		u64 bar4_mem_fault                   : 1;
+		u64 mbox_mem_fault                   : 1;
 		u64 reserved_3_63                    : 61;
 	} s;
-	struct rvu_af_gen_int_cn96xx {
-		u64 unmapped                         : 1;
-		u64 msix_fault                       : 1;
-		u64 reserved_2_63                    : 62;
-	} cn96xx;
-	/* struct rvu_af_gen_int_s cn98xx; */
-	/* struct rvu_af_gen_int_cn96xx cnf95xx; */
-	/* struct rvu_af_gen_int_cn96xx loki; */
+	/* struct rvu_af_gen_int_s cn; */
 };
 
 static inline u64 RVU_AF_GEN_INT(void)
@@ -410,17 +412,10 @@ union rvu_af_gen_int_ena_w1c {
 	struct rvu_af_gen_int_ena_w1c_s {
 		u64 unmapped                         : 1;
 		u64 msix_fault                       : 1;
-		u64 bar4_mem_fault                   : 1;
+		u64 mbox_mem_fault                   : 1;
 		u64 reserved_3_63                    : 61;
 	} s;
-	struct rvu_af_gen_int_ena_w1c_cn96xx {
-		u64 unmapped                         : 1;
-		u64 msix_fault                       : 1;
-		u64 reserved_2_63                    : 62;
-	} cn96xx;
-	/* struct rvu_af_gen_int_ena_w1c_s cn98xx; */
-	/* struct rvu_af_gen_int_ena_w1c_cn96xx cnf95xx; */
-	/* struct rvu_af_gen_int_ena_w1c_cn96xx loki; */
+	/* struct rvu_af_gen_int_ena_w1c_s cn; */
 };
 
 static inline u64 RVU_AF_GEN_INT_ENA_W1C(void)
@@ -441,17 +436,10 @@ union rvu_af_gen_int_ena_w1s {
 	struct rvu_af_gen_int_ena_w1s_s {
 		u64 unmapped                         : 1;
 		u64 msix_fault                       : 1;
-		u64 bar4_mem_fault                   : 1;
+		u64 mbox_mem_fault                   : 1;
 		u64 reserved_3_63                    : 61;
 	} s;
-	struct rvu_af_gen_int_ena_w1s_cn96xx {
-		u64 unmapped                         : 1;
-		u64 msix_fault                       : 1;
-		u64 reserved_2_63                    : 62;
-	} cn96xx;
-	/* struct rvu_af_gen_int_ena_w1s_s cn98xx; */
-	/* struct rvu_af_gen_int_ena_w1s_cn96xx cnf95xx; */
-	/* struct rvu_af_gen_int_ena_w1s_cn96xx loki; */
+	/* struct rvu_af_gen_int_ena_w1s_s cn; */
 };
 
 static inline u64 RVU_AF_GEN_INT_ENA_W1S(void)
@@ -472,17 +460,10 @@ union rvu_af_gen_int_w1s {
 	struct rvu_af_gen_int_w1s_s {
 		u64 unmapped                         : 1;
 		u64 msix_fault                       : 1;
-		u64 bar4_mem_fault                   : 1;
+		u64 mbox_mem_fault                   : 1;
 		u64 reserved_3_63                    : 61;
 	} s;
-	struct rvu_af_gen_int_w1s_cn96xx {
-		u64 unmapped                         : 1;
-		u64 msix_fault                       : 1;
-		u64 reserved_2_63                    : 62;
-	} cn96xx;
-	/* struct rvu_af_gen_int_w1s_s cn98xx; */
-	/* struct rvu_af_gen_int_w1s_cn96xx cnf95xx; */
-	/* struct rvu_af_gen_int_w1s_cn96xx loki; */
+	/* struct rvu_af_gen_int_w1s_s cn; */
 };
 
 static inline u64 RVU_AF_GEN_INT_W1S(void)
@@ -538,9 +519,72 @@ static inline u64 RVU_AF_MSIXTR_BASE(void)
 }
 
 /**
+ * Register (RVU_PF_BAR0) rvu_af_pf#_bar4_addr
+ *
+ * RVU Admin Function PF BAR4 Address Registers
+ */
+union rvu_af_pfx_bar4_addr {
+	u64 u;
+	struct rvu_af_pfx_bar4_addr_s {
+		u64 reserved_0_15                    : 16;
+		u64 addr                             : 48;
+	} s;
+	/* struct rvu_af_pfx_bar4_addr_s cn; */
+};
+
+static inline u64 RVU_AF_PFX_BAR4_ADDR(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 RVU_AF_PFX_BAR4_ADDR(u64 a)
+{
+	return 0x5000 + 0x10 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) rvu_af_pf#_bar4_cfg
+ *
+ * RVU Admin Function PF BAR4 Config Registers
+ */
+union rvu_af_pfx_bar4_cfg {
+	u64 u;
+	struct rvu_af_pfx_bar4_cfg_s {
+		u64 barbits                          : 6;
+		u64 reserved_6_63                    : 58;
+	} s;
+	/* struct rvu_af_pfx_bar4_cfg_s cn; */
+};
+
+static inline u64 RVU_AF_PFX_BAR4_CFG(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 RVU_AF_PFX_BAR4_CFG(u64 a)
+{
+	return 0x5200 + 0x10 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) rvu_af_pf#_lmtline_addr
+ *
+ * RVU Admin Function PF LMTLINE Address Registers
+ */
+union rvu_af_pfx_lmtline_addr {
+	u64 u;
+	struct rvu_af_pfx_lmtline_addr_s {
+		u64 reserved_0_15                    : 16;
+		u64 addr                             : 48;
+	} s;
+	/* struct rvu_af_pfx_lmtline_addr_s cn; */
+};
+
+static inline u64 RVU_AF_PFX_LMTLINE_ADDR(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 RVU_AF_PFX_LMTLINE_ADDR(u64 a)
+{
+	return 0x5800 + 0x10 * a;
+}
+
+/**
  * Register (RVU_PF_BAR0) rvu_af_pf#_vf_bar4_addr
  *
- * RVU Admin Function PF/VF BAR4 Address Registers
+ * RVU Admin Function VF BAR4 Address Registers
  */
 union rvu_af_pfx_vf_bar4_addr {
 	u64 u;
@@ -555,28 +599,28 @@ static inline u64 RVU_AF_PFX_VF_BAR4_ADDR(u64 a)
 	__attribute__ ((pure, always_inline));
 static inline u64 RVU_AF_PFX_VF_BAR4_ADDR(u64 a)
 {
-	return 0x1000 + 0x10 * a;
+	return 0x5400 + 0x10 * a;
 }
 
 /**
- * Register (RVU_PF_BAR0) rvu_af_pf_bar4_addr
+ * Register (RVU_PF_BAR0) rvu_af_pf#_vf_bar4_cfg
  *
- * RVU Admin Function PF BAR4 Address Registers
+ * RVU Admin Function VF BAR4 Config Registers
  */
-union rvu_af_pf_bar4_addr {
+union rvu_af_pfx_vf_bar4_cfg {
 	u64 u;
-	struct rvu_af_pf_bar4_addr_s {
-		u64 reserved_0_15                    : 16;
-		u64 addr                             : 48;
+	struct rvu_af_pfx_vf_bar4_cfg_s {
+		u64 barbits                          : 6;
+		u64 reserved_6_63                    : 58;
 	} s;
-	/* struct rvu_af_pf_bar4_addr_s cn; */
+	/* struct rvu_af_pfx_vf_bar4_cfg_s cn; */
 };
 
-static inline u64 RVU_AF_PF_BAR4_ADDR(void)
+static inline u64 RVU_AF_PFX_VF_BAR4_CFG(u64 a)
 	__attribute__ ((pure, always_inline));
-static inline u64 RVU_AF_PF_BAR4_ADDR(void)
+static inline u64 RVU_AF_PFX_VF_BAR4_CFG(u64 a)
 {
-	return 0x40;
+	return 0x5600 + 0x10 * a;
 }
 
 /**
@@ -592,15 +636,7 @@ union rvu_af_pf_rst {
 		u64 exec                             : 1;
 		u64 reserved_13_63                   : 51;
 	} s;
-	struct rvu_af_pf_rst_cn96xx {
-		u64 pf                               : 4;
-		u64 reserved_4_11                    : 8;
-		u64 exec                             : 1;
-		u64 reserved_13_63                   : 51;
-	} cn96xx;
-	/* struct rvu_af_pf_rst_s cn98xx; */
-	/* struct rvu_af_pf_rst_cn96xx cnf95xx; */
-	/* struct rvu_af_pf_rst_cn96xx loki; */
+	/* struct rvu_af_pf_rst_s cn; */
 };
 
 static inline u64 RVU_AF_PF_RST(void)
@@ -618,16 +654,10 @@ static inline u64 RVU_AF_PF_RST(void)
 union rvu_af_pfaf_mbox_int {
 	u64 u;
 	struct rvu_af_pfaf_mbox_int_s {
-		u64 mbox                             : 24;
-		u64 reserved_24_63                   : 40;
+		u64 mbox                             : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfaf_mbox_int_cn96xx {
-		u64 mbox                             : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfaf_mbox_int_s cn98xx; */
-	/* struct rvu_af_pfaf_mbox_int_cn96xx cnf95xx; */
-	/* struct rvu_af_pfaf_mbox_int_cn96xx loki; */
+	/* struct rvu_af_pfaf_mbox_int_s cn; */
 };
 
 static inline u64 RVU_AF_PFAF_MBOX_INT(void)
@@ -646,16 +676,10 @@ static inline u64 RVU_AF_PFAF_MBOX_INT(void)
 union rvu_af_pfaf_mbox_int_ena_w1c {
 	u64 u;
 	struct rvu_af_pfaf_mbox_int_ena_w1c_s {
-		u64 mbox                             : 24;
-		u64 reserved_24_63                   : 40;
+		u64 mbox                             : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfaf_mbox_int_ena_w1c_cn96xx {
-		u64 mbox                             : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfaf_mbox_int_ena_w1c_s cn98xx; */
-	/* struct rvu_af_pfaf_mbox_int_ena_w1c_cn96xx cnf95xx; */
-	/* struct rvu_af_pfaf_mbox_int_ena_w1c_cn96xx loki; */
+	/* struct rvu_af_pfaf_mbox_int_ena_w1c_s cn; */
 };
 
 static inline u64 RVU_AF_PFAF_MBOX_INT_ENA_W1C(void)
@@ -674,16 +698,10 @@ static inline u64 RVU_AF_PFAF_MBOX_INT_ENA_W1C(void)
 union rvu_af_pfaf_mbox_int_ena_w1s {
 	u64 u;
 	struct rvu_af_pfaf_mbox_int_ena_w1s_s {
-		u64 mbox                             : 24;
-		u64 reserved_24_63                   : 40;
+		u64 mbox                             : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfaf_mbox_int_ena_w1s_cn96xx {
-		u64 mbox                             : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfaf_mbox_int_ena_w1s_s cn98xx; */
-	/* struct rvu_af_pfaf_mbox_int_ena_w1s_cn96xx cnf95xx; */
-	/* struct rvu_af_pfaf_mbox_int_ena_w1s_cn96xx loki; */
+	/* struct rvu_af_pfaf_mbox_int_ena_w1s_s cn; */
 };
 
 static inline u64 RVU_AF_PFAF_MBOX_INT_ENA_W1S(void)
@@ -702,16 +720,10 @@ static inline u64 RVU_AF_PFAF_MBOX_INT_ENA_W1S(void)
 union rvu_af_pfaf_mbox_int_w1s {
 	u64 u;
 	struct rvu_af_pfaf_mbox_int_w1s_s {
-		u64 mbox                             : 24;
-		u64 reserved_24_63                   : 40;
+		u64 mbox                             : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfaf_mbox_int_w1s_cn96xx {
-		u64 mbox                             : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfaf_mbox_int_w1s_s cn98xx; */
-	/* struct rvu_af_pfaf_mbox_int_w1s_cn96xx cnf95xx; */
-	/* struct rvu_af_pfaf_mbox_int_w1s_cn96xx loki; */
+	/* struct rvu_af_pfaf_mbox_int_w1s_s cn; */
 };
 
 static inline u64 RVU_AF_PFAF_MBOX_INT_W1S(void)
@@ -729,16 +741,10 @@ static inline u64 RVU_AF_PFAF_MBOX_INT_W1S(void)
 union rvu_af_pfflr_int {
 	u64 u;
 	struct rvu_af_pfflr_int_s {
-		u64 flr                              : 24;
-		u64 reserved_24_63                   : 40;
+		u64 flr                              : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfflr_int_cn96xx {
-		u64 flr                              : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfflr_int_s cn98xx; */
-	/* struct rvu_af_pfflr_int_cn96xx cnf95xx; */
-	/* struct rvu_af_pfflr_int_cn96xx loki; */
+	/* struct rvu_af_pfflr_int_s cn; */
 };
 
 static inline u64 RVU_AF_PFFLR_INT(void)
@@ -757,16 +763,10 @@ static inline u64 RVU_AF_PFFLR_INT(void)
 union rvu_af_pfflr_int_ena_w1c {
 	u64 u;
 	struct rvu_af_pfflr_int_ena_w1c_s {
-		u64 flr                              : 24;
-		u64 reserved_24_63                   : 40;
+		u64 flr                              : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfflr_int_ena_w1c_cn96xx {
-		u64 flr                              : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfflr_int_ena_w1c_s cn98xx; */
-	/* struct rvu_af_pfflr_int_ena_w1c_cn96xx cnf95xx; */
-	/* struct rvu_af_pfflr_int_ena_w1c_cn96xx loki; */
+	/* struct rvu_af_pfflr_int_ena_w1c_s cn; */
 };
 
 static inline u64 RVU_AF_PFFLR_INT_ENA_W1C(void)
@@ -785,16 +785,10 @@ static inline u64 RVU_AF_PFFLR_INT_ENA_W1C(void)
 union rvu_af_pfflr_int_ena_w1s {
 	u64 u;
 	struct rvu_af_pfflr_int_ena_w1s_s {
-		u64 flr                              : 24;
-		u64 reserved_24_63                   : 40;
+		u64 flr                              : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfflr_int_ena_w1s_cn96xx {
-		u64 flr                              : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfflr_int_ena_w1s_s cn98xx; */
-	/* struct rvu_af_pfflr_int_ena_w1s_cn96xx cnf95xx; */
-	/* struct rvu_af_pfflr_int_ena_w1s_cn96xx loki; */
+	/* struct rvu_af_pfflr_int_ena_w1s_s cn; */
 };
 
 static inline u64 RVU_AF_PFFLR_INT_ENA_W1S(void)
@@ -813,16 +807,10 @@ static inline u64 RVU_AF_PFFLR_INT_ENA_W1S(void)
 union rvu_af_pfflr_int_w1s {
 	u64 u;
 	struct rvu_af_pfflr_int_w1s_s {
-		u64 flr                              : 24;
-		u64 reserved_24_63                   : 40;
+		u64 flr                              : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfflr_int_w1s_cn96xx {
-		u64 flr                              : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfflr_int_w1s_s cn98xx; */
-	/* struct rvu_af_pfflr_int_w1s_cn96xx cnf95xx; */
-	/* struct rvu_af_pfflr_int_w1s_cn96xx loki; */
+	/* struct rvu_af_pfflr_int_w1s_s cn; */
 };
 
 static inline u64 RVU_AF_PFFLR_INT_W1S(void)
@@ -840,16 +828,10 @@ static inline u64 RVU_AF_PFFLR_INT_W1S(void)
 union rvu_af_pfme_int {
 	u64 u;
 	struct rvu_af_pfme_int_s {
-		u64 me                               : 24;
-		u64 reserved_24_63                   : 40;
+		u64 me                               : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfme_int_cn96xx {
-		u64 me                               : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfme_int_s cn98xx; */
-	/* struct rvu_af_pfme_int_cn96xx cnf95xx; */
-	/* struct rvu_af_pfme_int_cn96xx loki; */
+	/* struct rvu_af_pfme_int_s cn; */
 };
 
 static inline u64 RVU_AF_PFME_INT(void)
@@ -868,16 +850,10 @@ static inline u64 RVU_AF_PFME_INT(void)
 union rvu_af_pfme_int_ena_w1c {
 	u64 u;
 	struct rvu_af_pfme_int_ena_w1c_s {
-		u64 me                               : 24;
-		u64 reserved_24_63                   : 40;
+		u64 me                               : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfme_int_ena_w1c_cn96xx {
-		u64 me                               : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfme_int_ena_w1c_s cn98xx; */
-	/* struct rvu_af_pfme_int_ena_w1c_cn96xx cnf95xx; */
-	/* struct rvu_af_pfme_int_ena_w1c_cn96xx loki; */
+	/* struct rvu_af_pfme_int_ena_w1c_s cn; */
 };
 
 static inline u64 RVU_AF_PFME_INT_ENA_W1C(void)
@@ -896,16 +872,10 @@ static inline u64 RVU_AF_PFME_INT_ENA_W1C(void)
 union rvu_af_pfme_int_ena_w1s {
 	u64 u;
 	struct rvu_af_pfme_int_ena_w1s_s {
-		u64 me                               : 24;
-		u64 reserved_24_63                   : 40;
+		u64 me                               : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfme_int_ena_w1s_cn96xx {
-		u64 me                               : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfme_int_ena_w1s_s cn98xx; */
-	/* struct rvu_af_pfme_int_ena_w1s_cn96xx cnf95xx; */
-	/* struct rvu_af_pfme_int_ena_w1s_cn96xx loki; */
+	/* struct rvu_af_pfme_int_ena_w1s_s cn; */
 };
 
 static inline u64 RVU_AF_PFME_INT_ENA_W1S(void)
@@ -924,16 +894,10 @@ static inline u64 RVU_AF_PFME_INT_ENA_W1S(void)
 union rvu_af_pfme_int_w1s {
 	u64 u;
 	struct rvu_af_pfme_int_w1s_s {
-		u64 me                               : 24;
-		u64 reserved_24_63                   : 40;
+		u64 me                               : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfme_int_w1s_cn96xx {
-		u64 me                               : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfme_int_w1s_s cn98xx; */
-	/* struct rvu_af_pfme_int_w1s_cn96xx cnf95xx; */
-	/* struct rvu_af_pfme_int_w1s_cn96xx loki; */
+	/* struct rvu_af_pfme_int_w1s_s cn; */
 };
 
 static inline u64 RVU_AF_PFME_INT_W1S(void)
@@ -951,16 +915,10 @@ static inline u64 RVU_AF_PFME_INT_W1S(void)
 union rvu_af_pfme_status {
 	u64 u;
 	struct rvu_af_pfme_status_s {
-		u64 me                               : 24;
-		u64 reserved_24_63                   : 40;
+		u64 me                               : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pfme_status_cn96xx {
-		u64 me                               : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pfme_status_s cn98xx; */
-	/* struct rvu_af_pfme_status_cn96xx cnf95xx; */
-	/* struct rvu_af_pfme_status_cn96xx loki; */
+	/* struct rvu_af_pfme_status_s cn; */
 };
 
 static inline u64 RVU_AF_PFME_STATUS(void)
@@ -978,16 +936,10 @@ static inline u64 RVU_AF_PFME_STATUS(void)
 union rvu_af_pftrpend {
 	u64 u;
 	struct rvu_af_pftrpend_s {
-		u64 trpend                           : 24;
-		u64 reserved_24_63                   : 40;
+		u64 trpend                           : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pftrpend_cn96xx {
-		u64 trpend                           : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pftrpend_s cn98xx; */
-	/* struct rvu_af_pftrpend_cn96xx cnf95xx; */
-	/* struct rvu_af_pftrpend_cn96xx loki; */
+	/* struct rvu_af_pftrpend_s cn; */
 };
 
 static inline u64 RVU_AF_PFTRPEND(void)
@@ -1006,16 +958,10 @@ static inline u64 RVU_AF_PFTRPEND(void)
 union rvu_af_pftrpend_w1s {
 	u64 u;
 	struct rvu_af_pftrpend_w1s_s {
-		u64 trpend                           : 24;
-		u64 reserved_24_63                   : 40;
+		u64 trpend                           : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct rvu_af_pftrpend_w1s_cn96xx {
-		u64 trpend                           : 16;
-		u64 reserved_16_63                   : 48;
-	} cn96xx;
-	/* struct rvu_af_pftrpend_w1s_s cn98xx; */
-	/* struct rvu_af_pftrpend_w1s_cn96xx cnf95xx; */
-	/* struct rvu_af_pftrpend_w1s_cn96xx loki; */
+	/* struct rvu_af_pftrpend_w1s_s cn; */
 };
 
 static inline u64 RVU_AF_PFTRPEND_W1S(void)
@@ -1036,16 +982,10 @@ union rvu_af_ras {
 	u64 u;
 	struct rvu_af_ras_s {
 		u64 msix_poison                      : 1;
-		u64 bar4_mem_poison                  : 1;
+		u64 mbox_mem_poison                  : 1;
 		u64 reserved_2_63                    : 62;
 	} s;
-	struct rvu_af_ras_cn96xx {
-		u64 msix_poison                      : 1;
-		u64 reserved_1_63                    : 63;
-	} cn96xx;
-	/* struct rvu_af_ras_s cn98xx; */
-	/* struct rvu_af_ras_cn96xx cnf95xx; */
-	/* struct rvu_af_ras_cn96xx loki; */
+	/* struct rvu_af_ras_s cn; */
 };
 
 static inline u64 RVU_AF_RAS(void)
@@ -1065,16 +1005,10 @@ union rvu_af_ras_ena_w1c {
 	u64 u;
 	struct rvu_af_ras_ena_w1c_s {
 		u64 msix_poison                      : 1;
-		u64 bar4_mem_poison                  : 1;
+		u64 mbox_mem_poison                  : 1;
 		u64 reserved_2_63                    : 62;
 	} s;
-	struct rvu_af_ras_ena_w1c_cn96xx {
-		u64 msix_poison                      : 1;
-		u64 reserved_1_63                    : 63;
-	} cn96xx;
-	/* struct rvu_af_ras_ena_w1c_s cn98xx; */
-	/* struct rvu_af_ras_ena_w1c_cn96xx cnf95xx; */
-	/* struct rvu_af_ras_ena_w1c_cn96xx loki; */
+	/* struct rvu_af_ras_ena_w1c_s cn; */
 };
 
 static inline u64 RVU_AF_RAS_ENA_W1C(void)
@@ -1094,16 +1028,10 @@ union rvu_af_ras_ena_w1s {
 	u64 u;
 	struct rvu_af_ras_ena_w1s_s {
 		u64 msix_poison                      : 1;
-		u64 bar4_mem_poison                  : 1;
+		u64 mbox_mem_poison                  : 1;
 		u64 reserved_2_63                    : 62;
 	} s;
-	struct rvu_af_ras_ena_w1s_cn96xx {
-		u64 msix_poison                      : 1;
-		u64 reserved_1_63                    : 63;
-	} cn96xx;
-	/* struct rvu_af_ras_ena_w1s_s cn98xx; */
-	/* struct rvu_af_ras_ena_w1s_cn96xx cnf95xx; */
-	/* struct rvu_af_ras_ena_w1s_cn96xx loki; */
+	/* struct rvu_af_ras_ena_w1s_s cn; */
 };
 
 static inline u64 RVU_AF_RAS_ENA_W1S(void)
@@ -1123,16 +1051,10 @@ union rvu_af_ras_w1s {
 	u64 u;
 	struct rvu_af_ras_w1s_s {
 		u64 msix_poison                      : 1;
-		u64 bar4_mem_poison                  : 1;
+		u64 mbox_mem_poison                  : 1;
 		u64 reserved_2_63                    : 62;
 	} s;
-	struct rvu_af_ras_w1s_cn96xx {
-		u64 msix_poison                      : 1;
-		u64 reserved_1_63                    : 63;
-	} cn96xx;
-	/* struct rvu_af_ras_w1s_s cn98xx; */
-	/* struct rvu_af_ras_w1s_cn96xx cnf95xx; */
-	/* struct rvu_af_ras_w1s_cn96xx loki; */
+	/* struct rvu_af_ras_w1s_s cn; */
 };
 
 static inline u64 RVU_AF_RAS_W1S(void)
@@ -1140,6 +1062,179 @@ static inline u64 RVU_AF_RAS_W1S(void)
 static inline u64 RVU_AF_RAS_W1S(void)
 {
 	return 0x108;
+}
+
+/**
+ * Register (RVU_PF_BAR0) rvu_af_smmu_addr_req
+ *
+ * RVU Admin Function SMMU Address Request Register
+ */
+union rvu_af_smmu_addr_req {
+	u64 u;
+	struct rvu_af_smmu_addr_req_s {
+		u64 va                               : 52;
+		u64 reserved_52_63                   : 12;
+	} s;
+	/* struct rvu_af_smmu_addr_req_s cn; */
+};
+
+static inline u64 RVU_AF_SMMU_ADDR_REQ(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 RVU_AF_SMMU_ADDR_REQ(void)
+{
+	return 0x6000;
+}
+
+/**
+ * Register (RVU_PF_BAR0) rvu_af_smmu_addr_rsp_sts
+ *
+ * RVU Admin Function SMMU Address Response Status Register
+ */
+union rvu_af_smmu_addr_rsp_sts {
+	u64 u;
+	struct rvu_af_smmu_addr_rsp_sts_s {
+		u64 done                             : 1;
+		u64 abrt                             : 1;
+		u64 zero                             : 1;
+		u64 sec                              : 1;
+		u64 reserved_4_63                    : 60;
+	} s;
+	/* struct rvu_af_smmu_addr_rsp_sts_s cn; */
+};
+
+static inline u64 RVU_AF_SMMU_ADDR_RSP_STS(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 RVU_AF_SMMU_ADDR_RSP_STS(void)
+{
+	return 0x6010;
+}
+
+/**
+ * Register (RVU_PF_BAR0) rvu_af_smmu_addr_tln
+ *
+ * RVU Admin Function SMMU Address Translation Register
+ */
+union rvu_af_smmu_addr_tln {
+	u64 u;
+	struct rvu_af_smmu_addr_tln_s {
+		u64 pa                               : 52;
+		u64 reserved_52_63                   : 12;
+	} s;
+	/* struct rvu_af_smmu_addr_tln_s cn; */
+};
+
+static inline u64 RVU_AF_SMMU_ADDR_TLN(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 RVU_AF_SMMU_ADDR_TLN(void)
+{
+	return 0x6018;
+}
+
+/**
+ * Register (RVU_PF_BAR0) rvu_af_smmu_tln_flit0
+ *
+ * INTERNAL: RVU Admin Function SMMU Translation FLIT0 Register
+ */
+union rvu_af_smmu_tln_flit0 {
+	u64 u;
+	struct rvu_af_smmu_tln_flit0_s {
+		u64 data                             : 64;
+	} s;
+	/* struct rvu_af_smmu_tln_flit0_s cn; */
+};
+
+static inline u64 RVU_AF_SMMU_TLN_FLIT0(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 RVU_AF_SMMU_TLN_FLIT0(void)
+{
+	return 0x6020;
+}
+
+/**
+ * Register (RVU_PF_BAR0) rvu_af_smmu_tln_flit0_1
+ *
+ * INTERNAL: RVU Admin Function SMMU Translation FLIT0_1 Register
+ */
+union rvu_af_smmu_tln_flit0_1 {
+	u64 u;
+	struct rvu_af_smmu_tln_flit0_1_s {
+		u64 data                             : 15;
+		u64 reserved_15_63                   : 49;
+	} s;
+	/* struct rvu_af_smmu_tln_flit0_1_s cn; */
+};
+
+static inline u64 RVU_AF_SMMU_TLN_FLIT0_1(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 RVU_AF_SMMU_TLN_FLIT0_1(void)
+{
+	return 0x6028;
+}
+
+/**
+ * Register (RVU_PF_BAR0) rvu_af_smmu_tln_flit1
+ *
+ * INTERNAL: RVU Admin Function SMMU Translation FLIT1 Register
+ */
+union rvu_af_smmu_tln_flit1 {
+	u64 u;
+	struct rvu_af_smmu_tln_flit1_s {
+		u64 data                             : 64;
+	} s;
+	/* struct rvu_af_smmu_tln_flit1_s cn; */
+};
+
+static inline u64 RVU_AF_SMMU_TLN_FLIT1(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 RVU_AF_SMMU_TLN_FLIT1(void)
+{
+	return 0x6030;
+}
+
+/**
+ * Register (RVU_PF_BAR0) rvu_af_smmu_tln_flit1_1
+ *
+ * INTERNAL: RVU Admin Function SMMU Translation FLIT1_1 Register
+ */
+union rvu_af_smmu_tln_flit1_1 {
+	u64 u;
+	struct rvu_af_smmu_tln_flit1_1_s {
+		u64 data                             : 15;
+		u64 reserved_15_63                   : 49;
+	} s;
+	/* struct rvu_af_smmu_tln_flit1_1_s cn; */
+};
+
+static inline u64 RVU_AF_SMMU_TLN_FLIT1_1(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 RVU_AF_SMMU_TLN_FLIT1_1(void)
+{
+	return 0x6038;
+}
+
+/**
+ * Register (RVU_PF_BAR0) rvu_af_smmu_txn_req
+ *
+ * RVU Admin Function SMMU TXN Request Register
+ */
+union rvu_af_smmu_txn_req {
+	u64 u;
+	struct rvu_af_smmu_txn_req_s {
+		u64 func                             : 8;
+		u64 pf                               : 5;
+		u64 wr_perm                          : 1;
+		u64 rd_perm                          : 1;
+		u64 reserved_15_62                   : 48;
+		u64 trg                              : 1;
+	} s;
+	/* struct rvu_af_smmu_txn_req_s cn; */
+};
+
+static inline u64 RVU_AF_SMMU_TXN_REQ(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 RVU_AF_SMMU_TXN_REQ(void)
+{
+	return 0x6008;
 }
 
 /**
@@ -1256,6 +1351,26 @@ static inline u64 RVU_PF_INT_W1S(void)
 }
 
 /**
+ * Register (RVU_PF_BAR2) rvu_pf_lmtline_addr
+ *
+ * RVU PF LMTLINE Address Registers
+ */
+union rvu_pf_lmtline_addr {
+	u64 u;
+	struct rvu_pf_lmtline_addr_s {
+		u64 addr                             : 64;
+	} s;
+	/* struct rvu_pf_lmtline_addr_s cn; */
+};
+
+static inline u64 RVU_PF_LMTLINE_ADDR(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 RVU_PF_LMTLINE_ADDR(void)
+{
+	return 0xc48;
+}
+
+/**
  * Register (RVU_PF_BAR2) rvu_pf_msix_pba#
  *
  * RVU PF MSI-X Pending-Bit-Array Registers This register is the MSI-X PF
@@ -1369,24 +1484,24 @@ static inline u64 RVU_PF_VFX_PFVF_MBOXX(u64 a, u64 b)
 }
 
 /**
- * Register (RVU_PF_BAR2) rvu_pf_vf_bar4_addr
+ * Register (RVU_PF_BAR2) rvu_pf_vf_mbox_addr
  *
  * RVU PF VF BAR4 Address Registers
  */
-union rvu_pf_vf_bar4_addr {
+union rvu_pf_vf_mbox_addr {
 	u64 u;
-	struct rvu_pf_vf_bar4_addr_s {
+	struct rvu_pf_vf_mbox_addr_s {
 		u64 reserved_0_15                    : 16;
 		u64 addr                             : 48;
 	} s;
-	/* struct rvu_pf_vf_bar4_addr_s cn; */
+	/* struct rvu_pf_vf_mbox_addr_s cn; */
 };
 
-static inline u64 RVU_PF_VF_BAR4_ADDR(void)
+static inline u64 RVU_PF_VF_MBOX_ADDR(void)
 	__attribute__ ((pure, always_inline));
-static inline u64 RVU_PF_VF_BAR4_ADDR(void)
+static inline u64 RVU_PF_VF_MBOX_ADDR(void)
 {
-	return 0x10;
+	return 0xc40;
 }
 
 /**
@@ -1778,7 +1893,9 @@ union rvu_priv_const {
 		u64 hwvfs                            : 12;
 		u64 pfs                              : 8;
 		u64 max_vfs_per_pf                   : 8;
-		u64 reserved_48_63                   : 16;
+		u64 dram_mbox                        : 1;
+		u64 smmu                             : 1;
+		u64 reserved_50_63                   : 14;
 	} s;
 	/* struct rvu_priv_const_s cn; */
 };
@@ -2005,21 +2122,9 @@ union rvu_priv_pfx_cfg {
 		u64 ena                              : 1;
 		u64 af_ena                           : 1;
 		u64 me_flr_ena                       : 1;
-		u64 pf_vf_io_bar4                    : 1;
-		u64 reserved_24_63                   : 40;
-	} s;
-	struct rvu_priv_pfx_cfg_cn96xxp1 {
-		u64 first_hwvf                       : 12;
-		u64 nvf                              : 8;
-		u64 ena                              : 1;
-		u64 af_ena                           : 1;
-		u64 me_flr_ena                       : 1;
 		u64 reserved_23_63                   : 41;
-	} cn96xxp1;
-	/* struct rvu_priv_pfx_cfg_s cn96xxp3; */
-	/* struct rvu_priv_pfx_cfg_s cn98xx; */
-	/* struct rvu_priv_pfx_cfg_cn96xxp1 cnf95xx; */
-	/* struct rvu_priv_pfx_cfg_s loki; */
+	} s;
+	/* struct rvu_priv_pfx_cfg_s cn; */
 };
 
 static inline u64 RVU_PRIV_PFX_CFG(u64 a)

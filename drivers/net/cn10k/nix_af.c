@@ -1,6 +1,6 @@
 // SPDX-License-Identifier:    GPL-2.0
 /*
- * Copyright (C) 2018 Marvell International Ltd.
+ * Copyright (C) 2020 Marvell International Ltd.
  *
  * https://spdx.org/licenses
  */
@@ -19,12 +19,10 @@
 #include <linux/log2.h>
 #include <asm/arch/board.h>
 #include "asm/arch/csrs/csrs-npc.h"
-#include "asm/arch/csrs/csrs-lmt.h"
 #include "nix.h"
+#include "rpm.h"
 #include "lmt.h"
 
-/* TODO for t106 */
-#ifdef TEMP_OUT_FOR_T106
 static struct nix_aq_cq_dis cq_dis ALIGNED;
 static struct nix_aq_rq_dis rq_dis ALIGNED;
 static struct nix_aq_sq_dis sq_dis ALIGNED;
@@ -43,7 +41,6 @@ int npa_attach_aura(struct nix_af *nix_af, int lf,
 	u64 head;
 	ulong start;
 
-	debug("%s(%p, %d, %p, %u)\n", __func__, nix_af, lf, desc, aura_id);
 	aq_stat.u = npa_af_reg_read(npa, NPA_AF_AQ_STATUS());
 	head = aq_stat.s.head_ptr;
 	inst = (union npa_aq_inst_s *)(npa->aq.inst.base) + head;
@@ -88,7 +85,6 @@ int npa_attach_pool(struct nix_af *nix_af, int lf,
 	u64 head;
 	ulong start;
 
-	debug("%s(%p, %d, %p, %u)\n", __func__, nix_af, lf, desc, pool_id);
 	aq_stat.u = npa_af_reg_read(npa, NPA_AF_AQ_STATUS());
 	head = aq_stat.s.head_ptr;
 
@@ -130,7 +126,6 @@ int npa_lf_admin_setup(struct npa *npa, int lf, dma_addr_t aura_base)
 	union npa_af_lfx_auras_cfg auras_cfg;
 	struct npa_af *npa_af = npa->npa_af;
 
-	debug("%s(%p, %d, 0x%llx)\n", __func__, npa_af, lf, aura_base);
 	lf_rst.u = 0;
 	lf_rst.s.exec = 1;
 	lf_rst.s.lf = lf;
@@ -143,7 +138,7 @@ int npa_lf_admin_setup(struct npa *npa, int lf, dma_addr_t aura_base)
 
 	/* Set Aura size and enable caching of contexts */
 	auras_cfg.u = npa_af_reg_read(npa_af, NPA_AF_LFX_AURAS_CFG(lf));
-	auras_cfg.s.loc_aura_size = NPA_AURA_SIZE_DEFAULT; //FIXME aura_size;
+	auras_cfg.s.loc_aura_size = NPA_AURA_SIZE_DEFAULT;
 	auras_cfg.s.caching = 1;
 	auras_cfg.s.rmt_aura_size = 0;
 	auras_cfg.s.rmt_aura_offset = 0;
@@ -209,8 +204,6 @@ int npa_lf_admin_shutdown(struct nix_af *nix_af, int lf, u32 pool_count)
 				pool_id);
 			return -1;
 		}
-		debug("%s(LF %d, pool id %d) disabled\n", __func__, lf,
-		      pool_id);
 	}
 
 	for (pool_id = 0; pool_id < pool_count; pool_id++) {
@@ -245,8 +238,6 @@ int npa_lf_admin_shutdown(struct nix_af *nix_af, int lf, u32 pool_count)
 			       pool_id);
 			return -1;
 		}
-		debug("%s(LF %d, aura id %d) disabled\n", __func__, lf,
-		      pool_id);
 	}
 
 	/* Reset the LF */
@@ -262,7 +253,6 @@ int npa_lf_admin_shutdown(struct nix_af *nix_af, int lf, u32 pool_count)
 
 	return 0;
 }
-#endif // TEMP_OUT_FOR_T106
 
 int npa_af_setup(struct npa_af *npa_af)
 {
@@ -279,8 +269,6 @@ int npa_af_setup(struct npa_af *npa_af)
 		printf("%s: Error %d allocating admin queue\n", __func__, err);
 		return err;
 	}
-	debug("%s: NPA admin queue allocated at %p %llx\n", __func__,
-	      npa_af->aq.inst.base, npa_af->aq.inst.iova);
 
 	blk_rst.u = 0;
 	blk_rst.s.rst = 1;
@@ -326,13 +314,9 @@ int npa_af_shutdown(struct npa_af *npa_af)
 
 	rvu_aq_free(&npa_af->aq);
 
-	debug("%s: npa af reset --\n", __func__);
-
 	return 0;
 }
 
-/* TODO for t106 */
-#ifdef TEMP_OUT_FOR_T106
 /***************
  * NIX API
  ***************/
@@ -348,15 +332,15 @@ static int nix_af_setup_sq(struct nix *nix)
 	union nixx_af_tl1x_schedule tl1_sched;
 	union nixx_af_tl2x_parent tl2_parent;
 	union nixx_af_tl3x_parent tl3_parent;
-	union nixx_af_tl3_tl2x_cfg tl3_tl2_cfg;
 	union nixx_af_tl3_tl2x_linkx_cfg tl3_tl2_link_cfg;
 	union nixx_af_tl4x_parent tl4_parent;
 	union nixx_af_tl4x_sdp_link_cfg tl4_sdp_link_cfg;
 	union nixx_af_smqx_cfg smq_cfg;
-	union nixx_af_mdqx_schedule mdq_sched;
 	union nixx_af_mdqx_parent mdq_parent;
 	union nixx_af_rx_linkx_cfg link_cfg;
-	int tl1_index = nix->lmac->link_num; /* NIX_LINK_E enum */
+	union nixx_af_linkx_cfg af_link_cfg;
+	struct lmac *lmac = nix->lmac;
+	int tl1_index = lmac->link_num; /* NIX_LINK_E enum */
 	int tl2_index = tl1_index;
 	int tl3_index = tl2_index;
 	int tl4_index = tl3_index;
@@ -366,7 +350,7 @@ static int nix_af_setup_sq(struct nix *nix)
 
 	tl1_sched.u = nix_af_reg_read(nix_af,
 				      NIXX_AF_TL1X_SCHEDULE(tl1_index));
-	tl1_sched.s.rr_quantum = MAX_MTU;
+	tl1_sched.s.rr_weight = MAX_MTU;
 	nix_af_reg_write(nix_af, NIXX_AF_TL1X_SCHEDULE(tl1_index),
 			 tl1_sched.u);
 
@@ -381,11 +365,6 @@ static int nix_af_setup_sq(struct nix *nix)
 	tl3_parent.s.parent = tl2_index;
 	nix_af_reg_write(nix_af, NIXX_AF_TL3X_PARENT(tl3_index),
 			 tl3_parent.u);
-	tl3_tl2_cfg.u = nix_af_reg_read(nix_af,
-					NIXX_AF_TL3_TL2X_CFG(tl3_index));
-	tl3_tl2_cfg.s.express = 0;
-	nix_af_reg_write(nix_af, NIXX_AF_TL3_TL2X_CFG(tl3_index),
-			 tl3_tl2_cfg.u);
 
 	offset = NIXX_AF_TL3_TL2X_LINKX_CFG(tl3_index,
 					    nix->lmac->link_num);
@@ -419,11 +398,6 @@ static int nix_af_setup_sq(struct nix *nix)
 	smq_cfg.s.minlen = NIX_MIN_HW_MTU;
 	nix_af_reg_write(nix_af, NIXX_AF_SMQX_CFG(smq_index), smq_cfg.u);
 
-	mdq_sched.u = nix_af_reg_read(nix_af,
-				      NIXX_AF_MDQX_SCHEDULE(smq_index));
-	mdq_sched.s.rr_quantum = MAX_MTU;
-	offset = NIXX_AF_MDQX_SCHEDULE(smq_index);
-	nix_af_reg_write(nix_af, offset, mdq_sched.u);
 	mdq_parent.u = nix_af_reg_read(nix_af,
 				       NIXX_AF_MDQX_PARENT(smq_index));
 	mdq_parent.s.parent = tl4_index;
@@ -437,6 +411,12 @@ static int nix_af_setup_sq(struct nix *nix)
 			 NIXX_AF_RX_LINKX_CFG(nix->lmac->link_num),
 			 link_cfg.u);
 
+	af_link_cfg.u = 0;
+	af_link_cfg.s.log2_range = 4;
+	af_link_cfg.s.base_chan = lmac->chan_num;
+	nix_af_reg_write(nix->nix_af,
+			 NIXX_AF_LINKX_CFG(nix->lmac->link_num),
+			 af_link_cfg.u);
 	return 0;
 }
 
@@ -463,8 +443,6 @@ static int nix_aq_issue_command(struct nix_af *nix_af,
 	union nix_aq_res_s *result = resp;
 	ulong start;
 
-	debug("%s(%p, 0x%x, 0x%x, 0x%x, 0x%x, %p)\n", __func__, nix_af, lf,
-	      op, ctype, cindex, resp);
 	aq_status.u = nix_af_reg_read(nix_af, NIXX_AF_AQ_STATUS());
 	aq_inst = (union nix_aq_inst_s *)(nix_af->aq.inst.base) +
 						aq_status.s.head_ptr;
@@ -476,8 +454,6 @@ static int nix_aq_issue_command(struct nix_af *nix_af,
 	aq_inst->s.cindex = cindex;
 	aq_inst->s.doneint = 0;
 	aq_inst->s.res_addr = (u64)resp;
-	debug("%s: inst@%p: 0x%llx 0x%llx\n", __func__, aq_inst,
-	      aq_inst->u[0], aq_inst->u[1]);
 	__iowmb();
 
 	/* Ring doorbell and wait for result */
@@ -512,7 +488,6 @@ static int nix_attach_receive_queue(struct nix_af *nix_af, int lf)
 	rq_req.rq.s.ipsech_ena = 0;
 	rq_req.rq.s.ena_wqwd = 0;
 	rq_req.rq.s.cq = NIX_CQ_RX;
-	rq_req.rq.s.substream = 0;	/* FIXME: Substream IDs? */
 	rq_req.rq.s.wqe_aura = -1;	/* No WQE aura */
 	rq_req.rq.s.spb_aura = NPA_POOL_RX;
 	rq_req.rq.s.lpb_aura = NPA_POOL_RX;
@@ -559,7 +534,6 @@ static int nix_attach_send_queue(struct nix *nix)
 	struct nix_aq_sq_request sq_req ALIGNED;
 	int err;
 
-	debug("%s(%p)\n", __func__, nix_af);
 	err = nix_af_setup_sq(nix);
 
 	memset(&sq_req, 0, sizeof(sq_req));
@@ -567,13 +541,11 @@ static int nix_attach_send_queue(struct nix *nix)
 	sq_req.sq.s.ena = 1;
 	sq_req.sq.s.cq_ena = 1;
 	sq_req.sq.s.max_sqe_size = NIX_MAXSQESZ_E_W16;
-	sq_req.sq.s.substream = 0; // FIXME: Substream IDs?
 	sq_req.sq.s.sdp_mcast = 0;
 	sq_req.sq.s.cq = NIX_CQ_TX;
 	sq_req.sq.s.cq_limit = 0;
 	sq_req.sq.s.smq = nix->lmac->link_num; // scheduling index
 	sq_req.sq.s.sso_ena = 0;
-	sq_req.sq.s.smq_rr_quantum = MAX_MTU / 4;
 	sq_req.sq.s.default_chan = nix->lmac->chan_num;
 	sq_req.sq.s.sqe_stype = NIX_STYPE_E_STP;
 	sq_req.sq.s.qint_idx = 0;
@@ -597,11 +569,10 @@ static int nix_attach_completion_queue(struct nix *nix, int cq_idx)
 	struct nix_aq_cq_request cq_req ALIGNED;
 	int err;
 
-	debug("%s(%p)\n", __func__, nix_af);
 	memset(&cq_req, 0, sizeof(cq_req));
 	cq_req.cq.s.ena = 1;
 	cq_req.cq.s.bpid = nix->lmac->pknd;
-	cq_req.cq.s.substream = 0;	/* FIXME: Substream IDs? */
+	cq_req.cq.s.substream = 0;
 	cq_req.cq.s.drop_ena = 0;
 	cq_req.cq.s.caching = 1;
 	cq_req.cq.s.qsize = CQS_QSIZE;
@@ -631,10 +602,6 @@ int nix_lf_admin_setup(struct nix *nix)
 	union nixx_af_lfx_rqs_cfg rqs_cfg;
 	union nixx_af_lfx_sqs_cfg sqs_cfg;
 	union nixx_af_lfx_cqs_cfg cqs_cfg;
-	union nixx_af_lfx_rss_cfg rss_cfg;
-	union nixx_af_lfx_cints_cfg cints_cfg;
-	union nixx_af_lfx_qints_cfg qints_cfg;
-	union nixx_af_lfx_rss_grpx rss_grp;
 	union nixx_af_lfx_tx_cfg2 tx_cfg2;
 	union nixx_af_lfx_cfg lfx_cfg;
 	union nixx_af_lf_rst lf_rst;
@@ -678,42 +645,13 @@ int nix_lf_admin_setup(struct nix *nix)
 	cqs_cfg.s.max_queuesm1 = nix->cq_cnt - 1;
 	nix_af_reg_write(nix_af, NIXX_AF_LFX_CQS_CFG(nix->lf), cqs_cfg.u);
 
-	/* Config NIX RSS HW context and base */
-	nix_af_reg_write(nix_af, NIXX_AF_LFX_RSS_BASE(nix->lf),
-			 (u64)nix->rss_base);
-	rss_cfg.u = nix_af_reg_read(nix_af, NIXX_AF_LFX_RSS_CFG(nix->lf));
-	rss_cfg.s.ena = 1;
-	rss_cfg.s.size = ilog2(nix->rss_sz) / 256;
-	nix_af_reg_write(nix_af, NIXX_AF_LFX_RSS_CFG(nix->lf), rss_cfg.u);
-
-	for (index = 0; index < nix->rss_grps; index++) {
-		rss_grp.u = 0;
-		rss_grp.s.sizem1 = 0x7;
-		rss_grp.s.offset = nix->rss_sz * index;
-		nix_af_reg_write(nix_af,
-				 NIXX_AF_LFX_RSS_GRPX(nix->lf, index),
-				 rss_grp.u);
-	}
-
 	/* Config CQints HW contexts and base */
 	nix_af_reg_write(nix_af, NIXX_AF_LFX_CINTS_BASE(nix->lf),
 			 (u64)nix->cint_base);
-	cints_cfg.u = nix_af_reg_read(nix_af,
-				      NIXX_AF_LFX_CINTS_CFG(nix->lf));
-	cints_cfg.s.caching = 1;
-	nix_af_reg_write(nix_af, NIXX_AF_LFX_CINTS_CFG(nix->lf),
-			 cints_cfg.u);
 
 	/* Config Qints HW context and base */
 	nix_af_reg_write(nix_af, NIXX_AF_LFX_QINTS_BASE(nix->lf),
 			 (u64)nix->qint_base);
-	qints_cfg.u = nix_af_reg_read(nix_af,
-				      NIXX_AF_LFX_QINTS_CFG(nix->lf));
-	qints_cfg.s.caching = 1;
-	nix_af_reg_write(nix_af, NIXX_AF_LFX_QINTS_CFG(nix->lf),
-			 qints_cfg.u);
-
-	debug("%s(%p, %d, %d)\n", __func__, nix_af, nix->lf, nix->pf);
 
 	/* Enable LMTST for this NIX LF */
 	tx_cfg2.u = nix_af_reg_read(nix_af, NIXX_AF_LFX_TX_CFG2(nix->lf));
@@ -790,7 +728,6 @@ int nix_lf_admin_shutdown(struct nix_af *nix_af, int lf,
 			       __func__, lf, index);
 			return err;
 		}
-		debug("%s: LF %d RQ(%d) disabled\n", __func__, lf, index);
 	}
 
 	for (index = 0; index < sq_count; index++) {
@@ -808,7 +745,6 @@ int nix_lf_admin_shutdown(struct nix_af *nix_af, int lf,
 			       __func__, lf, index);
 			return err;
 		}
-		debug("%s: LF %d SQ(%d) disabled\n", __func__, lf, index);
 	}
 
 	for (index = 0; index < cq_count; index++) {
@@ -826,7 +762,6 @@ int nix_lf_admin_shutdown(struct nix_af *nix_af, int lf,
 			       __func__, lf, index);
 			return err;
 		}
-		debug("%s: LF %d CQ(%d) disabled\n", __func__, lf, index);
 	}
 
 	/* Reset the LF */
@@ -850,10 +785,10 @@ int npc_lf_admin_setup(struct nix *nix)
 	union npc_af_pkindx_action1 action1;
 	union npc_af_intfx_kex_cfg kex_cfg;
 	union npc_af_intfx_miss_stat_act intfx_stat_act;
-	union npc_af_mcamex_bankx_camx_intf camx_intf;
-	union npc_af_mcamex_bankx_camx_w0 camx_w0;
-	union npc_af_mcamex_bankx_cfg bankx_cfg;
-	union npc_af_mcamex_bankx_stat_act mcamex_stat_act;
+	union npc_af_mcamex_bankx_camx_intf_ext camx_intf;
+	union npc_af_mcamex_bankx_camx_w0_ext camx_w0;
+	union npc_af_mcamex_bankx_cfg_ext bankx_cfg;
+	union npc_af_mcamex_bankx_stat_act_ext mcamex_stat_act;
 
 	union nix_rx_action_s rx_action;
 	union nix_tx_action_s tx_action;
@@ -864,7 +799,6 @@ int npc_lf_admin_setup(struct nix *nix)
 	int index;
 	u64 offset;
 
-	debug("%s(%p, pkind 0x%x)\n", __func__, nix_af, pkind);
 	af_const.u = npc_af_reg_read(nix_af, NPC_AF_CONST());
 	kpus = af_const.s.kpus;
 
@@ -882,42 +816,34 @@ int npc_lf_admin_setup(struct nix *nix)
 			 NPC_AF_INTFX_KEX_CFG(NPC_INTF_E_NIXX_RX(0)),
 			 kex_cfg.u);
 
-	/* HW Issue */
-	kex_cfg.u = 0;
-	kex_cfg.s.parse_nibble_ena = 0x7;
-	npc_af_reg_write(nix_af,
-			 NPC_AF_INTFX_KEX_CFG(NPC_INTF_E_NIXX_TX(0)),
-			 kex_cfg.u);
-
 	camx_intf.u = 0;
 	camx_intf.s.intf = ~NPC_INTF_E_NIXX_RX(0);
 	npc_af_reg_write(nix_af,
-			 NPC_AF_MCAMEX_BANKX_CAMX_INTF(pkind, 0, 0),
+			 NPC_AF_MCAMEX_BANKX_CAMX_INTF_EXT(pkind, 0, 0),
 			 camx_intf.u);
 
 	camx_intf.u = 0;
 	camx_intf.s.intf = NPC_INTF_E_NIXX_RX(0);
 	npc_af_reg_write(nix_af,
-			 NPC_AF_MCAMEX_BANKX_CAMX_INTF(pkind, 0, 1),
+			 NPC_AF_MCAMEX_BANKX_CAMX_INTF_EXT(pkind, 0, 1),
 			 camx_intf.u);
 
 	camx_w0.u = 0;
 	camx_w0.s.md = ~(nix->lmac->chan_num) & (~((~0x0ull) << 12));
-	debug("NPC LF ADMIN camx_w0.u %llx\n", camx_w0.u);
 	npc_af_reg_write(nix_af,
-			 NPC_AF_MCAMEX_BANKX_CAMX_W0(pkind, 0, 0),
+			 NPC_AF_MCAMEX_BANKX_CAMX_W0_EXT(pkind, 0, 0),
 			 camx_w0.u);
 
 	camx_w0.u = 0;
 	camx_w0.s.md = nix->lmac->chan_num;
 	npc_af_reg_write(nix_af,
-			 NPC_AF_MCAMEX_BANKX_CAMX_W0(pkind, 0, 1),
+			 NPC_AF_MCAMEX_BANKX_CAMX_W0_EXT(pkind, 0, 1),
 			 camx_w0.u);
 
-	npc_af_reg_write(nix_af, NPC_AF_MCAMEX_BANKX_CAMX_W1(pkind, 0, 0),
+	npc_af_reg_write(nix_af, NPC_AF_MCAMEX_BANKX_CAMX_W1_EXT(pkind, 0, 0),
 			 0);
 
-	npc_af_reg_write(nix_af, NPC_AF_MCAMEX_BANKX_CAMX_W1(pkind, 0, 1),
+	npc_af_reg_write(nix_af, NPC_AF_MCAMEX_BANKX_CAMX_W1_EXT(pkind, 0, 1),
 			 0);
 
 	/* Enable stats for NPC INTF RX */
@@ -925,7 +851,7 @@ int npc_lf_admin_setup(struct nix *nix)
 	mcamex_stat_act.s.ena = 1;
 	mcamex_stat_act.s.stat_sel = pkind;
 	npc_af_reg_write(nix_af,
-			 NPC_AF_MCAMEX_BANKX_STAT_ACT(pkind, 0),
+			 NPC_AF_MCAMEX_BANKX_STAT_ACT_EXT(pkind, 0),
 			 mcamex_stat_act.u);
 	intfx_stat_act.u = 0;
 	intfx_stat_act.s.ena = 1;
@@ -935,7 +861,7 @@ int npc_lf_admin_setup(struct nix *nix)
 	rx_action.u = 0;
 	rx_action.s.pf_func = nix->pf_func;
 	rx_action.s.op = NIX_RX_ACTIONOP_E_UCAST;
-	npc_af_reg_write(nix_af, NPC_AF_MCAMEX_BANKX_ACTION(pkind, 0),
+	npc_af_reg_write(nix_af, NPC_AF_MCAMEX_BANKX_ACTION_EXT(pkind, 0),
 			 rx_action.u);
 
 	for (index = 0; index < kpus; index++)
@@ -949,7 +875,7 @@ int npc_lf_admin_setup(struct nix *nix)
 			 rx_action.u);
 	bankx_cfg.u = 0;
 	bankx_cfg.s.ena = 1;
-	npc_af_reg_write(nix_af, NPC_AF_MCAMEX_BANKX_CFG(pkind, 0),
+	npc_af_reg_write(nix_af, NPC_AF_MCAMEX_BANKX_CFG_EXT(pkind, 0),
 			 bankx_cfg.u);
 
 	tx_action.u = 0;
@@ -965,7 +891,6 @@ int npc_lf_admin_setup(struct nix *nix)
 
 	return 0;
 }
-#endif // TEMP_OUT_FOR_T106
 
 int npc_af_shutdown(struct nix_af *nix_af)
 {
@@ -980,8 +905,6 @@ int npc_af_shutdown(struct nix_af *nix_af)
 		blk_rst.u = npc_af_reg_read(nix_af, NPC_AF_BLK_RST());
 		WATCHDOG_RESET();
 	} while (blk_rst.s.busy);
-
-	debug("%s: npc af reset --\n", __func__);
 
 	return 0;
 }
@@ -998,7 +921,6 @@ int nix_af_setup(struct nix_af *nix_af)
 	union nixx_af_aq_cfg aq_cfg;
 	union nixx_af_blk_rst blk_rst;
 
-	debug("%s(%p)\n", __func__, nix_af);
 	err = rvu_aq_alloc(&nix_af->aq, Q_COUNT(AQ_SIZE),
 			   sizeof(union nix_aq_inst_s),
 			   sizeof(union nix_aq_res_s));
@@ -1076,7 +998,6 @@ int nix_af_setup(struct nix_af *nix_af)
 	nix_af->rq_ctx_sz = 1ULL << af_const3.s.rq_ctx_log2bytes;
 	nix_af->sq_ctx_sz = 1ULL << af_const3.s.sq_ctx_log2bytes;
 	nix_af->cq_ctx_sz = 1ULL << af_const3.s.cq_ctx_log2bytes;
-	nix_af->rsse_ctx_sz = 1ULL << af_const3.s.rsse_log2bytes;
 	nix_af->qints = af_const2.s.qints;
 	nix_af->cints = af_const2.s.cints;
 	nix_af->cint_ctx_sz = 1ULL << af_const3.s.cint_log2bytes;
@@ -1101,8 +1022,6 @@ int nix_af_shutdown(struct nix_af *nix_af)
 	} while (blk_rst.s.busy);
 
 	rvu_aq_free(&nix_af->aq);
-
-	debug("%s: nix af reset --\n", __func__);
 
 	return 0;
 }

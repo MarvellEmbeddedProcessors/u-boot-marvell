@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier:    GPL-2.0
  *
- * Copyright (C) 2019 Marvell International Ltd.
+ * Copyright (C) 2020 Marvell International Ltd.
  *
  * https://spdx.org/licenses
  */
@@ -48,6 +48,7 @@
  *
  * NIX Context Type Enumeration Enumerates NIX_AQ_INST_S[CTYPE] values.
  */
+#define NIX_AQ_CTYPE_E_BAND_PROF (6)
 #define NIX_AQ_CTYPE_E_CQ (2)
 #define NIX_AQ_CTYPE_E_DYNO (5)
 #define NIX_AQ_CTYPE_E_MCE (3)
@@ -78,10 +79,11 @@
  * NIX_LINK_E are implemented.  Internal: P2X/X2P channel enumeration for
  * t9x.
  */
-#define NIX_CHAN_E_CGXX_LMACX_CHX(a, b, c)	\
-	(0x800 + 0x100 * (a) + 0x10 * (b) + (c))
+#define NIX_CHAN_E_CPT_CHX(a) (0x400 + (a))
 #define NIX_CHAN_E_LBKX_CHX(a, b) (0 + 0x100 * (a) + (b))
 #define NIX_CHAN_E_RX(a) (0 + 0x100 * (a))
+#define NIX_CHAN_E_RPMX_LMACX_CHX(a, b, c)	\
+	(0x800 + 0x100 * (a) + 0x10 * (b) + (c))
 #define NIX_CHAN_E_SDP_CHX(a) (0x700 + (a))
 
 /**
@@ -112,15 +114,10 @@
  * NIX Interface Number Enumeration Enumerates the bit index of
  * NIX_AF_STATUS[CALIBRATE_STATUS].
  */
-#define NIX_INTF_E_CGXX(a) (0 + (a))
-#define NIX_INTF_E_LBKX_CN96XX(a) (3 + (a))
-#define NIX_INTF_E_LBKX_CN98XX(a) (5 + (a))
-#define NIX_INTF_E_LBKX_CNF95XX(a) (3 + (a))
-#define NIX_INTF_E_LBKX_LOKI(a) (3 + (a))
-#define NIX_INTF_E_SDP_CN96XX (4)
-#define NIX_INTF_E_SDP_CN98XX (7)
-#define NIX_INTF_E_SDP_CNF95XX (4)
-#define NIX_INTF_E_SDP_LOKI (4)
+#define NIX_INTF_E_CPTX(a) (5 + 0 * (a))
+#define NIX_INTF_E_LBKX(a) (3 + (a))
+#define NIX_INTF_E_RPMX(a) (0 + (a))
+#define NIX_INTF_E_SDP (4)
 
 /**
  * Enumeration nix_lf_int_vec_e
@@ -139,22 +136,15 @@
  *
  * NIX Link Number Enumeration Enumerates the receive and transmit links,
  * and LINK index of NIX_AF_RX_LINK()_CFG, NIX_AF_RX_LINK()_WRR_CFG,
- * NIX_AF_TX_LINK()_NORM_CREDIT, NIX_AF_TX_LINK()_HW_XOFF and
- * NIX_AF_TL3_TL2()_LINK()_CFG.
+ * NIX_AF_RX_LINK()_WRR_OUT_CFG, NIX_AF_TX_LINK()_NORM_CREDIT,
+ * NIX_AF_TX_LINK()_HW_XOFF, NIX_AF_TL3_TL2()_LINK()_CFG and
+ * NIX_AF_LINK()_CFG.
  */
-#define NIX_LINK_E_CGXX_LMACX(a, b) (0 + 4 * (a) + (b))
-#define NIX_LINK_E_LBKX_CN96XX(a) (0xc + (a))
-#define NIX_LINK_E_LBKX_CN98XX(a) (0x14 + (a))
-#define NIX_LINK_E_LBKX_CNF95XX(a) (0xc + (a))
-#define NIX_LINK_E_LBKX_LOKI(a) (0xc + (a))
-#define NIX_LINK_E_MC_CN96XX (0xe)
-#define NIX_LINK_E_MC_CN98XX (0x17)
-#define NIX_LINK_E_MC_CNF95XX (0xe)
-#define NIX_LINK_E_MC_LOKI (0xe)
-#define NIX_LINK_E_SDP_CN96XX (0xd)
-#define NIX_LINK_E_SDP_CN98XX (0x16)
-#define NIX_LINK_E_SDP_CNF95XX (0xd)
-#define NIX_LINK_E_SDP_LOKI (0xd)
+#define NIX_LINK_E_CPT (0xe)
+#define NIX_LINK_E_LBKX(a) (0xc + (a))
+#define NIX_LINK_E_MC (0xf)
+#define NIX_LINK_E_RPMX_LMACX(a, b) (0 + 4 * (a) + (b))
+#define NIX_LINK_E_SDP (0xd)
 
 /**
  * Enumeration nix_lsoalg_e
@@ -289,6 +279,38 @@
 #define NIX_RX_ACTIONOP_E_UCAST_IPSEC (2)
 
 /**
+ * Enumeration nix_rx_band_prof_actionresult_e
+ *
+ * NIX RX Bandwidth Action Result Enumeration Enumerates the values of
+ * NIX_BAND_PROF_S[GC_ACTION], NIX_BAND_PROF_S[YC_ACTION],
+ * NIX_BAND_PROF_S[RC_ACTION].
+ */
+#define NIX_RX_BAND_PROF_ACTIONRESULT_E_DROP (1)
+#define NIX_RX_BAND_PROF_ACTIONRESULT_E_PASS (0)
+#define NIX_RX_BAND_PROF_ACTIONRESULT_E_RED (2)
+
+/**
+ * Enumeration nix_rx_band_prof_layer_e
+ *
+ * NIX RX Bandwidth Profile Layers Enumeration Enumerates the values of 4
+ * msb of NIX_AQ_INST_S[CINDEX], when
+ * NIX_AQ_INST_S[CTYPE]=NIX_AQ_CTYPE_E::BAND_PROF
+ */
+#define NIX_RX_BAND_PROF_LAYER_E_LEAF (0)
+#define NIX_RX_BAND_PROF_LAYER_E_MIDDLE (1)
+#define NIX_RX_BAND_PROF_LAYER_E_TOP (2)
+
+/**
+ * Enumeration nix_rx_colorresult_e
+ *
+ * NIX RX Bandwidth Profile Color Result Enumeration Enumerates the
+ * values of NIX_RX_PARSE_S[COLOR].
+ */
+#define NIX_RX_COLORRESULT_E_GREEN (0)
+#define NIX_RX_COLORRESULT_E_RED (2)
+#define NIX_RX_COLORRESULT_E_YELLOW (1)
+
+/**
  * Enumeration nix_rx_mcop_e
  *
  * NIX Receive Multicast/Mirror Opcode Enumeration Enumerates the values
@@ -322,6 +344,16 @@
 #define NIX_RX_PERRCODE_E_OL4_PORT (0x13)
 
 /**
+ * Enumeration nix_sa_alg_e
+ *
+ * NIX Inline IPSEC SA algorithm Enumeration Enumerates Inline IPSEC SA
+ * algorithm.
+ */
+#define NIX_SA_ALG_E_MS_27_25 (2)
+#define NIX_SA_ALG_E_MS_31_28 (1)
+#define NIX_SA_ALG_E_NON_MS (0)
+
+/**
  * Enumeration nix_send_status_e
  *
  * NIX Send Completion Status Enumeration Enumerates values of
@@ -347,6 +379,7 @@
 #define NIX_SEND_STATUS_E_SEND_MEM_ERR (0x13)
 #define NIX_SEND_STATUS_E_SEND_MEM_FAULT (0x27)
 #define NIX_SEND_STATUS_E_SEND_SG_ERR (0x12)
+#define NIX_SEND_STATUS_E_SEND_STATS_ERR (0x28)
 #define NIX_SEND_STATUS_E_SQB_FAULT (3)
 #define NIX_SEND_STATUS_E_SQB_POISON (4)
 #define NIX_SEND_STATUS_E_SQ_CTX_FAULT (1)
@@ -436,6 +469,21 @@
 #define NIX_SENDMEMDSZ_E_B8 (3)
 
 /**
+ * Enumeration nix_sendstatsalg_e
+ *
+ * NIX IP Counters Algorithm Enumeration Enumerates the different
+ * algorithms for modifying IP packet and octet counts in memory; see
+ * NIX_AGE_AND_SEND_STATS_S[ALG].
+ */
+#define NIX_SENDSTATSALG_E_ADD_BYTE_CNT (2)
+#define NIX_SENDSTATSALG_E_ADD_PKT_BYTE_CNT (3)
+#define NIX_SENDSTATSALG_E_ADD_PKT_CNT (1)
+#define NIX_SENDSTATSALG_E_NOP (0)
+#define NIX_SENDSTATSALG_E_UPDATE_BYTE_CNT_ON_DROP (5)
+#define NIX_SENDSTATSALG_E_UPDATE_PKT_BYTE_CNT_ON_DROP (6)
+#define NIX_SENDSTATSALG_E_UPDATE_PKT_CNT_ON_DROP (4)
+
+/**
  * Enumeration nix_sqint_e
  *
  * NIX Send Queue Interrupt Enumeration Enumerates the bit index of
@@ -469,6 +517,7 @@
  * index of NIX_AF_LF()_RX_STAT() and NIX_LF_RX_STAT().
  */
 #define NIX_STAT_LF_RX_E_RX_BCAST (2)
+#define NIX_STAT_LF_RX_E_RX_CPT_DROP_PKTS (0x18)
 #define NIX_STAT_LF_RX_E_RX_DROP (4)
 #define NIX_STAT_LF_RX_E_RX_DROP_OCTS (5)
 #define NIX_STAT_LF_RX_E_RX_DRP_BCAST (8)
@@ -477,9 +526,22 @@
 #define NIX_STAT_LF_RX_E_RX_DRP_MCAST (9)
 #define NIX_STAT_LF_RX_E_RX_ERR (7)
 #define NIX_STAT_LF_RX_E_RX_FCS (6)
+#define NIX_STAT_LF_RX_E_RX_GC_OCTS_DROP (0x12)
+#define NIX_STAT_LF_RX_E_RX_GC_OCTS_PASSED (0xc)
+#define NIX_STAT_LF_RX_E_RX_GC_PKTS_DROP (0x13)
+#define NIX_STAT_LF_RX_E_RX_GC_PKTS_PASSED (0xd)
+#define NIX_STAT_LF_RX_E_RX_IPSECD_DROP_PKTS (0x19)
 #define NIX_STAT_LF_RX_E_RX_MCAST (3)
 #define NIX_STAT_LF_RX_E_RX_OCTS (0)
+#define NIX_STAT_LF_RX_E_RX_RC_OCTS_DROP (0x16)
+#define NIX_STAT_LF_RX_E_RX_RC_OCTS_PASSED (0x10)
+#define NIX_STAT_LF_RX_E_RX_RC_PKTS_DROP (0x17)
+#define NIX_STAT_LF_RX_E_RX_RC_PKTS_PASSED (0x11)
 #define NIX_STAT_LF_RX_E_RX_UCAST (1)
+#define NIX_STAT_LF_RX_E_RX_YC_OCTS_DROP (0x14)
+#define NIX_STAT_LF_RX_E_RX_YC_OCTS_PASSED (0xe)
+#define NIX_STAT_LF_RX_E_RX_YC_PKTS_DROP (0x15)
+#define NIX_STAT_LF_RX_E_RX_YC_PKTS_PASSED (0xf)
 
 /**
  * Enumeration nix_stat_lf_tx_e
@@ -515,6 +577,7 @@
  * position as the first subdescriptor, and NIX_RX_PARSE_S, which is
  * determined by its position as the second subdescriptor.
  */
+#define NIX_SUBDC_E_AGE_AND_STATS (9)
 #define NIX_SUBDC_E_CRC (2)
 #define NIX_SUBDC_E_EXT (1)
 #define NIX_SUBDC_E_IMM (3)
@@ -522,6 +585,7 @@
 #define NIX_SUBDC_E_MEM (5)
 #define NIX_SUBDC_E_NOP (0)
 #define NIX_SUBDC_E_SG (4)
+#define NIX_SUBDC_E_SG2 (8)
 #define NIX_SUBDC_E_SOD (0xf)
 #define NIX_SUBDC_E_WORK (7)
 
@@ -578,6 +642,7 @@
 #define NIX_XQE_TYPE_E_RX_IPSECD (4)
 #define NIX_XQE_TYPE_E_RX_IPSECH (3)
 #define NIX_XQE_TYPE_E_RX_IPSECS (2)
+#define NIX_XQE_TYPE_E_RX_VWQE (5)
 #define NIX_XQE_TYPE_E_SEND (8)
 
 /**
@@ -588,6 +653,49 @@
  */
 #define NIX_XQESZ_E_W16 (1)
 #define NIX_XQESZ_E_W64 (0)
+
+/**
+ * Structure nix_age_and_send_stats_s
+ *
+ * NIX Aging and Send Stats Subdescriptor Structure The subdescriptor is
+ * used for two features, Latency (Aging) Drops and incrementing per-IP
+ * counters in memory  NIX_AGE_AND_SEND_STATS_S must follow
+ * NIX_SEND_HDR_S and NIX_SEND_EXT_S (if present). This sub-descriptor
+ * should always come before NIX_SEND_JUMP_S for SQEs that use
+ * NIX_SEND_JUMP_S subdescriptor.  There are at-most 6 64b counters in
+ * memory that each packet can increment. They are:   1. Transmit packet
+ * counter.   2. Drop packet counter.   3. Inner-IP transmit octet
+ * counter.   4. Outer-IP transmit octet counter.   5. Inner-IP drop
+ * octet counter.   6. Outer-IP drop octet counter.  All the counters
+ * need to be in contiguous memory locations. For eg: If both packet and
+ * octet counters are needed:   * mem[ADDR] is Transmit packet counter.
+ * * mem[ADDR+8] is Drop packet counter.   * mem[ADDR+16] is Inner-IP
+ * transmit octet counter.   * mem[ADDR+24] is Outer-IP transmit octet
+ * counter.   * mem[ADDR+32] is Inner-IP drop octet counter.   *
+ * mem[ADDR+40] is Outer-IP drop octet counter.  NIX will not initiate
+ * the memory updates for this subdescriptor until after it has completed
+ * all LLC/DRAM fetches that service all prior NIX_SEND_SG_S
+ * subdescriptors. The memory update is executed once, even if the packet
+ * is replicated due to NIX_TX_ACTION_S[OP] = NIX_TX_ACTIONOP_E::MCAST.
+ * When NIX_SEND_EXT_S[LSO] is set in the descriptor, NIX executes the
+ * memory updates while processing each segment.
+ */
+union nix_age_and_send_stats_s {
+	u64 u[2];
+	struct nix_age_and_send_stats_s_s {
+		u64 threshold                        : 29;
+		u64 latency_drop                     : 1;
+		u64 aging                            : 1;
+		u64 wmem                             : 1;
+		u64 ooffset                          : 12;
+		u64 ioffset                          : 12;
+		u64 sel                              : 1;
+		u64 alg                              : 3;
+		u64 subdc                            : 4;
+		u64 addr                             : 64;
+	} s;
+	/* struct nix_age_and_send_stats_s_s cn; */
+};
 
 /**
  * Structure nix_aq_inst_s
@@ -643,6 +751,78 @@ union nix_aq_res_s {
 		u64 reserved_64_127                  : 64;
 	} s;
 	/* struct nix_aq_res_s_s cn; */
+};
+
+/**
+ * Structure nix_band_prof_s
+ *
+ * NIX Bandwidth Profile Structure This structure specifies the format
+ * used by software to read and write a bandwidth profile context with
+ * the NIX admin queue.
+ */
+union nix_band_prof_s {
+	u64 u[16];
+	struct nix_band_prof_s_s {
+		u64 pc_mode                          : 2;
+		u64 icolor                           : 2;
+		u64 tnl_ena                          : 1;
+		u64 reserved_5_7                     : 3;
+		u64 peir_exponent                    : 5;
+		u64 reserved_13_15                   : 3;
+		u64 pebs_exponent                    : 5;
+		u64 reserved_21_23                   : 3;
+		u64 cir_exponent                     : 5;
+		u64 reserved_29_31                   : 3;
+		u64 cbs_exponent                     : 5;
+		u64 reserved_37_39                   : 3;
+		u64 peir_mantissa                    : 8;
+		u64 pebs_mantissa                    : 8;
+		u64 cir_mantissa                     : 8;
+		u64 cbs_mantissa                     : 8;
+		u64 lmode                            : 1;
+		u64 l_sellect                        : 3;
+		u64 rdiv                             : 4;
+		u64 adjust_exponent                  : 5;
+		u64 reserved_85_86                   : 2;
+		u64 adjust_mantissa                  : 9;
+		u64 gc_action                        : 2;
+		u64 yc_action                        : 2;
+		u64 rc_action                        : 2;
+		u64 meter_algo                       : 2;
+		u64 band_prof_id                     : 7;
+		u64 reserved_111_118                 : 8;
+		u64 hl_en                            : 1;
+		u64 reserved_120_127                 : 8;
+		u64 ts                               : 48;
+		u64 reserved_176_191                 : 16;
+		u64 pe_accum                         : 32;
+		u64 c_accum                          : 32;
+		u64 green_pkt_pass                   : 48;
+		u64 reserved_304_319                 : 16;
+		u64 yellow_pkt_pass                  : 48;
+		u64 reserved_368_383                 : 16;
+		u64 red_pkt_pass                     : 48;
+		u64 reserved_432_447                 : 16;
+		u64 green_octs_pass                  : 48;
+		u64 reserved_496_511                 : 16;
+		u64 yellow_octs_pass                 : 48;
+		u64 reserved_560_575                 : 16;
+		u64 red_octs_pass                    : 48;
+		u64 reserved_624_639                 : 16;
+		u64 green_pkt_drop                   : 48;
+		u64 reserved_688_703                 : 16;
+		u64 yellow_pkt_drop                  : 48;
+		u64 reserved_752_767                 : 16;
+		u64 red_pkt_drop                     : 48;
+		u64 reserved_816_831                 : 16;
+		u64 green_octs_drop                  : 48;
+		u64 reserved_880_895                 : 16;
+		u64 yellow_octs_drop                 : 48;
+		u64 reserved_944_959                 : 16;
+		u64 red_octs_drop                    : 48;
+		u64 reserved_1008_1023               : 16;
+	} s;
+	/* struct nix_band_prof_s_s cn; */
 };
 
 /**
@@ -768,8 +948,11 @@ union nix_iova_s {
 /**
  * Structure nix_ipsec_dyno_s
  *
- * INTERNAL: NIX IPSEC Dynamic Ordering Counter Structure  Internal: Not
- * used; no IPSEC fast-path.
+ * NIX IPSEC Dynamic Ordering Counter Structure This structure specifies
+ * the format of an IPSEC dynamic ordering (DYNO) counter in
+ * NDC/LLC/DRAM. See NIX_AF_LF()_RX_IPSEC_DYNO_CFG[DYNO_ENA]. Software
+ * uses the same structure format to read and write a DYNO counter with
+ * the NIX admin queue.
  */
 union nix_ipsec_dyno_s {
 	u32 u;
@@ -851,7 +1034,14 @@ union nix_rq_ctx_hw_s {
 		u64 ipsech_ena                       : 1;
 		u64 ena_wqwd                         : 1;
 		u64 cq                               : 20;
-		u64 substream                        : 20;
+		u64 reserved_24_36                   : 13;
+		u64 lenerr_dis                       : 1;
+		u64 csum_il4_dis                     : 1;
+		u64 csum_ol4_dis                     : 1;
+		u64 len_il4_dis                      : 1;
+		u64 len_il3_dis                      : 1;
+		u64 len_ol4_dis                      : 1;
+		u64 len_ol3_dis                      : 1;
 		u64 wqe_aura                         : 20;
 		u64 spb_aura                         : 20;
 		u64 lpb_aura                         : 20;
@@ -862,11 +1052,16 @@ union nix_rq_ctx_hw_s {
 		u64 xqe_drop_ena                     : 1;
 		u64 spb_drop_ena                     : 1;
 		u64 lpb_drop_ena                     : 1;
-		u64 wqe_skip                         : 2;
-		u64 reserved_124_127                 : 4;
-		u64 reserved_128_139                 : 12;
+		u64 pb_stashing                      : 1;
+		u64 ipsecd_drop_en                   : 1;
+		u64 chi_ena                          : 1;
+		u64 reserved_125_127                 : 3;
+		u64 band_prof_id                     : 10;
+		u64 reserved_138                     : 1;
+		u64 policer_ena                      : 1;
 		u64 spb_sizem1                       : 6;
-		u64 reserved_146_150                 : 5;
+		u64 wqe_skip                         : 2;
+		u64 spb_high_sizem1                  : 3;
 		u64 spb_ena                          : 1;
 		u64 lpb_sizem1                       : 12;
 		u64 first_skip                       : 7;
@@ -893,7 +1088,12 @@ union nix_rq_ctx_hw_s {
 		u64 good_utag                        : 8;
 		u64 bad_utag                         : 8;
 		u64 flow_tagw                        : 6;
-		u64 reserved_366_383                 : 18;
+		u64 ipsec_vwqe                       : 1;
+		u64 vwqe_ena                         : 1;
+		u64 vtime_wait                       : 8;
+		u64 max_vsize_exp                    : 4;
+		u64 vwqe_skip                        : 2;
+		u64 reserved_382_383                 : 2;
 		u64 octs                             : 48;
 		u64 reserved_432_447                 : 16;
 		u64 pkts                             : 48;
@@ -933,7 +1133,14 @@ union nix_rq_ctx_s {
 		u64 ipsech_ena                       : 1;
 		u64 ena_wqwd                         : 1;
 		u64 cq                               : 20;
-		u64 substream                        : 20;
+		u64 reserved_24_36                   : 13;
+		u64 lenerr_dis                       : 1;
+		u64 csum_il4_dis                     : 1;
+		u64 csum_ol4_dis                     : 1;
+		u64 len_il4_dis                      : 1;
+		u64 len_il3_dis                      : 1;
+		u64 len_ol4_dis                      : 1;
+		u64 len_ol3_dis                      : 1;
 		u64 wqe_aura                         : 20;
 		u64 spb_aura                         : 20;
 		u64 lpb_aura                         : 20;
@@ -944,11 +1151,16 @@ union nix_rq_ctx_s {
 		u64 xqe_drop_ena                     : 1;
 		u64 spb_drop_ena                     : 1;
 		u64 lpb_drop_ena                     : 1;
-		u64 reserved_122_127                 : 6;
-		u64 reserved_128_139                 : 12;
+		u64 pb_stashing                      : 1;
+		u64 ipsecd_drop_en                   : 1;
+		u64 chi_ena                          : 1;
+		u64 reserved_125_127                 : 3;
+		u64 band_prof_id                     : 10;
+		u64 reserved_138                     : 1;
+		u64 policer_ena                      : 1;
 		u64 spb_sizem1                       : 6;
 		u64 wqe_skip                         : 2;
-		u64 reserved_148_150                 : 3;
+		u64 spb_high_sizem1                  : 3;
 		u64 spb_ena                          : 1;
 		u64 lpb_sizem1                       : 12;
 		u64 first_skip                       : 7;
@@ -979,7 +1191,12 @@ union nix_rq_ctx_s {
 		u64 good_utag                        : 8;
 		u64 bad_utag                         : 8;
 		u64 flow_tagw                        : 6;
-		u64 reserved_366_383                 : 18;
+		u64 ipsec_vwqe                       : 1;
+		u64 vwqe_ena                         : 1;
+		u64 vtime_wait                       : 8;
+		u64 max_vsize_exp                    : 4;
+		u64 vwqe_skip                        : 2;
+		u64 reserved_382_383                 : 2;
 		u64 octs                             : 48;
 		u64 reserved_432_447                 : 16;
 		u64 pkts                             : 48;
@@ -1146,10 +1363,12 @@ union nix_rx_parse_s {
 		u64 vtag0_ptr                        : 8;
 		u64 vtag1_ptr                        : 8;
 		u64 flow_key_alg                     : 5;
-		u64 reserved_341_383                 : 43;
+		u64 reserved_341_359                 : 19;
+		u64 color                            : 2;
+		u64 reserved_362_383                 : 22;
 		u64 reserved_384_447                 : 64;
 	} s;
-	struct nix_rx_parse_s_cn96xx {
+	struct nix_rx_parse_s_cn {
 		u64 chan                             : 12;
 		u64 desc_sizem1                      : 5;
 		u64 imm_copy                         : 1;
@@ -1175,7 +1394,7 @@ union nix_rx_parse_s {
 		u64 vtag1_valid                      : 1;
 		u64 vtag1_gone                       : 1;
 		u64 pkind                            : 6;
-		u64 reserved_94_95                   : 2;
+		u64 nix_idx                          : 2;
 		u64 vtag0_tci                        : 16;
 		u64 vtag1_tci                        : 16;
 		u64 laflags                          : 8;
@@ -1201,12 +1420,16 @@ union nix_rx_parse_s {
 		u64 vtag0_ptr                        : 8;
 		u64 vtag1_ptr                        : 8;
 		u64 flow_key_alg                     : 5;
-		u64 reserved_341_383                 : 43;
+		u64 reserved_341                     : 1;
+		u64 reserved_342_349                 : 8;
+		u64 reserved_350_353                 : 4;
+		u64 reserved_354_359                 : 6;
+		u64 color                            : 2;
+		u64 reserved_362_381                 : 20;
+		u64 reserved_382                     : 1;
+		u64 reserved_383                     : 1;
 		u64 reserved_384_447                 : 64;
-	} cn96xx;
-	/* struct nix_rx_parse_s_s cn98xx; */
-	/* struct nix_rx_parse_s_cn96xx cnf95xx; */
-	/* struct nix_rx_parse_s_cn96xx loki; */
+	} cn;
 };
 
 /**
@@ -1248,16 +1471,16 @@ union nix_rx_vtag_action_s {
 	struct nix_rx_vtag_action_s_s {
 		u64 vtag0_relptr                     : 8;
 		u64 vtag0_lid                        : 3;
-		u64 reserved_11                      : 1;
+		u64 sa_xor                           : 1;
 		u64 vtag0_type                       : 3;
 		u64 vtag0_valid                      : 1;
-		u64 reserved_16_31                   : 16;
+		u64 sa_lo                            : 16;
 		u64 vtag1_relptr                     : 8;
 		u64 vtag1_lid                        : 3;
 		u64 reserved_43                      : 1;
 		u64 vtag1_type                       : 3;
 		u64 vtag1_valid                      : 1;
-		u64 reserved_48_63                   : 16;
+		u64 sa_hi                            : 16;
 	} s;
 	/* struct nix_rx_vtag_action_s_s cn; */
 };
@@ -1286,13 +1509,13 @@ union nix_send_comp_s {
  * when present in a send descriptor with NIX_SEND_EXT_S[LSO] set. There
  * may be up to two NIX_SEND_CRC_Ss per send descriptor.  NIX_SEND_CRC_S
  * constraints: * When present, NIX_SEND_CRC_S subdescriptors must
- * precede all NIX_SEND_SG_S, NIX_SEND_IMM_S and NIX_SEND_MEM_S
- * subdescriptors in the send descriptor. * NIX_SEND_CRC_S subdescriptors
- * must follow the same order as their checksum and insert regions in the
- * packet, i.e. the checksum and insert regions of a NIX_SEND_CRC_S must
- * come after the checksum and insert regions of a preceding
- * NIX_SEND_CRC_S. There must be no overlap between any NIX_SEND_CRC_S
- * checksum and insert regions. * If either
+ * precede all NIX_SEND_SG_S, NIX_SEND_SG2_S, NIX_SEND_IMM_S and
+ * NIX_SEND_MEM_S subdescriptors in the send descriptor. * NIX_SEND_CRC_S
+ * subdescriptors must follow the same order as their checksum and insert
+ * regions in the packet, i.e. the checksum and insert regions of a
+ * NIX_SEND_CRC_S must come after the checksum and insert regions of a
+ * preceding NIX_SEND_CRC_S. There must be no overlap between any
+ * NIX_SEND_CRC_S checksum and insert regions. * If either
  * NIX_SEND_HDR_S[OL4TYPE,IL4TYPE] = NIX_SENDL4TYPE_E::SCTP_CKSUM, the
  * SCTP checksum region and NIX_SEND_CRC_S insert region must not
  * overlap, and likewise the NIX_SEND_CRC_S checksum region and SCTP
@@ -1351,7 +1574,8 @@ union nix_send_ext_s {
 		u64 vlan1_ins_tci                    : 16;
 		u64 vlan0_ins_ena                    : 1;
 		u64 vlan1_ins_ena                    : 1;
-		u64 reserved_114_127                 : 14;
+		u64 init_color                       : 2;
+		u64 reserved_116_127                 : 12;
 	} s;
 	/* struct nix_send_ext_s_s cn; */
 };
@@ -1460,7 +1684,8 @@ union nix_send_mem_s {
 	u64 u[2];
 	struct nix_send_mem_s_s {
 		u64 offset                           : 16;
-		u64 reserved_16_52                   : 37;
+		u64 reserved_16_51                   : 36;
+		u64 per_lso_seg                      : 1;
 		u64 wmem                             : 1;
 		u64 dsz                              : 2;
 		u64 alg                              : 4;
@@ -1468,6 +1693,34 @@ union nix_send_mem_s {
 		u64 addr                             : 64;
 	} s;
 	/* struct nix_send_mem_s_s cn; */
+};
+
+/**
+ * Structure nix_send_sg2_s
+ *
+ * NIX Send Scatter/Gather with Aura Subdescriptor Structure The send
+ * scatter/gather subdescriptor is similar to NIX_SEND_SG_S but added to
+ * support multiple AURAs. It requests one segment of packet data bytes
+ * to be transmitted. There may be multiple NIX_SEND_SG2_Ss in each NIX
+ * send descriptor.  NIX_SEND_SG2_S is immediately followed by one
+ * NIX_IOVA_S word.  If the sum of all prior NIX_SEND_SG_S[SEG*_SIZE]s,
+ * NIX_SEND_SG2_S[SEG*_SIZE]s and NIX_SEND_IMM_S[SIZE]s meets or exceeds
+ * NIX_SEND_HDR_S[TOTAL], or if [SEG_SIZE]=0, this subdescriptor will not
+ * contribute any packet data but may free buffers to NPA (see [I1]).
+ */
+union nix_send_sg2_s {
+	u64 u;
+	struct nix_send_sg2_s_s {
+		u64 seg1_size                        : 16;
+		u64 aura                             : 20;
+		u64 i1                               : 1;
+		u64 fabs                             : 1;
+		u64 foff                             : 8;
+		u64 reserved_46_57                   : 12;
+		u64 ld_type                          : 2;
+		u64 subdc                            : 4;
+	} s;
+	/* struct nix_send_sg2_s_s cn; */
 };
 
 /**
@@ -1578,22 +1831,21 @@ union nix_sq_ctx_hw_s {
 		u64 sqb_enqueue_count                : 16;
 		u64 tail_offset                      : 6;
 		u64 lmt_dis                          : 1;
-		u64 smq_rr_quantum                   : 24;
-		u64 dnq_rsvd1                        : 17;
+		u64 smq_rr_weight                    : 14;
+		u64 dnq_rsvd1                        : 27;
 		u64 tail_sqb                         : 64;
 		u64 next_sqb                         : 64;
-		u64 mnq_dis                          : 1;
-		u64 smq                              : 9;
+		u64 smq                              : 10;
 		u64 smq_pend                         : 1;
 		u64 smq_next_sq                      : 20;
 		u64 smq_next_sq_vld                  : 1;
-		u64 scm1_rsvd2                       : 32;
+		u64 mnq_dis                          : 1;
+		u64 scm1_rsvd2                       : 31;
 		u64 smenq_sqb                        : 64;
 		u64 smenq_offset                     : 6;
 		u64 cq_limit                         : 8;
-		u64 smq_rr_count                     : 25;
+		u64 smq_rr_count                     : 32;
 		u64 scm_lso_rem                      : 18;
-		u64 scm_dq_rsvd0                     : 7;
 		u64 smq_lso_segnum                   : 8;
 		u64 vfi_lso_total                    : 18;
 		u64 vfi_lso_sizem1                   : 3;
@@ -1605,7 +1857,8 @@ union nix_sq_ctx_hw_s {
 		u64 smenq_next_sqb_vld               : 1;
 		u64 scm_dq_rsvd1                     : 9;
 		u64 smenq_next_sqb                   : 64;
-		u64 seb_rsvd1                        : 64;
+		u64 age_drop_octs                    : 32;
+		u64 age_drop_pkts                    : 32;
 		u64 drop_pkts                        : 48;
 		u64 drop_octs_lsw                    : 16;
 		u64 drop_octs_msw                    : 32;
@@ -1635,14 +1888,16 @@ union nix_sq_ctx_s {
 		u64 sdp_mcast                        : 1;
 		u64 cq                               : 20;
 		u64 sqe_way_mask                     : 16;
-		u64 smq                              : 9;
+		u64 smq                              : 10;
 		u64 cq_ena                           : 1;
 		u64 xoff                             : 1;
 		u64 sso_ena                          : 1;
-		u64 smq_rr_quantum                   : 24;
+		u64 smq_rr_weight                    : 14;
 		u64 default_chan                     : 12;
 		u64 sqb_count                        : 16;
-		u64 smq_rr_count                     : 25;
+		u64 reserved_119_120                 : 2;
+		u64 smq_rr_count_lb                  : 7;
+		u64 smq_rr_count_ub                  : 25;
 		u64 sqb_aura                         : 20;
 		u64 sq_int                           : 8;
 		u64 sq_int_ena                       : 8;
@@ -1681,7 +1936,8 @@ union nix_sq_ctx_s {
 		u64 reserved_752_767                 : 16;
 		u64 pkts                             : 48;
 		u64 reserved_816_831                 : 16;
-		u64 reserved_832_895                 : 64;
+		u64 aged_drop_octs                   : 32;
+		u64 aged_drop_pkts                   : 32;
 		u64 drop_octs                        : 48;
 		u64 reserved_944_959                 : 16;
 		u64 drop_pkts                        : 48;
@@ -1743,6 +1999,28 @@ union nix_tx_vtag_action_s {
 		u64 reserved_58_63                   : 6;
 	} s;
 	/* struct nix_tx_vtag_action_s_s cn; */
+};
+
+/**
+ * Structure nix_vwqe_hdr_s
+ *
+ * NIX Vectro Work Queue Entry Header Structure This 64-bit structure
+ * defines the first word of every receive VWQE generated by NIX. It is
+ * immediately followed by a list of NIX_IOVA_S structures each one
+ * points to a single WQE.
+ */
+union nix_vwqe_hdr_s {
+	u64 u;
+	struct nix_vwqe_hdr_s_s {
+		u64 vwqe_aura                        : 20;
+		u64 vwqe_size                        : 12;
+		u64 reserved_32_33                   : 2;
+		u64 grp                              : 10;
+		u64 node                             : 2;
+		u64 q                                : 14;
+		u64 wqe_type                         : 4;
+	} s;
+	/* struct nix_vwqe_hdr_s_s cn; */
 };
 
 /**
@@ -2218,16 +2496,19 @@ static inline u64 NIXX_AF_CINT_TIMERX(u64 a)
 union nixx_af_const {
 	u64 u;
 	struct nixx_af_const_s {
-		u64 cgx_lmac_channels                : 8;
-		u64 cgx_lmacs                        : 4;
-		u64 num_cgx                          : 4;
+		u64 rpm_lmac_channels                : 8;
+		u64 rpm_lmacs                        : 4;
+		u64 num_rpm                          : 4;
 		u64 lbk_channels                     : 8;
 		u64 num_lbk                          : 4;
 		u64 num_sdp                          : 4;
-		u64 reserved_32_47                   : 16;
+		u64 cpt_channels                     : 12;
+		u64 num_cpt                          : 4;
 		u64 links                            : 8;
 		u64 intfs                            : 4;
-		u64 reserved_60_63                   : 4;
+		u64 prog_chan                        : 1;
+		u64 policer                          : 1;
+		u64 reserved_62_63                   : 2;
 	} s;
 	/* struct nixx_af_const_s cn; */
 };
@@ -2254,7 +2535,8 @@ union nixx_af_const1 {
 		u64 lf_rx_stats                      : 8;
 		u64 lso_format_fields                : 8;
 		u64 lso_formats                      : 8;
-		u64 reserved_56_63                   : 8;
+		u64 max_dwrr_mtu                     : 5;
+		u64 reserved_61_63                   : 3;
 	} s;
 	/* struct nixx_af_const1_s cn; */
 };
@@ -2406,6 +2688,50 @@ static inline u64 NIXX_AF_CSI_ECO(void)
 }
 
 /**
+ * Register (RVU_PF_BAR0) nix#_af_dwrr_rpm_mtu
+ *
+ * NIX AF SQM PSE DWRR RPM MTU Register This is the register which would
+ * define Max MTU size for RPM packets. Used for DWRR
+ */
+union nixx_af_dwrr_rpm_mtu {
+	u64 u;
+	struct nixx_af_dwrr_rpm_mtu_s {
+		u64 mtu                              : 5;
+		u64 reserved_5_63                    : 59;
+	} s;
+	/* struct nixx_af_dwrr_rpm_mtu_s cn; */
+};
+
+static inline u64 NIXX_AF_DWRR_RPM_MTU(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_DWRR_RPM_MTU(void)
+{
+	return 0x7a0;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_dwrr_sdp_mtu
+ *
+ * NIX AF SQM PSE DWRR SDP MTU Register This is the register which would
+ * define Max MTU size for SDP packets. Used for DWRR
+ */
+union nixx_af_dwrr_sdp_mtu {
+	u64 u;
+	struct nixx_af_dwrr_sdp_mtu_s {
+		u64 mtu                              : 5;
+		u64 reserved_5_63                    : 59;
+	} s;
+	/* struct nixx_af_dwrr_sdp_mtu_s cn; */
+};
+
+static inline u64 NIXX_AF_DWRR_SDP_MTU(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_DWRR_SDP_MTU(void)
+{
+	return 0x790;
+}
+
+/**
  * Register (RVU_PF_BAR0) nix#_af_err_int
  *
  * NIX Admin Function Error Interrupt Register
@@ -2537,13 +2863,13 @@ static inline u64 NIXX_AF_ERR_INT_W1S(void)
  *
  * INTERNAL: NIX AF Express Transmit FIFO Status Register  Internal:
  * 802.3br frame preemption/express path is defeatured. Old definition:
- * Status of FIFO which transmits express packets to CGX and LBK.
+ * Status of FIFO which transmits express packets to RPM and LBK.
  */
 union nixx_af_expr_tx_fifo_status {
 	u64 u;
 	struct nixx_af_expr_tx_fifo_status_s {
-		u64 count                            : 12;
-		u64 reserved_12_63                   : 52;
+		u64 count                            : 13;
+		u64 reserved_13_63                   : 51;
 	} s;
 	/* struct nixx_af_expr_tx_fifo_status_s cn; */
 };
@@ -2565,8 +2891,7 @@ union nixx_af_gen_int {
 	struct nixx_af_gen_int_s {
 		u64 rx_mcast_drop                    : 1;
 		u64 rx_mirror_drop                   : 1;
-		u64 reserved_2                       : 1;
-		u64 tl1_drain                        : 1;
+		u64 reserved_2_3                     : 2;
 		u64 smq_flush_done                   : 1;
 		u64 reserved_5_63                    : 59;
 	} s;
@@ -2591,8 +2916,7 @@ union nixx_af_gen_int_ena_w1c {
 	struct nixx_af_gen_int_ena_w1c_s {
 		u64 rx_mcast_drop                    : 1;
 		u64 rx_mirror_drop                   : 1;
-		u64 reserved_2                       : 1;
-		u64 tl1_drain                        : 1;
+		u64 reserved_2_3                     : 2;
 		u64 smq_flush_done                   : 1;
 		u64 reserved_5_63                    : 59;
 	} s;
@@ -2617,8 +2941,7 @@ union nixx_af_gen_int_ena_w1s {
 	struct nixx_af_gen_int_ena_w1s_s {
 		u64 rx_mcast_drop                    : 1;
 		u64 rx_mirror_drop                   : 1;
-		u64 reserved_2                       : 1;
-		u64 tl1_drain                        : 1;
+		u64 reserved_2_3                     : 2;
 		u64 smq_flush_done                   : 1;
 		u64 reserved_5_63                    : 59;
 	} s;
@@ -2643,8 +2966,7 @@ union nixx_af_gen_int_w1s {
 	struct nixx_af_gen_int_w1s_s {
 		u64 rx_mcast_drop                    : 1;
 		u64 rx_mirror_drop                   : 1;
-		u64 reserved_2                       : 1;
-		u64 tl1_drain                        : 1;
+		u64 reserved_2_3                     : 2;
 		u64 smq_flush_done                   : 1;
 		u64 reserved_5_63                    : 59;
 	} s;
@@ -2953,18 +3275,7 @@ union nixx_af_lfx_rss_cfg {
 		u64 caching                          : 1;
 		u64 reserved_37_63                   : 27;
 	} s;
-	struct nixx_af_lfx_rss_cfg_cn96xxp1 {
-		u64 size                             : 4;
-		u64 ena                              : 1;
-		u64 reserved_5_19                    : 15;
-		u64 way_mask                         : 16;
-		u64 caching                          : 1;
-		u64 reserved_37_63                   : 27;
-	} cn96xxp1;
-	/* struct nixx_af_lfx_rss_cfg_s cn96xxp3; */
-	/* struct nixx_af_lfx_rss_cfg_s cn98xx; */
-	/* struct nixx_af_lfx_rss_cfg_cn96xxp1 cnf95xx; */
-	/* struct nixx_af_lfx_rss_cfg_s loki; */
+	/* struct nixx_af_lfx_rss_cfg_s cn; */
 };
 
 static inline u64 NIXX_AF_LFX_RSS_CFG(u64 a)
@@ -3026,24 +3337,7 @@ union nixx_af_lfx_rx_cfg {
 		u64 len_ol3                          : 1;
 		u64 reserved_42_63                   : 22;
 	} s;
-	struct nixx_af_lfx_rx_cfg_cn96xxp1 {
-		u64 reserved_0_31                    : 32;
-		u64 reserved_32                      : 1;
-		u64 lenerr_en                        : 1;
-		u64 ip6_udp_opt                      : 1;
-		u64 dis_apad                         : 1;
-		u64 csum_il4                         : 1;
-		u64 csum_ol4                         : 1;
-		u64 len_il4                          : 1;
-		u64 len_il3                          : 1;
-		u64 len_ol4                          : 1;
-		u64 len_ol3                          : 1;
-		u64 reserved_42_63                   : 22;
-	} cn96xxp1;
-	/* struct nixx_af_lfx_rx_cfg_s cn96xxp3; */
-	/* struct nixx_af_lfx_rx_cfg_s cn98xx; */
-	/* struct nixx_af_lfx_rx_cfg_s cnf95xx; */
-	/* struct nixx_af_lfx_rx_cfg_s loki; */
+	/* struct nixx_af_lfx_rx_cfg_s cn; */
 };
 
 static inline u64 NIXX_AF_LFX_RX_CFG(u64 a)
@@ -3056,8 +3350,7 @@ static inline u64 NIXX_AF_LFX_RX_CFG(u64 a)
 /**
  * Register (RVU_PF_BAR0) nix#_af_lf#_rx_ipsec_cfg0
  *
- * INTERNAL: NIX AF LF Receive IPSEC Configuration Registers  Internal:
- * Not used; no IPSEC fast-path.
+ * NIX AF LF Receive IPSEC Configuration Registers
  */
 union nixx_af_lfx_rx_ipsec_cfg0 {
 	u64 u;
@@ -3084,8 +3377,7 @@ static inline u64 NIXX_AF_LFX_RX_IPSEC_CFG0(u64 a)
 /**
  * Register (RVU_PF_BAR0) nix#_af_lf#_rx_ipsec_cfg1
  *
- * INTERNAL: NIX AF LF Receive IPSEC Security Association Configuration
- * Register  Internal: Not used; no IPSEC fast-path.
+ * NIX AF LF Receive IPSEC Security Association Configuration Register
  */
 union nixx_af_lfx_rx_ipsec_cfg1 {
 	u64 u;
@@ -3107,8 +3399,11 @@ static inline u64 NIXX_AF_LFX_RX_IPSEC_CFG1(u64 a)
 /**
  * Register (RVU_PF_BAR0) nix#_af_lf#_rx_ipsec_dyno_base
  *
- * INTERNAL: NIX AF LF Receive IPSEC Dynamic Ordering Base Address
- * Registers  Internal: Not used; no IPSEC fast-path.
+ * NIX AF LF Receive IPSEC Dynamic Ordering Base Address Registers This
+ * register specifies the base AF IOVA of the LF's IPSEC dynamic ordering
+ * counter table in NDC/LLC/DRAM. The table consists of 1 \<\<
+ * (NIX_AF_LF()_RX_IPSEC_DYNO_CFG[DYNO_IDX_W]) NIX_IPSEC_DYNO_S
+ * structures. See NIX_AF_LF()_RX_IPSEC_DYNO_CFG[DYNO_ENA].
  */
 union nixx_af_lfx_rx_ipsec_dyno_base {
 	u64 u;
@@ -3130,8 +3425,7 @@ static inline u64 NIXX_AF_LFX_RX_IPSEC_DYNO_BASE(u64 a)
 /**
  * Register (RVU_PF_BAR0) nix#_af_lf#_rx_ipsec_dyno_cfg
  *
- * INTERNAL: NIX AF LF Receive IPSEC Dynamic Ordering Base Address
- * Registers  Internal: Not used; no IPSEC fast-path.
+ * NIX AF LF Receive IPSEC Dynamic Ordering Base Address Registers
  */
 union nixx_af_lfx_rx_ipsec_dyno_cfg {
 	u64 u;
@@ -3156,8 +3450,9 @@ static inline u64 NIXX_AF_LFX_RX_IPSEC_DYNO_CFG(u64 a)
 /**
  * Register (RVU_PF_BAR0) nix#_af_lf#_rx_ipsec_sa_base
  *
- * INTERNAL: NIX AF LF Receive IPSEC Security Association Base Address
- * Register  Internal: Not used; no IPSEC fast-path.
+ * NIX AF LF Receive IPSEC Security Association Base Address Register
+ * This register specifies the base IOVA of CPT's IPSEC SA table in
+ * LLC/DRAM.
  */
 union nixx_af_lfx_rx_ipsec_sa_base {
 	u64 u;
@@ -3384,6 +3679,93 @@ static inline u64 NIXX_AF_LFX_TX_STATUS(u64 a)
 }
 
 /**
+ * Register (RVU_PF_BAR0) nix#_af_lf#_vwqe_hash_full
+ *
+ * NIX AF Local Function VWQE Completion early released due to Hash Table
+ * full Statistics Registers
+ */
+union nixx_af_lfx_vwqe_hash_full {
+	u64 u;
+	struct nixx_af_lfx_vwqe_hash_full_s {
+		u64 stat                             : 48;
+		u64 reserved_48_63                   : 16;
+	} s;
+	/* struct nixx_af_lfx_vwqe_hash_full_s cn; */
+};
+
+static inline u64 NIXX_AF_LFX_VWQE_HASH_FULL(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_LFX_VWQE_HASH_FULL(u64 a)
+{
+	return 0x4760 + 0x20000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_lf#_vwqe_norm_compl
+ *
+ * NIX AF Local Function VWQE Normal Completion Statistics Registers
+ */
+union nixx_af_lfx_vwqe_norm_compl {
+	u64 u;
+	struct nixx_af_lfx_vwqe_norm_compl_s {
+		u64 stat                             : 48;
+		u64 reserved_48_63                   : 16;
+	} s;
+	/* struct nixx_af_lfx_vwqe_norm_compl_s cn; */
+};
+
+static inline u64 NIXX_AF_LFX_VWQE_NORM_COMPL(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_LFX_VWQE_NORM_COMPL(u64 a)
+{
+	return 0x4740 + 0x20000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_lf#_vwqe_rls_timeout
+ *
+ * NIX AF Local Function VWQE Completion early released due to Timeout
+ * Statistics Registers
+ */
+union nixx_af_lfx_vwqe_rls_timeout {
+	u64 u;
+	struct nixx_af_lfx_vwqe_rls_timeout_s {
+		u64 stat                             : 48;
+		u64 reserved_48_63                   : 16;
+	} s;
+	/* struct nixx_af_lfx_vwqe_rls_timeout_s cn; */
+};
+
+static inline u64 NIXX_AF_LFX_VWQE_RLS_TIMEOUT(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_LFX_VWQE_RLS_TIMEOUT(u64 a)
+{
+	return 0x4750 + 0x20000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_lf#_vwqe_sa_full
+ *
+ * NIX AF Local Function VWQE Completion early released due to no free
+ * slots (Slot Allocator full) Statistics Registers
+ */
+union nixx_af_lfx_vwqe_sa_full {
+	u64 u;
+	struct nixx_af_lfx_vwqe_sa_full_s {
+		u64 stat                             : 48;
+		u64 reserved_48_63                   : 16;
+	} s;
+	/* struct nixx_af_lfx_vwqe_sa_full_s cn; */
+};
+
+static inline u64 NIXX_AF_LFX_VWQE_SA_FULL(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_LFX_VWQE_SA_FULL(u64 a)
+{
+	return 0x4770 + 0x20000 * a;
+}
+
+/**
  * Register (RVU_PF_BAR0) nix#_af_lf_rst
  *
  * NIX Admin Function LF Reset Register
@@ -3404,6 +3786,52 @@ static inline u64 NIXX_AF_LF_RST(void)
 static inline u64 NIXX_AF_LF_RST(void)
 {
 	return 0x150;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_link#_cfg
+ *
+ * NIX AF LINK Channel Number Configuration Registers
+ */
+union nixx_af_linkx_cfg {
+	u64 u;
+	struct nixx_af_linkx_cfg_s {
+		u64 base_chan                        : 12;
+		u64 reserved_12_15                   : 4;
+		u64 log2_range                       : 4;
+		u64 reserved_20_63                   : 44;
+	} s;
+	/* struct nixx_af_linkx_cfg_s cn; */
+};
+
+static inline u64 NIXX_AF_LINKX_CFG(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_LINKX_CFG(u64 a)
+{
+	return 0x4010 + 0x20000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_link_cdt_adj_err
+ *
+ * NIX AF Transmit Link Overflow underflow Register This register keeps
+ * error condition for all the links and both unit cnt and pkt cnt.
+ */
+union nixx_af_link_cdt_adj_err {
+	u64 u;
+	struct nixx_af_link_cdt_adj_err_s {
+		u64 cc_cnt_underflow                 : 1;
+		u64 cc_cnt_overflow                  : 1;
+		u64 reserved_2_63                    : 62;
+	} s;
+	/* struct nixx_af_link_cdt_adj_err_s cn; */
+};
+
+static inline u64 NIXX_AF_LINK_CDT_ADJ_ERR(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_LINK_CDT_ADJ_ERR(void)
+{
+	return 0xaa0;
 }
 
 /**
@@ -3537,9 +3965,9 @@ union nixx_af_mdqx_cir {
 		u64 rate_exponent                    : 4;
 		u64 rate_divider_exponent            : 4;
 		u64 reserved_17_28                   : 12;
-		u64 burst_mantissa                   : 8;
+		u64 burst_mantissa                   : 15;
 		u64 burst_exponent                   : 4;
-		u64 reserved_41_63                   : 23;
+		u64 reserved_48_63                   : 16;
 	} s;
 	/* struct nixx_af_mdqx_cir_s cn; */
 };
@@ -3549,6 +3977,27 @@ static inline u64 NIXX_AF_MDQX_CIR(u64 a)
 static inline u64 NIXX_AF_MDQX_CIR(u64 a)
 {
 	return 0x1420 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_mdq#_in_md_count
+ *
+ * NIX AF MDQ Pkt count Registers
+ */
+union nixx_af_mdqx_in_md_count {
+	u64 u;
+	struct nixx_af_mdqx_in_md_count_s {
+		u64 pkt_cnt                          : 44;
+		u64 reserved_44_63                   : 20;
+	} s;
+	/* struct nixx_af_mdqx_in_md_count_s cn; */
+};
+
+static inline u64 NIXX_AF_MDQX_IN_MD_COUNT(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_MDQX_IN_MD_COUNT(u64 a)
+{
+	return 0x14e0 + 0x10000 * a;
 }
 
 /**
@@ -3567,7 +4016,8 @@ union nixx_af_mdqx_md_debug {
 		u64 shp_dis                          : 1;
 		u64 reserved_19                      : 1;
 		u64 shp_chg                          : 9;
-		u64 reserved_29_31                   : 3;
+		u64 color                            : 2;
+		u64 sdp                              : 1;
 		u64 sqm_pkt_id                       : 13;
 		u64 reserved_45_60                   : 16;
 		u64 md_type                          : 2;
@@ -3581,6 +4031,27 @@ static inline u64 NIXX_AF_MDQX_MD_DEBUG(u64 a)
 static inline u64 NIXX_AF_MDQX_MD_DEBUG(u64 a)
 {
 	return 0x14c0 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_mdq#_out_md_count
+ *
+ * NIX AF MDQ out Pkt count Registers
+ */
+union nixx_af_mdqx_out_md_count {
+	u64 u;
+	struct nixx_af_mdqx_out_md_count_s {
+		u64 pkt_cnt                          : 44;
+		u64 reserved_44_63                   : 20;
+	} s;
+	/* struct nixx_af_mdqx_out_md_count_s cn; */
+};
+
+static inline u64 NIXX_AF_MDQX_OUT_MD_COUNT(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_MDQX_OUT_MD_COUNT(u64 a)
+{
+	return 0xdb0 + 0x10000 * a;
 }
 
 /**
@@ -3619,9 +4090,9 @@ union nixx_af_mdqx_pir {
 		u64 rate_exponent                    : 4;
 		u64 rate_divider_exponent            : 4;
 		u64 reserved_17_28                   : 12;
-		u64 burst_mantissa                   : 8;
+		u64 burst_mantissa                   : 15;
 		u64 burst_exponent                   : 4;
-		u64 reserved_41_63                   : 23;
+		u64 reserved_48_63                   : 16;
 	} s;
 	/* struct nixx_af_mdqx_pir_s cn; */
 };
@@ -3637,15 +4108,14 @@ static inline u64 NIXX_AF_MDQX_PIR(u64 a)
  * Register (RVU_PF_BAR0) nix#_af_mdq#_pointers
  *
  * INTERNAL: NIX AF Meta Descriptor 4 Linked List Pointers Debug Register
- * This register has the same bit fields as NIX_AF_TL4()_POINTERS.
  */
 union nixx_af_mdqx_pointers {
 	u64 u;
 	struct nixx_af_mdqx_pointers_s {
-		u64 next                             : 9;
-		u64 reserved_9_15                    : 7;
-		u64 prev                             : 9;
-		u64 reserved_25_63                   : 39;
+		u64 next                             : 10;
+		u64 reserved_10_15                   : 6;
+		u64 prev                             : 10;
+		u64 reserved_26_63                   : 38;
 	} s;
 	/* struct nixx_af_mdqx_pointers_s cn; */
 };
@@ -3689,8 +4159,8 @@ static inline u64 NIXX_AF_MDQX_PTR_FIFO(u64 a)
 union nixx_af_mdqx_sched_state {
 	u64 u;
 	struct nixx_af_mdqx_sched_state_s {
-		u64 rr_count                         : 25;
-		u64 reserved_25_63                   : 39;
+		u64 rr_count                         : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
 	/* struct nixx_af_mdqx_sched_state_s cn; */
 };
@@ -3711,7 +4181,8 @@ static inline u64 NIXX_AF_MDQX_SCHED_STATE(u64 a)
 union nixx_af_mdqx_schedule {
 	u64 u;
 	struct nixx_af_mdqx_schedule_s {
-		u64 rr_quantum                       : 24;
+		u64 rr_weight                        : 14;
+		u64 reserved_14_23                   : 10;
 		u64 prio                             : 4;
 		u64 reserved_28_63                   : 36;
 	} s;
@@ -3740,8 +4211,7 @@ union nixx_af_mdqx_shape {
 		u64 yellow_disable                   : 1;
 		u64 reserved_13_23                   : 11;
 		u64 length_disable                   : 1;
-		u64 schedule_list                    : 2;
-		u64 reserved_27_63                   : 37;
+		u64 reserved_25_63                   : 39;
 	} s;
 	/* struct nixx_af_mdqx_shape_s cn; */
 };
@@ -3754,26 +4224,49 @@ static inline u64 NIXX_AF_MDQX_SHAPE(u64 a)
 }
 
 /**
- * Register (RVU_PF_BAR0) nix#_af_mdq#_shape_state
+ * Register (RVU_PF_BAR0) nix#_af_mdq#_shape_state_cir
  *
  * NIX AF Meta Descriptor Queue Shaping State Registers This register has
- * the same bit fields as NIX_AF_TL2()_SHAPE_STATE. This register must
- * not be written during normal operation.
+ * the same bit fields as NIX_AF_TL2()_SHAPE_STATE_CIR. This register
+ * must not be written during normal operation.
  */
-union nixx_af_mdqx_shape_state {
+union nixx_af_mdqx_shape_state_cir {
 	u64 u;
-	struct nixx_af_mdqx_shape_state_s {
-		u64 cir_accum                        : 26;
-		u64 pir_accum                        : 26;
+	struct nixx_af_mdqx_shape_state_cir_s {
+		u64 cir_accum                        : 33;
 		u64 color                            : 2;
-		u64 reserved_54_63                   : 10;
+		u64 reserved_35_63                   : 29;
 	} s;
-	/* struct nixx_af_mdqx_shape_state_s cn; */
+	/* struct nixx_af_mdqx_shape_state_cir_s cn; */
 };
 
-static inline u64 NIXX_AF_MDQX_SHAPE_STATE(u64 a)
+static inline u64 NIXX_AF_MDQX_SHAPE_STATE_CIR(u64 a)
 	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_MDQX_SHAPE_STATE(u64 a)
+static inline u64 NIXX_AF_MDQX_SHAPE_STATE_CIR(u64 a)
+{
+	return 0x12d0 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_mdq#_shape_state_pir
+ *
+ * NIX AF Meta Descriptor Queue Shaping State Registers This register has
+ * the same bit fields as NIX_AF_TL2()_SHAPE_STATE_PIR. This register
+ * must not be written during normal operation.
+ */
+union nixx_af_mdqx_shape_state_pir {
+	u64 u;
+	struct nixx_af_mdqx_shape_state_pir_s {
+		u64 pir_accum                        : 33;
+		u64 color                            : 2;
+		u64 reserved_35_63                   : 29;
+	} s;
+	/* struct nixx_af_mdqx_shape_state_pir_s cn; */
+};
+
+static inline u64 NIXX_AF_MDQX_SHAPE_STATE_PIR(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_MDQX_SHAPE_STATE_PIR(u64 a)
 {
 	return 0x1450 + 0x10000 * a;
 }
@@ -3788,10 +4281,7 @@ union nixx_af_mdqx_sw_xoff {
 	u64 u;
 	struct nixx_af_mdqx_sw_xoff_s {
 		u64 xoff                             : 1;
-		u64 drain                            : 1;
-		u64 reserved_2                       : 1;
-		u64 drain_irq                        : 1;
-		u64 reserved_4_63                    : 60;
+		u64 reserved_1_63                    : 63;
 	} s;
 	/* struct nixx_af_mdqx_sw_xoff_s cn; */
 };
@@ -3843,6 +4333,73 @@ static inline u64 NIXX_AF_MDQ_MD_COUNT(void)
 static inline u64 NIXX_AF_MDQ_MD_COUNT(void)
 {
 	return 0xda0;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_mdq_tw#_arb_req_debug0
+ *
+ * NIX AF Meta Descriptor Queue Timewheel Arbiter Request Debug0 Register
+ * This register has the same bit fields as
+ * NIX_AF_TL2_TW()_ARB_REQ_DEBUG0
+ */
+union nixx_af_mdq_twx_arb_req_debug0 {
+	u64 u;
+	struct nixx_af_mdq_twx_arb_req_debug0_s {
+		u64 req_lo                           : 64;
+	} s;
+	/* struct nixx_af_mdq_twx_arb_req_debug0_s cn; */
+};
+
+static inline u64 NIXX_AF_MDQ_TWX_ARB_REQ_DEBUG0(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_MDQ_TWX_ARB_REQ_DEBUG0(u64 a)
+{
+	return 0x13c8 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_mdq_tw#_arb_req_debug1
+ *
+ * NIX AF Meta Descriptor Queue Timewheel Arbiter Request Debug1 Register
+ * This register has the same bit fields as
+ * NIX_AF_TL2_TW()_ARB_REQ_DEBUG1
+ */
+union nixx_af_mdq_twx_arb_req_debug1 {
+	u64 u;
+	struct nixx_af_mdq_twx_arb_req_debug1_s {
+		u64 req_hi                           : 64;
+	} s;
+	/* struct nixx_af_mdq_twx_arb_req_debug1_s cn; */
+};
+
+static inline u64 NIXX_AF_MDQ_TWX_ARB_REQ_DEBUG1(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_MDQ_TWX_ARB_REQ_DEBUG1(u64 a)
+{
+	return 0x13d0 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_mdq_tw_arb_ctl_debug
+ *
+ * NIX AF Meta Descriptor Queue Timewheel Arbiter Control Debug Register
+ */
+union nixx_af_mdq_tw_arb_ctl_debug {
+	u64 u;
+	struct nixx_af_mdq_tw_arb_ctl_debug_s {
+		u64 req_index                        : 10;
+		u64 reserved_10_15                   : 6;
+		u64 quiet                            : 1;
+		u64 reserved_17_63                   : 47;
+	} s;
+	/* struct nixx_af_mdq_tw_arb_ctl_debug_s cn; */
+};
+
+static inline u64 NIXX_AF_MDQ_TW_ARB_CTL_DEBUG(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_MDQ_TW_ARB_CTL_DEBUG(void)
+{
+	return 0x13c0;
 }
 
 /**
@@ -3931,13 +4488,13 @@ static inline u64 NIXX_AF_NDC_TX_SYNC(void)
  * Register (RVU_PF_BAR0) nix#_af_norm_tx_fifo_status
  *
  * NIX AF Normal Transmit FIFO Status Register Status of FIFO which
- * transmits normal packets to CGX and LBK.
+ * transmits normal packets to RPM and LBK.
  */
 union nixx_af_norm_tx_fifo_status {
 	u64 u;
 	struct nixx_af_norm_tx_fifo_status_s {
-		u64 count                            : 12;
-		u64 reserved_12_63                   : 52;
+		u64 count                            : 13;
+		u64 reserved_13_63                   : 51;
 	} s;
 	/* struct nixx_af_norm_tx_fifo_status_s cn; */
 };
@@ -3950,78 +4507,49 @@ static inline u64 NIXX_AF_NORM_TX_FIFO_STATUS(void)
 }
 
 /**
- * Register (RVU_PF_BAR0) nix#_af_pq#_dbg_arb_link_exp
+ * Register (RVU_PF_BAR0) nix#_af_pl_const
  *
- * INTERNAL: NIX AF PQ Arb Link EXPRESS Debug Register
+ * NIX AF Policer Constants Register This register defines the number of
+ * leaf/middle/top bandwidth profiles exists.
  */
-union nixx_af_pqx_dbg_arb_link_exp {
+union nixx_af_pl_const {
 	u64 u;
-	struct nixx_af_pqx_dbg_arb_link_exp_s {
-		u64 req                              : 1;
-		u64 act_c_con                        : 1;
-		u64 cnt                              : 2;
-		u64 reserved_4_5                     : 2;
-		u64 rr_mask                          : 1;
-		u64 reserved_7_63                    : 57;
+	struct nixx_af_pl_const_s {
+		u64 leaf_num                         : 16;
+		u64 middle_num                       : 16;
+		u64 top_num                          : 16;
+		u64 reserved_48_63                   : 16;
 	} s;
-	/* struct nixx_af_pqx_dbg_arb_link_exp_s cn; */
+	/* struct nixx_af_pl_const_s cn; */
 };
 
-static inline u64 NIXX_AF_PQX_DBG_ARB_LINK_EXP(u64 a)
+static inline u64 NIXX_AF_PL_CONST(void)
 	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_PQX_DBG_ARB_LINK_EXP(u64 a)
+static inline u64 NIXX_AF_PL_CONST(void)
 {
-	return 0xce8 + 0x10000 * a;
+	return 0x58;
 }
 
 /**
- * Register (RVU_PF_BAR0) nix#_af_pq#_dbg_arb_link_nrm
+ * Register (RVU_PF_BAR0) nix#_af_pl_ts
  *
- * INTERNAL: NIX AF PQ Arb Link NORMAL Debug Register
+ * NIX AF Transmit Timestamp Configuration Register
  */
-union nixx_af_pqx_dbg_arb_link_nrm {
+union nixx_af_pl_ts {
 	u64 u;
-	struct nixx_af_pqx_dbg_arb_link_nrm_s {
-		u64 req                              : 1;
-		u64 act_c_con                        : 1;
-		u64 cnt                              : 2;
-		u64 reserved_4_5                     : 2;
-		u64 rr_mask                          : 1;
-		u64 reserved_7_63                    : 57;
+	struct nixx_af_pl_ts_s {
+		u64 pl_div                           : 10;
+		u64 reserved_10_15                   : 6;
+		u64 ts                               : 48;
 	} s;
-	/* struct nixx_af_pqx_dbg_arb_link_nrm_s cn; */
+	/* struct nixx_af_pl_ts_s cn; */
 };
 
-static inline u64 NIXX_AF_PQX_DBG_ARB_LINK_NRM(u64 a)
+static inline u64 NIXX_AF_PL_TS(void)
 	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_PQX_DBG_ARB_LINK_NRM(u64 a)
+static inline u64 NIXX_AF_PL_TS(void)
 {
-	return 0xce0 + 0x10000 * a;
-}
-
-/**
- * Register (RVU_PF_BAR0) nix#_af_pq#_dbg_arb_link_sdp
- *
- * INTERNAL: NIX AF PQ Arb Link SDP Debug Register
- */
-union nixx_af_pqx_dbg_arb_link_sdp {
-	u64 u;
-	struct nixx_af_pqx_dbg_arb_link_sdp_s {
-		u64 req                              : 1;
-		u64 act_c_con                        : 1;
-		u64 cnt                              : 2;
-		u64 reserved_4_5                     : 2;
-		u64 rr_mask                          : 1;
-		u64 reserved_7_63                    : 57;
-	} s;
-	/* struct nixx_af_pqx_dbg_arb_link_sdp_s cn; */
-};
-
-static inline u64 NIXX_AF_PQX_DBG_ARB_LINK_SDP(u64 a)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_PQX_DBG_ARB_LINK_SDP(u64 a)
-{
-	return 0xcf0 + 0x10000 * a;
+	return 0xc8;
 }
 
 /**
@@ -4132,27 +4660,6 @@ static inline u64 NIXX_AF_PQ_ARB_SHAPE_VLD_DBG(void)
 }
 
 /**
- * Register (RVU_PF_BAR0) nix#_af_pq_dbg_arb_0
- *
- * INTERNAL: NIX AF PQ Arb Debug 0 Register
- */
-union nixx_af_pq_dbg_arb_0 {
-	u64 u;
-	struct nixx_af_pq_dbg_arb_0_s {
-		u64 rr_mask_clr                      : 1;
-		u64 reserved_1_63                    : 63;
-	} s;
-	/* struct nixx_af_pq_dbg_arb_0_s cn; */
-};
-
-static inline u64 NIXX_AF_PQ_DBG_ARB_0(void)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_PQ_DBG_ARB_0(void)
-{
-	return 0xcf8;
-}
-
-/**
  * Register (RVU_PF_BAR0) nix#_af_pq_lnk_#_dwrr_msk_dbg
  *
  * INTERNAL: NIX AF PQ_ARB Physical Link DWRR MASK Registers
@@ -4224,16 +4731,12 @@ union nixx_af_pse_bp_test0 {
 	u64 u;
 	struct nixx_af_pse_bp_test0_s {
 		u64 lfsr_freq                        : 12;
-		u64 reserved_12_63                   : 52;
+		u64 reserved_12_19                   : 8;
+		u64 bp_cfg                           : 12;
+		u64 reserved_32_57                   : 26;
+		u64 enable                           : 6;
 	} s;
-	struct nixx_af_pse_bp_test0_cn96xxp1 {
-		u64 lfsr_freq                        : 12;
-		u64 reserved_12_15                   : 4;
-		u64 bp_cfg                           : 8;
-		u64 reserved_24_59                   : 36;
-		u64 enable                           : 4;
-	} cn96xxp1;
-	struct nixx_af_pse_bp_test0_cn96xxp3 {
+	struct nixx_af_pse_bp_test0_cn {
 		u64 lfsr_freq                        : 12;
 		u64 reserved_12_15                   : 4;
 		u64 reserved_16_19                   : 4;
@@ -4241,19 +4744,7 @@ union nixx_af_pse_bp_test0 {
 		u64 reserved_32_55                   : 24;
 		u64 reserved_56_57                   : 2;
 		u64 enable                           : 6;
-	} cn96xxp3;
-	/* struct nixx_af_pse_bp_test0_cn96xxp3 cn98xx; */
-	/* struct nixx_af_pse_bp_test0_cn96xxp1 cnf95xxp1; */
-	struct nixx_af_pse_bp_test0_cnf95xxp2 {
-		u64 lfsr_freq                        : 12;
-		u64 reserved_12_15                   : 4;
-		u64 bp_cfg                           : 8;
-		u64 reserved_24_31                   : 8;
-		u64 reserved_32_55                   : 24;
-		u64 reserved_56_59                   : 4;
-		u64 enable                           : 4;
-	} cnf95xxp2;
-	/* struct nixx_af_pse_bp_test0_cn96xxp3 loki; */
+	} cn;
 };
 
 static inline u64 NIXX_AF_PSE_BP_TEST0(void)
@@ -4274,16 +4765,10 @@ union nixx_af_pse_bp_test1 {
 		u64 lfsr_freq                        : 12;
 		u64 reserved_12_15                   : 4;
 		u64 bp_cfg                           : 10;
-		u64 reserved_26_63                   : 38;
+		u64 reserved_26_58                   : 33;
+		u64 enable                           : 5;
 	} s;
-	struct nixx_af_pse_bp_test1_cn96xxp1 {
-		u64 lfsr_freq                        : 12;
-		u64 reserved_12_15                   : 4;
-		u64 bp_cfg                           : 8;
-		u64 reserved_24_59                   : 36;
-		u64 enable                           : 4;
-	} cn96xxp1;
-	struct nixx_af_pse_bp_test1_cn96xxp3 {
+	struct nixx_af_pse_bp_test1_cn {
 		u64 lfsr_freq                        : 12;
 		u64 reserved_12_15                   : 4;
 		u64 bp_cfg                           : 10;
@@ -4291,19 +4776,7 @@ union nixx_af_pse_bp_test1 {
 		u64 reserved_32_55                   : 24;
 		u64 reserved_56_58                   : 3;
 		u64 enable                           : 5;
-	} cn96xxp3;
-	/* struct nixx_af_pse_bp_test1_cn96xxp3 cn98xx; */
-	/* struct nixx_af_pse_bp_test1_cn96xxp1 cnf95xxp1; */
-	struct nixx_af_pse_bp_test1_cnf95xxp2 {
-		u64 lfsr_freq                        : 12;
-		u64 reserved_12_15                   : 4;
-		u64 bp_cfg                           : 8;
-		u64 reserved_24_31                   : 8;
-		u64 reserved_32_55                   : 24;
-		u64 reserved_56_59                   : 4;
-		u64 enable                           : 4;
-	} cnf95xxp2;
-	/* struct nixx_af_pse_bp_test1_cn96xxp3 loki; */
+	} cn;
 };
 
 static inline u64 NIXX_AF_PSE_BP_TEST1(void)
@@ -4324,16 +4797,10 @@ union nixx_af_pse_bp_test2 {
 		u64 lfsr_freq                        : 12;
 		u64 reserved_12_15                   : 4;
 		u64 bp_cfg                           : 10;
-		u64 reserved_26_63                   : 38;
+		u64 reserved_26_58                   : 33;
+		u64 enable                           : 5;
 	} s;
-	struct nixx_af_pse_bp_test2_cn96xxp1 {
-		u64 lfsr_freq                        : 12;
-		u64 reserved_12_15                   : 4;
-		u64 bp_cfg                           : 8;
-		u64 reserved_24_59                   : 36;
-		u64 enable                           : 4;
-	} cn96xxp1;
-	struct nixx_af_pse_bp_test2_cn96xxp3 {
+	struct nixx_af_pse_bp_test2_cn {
 		u64 lfsr_freq                        : 12;
 		u64 reserved_12_15                   : 4;
 		u64 bp_cfg                           : 10;
@@ -4341,19 +4808,7 @@ union nixx_af_pse_bp_test2 {
 		u64 reserved_32_55                   : 24;
 		u64 reserved_56_58                   : 3;
 		u64 enable                           : 5;
-	} cn96xxp3;
-	/* struct nixx_af_pse_bp_test2_cn96xxp3 cn98xx; */
-	/* struct nixx_af_pse_bp_test2_cn96xxp1 cnf95xxp1; */
-	struct nixx_af_pse_bp_test2_cnf95xxp2 {
-		u64 lfsr_freq                        : 12;
-		u64 reserved_12_15                   : 4;
-		u64 bp_cfg                           : 8;
-		u64 reserved_24_31                   : 8;
-		u64 reserved_32_55                   : 24;
-		u64 reserved_56_59                   : 4;
-		u64 enable                           : 4;
-	} cnf95xxp2;
-	/* struct nixx_af_pse_bp_test2_cn96xxp3 loki; */
+	} cn;
 };
 
 static inline u64 NIXX_AF_PSE_BP_TEST2(void)
@@ -4374,16 +4829,10 @@ union nixx_af_pse_bp_test3 {
 		u64 lfsr_freq                        : 12;
 		u64 reserved_12_15                   : 4;
 		u64 bp_cfg                           : 10;
-		u64 reserved_26_63                   : 38;
+		u64 reserved_26_58                   : 33;
+		u64 enable                           : 5;
 	} s;
-	struct nixx_af_pse_bp_test3_cn96xxp1 {
-		u64 lfsr_freq                        : 12;
-		u64 reserved_12_15                   : 4;
-		u64 bp_cfg                           : 8;
-		u64 reserved_24_59                   : 36;
-		u64 enable                           : 4;
-	} cn96xxp1;
-	struct nixx_af_pse_bp_test3_cn96xxp3 {
+	struct nixx_af_pse_bp_test3_cn {
 		u64 lfsr_freq                        : 12;
 		u64 reserved_12_15                   : 4;
 		u64 bp_cfg                           : 10;
@@ -4391,19 +4840,7 @@ union nixx_af_pse_bp_test3 {
 		u64 reserved_32_55                   : 24;
 		u64 reserved_56_58                   : 3;
 		u64 enable                           : 5;
-	} cn96xxp3;
-	/* struct nixx_af_pse_bp_test3_cn96xxp3 cn98xx; */
-	/* struct nixx_af_pse_bp_test3_cn96xxp1 cnf95xxp1; */
-	struct nixx_af_pse_bp_test3_cnf95xxp2 {
-		u64 lfsr_freq                        : 12;
-		u64 reserved_12_15                   : 4;
-		u64 bp_cfg                           : 8;
-		u64 reserved_24_31                   : 8;
-		u64 reserved_32_55                   : 24;
-		u64 reserved_56_59                   : 4;
-		u64 enable                           : 4;
-	} cnf95xxp2;
-	/* struct nixx_af_pse_bp_test3_cn96xxp3 loki; */
+	} cn;
 };
 
 static inline u64 NIXX_AF_PSE_BP_TEST3(void)
@@ -4479,27 +4916,24 @@ static inline u64 NIXX_AF_PSE_ECO(void)
 }
 
 /**
- * Register (RVU_PF_BAR0) nix#_af_pse_expr_bp_test
+ * Register (RVU_PF_BAR0) nix#_af_pse_misc
  *
- * INTERNAL: NIX AF PSE Express Backpressure Test Register  Internal:
- * 802.3br frame preemption/express path is defeatured.
+ * INTERNAL: NIX AF PSE MISC Register
  */
-union nixx_af_pse_expr_bp_test {
+union nixx_af_pse_misc {
 	u64 u;
-	struct nixx_af_pse_expr_bp_test_s {
-		u64 lfsr_freq                        : 12;
-		u64 reserved_12_15                   : 4;
-		u64 bp_cfg                           : 32;
-		u64 enable                           : 16;
+	struct nixx_af_pse_misc_s {
+		u64 sclk_cnt_100mhz                  : 13;
+		u64 reserved_13_63                   : 51;
 	} s;
-	/* struct nixx_af_pse_expr_bp_test_s cn; */
+	/* struct nixx_af_pse_misc_s cn; */
 };
 
-static inline u64 NIXX_AF_PSE_EXPR_BP_TEST(void)
+static inline u64 NIXX_AF_PSE_MISC(void)
 	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_PSE_EXPR_BP_TEST(void)
+static inline u64 NIXX_AF_PSE_MISC(void)
 {
-	return 0x890;
+	return 0x820;
 }
 
 /**
@@ -4512,25 +4946,11 @@ union nixx_af_pse_norm_bp_test {
 	struct nixx_af_pse_norm_bp_test_s {
 		u64 lfsr_freq                        : 12;
 		u64 reserved_12_15                   : 4;
-		u64 bp_cfg                           : 32;
-		u64 reserved_48_63                   : 16;
-	} s;
-	struct nixx_af_pse_norm_bp_test_cn96xxp1 {
-		u64 lfsr_freq                        : 12;
-		u64 reserved_12_15                   : 4;
-		u64 bp_cfg                           : 32;
-		u64 enable                           : 16;
-	} cn96xxp1;
-	struct nixx_af_pse_norm_bp_test_cn96xxp3 {
-		u64 lfsr_freq                        : 12;
-		u64 reserved_12_15                   : 4;
 		u64 bp_cfg                           : 12;
 		u64 reserved_28_57                   : 30;
 		u64 enable                           : 6;
-	} cn96xxp3;
-	/* struct nixx_af_pse_norm_bp_test_cn96xxp3 cn98xx; */
-	/* struct nixx_af_pse_norm_bp_test_cn96xxp1 cnf95xx; */
-	/* struct nixx_af_pse_norm_bp_test_cn96xxp3 loki; */
+	} s;
+	/* struct nixx_af_pse_norm_bp_test_s cn; */
 };
 
 static inline u64 NIXX_AF_PSE_NORM_BP_TEST(void)
@@ -4918,7 +5338,8 @@ union nixx_af_rx_bpidx_status {
 	u64 u;
 	struct nixx_af_rx_bpidx_status_s {
 		u64 aura_cnt                         : 32;
-		u64 cq_cnt                           : 32;
+		u64 cq_cnt                           : 28;
+		u64 cpt_cnt                          : 4;
 	} s;
 	/* struct nixx_af_rx_bpidx_status_s cn; */
 };
@@ -4985,7 +5406,12 @@ union nixx_af_rx_cptx_credit {
 	u64 u;
 	struct nixx_af_rx_cptx_credit_s {
 		u64 inst_cred_cnt                    : 22;
-		u64 reserved_22_63                   : 42;
+		u64 bpid                             : 9;
+		u64 reserved_31                      : 1;
+		u64 inst_credit_th                   : 22;
+		u64 reserved_54_55                   : 2;
+		u64 hysteresis                       : 6;
+		u64 reserved_62_63                   : 2;
 	} s;
 	/* struct nixx_af_rx_cptx_credit_s cn; */
 };
@@ -5016,7 +5442,8 @@ union nixx_af_rx_cptx_inst_qsel {
 	struct nixx_af_rx_cptx_inst_qsel_s {
 		u64 slot                             : 8;
 		u64 pf_func                          : 16;
-		u64 reserved_24_63                   : 40;
+		u64 block                            : 5;
+		u64 reserved_29_63                   : 35;
 	} s;
 	/* struct nixx_af_rx_cptx_inst_qsel_s cn; */
 };
@@ -5026,6 +5453,164 @@ static inline u64 NIXX_AF_RX_CPTX_INST_QSEL(u64 a)
 static inline u64 NIXX_AF_RX_CPTX_INST_QSEL(u64 a)
 {
 	return 0x320 + 8 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_rx_def_chi#
+ *
+ * INTERNAL: NIX AF Receive CHI Header Definition Registers
+ */
+union nixx_af_rx_def_chix {
+	u64 u;
+	struct nixx_af_rx_def_chix_s {
+		u64 ltype_mask                       : 4;
+		u64 ltype_match                      : 4;
+		u64 lid                              : 3;
+		u64 reserved_11                      : 1;
+		u64 aoffset                          : 3;
+		u64 reserved_15_63                   : 49;
+	} s;
+	/* struct nixx_af_rx_def_chix_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_DEF_CHIX(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_DEF_CHIX(u64 a)
+{
+	return 0x2c0 + 8 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_rx_def_cst_apad_0
+ *
+ * NIX AF Receive Custom Alignment Pad 0 Register This register used in
+ * alignment padding algorithm, having highest priority.
+ */
+union nixx_af_rx_def_cst_apad_0 {
+	u64 u;
+	struct nixx_af_rx_def_cst_apad_0_s {
+		u64 ltype_mask                       : 4;
+		u64 ltype_match                      : 4;
+		u64 lid                              : 3;
+		u64 valid                            : 1;
+		u64 reserved_12_63                   : 52;
+	} s;
+	/* struct nixx_af_rx_def_cst_apad_0_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_DEF_CST_APAD_0(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_DEF_CST_APAD_0(void)
+{
+	return 0x298;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_rx_def_cst_apad_1
+ *
+ * NIX AF Receive Custom Alignment Pad 1 Register This register is used
+ * in alignment padding algorithm, having lower prioirty than
+ * NIX_AF_RX_DEF_CST_APAD_0, but higher priority than
+ * NIX_AF_RX_DEF_OIP4/OIP6/IIP6.
+ */
+union nixx_af_rx_def_cst_apad_1 {
+	u64 u;
+	struct nixx_af_rx_def_cst_apad_1_s {
+		u64 ltype_mask                       : 4;
+		u64 ltype_match                      : 4;
+		u64 lid                              : 3;
+		u64 valid                            : 1;
+		u64 reserved_12_63                   : 52;
+	} s;
+	/* struct nixx_af_rx_def_cst_apad_1_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_DEF_CST_APAD_1(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_DEF_CST_APAD_1(void)
+{
+	return 0x2a8;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_rx_def_et#
+ *
+ * NIX AF Receive Ehtertype Definition Registers Defines layer
+ * information in NPC_RESULT_S to identify the Ethertype location in L2
+ * header. Used for Ethertype overwriting in inline IPsec flow.
+ */
+union nixx_af_rx_def_etx {
+	u64 u;
+	struct nixx_af_rx_def_etx_s {
+		u64 ltype_mask                       : 4;
+		u64 ltype_match                      : 4;
+		u64 lid                              : 3;
+		u64 valid                            : 1;
+		u64 offset                           : 6;
+		u64 reserved_18_63                   : 46;
+	} s;
+	/* struct nixx_af_rx_def_etx_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_DEF_ETX(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_DEF_ETX(u64 a)
+{
+	return 0x1f0 + 8 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_rx_def_gen0_color
+ *
+ * NIX AF Receive Genric Color Definition Register This register
+ * specifies how to identify a generic field, so it can be extracted for
+ * pre color determination.
+ */
+union nixx_af_rx_def_gen0_color {
+	u64 u;
+	struct nixx_af_rx_def_gen0_color_s {
+		u64 ltype_mask                       : 4;
+		u64 ltype_match                      : 4;
+		u64 lid                              : 3;
+		u64 noffset                          : 1;
+		u64 offset                           : 6;
+		u64 reserved_18_63                   : 46;
+	} s;
+	/* struct nixx_af_rx_def_gen0_color_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_DEF_GEN0_COLOR(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_DEF_GEN0_COLOR(void)
+{
+	return 0x208;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_rx_def_gen1_color
+ *
+ * NIX AF Receive Genric Color Definition Register This register
+ * specifies how to identify a generic field, so it can be extracted for
+ * pre color determination.
+ */
+union nixx_af_rx_def_gen1_color {
+	u64 u;
+	struct nixx_af_rx_def_gen1_color_s {
+		u64 ltype_mask                       : 4;
+		u64 ltype_match                      : 4;
+		u64 lid                              : 3;
+		u64 noffset                          : 1;
+		u64 offset                           : 6;
+		u64 reserved_18_63                   : 46;
+	} s;
+	/* struct nixx_af_rx_def_gen1_color_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_DEF_GEN1_COLOR(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_DEF_GEN1_COLOR(void)
+{
+	return 0x218;
 }
 
 /**
@@ -5054,6 +5639,33 @@ static inline u64 NIXX_AF_RX_DEF_IIP4(void)
 }
 
 /**
+ * Register (RVU_PF_BAR0) nix#_af_rx_def_iip4_dscp
+ *
+ * NIX AF Receive Inner IPv4 DSCP Definition Register This register
+ * specifies how to identify inner IPv4 DSCP field, so it can be
+ * extracted for pre color determination.
+ */
+union nixx_af_rx_def_iip4_dscp {
+	u64 u;
+	struct nixx_af_rx_def_iip4_dscp_s {
+		u64 ltype_mask                       : 4;
+		u64 ltype_match                      : 4;
+		u64 lid                              : 3;
+		u64 noffset                          : 1;
+		u64 offset                           : 6;
+		u64 reserved_18_63                   : 46;
+	} s;
+	/* struct nixx_af_rx_def_iip4_dscp_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_DEF_IIP4_DSCP(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_DEF_IIP4_DSCP(void)
+{
+	return 0x2e0;
+}
+
+/**
  * Register (RVU_PF_BAR0) nix#_af_rx_def_iip6
  *
  * NIX AF Receive Inner IPv6 Header Definition Register Defines layer
@@ -5078,10 +5690,39 @@ static inline u64 NIXX_AF_RX_DEF_IIP6(void)
 }
 
 /**
+ * Register (RVU_PF_BAR0) nix#_af_rx_def_iip6_dscp
+ *
+ * NIX AF Receive Inner IPv6 DSCP Definition Register This register
+ * specifies how to identify inner IPv4 DSCP field, so it can be
+ * extracted for pre color determination.
+ */
+union nixx_af_rx_def_iip6_dscp {
+	u64 u;
+	struct nixx_af_rx_def_iip6_dscp_s {
+		u64 ltype_mask                       : 4;
+		u64 ltype_match                      : 4;
+		u64 lid                              : 3;
+		u64 noffset                          : 1;
+		u64 offset                           : 6;
+		u64 reserved_18_63                   : 46;
+	} s;
+	/* struct nixx_af_rx_def_iip6_dscp_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_DEF_IIP6_DSCP(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_DEF_IIP6_DSCP(void)
+{
+	return 0x2f0;
+}
+
+/**
  * Register (RVU_PF_BAR0) nix#_af_rx_def_ipsec#
  *
- * INTERNAL: NIX AF Receive IPSEC Header Definition Registers  Internal:
- * Not used; no IPSEC fast-path.
+ * NIX AF Receive IPSEC Header Definition Registers These two registers
+ * define layer information in NPC_RESULT_S to identify an IPSEC header
+ * for up to two IPSEC packet formats. The two formats are typically
+ * IPSEC ESP (RFC 4303) and UDP-encapsulated IPSEC ESP (RFC 3948).
  */
 union nixx_af_rx_def_ipsecx {
 	u64 u;
@@ -5202,6 +5843,33 @@ static inline u64 NIXX_AF_RX_DEF_OIP4(void)
 }
 
 /**
+ * Register (RVU_PF_BAR0) nix#_af_rx_def_oip4_dscp
+ *
+ * NIX AF Receive Outer IPv4 DSCP Definition Register This register
+ * specifies how to identify outer IPv4 DSCP field, so it can be
+ * extracted for pre color determination.
+ */
+union nixx_af_rx_def_oip4_dscp {
+	u64 u;
+	struct nixx_af_rx_def_oip4_dscp_s {
+		u64 ltype_mask                       : 4;
+		u64 ltype_match                      : 4;
+		u64 lid                              : 3;
+		u64 noffset                          : 1;
+		u64 offset                           : 6;
+		u64 reserved_18_63                   : 46;
+	} s;
+	/* struct nixx_af_rx_def_oip4_dscp_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_DEF_OIP4_DSCP(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_DEF_OIP4_DSCP(void)
+{
+	return 0x2e8;
+}
+
+/**
  * Register (RVU_PF_BAR0) nix#_af_rx_def_oip6
  *
  * NIX AF Receive Outer IPv6 Header Definition Register Defines layer
@@ -5224,6 +5892,33 @@ static inline u64 NIXX_AF_RX_DEF_OIP6(void)
 static inline u64 NIXX_AF_RX_DEF_OIP6(void)
 {
 	return 0x230;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_rx_def_oip6_dscp
+ *
+ * NIX AF Receive Outer IPv6 DSCP Definition Register This register
+ * specifies how to identify outer IPv6 DSCP field, so it can be
+ * extracted for pre color determination.
+ */
+union nixx_af_rx_def_oip6_dscp {
+	u64 u;
+	struct nixx_af_rx_def_oip6_dscp_s {
+		u64 ltype_mask                       : 4;
+		u64 ltype_match                      : 4;
+		u64 lid                              : 3;
+		u64 noffset                          : 1;
+		u64 offset                           : 6;
+		u64 reserved_18_63                   : 46;
+	} s;
+	/* struct nixx_af_rx_def_oip6_dscp_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_DEF_OIP6_DSCP(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_DEF_OIP6_DSCP(void)
+{
+	return 0x2f8;
 }
 
 /**
@@ -5324,6 +6019,60 @@ static inline u64 NIXX_AF_RX_DEF_OUDP(void)
 }
 
 /**
+ * Register (RVU_PF_BAR0) nix#_af_rx_def_vlan0_pcp_dei
+ *
+ * NIX AF Receive VLAN0 PCP and DEI Definition Register This register
+ * specifies how to identify VLAN0 PCP and DEI fields, so they can be
+ * extracted for pre color determination.
+ */
+union nixx_af_rx_def_vlan0_pcp_dei {
+	u64 u;
+	struct nixx_af_rx_def_vlan0_pcp_dei_s {
+		u64 ltype_mask                       : 4;
+		u64 ltype_match                      : 4;
+		u64 lid                              : 3;
+		u64 noffset                          : 1;
+		u64 offset                           : 6;
+		u64 reserved_18_63                   : 46;
+	} s;
+	/* struct nixx_af_rx_def_vlan0_pcp_dei_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_DEF_VLAN0_PCP_DEI(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_DEF_VLAN0_PCP_DEI(void)
+{
+	return 0x228;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_rx_def_vlan1_pcp_dei
+ *
+ * NIX AF Receive VLAN0 PCP and DEI Definition Register This register
+ * specifies how to identify VLAN1 PCP and DEI fields, so they can be
+ * extracted for pre color determination.
+ */
+union nixx_af_rx_def_vlan1_pcp_dei {
+	u64 u;
+	struct nixx_af_rx_def_vlan1_pcp_dei_s {
+		u64 ltype_mask                       : 4;
+		u64 ltype_match                      : 4;
+		u64 lid                              : 3;
+		u64 noffset                          : 1;
+		u64 offset                           : 6;
+		u64 reserved_18_63                   : 46;
+	} s;
+	/* struct nixx_af_rx_def_vlan1_pcp_dei_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_DEF_VLAN1_PCP_DEI(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_DEF_VLAN1_PCP_DEI(void)
+{
+	return 0x238;
+}
+
+/**
  * Register (RVU_PF_BAR0) nix#_af_rx_flow_key_alg#_field#
  *
  * NIX AF Receive Flow Key Algorithm Field Registers A flow key algorithm
@@ -5366,8 +6115,9 @@ static inline u64 NIXX_AF_RX_FLOW_KEY_ALGX_FIELDX(u64 a, u64 b)
 /**
  * Register (RVU_PF_BAR0) nix#_af_rx_ipsec_gen_cfg
  *
- * INTERNAL: NIX AF Receive IPSEC General Configuration Register
- * Internal: Not used; no IPSEC fast-path.
+ * NIX AF Receive IPSEC General Configuration Register This register
+ * specifies the values of certain fields in CPT instructions
+ * (CPT_INST_S) generated by NIX for IPSEC hardware fast-path packets.
  */
 union nixx_af_rx_ipsec_gen_cfg {
 	u64 u;
@@ -5376,7 +6126,8 @@ union nixx_af_rx_ipsec_gen_cfg {
 		u64 param1                           : 16;
 		u64 opcode                           : 16;
 		u64 egrp                             : 3;
-		u64 reserved_51_63                   : 13;
+		u64 ctx_val                          : 1;
+		u64 reserved_52_63                   : 12;
 	} s;
 	/* struct nixx_af_rx_ipsec_gen_cfg_s cn; */
 };
@@ -5386,6 +6137,33 @@ static inline u64 NIXX_AF_RX_IPSEC_GEN_CFG(void)
 static inline u64 NIXX_AF_RX_IPSEC_GEN_CFG(void)
 {
 	return 0x300;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_rx_ipsec_vwqe_gen_cfg
+ *
+ * NIX AF Receive IPSEC VWQE General Configuration Register This register
+ * specifies the values of certain fields in CPT instructions
+ * (CPT_INST_S) generated by NIX for IPSEC VWQE hardware fast-path
+ * packets.
+ */
+union nixx_af_rx_ipsec_vwqe_gen_cfg {
+	u64 u;
+	struct nixx_af_rx_ipsec_vwqe_gen_cfg_s {
+		u64 param2                           : 16;
+		u64 param1                           : 16;
+		u64 opcode                           : 16;
+		u64 egrp                             : 3;
+		u64 reserved_51_63                   : 13;
+	} s;
+	/* struct nixx_af_rx_ipsec_vwqe_gen_cfg_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_IPSEC_VWQE_GEN_CFG(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_IPSEC_VWQE_GEN_CFG(void)
+{
+	return 0x310;
 }
 
 /**
@@ -5462,6 +6240,28 @@ static inline u64 NIXX_AF_RX_LINKX_WRR_CFG(u64 a)
 static inline u64 NIXX_AF_RX_LINKX_WRR_CFG(u64 a)
 {
 	return 0x560 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_rx_link#_wrr_out_cfg
+ *
+ * NIX AF NCB write link Weighted Round Robin Configuration Registers
+ * Index enumerated by NIX_LINK_E.
+ */
+union nixx_af_rx_linkx_wrr_out_cfg {
+	u64 u;
+	struct nixx_af_rx_linkx_wrr_out_cfg_s {
+		u64 weight                           : 8;
+		u64 reserved_8_63                    : 56;
+	} s;
+	/* struct nixx_af_rx_linkx_wrr_out_cfg_s cn; */
+};
+
+static inline u64 NIXX_AF_RX_LINKX_WRR_OUT_CFG(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_RX_LINKX_WRR_OUT_CFG(u64 a)
+{
+	return 0x4a00 + 0x10000 * a;
 }
 
 /**
@@ -5555,33 +6355,7 @@ union nixx_af_rx_mcast_buf_cfg {
 		u64 busy                             : 1;
 		u64 ena                              : 1;
 	} s;
-	struct nixx_af_rx_mcast_buf_cfg_cn96xxp1 {
-		u64 size                             : 4;
-		u64 way_mask                         : 16;
-		u64 caching                          : 1;
-		u64 reserved_21_23                   : 3;
-		u64 npc_replay_pkind                 : 6;
-		u64 reserved_30_31                   : 2;
-		u64 free_buf_level                   : 11;
-		u64 reserved_43_61                   : 19;
-		u64 reserved_62                      : 1;
-		u64 ena                              : 1;
-	} cn96xxp1;
-	/* struct nixx_af_rx_mcast_buf_cfg_s cn96xxp3; */
-	/* struct nixx_af_rx_mcast_buf_cfg_s cn98xx; */
-	struct nixx_af_rx_mcast_buf_cfg_cnf95xxp1 {
-		u64 size                             : 4;
-		u64 way_mask                         : 16;
-		u64 caching                          : 1;
-		u64 reserved_21_23                   : 3;
-		u64 npc_replay_pkind                 : 6;
-		u64 reserved_30_31                   : 2;
-		u64 free_buf_level                   : 11;
-		u64 reserved_43_62                   : 20;
-		u64 ena                              : 1;
-	} cnf95xxp1;
-	/* struct nixx_af_rx_mcast_buf_cfg_s cnf95xxp2; */
-	/* struct nixx_af_rx_mcast_buf_cfg_s loki; */
+	/* struct nixx_af_rx_mcast_buf_cfg_s cn; */
 };
 
 static inline u64 NIXX_AF_RX_MCAST_BUF_CFG(void)
@@ -5667,33 +6441,7 @@ union nixx_af_rx_mirror_buf_cfg {
 		u64 busy                             : 1;
 		u64 ena                              : 1;
 	} s;
-	struct nixx_af_rx_mirror_buf_cfg_cn96xxp1 {
-		u64 size                             : 4;
-		u64 way_mask                         : 16;
-		u64 caching                          : 1;
-		u64 reserved_21_23                   : 3;
-		u64 npc_replay_pkind                 : 6;
-		u64 reserved_30_31                   : 2;
-		u64 free_buf_level                   : 11;
-		u64 reserved_43_61                   : 19;
-		u64 reserved_62                      : 1;
-		u64 ena                              : 1;
-	} cn96xxp1;
-	/* struct nixx_af_rx_mirror_buf_cfg_s cn96xxp3; */
-	/* struct nixx_af_rx_mirror_buf_cfg_s cn98xx; */
-	struct nixx_af_rx_mirror_buf_cfg_cnf95xxp1 {
-		u64 size                             : 4;
-		u64 way_mask                         : 16;
-		u64 caching                          : 1;
-		u64 reserved_21_23                   : 3;
-		u64 npc_replay_pkind                 : 6;
-		u64 reserved_30_31                   : 2;
-		u64 free_buf_level                   : 11;
-		u64 reserved_43_62                   : 20;
-		u64 ena                              : 1;
-	} cnf95xxp1;
-	/* struct nixx_af_rx_mirror_buf_cfg_s cnf95xxp2; */
-	/* struct nixx_af_rx_mirror_buf_cfg_s loki; */
+	/* struct nixx_af_rx_mirror_buf_cfg_s cn; */
 };
 
 static inline u64 NIXX_AF_RX_MIRROR_BUF_CFG(void)
@@ -5833,6 +6581,30 @@ static inline u64 NIXX_AF_SDP_HW_XOFFX(u64 a)
 }
 
 /**
+ * Register (RVU_PF_BAR0) nix#_af_sdp_link_cdt_adj
+ *
+ * NIX AF Transmit Link SDP Credit Delta Register This register tracks
+ * SDP link credits.
+ */
+union nixx_af_sdp_link_cdt_adj {
+	u64 u;
+	struct nixx_af_sdp_link_cdt_adj_s {
+		u64 reserved_0_1                     : 2;
+		u64 cc_packet_cnt_adj                : 10;
+		u64 cc_unit_cnt_adj                  : 20;
+		u64 reserved_32_63                   : 32;
+	} s;
+	/* struct nixx_af_sdp_link_cdt_adj_s cn; */
+};
+
+static inline u64 NIXX_AF_SDP_LINK_CDT_ADJ(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_SDP_LINK_CDT_ADJ(void)
+{
+	return 0xa50;
+}
+
+/**
  * Register (RVU_PF_BAR0) nix#_af_sdp_link_credit
  *
  * NIX AF Transmit Link SDP Credit Register This register tracks SDP link
@@ -5845,20 +6617,16 @@ union nixx_af_sdp_link_credit {
 		u64 cc_enable                        : 1;
 		u64 cc_packet_cnt                    : 10;
 		u64 cc_unit_cnt                      : 20;
-		u64 reserved_32_62                   : 31;
-		u64 pse_pkt_id_lmt                   : 1;
+		u64 reserved_32_63                   : 32;
 	} s;
-	struct nixx_af_sdp_link_credit_cn96xx {
+	struct nixx_af_sdp_link_credit_cn {
 		u64 reserved_0                       : 1;
 		u64 cc_enable                        : 1;
 		u64 cc_packet_cnt                    : 10;
 		u64 cc_unit_cnt                      : 20;
 		u64 reserved_32_62                   : 31;
 		u64 reserved_63                      : 1;
-	} cn96xx;
-	/* struct nixx_af_sdp_link_credit_cn96xx cn98xx; */
-	/* struct nixx_af_sdp_link_credit_s cnf95xx; */
-	/* struct nixx_af_sdp_link_credit_cn96xx loki; */
+	} cn;
 };
 
 static inline u64 NIXX_AF_SDP_LINK_CREDIT(void)
@@ -5866,28 +6634,6 @@ static inline u64 NIXX_AF_SDP_LINK_CREDIT(void)
 static inline u64 NIXX_AF_SDP_LINK_CREDIT(void)
 {
 	return 0xa40;
-}
-
-/**
- * Register (RVU_PF_BAR0) nix#_af_sdp_sw_xoff#
- *
- * INTERNAL: NIX AF SDP Transmit Link Software Controlled XOFF Registers
- * Internal: Defeatured registers. Software should use
- * NIX_AF_TL4()_SW_XOFF registers instead.
- */
-union nixx_af_sdp_sw_xoffx {
-	u64 u;
-	struct nixx_af_sdp_sw_xoffx_s {
-		u64 chan_xoff                        : 64;
-	} s;
-	/* struct nixx_af_sdp_sw_xoffx_s cn; */
-};
-
-static inline u64 NIXX_AF_SDP_SW_XOFFX(u64 a)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_SDP_SW_XOFFX(u64 a)
-{
-	return 0xa60 + 8 * a;
 }
 
 /**
@@ -5899,8 +6645,8 @@ static inline u64 NIXX_AF_SDP_SW_XOFFX(u64 a)
 union nixx_af_sdp_tx_fifo_status {
 	u64 u;
 	struct nixx_af_sdp_tx_fifo_status_s {
-		u64 count                            : 12;
-		u64 reserved_12_63                   : 52;
+		u64 count                            : 13;
+		u64 reserved_13_63                   : 51;
 	} s;
 	/* struct nixx_af_sdp_tx_fifo_status_s cn; */
 };
@@ -6089,7 +6835,8 @@ union nixx_af_smqx_cfg {
 		u64 flush                            : 1;
 		u64 enq_xoff                         : 1;
 		u64 pri_thr                          : 6;
-		u64 reserved_57_63                   : 7;
+		u64 sdp                              : 1;
+		u64 reserved_58_63                   : 6;
 	} s;
 	/* struct nixx_af_smqx_cfg_s cn; */
 };
@@ -6274,49 +7021,42 @@ union nixx_af_sqm_dbg_ctl_status {
 		u64 tm2                              : 1;
 		u64 tm3                              : 4;
 		u64 tm4                              : 1;
-		u64 tm5                              : 1;
-		u64 tm6                              : 1;
+		u64 reserved_14_15                   : 2;
 		u64 tm7                              : 4;
 		u64 tm8                              : 1;
 		u64 tm9                              : 1;
 		u64 tm10                             : 1;
 		u64 tm11                             : 1;
-		u64 tm12                             : 1;
-		u64 tm13                             : 1;
-		u64 reserved_26_63                   : 38;
-	} s;
-	struct nixx_af_sqm_dbg_ctl_status_cn96xxp1 {
-		u64 tm1                              : 8;
-		u64 tm2                              : 1;
-		u64 tm3                              : 4;
-		u64 tm4                              : 1;
-		u64 tm5                              : 1;
-		u64 tm6                              : 1;
-		u64 tm7                              : 4;
-		u64 tm8                              : 1;
-		u64 tm9                              : 1;
-		u64 reserved_22_63                   : 42;
-	} cn96xxp1;
-	/* struct nixx_af_sqm_dbg_ctl_status_s cn96xxp3; */
-	/* struct nixx_af_sqm_dbg_ctl_status_s cn98xx; */
-	/* struct nixx_af_sqm_dbg_ctl_status_cn96xxp1 cnf95xxp1; */
-	struct nixx_af_sqm_dbg_ctl_status_cnf95xxp2 {
-		u64 tm1                              : 8;
-		u64 tm2                              : 1;
-		u64 tm3                              : 4;
-		u64 tm4                              : 1;
-		u64 tm5                              : 1;
-		u64 tm6                              : 1;
-		u64 tm7                              : 4;
-		u64 tm8                              : 1;
-		u64 tm9                              : 1;
-		u64 reserved_22                      : 1;
-		u64 reserved_23                      : 1;
 		u64 reserved_24                      : 1;
-		u64 reserved_25                      : 1;
-		u64 reserved_26_63                   : 38;
-	} cnf95xxp2;
-	/* struct nixx_af_sqm_dbg_ctl_status_s loki; */
+		u64 tm13                             : 1;
+		u64 tm14                             : 1;
+		u64 tm15                             : 1;
+		u64 tm16                             : 1;
+		u64 tm17                             : 1;
+		u64 tm18                             : 1;
+		u64 reserved_31_63                   : 33;
+	} s;
+	struct nixx_af_sqm_dbg_ctl_status_cn {
+		u64 tm1                              : 8;
+		u64 tm2                              : 1;
+		u64 tm3                              : 4;
+		u64 tm4                              : 1;
+		u64 reserved_14                      : 1;
+		u64 reserved_15                      : 1;
+		u64 tm7                              : 4;
+		u64 tm8                              : 1;
+		u64 tm9                              : 1;
+		u64 tm10                             : 1;
+		u64 tm11                             : 1;
+		u64 reserved_24                      : 1;
+		u64 tm13                             : 1;
+		u64 tm14                             : 1;
+		u64 tm15                             : 1;
+		u64 tm16                             : 1;
+		u64 tm17                             : 1;
+		u64 tm18                             : 1;
+		u64 reserved_31_63                   : 33;
+	} cn;
 };
 
 static inline u64 NIXX_AF_SQM_DBG_CTL_STATUS(void)
@@ -6344,6 +7084,29 @@ static inline u64 NIXX_AF_SQM_ECO(void)
 static inline u64 NIXX_AF_SQM_ECO(void)
 {
 	return 0x5b0;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_sqm_sclk_cnt
+ *
+ * NIX AF SQM Sclk Count Register This is a debug register to be used for
+ * testing latency feature
+ */
+union nixx_af_sqm_sclk_cnt {
+	u64 u;
+	struct nixx_af_sqm_sclk_cnt_s {
+		u64 sclk_cnt                         : 30;
+		u64 div_cnt                          : 8;
+		u64 reserved_38_63                   : 26;
+	} s;
+	/* struct nixx_af_sqm_sclk_cnt_s cn; */
+};
+
+static inline u64 NIXX_AF_SQM_SCLK_CNT(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_SQM_SCLK_CNT(void)
+{
+	return 0x780;
 }
 
 /**
@@ -6408,9 +7171,9 @@ union nixx_af_tl1x_cir {
 		u64 rate_exponent                    : 4;
 		u64 rate_divider_exponent            : 4;
 		u64 reserved_17_28                   : 12;
-		u64 burst_mantissa                   : 8;
+		u64 burst_mantissa                   : 15;
 		u64 burst_exponent                   : 4;
-		u64 reserved_41_63                   : 23;
+		u64 reserved_48_63                   : 16;
 	} s;
 	/* struct nixx_af_tl1x_cir_s cn; */
 };
@@ -6538,33 +7301,25 @@ static inline u64 NIXX_AF_TL1X_GREEN_PACKETS(u64 a)
  * Register (RVU_PF_BAR0) nix#_af_tl1#_md_debug0
  *
  * NIX AF Transmit Level 1 Meta Descriptor Debug 0 Registers
- * NIX_AF_TL1()_MD_DEBUG0, NIX_AF_TL1()_MD_DEBUG1, NIX_AF_TL1()_MD_DEBUG2
- * and NIX_AF_TL1()_MD_DEBUG3 provide access to the TLn queue meta
- * descriptor. A TLn queue can hold up to two packet meta descriptors
- * (PMD) and one flush meta descriptor (FMD): * PMD0 state is accessed
- * with [PMD0_VLD], [PMD0_LENGTH] and NIX_AF_TL1()_MD_DEBUG1. * PMD1 is
- * accessed with [PMD1_VLD], [PMD1_LENGTH] and NIX_AF_TL1()_MD_DEBUG2. *
- * FMD is accessed with NIX_AF_TL1()_MD_DEBUG3.
+ * NIX_AF_TL1()_MD_DEBUG0, NIX_AF_TL1()_MD_DEBUG1 provide access to the
+ * TLn queue meta descriptor. A TLn queue can hold up to two packet meta
+ * descriptors (PMD) and one flush meta descriptor (FMD): * PMD0 state is
+ * accessed with [PMD0_VLD], [PMD0_LENGTH] and NIX_AF_TL1()_MD_DEBUG1.
  */
 union nixx_af_tl1x_md_debug0 {
 	u64 u;
 	struct nixx_af_tl1x_md_debug0_s {
 		u64 pmd0_length                      : 16;
-		u64 pmd1_length                      : 16;
+		u64 reserved_16_31                   : 16;
 		u64 pmd0_vld                         : 1;
-		u64 pmd1_vld                         : 1;
-		u64 reserved_34_45                   : 12;
-		u64 drain_pri                        : 1;
-		u64 drain                            : 1;
+		u64 reserved_33_47                   : 15;
 		u64 c_con                            : 1;
 		u64 p_con                            : 1;
 		u64 reserved_50_51                   : 2;
 		u64 child                            : 10;
-		u64 reserved_62                      : 1;
-		u64 pmd_count                        : 1;
+		u64 reserved_62_63                   : 2;
 	} s;
-	/* struct nixx_af_tl1x_md_debug0_s cn96xxp1; */
-	struct nixx_af_tl1x_md_debug0_cn96xxp3 {
+	struct nixx_af_tl1x_md_debug0_cn {
 		u64 pmd0_length                      : 16;
 		u64 reserved_16_31                   : 16;
 		u64 pmd0_vld                         : 1;
@@ -6578,10 +7333,7 @@ union nixx_af_tl1x_md_debug0 {
 		u64 child                            : 10;
 		u64 reserved_62                      : 1;
 		u64 reserved_63                      : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl1x_md_debug0_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl1x_md_debug0_s cnf95xx; */
-	/* struct nixx_af_tl1x_md_debug0_cn96xxp3 loki; */
+	} cn;
 };
 
 static inline u64 NIXX_AF_TL1X_MD_DEBUG0(u64 a)
@@ -6605,57 +7357,19 @@ union nixx_af_tl1x_md_debug1 {
 		u64 cir_dis                          : 1;
 		u64 pir_dis                          : 1;
 		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 reserved_23                      : 1;
+		u64 reserved_19_22                   : 4;
+		u64 flush                            : 1;
 		u64 bubble                           : 1;
 		u64 color                            : 2;
 		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
+		u64 sdp                              : 1;
 		u64 tx_pkt_p2x                       : 2;
 		u64 sqm_pkt_id                       : 13;
 		u64 mdq_idx                          : 10;
 		u64 reserved_62                      : 1;
 		u64 vld                              : 1;
 	} s;
-	struct nixx_af_tl1x_md_debug1_cn96xxp1 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 drain                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp1;
-	struct nixx_af_tl1x_md_debug1_cn96xxp3 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 reserved_19_22                   : 4;
-		u64 flush                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl1x_md_debug1_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl1x_md_debug1_cn96xxp1 cnf95xx; */
-	/* struct nixx_af_tl1x_md_debug1_cn96xxp3 loki; */
+	/* struct nixx_af_tl1x_md_debug1_s cn; */
 };
 
 static inline u64 NIXX_AF_TL1X_MD_DEBUG1(u64 a)
@@ -6663,117 +7377,6 @@ static inline u64 NIXX_AF_TL1X_MD_DEBUG1(u64 a)
 static inline u64 NIXX_AF_TL1X_MD_DEBUG1(u64 a)
 {
 	return 0xcc8 + 0x10000 * a;
-}
-
-/**
- * Register (RVU_PF_BAR0) nix#_af_tl1#_md_debug2
- *
- * NIX AF Transmit Level 1 Meta Descriptor Debug 2 Registers Packet meta
- * descriptor 1 debug. See NIX_AF_TL1()_MD_DEBUG0.
- */
-union nixx_af_tl1x_md_debug2 {
-	u64 u;
-	struct nixx_af_tl1x_md_debug2_s {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 reserved_23                      : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} s;
-	struct nixx_af_tl1x_md_debug2_cn96xxp1 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 drain                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp1;
-	struct nixx_af_tl1x_md_debug2_cn96xxp3 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 reserved_19_22                   : 4;
-		u64 flush                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl1x_md_debug2_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl1x_md_debug2_cn96xxp1 cnf95xx; */
-	/* struct nixx_af_tl1x_md_debug2_cn96xxp3 loki; */
-};
-
-static inline u64 NIXX_AF_TL1X_MD_DEBUG2(u64 a)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL1X_MD_DEBUG2(u64 a)
-{
-	return 0xcd0 + 0x10000 * a;
-}
-
-/**
- * Register (RVU_PF_BAR0) nix#_af_tl1#_md_debug3
- *
- * NIX AF Transmit Level 1 Meta Descriptor Debug 3 Registers Flush meta
- * descriptor debug. See NIX_AF_TL1()_MD_DEBUG0.
- */
-union nixx_af_tl1x_md_debug3 {
-	u64 u;
-	struct nixx_af_tl1x_md_debug3_s {
-		u64 reserved_0_36                    : 37;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} s;
-	/* struct nixx_af_tl1x_md_debug3_s cn96xxp1; */
-	struct nixx_af_tl1x_md_debug3_cn96xxp3 {
-		u64 reserved_0_36                    : 37;
-		u64 reserved_37_38                   : 2;
-		u64 reserved_39_51                   : 13;
-		u64 reserved_52_61                   : 10;
-		u64 reserved_62                      : 1;
-		u64 reserved_63                      : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl1x_md_debug3_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl1x_md_debug3_s cnf95xx; */
-	/* struct nixx_af_tl1x_md_debug3_cn96xxp3 loki; */
-};
-
-static inline u64 NIXX_AF_TL1X_MD_DEBUG3(u64 a)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL1X_MD_DEBUG3(u64 a)
-{
-	return 0xcd8 + 0x10000 * a;
 }
 
 /**
@@ -6852,8 +7455,8 @@ static inline u64 NIXX_AF_TL1X_RED_PACKETS(u64 a)
 union nixx_af_tl1x_schedule {
 	u64 u;
 	struct nixx_af_tl1x_schedule_s {
-		u64 rr_quantum                       : 24;
-		u64 reserved_24_63                   : 40;
+		u64 rr_weight                        : 14;
+		u64 reserved_14_63                   : 50;
 	} s;
 	/* struct nixx_af_tl1x_schedule_s cn; */
 };
@@ -6895,25 +7498,24 @@ static inline u64 NIXX_AF_TL1X_SHAPE(u64 a)
 }
 
 /**
- * Register (RVU_PF_BAR0) nix#_af_tl1#_shape_state
+ * Register (RVU_PF_BAR0) nix#_af_tl1#_shape_state_cir
  *
  * NIX AF Transmit Level 1 Shape State Register This register must not be
  * written during normal operation.
  */
-union nixx_af_tl1x_shape_state {
+union nixx_af_tl1x_shape_state_cir {
 	u64 u;
-	struct nixx_af_tl1x_shape_state_s {
-		u64 cir_accum                        : 26;
-		u64 reserved_26_51                   : 26;
+	struct nixx_af_tl1x_shape_state_cir_s {
+		u64 cir_accum                        : 33;
 		u64 color                            : 1;
-		u64 reserved_53_63                   : 11;
+		u64 reserved_34_63                   : 30;
 	} s;
-	/* struct nixx_af_tl1x_shape_state_s cn; */
+	/* struct nixx_af_tl1x_shape_state_cir_s cn; */
 };
 
-static inline u64 NIXX_AF_TL1X_SHAPE_STATE(u64 a)
+static inline u64 NIXX_AF_TL1X_SHAPE_STATE_CIR(u64 a)
 	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL1X_SHAPE_STATE(u64 a)
+static inline u64 NIXX_AF_TL1X_SHAPE_STATE_CIR(u64 a)
 {
 	return 0xc50 + 0x10000 * a;
 }
@@ -6927,10 +7529,7 @@ union nixx_af_tl1x_sw_xoff {
 	u64 u;
 	struct nixx_af_tl1x_sw_xoff_s {
 		u64 xoff                             : 1;
-		u64 drain                            : 1;
-		u64 reserved_2                       : 1;
-		u64 drain_irq                        : 1;
-		u64 reserved_4_63                    : 60;
+		u64 reserved_1_63                    : 63;
 	} s;
 	/* struct nixx_af_tl1x_sw_xoff_s cn; */
 };
@@ -7056,6 +7655,53 @@ static inline u64 NIXX_AF_TL1_CONST(void)
 }
 
 /**
+ * Register (RVU_PF_BAR0) nix#_af_tl1_tw_arb_ctl_debug
+ *
+ * NIX AF Transmit Level 1 Timewheel Arbiter Control Debug Register Clear
+ * or set an individual requestor in timewheel arbiter. For diagnostic
+ * and debug use.
+ */
+union nixx_af_tl1_tw_arb_ctl_debug {
+	u64 u;
+	struct nixx_af_tl1_tw_arb_ctl_debug_s {
+		u64 req_index                        : 5;
+		u64 reserved_5_15                    : 11;
+		u64 quiet                            : 1;
+		u64 reserved_17_63                   : 47;
+	} s;
+	/* struct nixx_af_tl1_tw_arb_ctl_debug_s cn; */
+};
+
+static inline u64 NIXX_AF_TL1_TW_ARB_CTL_DEBUG(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL1_TW_ARB_CTL_DEBUG(void)
+{
+	return 0xbc0;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_tl1_tw_arb_req_debug
+ *
+ * NIX AF Transmit Level 1 Timewheel Arbiter Request Debug Register
+ * Timewheel arbiter request vector. For diagnostic and debug purposes.
+ */
+union nixx_af_tl1_tw_arb_req_debug {
+	u64 u;
+	struct nixx_af_tl1_tw_arb_req_debug_s {
+		u64 req                              : 28;
+		u64 reserved_28_63                   : 36;
+	} s;
+	/* struct nixx_af_tl1_tw_arb_req_debug_s cn; */
+};
+
+static inline u64 NIXX_AF_TL1_TW_ARB_REQ_DEBUG(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL1_TW_ARB_REQ_DEBUG(void)
+{
+	return 0xbc8;
+}
+
+/**
  * Register (RVU_PF_BAR0) nix#_af_tl2#_cir
  *
  * NIX AF Transmit Level 2 Committed Information Rate Registers This
@@ -7069,9 +7715,9 @@ union nixx_af_tl2x_cir {
 		u64 rate_exponent                    : 4;
 		u64 rate_divider_exponent            : 4;
 		u64 reserved_17_28                   : 12;
-		u64 burst_mantissa                   : 8;
+		u64 burst_mantissa                   : 15;
 		u64 burst_exponent                   : 4;
-		u64 reserved_41_63                   : 23;
+		u64 reserved_48_63                   : 16;
 	} s;
 	/* struct nixx_af_tl2x_cir_s cn; */
 };
@@ -7120,21 +7766,16 @@ union nixx_af_tl2x_md_debug0 {
 	u64 u;
 	struct nixx_af_tl2x_md_debug0_s {
 		u64 pmd0_length                      : 16;
-		u64 pmd1_length                      : 16;
+		u64 reserved_16_31                   : 16;
 		u64 pmd0_vld                         : 1;
-		u64 pmd1_vld                         : 1;
-		u64 reserved_34_45                   : 12;
-		u64 drain_pri                        : 1;
-		u64 drain                            : 1;
+		u64 reserved_33_47                   : 15;
 		u64 c_con                            : 1;
 		u64 p_con                            : 1;
 		u64 reserved_50_51                   : 2;
 		u64 child                            : 10;
-		u64 reserved_62                      : 1;
-		u64 pmd_count                        : 1;
+		u64 reserved_62_63                   : 2;
 	} s;
-	/* struct nixx_af_tl2x_md_debug0_s cn96xxp1; */
-	struct nixx_af_tl2x_md_debug0_cn96xxp3 {
+	struct nixx_af_tl2x_md_debug0_cn {
 		u64 pmd0_length                      : 16;
 		u64 reserved_16_31                   : 16;
 		u64 pmd0_vld                         : 1;
@@ -7148,10 +7789,7 @@ union nixx_af_tl2x_md_debug0 {
 		u64 child                            : 10;
 		u64 reserved_62                      : 1;
 		u64 reserved_63                      : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl2x_md_debug0_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl2x_md_debug0_s cnf95xx; */
-	/* struct nixx_af_tl2x_md_debug0_cn96xxp3 loki; */
+	} cn;
 };
 
 static inline u64 NIXX_AF_TL2X_MD_DEBUG0(u64 a)
@@ -7175,57 +7813,19 @@ union nixx_af_tl2x_md_debug1 {
 		u64 cir_dis                          : 1;
 		u64 pir_dis                          : 1;
 		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 reserved_23                      : 1;
+		u64 reserved_19_22                   : 4;
+		u64 flush                            : 1;
 		u64 bubble                           : 1;
 		u64 color                            : 2;
 		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
+		u64 sdp                              : 1;
 		u64 tx_pkt_p2x                       : 2;
 		u64 sqm_pkt_id                       : 13;
 		u64 mdq_idx                          : 10;
 		u64 reserved_62                      : 1;
 		u64 vld                              : 1;
 	} s;
-	struct nixx_af_tl2x_md_debug1_cn96xxp1 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 drain                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp1;
-	struct nixx_af_tl2x_md_debug1_cn96xxp3 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 reserved_19_22                   : 4;
-		u64 flush                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl2x_md_debug1_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl2x_md_debug1_cn96xxp1 cnf95xx; */
-	/* struct nixx_af_tl2x_md_debug1_cn96xxp3 loki; */
+	/* struct nixx_af_tl2x_md_debug1_s cn; */
 };
 
 static inline u64 NIXX_AF_TL2X_MD_DEBUG1(u64 a)
@@ -7233,117 +7833,6 @@ static inline u64 NIXX_AF_TL2X_MD_DEBUG1(u64 a)
 static inline u64 NIXX_AF_TL2X_MD_DEBUG1(u64 a)
 {
 	return 0xec8 + 0x10000 * a;
-}
-
-/**
- * Register (RVU_PF_BAR0) nix#_af_tl2#_md_debug2
- *
- * NIX AF Transmit Level 2 Meta Descriptor Debug 2 Registers Packet meta
- * descriptor 1 debug. See NIX_AF_TL1()_MD_DEBUG0.
- */
-union nixx_af_tl2x_md_debug2 {
-	u64 u;
-	struct nixx_af_tl2x_md_debug2_s {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 reserved_23                      : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} s;
-	struct nixx_af_tl2x_md_debug2_cn96xxp1 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 drain                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp1;
-	struct nixx_af_tl2x_md_debug2_cn96xxp3 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 reserved_19_22                   : 4;
-		u64 flush                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl2x_md_debug2_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl2x_md_debug2_cn96xxp1 cnf95xx; */
-	/* struct nixx_af_tl2x_md_debug2_cn96xxp3 loki; */
-};
-
-static inline u64 NIXX_AF_TL2X_MD_DEBUG2(u64 a)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL2X_MD_DEBUG2(u64 a)
-{
-	return 0xed0 + 0x10000 * a;
-}
-
-/**
- * Register (RVU_PF_BAR0) nix#_af_tl2#_md_debug3
- *
- * NIX AF Transmit Level 2 Meta Descriptor Debug 3 Registers Flush meta
- * descriptor debug. See NIX_AF_TL1()_MD_DEBUG0.
- */
-union nixx_af_tl2x_md_debug3 {
-	u64 u;
-	struct nixx_af_tl2x_md_debug3_s {
-		u64 reserved_0_36                    : 37;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} s;
-	/* struct nixx_af_tl2x_md_debug3_s cn96xxp1; */
-	struct nixx_af_tl2x_md_debug3_cn96xxp3 {
-		u64 reserved_0_36                    : 37;
-		u64 reserved_37_38                   : 2;
-		u64 reserved_39_51                   : 13;
-		u64 reserved_52_61                   : 10;
-		u64 reserved_62                      : 1;
-		u64 reserved_63                      : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl2x_md_debug3_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl2x_md_debug3_s cnf95xx; */
-	/* struct nixx_af_tl2x_md_debug3_cn96xxp3 loki; */
-};
-
-static inline u64 NIXX_AF_TL2X_MD_DEBUG3(u64 a)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL2X_MD_DEBUG3(u64 a)
-{
-	return 0xed8 + 0x10000 * a;
 }
 
 /**
@@ -7382,9 +7871,9 @@ union nixx_af_tl2x_pir {
 		u64 rate_exponent                    : 4;
 		u64 rate_divider_exponent            : 4;
 		u64 reserved_17_28                   : 12;
-		u64 burst_mantissa                   : 8;
+		u64 burst_mantissa                   : 15;
 		u64 burst_exponent                   : 4;
-		u64 reserved_41_63                   : 23;
+		u64 reserved_48_63                   : 16;
 	} s;
 	/* struct nixx_af_tl2x_pir_s cn; */
 };
@@ -7451,8 +7940,8 @@ static inline u64 NIXX_AF_TL2X_RED(u64 a)
 union nixx_af_tl2x_sched_state {
 	u64 u;
 	struct nixx_af_tl2x_sched_state_s {
-		u64 rr_count                         : 25;
-		u64 reserved_25_63                   : 39;
+		u64 rr_count                         : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
 	/* struct nixx_af_tl2x_sched_state_s cn; */
 };
@@ -7472,7 +7961,8 @@ static inline u64 NIXX_AF_TL2X_SCHED_STATE(u64 a)
 union nixx_af_tl2x_schedule {
 	u64 u;
 	struct nixx_af_tl2x_schedule_s {
-		u64 rr_quantum                       : 24;
+		u64 rr_weight                        : 14;
+		u64 reserved_14_23                   : 10;
 		u64 prio                             : 4;
 		u64 reserved_28_63                   : 36;
 	} s;
@@ -7500,8 +7990,7 @@ union nixx_af_tl2x_shape {
 		u64 yellow_disable                   : 1;
 		u64 reserved_13_23                   : 11;
 		u64 length_disable                   : 1;
-		u64 schedule_list                    : 2;
-		u64 reserved_27_63                   : 37;
+		u64 reserved_25_63                   : 39;
 	} s;
 	/* struct nixx_af_tl2x_shape_s cn; */
 };
@@ -7514,25 +8003,47 @@ static inline u64 NIXX_AF_TL2X_SHAPE(u64 a)
 }
 
 /**
- * Register (RVU_PF_BAR0) nix#_af_tl2#_shape_state
+ * Register (RVU_PF_BAR0) nix#_af_tl2#_shape_state_cir
  *
  * NIX AF Transmit Level 2 Shape State Registers This register must not
  * be written during normal operation.
  */
-union nixx_af_tl2x_shape_state {
+union nixx_af_tl2x_shape_state_cir {
 	u64 u;
-	struct nixx_af_tl2x_shape_state_s {
-		u64 cir_accum                        : 26;
-		u64 pir_accum                        : 26;
+	struct nixx_af_tl2x_shape_state_cir_s {
+		u64 cir_accum                        : 33;
 		u64 color                            : 2;
-		u64 reserved_54_63                   : 10;
+		u64 reserved_35_63                   : 29;
 	} s;
-	/* struct nixx_af_tl2x_shape_state_s cn; */
+	/* struct nixx_af_tl2x_shape_state_cir_s cn; */
 };
 
-static inline u64 NIXX_AF_TL2X_SHAPE_STATE(u64 a)
+static inline u64 NIXX_AF_TL2X_SHAPE_STATE_CIR(u64 a)
 	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL2X_SHAPE_STATE(u64 a)
+static inline u64 NIXX_AF_TL2X_SHAPE_STATE_CIR(u64 a)
+{
+	return 0xcd0 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_tl2#_shape_state_pir
+ *
+ * NIX AF Transmit Level 2 Shape State Registers This register must not
+ * be written during normal operation.
+ */
+union nixx_af_tl2x_shape_state_pir {
+	u64 u;
+	struct nixx_af_tl2x_shape_state_pir_s {
+		u64 pir_accum                        : 33;
+		u64 color                            : 2;
+		u64 reserved_35_63                   : 29;
+	} s;
+	/* struct nixx_af_tl2x_shape_state_pir_s cn; */
+};
+
+static inline u64 NIXX_AF_TL2X_SHAPE_STATE_PIR(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL2X_SHAPE_STATE_PIR(u64 a)
 {
 	return 0xe50 + 0x10000 * a;
 }
@@ -7547,10 +8058,7 @@ union nixx_af_tl2x_sw_xoff {
 	u64 u;
 	struct nixx_af_tl2x_sw_xoff_s {
 		u64 xoff                             : 1;
-		u64 drain                            : 1;
-		u64 reserved_2                       : 1;
-		u64 drain_irq                        : 1;
-		u64 reserved_4_63                    : 60;
+		u64 reserved_1_63                    : 63;
 	} s;
 	/* struct nixx_af_tl2x_sw_xoff_s cn; */
 };
@@ -7633,6 +8141,75 @@ static inline u64 NIXX_AF_TL2_CONST(void)
 }
 
 /**
+ * Register (RVU_PF_BAR0) nix#_af_tl2_tw#_arb_req_debug0
+ *
+ * NIX AF Transmit Level 2 Timewheel Arbiter Request Debug0 Register
+ * Timewheel arbiter request vector, lower 64-bits of 128-bit request
+ * vector. For diagnostic and debug purposes.
+ */
+union nixx_af_tl2_twx_arb_req_debug0 {
+	u64 u;
+	struct nixx_af_tl2_twx_arb_req_debug0_s {
+		u64 req_lo                           : 64;
+	} s;
+	/* struct nixx_af_tl2_twx_arb_req_debug0_s cn; */
+};
+
+static inline u64 NIXX_AF_TL2_TWX_ARB_REQ_DEBUG0(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL2_TWX_ARB_REQ_DEBUG0(u64 a)
+{
+	return 0xdc8 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_tl2_tw#_arb_req_debug1
+ *
+ * NIX AF Transmit Level 2 Timewheel Arbiter Request Debug1 Register
+ * Timewheel arbiter request vector, upper 64-bits of 128-bit request
+ * vector. For diagnostic and debug use.
+ */
+union nixx_af_tl2_twx_arb_req_debug1 {
+	u64 u;
+	struct nixx_af_tl2_twx_arb_req_debug1_s {
+		u64 req_hi                           : 64;
+	} s;
+	/* struct nixx_af_tl2_twx_arb_req_debug1_s cn; */
+};
+
+static inline u64 NIXX_AF_TL2_TWX_ARB_REQ_DEBUG1(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL2_TWX_ARB_REQ_DEBUG1(u64 a)
+{
+	return 0xdd0 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_tl2_tw_arb_ctl_debug
+ *
+ * NIX AF Transmit Level 2 Timewheel Arbiter Control Debug Register Clear
+ * or set an individual requestor in timewheel arbiter. For diagnostic
+ * and debug use.
+ */
+union nixx_af_tl2_tw_arb_ctl_debug {
+	u64 u;
+	struct nixx_af_tl2_tw_arb_ctl_debug_s {
+		u64 req_index                        : 8;
+		u64 reserved_8_15                    : 8;
+		u64 quiet                            : 1;
+		u64 reserved_17_63                   : 47;
+	} s;
+	/* struct nixx_af_tl2_tw_arb_ctl_debug_s cn; */
+};
+
+static inline u64 NIXX_AF_TL2_TW_ARB_CTL_DEBUG(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL2_TW_ARB_CTL_DEBUG(void)
+{
+	return 0xdc0;
+}
+
+/**
  * Register (RVU_PF_BAR0) nix#_af_tl3#_cir
  *
  * NIX AF Transmit Level 3 Committed Information Rate Registers This
@@ -7646,9 +8223,9 @@ union nixx_af_tl3x_cir {
 		u64 rate_exponent                    : 4;
 		u64 rate_divider_exponent            : 4;
 		u64 reserved_17_28                   : 12;
-		u64 burst_mantissa                   : 8;
+		u64 burst_mantissa                   : 15;
 		u64 burst_exponent                   : 4;
-		u64 reserved_41_63                   : 23;
+		u64 reserved_48_63                   : 16;
 	} s;
 	/* struct nixx_af_tl3x_cir_s cn; */
 };
@@ -7696,21 +8273,16 @@ union nixx_af_tl3x_md_debug0 {
 	u64 u;
 	struct nixx_af_tl3x_md_debug0_s {
 		u64 pmd0_length                      : 16;
-		u64 pmd1_length                      : 16;
+		u64 reserved_16_31                   : 16;
 		u64 pmd0_vld                         : 1;
-		u64 pmd1_vld                         : 1;
-		u64 reserved_34_45                   : 12;
-		u64 drain_pri                        : 1;
-		u64 drain                            : 1;
+		u64 reserved_33_47                   : 15;
 		u64 c_con                            : 1;
 		u64 p_con                            : 1;
 		u64 reserved_50_51                   : 2;
 		u64 child                            : 10;
-		u64 reserved_62                      : 1;
-		u64 pmd_count                        : 1;
+		u64 reserved_62_63                   : 2;
 	} s;
-	/* struct nixx_af_tl3x_md_debug0_s cn96xxp1; */
-	struct nixx_af_tl3x_md_debug0_cn96xxp3 {
+	struct nixx_af_tl3x_md_debug0_cn {
 		u64 pmd0_length                      : 16;
 		u64 reserved_16_31                   : 16;
 		u64 pmd0_vld                         : 1;
@@ -7724,10 +8296,7 @@ union nixx_af_tl3x_md_debug0 {
 		u64 child                            : 10;
 		u64 reserved_62                      : 1;
 		u64 reserved_63                      : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl3x_md_debug0_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl3x_md_debug0_s cnf95xx; */
-	/* struct nixx_af_tl3x_md_debug0_cn96xxp3 loki; */
+	} cn;
 };
 
 static inline u64 NIXX_AF_TL3X_MD_DEBUG0(u64 a)
@@ -7751,57 +8320,19 @@ union nixx_af_tl3x_md_debug1 {
 		u64 cir_dis                          : 1;
 		u64 pir_dis                          : 1;
 		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 reserved_23                      : 1;
+		u64 reserved_19_22                   : 4;
+		u64 flush                            : 1;
 		u64 bubble                           : 1;
 		u64 color                            : 2;
 		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
+		u64 sdp                              : 1;
 		u64 tx_pkt_p2x                       : 2;
 		u64 sqm_pkt_id                       : 13;
 		u64 mdq_idx                          : 10;
 		u64 reserved_62                      : 1;
 		u64 vld                              : 1;
 	} s;
-	struct nixx_af_tl3x_md_debug1_cn96xxp1 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 drain                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp1;
-	struct nixx_af_tl3x_md_debug1_cn96xxp3 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 reserved_19_22                   : 4;
-		u64 flush                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl3x_md_debug1_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl3x_md_debug1_cn96xxp1 cnf95xx; */
-	/* struct nixx_af_tl3x_md_debug1_cn96xxp3 loki; */
+	/* struct nixx_af_tl3x_md_debug1_s cn; */
 };
 
 static inline u64 NIXX_AF_TL3X_MD_DEBUG1(u64 a)
@@ -7809,117 +8340,6 @@ static inline u64 NIXX_AF_TL3X_MD_DEBUG1(u64 a)
 static inline u64 NIXX_AF_TL3X_MD_DEBUG1(u64 a)
 {
 	return 0x10c8 + 0x10000 * a;
-}
-
-/**
- * Register (RVU_PF_BAR0) nix#_af_tl3#_md_debug2
- *
- * NIX AF Transmit Level 3 Meta Descriptor Debug 2 Registers Packet meta
- * descriptor 1 debug. See NIX_AF_TL1()_MD_DEBUG0.
- */
-union nixx_af_tl3x_md_debug2 {
-	u64 u;
-	struct nixx_af_tl3x_md_debug2_s {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 reserved_23                      : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} s;
-	struct nixx_af_tl3x_md_debug2_cn96xxp1 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 drain                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp1;
-	struct nixx_af_tl3x_md_debug2_cn96xxp3 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 reserved_19_22                   : 4;
-		u64 flush                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl3x_md_debug2_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl3x_md_debug2_cn96xxp1 cnf95xx; */
-	/* struct nixx_af_tl3x_md_debug2_cn96xxp3 loki; */
-};
-
-static inline u64 NIXX_AF_TL3X_MD_DEBUG2(u64 a)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL3X_MD_DEBUG2(u64 a)
-{
-	return 0x10d0 + 0x10000 * a;
-}
-
-/**
- * Register (RVU_PF_BAR0) nix#_af_tl3#_md_debug3
- *
- * NIX AF Transmit Level 3 Meta Descriptor Debug 3 Registers Flush meta
- * descriptor debug. See NIX_AF_TL1()_MD_DEBUG0.
- */
-union nixx_af_tl3x_md_debug3 {
-	u64 u;
-	struct nixx_af_tl3x_md_debug3_s {
-		u64 reserved_0_36                    : 37;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} s;
-	/* struct nixx_af_tl3x_md_debug3_s cn96xxp1; */
-	struct nixx_af_tl3x_md_debug3_cn96xxp3 {
-		u64 reserved_0_36                    : 37;
-		u64 reserved_37_38                   : 2;
-		u64 reserved_39_51                   : 13;
-		u64 reserved_52_61                   : 10;
-		u64 reserved_62                      : 1;
-		u64 reserved_63                      : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl3x_md_debug3_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl3x_md_debug3_s cnf95xx; */
-	/* struct nixx_af_tl3x_md_debug3_cn96xxp3 loki; */
-};
-
-static inline u64 NIXX_AF_TL3X_MD_DEBUG3(u64 a)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL3X_MD_DEBUG3(u64 a)
-{
-	return 0x10d8 + 0x10000 * a;
 }
 
 /**
@@ -7958,9 +8378,9 @@ union nixx_af_tl3x_pir {
 		u64 rate_exponent                    : 4;
 		u64 rate_divider_exponent            : 4;
 		u64 reserved_17_28                   : 12;
-		u64 burst_mantissa                   : 8;
+		u64 burst_mantissa                   : 15;
 		u64 burst_exponent                   : 4;
-		u64 reserved_41_63                   : 23;
+		u64 reserved_48_63                   : 16;
 	} s;
 	/* struct nixx_af_tl3x_pir_s cn; */
 };
@@ -8029,8 +8449,8 @@ static inline u64 NIXX_AF_TL3X_RED(u64 a)
 union nixx_af_tl3x_sched_state {
 	u64 u;
 	struct nixx_af_tl3x_sched_state_s {
-		u64 rr_count                         : 25;
-		u64 reserved_25_63                   : 39;
+		u64 rr_count                         : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
 	/* struct nixx_af_tl3x_sched_state_s cn; */
 };
@@ -8051,7 +8471,8 @@ static inline u64 NIXX_AF_TL3X_SCHED_STATE(u64 a)
 union nixx_af_tl3x_schedule {
 	u64 u;
 	struct nixx_af_tl3x_schedule_s {
-		u64 rr_quantum                       : 24;
+		u64 rr_weight                        : 14;
+		u64 reserved_14_23                   : 10;
 		u64 prio                             : 4;
 		u64 reserved_28_63                   : 36;
 	} s;
@@ -8079,8 +8500,7 @@ union nixx_af_tl3x_shape {
 		u64 yellow_disable                   : 1;
 		u64 reserved_13_23                   : 11;
 		u64 length_disable                   : 1;
-		u64 schedule_list                    : 2;
-		u64 reserved_27_63                   : 37;
+		u64 reserved_25_63                   : 39;
 	} s;
 	/* struct nixx_af_tl3x_shape_s cn; */
 };
@@ -8093,26 +8513,49 @@ static inline u64 NIXX_AF_TL3X_SHAPE(u64 a)
 }
 
 /**
- * Register (RVU_PF_BAR0) nix#_af_tl3#_shape_state
+ * Register (RVU_PF_BAR0) nix#_af_tl3#_shape_state_cir
  *
- * NIX AF Transmit Level 3 Shaping State Registers This register has the
- * same bit fields as NIX_AF_TL2()_SHAPE_STATE. This register must not be
- * written during normal operation.
+ * NIX AF Transmit Level 3 Shaping State CIR Registers This register has
+ * the same bit fields as NIX_AF_TL2()_SHAPE_STATE_CIR. This register
+ * must not be written during normal operation.
  */
-union nixx_af_tl3x_shape_state {
+union nixx_af_tl3x_shape_state_cir {
 	u64 u;
-	struct nixx_af_tl3x_shape_state_s {
-		u64 cir_accum                        : 26;
-		u64 pir_accum                        : 26;
+	struct nixx_af_tl3x_shape_state_cir_s {
+		u64 cir_accum                        : 33;
 		u64 color                            : 2;
-		u64 reserved_54_63                   : 10;
+		u64 reserved_35_63                   : 29;
 	} s;
-	/* struct nixx_af_tl3x_shape_state_s cn; */
+	/* struct nixx_af_tl3x_shape_state_cir_s cn; */
 };
 
-static inline u64 NIXX_AF_TL3X_SHAPE_STATE(u64 a)
+static inline u64 NIXX_AF_TL3X_SHAPE_STATE_CIR(u64 a)
 	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL3X_SHAPE_STATE(u64 a)
+static inline u64 NIXX_AF_TL3X_SHAPE_STATE_CIR(u64 a)
+{
+	return 0xed0 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_tl3#_shape_state_pir
+ *
+ * NIX AF Transmit Level 3 Shaping State PIR Registers This register has
+ * the same bit fields as NIX_AF_TL2()_SHAPE_STATE_PIR. This register
+ * must not be written during normal operation.
+ */
+union nixx_af_tl3x_shape_state_pir {
+	u64 u;
+	struct nixx_af_tl3x_shape_state_pir_s {
+		u64 pir_accum                        : 33;
+		u64 color                            : 2;
+		u64 reserved_35_63                   : 29;
+	} s;
+	/* struct nixx_af_tl3x_shape_state_pir_s cn; */
+};
+
+static inline u64 NIXX_AF_TL3X_SHAPE_STATE_PIR(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL3X_SHAPE_STATE_PIR(u64 a)
 {
 	return 0x1050 + 0x10000 * a;
 }
@@ -8127,10 +8570,7 @@ union nixx_af_tl3x_sw_xoff {
 	u64 u;
 	struct nixx_af_tl3x_sw_xoff_s {
 		u64 xoff                             : 1;
-		u64 drain                            : 1;
-		u64 reserved_2                       : 1;
-		u64 drain_irq                        : 1;
-		u64 reserved_4_63                    : 60;
+		u64 reserved_1_63                    : 63;
 	} s;
 	/* struct nixx_af_tl3x_sw_xoff_s cn; */
 };
@@ -8233,27 +8673,6 @@ static inline u64 NIXX_AF_TL3_TL2X_BP_STATUS(u64 a)
 }
 
 /**
- * Register (RVU_PF_BAR0) nix#_af_tl3_tl2#_cfg
- *
- * NIX AF Transmit Level 3/2 Configuration Registers
- */
-union nixx_af_tl3_tl2x_cfg {
-	u64 u;
-	struct nixx_af_tl3_tl2x_cfg_s {
-		u64 express                          : 1;
-		u64 reserved_1_63                    : 63;
-	} s;
-	/* struct nixx_af_tl3_tl2x_cfg_s cn; */
-};
-
-static inline u64 NIXX_AF_TL3_TL2X_CFG(u64 a)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL3_TL2X_CFG(u64 a)
-{
-	return 0x1600 + 0x10000 * a;
-}
-
-/**
  * Register (RVU_PF_BAR0) nix#_af_tl3_tl2#_link#_cfg
  *
  * NIX AF Transmit Level 3/2 Link Configuration Registers These registers
@@ -8280,6 +8699,72 @@ static inline u64 NIXX_AF_TL3_TL2X_LINKX_CFG(u64 a, u64 b)
 static inline u64 NIXX_AF_TL3_TL2X_LINKX_CFG(u64 a, u64 b)
 {
 	return 0x1700 + 0x10000 * a + 8 * b;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_tl3_tw#_arb_req_debug0
+ *
+ * NIX AF Transmit Level 3 Timewheel Arbiter Request Debug0 Register This
+ * register has the same bit fields as NIX_AF_TL2_TW()_ARB_REQ_DEBUG0
+ */
+union nixx_af_tl3_twx_arb_req_debug0 {
+	u64 u;
+	struct nixx_af_tl3_twx_arb_req_debug0_s {
+		u64 req_lo                           : 64;
+	} s;
+	/* struct nixx_af_tl3_twx_arb_req_debug0_s cn; */
+};
+
+static inline u64 NIXX_AF_TL3_TWX_ARB_REQ_DEBUG0(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL3_TWX_ARB_REQ_DEBUG0(u64 a)
+{
+	return 0xfc8 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_tl3_tw#_arb_req_debug1
+ *
+ * NIX AF Transmit Level 3 Timewheel Arbiter Request Debug1 Register This
+ * register has the same bit fields as NIX_AF_TL2_TW()_ARB_REQ_DEBUG1
+ */
+union nixx_af_tl3_twx_arb_req_debug1 {
+	u64 u;
+	struct nixx_af_tl3_twx_arb_req_debug1_s {
+		u64 req_hi                           : 64;
+	} s;
+	/* struct nixx_af_tl3_twx_arb_req_debug1_s cn; */
+};
+
+static inline u64 NIXX_AF_TL3_TWX_ARB_REQ_DEBUG1(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL3_TWX_ARB_REQ_DEBUG1(u64 a)
+{
+	return 0xfd0 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_tl3_tw_arb_ctl_debug
+ *
+ * NIX AF Transmit Level 3 Timewheel Arbiter Control Debug Register This
+ * register has the same bit fields as NIX_AF_TL2_TW_ARB_CTL_DEBUG
+ */
+union nixx_af_tl3_tw_arb_ctl_debug {
+	u64 u;
+	struct nixx_af_tl3_tw_arb_ctl_debug_s {
+		u64 req_index                        : 8;
+		u64 reserved_8_15                    : 8;
+		u64 quiet                            : 1;
+		u64 reserved_17_63                   : 47;
+	} s;
+	/* struct nixx_af_tl3_tw_arb_ctl_debug_s cn; */
+};
+
+static inline u64 NIXX_AF_TL3_TW_ARB_CTL_DEBUG(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL3_TW_ARB_CTL_DEBUG(void)
+{
+	return 0xfc0;
 }
 
 /**
@@ -8317,9 +8802,9 @@ union nixx_af_tl4x_cir {
 		u64 rate_exponent                    : 4;
 		u64 rate_divider_exponent            : 4;
 		u64 reserved_17_28                   : 12;
-		u64 burst_mantissa                   : 8;
+		u64 burst_mantissa                   : 15;
 		u64 burst_exponent                   : 4;
-		u64 reserved_41_63                   : 23;
+		u64 reserved_48_63                   : 16;
 	} s;
 	/* struct nixx_af_tl4x_cir_s cn; */
 };
@@ -8334,16 +8819,13 @@ static inline u64 NIXX_AF_TL4X_CIR(u64 a)
 /**
  * Register (RVU_PF_BAR0) nix#_af_tl4#_green
  *
- * INTERNAL: NIX Transmit Level 4 Green State Debug Register  This
- * register has the same bit fields as NIX_AF_TL3()_GREEN.
+ * INTERNAL: NIX Transmit Level 4 Green State Debug Register
  */
 union nixx_af_tl4x_green {
 	u64 u;
 	struct nixx_af_tl4x_green_s {
-		u64 tail                             : 9;
-		u64 reserved_9                       : 1;
-		u64 head                             : 9;
-		u64 reserved_19                      : 1;
+		u64 tail                             : 10;
+		u64 head                             : 10;
 		u64 active_vec                       : 20;
 		u64 rr_active                        : 1;
 		u64 reserved_41_63                   : 23;
@@ -8368,21 +8850,16 @@ union nixx_af_tl4x_md_debug0 {
 	u64 u;
 	struct nixx_af_tl4x_md_debug0_s {
 		u64 pmd0_length                      : 16;
-		u64 pmd1_length                      : 16;
+		u64 reserved_16_31                   : 16;
 		u64 pmd0_vld                         : 1;
-		u64 pmd1_vld                         : 1;
-		u64 reserved_34_45                   : 12;
-		u64 drain_pri                        : 1;
-		u64 drain                            : 1;
+		u64 reserved_33_47                   : 15;
 		u64 c_con                            : 1;
 		u64 p_con                            : 1;
 		u64 reserved_50_51                   : 2;
 		u64 child                            : 10;
-		u64 reserved_62                      : 1;
-		u64 pmd_count                        : 1;
+		u64 reserved_62_63                   : 2;
 	} s;
-	/* struct nixx_af_tl4x_md_debug0_s cn96xxp1; */
-	struct nixx_af_tl4x_md_debug0_cn96xxp3 {
+	struct nixx_af_tl4x_md_debug0_cn {
 		u64 pmd0_length                      : 16;
 		u64 reserved_16_31                   : 16;
 		u64 pmd0_vld                         : 1;
@@ -8396,10 +8873,7 @@ union nixx_af_tl4x_md_debug0 {
 		u64 child                            : 10;
 		u64 reserved_62                      : 1;
 		u64 reserved_63                      : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl4x_md_debug0_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl4x_md_debug0_s cnf95xx; */
-	/* struct nixx_af_tl4x_md_debug0_cn96xxp3 loki; */
+	} cn;
 };
 
 static inline u64 NIXX_AF_TL4X_MD_DEBUG0(u64 a)
@@ -8423,57 +8897,19 @@ union nixx_af_tl4x_md_debug1 {
 		u64 cir_dis                          : 1;
 		u64 pir_dis                          : 1;
 		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 reserved_23                      : 1;
+		u64 reserved_19_22                   : 4;
+		u64 flush                            : 1;
 		u64 bubble                           : 1;
 		u64 color                            : 2;
 		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
+		u64 sdp                              : 1;
 		u64 tx_pkt_p2x                       : 2;
 		u64 sqm_pkt_id                       : 13;
 		u64 mdq_idx                          : 10;
 		u64 reserved_62                      : 1;
 		u64 vld                              : 1;
 	} s;
-	struct nixx_af_tl4x_md_debug1_cn96xxp1 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 drain                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp1;
-	struct nixx_af_tl4x_md_debug1_cn96xxp3 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 reserved_19_22                   : 4;
-		u64 flush                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl4x_md_debug1_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl4x_md_debug1_cn96xxp1 cnf95xx; */
-	/* struct nixx_af_tl4x_md_debug1_cn96xxp3 loki; */
+	/* struct nixx_af_tl4x_md_debug1_s cn; */
 };
 
 static inline u64 NIXX_AF_TL4X_MD_DEBUG1(u64 a)
@@ -8481,117 +8917,6 @@ static inline u64 NIXX_AF_TL4X_MD_DEBUG1(u64 a)
 static inline u64 NIXX_AF_TL4X_MD_DEBUG1(u64 a)
 {
 	return 0x12c8 + 0x10000 * a;
-}
-
-/**
- * Register (RVU_PF_BAR0) nix#_af_tl4#_md_debug2
- *
- * NIX AF Transmit Level 4 Meta Descriptor Debug 2 Registers Packet meta
- * descriptor 1 debug. See NIX_AF_TL1()_MD_DEBUG0.
- */
-union nixx_af_tl4x_md_debug2 {
-	u64 u;
-	struct nixx_af_tl4x_md_debug2_s {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 reserved_23                      : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} s;
-	struct nixx_af_tl4x_md_debug2_cn96xxp1 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 uid                              : 4;
-		u64 drain                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp1;
-	struct nixx_af_tl4x_md_debug2_cn96xxp3 {
-		u64 reserved_0_5                     : 6;
-		u64 red_algo_override                : 2;
-		u64 cir_dis                          : 1;
-		u64 pir_dis                          : 1;
-		u64 adjust                           : 9;
-		u64 reserved_19_22                   : 4;
-		u64 flush                            : 1;
-		u64 bubble                           : 1;
-		u64 color                            : 2;
-		u64 pse_pkt_id                       : 9;
-		u64 reserved_36                      : 1;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl4x_md_debug2_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl4x_md_debug2_cn96xxp1 cnf95xx; */
-	/* struct nixx_af_tl4x_md_debug2_cn96xxp3 loki; */
-};
-
-static inline u64 NIXX_AF_TL4X_MD_DEBUG2(u64 a)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL4X_MD_DEBUG2(u64 a)
-{
-	return 0x12d0 + 0x10000 * a;
-}
-
-/**
- * Register (RVU_PF_BAR0) nix#_af_tl4#_md_debug3
- *
- * NIX AF Transmit Level 4 Meta Descriptor Debug 3 Registers Flush meta
- * descriptor debug. See NIX_AF_TL1()_MD_DEBUG0.
- */
-union nixx_af_tl4x_md_debug3 {
-	u64 u;
-	struct nixx_af_tl4x_md_debug3_s {
-		u64 reserved_0_36                    : 37;
-		u64 tx_pkt_p2x                       : 2;
-		u64 sqm_pkt_id                       : 13;
-		u64 mdq_idx                          : 10;
-		u64 reserved_62                      : 1;
-		u64 vld                              : 1;
-	} s;
-	/* struct nixx_af_tl4x_md_debug3_s cn96xxp1; */
-	struct nixx_af_tl4x_md_debug3_cn96xxp3 {
-		u64 reserved_0_36                    : 37;
-		u64 reserved_37_38                   : 2;
-		u64 reserved_39_51                   : 13;
-		u64 reserved_52_61                   : 10;
-		u64 reserved_62                      : 1;
-		u64 reserved_63                      : 1;
-	} cn96xxp3;
-	/* struct nixx_af_tl4x_md_debug3_cn96xxp3 cn98xx; */
-	/* struct nixx_af_tl4x_md_debug3_s cnf95xx; */
-	/* struct nixx_af_tl4x_md_debug3_cn96xxp3 loki; */
-};
-
-static inline u64 NIXX_AF_TL4X_MD_DEBUG3(u64 a)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL4X_MD_DEBUG3(u64 a)
-{
-	return 0x12d8 + 0x10000 * a;
 }
 
 /**
@@ -8630,9 +8955,9 @@ union nixx_af_tl4x_pir {
 		u64 rate_exponent                    : 4;
 		u64 rate_divider_exponent            : 4;
 		u64 reserved_17_28                   : 12;
-		u64 burst_mantissa                   : 8;
+		u64 burst_mantissa                   : 15;
 		u64 burst_exponent                   : 4;
-		u64 reserved_41_63                   : 23;
+		u64 reserved_48_63                   : 16;
 	} s;
 	/* struct nixx_af_tl4x_pir_s cn; */
 };
@@ -8672,15 +8997,14 @@ static inline u64 NIXX_AF_TL4X_POINTERS(u64 a)
  * Register (RVU_PF_BAR0) nix#_af_tl4#_red
  *
  * INTERNAL: NIX Transmit Level 4 Red State Debug Register  This register
- * has the same bit fields as NIX_AF_TL3()_YELLOW.
+ * has the same bit fields as NIX_AF_TL4()_YELLOW.
  */
 union nixx_af_tl4x_red {
 	u64 u;
 	struct nixx_af_tl4x_red_s {
-		u64 tail                             : 9;
-		u64 reserved_9                       : 1;
-		u64 head                             : 9;
-		u64 reserved_19_63                   : 45;
+		u64 tail                             : 10;
+		u64 head                             : 10;
+		u64 reserved_20_63                   : 44;
 	} s;
 	/* struct nixx_af_tl4x_red_s cn; */
 };
@@ -8701,8 +9025,8 @@ static inline u64 NIXX_AF_TL4X_RED(u64 a)
 union nixx_af_tl4x_sched_state {
 	u64 u;
 	struct nixx_af_tl4x_sched_state_s {
-		u64 rr_count                         : 25;
-		u64 reserved_25_63                   : 39;
+		u64 rr_count                         : 32;
+		u64 reserved_32_63                   : 32;
 	} s;
 	/* struct nixx_af_tl4x_sched_state_s cn; */
 };
@@ -8723,7 +9047,8 @@ static inline u64 NIXX_AF_TL4X_SCHED_STATE(u64 a)
 union nixx_af_tl4x_schedule {
 	u64 u;
 	struct nixx_af_tl4x_schedule_s {
-		u64 rr_quantum                       : 24;
+		u64 rr_weight                        : 14;
+		u64 reserved_14_23                   : 10;
 		u64 prio                             : 4;
 		u64 reserved_28_63                   : 36;
 	} s;
@@ -8747,8 +9072,8 @@ static inline u64 NIXX_AF_TL4X_SCHEDULE(u64 a)
 union nixx_af_tl4x_sdp_link_cfg {
 	u64 u;
 	struct nixx_af_tl4x_sdp_link_cfg_s {
-		u64 relchan                          : 8;
-		u64 reserved_8_11                    : 4;
+		u64 relchan                          : 7;
+		u64 reserved_7_11                    : 5;
 		u64 ena                              : 1;
 		u64 bp_ena                           : 1;
 		u64 reserved_14_63                   : 50;
@@ -8778,8 +9103,7 @@ union nixx_af_tl4x_shape {
 		u64 yellow_disable                   : 1;
 		u64 reserved_13_23                   : 11;
 		u64 length_disable                   : 1;
-		u64 schedule_list                    : 2;
-		u64 reserved_27_63                   : 37;
+		u64 reserved_25_63                   : 39;
 	} s;
 	/* struct nixx_af_tl4x_shape_s cn; */
 };
@@ -8792,26 +9116,49 @@ static inline u64 NIXX_AF_TL4X_SHAPE(u64 a)
 }
 
 /**
- * Register (RVU_PF_BAR0) nix#_af_tl4#_shape_state
+ * Register (RVU_PF_BAR0) nix#_af_tl4#_shape_state_cir
  *
- * NIX AF Transmit Level 4 Shaping State Registers This register has the
- * same bit fields as NIX_AF_TL2()_SHAPE_STATE. This register must not be
- * written during normal operation.
+ * NIX AF Transmit Level 4 Shaping CIR State Registers This register has
+ * the same bit fields as NIX_AF_TL2()_SHAPE_STATE_CIR. This register
+ * must not be written during normal operation.
  */
-union nixx_af_tl4x_shape_state {
+union nixx_af_tl4x_shape_state_cir {
 	u64 u;
-	struct nixx_af_tl4x_shape_state_s {
-		u64 cir_accum                        : 26;
-		u64 pir_accum                        : 26;
+	struct nixx_af_tl4x_shape_state_cir_s {
+		u64 cir_accum                        : 33;
 		u64 color                            : 2;
-		u64 reserved_54_63                   : 10;
+		u64 reserved_35_63                   : 29;
 	} s;
-	/* struct nixx_af_tl4x_shape_state_s cn; */
+	/* struct nixx_af_tl4x_shape_state_cir_s cn; */
 };
 
-static inline u64 NIXX_AF_TL4X_SHAPE_STATE(u64 a)
+static inline u64 NIXX_AF_TL4X_SHAPE_STATE_CIR(u64 a)
 	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TL4X_SHAPE_STATE(u64 a)
+static inline u64 NIXX_AF_TL4X_SHAPE_STATE_CIR(u64 a)
+{
+	return 0x10d0 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_tl4#_shape_state_pir
+ *
+ * NIX AF Transmit Level 4 Shaping State Registers This register has the
+ * same bit fields as NIX_AF_TL2()_SHAPE_STATE_PIR. This register must
+ * not be written during normal operation.
+ */
+union nixx_af_tl4x_shape_state_pir {
+	u64 u;
+	struct nixx_af_tl4x_shape_state_pir_s {
+		u64 pir_accum                        : 33;
+		u64 color                            : 2;
+		u64 reserved_35_63                   : 29;
+	} s;
+	/* struct nixx_af_tl4x_shape_state_pir_s cn; */
+};
+
+static inline u64 NIXX_AF_TL4X_SHAPE_STATE_PIR(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL4X_SHAPE_STATE_PIR(u64 a)
 {
 	return 0x1250 + 0x10000 * a;
 }
@@ -8826,10 +9173,7 @@ union nixx_af_tl4x_sw_xoff {
 	u64 u;
 	struct nixx_af_tl4x_sw_xoff_s {
 		u64 xoff                             : 1;
-		u64 drain                            : 1;
-		u64 reserved_2                       : 1;
-		u64 drain_irq                        : 1;
-		u64 reserved_4_63                    : 60;
+		u64 reserved_1_63                    : 63;
 	} s;
 	/* struct nixx_af_tl4x_sw_xoff_s cn; */
 };
@@ -8852,8 +9196,8 @@ union nixx_af_tl4x_topology {
 		u64 reserved_0                       : 1;
 		u64 rr_prio                          : 4;
 		u64 reserved_5_31                    : 27;
-		u64 prio_anchor                      : 9;
-		u64 reserved_41_63                   : 23;
+		u64 prio_anchor                      : 10;
+		u64 reserved_42_63                   : 22;
 	} s;
 	/* struct nixx_af_tl4x_topology_s cn; */
 };
@@ -8868,16 +9212,14 @@ static inline u64 NIXX_AF_TL4X_TOPOLOGY(u64 a)
 /**
  * Register (RVU_PF_BAR0) nix#_af_tl4#_yellow
  *
- * INTERNAL: NIX Transmit Level 4 Yellow State Debug Register  This
- * register has the same bit fields as NIX_AF_TL3()_YELLOW
+ * INTERNAL: NIX Transmit Level 4 Yellow State Debug Register
  */
 union nixx_af_tl4x_yellow {
 	u64 u;
 	struct nixx_af_tl4x_yellow_s {
-		u64 tail                             : 9;
-		u64 reserved_9                       : 1;
-		u64 head                             : 9;
-		u64 reserved_19_63                   : 45;
+		u64 tail                             : 10;
+		u64 head                             : 10;
+		u64 reserved_20_63                   : 44;
 	} s;
 	/* struct nixx_af_tl4x_yellow_s cn; */
 };
@@ -8912,31 +9254,70 @@ static inline u64 NIXX_AF_TL4_CONST(void)
 }
 
 /**
- * Register (RVU_PF_BAR0) nix#_af_tx_link#_expr_credit
+ * Register (RVU_PF_BAR0) nix#_af_tl4_tw#_arb_req_debug0
  *
- * INTERNAL: NIX AF Transmit Link Express Credit Registers  Internal:
- * 802.3br frame preemption/express path is defeatured. Old definition:
- * These registers track credits per link for express packets that may
- * potentially preempt normal packets. Link index enumerated by
- * NIX_LINK_E.
+ * NIX AF Transmit Level 4 Timewheel Arbiter Request Debug0 Register This
+ * register has the same bit fields as NIX_AF_TL2_TW()_ARB_REQ_DEBUG0
  */
-union nixx_af_tx_linkx_expr_credit {
+union nixx_af_tl4_twx_arb_req_debug0 {
 	u64 u;
-	struct nixx_af_tx_linkx_expr_credit_s {
-		u64 reserved_0                       : 1;
-		u64 cc_enable                        : 1;
-		u64 cc_packet_cnt                    : 10;
-		u64 cc_unit_cnt                      : 20;
-		u64 reserved_32_63                   : 32;
+	struct nixx_af_tl4_twx_arb_req_debug0_s {
+		u64 req_lo                           : 64;
 	} s;
-	/* struct nixx_af_tx_linkx_expr_credit_s cn; */
+	/* struct nixx_af_tl4_twx_arb_req_debug0_s cn; */
 };
 
-static inline u64 NIXX_AF_TX_LINKX_EXPR_CREDIT(u64 a)
+static inline u64 NIXX_AF_TL4_TWX_ARB_REQ_DEBUG0(u64 a)
 	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TX_LINKX_EXPR_CREDIT(u64 a)
+static inline u64 NIXX_AF_TL4_TWX_ARB_REQ_DEBUG0(u64 a)
 {
-	return 0xa10 + 0x10000 * a;
+	return 0x11c8 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_tl4_tw#_arb_req_debug1
+ *
+ * NIX AF Transmit Level 4 Timewheel Arbiter Request Debug1 Register This
+ * register has the same bit fields as NIX_AF_TL2_TW()_ARB_REQ_DEBUG1
+ */
+union nixx_af_tl4_twx_arb_req_debug1 {
+	u64 u;
+	struct nixx_af_tl4_twx_arb_req_debug1_s {
+		u64 req_hi                           : 64;
+	} s;
+	/* struct nixx_af_tl4_twx_arb_req_debug1_s cn; */
+};
+
+static inline u64 NIXX_AF_TL4_TWX_ARB_REQ_DEBUG1(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL4_TWX_ARB_REQ_DEBUG1(u64 a)
+{
+	return 0x11d0 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_tl4_tw_arb_ctl_debug
+ *
+ * NIX AF Transmit Level 4 Timewheel Arbiter Control Debug Register Clear
+ * or set an individual requestor in timewheel arbiter. For diagnostic
+ * and debug use.
+ */
+union nixx_af_tl4_tw_arb_ctl_debug {
+	u64 u;
+	struct nixx_af_tl4_tw_arb_ctl_debug_s {
+		u64 req_index                        : 9;
+		u64 reserved_9_15                    : 7;
+		u64 quiet                            : 1;
+		u64 reserved_17_63                   : 47;
+	} s;
+	/* struct nixx_af_tl4_tw_arb_ctl_debug_s cn; */
+};
+
+static inline u64 NIXX_AF_TL4_TW_ARB_CTL_DEBUG(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TL4_TW_ARB_CTL_DEBUG(void)
+{
+	return 0x11c0;
 }
 
 /**
@@ -8961,10 +9342,35 @@ static inline u64 NIXX_AF_TX_LINKX_HW_XOFF(u64 a)
 }
 
 /**
+ * Register (RVU_PF_BAR0) nix#_af_tx_link#_norm_cdt_adj
+ *
+ * NIX AF Transmit Link Normal Credit Registers These registers track
+ * credits per link for normal packets sent to RPM and LBK. Link index
+ * enumerated by NIX_LINK_E.
+ */
+union nixx_af_tx_linkx_norm_cdt_adj {
+	u64 u;
+	struct nixx_af_tx_linkx_norm_cdt_adj_s {
+		u64 reserved_0_1                     : 2;
+		u64 cc_packet_cnt_adj                : 10;
+		u64 cc_unit_cnt_adj                  : 20;
+		u64 reserved_32_63                   : 32;
+	} s;
+	/* struct nixx_af_tx_linkx_norm_cdt_adj_s cn; */
+};
+
+static inline u64 NIXX_AF_TX_LINKX_NORM_CDT_ADJ(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_TX_LINKX_NORM_CDT_ADJ(u64 a)
+{
+	return 0xa20 + 0x10000 * a;
+}
+
+/**
  * Register (RVU_PF_BAR0) nix#_af_tx_link#_norm_credit
  *
  * NIX AF Transmit Link Normal Credit Registers These registers track
- * credits per link for normal packets sent to CGX and LBK. Link index
+ * credits per link for normal packets sent to RPM and LBK. Link index
  * enumerated by NIX_LINK_E.
  */
 union nixx_af_tx_linkx_norm_credit {
@@ -8974,7 +9380,8 @@ union nixx_af_tx_linkx_norm_credit {
 		u64 cc_enable                        : 1;
 		u64 cc_packet_cnt                    : 10;
 		u64 cc_unit_cnt                      : 20;
-		u64 reserved_32_63                   : 32;
+		u64 cc_mcs_cnt                       : 2;
+		u64 reserved_34_63                   : 30;
 	} s;
 	/* struct nixx_af_tx_linkx_norm_credit_s cn; */
 };
@@ -8984,30 +9391,6 @@ static inline u64 NIXX_AF_TX_LINKX_NORM_CREDIT(u64 a)
 static inline u64 NIXX_AF_TX_LINKX_NORM_CREDIT(u64 a)
 {
 	return 0xa00 + 0x10000 * a;
-}
-
-/**
- * Register (RVU_PF_BAR0) nix#_af_tx_link#_sw_xoff
- *
- * INTERNAL: NIX AF Transmit Link Software Controlled XOFF Registers
- * Link index enumerated by NIX_LINK_E. Internal: Defeatured registers.
- * Software should instead use NIX_AF_TL3()_SW_XOFF registers when
- * NIX_AF_PSE_CHANNEL_LEVEL[BP_LEVEL] is set and NIX_AF_TL2()_SW_XOFF
- * registers when NIX_AF_PSE_CHANNEL_LEVEL[BP_LEVEL] is clear.
- */
-union nixx_af_tx_linkx_sw_xoff {
-	u64 u;
-	struct nixx_af_tx_linkx_sw_xoff_s {
-		u64 chan_xoff                        : 64;
-	} s;
-	/* struct nixx_af_tx_linkx_sw_xoff_s cn; */
-};
-
-static inline u64 NIXX_AF_TX_LINKX_SW_XOFF(u64 a)
-	__attribute__ ((pure, always_inline));
-static inline u64 NIXX_AF_TX_LINKX_SW_XOFF(u64 a)
-{
-	return 0xa20 + 0x10000 * a;
 }
 
 /**
@@ -9132,11 +9515,13 @@ union nixx_af_tx_tstmp_cfg {
 	u64 u;
 	struct nixx_af_tx_tstmp_cfg_s {
 		u64 tstmp_wd_period                  : 4;
-		u64 reserved_4_7                     : 4;
-		u64 express                          : 16;
-		u64 reserved_24_63                   : 40;
+		u64 reserved_4_63                    : 60;
 	} s;
-	/* struct nixx_af_tx_tstmp_cfg_s cn; */
+	struct nixx_af_tx_tstmp_cfg_cn {
+		u64 tstmp_wd_period                  : 4;
+		u64 reserved_4_7                     : 4;
+		u64 reserved_8_63                    : 56;
+	} cn;
 };
 
 static inline u64 NIXX_AF_TX_TSTMP_CFG(void)
@@ -9189,6 +9574,50 @@ static inline u64 NIXX_AF_TX_VTAG_DEFX_DATA(u64 a)
 static inline u64 NIXX_AF_TX_VTAG_DEFX_DATA(u64 a)
 {
 	return 0x1a10 + 0x10000 * a;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_vwqe_hash_func_mask
+ *
+ * NIX AF VWQE Hash Function Timer Register
+ */
+union nixx_af_vwqe_hash_func_mask {
+	u64 u;
+	struct nixx_af_vwqe_hash_func_mask_s {
+		u64 mask                             : 35;
+		u64 reserved_35_63                   : 29;
+	} s;
+	/* struct nixx_af_vwqe_hash_func_mask_s cn; */
+};
+
+static inline u64 NIXX_AF_VWQE_HASH_FUNC_MASK(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_VWQE_HASH_FUNC_MASK(void)
+{
+	return 0x47a0;
+}
+
+/**
+ * Register (RVU_PF_BAR0) nix#_af_vwqe_timer
+ *
+ * NIX AF VWQE Timer Register
+ */
+union nixx_af_vwqe_timer {
+	u64 u;
+	struct nixx_af_vwqe_timer_s {
+		u64 vwqe_dly                         : 10;
+		u64 reserved_10_15                   : 6;
+		u64 vwqe_ts                          : 16;
+		u64 reserved_32_63                   : 32;
+	} s;
+	/* struct nixx_af_vwqe_timer_s cn; */
+};
+
+static inline u64 NIXX_AF_VWQE_TIMER(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_AF_VWQE_TIMER(void)
+{
+	return 0xf8;
 }
 
 /**
@@ -9457,7 +9886,8 @@ union nixx_lf_err_int {
 		u64 reserved_26_27                   : 2;
 		u64 qint_fault                       : 1;
 		u64 cint_fault                       : 1;
-		u64 reserved_30_63                   : 34;
+		u64 rx_vwqe_fault                    : 1;
+		u64 reserved_31_63                   : 33;
 	} s;
 	/* struct nixx_lf_err_int_s cn; */
 };
@@ -9501,7 +9931,8 @@ union nixx_lf_err_int_ena_w1c {
 		u64 reserved_26_27                   : 2;
 		u64 qint_fault                       : 1;
 		u64 cint_fault                       : 1;
-		u64 reserved_30_63                   : 34;
+		u64 rx_vwqe_fault                    : 1;
+		u64 reserved_31_63                   : 33;
 	} s;
 	/* struct nixx_lf_err_int_ena_w1c_s cn; */
 };
@@ -9545,7 +9976,8 @@ union nixx_lf_err_int_ena_w1s {
 		u64 reserved_26_27                   : 2;
 		u64 qint_fault                       : 1;
 		u64 cint_fault                       : 1;
-		u64 reserved_30_63                   : 34;
+		u64 rx_vwqe_fault                    : 1;
+		u64 reserved_31_63                   : 33;
 	} s;
 	/* struct nixx_lf_err_int_ena_w1s_s cn; */
 };
@@ -9588,7 +10020,8 @@ union nixx_lf_err_int_w1s {
 		u64 reserved_26_27                   : 2;
 		u64 qint_fault                       : 1;
 		u64 cint_fault                       : 1;
-		u64 reserved_30_63                   : 34;
+		u64 rx_vwqe_fault                    : 1;
+		u64 reserved_31_63                   : 33;
 	} s;
 	/* struct nixx_lf_err_int_w1s_s cn; */
 };
@@ -9722,8 +10155,12 @@ static inline u64 NIXX_LF_MNQ_ERR_DBG(void)
 /**
  * Register (RVU_PFVF_BAR2) nix#_lf_op_ipsec_dyno_cnt
  *
- * INTERNAL: NIX LF IPSEC Dynamic Ordering Counter Operation Register
- * Internal: Not used; no IPSEC fast-path. All accesses are RAZ/WI.
+ * NIX LF IPSEC Dynamic Ordering Counter Operation Register A 64-bit
+ * atomic load-and-add to this register reads an IPSEC dynamic ordering
+ * counter (NIX_IPSEC_DYNO_S). A write decrements
+ * NIX_IPSEC_DYNO_S[COUNT]. A read is RAZ. See
+ * NIX_AF_LF()_RX_IPSEC_DYNO_CFG[DYNO_ENA].  RSL accesses to this
+ * register are RAZ/WI.
  */
 union nixx_lf_op_ipsec_dyno_cnt {
 	u64 u;
@@ -9780,6 +10217,57 @@ static inline u64 NIXX_LF_OP_SENDX(u64 a)
 static inline u64 NIXX_LF_OP_SENDX(u64 a)
 {
 	return 0x800 + 8 * a;
+}
+
+/**
+ * Register (RVU_PFVF_BAR2) nix#_lf_op_vwqe_flush
+ *
+ * NIX LF VWQE Flush Operation Register A write to this register flushes
+ * VWQE pertaining to specified RQ or all VWQE of LF depending on
+ * specified mode. RSL accesses to this register are RAZ/WI.
+ */
+union nixx_lf_op_vwqe_flush {
+	u64 u;
+	struct nixx_lf_op_vwqe_flush_s {
+		u64 rq                               : 20;
+		u64 reserved_20_30                   : 11;
+		u64 flush_mode                       : 1;
+		u64 reserved_32_63                   : 32;
+	} s;
+	/* struct nixx_lf_op_vwqe_flush_s cn; */
+};
+
+static inline u64 NIXX_LF_OP_VWQE_FLUSH(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_LF_OP_VWQE_FLUSH(void)
+{
+	return 0x9a0;
+}
+
+/**
+ * Register (RVU_PFVF_BAR2) nix#_lf_pl_op_band_prof
+ *
+ * NIX LF Policer Bandwidth Profiles Operation Register A 64-bit atomic
+ * load-and-add to this register reads policer bandwidth profile. The
+ * atomic write data has format NIX_OP_Q_WDATA_S with the same encoding
+ * of BAND_PROF as specified by NIX_AQ_INST_S[CINDEX] for
+ * NIX_AQ_INST_S[CTYPE] = NIX_AQ_CTYPE_E::BAND_PROF. All other accesses
+ * to this register (e.g. reads and writes) are RAZ/WI.  RSL accesses to
+ * this register are RAZ/WI.
+ */
+union nixx_lf_pl_op_band_prof {
+	u64 u;
+	struct nixx_lf_pl_op_band_prof_s {
+		u64 prof_data                        : 64;
+	} s;
+	/* struct nixx_lf_pl_op_band_prof_s cn; */
+};
+
+static inline u64 NIXX_LF_PL_OP_BAND_PROF(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_LF_PL_OP_BAND_PROF(void)
+{
+	return 0x9c0;
 }
 
 /**
@@ -10176,6 +10664,112 @@ static inline u64 NIXX_LF_RQ_OP_RE_PKTS(void)
 }
 
 /**
+ * Register (RVU_PFVF_BAR2) nix#_lf_rx_gen_color_conv#
+ *
+ * NIX LF Receive Generic Color Conversion Register Generic conversion
+ * table converts from generic field to Color
+ */
+union nixx_lf_rx_gen_color_convx {
+	u64 u;
+	struct nixx_lf_rx_gen_color_convx_s {
+		u64 gen_conv                         : 32;
+		u64 reserved_32_63                   : 32;
+	} s;
+	/* struct nixx_lf_rx_gen_color_convx_s cn; */
+};
+
+static inline u64 NIXX_LF_RX_GEN_COLOR_CONVX(u64 a)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_LF_RX_GEN_COLOR_CONVX(u64 a)
+{
+	return 0x4740 + 8 * a;
+}
+
+/**
+ * Register (RVU_PFVF_BAR2) nix#_lf_rx_iip_color_conv_hi
+ *
+ * NIX LF Receive Inner IP Color Conversion Register Inner IP conversion
+ * table converts from DSCP bits to Color
+ */
+union nixx_lf_rx_iip_color_conv_hi {
+	u64 u;
+	struct nixx_lf_rx_iip_color_conv_hi_s {
+		u64 dscp_conv                        : 64;
+	} s;
+	/* struct nixx_lf_rx_iip_color_conv_hi_s cn; */
+};
+
+static inline u64 NIXX_LF_RX_IIP_COLOR_CONV_HI(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_LF_RX_IIP_COLOR_CONV_HI(void)
+{
+	return 0x4778;
+}
+
+/**
+ * Register (RVU_PFVF_BAR2) nix#_lf_rx_iip_color_conv_lo
+ *
+ * NIX LF Receive Inner IP Color Conversion Register Inner IP conversion
+ * table converts from DSCP bits to Color
+ */
+union nixx_lf_rx_iip_color_conv_lo {
+	u64 u;
+	struct nixx_lf_rx_iip_color_conv_lo_s {
+		u64 dscp_conv                        : 64;
+	} s;
+	/* struct nixx_lf_rx_iip_color_conv_lo_s cn; */
+};
+
+static inline u64 NIXX_LF_RX_IIP_COLOR_CONV_LO(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_LF_RX_IIP_COLOR_CONV_LO(void)
+{
+	return 0x4770;
+}
+
+/**
+ * Register (RVU_PFVF_BAR2) nix#_lf_rx_oip_color_conv_hi
+ *
+ * NIX LF Receive Outer IP Color Conversion Register Outer IP conversion
+ * table converts from DSCP bits to Color
+ */
+union nixx_lf_rx_oip_color_conv_hi {
+	u64 u;
+	struct nixx_lf_rx_oip_color_conv_hi_s {
+		u64 dscp_conv                        : 64;
+	} s;
+	/* struct nixx_lf_rx_oip_color_conv_hi_s cn; */
+};
+
+static inline u64 NIXX_LF_RX_OIP_COLOR_CONV_HI(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_LF_RX_OIP_COLOR_CONV_HI(void)
+{
+	return 0x4788;
+}
+
+/**
+ * Register (RVU_PFVF_BAR2) nix#_lf_rx_oip_color_conv_lo
+ *
+ * NIX LF Receive Outer IP Color Conversion Register Outer IP conversion
+ * table converts from DSCP bits to Color
+ */
+union nixx_lf_rx_oip_color_conv_lo {
+	u64 u;
+	struct nixx_lf_rx_oip_color_conv_lo_s {
+		u64 dscp_conv                        : 64;
+	} s;
+	/* struct nixx_lf_rx_oip_color_conv_lo_s cn; */
+};
+
+static inline u64 NIXX_LF_RX_OIP_COLOR_CONV_LO(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_LF_RX_OIP_COLOR_CONV_LO(void)
+{
+	return 0x4780;
+}
+
+/**
  * Register (RVU_PFVF_BAR2) nix#_lf_rx_secret#
  *
  * NIX LF Receive Secret Key Registers
@@ -10215,6 +10809,50 @@ static inline u64 NIXX_LF_RX_STATX(u64 a)
 static inline u64 NIXX_LF_RX_STATX(u64 a)
 {
 	return 0x400 + 8 * a;
+}
+
+/**
+ * Register (RVU_PFVF_BAR2) nix#_lf_rx_vlan0_color_conv
+ *
+ * NIX LF Receive VLAN0 Color Conversion Register VLAN0 conversion table
+ * converts from PCP,DEI bits to Color
+ */
+union nixx_lf_rx_vlan0_color_conv {
+	u64 u;
+	struct nixx_lf_rx_vlan0_color_conv_s {
+		u64 vlan_conv                        : 32;
+		u64 reserved_32_63                   : 32;
+	} s;
+	/* struct nixx_lf_rx_vlan0_color_conv_s cn; */
+};
+
+static inline u64 NIXX_LF_RX_VLAN0_COLOR_CONV(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_LF_RX_VLAN0_COLOR_CONV(void)
+{
+	return 0x4760;
+}
+
+/**
+ * Register (RVU_PFVF_BAR2) nix#_lf_rx_vlan1_color_conv
+ *
+ * NIX LF Receive VLAN1 Color Conversion Register VLAN1 conversion table
+ * converts from PCP,DEI bits to Color
+ */
+union nixx_lf_rx_vlan1_color_conv {
+	u64 u;
+	struct nixx_lf_rx_vlan1_color_conv_s {
+		u64 vlan_conv                        : 32;
+		u64 reserved_32_63                   : 32;
+	} s;
+	/* struct nixx_lf_rx_vlan1_color_conv_s cn; */
+};
+
+static inline u64 NIXX_LF_RX_VLAN1_COLOR_CONV(void)
+	__attribute__ ((pure, always_inline));
+static inline u64 NIXX_LF_RX_VLAN1_COLOR_CONV(void)
+{
+	return 0x4768;
 }
 
 /**

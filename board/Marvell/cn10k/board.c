@@ -35,6 +35,24 @@ void cleanup_env_ethaddr(void)
 	}
 }
 
+void cn10k_board_get_mac_addr(u8 index, u8 *mac_addr)
+{
+	u64 tmp_mac, board_mac_addr = fdt_get_board_mac_addr();
+	static int board_mac_num;
+
+	board_mac_num = fdt_get_board_mac_cnt();
+	if ((!is_zero_ethaddr((u8 *)&board_mac_addr)) && board_mac_num) {
+		tmp_mac = board_mac_addr;
+		tmp_mac += index;
+		tmp_mac = swab64(tmp_mac) >> 16;
+		memcpy(mac_addr, (u8 *)&tmp_mac, ARP_HLEN);
+		board_mac_num--;
+	} else {
+		memset(mac_addr, 0, ARP_HLEN);
+	}
+	debug("%s mac %pM\n", __func__, mac_addr);
+}
+
 void board_get_env_spi_bus_cs(int *bus, int *cs)
 {
 	const void *blob = gd->fdt_blob;
@@ -95,13 +113,20 @@ int dram_init(void)
 }
 
 #ifdef CONFIG_NET_CN10K
+#define	PCI_DEVID_CN10K_RPM			0xA060
 #define	PCI_DEVID_OCTEONTX2_RVU_AF		0xA065
-#define	PCI_DEVID_OCTEONTX2_RVU_PF		0xA063
 void board_late_probe_devices(void)
 {
 	struct udevice *dev;
-	int err;
+	int err, rpm_cnt = 3, i;
 
+	/* Probe MAC(RPM) and NIC AF devices before Network stack init */
+	for (i = 0; i < rpm_cnt; i++) {
+		err = dm_pci_find_device(PCI_VENDOR_ID_CAVIUM,
+					 PCI_DEVID_CN10K_RPM, i, &dev);
+		if (err)
+			debug("%s RPM%d device not found\n", __func__, i);
+	}
 	err = dm_pci_find_device(PCI_VENDOR_ID_CAVIUM,
 				 PCI_DEVID_OCTEONTX2_RVU_AF, 0, &dev);
 	if (err)

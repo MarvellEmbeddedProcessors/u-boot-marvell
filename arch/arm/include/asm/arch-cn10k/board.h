@@ -19,5 +19,5 @@ u64 fdt_get_board_mac_addr(void);
 const char *fdt_get_board_model(void);
 const char *fdt_get_board_serial(void);
 const char *fdt_get_board_revision(void);
-void octeontx2_board_get_mac_addr(u8 index, u8 *mac_addr);
+void cn10k_board_get_mac_addr(u8 index, u8 *mac_addr);
 #endif /* __BOARD_H__ */

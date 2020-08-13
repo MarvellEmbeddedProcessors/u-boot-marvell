@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier:    GPL-2.0
  *
- * Copyright (C) 2018 Marvell International Ltd.
+ * Copyright (C) 2020 Marvell International Ltd.
  *
  * https://spdx.org/licenses
  */
@@ -13,7 +13,6 @@
 #define ALIGNED		__aligned(CONFIG_SYS_CACHELINE_SIZE)
 
 /* PCI device IDs */
-#define	PCI_DEVID_OCTEONTX2_CGX			0xA059
 #define	PCI_DEVID_OCTEONTX2_RVU_AF		0xA065
 #define	PCI_DEVID_OCTEONTX2_RVU_PF		0xA063
 #define	PCI_DEVID_OCTEONTX2_RVU_VF		0xA064

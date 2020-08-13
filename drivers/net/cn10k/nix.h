@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier:    GPL-2.0
  *
- * Copyright (C) 2018 Marvell International Ltd.
+ * Copyright (C) 2020 Marvell International Ltd.
  *
  * https://spdx.org/licenses
  */
@@ -43,8 +43,8 @@
 #define NPA_POOL_RX			0ULL
 #define NPA_POOL_TX			1ULL
 #define NPA_POOL_SQB			2ULL
-#define RQ_QLEN				Q_COUNT(Q_SIZE_1K)
-#define SQ_QLEN				Q_COUNT(Q_SIZE_1K)
+#define RQ_QLEN				Q_COUNT(Q_SIZE_256)
+#define SQ_QLEN				Q_COUNT(Q_SIZE_256)
 #define SQB_QLEN			Q_COUNT(Q_SIZE_16)
 
 #define NIX_CQ_RX			0ULL
@@ -60,8 +60,8 @@
 
 #define NPA_DEFAULT_PF_FUNC		0xffff
 
-#define NIX_CHAN_CGX_LMAC_CHX(a, b, c)	(0x800 + 0x100 * (a) + 0x10 * (b) + (c))
-#define NIX_LINK_CGX_LMAC(a, b)		(0 + 4 * (a) + (b))
+#define NIX_CHAN_RPM_LMAC_CHX(a, b, c)	(0x800 + 0x100 * (a) + 0x10 * (b) + (c))
+#define NIX_LINK_RPM_LMAC(a, b)		(0 + 4 * (a) + (b))
 #define NIX_LINK_LBK(a)			(12 + (a))
 #define NIX_CHAN_LBK_CHX(a, b)		(0 + 0x100 * (a) + (b))
 #define MAX_LMAC_PKIND			12

@@ -15,7 +15,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define CN10K_MEM_MAP_USED 4
 
 /* +1 is end of list which needs to be empty */
-#define CN10K_MEM_MAP_MAX (CN10K_MEM_MAP_USED + CONFIG_NR_DRAM_BANKS + 1)
+#define CN10K_MEM_MAP_MAX (CN10K_MEM_MAP_USED + CONFIG_NR_DRAM_BANKS + 2)
 
 static struct mm_region cn10k_mem_map[CN10K_MEM_MAP_MAX] = {
 	{
@@ -47,6 +47,7 @@ static struct mm_region cn10k_mem_map[CN10K_MEM_MAP_MAX] = {
 
 struct mm_region *mem_map = cn10k_mem_map;
 
+#define LMT_REGION	0x3000000UL
 void mem_map_fill(void)
 {
 	int banks = CN10K_MEM_MAP_USED;
@@ -60,6 +61,11 @@ void mem_map_fill(void)
 					    PTE_BLOCK_NON_SHARE;
 		banks = banks + 1;
 	}
+	cn10k_mem_map[banks].virt = dram_start - LMT_REGION;
+	cn10k_mem_map[banks].phys = dram_start - LMT_REGION;
+	cn10k_mem_map[banks].size = LMT_REGION;
+	cn10k_mem_map[banks].attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+				    PTE_BLOCK_NON_SHARE;
 }
 
 u64 get_page_table_size(void)

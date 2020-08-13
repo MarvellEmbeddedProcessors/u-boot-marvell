@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier:    GPL-2.0
  *
- * Copyright (C) 2018 Marvell International Ltd.
+ * Copyright (C) 2020 Marvell International Ltd.
  *
  * https://spdx.org/licenses
  */
@@ -30,22 +30,8 @@ static inline s64 atomic_fetch_and_add64_nosync(s64 *ptr, s64 incr)
 	return result;
 }
 
-static inline void lmt_cancel(const struct nix *nix)
+static inline void lmt_submit(u64 io_address, u64 val)
 {
-	writeq(0, nix->lmt_base + LMT_LF_LMTCANCEL());
-}
-
-static inline u64 *lmt_store_ptr(struct nix *nix)
-{
-	return (u64 *)((u8 *)(nix->lmt_base) +
-				       LMT_LF_LMTLINEX(0));
-}
-
-static inline s64 lmt_submit(u64 io_address)
-{
-	s64 result = 0;
-
-	asm volatile("ldeor xzr, %x[rf],[%[rs]]"
-			: [rf] "=r"(result) : [rs] "r"(io_address));
-	return result;
+	asm volatile("steor %x[rf],[%[rs]]"
+			: [rf] "+r"(val) : [rs] "r"(io_address));
 }

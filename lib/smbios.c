@@ -17,6 +17,7 @@
 #include <dm/uclass-internal.h>
 #endif
 #include <linux/bitops.h>
+#include "smbios_ddr_info.h"
 
 static u32 smbios_struct_count;
 
@@ -477,21 +478,50 @@ static int smbios_write_type17_dm(ulong *current, int handle, int index)
 {
 	struct smbios_type17 *t;
 	int len = sizeof(struct smbios_type17);
-	const char *manufacturer = "UNKNOWN";
+	const char *locator = "A1";
+	char str[32];
+
+	get_dram_info_init();
 
 	t = map_sysmem(*current, len);
 	memset(t, 0, sizeof(struct smbios_type17));
 	fill_smbios_header(t, SMBIOS_MEMORY_DEVICE, len, handle + index);
 
-	/* Data to be filled by OEM */
-	/* ...
-	 * ...
-	 * ...
-	 */
+	/* Additional Data to be modified by OEM */
+
 	t->physical_memory_array_handle = 0x0800;
-	t->size = DMTF_TYPE17_4GB;
-	t->form_factor = DMTF_TYPE17_DIMM;
-	t->manufacturer = smbios_add_string(t->eos, manufacturer);
+	t->size = mv_ddr_spd_die_capacity_get();
+	t->form_factor = spd_module_type_to_dtmf_type();
+
+	t->total_width = bus_total_width();
+	t->data_width = bus_data_width();
+
+	t->device_set = SET_1;
+	t->device_locator = smbios_add_string(t->eos, locator);
+
+	t->memory_type = spd_dramdev_type_to_dtmf_type();
+	t->type_detail = spd_module_type_to_dtmf_type();
+	t->speed = get_dram_speed();
+	t->configured_memory_speed = get_dram_speed();
+
+	t->attributes = mv_ddr_spd_pkg_rank_get();
+	t->module_product_id = get_product_id();
+
+	sprintf(str, "%X", get_dram_serial());
+	t->serial_number = smbios_add_string(t->eos, str);
+
+	sprintf(str, "%X", get_module_manufacturer_id());
+	t->module_manufacturer_id = smbios_add_string(t->eos, str);
+
+	sprintf(str, "%X", get_dram_manufacturer_id());
+	t->manufacturer = smbios_add_string(t->eos, str);
+
+	get_dram_module_part_no(str);
+	t->part_number = smbios_add_string(t->eos, str);
+
+	t->minimum_voltage = get_dram_min_volt();
+	t->maximum_voltage  = get_dram_max_volt();
+	t->configured_voltage = get_dram_configured_volt();
 
 	len = t->length + smbios_string_table_len(t->eos);
 	*current += len;

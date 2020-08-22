@@ -1763,6 +1763,7 @@ config ARCH_CN10K
 	select ARM64
 	select OF_CONTROL
 	select BOARD_LATE_INIT
+	select SYS_CACHE_SHIFT_7
 
 config TARGET_THUNDERX_88XX
 	bool "Support ThunderX 88xx"

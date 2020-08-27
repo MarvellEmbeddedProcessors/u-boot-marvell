@@ -9,7 +9,7 @@ config CMD_FAILSAFE
 	   primary device was successful.
 
 config CMD_ETH
-	depends on NET_OCTEONTX2
+	depends on NET_OCTEONTX2 || NET_CN10K
 	bool "Command to change fec and phy-mod type"
 	help
 	   Support for change of fec and phy-mod type for some specific

@@ -11,6 +11,7 @@
 #include <dm/uclass-internal.h>
 #include <net.h>
 
+#ifndef CONFIG_ARCH_CN10K
 extern int cgx_intf_set_fec(struct udevice *ethdev, int type);
 extern int cgx_intf_get_fec(struct udevice *ethdev);
 extern int cgx_intf_get_phy_mod_type(struct udevice *ethdev);
@@ -21,6 +22,7 @@ extern int cgx_intf_set_ignore(struct udevice *ethdev, int cgxid, int lmacid,
 			       int ignore);
 extern int cgx_intf_get_ignore(struct udevice *ethdev, int cgxid, int lmacid);
 extern int cgx_intf_get_mode(struct udevice *ethdev);
+#endif
 extern void nix_print_mac_info(struct udevice *dev);
 
 static int do_ethlist(struct cmd_tbl *cmdtp, int flag, int argc,
@@ -44,6 +46,7 @@ U_BOOT_CMD(
 	"ethX [device name] [LMAC info for RVU PF devices]\n"
 );
 
+#ifndef CONFIG_ARCH_CN10K
 static int do_ethparam_common(struct cmd_tbl *cmdtp, int flag, int argc,
 			      char *const argv[])
 {
@@ -223,4 +226,5 @@ U_BOOT_CMD(set_mode, 3, 1, do_ethparam_common,
 	   "	6 - 50G_4_C2C\n"
 	   "Use 'ethlist' command to display network interface names\n"
 );
+#endif
 

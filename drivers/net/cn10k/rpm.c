@@ -194,7 +194,6 @@ int rpm_lmac_link_enable(struct lmac *lmac, int lmac_id, bool enable,
 static int rpm_lmac_init(struct rpm *rpm)
 {
 	struct lmac *lmac;
-	union rpmx_cmrx_config cmrx_cfg;
 	static int instance = 1;
 	int i;
 
@@ -209,16 +208,12 @@ static int rpm_lmac_init(struct rpm *rpm)
 		lmac->instance = instance++;
 		snprintf(lmac->name, sizeof(lmac->name), "rpm_fwi_%d_%d",
 			 rpm->rpm_id, i);
-		/* Get LMAC type */
-		cmrx_cfg.u = rpm_read(rpm, i, RPMX_CMRX_CONFIG(0));
-		lmac->lmac_type = cmrx_cfg.s.lmac_type;
 
 		lmac->lmac_id = i;
 		lmac->rpm = rpm;
 		rpm->lmac[i] = lmac;
-		debug("%s: map id %d to lmac %p (%s), type:%d instance %d\n",
-		      __func__, i, lmac, lmac->name, lmac->lmac_type,
-		      lmac->instance);
+		debug("%s: map id %d to lmac %p (%s), instance %d\n",
+		      __func__, i, lmac, lmac->name, lmac->instance);
 		lmac->init_pend = 1;
 		cn10k_board_get_mac_addr((lmac->instance - 1),
 					 lmac->mac_addr);

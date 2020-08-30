@@ -758,9 +758,8 @@ int nix_lf_init(struct udevice *dev)
 	u8 link, speed;
 	u16 errcode;
 
-	printf("Waiting for RPM%d LMAC%d [%s] link status...",
-	       lmac->rpm->rpm_id, lmac->lmac_id,
-	       lmac_type_to_str[lmac->lmac_type]);
+	printf("Waiting for RPM%d LMAC%d link status...",
+	       lmac->rpm->rpm_id, lmac->lmac_id);
 
 	if (lmac->init_pend) {
 		/* Bring up LMAC */
@@ -809,7 +808,6 @@ void nix_print_mac_info(struct udevice *dev)
 	struct nix *nix = rvu->nix;
 	struct lmac *lmac = nix->lmac;
 
-	printf(" RPM%d LMAC%d [%s]", lmac->rpm->rpm_id, lmac->lmac_id,
-	       lmac_type_to_str[lmac->lmac_type]);
+	printf(" RPM%d LMAC%d", lmac->rpm->rpm_id, lmac->lmac_id);
 }
 

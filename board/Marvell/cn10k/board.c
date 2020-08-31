@@ -23,6 +23,7 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 extern unsigned long fdt_base_addr;
+extern void eth_intf_shutdown(void);
 
 void cleanup_env_ethaddr(void)
 {
@@ -395,6 +396,28 @@ int board_late_init(void)
 
 void board_quiesce_devices(void)
 {
+	struct uclass *uc_dev;
+	int ret;
+
+	/* Removes all RVU PF devices */
+	ret = uclass_get(UCLASS_ETH, &uc_dev);
+	if (uc_dev)
+		ret = uclass_destroy(uc_dev);
+	if (ret)
+		printf("couldn't remove rvu pf devices\n");
+
+#ifdef CONFIG_CN10K_ETH_INTF
+	/* Bring down all lmac links */
+	eth_intf_shutdown();
+#endif
+
+	/* Removes all RPM and RVU AF devices */
+	ret = uclass_get(UCLASS_MISC, &uc_dev);
+	if (uc_dev)
+		ret = uclass_destroy(uc_dev);
+	if (ret)
+		printf("couldn't remove misc (rpm/rvu_af) devices\n");
+
 	/* SMC call - removes all LF<->PF mappings */
 	smc_disable_rvu_lfs(0);
 	board_switch_reset();

@@ -252,7 +252,7 @@ struct eth_lnk_sts_s {
 	u64 err_type:10;
 	u64 an:1;		/* Current AN state : enabled/disabled */
 	u64 fec:2;		/* Current FEC type if enabled, if not 0 */
-	u64 port:8;	/* Share the current port info if required */
+	u64 lmac_type:8;	/* Share the current port info if required */
 	u64 mode:8;	/* eth_mode_t enum integer value */
 	u64 reserved2:20;
 };

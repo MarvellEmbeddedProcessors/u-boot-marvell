@@ -230,9 +230,9 @@ int eth_intf_get_link_sts(u8 rpm, u8 lmac, u64 *lnk_sts)
 
 	scr0.u >>= 9;
 	/* pass the same format as eth_lnk_sts_s
-	 * err_type:10, speed:4, full_duplex:1, link_up:1
+	 * lmac_type:8 err_type:10, speed:4, full_duplex:1, link_up:1
 	 */
-	*lnk_sts = scr0.u & 0xFFFF;
+	*lnk_sts = scr0.u & 0xFFFFFFF;
 	return 0;
 }
 
@@ -250,9 +250,9 @@ int eth_intf_link_up_dwn(u8 rpm, u8 lmac, u8 up_dwn, u64 *lnk_sts)
 
 	scr0.u >>= 9;
 	/* pass the same format as eth_lnk_sts_s
-	 * err_type:10, speed:4, full_duplex:1, link_up:1
+	 * lmac_type:8 err_type:10, speed:4, full_duplex:1, link_up:1
 	 */
-	*lnk_sts = scr0.u & 0xFFFF;
+	*lnk_sts = scr0.u & 0xFFFFFFF;
 	return 0;
 }
 

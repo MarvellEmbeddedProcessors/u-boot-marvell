@@ -755,7 +755,7 @@ int nix_lf_init(struct udevice *dev)
 	struct lmac *lmac = nix->lmac;
 	int ret;
 	u64 link_sts;
-	u8 link, speed;
+	u8 link, speed, type;
 	u16 errcode;
 
 	printf("Waiting for RPM%d LMAC%d link status...",
@@ -778,11 +778,14 @@ int nix_lf_init(struct udevice *dev)
 	link = link_sts & 0x1;
 	speed = (link_sts >> 2) & 0xf;
 	errcode = (link_sts >> 6) & 0x2ff;
+	type = (link_sts >> 19) & 0xff;
 	debug("%s: link %x speed %x errcode %x\n",
 	      __func__, link, speed, errcode);
 
 	/* Print link status */
-	printf(" [%s]\n", link ? lmac_speed_to_str[speed] : "Down");
+	printf(" %s [%s]\n",
+	       link ? lmac_type_to_str[type] : "",
+	       link ? lmac_speed_to_str[speed] : "Down");
 	if (!link)
 		return -1;
 

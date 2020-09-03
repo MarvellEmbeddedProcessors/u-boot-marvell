@@ -38,18 +38,22 @@ void cleanup_env_ethaddr(void)
 
 void cn10k_board_get_mac_addr(u8 index, u8 *mac_addr)
 {
-	u64 tmp_mac, board_mac_addr = fdt_get_board_mac_addr();
-	static int board_mac_num;
+	u64 tmp_mac, mac;
+	static int mac_num;
+	bool use_id;
 
-	board_mac_num = fdt_get_board_mac_cnt();
-	if ((!is_zero_ethaddr((u8 *)&board_mac_addr)) && board_mac_num) {
-		tmp_mac = board_mac_addr;
-		tmp_mac += index;
-		tmp_mac = swab64(tmp_mac) >> 16;
-		memcpy(mac_addr, (u8 *)&tmp_mac, ARP_HLEN);
-		board_mac_num--;
-	} else {
-		memset(mac_addr, 0, ARP_HLEN);
+	memset(mac_addr, 0, ARP_HLEN);
+	mac_num = fdt_get_board_mac_cnt(&use_id);
+
+	if (mac_num && index < mac_num) {
+		mac = fdt_get_board_mac_addr(use_id, index);
+		if (!is_zero_ethaddr((u8 *)&mac)) {
+			tmp_mac = mac;
+			if (!use_id)
+				tmp_mac += index;
+			tmp_mac = swab64(tmp_mac) >> 16;
+			memcpy(mac_addr, (u8 *)&tmp_mac, ARP_HLEN);
+		}
 	}
 	debug("%s mac %pM\n", __func__, mac_addr);
 }

@@ -46,28 +46,38 @@ static int fdt_get_bdk_node(void)
 	return node;
 }
 
-u64 fdt_get_board_mac_addr(void)
+u64 fdt_get_board_mac_addr(bool use_id, u8 id)
 {
 	int node, len = 16;
 	const char *str = NULL;
 	const void *fdt = gd->fdt_blob;
 	u64 mac_addr = 0;
+	char name[32];
 
 	node = fdt_get_bdk_node();
 	if (!node)
 		return mac_addr;
-	str = fdt_getprop(fdt, node, "BOARD-MAC-ADDRESS", &len);
+
+	debug("fdt: %d %d\n", use_id, id);
+	if (use_id)
+		snprintf(name, sizeof(name), "BOARD-MAC-ADDRESS-ID%d", id);
+	else
+		snprintf(name, sizeof(name), "BOARD-MAC-ADDRESS");
+
+	debug("fdt: %s\n", name);
+	str = fdt_getprop(fdt, node, name, &len);
 	if (str)
 		mac_addr = simple_strtol(str, NULL, 16);
+	debug("fdt: %llx\n", mac_addr);
 	return mac_addr;
 }
 
-int fdt_get_board_mac_cnt(void)
+int fdt_get_board_mac_cnt(bool *use_id)
 {
 	int node, len = 16;
 	const char *str = NULL;
 	const void *fdt = gd->fdt_blob;
-	int mac_count = 0;
+	int mac_count = 0, mac_id_count = 0;
 
 	node = fdt_get_bdk_node();
 	if (!node)
@@ -90,6 +100,18 @@ int fdt_get_board_mac_cnt(void)
 	} else {
 		printf("Error: cannot retrieve mac num override prop\n");
 	}
+	str = fdt_getprop(fdt, node, "BOARD-MAC-ADDRESS-ID-NUM", &len);
+	if (str) {
+		mac_id_count = simple_strtol(str, NULL, 10);
+		if (!mac_id_count)
+			mac_id_count = simple_strtol(str, NULL, 16);
+		debug("fdt: MAC_ID_NUM %d\n", mac_id_count);
+		if (mac_id_count)
+			mac_count = mac_id_count;
+	} else {
+		printf("Error: cannot retrieve mac count prop from fdt\n");
+	}
+	*use_id = mac_id_count ? true : false;
 	return mac_count;
 }
 

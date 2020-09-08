@@ -171,7 +171,7 @@ U_BOOT_CMD(set_ignore, 4, 1, do_ethparam_common,
 	   "0 [clear ignore] or 1 [set ignore]\n"
 	   "Example - set_ignore <cgx#> <lmac#> [value]\n"
 	   "For CGX0 LMAC3 - set_ignore 0 3 [value]\n"
-	   "0 [clear ignore] or 1 [set ignore]\n"
+	   "0 [do not ignore flash settings] or 1 [ignore flash settings]\n"
 	   "Helps to ignore all persist settings for selected ethernet\n"
 	   "interface on next boot\n"
 	   "Use 'ethlist' command to display network interface names\n"

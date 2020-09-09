@@ -5,7 +5,6 @@
  * https://spdx.org/licenses
  */
 
-#define DEBUG
 #include <common.h>
 #include <net.h>
 #include <malloc.h>
@@ -657,3 +656,21 @@ int eth_intf_set_macaddr(struct udevice *ethdev)
 
 	return 0;
 }
+
+int eth_intf_get_fwdata_base(u64 *base)
+{
+	union eth_scratchx0 scr0;
+	union eth_cmd_s cmd;
+	int ret;
+
+	cmd.cmd.id = ETH_CMD_GET_FWD_BASE;
+	ret = eth_intf_req(0, 0, cmd, &scr0.u, 1);
+	if (ret) {
+		printf("Fetch of Shared FW Base failed\n");
+		return -1;
+	}
+	scr0.u >>= 9;
+	*base = scr0.u;
+	return 0;
+}
+

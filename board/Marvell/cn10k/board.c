@@ -25,6 +25,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 extern unsigned long fdt_base_addr;
 extern void eth_intf_shutdown(void);
+extern void init_sh_fwdata(void);
 
 void cleanup_env_ethaddr(void)
 {
@@ -180,7 +181,9 @@ int board_late_init(void)
 			save_env = true;
 		env_set("serial#", boardserial);
 	}
-
+#ifdef CONFIG_CN10K_ETH_INTF
+	init_sh_fwdata();
+#endif
 #ifdef CONFIG_NET_CN10K
 	board_late_probe_devices();
 #endif

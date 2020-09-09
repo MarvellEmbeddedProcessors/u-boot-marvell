@@ -47,6 +47,31 @@ char lmac_speed_to_str[][8] = {
 	"100G",
 };
 
+static u64 sh_fwbase;
+
+extern int eth_intf_get_fwdata_base(u64 *base);
+
+void init_sh_fwdata(void)
+{
+	int ret;
+
+	ret = eth_intf_get_fwdata_base(&sh_fwbase);
+	if (ret)
+		printf("Shared FW Base init failed\n");
+}
+
+void print_fwdata_lmac_type(int rpm_id, int lmac_id)
+{
+	int lmac_type;
+	struct sh_fwdata *data = (struct sh_fwdata *)sh_fwbase;
+
+	if (data) {
+		lmac_type = data->eth_fw_data[rpm_id][lmac_id].lmac_type;
+		printf("RPM%d LMAC%d [%s]\n", rpm_id, lmac_id,
+		       lmac_type_to_str[lmac_type]);
+	}
+}
+
 /**
  * Given an LMAC/PF instance number, return the lmac
  * Per design, each PF has only one LMAC mapped.
@@ -219,6 +244,7 @@ static int rpm_lmac_init(struct rpm *rpm)
 					 lmac->mac_addr);
 		debug("%s: MAC %pM\n", __func__, lmac->mac_addr);
 		rpm_lmac_mac_filter_setup(lmac);
+		print_fwdata_lmac_type(rpm->rpm_id, i);
 	}
 	return 0;
 }

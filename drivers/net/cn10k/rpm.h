@@ -86,6 +86,76 @@ static inline u64 rpm_read(struct rpm *rpm, u8 lmac, u64 offset)
 	return readq(rpm->reg_base + CMR_SHIFT(lmac) + offset);
 }
 
+/* SH FWDATA Structure Definitions */
+struct sfp_eeprom_s {
+#define SFP_EEPROM_SIZE 256
+	u16 sff_id;
+	u8 buf[SFP_EEPROM_SIZE];
+	u64 reserved;
+};
+
+struct phy_s {
+	struct {
+		u64 can_change_mod_type : 1;
+		u64 mod_type            : 1;
+		u64 has_fec_stats       : 1;
+	} misc;
+	struct {
+		u32 rsfec_corr_cws;
+		u32 rsfec_uncorr_cws;
+		u32 brfec_corr_blks;
+		u32 brfec_uncorr_blks;
+	} fec_stats;
+};
+
+struct eth_lmac_fwdata_s {
+	/* RO to kernel. FW to set rw_valid as 0 when updating this struct
+	 * indicating data is invalid. After copying the data, this bit needs
+	 * to be set as 1. only when this bit is 1, kernel should
+	 * read this info
+	 */
+	u16 rw_valid;
+	u64 supported_fec;
+	u64 supported_an;
+	u64 supported_link_modes;
+	/* only applicable if AN is supported */
+	u64 advertised_fec;
+	u64 advertised_link_modes;
+	/* Only applicable if SFP/QSFP slot is present */
+	struct sfp_eeprom_s sfp_eeprom;
+	struct phy_s phy;
+	/* LMAC type updated with CSR macro CAVM_RPM_LMAC_TYPES_E_* */
+	u64 lmac_type;
+#define LMAC_FWDATA_RESERVED_MEM 1020
+	u64 reserved[LMAC_FWDATA_RESERVED_MEM];
+
+};
+
+/* sh_fwdata to be synced with linux/drivers/net/ethernet/marvell/octeontx2/af/rvu.h */
+struct sh_fwdata {
+#define SH_FWDATA_HEADER_MAGIC	0xCFDA	/*Custom Firmware Data*/
+#define SH_FWDATA_VERSION	0x0001
+	u32 header_magic;
+	u32 version;		/* version id */
+
+	/* MAC address */
+#define PF_MACNUM_MAX	32
+#define VF_MACNUM_MAX	256
+	u64 pf_macs[PF_MACNUM_MAX];
+	u64 vf_macs[VF_MACNUM_MAX];
+	u64 sclk;	/* In MHZ */
+	u64 coreclk; /* In MHZ */
+	u64 mcam_addr;
+	u64 mcam_sz;
+	u64 rvu_af_msixtr_base;
+ #define FWDATA_RESERVED_MEM 1023
+	u64 reserved[FWDATA_RESERVED_MEM];
+	/* Do not add new fields below this line */
+#define ETH_MAX		5
+#define ETH_LMACS_MAX	4
+	struct eth_lmac_fwdata_s eth_fw_data[ETH_MAX][ETH_LMACS_MAX];
+};
+
 /**
  * Given an LMAC/PF instance number, return the lmac
  * Per design, each PF has only one LMAC mapped.

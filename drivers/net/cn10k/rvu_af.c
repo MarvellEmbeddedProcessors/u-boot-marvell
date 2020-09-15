@@ -76,7 +76,7 @@ struct nix_af *rvu_af_init(struct rvu_af *rvu_af)
 	nix_af = (struct nix_af *)calloc(1, sizeof(struct nix_af));
 	if (!nix_af) {
 		printf("%s: out of memory\n", __func__);
-		goto error;
+		goto err;
 	}
 
 	nix_af->dev = rvu_af->dev;
@@ -116,6 +116,7 @@ error:
 		free(nix_af->npa_af);
 		memset(nix_af, 0, sizeof(*nix_af));
 	}
+err:
 	if (nix_af)
 		free(nix_af);
 	return NULL;

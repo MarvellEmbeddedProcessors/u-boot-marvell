@@ -1137,8 +1137,6 @@ static int do_bootu_mmc(int argc, char * const argv[],
 	num_blks = len - blk;
 	n = blk_dwrite(desc, blk, num_blks, buf);
 	blk_cnt += n;
-	if (n != num_blks)
-		goto error;
 
 #if !CONFIG_IS_ENABLED(ARCH_OCTEONTX)
 	if (!update_scp)

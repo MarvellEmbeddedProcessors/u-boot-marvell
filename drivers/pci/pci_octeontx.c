@@ -331,7 +331,7 @@ static int pci_octeontx_probe(struct udevice *dev)
 
 	err = dev_read_pci_bus_range(dev, &pcie->bus);
 	if (err) {
-		debug("Error reading resource: %s\n", fdt_strerror(err));
+		debug("Error reading resource: %x\n", err);
 		return err;
 	}
 

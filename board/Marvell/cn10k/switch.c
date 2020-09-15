@@ -53,7 +53,15 @@ void board_switch_reset(void)
 		return;
 	}
 	sw_bar0 = dm_pci_map_bar(dev, PCI_BASE_ADDRESS_0, PCI_REGION_MEM);
+	if (!sw_bar0) {
+		debug("Switch device BAR not configured\n");
+		return;
+	}
 	sw_bar2 = dm_pci_map_bar(dev, PCI_BASE_ADDRESS_2, PCI_REGION_MEM);
+	if (!sw_bar2) {
+		debug("Switch device BAR not configured\n");
+		return;
+	}
 	sw_bar2_lo = (u32)((ulong)sw_bar2 & 0xffffffff);
 	sw_bar2_hi = (u32)(((ulong)sw_bar2 >> 32) & 0xffffffff);
 
@@ -139,7 +147,15 @@ void board_switch_init(void)
 		return;
 	}
 	sw_bar0 = dm_pci_map_bar(dev, PCI_BASE_ADDRESS_0, PCI_REGION_MEM);
+	if (!sw_bar0) {
+		debug("Switch device BAR not configured\n");
+		return;
+	}
 	sw_bar2 = dm_pci_map_bar(dev, PCI_BASE_ADDRESS_2, PCI_REGION_MEM);
+	if (!sw_bar2) {
+		debug("Switch device BAR not configured\n");
+		return;
+	}
 	sw_bar2_lo = (u32)((ulong)sw_bar2 & 0xffffffff);
 	sw_bar2_hi = (u32)(((ulong)sw_bar2 >> 32) & 0xffffffff);
 

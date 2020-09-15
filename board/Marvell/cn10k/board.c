@@ -160,7 +160,10 @@ int board_late_init(void)
 	 */
 	cleanup_env_ethaddr();
 
-	snprintf(boardname, sizeof(boardname), "%s> ", fdt_get_board_model());
+	str = fdt_get_board_model();
+	if (!str)
+		str = "Marvell";
+	snprintf(boardname, sizeof(boardname), "%s> ", str);
 	env_set("prompt", boardname);
 	set_working_fdt_addr(env_get_hex("fdtcontroladdr", fdt_base_addr));
 
@@ -230,7 +233,7 @@ void board_quiesce_devices(void)
  */
 int show_board_info(void)
 {
-	char *str;
+	const char *str;
 
 	if (otx_is_soc(CN106XX))
 		str = "CN106XX";
@@ -238,7 +241,10 @@ int show_board_info(void)
 		str = "UNKNOWN";
 	printf("Marvell CN10K %s ARM V8 Core\n", str);
 
-	printf("Board: %s\n", fdt_get_board_model());
+	str = fdt_get_board_model();
+	if (!str)
+		str = "UNKNOWN";
+	printf("Board: %s\n", str);
 
 	return 0;
 }

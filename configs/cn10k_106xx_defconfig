@@ -14,7 +14,7 @@ CONFIG_FIT_SIGNATURE=y
 CONFIG_OF_BOARD_SETUP=y
 CONFIG_BOOTDELAY=5
 CONFIG_USE_BOOTARGS=y
-CONFIG_BOOTARGS="console=ttyAMA0,115200n8 earlycon=pl011,0x87e028000000 maxcpus=24 rootwait rw root=/dev/mmcblk0p2 coherent_pool=16M"
+CONFIG_BOOTARGS="console=ttyAMA0,115200n8 earlycon=pl011,0x87e028000000 maxcpus=24 rootwait rw root=/dev/mmcblk0p2 coherent_pool=16M iommu.passthrough=1"
 CONFIG_VERSION_VARIABLE=y
 # CONFIG_DISPLAY_CPUINFO is not set
 CONFIG_BOARD_EARLY_INIT_R=y

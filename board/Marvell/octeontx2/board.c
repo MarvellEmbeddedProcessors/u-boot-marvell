@@ -335,7 +335,7 @@ int board_late_init(void)
 {
 	char boardname[32];
 	char boardserial[150], boardrev[150];
-	long val;
+	u64 val;
 	bool save_env = false;
 	const char *str;
 

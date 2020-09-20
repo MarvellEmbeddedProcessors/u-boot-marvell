@@ -10,7 +10,8 @@
 
 #include <asm/arch/smc-id.h>
 
-ssize_t smc_configure_ooo(u64 val);
+ssize_t smc_configure_ooo(unsigned int val);
+ssize_t smc_configure_ooo_mask(u64 val);
 ssize_t smc_configure_wfe(u64 val);
 ssize_t smc_dram_size(unsigned int node);
 ssize_t smc_disable_rvu_lfs(unsigned int node);

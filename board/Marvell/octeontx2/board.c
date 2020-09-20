@@ -373,11 +373,14 @@ int board_late_init(void)
 	val = env_get_hex("disable_ooo", 0);
 	smc_configure_ooo(val);
 
-	if (IS_ENABLED(CONFIG_NET_OCTEONTX2))
-		board_late_probe_devices();
+	val = env_get_hex("disable_ooo_mask", 0);
+	smc_configure_ooo_mask(val);
 
 	val = env_get_hex("enable_wfe", 0);
 	smc_configure_wfe(val);
+
+	if (IS_ENABLED(CONFIG_NET_OCTEONTX2))
+		board_late_probe_devices();
 
 #if CONFIG_IS_ENABLED(OCTEONTX_SERIAL_BOOTCMD)
 	if (init_bootcmd_console())

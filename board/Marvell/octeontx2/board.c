@@ -376,8 +376,8 @@ int board_late_init(void)
 	val = env_get_hex("disable_ooo_mask", 0);
 	smc_configure_ooo_mask(val);
 
-	val = env_get_hex("enable_wfe", 0);
-	smc_configure_wfe(val);
+	val = env_get_hex("enable_wfe_mask", 0);
+	smc_configure_wfe_mask(val);
 
 	if (IS_ENABLED(CONFIG_NET_OCTEONTX2))
 		board_late_probe_devices();

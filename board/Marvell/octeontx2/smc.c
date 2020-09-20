@@ -58,11 +58,11 @@ ssize_t smc_configure_ooo_mask(u64 val)
 	return regs.regs[0];
 }
 
-ssize_t smc_configure_wfe(u64 val)
+ssize_t smc_configure_wfe_mask(u64 val)
 {
 	struct pt_regs regs;
 
-	regs.regs[0] = OCTEONTX2_CONFIG_WFE;
+	regs.regs[0] = OCTEONTX2_CONFIG_WFE_MASK;
 	regs.regs[1] = val;
 	smc_call(&regs);
 

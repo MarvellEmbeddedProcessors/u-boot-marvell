@@ -12,7 +12,7 @@
 
 ssize_t smc_configure_ooo(unsigned int val);
 ssize_t smc_configure_ooo_mask(u64 val);
-ssize_t smc_configure_wfe(u64 val);
+ssize_t smc_configure_wfe_mask(u64 val);
 ssize_t smc_dram_size(unsigned int node);
 ssize_t smc_disable_rvu_lfs(unsigned int node);
 ssize_t smc_flsf_fw_booted(void);

@@ -593,6 +593,350 @@ erase_err:
 	return ret;
 }
 
+#if defined(CONFIG_SPI_FLASH_MACRONIX)
+/*
+ * Read configuration register, returning its value in the
+ * location. Return the configuration register value.
+ * Returns negative if error occurred.
+ */
+static int read_cr_mx(struct spi_nor *nor)
+{
+	int ret;
+	u8 val;
+
+	ret = nor->read_reg(nor, SPINOR_OP_RD_CR, &val, 1);
+	if (ret < 0) {
+		dev_dbg(nor->dev, "error %d reading CR\n", ret);
+		return ret;
+	}
+
+	return val;
+}
+
+/*
+ * Write status register 2 byte
+ * Returns negative if error occurred.
+ */
+static int write_sr2(struct spi_nor *nor, u8 val, u8 val1)
+{
+	nor->cmd_buf[0] = val;
+	nor->cmd_buf[1] = val1;
+	return nor->write_reg(nor, SPINOR_OP_WRSR, nor->cmd_buf, 2);
+}
+
+/* Write status register and configuration register and
+ * ensure bits in mask match written values
+ */
+static int write_sr_cr_and_check(struct spi_nor *nor, u8 status_new, u8 config,
+				 u8 mask)
+{
+	int ret;
+
+	write_enable(nor);
+	ret = write_sr2(nor, status_new, config);
+	if (ret)
+		return ret;
+
+	ret = spi_nor_wait_till_ready(nor);
+	if (ret)
+		return ret;
+
+	ret = read_sr(nor);
+	if (ret < 0)
+		return ret;
+
+	return ((ret & mask) != (status_new & mask)) ? -EIO : 0;
+}
+
+static void mx_get_locked_range(struct spi_nor *nor, u8 sr, u8 cr, loff_t *ofs,
+				uint64_t *len)
+{
+	struct mtd_info *mtd = &nor->mtd;
+	u8 mask = SR_BP2 | SR_BP1 | SR_BP0;
+	int shift = ffs(mask) - 1;
+	int pow;
+
+	if (!strcmp(mtd->name, "mx66l2g45g"))
+		mask |= SR_BP3;
+
+	if (!(sr & mask)) {
+		/* No protection */
+		*ofs = 0;
+		*len = 0;
+	} else {
+		pow = ((sr & mask) ^ mask) >> shift;
+		*len = mtd->size >> (pow - 2);
+		if (cr & CR_TB_MX)
+			*ofs = 0;
+		else
+			*ofs = mtd->size - *len;
+		debug("%s sr %x shift %x mask %x xor %x pow %x\n", __func__,
+		      sr, shift, mask, (sr & mask) ^ mask, pow);
+	}
+	debug("%s ofs %llx len %llx\n", __func__, *ofs, *len);
+}
+
+/*
+ * Return 1 if the entire region is locked (if @locked is true) or unlocked (if
+ * @locked is false); 0 otherwise
+ */
+static int mx_check_lock_status_sr(struct spi_nor *nor, loff_t ofs, u64 len,
+				   u8 sr, u8 cr, bool locked)
+{
+	loff_t lock_offs;
+	uint64_t lock_len;
+
+	if (!len)
+		return 1;
+
+	mx_get_locked_range(nor, sr, cr, &lock_offs, &lock_len);
+	debug("%s ofs %llx len %llx\n", __func__, ofs, len);
+	debug("%s lock_offs %llx lock_len %llx\n", __func__, lock_offs,
+	      lock_len);
+	if (locked)
+		/* Requested range is a sub-range of locked range */
+		return (ofs + len <= lock_offs + lock_len) && (ofs >= lock_offs);
+	else
+		/* Requested range does not overlap with locked range */
+		return (ofs >= lock_offs + lock_len) || (ofs + len <= lock_offs);
+}
+
+static int mx_is_locked_sr(struct spi_nor *nor, loff_t ofs, uint64_t len,
+			   u8 sr, u8 cr)
+{
+	return mx_check_lock_status_sr(nor, ofs, len, sr, cr, true);
+}
+
+static int mx_is_unlocked_sr(struct spi_nor *nor, loff_t ofs, uint64_t len,
+			     u8 sr, u8 cr)
+{
+	return mx_check_lock_status_sr(nor, ofs, len, sr, cr, false);
+}
+
+static int mx_lock(struct spi_nor *nor, loff_t ofs, uint64_t len)
+{
+	struct mtd_info *mtd = &nor->mtd;
+	int status_old, status_new;
+	u8 config;
+	u8 mask = SR_BP2 | SR_BP1 | SR_BP0;
+	u8 shift = ffs(mask) - 1, pow, val;
+	loff_t lock_len;
+	bool can_be_top = true, can_be_bottom = true;
+	bool use_top;
+
+	status_old = read_sr(nor);
+	if (status_old < 0)
+		return status_old;
+
+	config = read_cr_mx(nor);
+	if (config < 0)
+		return config;
+
+	/* For this flash device, BP3 of status is in position 5
+	 * so add it to mask
+	 */
+	if (!strcmp(mtd->name, "mx66l2g45g"))
+		mask |= SR_BP3;
+
+	/* If nothing in our range is unlocked, we don't need to do anything */
+	if (mx_is_locked_sr(nor, ofs, len, status_old, config))
+		return 0;
+
+	/* If anything below us is unlocked, we can't use 'bottom' protection */
+	if (!mx_is_locked_sr(nor, 0, ofs, status_old, config))
+		can_be_bottom = false;
+
+	debug("%s ofs %llx len %llx\n", __func__, ofs, len);
+	debug("%s 1ofs %llx 1len %llx\n", __func__, ofs + len,
+	      mtd->size - ofs - len);
+	/* If anything above us is unlocked, we can't use 'top' protection */
+	if (!mx_is_locked_sr(nor, ofs + len, mtd->size - (ofs + len),
+			     status_old, config))
+		can_be_top = false;
+
+	if (!can_be_bottom && !can_be_top)
+		return -EINVAL;
+
+	/* Prefer top, if both are valid */
+	use_top = can_be_top;
+	if (!strcmp(mtd->name, "mx66l2g45g"))
+		use_top = false;
+
+	/* lock_len: length of region that should end up locked */
+	if (use_top)
+		lock_len = mtd->size - ofs;
+	else
+		lock_len = ofs + len;
+
+	/*
+	 * Need smallest pow such that:
+	 *
+	 *   1 / (2^pow) <= (len / size)
+	 *
+	 * so (assuming power-of-2 size) we do:
+	 *
+	 *   pow = ceil(log2(size / len)) = log2(size) - floor(log2(len))
+	 */
+	pow = ilog2(mtd->size) - ilog2(lock_len);
+	val = mask - ((pow + 1) << shift);
+	if (val & ~mask)
+		return -EINVAL;
+	debug("%s val %x mask %x pow %x shift %x\n", __func__, val, mask, pow,
+	      shift);
+
+	/* Don't "lock" with no region! */
+	if (!(val & mask))
+		return -EINVAL;
+
+	status_new = (status_old & ~mask) | val;
+
+	/* Disallow further writes if WP pin is asserted */
+	status_new |= SR_SRWD;
+
+	/* Don't bother if they're the same */
+	if (status_new == status_old)
+		return 0;
+
+	/* Only modify protection if it will not unlock other areas */
+	if ((status_new & mask) < (status_old & mask))
+		return -EINVAL;
+
+	if (!use_top)
+		config |= CR_TB_MX;
+	else
+		config &= ~CR_TB_MX;
+
+	debug("%s SRN %x mask %x\n", __func__, status_new, mask);
+	return write_sr_cr_and_check(nor, status_new, config, mask);
+}
+
+/*
+ * Unlock a region of the flash. See stm_lock() for more info
+ *
+ * Returns negative on errors, 0 on success.
+ */
+static int mx_unlock(struct spi_nor *nor, loff_t ofs, uint64_t len)
+{
+	struct mtd_info *mtd = &nor->mtd;
+	int status_old, status_new;
+	u8 config;
+	u8 mask = SR_BP2 | SR_BP1 | SR_BP0;
+	u8 shift = ffs(mask) - 1, pow, val;
+	loff_t lock_len;
+	bool can_be_top = true, can_be_bottom = false;
+	bool use_top;
+
+	status_old = read_sr(nor);
+	if (status_old < 0)
+		return status_old;
+
+	config = read_cr_mx(nor);
+	if (config < 0)
+		return config;
+
+	/* For this flash device, BP3 of status is in position 5
+	 * so add it to mask
+	 */
+	if (!strcmp(mtd->name, "mx66l2g45g"))
+		mask |= SR_BP3;
+
+	/* If nothing in our range is locked, we don't need to do anything */
+	if (mx_is_unlocked_sr(nor, ofs, len, status_old, config))
+		return 0;
+
+	/* If anything below us is locked, we can't use 'top' protection */
+	if (!mx_is_unlocked_sr(nor, 0, ofs, status_old, config))
+		can_be_top = false;
+
+	/* If anything above us is locked, we can't use 'bottom' protection */
+	if (!mx_is_unlocked_sr(nor, ofs + len, mtd->size - (ofs + len),
+				status_old, config))
+		can_be_bottom = false;
+
+	if (!can_be_bottom && !can_be_top)
+		return -EINVAL;
+
+	/* Prefer top, if both are valid */
+	use_top = can_be_top;
+	if (!strcmp(mtd->name, "mx66l2g45g"))
+		use_top = false;
+
+	/* lock_len: length of region that should remain locked */
+	if (use_top)
+		lock_len = mtd->size - (ofs + len);
+	else
+		lock_len = ofs;
+
+	/*
+	 * Need largest pow such that:
+	 *
+	 *   1 / (2^pow) >= (len / size)
+	 *
+	 * so (assuming power-of-2 size) we do:
+	 *
+	 *   pow = floor(log2(size / len)) = log2(size) - ceil(log2(len))
+	 */
+	pow = ilog2(mtd->size) - order_base_2(lock_len);
+	debug("%s il1 %x il2 %x\n", __func__, ilog2(mtd->size),
+	      order_base_2(lock_len));
+	if (lock_len == 0) {
+		val = 0; /* fully unlocked */
+	} else {
+		val = mask - (pow << shift);
+		debug("%s val %x mask %x po %x\n", __func__, val, mask,
+		      pow << shift);
+		/* Some power-of-two sizes are not supported */
+		if (val & ~mask)
+			return -EINVAL;
+	}
+	debug("%s val %x mask %x\n", __func__, val, mask);
+
+	status_new = (status_old & ~mask) | val;
+
+	/* Don't protect status register if we're fully unlocked */
+	if (lock_len == 0)
+		status_new &= ~SR_SRWD;
+
+	/* Don't bother if they're the same */
+	if (status_new == status_old)
+		return 0;
+
+	/* Only modify protection if it will not lock other areas */
+	if ((status_new & mask) > (status_old & mask))
+		return -EINVAL;
+
+	if (!use_top)
+		config |= CR_TB_MX;
+	else
+		config &= ~CR_TB_MX;
+
+	debug("%s SRN %x mask %x\n", __func__, status_new, mask);
+	return write_sr_cr_and_check(nor, status_new, config, mask);
+}
+
+/*
+ * Check if a region of the flash is (completely) locked. See stm_lock() for
+ * more info.
+ *
+ * Returns 1 if entire region is locked, 0 if any portion is unlocked, and
+ * negative on errors.
+ */
+static int mx_is_locked(struct spi_nor *nor, loff_t ofs, uint64_t len)
+{
+	int status, config;
+
+	status = read_sr(nor);
+	if (status < 0)
+		return status;
+
+	config = read_cr_mx(nor);
+	if (config < 0)
+		return config;
+
+	return mx_is_locked_sr(nor, ofs, len, status, config);
+}
+#endif /* CONFIG_SPI_FLASH_MACRONIX */
+
 #if defined(CONFIG_SPI_FLASH_STMICRO) || defined(CONFIG_SPI_FLASH_SST)
 /* Write status register and ensure bits in mask match written values */
 static int write_sr_and_check(struct spi_nor *nor, u8 status_new, u8 mask)
@@ -2651,6 +2995,15 @@ int spi_nor_scan(struct spi_nor *nor)
 		nor->flash_lock = stm_lock;
 		nor->flash_unlock = stm_unlock;
 		nor->flash_is_locked = stm_is_locked;
+	}
+#endif
+
+#if defined(CONFIG_SPI_FLASH_MACRONIX)
+	/* NOR protection support for Macronix chips */
+	if (JEDEC_MFR(info) == SNOR_MFR_MACRONIX) {
+		nor->flash_lock = mx_lock;
+		nor->flash_unlock = mx_unlock;
+		nor->flash_is_locked = mx_is_locked;
 	}
 #endif
 

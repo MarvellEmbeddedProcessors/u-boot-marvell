@@ -292,13 +292,13 @@
 /**
  * Enumeration nix_rx_band_prof_layer_e
  *
- * NIX RX Bandwidth Profile Layers Enumeration Enumerates the values of 4
- * msb of NIX_AQ_INST_S[CINDEX], when
+ * NIX RX Bandwidth Profile Layers Enumeration Enumerates the values of
+ * NIX_AQ_INST_S[CINDEX], when
  * NIX_AQ_INST_S[CTYPE]=NIX_AQ_CTYPE_E::BAND_PROF
  */
 #define NIX_RX_BAND_PROF_LAYER_E_LEAF (0)
-#define NIX_RX_BAND_PROF_LAYER_E_MIDDLE (1)
-#define NIX_RX_BAND_PROF_LAYER_E_TOP (2)
+#define NIX_RX_BAND_PROF_LAYER_E_MIDDLE (2)
+#define NIX_RX_BAND_PROF_LAYER_E_TOP (3)
 
 /**
  * Enumeration nix_rx_colorresult_e
@@ -1034,7 +1034,9 @@ union nix_rq_ctx_hw_s {
 		u64 ipsech_ena                       : 1;
 		u64 ena_wqwd                         : 1;
 		u64 cq                               : 20;
-		u64 reserved_24_36                   : 13;
+		u64 reserved_24_34                   : 11;
+		u64 port_il4_dis                     : 1;
+		u64 port_ol4_dis                     : 1;
 		u64 lenerr_dis                       : 1;
 		u64 csum_il4_dis                     : 1;
 		u64 csum_ol4_dis                     : 1;
@@ -1133,7 +1135,9 @@ union nix_rq_ctx_s {
 		u64 ipsech_ena                       : 1;
 		u64 ena_wqwd                         : 1;
 		u64 cq                               : 20;
-		u64 reserved_24_36                   : 13;
+		u64 reserved_24_34                   : 11;
+		u64 port_il4_dis                     : 1;
+		u64 port_ol4_dis                     : 1;
 		u64 lenerr_dis                       : 1;
 		u64 csum_il4_dis                     : 1;
 		u64 csum_ol4_dis                     : 1;
@@ -2691,7 +2695,7 @@ static inline u64 NIXX_AF_CSI_ECO(void)
  * Register (RVU_PF_BAR0) nix#_af_dwrr_rpm_mtu
  *
  * NIX AF SQM PSE DWRR RPM MTU Register This is the register which would
- * define Max MTU size for RPM packets. Used for DWRR
+ * define Max MTU size for RPM packets. Used for DWRR.
  */
 union nixx_af_dwrr_rpm_mtu {
 	u64 u;
@@ -2713,7 +2717,7 @@ static inline u64 NIXX_AF_DWRR_RPM_MTU(void)
  * Register (RVU_PF_BAR0) nix#_af_dwrr_sdp_mtu
  *
  * NIX AF SQM PSE DWRR SDP MTU Register This is the register which would
- * define Max MTU size for SDP packets. Used for DWRR
+ * define Max MTU size for SDP packets. Used for DWRR.
  */
 union nixx_af_dwrr_sdp_mtu {
 	u64 u;
@@ -2746,7 +2750,8 @@ union nixx_af_err_int {
 		u64 rx_mce_fault                     : 1;
 		u64 rx_mce_list_err                  : 1;
 		u64 rx_unmapped_pf_func              : 1;
-		u64 reserved_7_11                    : 5;
+		u64 rx_cpt_actionop_err              : 1;
+		u64 reserved_8_11                    : 4;
 		u64 aq_door_err                      : 1;
 		u64 aq_res_fault                     : 1;
 		u64 aq_inst_fault                    : 1;
@@ -2778,7 +2783,8 @@ union nixx_af_err_int_ena_w1c {
 		u64 rx_mce_fault                     : 1;
 		u64 rx_mce_list_err                  : 1;
 		u64 rx_unmapped_pf_func              : 1;
-		u64 reserved_7_11                    : 5;
+		u64 rx_cpt_actionop_err              : 1;
+		u64 reserved_8_11                    : 4;
 		u64 aq_door_err                      : 1;
 		u64 aq_res_fault                     : 1;
 		u64 aq_inst_fault                    : 1;
@@ -2810,7 +2816,8 @@ union nixx_af_err_int_ena_w1s {
 		u64 rx_mce_fault                     : 1;
 		u64 rx_mce_list_err                  : 1;
 		u64 rx_unmapped_pf_func              : 1;
-		u64 reserved_7_11                    : 5;
+		u64 rx_cpt_actionop_err              : 1;
+		u64 reserved_8_11                    : 4;
 		u64 aq_door_err                      : 1;
 		u64 aq_res_fault                     : 1;
 		u64 aq_inst_fault                    : 1;
@@ -2842,7 +2849,8 @@ union nixx_af_err_int_w1s {
 		u64 rx_mce_fault                     : 1;
 		u64 rx_mce_list_err                  : 1;
 		u64 rx_unmapped_pf_func              : 1;
-		u64 reserved_7_11                    : 5;
+		u64 rx_cpt_actionop_err              : 1;
+		u64 reserved_8_11                    : 4;
 		u64 aq_door_err                      : 1;
 		u64 aq_res_fault                     : 1;
 		u64 aq_inst_fault                    : 1;
@@ -4538,7 +4546,7 @@ static inline u64 NIXX_AF_PL_CONST(void)
 union nixx_af_pl_ts {
 	u64 u;
 	struct nixx_af_pl_ts_s {
-		u64 pl_div                           : 10;
+		u64 pl_dly                           : 10;
 		u64 reserved_10_15                   : 6;
 		u64 ts                               : 48;
 	} s;
@@ -7089,8 +7097,8 @@ static inline u64 NIXX_AF_SQM_ECO(void)
 /**
  * Register (RVU_PF_BAR0) nix#_af_sqm_sclk_cnt
  *
- * NIX AF SQM Sclk Count Register This is a debug register to be used for
- * testing latency feature
+ * NIX AF SQM SCLK Count Register This is a debug register to be used for
+ * testing latency feature.
  */
 union nixx_af_sqm_sclk_cnt {
 	u64 u;
@@ -10250,7 +10258,7 @@ static inline u64 NIXX_LF_OP_VWQE_FLUSH(void)
  * NIX LF Policer Bandwidth Profiles Operation Register A 64-bit atomic
  * load-and-add to this register reads policer bandwidth profile. The
  * atomic write data has format NIX_OP_Q_WDATA_S with the same encoding
- * of BAND_PROF as specified by NIX_AQ_INST_S[CINDEX] for
+ * of BAND_PROF_INDEX as specified by NIX_AQ_INST_S[CINDEX] for
  * NIX_AQ_INST_S[CTYPE] = NIX_AQ_CTYPE_E::BAND_PROF. All other accesses
  * to this register (e.g. reads and writes) are RAZ/WI.  RSL accesses to
  * this register are RAZ/WI.
@@ -10667,7 +10675,7 @@ static inline u64 NIXX_LF_RQ_OP_RE_PKTS(void)
  * Register (RVU_PFVF_BAR2) nix#_lf_rx_gen_color_conv#
  *
  * NIX LF Receive Generic Color Conversion Register Generic conversion
- * table converts from generic field to Color
+ * table converts from generic field to color.
  */
 union nixx_lf_rx_gen_color_convx {
 	u64 u;
@@ -10689,7 +10697,7 @@ static inline u64 NIXX_LF_RX_GEN_COLOR_CONVX(u64 a)
  * Register (RVU_PFVF_BAR2) nix#_lf_rx_iip_color_conv_hi
  *
  * NIX LF Receive Inner IP Color Conversion Register Inner IP conversion
- * table converts from DSCP bits to Color
+ * table converts from DSCP bits to color.
  */
 union nixx_lf_rx_iip_color_conv_hi {
 	u64 u;
@@ -10710,7 +10718,7 @@ static inline u64 NIXX_LF_RX_IIP_COLOR_CONV_HI(void)
  * Register (RVU_PFVF_BAR2) nix#_lf_rx_iip_color_conv_lo
  *
  * NIX LF Receive Inner IP Color Conversion Register Inner IP conversion
- * table converts from DSCP bits to Color
+ * table converts from DSCP bits to color.
  */
 union nixx_lf_rx_iip_color_conv_lo {
 	u64 u;
@@ -10731,7 +10739,7 @@ static inline u64 NIXX_LF_RX_IIP_COLOR_CONV_LO(void)
  * Register (RVU_PFVF_BAR2) nix#_lf_rx_oip_color_conv_hi
  *
  * NIX LF Receive Outer IP Color Conversion Register Outer IP conversion
- * table converts from DSCP bits to Color
+ * table converts from DSCP bits to color.
  */
 union nixx_lf_rx_oip_color_conv_hi {
 	u64 u;
@@ -10752,7 +10760,7 @@ static inline u64 NIXX_LF_RX_OIP_COLOR_CONV_HI(void)
  * Register (RVU_PFVF_BAR2) nix#_lf_rx_oip_color_conv_lo
  *
  * NIX LF Receive Outer IP Color Conversion Register Outer IP conversion
- * table converts from DSCP bits to Color
+ * table converts from DSCP bits to color.
  */
 union nixx_lf_rx_oip_color_conv_lo {
 	u64 u;
@@ -10815,7 +10823,7 @@ static inline u64 NIXX_LF_RX_STATX(u64 a)
  * Register (RVU_PFVF_BAR2) nix#_lf_rx_vlan0_color_conv
  *
  * NIX LF Receive VLAN0 Color Conversion Register VLAN0 conversion table
- * converts from PCP,DEI bits to Color
+ * converts from PCP,DEI bits to color.
  */
 union nixx_lf_rx_vlan0_color_conv {
 	u64 u;
@@ -10837,7 +10845,7 @@ static inline u64 NIXX_LF_RX_VLAN0_COLOR_CONV(void)
  * Register (RVU_PFVF_BAR2) nix#_lf_rx_vlan1_color_conv
  *
  * NIX LF Receive VLAN1 Color Conversion Register VLAN1 conversion table
- * converts from PCP,DEI bits to Color
+ * converts from PCP,DEI bits to color.
  */
 union nixx_lf_rx_vlan1_color_conv {
 	u64 u;

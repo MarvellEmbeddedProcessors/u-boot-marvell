@@ -88,7 +88,7 @@
 /**
  * Enumeration npa_batch_alloc_ccode_e
  *
- * NPA Batch Alloc Condition Code Enumeration
+ * NPA Batch Allocate Condition Code Enumeration
  */
 #define NPA_BATCH_ALLOC_CCODE_E_ALLOC_CCODE_INVAL (0)
 #define NPA_BATCH_ALLOC_CCODE_E_ALLOC_CCODE_VAL (1)
@@ -97,7 +97,7 @@
 /**
  * Enumeration npa_batch_alloc_result_e
  *
- * NPA Batch Alloc Result Enumeration
+ * NPA Batch Allocate Result Enumeration
  */
 #define NPA_BATCH_ALLOC_RESULT_E_ALLOC_RESULT_ACCEPTED (0)
 #define NPA_BATCH_ALLOC_RESULT_E_ALLOC_RESULT_ERR (2)
@@ -321,8 +321,8 @@ union npa_batch_alloc_compare_s {
 /**
  * Structure npa_batch_alloc_status_s
  *
- * NPA Batch Alloc DMA Write Status Structure This structure contains the
- * status fields for the Batch Alloc cacheline DMA write.
+ * NPA Batch Allocate DMA Write Status Structure This structure contains
+ * the status fields for the batch allocate cacheline DMA write.
  */
 union npa_batch_alloc_status_s {
 	u32 u;
@@ -898,8 +898,8 @@ static inline u64 NPA_AF_BAR2_SEL(void)
 /**
  * Register (RVU_PF_BAR0) npa_af_batch_accept_ctl
  *
- * NPA AF Batch Acceptance Control Register Specifies the Acceptance
- * Control Parameters
+ * NPA AF Batch Acceptance Control Register Specifies the acceptance
+ * control parameters.
  */
 union npa_af_batch_accept_ctl {
 	u64 u;
@@ -1837,8 +1837,8 @@ static inline u64 NPA_AF_RVU_LF_CFG_DEBUG(void)
  * NPA_BATCH_ALLOC_RESULT_E. All other accesses to this register (e.g.
  * reads and writes) are RAZ/WI.  RSL accesses to this register are
  * RAZ/WI.  NPA always assumes that the atomic operand data is little-
- * endian.  If processed, the batch alloc request will DMA write one or
- * more cachelines to address begining at
+ * endian.  If processed, the batch allocate request will DMA write one
+ * or more cachelines to address beginning at
  * NPA_BATCH_ALLOC_SWAP_S[ADDRESS].  A Status field as described by
  * NPA_BATCH_ALLOC_STATUS_S will be updated by HW upon DMA write
  * completion for each cacheline.

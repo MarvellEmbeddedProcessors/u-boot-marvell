@@ -58,7 +58,7 @@ int cpu_sandbox_probe(struct udevice *dev)
 }
 
 static const struct udevice_id cpu_sandbox_ids[] = {
-	{ .compatible = "arm,cortex-a72" },
+	{ .compatible = "sandbox,cpu_sandbox" },
 	{ }
 };
 

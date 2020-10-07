@@ -220,9 +220,11 @@ static int rpm_lmac_init(struct rpm *rpm)
 {
 	struct lmac *lmac;
 	static int instance = 1;
+	union rpmx_cmr_rx_lmacs rx_lmacs;
 	int i;
 
-	rpm->lmac_count = rpm_read(rpm, 0, RPMX_CMR_RX_LMACS());
+	rx_lmacs.u = rpm_read(rpm, 0, RPMX_CMR_RX_LMACS());
+	rpm->lmac_count = fls(rx_lmacs.s.lmac_exist);
 	debug("%s: Found %d lmacs for rpm %d@%p\n", __func__, rpm->lmac_count,
 	      rpm->rpm_id, rpm->reg_base);
 

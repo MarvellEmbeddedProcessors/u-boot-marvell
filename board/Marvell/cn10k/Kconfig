@@ -1,4 +1,4 @@
-if TARGET_CN10K_106XX
+if TARGET_CN10K_A
 
 config SYS_VENDOR
 	string

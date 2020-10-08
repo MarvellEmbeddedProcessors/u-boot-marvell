@@ -4,7 +4,7 @@ choice
 	prompt "CN10K board select"
 	optional
 
-config TARGET_CN10K_106XX
+config TARGET_CN10K_A
 	bool "Marvell CN10K CN106XX"
 
 endchoice

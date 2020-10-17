@@ -15,6 +15,7 @@
 #define LOKI	0xB4
 #define F95MM	0xB5
 #define CN10KA	0xB9
+#define CNF10KA 0xBA
 
 /* Register defines */
 

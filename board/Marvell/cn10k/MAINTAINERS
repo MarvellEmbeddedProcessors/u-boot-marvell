@@ -4,3 +4,4 @@ S:	Maintained
 F:	board/Marvell/cn10k/
 F:	include/configs/cn10k_common.h
 F:	configs/cn10ka_defconfig
+F:	configs/cnf10ka_defconfig

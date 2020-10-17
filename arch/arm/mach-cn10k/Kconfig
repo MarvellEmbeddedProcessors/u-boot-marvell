@@ -7,6 +7,9 @@ choice
 config TARGET_CN10K_A
 	bool "Marvell CN10K SoC A"
 
+config TARGET_CNF10K_A
+	bool "Marvell CN10K Fusion SoC A"
+
 endchoice
 
 config SYS_SOC

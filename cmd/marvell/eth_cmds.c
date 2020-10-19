@@ -23,7 +23,7 @@ extern int cgx_intf_get_ignore(struct udevice *ethdev, int cgxid, int lmacid);
 extern int cgx_intf_get_mode(struct udevice *ethdev);
 extern void nix_print_mac_info(struct udevice *dev);
 
-static int do_ethlist(cmd_tbl_t *cmdtp, int flag, int argc,
+static int do_ethlist(struct cmd_tbl *cmdtp, int flag, int argc,
 		      char *const argv[])
 {
 	struct udevice *dev;
@@ -44,7 +44,7 @@ U_BOOT_CMD(
 	"ethX [device name] [LMAC info for RVU PF devices]\n"
 );
 
-static int do_ethparam_common(cmd_tbl_t *cmdtp, int flag, int argc,
+static int do_ethparam_common(struct cmd_tbl *cmdtp, int flag, int argc,
 			      char *const argv[])
 {
 	const char *cmd;

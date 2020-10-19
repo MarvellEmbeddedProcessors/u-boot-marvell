@@ -1,13 +1,12 @@
 // SPDX-License-Identifier:    GPL-2.0
 /*
- * Command for updating boot image.
+ * Copyright (C) 2018 Marvell International Ltd.
  *
- * Copyright (C) 2008 Atmel Corporation
- *
- * SPDX-License-Identifier:	GPL-2.0+
+ * https://spdx.org/licenses
  */
 
 #include <common.h>
+#include <command.h>
 #include <div64.h>
 #include <dm.h>
 #include <dm/device-internal.h>
@@ -19,6 +18,7 @@
 #include <spi_flash.h>
 #include <jffs2/jffs2.h>
 #include <asm/io.h>
+#include <u-boot/crc.h>
 #include <linux/mtd/mtd.h>
 
 /* Offsets and sizes to various structures in the image */
@@ -1160,7 +1160,7 @@ error:
 	return CMD_RET_SUCCESS;
 }
 
-static int do_bootimgup(cmd_tbl_t *cmdtp, int flag, int argc,
+static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 			char * const argv[])
 {
 	const char *cmd;

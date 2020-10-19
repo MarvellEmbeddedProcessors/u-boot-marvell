@@ -12,7 +12,7 @@
 
 extern void nix_get_cgx_lmac_id(struct udevice *dev, int *cgxid, int *lmacid);
 
-static int do_mdio_dbg(cmd_tbl_t *cmdtp, int flag, int argc,
+static int do_mdio_dbg(struct cmd_tbl *cmdtp, int flag, int argc,
 		       char *const argv[])
 {
 	const char *cmd;

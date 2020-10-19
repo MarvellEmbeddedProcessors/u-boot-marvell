@@ -5,10 +5,12 @@
  * Copyright (C) 2019 Marvell International Ltd.
  */
 #include <asm/psci.h>
+#include <asm/system.h>
 #include <common.h>
 #include <command.h>
 #include <linux/arm-smccc.h>
 #include <linux/compiler.h>
+#include <linux/delay.h>
 #include <linux/psci.h>
 #include <asm/arch/smc.h>
 
@@ -29,7 +31,7 @@ static void waitforresult(struct arm_smccc_res *res)
 	}
 }
 
-static int do_prbs(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+static int do_prbs(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 {
 	struct arm_smccc_res res;
 	long time;
@@ -90,7 +92,7 @@ U_BOOT_CMD(prbs,    5,    1,     do_prbs,
 	   "      PRBS is performed on a particular 'lane'"
 );
 
-static int do_eye(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+static int do_eye(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 {
 	struct arm_smccc_res res;
 	ulong lane;
@@ -117,7 +119,7 @@ U_BOOT_CMD(eye,    3,    1,     do_eye,
 	   "    - run eye by 'lane'  'qlm'\n"
 );
 
-static int do_serdes(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+static int do_serdes(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 {
 	struct arm_smccc_res res;
 	ulong lane;

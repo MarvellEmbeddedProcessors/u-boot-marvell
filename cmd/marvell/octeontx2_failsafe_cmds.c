@@ -10,7 +10,7 @@
 #include <asm/arch/smc.h>
 
 static int do_fsafe_clr(
-	cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
+	struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 {
 	return smc_flsf_clr_force_2ndry();
 }

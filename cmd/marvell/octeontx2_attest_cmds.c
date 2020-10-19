@@ -52,7 +52,7 @@ static const char *tlv_type_name(enum sw_attestation_tlv_type type)
 		return tlv_types[type];
 }
 
-static int do_attest(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
+static int do_attest(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 {
 	ssize_t len;
 	uintptr_t attest_ret;

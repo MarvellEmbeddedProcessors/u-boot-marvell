@@ -127,7 +127,7 @@ struct octeontx_pcie_console {
 	void			*user;
 	struct octeontx_pcie_lock	pcie_lock;
 	u32			pad[8];
-} __packed;
+} __packed __aligned(8);
 
 /**
  * This is the main container structure that contains all the information
@@ -160,7 +160,7 @@ struct octeontx_pcie_console_nexus {
 	u64		pad[13];
 	/* Starts at offset 128 */
 	__le64		console_addr[OCTEONTX_PCIE_MAX_CONSOLES];
-} __packed;
+} __packed __aligned(8);
 
 struct octeontx_pcie_console_priv {
 	struct resource res;

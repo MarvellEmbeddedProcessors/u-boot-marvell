@@ -764,7 +764,7 @@ static int octeon_i2c_set_bus_speed(struct udevice *bus, unsigned int speed)
 		return -1;
 
 	val = readq(twsi->base + TWSI_MODE);
-	if (speed > FREQ_400KHZ) {
+	if (speed > FREQ_400KHZ)
 		val |= TWSI_MODE_HS_MODE | TWSI_MODE_REFCLK_SRC;
 	else
 		val &= (~(TWSI_MODE_HS_MODE | TWSI_MODE_REFCLK_SRC));

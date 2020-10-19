@@ -166,11 +166,11 @@ static int i2c_gpio_probe(struct udevice *dev)
 	int size;
 	const char *status;
 
-	debug("%s(%s)\n", __func__, dev->name);
+	pr_debug("%s(%s)\n", __func__, dev->name);
 
 	status = ofnode_read_string(dev->node, "status");
 	if (status && !strncmp(status, "ok", 2)) {
-		debug("%s(%s): GPIO device disabled in device tree\n",
+		pr_debug("%s(%s): GPIO device disabled in device tree\n",
 		      __func__, dev->name);
 		return -ENODEV;
 	}
@@ -206,7 +206,7 @@ static int i2c_gpio_probe(struct udevice *dev)
 	if (!chip->func)
 		return -ENOMEM;
 
-	debug("%s(%s): probed at address %d with %u gpios and name %s\n",
+	pr_debug("%s(%s): probed at address %d with %u gpios and name %s\n",
 	      __func__, dev->name, chip->addr, chip->gpio_count, name);
 
 	return 0;

@@ -7,13 +7,16 @@
 
 #include <common.h>
 #include <dm.h>
+#include <dm/device_compat.h>
 #include <errno.h>
 #include <asm/io.h>
 #include <serial.h>
 #include <linux/compiler.h>
+#include <linux/delay.h>
 #include <watchdog.h>
 #include <stdio_dev.h>
 #include <input.h>
+#include <cpu_func.h>
 
 #undef CONFIG_LOGLEVEL
 #define CONFIG_LOGLEVEL 10

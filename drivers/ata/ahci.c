@@ -31,6 +31,10 @@
 #include <dm/device-internal.h>
 #include <dm/lists.h>
 
+#if defined(CONFIG_ARCH_OCTEONTX)
+#include <asm/arch/board.h>
+#endif
+
 static int ata_io_flush(struct ahci_uc_priv *uc_priv, u8 port);
 
 #ifndef CONFIG_DM_SCSI
@@ -623,6 +627,18 @@ static int ahci_port_start(struct ahci_uc_priv *uc_priv, u8 port)
 			  PORT_CMD_START, port_mmio + PORT_CMD);
 
 	debug("Exit start port %d\n", port);
+
+#if CONFIG_ARCH_OCTEONTX
+	/*
+	 * Skip interface busy check based on error and status
+	 * information from task file data register as these boards
+	 * have port multiplier and device is always present
+	 * U-boot lacks port multiplier support hence this ugly hack.
+	 */
+
+	if (octeontx_board_has_pmp())
+		return 0;
+#endif
 
 	/*
 	 * Make sure interface is not busy based on error and status

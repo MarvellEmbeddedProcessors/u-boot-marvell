@@ -11,8 +11,10 @@
 /* Product PARTNUM */
 #define CN81XX	0xA2
 #define CN83XX	0xA3
+#define CN98XX	0xB1
 #define CN96XX	0xB2
 #define CN95XX	0xB3
+#define F95MM	0xB5
 
 #define otx_is_altpkg()	read_alt_pkg()
 #define otx_is_soc(soc)	(read_partnum() == (soc))

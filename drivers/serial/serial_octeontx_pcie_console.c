@@ -6,11 +6,15 @@
 #include <common.h>
 #include <dm.h>
 #include <dm/device-internal.h>
+#include <dm/device_compat.h>
 #include <dm/uclass.h>
 #include <dm/lists.h>
 #include <dm/uclass-internal.h>
 #include <linux/ioport.h>
+#include <linux/bitops.h>
+#include <linux/delay.h>
 #include <errno.h>
+#include <log.h>
 #include <asm/io.h>
 #include <serial.h>
 #include <linux/compiler.h>
@@ -21,6 +25,7 @@
 #include "serial_octeontx_pcie_console.h"
 #include <string.h>
 #include <iomux.h>
+#include <env.h>
 
 /* This driver provides a PCIe console for OcteonTX processors.  It behaves
  * similar to a serial console but it works by using shared memory between

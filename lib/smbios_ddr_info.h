@@ -7,6 +7,8 @@
 #ifndef _SMBIOS_DDR_INFO_H_
 #define _SMBIOS_DDR_INFO_H_
 
+#include <linux/bitops.h>
+
 /* The DRAM location where SPD data is stored from firmware running from SRAM */
 #define SHARED_DDR_BTW_BLE_UBOOT	0x6000000
 

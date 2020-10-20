@@ -9,7 +9,12 @@
 #define __SOC_H__
 
 /* Product PARTNUM */
-#define CN106XX	0xB9
+#define CN98XX	0xB1
+#define CN96XX	0xB2
+#define CN95XX	0xB3
+#define LOKI	0xB4
+#define F95MM	0xB5
+#define CN10KA	0xB9
 
 /* Register defines */
 

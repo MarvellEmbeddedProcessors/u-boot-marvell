@@ -47,23 +47,12 @@ char lmac_speed_to_str[][8] = {
 	"100G",
 };
 
-static u64 sh_fwbase;
-
-extern int eth_intf_get_fwdata_base(u64 *base);
-
-void init_sh_fwdata(void)
-{
-	int ret;
-
-	ret = eth_intf_get_fwdata_base(&sh_fwbase);
-	if (ret)
-		printf("Shared FW Base init failed\n");
-}
+extern struct sh_fwdata *get_fwdata_base(void);
 
 void print_fwdata_lmac_type(int rpm_id, int lmac_id)
 {
 	int lmac_type;
-	struct sh_fwdata *data = (struct sh_fwdata *)sh_fwbase;
+	struct sh_fwdata *data = get_fwdata_base();
 
 	if (data) {
 		lmac_type = data->eth_fw_data[rpm_id][lmac_id].lmac_type;

@@ -9,6 +9,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <env.h>
+#include <log.h>
 #include <asm/io.h>
 #include <linux/compiler.h>
 #include <linux/libfdt.h>
@@ -237,7 +238,7 @@ static int ft_board_clean_props(void *blob, int node)
 	return 0;
 }
 
-int ft_board_setup(void *blob, bd_t *bd)
+int ft_board_setup(void *blob, struct bd_info *bd)
 {
 	int nodeoff, ret;
 

@@ -12,6 +12,8 @@
 
 /** Reg offsets */
 
+extern unsigned long fdt_base_addr;
+
 /** Function definitions */
 void mem_map_fill(void);
 int fdt_get_board_mac_cnt(bool *use_id);
@@ -20,4 +22,6 @@ const char *fdt_get_board_model(void);
 const char *fdt_get_board_serial(void);
 const char *fdt_get_board_revision(void);
 void cn10k_board_get_mac_addr(u8 index, u8 *mac_addr);
+void eth_intf_shutdown(void);
+void init_sh_fwdata(void);
 #endif /* __BOARD_H__ */

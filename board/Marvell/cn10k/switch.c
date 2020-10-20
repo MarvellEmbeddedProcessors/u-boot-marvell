@@ -5,9 +5,10 @@
  * https://spdx.org/licenses
  */
 
-#include <common.h>
 #include <console.h>
 #include <dm.h>
+#include <log.h>
+#include <linux/delay.h>
 #include <dm/uclass-internal.h>
 #include <malloc.h>
 #include <errno.h>

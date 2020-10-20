@@ -5,7 +5,7 @@ choice
 	optional
 
 config TARGET_CN10K_A
-	bool "Marvell CN10K CN106XX"
+	bool "Marvell CN10K SoC A"
 
 endchoice
 

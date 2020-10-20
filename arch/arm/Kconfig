@@ -1759,9 +1759,11 @@ config ARCH_OCTEONTX2
 
 config ARCH_CN10K
 	bool "Support Marvell CN10XXX SoCs"
+	select CLK
 	select DM
 	select ARM64
 	select OF_CONTROL
+	select OF_LIVE
 	select BOARD_LATE_INIT
 	select SYS_CACHE_SHIFT_7
 

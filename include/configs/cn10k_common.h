@@ -5,8 +5,8 @@
  * https://spdx.org/licenses
  */
 
-#ifndef __CN10K_106XX_H__
-#define __CN10K_106XX_H__
+#ifndef __CN10K_A_H__
+#define __CN10K_A_H__
 
 #define CONFIG_SUPPORT_RAW_INITRD
 
@@ -18,12 +18,6 @@
 
 /** Stack starting address */
 #define CONFIG_SYS_INIT_SP_ADDR		(CONFIG_SYS_SDRAM_BASE + 0xffff0)
-
-/** Memory test starting address */
-#define CONFIG_SYS_MEMTEST_START	CONFIG_SYS_SDRAM_BASE
-
-/** Memory test end address */
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_SDRAM_BASE + 0xf0000)
 
 /** Heap size for U-Boot */
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + 64 * 1024 * 1024)
@@ -51,12 +45,8 @@
 					"autoload=0\0"
 
 /** Environment defines */
-#define CONFIG_ENV_SIZE			0x8000
-#define CONFIG_ENV_OFFSET		0xf00000
 #if defined(CONFIG_ENV_IS_IN_MMC)
 #define CONFIG_SYS_MMC_ENV_DEV		0
-#elif defined(CONFIG_ENV_IS_IN_SPI_FLASH)
-#define CONFIG_ENV_SECT_SIZE		(64 * 1024)
 #endif
 
 /* Monitor Command Prompt */
@@ -75,4 +65,4 @@
 #define CONFIG_SUPPORT_EMMC_RPMB
 #define CONFIG_CMD_BKOPS_ENABLE
 #define MMC_SUPPORTS_TUNING
-#endif /* __CN10K_106XX_H__ */
+#endif /* __CN10K_A_H__ */

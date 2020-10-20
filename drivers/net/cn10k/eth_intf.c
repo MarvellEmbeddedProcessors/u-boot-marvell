@@ -13,6 +13,7 @@
 #include <asm/io.h>
 #include <errno.h>
 #include <linux/list.h>
+#include <linux/delay.h>
 #include <asm/arch/board.h>
 
 #include "eth_intf.h"
@@ -672,5 +673,21 @@ int eth_intf_get_fwdata_base(u64 *base)
 	scr0.u >>= 9;
 	*base = scr0.u;
 	return 0;
+}
+
+static u64 sh_fwbase;
+
+void init_sh_fwdata(void)
+{
+	int ret;
+
+	ret = eth_intf_get_fwdata_base(&sh_fwbase);
+	if (ret)
+		printf("Shared FW Base init failed\n");
+}
+
+struct sh_fwdata *get_fwdata_base(void)
+{
+	return (struct sh_fwdata *)sh_fwbase;
 }
 

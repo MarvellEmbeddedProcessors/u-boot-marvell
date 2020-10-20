@@ -9,7 +9,11 @@
 #include <console.h>
 #include <dm.h>
 #include <dm/uclass-internal.h>
+#include <env.h>
+#include <init.h>
+#include <log.h>
 #include <malloc.h>
+#include <net.h>
 #include <errno.h>
 #include <asm/io.h>
 #include <linux/compiler.h>
@@ -22,10 +26,6 @@
 #include <dm/util.h>
 
 DECLARE_GLOBAL_DATA_PTR;
-
-extern unsigned long fdt_base_addr;
-extern void eth_intf_shutdown(void);
-extern void init_sh_fwdata(void);
 
 void cleanup_env_ethaddr(void)
 {
@@ -119,9 +119,6 @@ int dram_init(void)
 	return 0;
 }
 
-#ifdef CONFIG_NET_CN10K
-#define	PCI_DEVID_CN10K_RPM			0xA060
-#define	PCI_DEVID_OCTEONTX2_RVU_AF		0xA065
 void board_late_probe_devices(void)
 {
 	struct udevice *dev;
@@ -130,16 +127,15 @@ void board_late_probe_devices(void)
 	/* Probe MAC(RPM) and NIC AF devices before Network stack init */
 	for (i = 0; i < rpm_cnt; i++) {
 		err = dm_pci_find_device(PCI_VENDOR_ID_CAVIUM,
-					 PCI_DEVID_CN10K_RPM, i, &dev);
+					 PCI_DEVICE_ID_CAVIUM_RPM, i, &dev);
 		if (err)
 			debug("%s RPM%d device not found\n", __func__, i);
 	}
 	err = dm_pci_find_device(PCI_VENDOR_ID_CAVIUM,
-				 PCI_DEVID_OCTEONTX2_RVU_AF, 0, &dev);
+				 PCI_DEVICE_ID_CAVIUM_RVU_AF, 0, &dev);
 	if (err)
 		debug("RVU AF device not found\n");
 }
-#endif
 
 /**
  * Board late initialization routine.
@@ -184,14 +180,14 @@ int board_late_init(void)
 			save_env = true;
 		env_set("serial#", boardserial);
 	}
-#ifdef CONFIG_CN10K_ETH_INTF
-	init_sh_fwdata();
-#endif
-#ifdef CONFIG_NET_CN10K
-	board_late_probe_devices();
-#endif
 
-	board_switch_init();
+	if (IS_ENABLED(CONFIG_CN10K_ETH_INTF))
+		init_sh_fwdata();
+	if (IS_ENABLED(CONFIG_NET_CN10K))
+		board_late_probe_devices();
+
+	if (IS_ENABLED(CONFIG_TARGET_CN10K_A))
+		board_switch_init();
 
 	if (save_env)
 		env_save();
@@ -211,10 +207,9 @@ void board_quiesce_devices(void)
 	if (ret)
 		printf("couldn't remove rvu pf devices\n");
 
-#ifdef CONFIG_CN10K_ETH_INTF
 	/* Bring down all lmac links */
-	eth_intf_shutdown();
-#endif
+	if (IS_ENABLED(CONFIG_CN10K_ETH_INTF))
+		eth_intf_shutdown();
 
 	/* Removes all RPM and RVU AF devices */
 	ret = uclass_get(UCLASS_MISC, &uc_dev);
@@ -225,27 +220,23 @@ void board_quiesce_devices(void)
 
 	/* SMC call - removes all LF<->PF mappings */
 	smc_disable_rvu_lfs(0);
-	board_switch_reset();
+
+	if (IS_ENABLED(CONFIG_TARGET_CN10K_A))
+		board_switch_reset();
 }
 
 /*
  * Invoked before relocation, so limit to stack variables.
  */
-int show_board_info(void)
+int checkboard(void)
 {
 	const char *str;
-
-	if (otx_is_soc(CN106XX))
-		str = "CN106XX";
-	else
-		str = "UNKNOWN";
-	printf("Marvell CN10K %s ARM V8 Core\n", str);
 
 	str = fdt_get_board_model();
 	if (!str)
 		str = "UNKNOWN";
-	printf("Board: %s\n", str);
+
+	printf("Board: %s\n", fdt_get_board_model());
 
 	return 0;
 }
-

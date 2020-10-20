@@ -393,7 +393,7 @@ config SYS_I2C_SANDBOX
 
 config SYS_I2C_OCTEON
 	bool "Octeon II/III/TX/TX2 I2C driver"
-	depends on (ARCH_OCTEON || ARCH_OCTEONTX || ARCH_OCTEONTX2) && DM_I2C
+	depends on (ARCH_OCTEON || ARCH_OCTEONTX || ARCH_OCTEONTX2 || ARCH_CN10K) && DM_I2C
 	default y
 	help
 	  Add support for the Marvell Octeon I2C driver. This is used with

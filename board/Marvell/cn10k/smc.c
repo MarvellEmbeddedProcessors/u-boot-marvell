@@ -5,15 +5,12 @@
  * https://spdx.org/licenses
  */
 
-#include <common.h>
+#include <asm/global_data.h>
 #include <asm/io.h>
-
 #include <asm/system.h>
+#include <asm/ptrace.h>
 #include <asm/arch/smc.h>
-
 #include <asm/psci.h>
-
-#include <malloc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

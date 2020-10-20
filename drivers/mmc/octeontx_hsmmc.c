@@ -9,6 +9,7 @@
 #include <cpu_func.h>
 #include <dm.h>
 #include <dm/lists.h>
+#include <display_options.h>
 #include <env.h>
 #include <errno.h>
 #include <fdtdec.h>

@@ -17,6 +17,7 @@
 #include <asm/io.h>
 #include <linux/types.h>
 #include <linux/log2.h>
+#include <linux/delay.h>
 #include <asm/arch/board.h>
 #include "nix.h"
 #include "lmt.h"

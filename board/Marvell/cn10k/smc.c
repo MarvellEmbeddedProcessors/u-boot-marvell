@@ -37,6 +37,26 @@ ssize_t smc_disable_rvu_lfs(unsigned int node)
 }
 
 /*
+ * Get RVU Reserved Memory Region Info
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *	x1 - region start address
+ *	x2 - region size
+ */
+int smc_rvu_rsvd_reg_info(u64 *reg_addr, u64 *reg_size)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_RVU_RSVD_REG_INFO;
+	smc_call(&regs);
+
+	*reg_addr = regs.regs[1];
+	*reg_size = regs.regs[2];
+	return regs.regs[0];
+}
+/*
  * Perform Switch Firmware load to DRAM in ATF
  *
  * x1 - super image location

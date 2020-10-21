@@ -15,7 +15,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define CN10K_MEM_MAP_USED 4
 
 /* +1 is end of list which needs to be empty */
-#define CN10K_MEM_MAP_MAX (CN10K_MEM_MAP_USED + CONFIG_NR_DRAM_BANKS + 2)
+#define CN10K_MEM_MAP_MAX (CN10K_MEM_MAP_USED + CONFIG_NR_DRAM_BANKS + 3)
 
 static struct mm_region cn10k_mem_map[CN10K_MEM_MAP_MAX] = {
 	{
@@ -47,8 +47,8 @@ static struct mm_region cn10k_mem_map[CN10K_MEM_MAP_MAX] = {
 
 struct mm_region *mem_map = cn10k_mem_map;
 
-#define LMT_REGION	0x3000000UL
-void mem_map_fill(void)
+#define SHFW_REGION	0x3000000UL
+void mem_map_fill(u64 rvu_addr, u64 rvu_size)
 {
 	int banks = CN10K_MEM_MAP_USED;
 	u32 dram_start = CONFIG_SYS_TEXT_BASE;
@@ -61,9 +61,15 @@ void mem_map_fill(void)
 					    PTE_BLOCK_NON_SHARE;
 		banks = banks + 1;
 	}
-	cn10k_mem_map[banks].virt = dram_start - LMT_REGION;
-	cn10k_mem_map[banks].phys = dram_start - LMT_REGION;
-	cn10k_mem_map[banks].size = LMT_REGION;
+	cn10k_mem_map[banks].virt = dram_start - SHFW_REGION;
+	cn10k_mem_map[banks].phys = dram_start - SHFW_REGION;
+	cn10k_mem_map[banks].size = SHFW_REGION;
+	cn10k_mem_map[banks].attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+				    PTE_BLOCK_NON_SHARE;
+	banks++;
+	cn10k_mem_map[banks].virt = rvu_addr;
+	cn10k_mem_map[banks].phys = rvu_addr;
+	cn10k_mem_map[banks].size = rvu_size;
 	cn10k_mem_map[banks].attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 				    PTE_BLOCK_NON_SHARE;
 }

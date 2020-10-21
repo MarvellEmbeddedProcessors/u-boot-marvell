@@ -15,7 +15,7 @@
 extern unsigned long fdt_base_addr;
 
 /** Function definitions */
-void mem_map_fill(void);
+void mem_map_fill(u64 rvu_addr, u64 rvu_size);
 int fdt_get_board_mac_cnt(bool *use_id);
 u64 fdt_get_board_mac_addr(bool use_id, u8 id);
 const char *fdt_get_board_model(void);

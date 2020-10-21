@@ -111,10 +111,14 @@ int timer_init(void)
 
 int dram_init(void)
 {
+	u64 rvu_addr, rvu_size;
+	int ret;
+
 	gd->ram_size = smc_dram_size(0);
 	gd->ram_size -= CONFIG_SYS_SDRAM_BASE;
 
-	mem_map_fill();
+	ret = smc_rvu_rsvd_reg_info(&rvu_addr, &rvu_size);
+	mem_map_fill(rvu_addr, rvu_size);
 
 	return 0;
 }

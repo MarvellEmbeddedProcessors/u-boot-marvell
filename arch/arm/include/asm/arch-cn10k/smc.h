@@ -14,6 +14,17 @@ ssize_t smc_dram_size(unsigned int node);
 ssize_t	smc_disable_rvu_lfs(unsigned int node);
 
 /*
+ * Get RVU Reserved Memory Region Info
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *	x1 - region start address
+ *	x2 - region size
+ */
+int smc_rvu_rsvd_reg_info(u64 *reg_addr, u64 *reg_size);
+
+/*
  * x1 - user_buffer
  * x2 - size
  * x3 - bus

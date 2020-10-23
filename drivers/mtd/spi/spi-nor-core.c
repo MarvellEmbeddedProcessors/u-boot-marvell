@@ -180,6 +180,25 @@ static int read_fsr(struct spi_nor *nor)
 }
 
 /*
+ * Read the security register, returning its value in the location
+ * Return the register value.
+ * Returns negative if error occurred.
+ */
+static int read_scur(struct spi_nor *nor)
+{
+	int ret;
+	u8 val;
+
+	ret = nor->read_reg(nor, SPINOR_OP_RD_SCUR, &val, 1);
+	if (ret < 0) {
+		pr_debug("error %d reading SCUR\n", ret);
+		return ret;
+	}
+
+	return val;
+}
+
+/*
  * Read configuration register, returning its value in the
  * location. Return the configuration register value.
  * Returns negative if error occurred.
@@ -403,9 +422,28 @@ static int spi_nor_fsr_ready(struct spi_nor *nor)
 	return fsr & FSR_READY;
 }
 
+static int spi_nor_scur_ready(struct spi_nor *nor)
+{
+	int scur = read_scur(nor);
+
+	if (scur < 0)
+		return scur;
+
+	if (scur & (SCUR_E_ERR | SCUR_P_ERR)) {
+		if (scur & SCUR_E_ERR)
+			dev_dbg(nor->dev, "Erase operation failed.\n");
+		else
+			dev_dbg(nor->dev, "Program operation failed.\n");
+
+		return -EIO;
+	}
+
+	return 1;
+}
+
 static int spi_nor_ready(struct spi_nor *nor)
 {
-	int sr, fsr;
+	int sr, fsr, scur;
 
 	sr = spi_nor_sr_ready(nor);
 	if (sr < 0)
@@ -413,7 +451,11 @@ static int spi_nor_ready(struct spi_nor *nor)
 	fsr = nor->flags & SNOR_F_USE_FSR ? spi_nor_fsr_ready(nor) : 1;
 	if (fsr < 0)
 		return fsr;
-	return sr && fsr;
+	scur = nor->flags & SNOR_F_USE_SCUR ? spi_nor_scur_ready(nor) : 1;
+	if (scur < 0)
+		return scur;
+
+	return sr && fsr && scur;
 }
 
 /*
@@ -3004,6 +3046,8 @@ int spi_nor_scan(struct spi_nor *nor)
 		nor->flash_lock = mx_lock;
 		nor->flash_unlock = mx_unlock;
 		nor->flash_is_locked = mx_is_locked;
+		if (!strcmp(mtd->name, "mx66l2g45g"))
+			nor->flags |= SNOR_F_USE_SCUR;
 	}
 #endif
 

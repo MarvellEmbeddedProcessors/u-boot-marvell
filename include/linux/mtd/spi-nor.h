@@ -118,6 +118,7 @@
 
 /* Used for Macronix flashes only. */
 #define SPINOR_OP_RD_CR		0x15	/* Read CR register */
+#define SPINOR_OP_RD_SCUR	0x2b	/* Read Security register */
 
 /* Used for Spansion flashes only. */
 #define SPINOR_OP_BRWR		0x17	/* Bank register write */
@@ -159,6 +160,10 @@
 
 /* Status Register 2 bits. */
 #define SR2_QUAD_EN_BIT7	BIT(7)
+
+/* Macronix Security Register bits */
+#define SCUR_E_ERR		BIT(6)
+#define SCUR_P_ERR		BIT(5)
 
 /* Supported SPI protocols */
 #define SNOR_PROTO_INST_MASK	GENMASK(23, 16)
@@ -252,6 +257,7 @@ enum spi_nor_option_flags {
 	SNOR_F_READY_XSR_RDY	= BIT(4),
 	SNOR_F_USE_CLSR		= BIT(5),
 	SNOR_F_BROKEN_RESET	= BIT(6),
+	SNOR_F_USE_SCUR		= BIT(7),
 };
 
 /**

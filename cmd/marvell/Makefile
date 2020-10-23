@@ -16,5 +16,6 @@ obj-$(CONFIG_CMD_BOOTIMGUP) += bootimgup.o
 endif
 ifdef CONFIG_ARCH_CN10K
 obj-$(CONFIG_CMD_ETH) += eth_cmds.o
+obj-$(CONFIG_CMD_EFI_CMDS) += efi_cmds.o
 obj-$(CONFIG_CMD_BOOTIMGUP) += bootimgup.o
 endif

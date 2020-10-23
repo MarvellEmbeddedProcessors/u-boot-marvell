@@ -58,4 +58,21 @@ int smc_spi_update(u64 user_buffer, u32 size, u32 bus, u32 cs);
  */
 int smc_load_switch_fw(u64 super_img_addr, u64 cm3_img_addr,
 		       u64 *cm3_img_size);
+
+/*
+ * Perform EFI Application Image load to DRAM in ATF
+ *
+ * x1 - Image ID
+ * x2 - Image location
+ * x3 - Pointer to store image size
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ *		-2 -- SPI_CONFIG_ERR
+ *		-3 -- SPI_MMAP_ERR
+ *		-5 -- EIO
+ */
+int smc_load_efi_img(int image_id, u64 img_addr, u64 *img_size);
 #endif

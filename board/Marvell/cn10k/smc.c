@@ -56,6 +56,35 @@ int smc_rvu_rsvd_reg_info(u64 *reg_addr, u64 *reg_size)
 	*reg_size = regs.regs[2];
 	return regs.regs[0];
 }
+
+/*
+ * Perform EFI Application Image load to DRAM in ATF
+ *
+ * x1 - Image ID
+ * x2 - Image location
+ * x3 - Pointer to store image size
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ *		-2 -- SPI_CONFIG_ERR
+ *		-3 -- SPI_MMAP_ERR
+ *		-5 -- EIO
+ */
+int smc_load_efi_img(int image_id, u64 img_addr, u64 *img_size)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_LOAD_EFI_APP;
+	regs.regs[1] = image_id;
+	regs.regs[2] = img_addr;
+	smc_call(&regs);
+
+	*img_size = regs.regs[1];
+	return regs.regs[0];
+}
+
 /*
  * Perform Switch Firmware load to DRAM in ATF
  *

@@ -16,6 +16,13 @@ config CMD_ETH
 	   LMAC modes on RVU PF [CGX] network interfaces on Marvell
 	   OcteonTX2 platforms.
 
+config CMD_EFI_CMDS
+	depends on ARCH_CN10K
+	bool "EFI commands"
+	help
+	   Support to load EFI Application Images from Secure SPI Flash
+	   on CN10K platforms.
+
 config CMD_MDIO_DBG
 	depends on ARCH_OCTEONTX2
 	bool "PHY registers read/write support on mdio bus"

@@ -16,8 +16,31 @@
 #include <efi_loader.h>
 #include <efi_variable.h>
 #include <u-boot/crc.h>
+#include <spi_flash.h>
 
 #define PART_STR_LEN 10
+
+static struct spi_flash *flash;
+
+static efi_status_t __maybe_unused efi_init_spi_flash(void)
+{
+	unsigned int cs = 0; /* Data flash on SPI 1:0 */
+	unsigned int bus = 1;
+	unsigned int speed = CONFIG_SF_DEFAULT_SPEED;
+	unsigned int mode = CONFIG_SF_DEFAULT_MODE;
+	struct udevice *new;
+	int ret;
+
+	ret = spi_flash_probe_bus_cs(bus, cs, speed, mode, &new);
+	if (ret) {
+		printf("Failed to initialize SPI flash at %u:%u (error %d)\n",
+		       bus, cs, ret);
+	} else {
+		flash = dev_get_uclass_priv(new);
+	}
+
+	return (flash ? EFI_SUCCESS : ret);
+}
 
 /**
  * efi_set_blk_dev_to_system_partition() - select EFI system partition
@@ -123,13 +146,31 @@ efi_status_t efi_var_to_file(void)
 	efi_status_t ret;
 	struct efi_var_file *buf;
 	loff_t len;
-	loff_t actlen;
 	int r;
 
 	ret = efi_var_collect(&buf, &len, EFI_VARIABLE_NON_VOLATILE);
 	if (ret != EFI_SUCCESS)
 		goto error;
 
+#ifdef CONFIG_EFI_VARIABLE_IN_SPI_FLASH
+	ret = efi_init_spi_flash();
+	if (ret != EFI_SUCCESS)
+		goto error;
+	/*
+	 * VAR Buffer size is fixed for 16K so assume the file is stored
+	 * at configured offset in data flash.
+	 * Erase sector - 64KB usually.
+	 */
+	r = spi_flash_erase(flash, CONFIG_EFI_VARIABLE_IN_SPI_FLASH_AT_OFFSET,
+							flash->erase_size);
+	if (ret != EFI_SUCCESS)
+		goto error;
+	r = spi_flash_write(flash, CONFIG_EFI_VARIABLE_IN_SPI_FLASH_AT_OFFSET,
+					len, (void *)map_to_sysmem((void *)buf));
+	if (r)
+		ret = EFI_DEVICE_ERROR;
+#else
+	loff_t actlen;
 	ret = efi_set_blk_dev_to_system_partition();
 	if (ret != EFI_SUCCESS)
 		goto error;
@@ -137,7 +178,7 @@ efi_status_t efi_var_to_file(void)
 	r = fs_write(EFI_VAR_FILE_NAME, map_to_sysmem(buf), 0, len, &actlen);
 	if (r || len != actlen)
 		ret = EFI_DEVICE_ERROR;
-
+#endif
 error:
 	if (ret != EFI_SUCCESS)
 		log_err("Failed to persist EFI variables\n");
@@ -204,11 +245,24 @@ efi_status_t efi_var_from_file(void)
 		return EFI_OUT_OF_RESOURCES;
 	}
 
+#ifdef CONFIG_EFI_VARIABLE_IN_SPI_FLASH
+	ret = efi_init_spi_flash();
+	if (ret != EFI_SUCCESS)
+		goto error;
+	/*
+	 * VAR Buffer size is fixed for 16K so assume the file is stored
+	 * at offset configured.
+	 */
+	r = spi_flash_read(flash, CONFIG_EFI_VARIABLE_IN_SPI_FLASH_AT_OFFSET, 
+				EFI_VAR_BUF_SIZE, (void *)map_to_sysmem((void *)buf));
+	len = buf->length;
+#else
 	ret = efi_set_blk_dev_to_system_partition();
 	if (ret != EFI_SUCCESS)
 		goto error;
 	r = fs_read(EFI_VAR_FILE_NAME, map_to_sysmem(buf), 0, EFI_VAR_BUF_SIZE,
 		    &len);
+#endif
 	if (r || len < sizeof(struct efi_var_file)) {
 		log_err("Failed to load EFI variables\n");
 		goto error;

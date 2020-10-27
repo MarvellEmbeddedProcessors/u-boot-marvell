@@ -39,17 +39,26 @@ static int do_prbs(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[
 	ulong qlm;
 	ulong lane;
 	ulong delay;
+	ulong inject;
 
 	if (argc == 5) {
 		qlm = simple_strtoul(argv[1], NULL, 10);
 		lane = simple_strtoul(argv[2], NULL, 10);
 		mode = simple_strtoul(argv[3], NULL, 10);
 		time = simple_strtoul(argv[4], NULL, 10);
+		inject = 0;
+	} else if (argc == 6) {
+		qlm = simple_strtoul(argv[1], NULL, 10);
+		lane = simple_strtoul(argv[2], NULL, 10);
+		mode = simple_strtoul(argv[3], NULL, 10);
+		time = simple_strtoul(argv[4], NULL, 10);
+		inject = simple_strtoul(argv[5], NULL, 10);
 	} else {
 		return CMD_RET_USAGE;
 	}
 
-	arm_smccc_smc(OCTEONTX_SERDES_DBG_PRBS, CGX_PRBS_START_CMD, qlm, mode, lane, 0, 0, 0, &res);
+	arm_smccc_smc(OCTEONTX_SERDES_DBG_PRBS, CGX_PRBS_START_CMD, qlm,
+		      (mode | inject << 8), lane, 0, 0, 0, &res);
 
 	waitforresult(&res);
 	if (res.a0 != SMCCC_RET_SUCCESS) {
@@ -84,12 +93,13 @@ static int do_prbs(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[
 	return CMD_RET_SUCCESS;
 }
 
-U_BOOT_CMD(prbs,    5,    1,     do_prbs,
+U_BOOT_CMD(prbs,    6,    1,     do_prbs,
 	   "command to run PRBS on slected QLM",
-	   "<qlm> <lane> <mode> <time> \n"
+	   "<qlm> <lane> <mode> <time> [inject] \n"
 	   "    - run PRBS with pattern indicated by 'mode' on selected 'qlm'\n"
 	   "      PRBS will be enabled by 'time' seconds\n"
-	   "      PRBS is performed on a particular 'lane'"
+	   "      PRBS is performed on a particular 'lane'\n"
+	   "      Inject errors if 'inject' is passed"
 );
 
 static int do_eye(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])

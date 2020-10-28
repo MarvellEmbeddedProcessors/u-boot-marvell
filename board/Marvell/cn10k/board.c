@@ -227,6 +227,14 @@ void board_quiesce_devices(void)
 
 	if (IS_ENABLED(CONFIG_TARGET_CN10K_A))
 		board_switch_reset();
+
+	/* Removes watchdog */
+	ret = uclass_get(UCLASS_WDT, &uc_dev);
+	if (uc_dev)
+		ret = uclass_destroy(uc_dev);
+	if (ret)
+		printf("couldn't stop watchdog\n");
+
 }
 
 /*

@@ -75,7 +75,7 @@ struct lmac *nix_get_rpm_lmac(int lmac_instance)
 	struct udevice *dev;
 	int i, idx, err;
 
-	for (i = 0; i < RPM_PER_NODE; i++) {
+	for (i = 0; i < MAX_RPM; i++) {
 		err = dm_pci_find_device(PCI_VENDOR_ID_CAVIUM,
 					 PCI_DEVICE_ID_CN10K_RPM, i,
 					 &dev);

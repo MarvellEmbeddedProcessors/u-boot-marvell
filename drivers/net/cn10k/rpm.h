@@ -13,7 +13,7 @@
 #define PCI_DEVICE_ID_CN10K_RPM	0xA060
 
 #define MAX_LMAC_PER_RPM		4
-#define RPM_PER_NODE			3
+#define MAX_RPM				9
 
 /* Register offsets */
 #define RPM_CMR_INT		0x87e0e0000040

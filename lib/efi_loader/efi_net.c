@@ -19,6 +19,7 @@
 #include <efi_loader.h>
 #include <malloc.h>
 #include <net.h>
+#include <cpu_func.h>
 
 static const efi_guid_t efi_net_guid = EFI_SIMPLE_NETWORK_PROTOCOL_GUID;
 static const efi_guid_t efi_pxe_base_code_protocol_guid =
@@ -944,4 +945,76 @@ out_of_resources:
 	/* free(transmit_buffer) not needed yet */
 	printf("ERROR: Out of memory\n");
 	return EFI_OUT_OF_RESOURCES;
+}
+
+/**
+ * efi_load_image_from_net() - load an EFI image into memory
+ * @file_path:     the path of the image to load
+ * @image_handle:  handle for the newly installed image
+ *
+ * This function implements the LoadImage service.
+ *
+ * See the Unified Extensible Firmware Interface (UEFI) specification
+ * for details.
+ *
+ * Return: status code
+ */
+efi_status_t EFIAPI efi_load_image_from_net(char *file_name, struct in_addr server,
+				   long int interface, efi_handle_t *image_handle, efi_uintn_t *efi_size)
+{
+	int size, rv;
+	char *saved_netretry, *saved_bootfile, *saved_ethact, *str, eth[20];
+
+	rv = 0;
+	/* Save used globals and env variable */
+	saved_netretry = strdup(env_get("netretry"));
+	saved_bootfile = strdup(net_boot_file_name);
+	saved_ethact = strdup(env_get("ethact"));
+
+	/* We don't want to retry the connection if errors occur */
+	env_set("netretry", "no");
+
+	/* Select eth interface */
+	snprintf(eth, sizeof(eth), "eth%ld", interface);
+	env_set("ethact", eth);
+
+	/* Convert file name to Linux */
+	str = file_name;
+	while ((str = strchr(str, '\\')))
+		*str++ = '/';
+
+	/* Check eth up else start it */
+	str = env_get("ipaddr");
+	if (str == NULL)
+		size = net_loop(DHCP);
+
+	/* Copy file name for net loop to use */
+	copy_filename(net_boot_file_name, file_name, sizeof(net_boot_file_name));
+	/* Copy IP address of TFTP server */
+	net_server_ip = server;
+	/* Download file */
+	size = net_loop(TFTPGET);
+
+	/* Check download size */
+	if (size < 0)
+		rv = 1;
+	else if (size > 0)
+		flush_cache(image_load_addr, size);
+	*efi_size = size;
+
+	/* Restore used globals and env variable to original state */
+	env_set("netretry", saved_netretry);
+	if (saved_netretry != NULL)
+		free(saved_netretry);
+
+	if (saved_bootfile != NULL) {
+		copy_filename(net_boot_file_name, saved_bootfile,
+			      sizeof(net_boot_file_name));
+		free(saved_bootfile);
+	}
+
+	env_set("ethact", saved_ethact);
+	if (saved_ethact != NULL)
+		free(saved_ethact);
+	return rv;
 }

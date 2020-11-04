@@ -15,6 +15,7 @@
 #include <efi_api.h>
 #include <image.h>
 #include <pe.h>
+#include <net.h>
 
 struct blk_desc;
 
@@ -474,6 +475,9 @@ efi_status_t EFIAPI efi_load_image(bool boot_policy,
 				   void *source_buffer,
 				   efi_uintn_t source_size,
 				   efi_handle_t *image_handle);
+efi_status_t EFIAPI efi_load_image_from_net(char *file_name,
+				   struct in_addr ip_address, long int interface,
+				   efi_handle_t *image_handle, efi_uintn_t *size);
 /* Start image */
 efi_status_t EFIAPI efi_start_image(efi_handle_t image_handle,
 				    efi_uintn_t *exit_data_size,

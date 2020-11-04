@@ -1090,8 +1090,9 @@ efi_status_t efi_dp_from_name(const char *dev, const char *devnr,
 	struct blk_desc *desc = NULL;
 	struct disk_partition fs_partition;
 	int part = 0;
-	char filename[32] = { 0 }; /* dp->str is u16[32] long */
+	char filename[320] = { 0 }; /* dp->str is u16[32] long */
 	char *s;
+	struct udevice *net_dev = NULL;
 
 	if (path && !file)
 		return EFI_INVALID_PARAMETER;
@@ -1107,15 +1108,24 @@ efi_status_t efi_dp_from_name(const char *dev, const char *devnr,
 			*device = efi_dp_from_part(desc, part);
 	} else {
 #ifdef CONFIG_NET
-		if (device)
+		if (device) {
+			net_dev = eth_get_dev_by_name(devnr);
 			*device = efi_dp_from_eth();
+		}
+		if (((*device)->type == DEVICE_PATH_TYPE_END) &&
+				((*device)->sub_type == DEVICE_PATH_SUB_TYPE_END))
+			return EFI_INVALID_PARAMETER;
 #endif
 	}
 
 	if (!path)
 		return EFI_SUCCESS;
 
-	snprintf(filename, sizeof(filename), "%s", path);
+	if (!is_net || !net_dev)
+		snprintf(filename, sizeof(filename), "%s", path);
+	else
+		snprintf(filename, sizeof(filename), "%d:%s", net_dev->seq, path);
+
 	/* DOS style file path: */
 	s = filename;
 	while ((s = strchr(s, '/')))

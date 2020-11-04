@@ -18,6 +18,7 @@
 #include <pe.h>
 #include <u-boot/crc.h>
 #include <watchdog.h>
+#include <net.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -1878,8 +1879,38 @@ efi_status_t EFIAPI efi_load_image(bool boot_policy,
 	}
 
 	if (!source_buffer) {
-		ret = efi_load_image_from_path(file_path, &dest_buffer,
+		/* Retrieve file path */
+		struct efi_device_path_file_path *fp =
+			(struct efi_device_path_file_path *)file_path;
+		int flen = u16_strlen(fp->str);
+		char filename[80];
+		char *eth_str, *ip_str, *path, *substring;
+		memset(filename, 0, sizeof(filename));
+		utf16_to_utf8((u8 *)filename, fp->str, flen);
+		substring = strchr((const char *)filename, ':');
+		/* If file path is <IP>:<File> format, use network */
+		substring = strchr((const char *)filename, ':');
+		if (substring != NULL) {
+			*substring = 0;
+			eth_str = filename;
+			ip_str = ++substring;
+			substring = strchr((const char *)ip_str, ':');
+			if (substring != NULL) {
+				*substring = 0;
+				path = ++substring;
+			}
+			struct in_addr addr = string_to_ip((const char *)ip_str);
+			if (addr.s_addr) {
+				char *s = env_get("loadaddr");
+				if (s != NULL)
+					dest_buffer = (void *)simple_strtoul(s, NULL, 16);
+				ret = efi_load_image_from_net(path, addr,
+					simple_strtol(eth_str, NULL, 10), image_handle, &source_size);
+			}
+		} else {
+			ret = efi_load_image_from_path(file_path, &dest_buffer,
 					       &source_size);
+		}
 		if (ret != EFI_SUCCESS)
 			goto error;
 	} else {

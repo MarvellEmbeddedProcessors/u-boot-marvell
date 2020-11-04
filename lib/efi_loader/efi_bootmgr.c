@@ -355,5 +355,12 @@ efi_status_t efi_bootmgr_load(efi_handle_t *handle, void **load_options)
 	free(bootorder);
 
 error:
+	if (IS_ENABLED(CONFIG_RESET_ON_EFI_BOOT_FAIL)) {
+		if (ret != EFI_SUCCESS) {
+			log_info("Boot Options failed, resetting\n");
+			do_reset(NULL, 0, 0, NULL);
+		}
+	}
+
 	return ret;
 }

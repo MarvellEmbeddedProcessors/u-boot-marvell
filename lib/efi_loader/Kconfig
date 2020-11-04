@@ -64,6 +64,13 @@ config EFI_VARIABLE_IN_SPI_FLASH_AT_OFFSET
 	default 0
 	help
 	  Store EFI variables at this offset in SPI-NOR device.
+config RESET_ON_EFI_BOOT_FAIL
+	bool "Reset system if EFI boot fails"
+	depends on ARCH_CN10K
+	default n
+	help
+	  Select this option if you would like to reset the system if none
+	  of the EFI boot options result in successful boot.
 
 config EFI_VARIABLES_PRESEED
 	bool "Initial values for UEFI variables"

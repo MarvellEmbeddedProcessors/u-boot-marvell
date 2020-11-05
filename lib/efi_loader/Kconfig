@@ -59,11 +59,12 @@ config EFI_VARIABLE_IN_SPI_FLASH
 	  stored as raw file on SPI-NOR flash device.
 
 config EFI_VARIABLE_IN_SPI_FLASH_AT_OFFSET
-	hex "Store non-volatile UEFI variables in SPI-NOR at this offset"
-	depends on EFI_VARIABLE_IN_SPI_FLASH
-	default 0
-	help
-	  Store EFI variables at this offset in SPI-NOR device.
+        hex "Store non-volatile UEFI variables in SPI-NOR at this offset"
+        depends on EFI_VARIABLE_IN_SPI_FLASH
+        default 0x00E30000
+        help
+          Store EFI variables at this offset in SPI-NOR device.
+
 config RESET_ON_EFI_BOOT_FAIL
 	bool "Reset system if EFI boot fails"
 	depends on ARCH_CN10K

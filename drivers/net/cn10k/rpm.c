@@ -85,8 +85,9 @@ struct lmac *nix_get_rpm_lmac(int lmac_instance)
 		rpm = dev_get_priv(dev);
 		debug("%s udev %p rpm %p instance %d\n", __func__, dev, rpm,
 		      lmac_instance);
-		for (idx = 0; idx < rpm->lmac_count; idx++) {
-			if (rpm->lmac[idx]->instance == lmac_instance)
+		for (idx = 0; idx < MAX_LMAC_PER_RPM; idx++) {
+			if (rpm->lmac[idx] &&
+			    rpm->lmac[idx]->instance == lmac_instance)
 				return rpm->lmac[idx];
 		}
 	}
@@ -213,11 +214,15 @@ static int rpm_lmac_init(struct rpm *rpm)
 	int i;
 
 	rx_lmacs.u = rpm_read(rpm, 0, RPMX_CMR_RX_LMACS());
-	rpm->lmac_count = fls(rx_lmacs.s.lmac_exist);
+	for (i = 0; i < MAX_LMAC_PER_RPM; i++)
+		if (rx_lmacs.s.lmac_exist & BIT(i))
+			rpm->lmac_count++;
 	debug("%s: Found %d lmacs for rpm %d@%p\n", __func__, rpm->lmac_count,
 	      rpm->rpm_id, rpm->reg_base);
 
-	for (i = 0; i < rpm->lmac_count; i++) {
+	for (i = 0; i < fls(rx_lmacs.s.lmac_exist); i++) {
+		if (!(rx_lmacs.u & BIT(i)))
+			continue;
 		lmac = calloc(1, sizeof(*lmac));
 		if (!lmac)
 			return -ENOMEM;
@@ -231,7 +236,7 @@ static int rpm_lmac_init(struct rpm *rpm)
 		debug("%s: map id %d to lmac %p (%s), instance %d\n",
 		      __func__, i, lmac, lmac->name, lmac->instance);
 		lmac->init_pend = 1;
-		cn10k_board_get_mac_addr((lmac->instance - 1),
+		cn10k_board_get_mac_addr((rpm->rpm_id * 4 + i),
 					 lmac->mac_addr);
 		debug("%s: MAC %pM\n", __func__, lmac->mac_addr);
 		rpm_lmac_mac_filter_setup(lmac);

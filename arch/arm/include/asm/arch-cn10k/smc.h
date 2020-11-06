@@ -62,9 +62,8 @@ int smc_load_switch_fw(u64 super_img_addr, u64 cm3_img_addr,
 /*
  * Perform EFI Application Image load to DRAM in ATF
  *
- * x1 - Image ID
- * x2 - Image location
- * x3 - Pointer to store image size
+ * x1 - Image location
+ * x2 - Pointer to store image size
  *
  * Return:
  *	x0:
@@ -74,5 +73,5 @@ int smc_load_switch_fw(u64 super_img_addr, u64 cm3_img_addr,
  *		-3 -- SPI_MMAP_ERR
  *		-5 -- EIO
  */
-int smc_load_efi_img(int image_id, u64 img_addr, u64 *img_size);
+int smc_load_efi_img(u64 img_addr, u64 *img_size);
 #endif

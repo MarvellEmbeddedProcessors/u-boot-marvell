@@ -9,10 +9,25 @@
 #include <bootm.h>
 #include <efi_loader.h>
 #include <efi_variable.h>
+#include <dm.h>
 
 #define OBJ_LIST_NOT_INITIALIZED 1
 
 efi_status_t efi_obj_list_initialized = OBJ_LIST_NOT_INITIALIZED;
+
+const char *get_boot_device(void)
+{
+	ofnode node;
+	const char *str = NULL;
+
+	node = ofnode_path("/cavium,bdk");
+	if (ofnode_valid(node))
+		str = ofnode_read_string(node, "BOOT-DEVICE.N0");
+	else
+		printf("Error: cannot retrieve boot device from fdt\n");
+
+	return str;
+}
 
 /*
  * Allow unaligned memory access.
@@ -230,6 +245,18 @@ efi_status_t efi_init_obj_list(void)
 	ret = efi_reset_system_init();
 	if (ret != EFI_SUCCESS)
 		goto out;
+
+	const char *str = get_boot_device();
+	if (str) {
+		ret = EFI_CALL(efi_set_variable(L"BootDevice",
+						&efi_global_variable_guid,
+						EFI_VARIABLE_BOOTSERVICE_ACCESS |
+						EFI_VARIABLE_RUNTIME_ACCESS,
+						sizeof(str),
+						str));
+		if (ret != EFI_SUCCESS)
+			printf("Error: cannot set BootDevice EFI variable\n");
+	}
 
 out:
 	efi_obj_list_initialized = ret;

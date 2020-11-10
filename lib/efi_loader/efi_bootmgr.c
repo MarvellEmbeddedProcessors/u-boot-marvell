@@ -14,6 +14,7 @@
 #include <efi_loader.h>
 #include <efi_variable.h>
 #include <asm/unaligned.h>
+#include <asm/arch/smc.h>
 
 static const struct efi_boot_services *bs;
 static const struct efi_runtime_services *rs;
@@ -284,6 +285,82 @@ error:
 	return ret;
 }
 
+static efi_status_t efi_load_from_secure_spi(efi_handle_t *handle,
+					     void **load_options)
+{
+	u64 source_buffer, size;
+	char filesize[64];
+	efi_handle_t mem_handle = NULL;
+	struct efi_device_path *file_path = NULL;
+	struct efi_device_path *msg_path;
+	efi_status_t ret;
+	const char *env = NULL;
+	size_t sz;
+	u16 *pos;
+
+	source_buffer = env_get_hex("loadaddr", 0x20080000);
+
+	/* Load image from Secure SPI Flash */
+	ret = smc_load_efi_img(source_buffer, &size);
+	if (ret)
+		return EFI_LOAD_ERROR;
+
+	snprintf(filesize, sizeof(filesize), "%llx", size);
+	env_set("filesize", filesize);
+
+	/*
+	 * Special case for efi payload not loaded from disk,
+	 * such as payload loaded directly into memory etc:
+	 */
+	file_path = efi_dp_from_mem(EFI_RESERVED_MEMORY_TYPE,
+				    (uintptr_t)source_buffer,
+				    size);
+
+	/*
+	 * Make sure that device for device_path exist
+	 * in load_image(). Otherwise, shell and grub will fail.
+	 */
+	ret = efi_create_handle(&mem_handle);
+	if (ret != EFI_SUCCESS)
+		goto out;
+	ret = efi_add_protocol(mem_handle, &efi_guid_device_path,
+			       file_path);
+	if (ret != EFI_SUCCESS)
+		goto out;
+	msg_path = file_path;
+
+	log_info("Booting %pD\n", msg_path);
+	ret = EFI_CALL(efi_load_image(false, efi_root, file_path,
+				      (void *)source_buffer,
+				      size, handle));
+	if (ret != EFI_SUCCESS) {
+		log_err("Loading image failed\n");
+		goto out;
+	}
+
+	/* Transfer environment variable as load options */
+	env = env_get("bootargs");
+	if (!env)
+		goto out;
+
+	sz = sizeof(u16) * (utf8_utf16_strlen(env) + 1);
+	pos = calloc(sz, 1);
+	if (!pos)
+		return EFI_OUT_OF_RESOURCES;
+	*load_options = pos;
+	utf8_utf16_strcpy(&pos, env);
+	ret = efi_set_load_options(*handle, sz, *load_options);
+	if (ret == EFI_SUCCESS)
+		return ret;
+
+	free(*load_options);
+	*load_options = NULL;
+out:
+	efi_delete_handle(mem_handle);
+	efi_free_pool(file_path);
+	return ret;
+}
+
 /**
  * efi_bootmgr_load() - try to load from BootNext or BootOrder
  *
@@ -334,6 +411,12 @@ efi_status_t efi_bootmgr_load(efi_handle_t *handle, void **load_options)
 			log_err("Deleting BootNext failed\n");
 		}
 	}
+
+	/* Try EFI App from secure SPI */
+	log_info("Trying EFI App from Secure SPI Flash\n");
+	ret = efi_load_from_secure_spi(handle, load_options);
+	if (ret == EFI_SUCCESS)
+		return ret;
 
 	/* BootOrder */
 	bootorder = get_var(L"BootOrder", &efi_global_variable_guid, &size);

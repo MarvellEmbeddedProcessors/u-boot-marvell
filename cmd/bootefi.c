@@ -333,7 +333,8 @@ static efi_status_t do_bootefi_exec(efi_handle_t handle, void *load_options)
 
 	efi_restore_gd();
 
-	free(load_options);
+	if (load_options)
+		free(load_options);
 
 	return ret;
 }

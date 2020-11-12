@@ -148,7 +148,19 @@ int dram_init(void)
 void board_late_probe_devices(void)
 {
 	struct udevice *dev;
-	int err, rpm_cnt = 3, i;
+	int err, rpm_cnt, i;
+
+	switch (read_partnum()) {
+	case CNF10KA:
+		rpm_cnt = 4;
+		break;
+	case CNF10KB:
+		rpm_cnt = 9;
+		break;
+	default:
+		rpm_cnt = 3;
+		break;
+	}
 
 	/* Probe MAC(RPM) and NIC AF devices before Network stack init */
 	for (i = 0; i < rpm_cnt; i++) {

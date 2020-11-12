@@ -285,6 +285,11 @@ error:
 	return ret;
 }
 
+__weak int smc_load_efi_img(u64 img_addr, u64 *img_size)
+{
+	return 1;
+}
+
 static efi_status_t efi_load_from_secure_spi(efi_handle_t *handle,
 					     void **load_options)
 {

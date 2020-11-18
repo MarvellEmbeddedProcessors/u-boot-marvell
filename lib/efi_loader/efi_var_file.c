@@ -212,7 +212,7 @@ efi_status_t efi_var_restore(struct efi_var_file *buf)
 	if (buf->reserved || buf->magic != EFI_VAR_FILE_MAGIC ||
 	    buf->crc32 != crc32(0, (u8 *)buf->var,
 				buf->length - sizeof(struct efi_var_file))) {
-		log_err("Invalid EFI variables file\n");
+		log_debug("Invalid EFI variables file\n");
 		return EFI_INVALID_PARAMETER;
 	}
 
@@ -283,8 +283,9 @@ efi_status_t efi_var_from_file(void)
 		log_err("Failed to load EFI variables\n");
 		goto error;
 	}
-	if (buf->length != len || efi_var_restore(buf) != EFI_SUCCESS)
-		log_err("Invalid EFI variables file\n");
+	if (buf->length != len || efi_var_restore(buf) != EFI_SUCCESS) {
+		log_err("EFI variable store file not found\n");
+	}
 error:
 	free(buf);
 #endif

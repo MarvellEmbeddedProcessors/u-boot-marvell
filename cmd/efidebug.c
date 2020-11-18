@@ -1132,6 +1132,14 @@ static int do_efi_test_bootmgr(struct cmd_tbl *cmdtp, int flag,
 	u16 *exit_data = NULL;
 	efi_status_t ret;
 	void *load_options = NULL;
+	void *fdt;
+
+	fdt = EFI_FDT_USE_INTERNAL;
+	ret = efi_install_fdt(fdt);
+	if (ret == EFI_INVALID_PARAMETER)
+		return CMD_RET_USAGE;
+	else if (ret != EFI_SUCCESS)
+		return CMD_RET_FAILURE;
 
 	ret = efi_bootmgr_load(&image, &load_options);
 	printf("efi_bootmgr_load() returned: %ld\n", ret & ~EFI_ERROR_MASK);

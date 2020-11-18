@@ -23,7 +23,13 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define	SUPER_FW_RAM_ADDR	0x10040000
 #define	CM3_FW_RAM_ADDR		0x10100000
-#define	PCI_DEVID_SWITCH	0x9000
+
+static struct pci_device_id switch_supported[] = {
+	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x9000) },
+	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x9200) },
+	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x9210) },
+	{}
+};
 
 void copy32(void *source, void *dest, u32 count)
 {
@@ -40,19 +46,26 @@ int load_switch_images(u64 *cm3_size)
 				  cm3_size);
 }
 
+struct udevice *get_switch_dev(void)
+{
+	int ret;
+	struct udevice *udev = NULL;
+
+	ret = pci_find_device_id(switch_supported, 0, &udev);
+
+	return udev;
+}
+
 void board_switch_reset(void)
 {
 	struct udevice *dev;
-	int err;
 	void *sw_bar0, *sw_bar2;
 	u32 sw_bar2_lo, sw_bar2_hi, val;
 
-	err = dm_pci_find_device(PCI_VENDOR_ID_MARVELL,
-				 PCI_DEVID_SWITCH, 0, &dev);
-	if (err) {
-		debug("Switch device not found\n");
+	dev = get_switch_dev();
+	if (!dev)
 		return;
-	}
+
 	sw_bar0 = dm_pci_map_bar(dev, PCI_BASE_ADDRESS_0, PCI_REGION_MEM);
 	if (!sw_bar0) {
 		debug("Switch device BAR not configured\n");
@@ -136,17 +149,15 @@ void board_switch_reset(void)
 void board_switch_init(void)
 {
 	struct udevice *dev;
-	int err;
+	struct pci_child_platdata *pplat;
 	void *sw_bar0, *sw_bar2;
 	u32 sw_bar2_lo, sw_bar2_hi;
 	u64 cm3_img_sz;
 
-	err = dm_pci_find_device(PCI_VENDOR_ID_MARVELL,
-				 PCI_DEVID_SWITCH, 0, &dev);
-	if (err) {
-		debug("Switch device not found\n");
+	dev = get_switch_dev();
+	if (!dev)
 		return;
-	}
+
 	sw_bar0 = dm_pci_map_bar(dev, PCI_BASE_ADDRESS_0, PCI_REGION_MEM);
 	if (!sw_bar0) {
 		debug("Switch device BAR not configured\n");
@@ -160,8 +171,8 @@ void board_switch_init(void)
 	sw_bar2_lo = (u32)((ulong)sw_bar2 & 0xffffffff);
 	sw_bar2_hi = (u32)(((ulong)sw_bar2 >> 32) & 0xffffffff);
 
-	printf("Switch device [%x:%x] detected\n", PCI_VENDOR_ID_MARVELL,
-	       PCI_DEVID_SWITCH);
+	pplat = dev_get_parent_platdata(dev);
+	printf("Switch device [%x:%x] detected\n", pplat->vendor, pplat->device);
 	debug("BAR0 %p BAR2 %p\n", sw_bar0, sw_bar2);
 	printf("Executing micro-init sequence... ");
 	/*

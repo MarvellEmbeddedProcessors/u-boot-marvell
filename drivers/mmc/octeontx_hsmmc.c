@@ -2540,16 +2540,16 @@ static int octeontx_mmc_set_ios(struct udevice *dev)
 	      __func__, dev->name, mode.u, mode.s.bus_width,
 	      mode.s.hs_timing, mode.s.hs200_timing, mode.s.hs400_timing);
 
-	err = octeontx_mmc_configure_delay(mmc);
-
 #ifdef MMC_SUPPORTS_TUNING
-	if (!err && mmc->selected_mode == MMC_HS_400 && !slot->hs400_tuned) {
+	if (mmc->selected_mode == MMC_HS_400 && !slot->hs400_tuned) {
 		debug("%s: Tuning HS400 mode\n", __func__);
 		err = octeontx_tune_hs400(mmc);
+		if (err)
+			return err;
 	}
 #endif
 
-	return err;
+	return octeontx_mmc_configure_delay(mmc);
 }
 
 /**

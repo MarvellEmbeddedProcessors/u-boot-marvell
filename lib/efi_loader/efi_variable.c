@@ -418,8 +418,9 @@ efi_status_t efi_set_variable_int(u16 *variable_name, const efi_guid_t *vendor,
 		ret = EFI_SUCCESS;
 
 	/* Write non-volatile EFI variables to file */
-	if (attributes & EFI_VARIABLE_NON_VOLATILE &&
-	    ret == EFI_SUCCESS && efi_obj_list_initialized == EFI_SUCCESS)
+	if ((attributes & EFI_VARIABLE_NON_VOLATILE &&
+	    ret == EFI_SUCCESS && efi_obj_list_initialized == EFI_SUCCESS) ||
+	    delete)
 		efi_var_to_file();
 
 	return EFI_SUCCESS;

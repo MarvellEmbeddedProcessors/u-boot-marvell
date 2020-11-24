@@ -265,8 +265,9 @@ int rpm_remove(struct udevice *dev)
 	struct rpm *rpm = dev_get_priv(dev);
 	int i;
 
-	for (i = 0; i < rpm->lmac_count; i++)
-		rpm_lmac_mac_filter_clear(rpm->lmac[i]);
+	for (i = 0; i < MAX_LMAC_PER_RPM; i++)
+		if (rpm->lmac[i])
+			rpm_lmac_mac_filter_clear(rpm->lmac[i]);
 
 	return 0;
 }

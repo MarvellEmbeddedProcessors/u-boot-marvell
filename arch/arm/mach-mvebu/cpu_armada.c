@@ -1,7 +1,8 @@
-// SPDX-License-Identifier: GPL-2.0+
-/*
- * (C) Copyright 2020
- * Sujeet Baranwal, sbaranwal@marvell.com
+/* SPDX-License-Identifier:    GPL-2.0
+ *
+ * Copyright (C) 2020 Marvell.
+ *
+ * https://spdx.org/licenses
  */
 
 #include <common.h>

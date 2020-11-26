@@ -241,6 +241,7 @@ static int rpm_lmac_init(struct rpm *rpm)
 		debug("%s: MAC %pM\n", __func__, lmac->mac_addr);
 		rpm_lmac_mac_filter_setup(lmac);
 		print_fwdata_lmac_type(rpm->rpm_id, i);
+		rpm_write(rpm, i, RPMX_CMRX_SCRATCHX(0, 0), 0x0);
 	}
 	return 0;
 }

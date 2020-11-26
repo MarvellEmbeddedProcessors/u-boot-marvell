@@ -605,7 +605,8 @@ void nix_lf_flush_rx(struct udevice *dev)
 
 		seg = (dma_addr_t *)(&rx_dr->rx_sg + 1);
 
-		npa_lf_rx_free_ptr(nix->npa, (u64)(*seg));
+		if (*seg)
+			npa_lf_rx_free_ptr(nix->npa, (u64)(*seg));
 
 		debug("%s return %llx to NPA\n", __func__, *seg);
 		nix_pf_reg_write(nix, NIXX_LF_CQ_OP_DOOR(),

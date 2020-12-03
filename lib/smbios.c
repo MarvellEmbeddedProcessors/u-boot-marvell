@@ -17,7 +17,7 @@
 #include <dm/uclass-internal.h>
 #endif
 #include <linux/bitops.h>
-#include "smbios_ddr_info.h"
+#include <mvebu/smbios_ddr_info.h>
 #include <dm/ofnode.h>
 
 static u32 smbios_struct_count;

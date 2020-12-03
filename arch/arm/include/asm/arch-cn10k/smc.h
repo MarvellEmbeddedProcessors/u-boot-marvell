@@ -9,6 +9,7 @@
 #define __SMC_H__
 
 #include <asm/arch/smc-id.h>
+#include <asm/arch/update.h>
 
 ssize_t smc_dram_size(unsigned int node);
 ssize_t	smc_disable_rvu_lfs(unsigned int node);
@@ -25,10 +26,10 @@ ssize_t	smc_disable_rvu_lfs(unsigned int node);
 int smc_rvu_rsvd_reg_info(u64 *reg_addr, u64 *reg_size);
 
 /*
- * x1 - user_buffer
- * x2 - size
- * x3 - bus
- * x4 - chip select
+ * x1 - descriptor address
+ * x2 - descriptor size
+ * x3 - 0
+ * x4 - 0
  *
  * Return:
  *	x0:
@@ -39,7 +40,7 @@ int smc_rvu_rsvd_reg_info(u64 *reg_addr, u64 *reg_size);
  *		-4 -- SPI_IMG_VALIDATE_ERR
  *		-5 -- SPI_IMG_UPDATE_ERR
  */
-int smc_spi_update(u64 user_buffer, u32 size, u32 bus, u32 cs);
+int smc_spi_update(const struct smc_update_descriptor *desc);
 
 /*
  * Perform Switch Firmware load to DRAM in ATF

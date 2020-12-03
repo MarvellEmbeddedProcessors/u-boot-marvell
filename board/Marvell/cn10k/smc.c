@@ -11,6 +11,7 @@
 #include <asm/ptrace.h>
 #include <asm/arch/smc.h>
 #include <asm/psci.h>
+#include <asm/arch/update.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -114,10 +115,10 @@ int smc_load_switch_fw(u64 super_img_addr, u64 cm3_img_addr, u64 *cm3_img_size)
 /*
  * Perform SPI Update from ATF
  *
- * x1 - user_buffer
- * x2 - size
- * x3 - bus
- * x4 - chip select
+ * x1 - descriptor address
+ * x2 - descriptor size
+ * x3 - 0
+ * x4 - 0
  *
  * Return:
  *	x0:
@@ -128,15 +129,15 @@ int smc_load_switch_fw(u64 super_img_addr, u64 cm3_img_addr, u64 *cm3_img_size)
  *		-4 -- SPI_IMG_VALIDATE_ERR
  *		-5 -- SPI_IMG_UPDATE_ERR
  */
-int smc_spi_update(u64 user_buffer, u32 size, u32 bus, u32 cs)
+int smc_spi_update(const struct smc_update_descriptor *desc)
 {
 	struct pt_regs regs;
 
 	regs.regs[0] = PLAT_OCTEONTX_SPI_SECURE_UPDATE;
-	regs.regs[1] = user_buffer;
-	regs.regs[2] = size;
-	regs.regs[3] = bus;
-	regs.regs[4] = cs;
+	regs.regs[1] = (uint64_t)desc;
+	regs.regs[2] = sizeof(*desc);
+	regs.regs[3] = 0;
+	regs.regs[4] = 0;
 	smc_call(&regs);
 
 	return regs.regs[0];

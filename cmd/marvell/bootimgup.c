@@ -20,6 +20,7 @@
 #include <asm/io.h>
 #include <u-boot/crc.h>
 #include <linux/mtd/mtd.h>
+#include <asm/arch/update.h>
 #include <asm/arch/smc.h>
 
 /* Offsets and sizes to various structures in the image */
@@ -804,6 +805,10 @@ static int do_bootu_spi(int argc, char * const argv[], bool update_scr)
 #if CONFIG_IS_ENABLED(ARCH_OCTEONTX2)
 	struct rom_scr_info si;
 #endif
+#if CONFIG_IS_ENABLED(ARCH_CN10K)
+	struct smc_update_descriptor desc;
+#endif
+
 	if ((argc < 1) || (argc > 4))
 		return -1;
 
@@ -877,9 +882,20 @@ static int do_bootu_spi(int argc, char * const argv[], bool update_scr)
 	buf = (u8 *)addr;
 
 #if CONFIG_IS_ENABLED(ARCH_CN10K)
+	memset(&desc, 0, sizeof(desc));
+
+	desc.magic = cpu_to_le32(UPDATE_MAGIC);
+	desc.version = UPDATE_VERSION;
+	desc.update_flags = 0;	/* FIXME later */
+	desc.image_addr = (uint64_t)buf;
+	desc.image_size = len;
+	desc.bus = bus;
+	desc.cs = cs;
 
 	debug("%s Probing Secure SPI..\n", __func__);
-	ret = smc_spi_update((uint64_t)buf, len, bus, cs);
+	debug("Descriptor at %p, addr: 0x%llx, size: 0x%llx\n",
+	      &desc, desc.image_addr, desc.image_size);
+	ret = smc_spi_update(&desc);
 	goto done;
 #endif
 

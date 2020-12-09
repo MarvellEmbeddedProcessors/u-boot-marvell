@@ -45,6 +45,190 @@ static int fdt_get_bdk_node(void)
 	return node;
 }
 
+#if CONFIG_IS_ENABLED(GENERATE_SMBIOS_TABLE)
+
+#include <ddr_spd.h>
+#include <mvebu/smbios_ddr_info.h>
+
+#define MAX_SCKT	1
+#define MAX_CTRL	3
+#define MAX_DIMM	2
+
+static u8 num_sckt;
+static u8 dimm_present[MAX_SCKT][MAX_CTRL][MAX_DIMM];
+static const u8 *spd_cache[MAX_SCKT][MAX_CTRL][MAX_DIMM];
+
+static void smbios_update_type7(void)
+{
+	u32 val;
+	int node_offset;
+	void *fdt = (void *)gd->fdt_blob;
+	const u32 *reg;
+
+	node_offset = fdt_path_offset(fdt, "/l3-cache");
+	if (node_offset < 0)
+		return;
+
+	reg = fdt_getprop(fdt, node_offset, "cache-size", NULL);
+	if (!reg)
+		return;
+	val = fdt32_to_cpu(*reg);
+
+	node_offset = fdt_path_offset(fdt, "/uboot-smbios/type7@3");
+	if (node_offset < 0)
+		return;
+
+	fdt_setprop_inplace_u32(fdt, node_offset, "maxsize", val);
+	fdt_setprop_inplace_u32(fdt, node_offset, "installed-size", val);
+}
+
+static void smbios_update_type19(void)
+{
+	u32 i;
+	char tmp_str[40];
+	int node_offset;
+	struct fdt_resource res;
+	void *fdt = (void *)gd->fdt_blob;
+
+	i = 0;
+	do {
+		sprintf(tmp_str, "/memory@%d", i);
+		node_offset = fdt_path_offset(fdt, tmp_str);
+		if (node_offset < 0)
+			continue;
+
+		if (fdt_get_resource(fdt, node_offset, "reg", 0, &res))
+			continue;
+
+		sprintf(tmp_str, "/uboot-smbios/type19@%d", i);
+		node_offset = fdt_path_offset(fdt, tmp_str);
+		if (node_offset < 0)
+			continue;
+
+		if (res.start < 0x100000000 && res.end < 0x100000000) {
+			fdt_setprop_inplace_u32(fdt, node_offset, "start-addr", res.start);
+			fdt_setprop_inplace_u32(fdt, node_offset, "end-addr", res.end);
+		} else {
+			fdt_setprop_inplace_u64(fdt, node_offset, "ext-start-addrs", res.start);
+			fdt_setprop_inplace_u64(fdt, node_offset, "ext-end-addrs", res.end);
+		}
+		i++;
+
+	} while (node_offset > 0);
+}
+
+static void smbios_add_ddr_info(u8 dimm)
+{
+	u32 tmp_val32;
+	char tmp_str[40];
+	int node_offset;
+	void *fdt = (void *)gd->fdt_blob;
+
+	sprintf(tmp_str, "/uboot-smbios/type17@%d", dimm);
+	node_offset = fdt_path_offset(fdt, tmp_str);
+	if (node_offset < 0)
+		return;
+
+	tmp_val32 = mv_ddr_spd_die_capacity_get();
+	if (tmp_val32 < 0x7FFF) {
+		fdt_setprop_inplace_u32(fdt, node_offset, "size", tmp_val32);
+	} else {
+		fdt_setprop_inplace_u32(fdt, node_offset, "size", 0x7FFF);
+		fdt_setprop_inplace_u32(fdt, node_offset, "ext-size", tmp_val32);
+	}
+	fdt_setprop_inplace_u64(fdt, node_offset, "vol-sizes", tmp_val32 * 1024 * 1024);
+	fdt_setprop_inplace_u64(fdt, node_offset, "log-sizes", tmp_val32 * 1024 * 1024);
+
+	fdt_setprop_inplace_u32(fdt, node_offset, "total-width", bus_total_width());
+	fdt_setprop_inplace_u32(fdt, node_offset, "data-width", bus_data_width());
+	fdt_setprop_inplace_u32(fdt, node_offset, "form-factor", spd_module_type_to_dtmf_type());
+	fdt_setprop_inplace_u32(fdt, node_offset, "mem-type", spd_dramdev_type_to_dtmf_type());
+}
+
+void smbios_update_type17(void)
+{
+	u8 i, j, k;
+	u8 dimm_num;
+
+	dimm_num = 0;
+	for (i = 0; i < MAX_SCKT; i++) {
+		for (j = 0; j < MAX_CTRL; j++) {
+			for (k = 0; k < MAX_DIMM; k++) {
+				if (!dimm_present[i][j][k] || !spd_cache[i][j][k]) {
+					dimm_num++;
+					continue;
+				}
+				get_dram_info_init((u8 *)spd_cache[i][j][k]);
+				smbios_add_ddr_info(dimm_num);
+				dimm_num++;
+			}
+		}
+	}
+}
+
+u64 fdt_get_smbios_info(void)
+{
+	int node, ret, len, i, j, k;
+	char tmp_str[80];
+	const void *fdt = gd->fdt_blob;
+
+	if (!fdt) {
+		printf("ERROR: %s: no valid device tree found\n", __func__);
+		return 0;
+	}
+
+	ret = fdt_check_header(fdt);
+	if (ret < 0) {
+		printf("fdt: %s\n", fdt_strerror(ret));
+		return 0;
+	}
+
+	/* Figure out number of sockets on this board */
+	i = 0;
+	do {
+		sprintf(tmp_str, "/memory@%d", i);
+		node = fdt_path_offset(fdt, tmp_str);
+		if (node > 0)
+			num_sckt++;
+		i++;
+	} while (node > 0);
+
+	if (!num_sckt)
+		return num_sckt;
+
+	/* Determine location of SPD cache */
+	node = fdt_path_offset(fdt, "/cavium,bdk");
+	if (node < 0) {
+		printf("%s: /cavium,bdk is missing from device tree: %s\n",
+		       __func__, fdt_strerror(node));
+		return 0;
+	}
+
+	memset(spd_cache, 0, sizeof(spd_cache));
+
+	len = 512;
+	for (i = 0; i < MAX_SCKT; i++) {
+		for (j = 0; j < MAX_CTRL; j++) {
+			for (k = 0; k < MAX_DIMM; k++) {
+				sprintf(tmp_str,
+					"DDR-CONFIG-SPD-DATA.DIMM%d.LMC%d.N%d", k, j, i);
+				spd_cache[i][j][k] = fdt_getprop(fdt, node, tmp_str, &len);
+				if (spd_cache[i][j][k])
+					dimm_present[i][j][k] = 1;
+				else
+					dimm_present[i][j][k] = 0;
+			}
+		}
+	}
+
+	smbios_update_type7();
+	smbios_update_type17();
+	smbios_update_type19();
+
+	return 0;
+}
+#endif //CONFIG_IS_ENABLED(GENERATE_SMBIOS_TABLE)
+
 u64 fdt_get_board_mac_addr(void)
 {
 	int node, len = 16;

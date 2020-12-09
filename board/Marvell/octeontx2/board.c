@@ -394,6 +394,9 @@ int board_late_init(void)
 	if (save_env)
 		env_save();
 
+#if CONFIG_IS_ENABLED(GENERATE_SMBIOS_TABLE)
+	fdt_get_smbios_info();
+#endif
 	return 0;
 }
 

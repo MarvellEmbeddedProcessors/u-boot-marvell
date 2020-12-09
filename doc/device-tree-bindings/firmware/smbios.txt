@@ -1,0 +1,323 @@
+SMBIOS Table Device Tree Bindings
+---------------------------------
+
+The nodes described below can be used to populate SMBIOS tables. There is a top
+level parent node, "uboot-smbios", which can have many child nodes that can be
+used to create individual SMBIOS tables. Please refer SMBIOS spec for property
+values.
+
+Example:
+	uboot-smbios {
+
+	};
+
+
+BIOS information table can be populated with "type0" child node.
+---------------------------------------------------------------
+Required properties:
+
+- bios-chars: 64-bit value describing BIOS characteristics.
+- bios-chars-ext1: BIOS characteristics extension byte 1.
+- bios-chars-ext2: BIOS characteristics extension byte 2.
+
+Example:
+	type0 {
+		#bios-char-cells = <2>;
+		bios-chars = <0x10880 0x0>;
+		bios-chars-ext1 = <0x01>;
+		bios-chars-ext2 = <0x08>;
+	};
+
+
+System information table can be populated with "type1" child node.
+------------------------------------------------------------------
+Required properties:
+
+- manufacturer: String describing manufacturer.
+- prod-name: String describing product name.
+- wakeup-type: 8-bit value indicating system start type.
+
+Example:
+	type1 {
+		manufacturer = "Marvell";
+		prod-name = "OcteonTX2";
+		wakeup-type = <0x08>;
+	};
+
+
+System enclosure table can be populated with "type3" child node.
+----------------------------------------------------------------
+Required properties:
+
+- manufacturer: String describing manufacturer.
+- type: 8-bit value indicating enclosure type.
+
+Example:
+	type3 {
+		manufacturer = "Marvell";
+		type = <0x17>;
+	};
+
+
+Processor information table can be populated with "type4" child node(s).
+------------------------------------------------------------------------
+Required properties:
+
+- socket: String representing processor designation.
+- processor-type: 8-bit value indicating processor type.
+- processor-family: 8-bit value indicating processor family.
+- processor-family2: 16-bit value indicating processor family.
+- processor-manufacturer: String representing manufacturer.
+- maxspeed: 16-bit value indicating max speed in MHz.
+- cpu-status: 8-bit value indicating processor status.
+- processor-upgrade: 8-bit value indicating socket type.
+
+Optional properties:
+
+- processor-id: 16-bit value representing processor id.
+- processor-version: String representing processor version.
+- voltage: 8-bit value representing processor voltage level.
+- external-clock: 16-bit value representing external clock frequency in MHz.
+- cur-speed: 16-bit value indicating current speed in MHz.
+- status: 8-bit value representing socket status.
+- serial-number: String representing serial number.
+- asset-tag: String representing asset tag.
+- part-number: String representing part number.
+- core-count: 8-bit value representing number of cores.
+- core-enabled: 8-bit value representing number of cores enabled.
+- thread-count: 8-bit value representing number of threads in this socket.
+- thread-count2: 16-bit value representing number of threads in this socket.
+- processor-characteristics: 16-bit value representing functions supported.
+
+Note: There is one Type 4 table for each physical socket in the system.
+
+Example:
+	type4 {
+		socket = "Socket 0";
+		processor-type = <0x03>;
+		processor-family = <0xFE>;
+		processor-family2 = <0x101>;
+		processor-manufacturer = "Marvell";
+		processor-id = <0x00>;
+		processor-version = "";
+		voltage = <0x02>;
+		external-clock = <0x00>;
+		maxspeed = <0x898>;
+		curspeed = <0x898>;
+		status = "okay";
+		processor-upgrade = <0x01>;
+		serial-number = " ";
+		asset-tag = " ";
+		part-number = " ";
+		core-count = <0x18>;
+		core-enabled = <0x18>;
+		thread-count = <0x18>;
+		processor-characteristics = <0x6C>;
+	};
+
+
+Cache information table can be populated with "type7" child node(s).
+--------------------------------------------------------------------
+Required properties:
+
+- socket: String representing cache level.
+- cache-config: 16-bit value representing cache location and type.
+
+Optional properties:
+
+- maxsize: 16-bit value representing maximum cache size.
+- installed-size: 16-bit value representing installed cache size.
+- supported-sram: 16-bit value representing cache memory type.
+- current-sram: 16-bit value representing cache memory type present.
+- cache-speed: 8-bit value representing speed in nano seconds.
+- ecorr-type: 8-bit value representing error correction type.
+- cache-type: 8-bit value representing instruction/data/unified type.
+- associativity: 8-bit value representing cache associativity.
+
+Note: There is one Type 7 table for each cache type and level.
+
+Example:
+	type7 {
+		socket = "CACHE-D-L1";
+		cache-config = <0x180>;
+		maxsize = <0x20>;
+		installed-size = <0x20>;
+		supported-sram = <0x48>;
+		current-sram = <0x48>;
+		cache-speed = <0x0>;
+		ecorr-type = <0x05>;
+		cache-type = <0x04>;
+		associativity = <0x04>;
+	};
+
+
+Physical memory array table can be populated with "type16" child node.
+----------------------------------------------------------------------
+Required properties:
+
+- location: 8-bit value representing location of memory.
+- use: 8-bit value representing memory usage.
+- err-corr: 8-bit value representing supported error correction.
+- max-capacity: 32-bit value representing max memory supported.
+- ext-max-capacitys: 64-bit value representing max memory supported if size does fit in max-capacity.
+- mem-slots: 8-bit value representing number of physical memory devices.
+- memerr-info: 16-bit value representing previously detected error.
+
+Example:
+	type16 {
+		location = <0x03>;
+		use = <0x03>;
+		err-corr = <0x05>;
+		max-capacity = <0x4000000>;
+		memerr-info = <0xFFFE>;
+		mem-slots = <0x01>;
+		ext-max-capacitys = <0x000 0x00000000>;
+	};
+
+
+Memory device table can be populated with "type17" child node(s).
+-----------------------------------------------------------------
+Required properties:
+
+- array-handle: 16-bit value for the handle to Type 16 table.
+- total-width: 16-bit value representing total bus width.
+- data-width: 16-bit value representing data bus width.
+- size: 16-bit value representing memory device size if less than 32GB - 1 MB.
+- ext-size: 64-bit value representing memory device size if 32GB or more.
+- form-factor: 8-bit value representing device form factor.
+- device-set: 8-bit value representing a set number that is common to devices
+		that need to be populated together.
+- device-loc: String representing location of memory device.
+- nonvol-size: 64-bit value representing non-volatile portion of device.
+- vol-sizes: 64-bit value representing volatile portion of device.
+- cache-sizes: 64-bit value representing cache size of memory device.
+- log-sizes: 64-bit value representing logical memory device size.
+
+Note: There is one instance of Type 17 table for each memory device or memory slot (populated or not).
+
+Example:
+	type17@0 {
+		array-handle = <0x600>;
+		errinfo-handle = <0xFFFE>;
+		total-width = <0x48>;
+		data-width = <0x40>;
+		size = <0>;
+		ext-size = <0>;
+		form-factor = <0x09>;
+		device-set = <1>;
+		device-loc = "DDR0 DIMM0";
+		mem-type = <0x1A>;
+		nonvol-size = <0>;
+		#vol-size-cells = <2>;
+		vol-sizes = <0xFFFFFFFF 0xFFFFFFFF>;
+		#cache-size-cells = <2>;
+		cache-sizes = <0xFFFFFFFF 0xFFFFFFFF>;
+		#log-size-cells = <2>;
+		log-sizes = <0xFFFFFFFF 0xFFFFFFFF>;
+		speed = <0>;
+		configured-memory-speed = <0>;
+		attributes = <0>;
+		module-product-id = <0>;
+		minimum_voltage = <0>;
+		maximum_voltage = <0>;
+		configured_voltage = <0>;
+		serial-number = "UNKNOWN1";
+		module-manufacturer-id = "UNKNOWN2";
+		manufacturer = "UNKNOWN3";
+		part-number = "UNKNOWN4";
+	};
+
+
+Memory array mapped address table can be populated with "type19" child node.
+----------------------------------------------------------------------------
+Required properties:
+
+- start-addr: 32-bit value representing starting physical address of memory in KB.
+- end-addr: 32-bit value representing ending physical address of memory in KB.
+- ext-start-addrs: 64-bit value representing starting physical address of memory in KB
+			if too big to fit in start-addr.
+- ext-end-addrs: 64-bit value representing ending physical address of memory in KB
+			if too big to fit in end-addr.
+- array-handle: 16-bit value pointing to Type 16 table.
+- part-width: 8-bit value representing number of devices that form single row.
+
+Example:
+	type19 {
+		start-addr = <0xFFFFFFFF>;
+		end-addr = <0xFFFFFFFF>;
+		array-handle = <0x600>;
+		part-width = <0>;
+		#ext-start-addr-cells = <2>;
+		ext-start-addrs = <0x0 0x0>;
+		#ext-end-addr-cells = <2>;
+		ext-end-addrs = <0x0 0x0>;
+	};
+
+
+Memory device mapped address table can be populated with "type20" child node.
+-----------------------------------------------------------------------------
+Required properties:
+
+- start-addr: 32-bit value representing starting physical address of memory in KB.
+- end-addr: 32-bit value representing ending physical address of memory in KB.
+- ext-start-addrs: 64-bit value representing starting physical address of memory in KB
+			if too big to fit in start-addr.
+- ext-end-addrs: 64-bit value representing ending physical address of memory in KB
+			if too big to fit in end-addr.
+- device-handle: 16-bit value representing the handle of memory device structure.
+- array-handle: 16-bit value representing the handle of memory array mapped
+			address structure.
+- part-row-position: 8-bit value representing position of referenced memory
+			device in a row of address partition.
+- interleave-position: 8-bit value representing position of reference memory
+			device in an interleave.
+- interleave-depth: 8-bit value representing max number of rows that are accessed
+			in a single interleaved transfer.
+
+Example:
+	type20@0 {
+		start-addr = <0x40000000>;
+		end-addr = <0x80000000>;
+		ext-start-addrs = <0x00>;
+		ext-end-addrs = <0x00>;
+		device-handle = <0x100>;
+		array-handle = <0x4000>;
+		part-row-position = <0x00>;
+		interleave-position = <0x00>;
+		interleave-depth = <0x00>;
+	};
+
+
+System boot information table can be populated with "type32" child node.
+------------------------------------------------------------------------
+Required properties:
+
+- boot-status: Field representing boot status.
+
+Example:
+	type32 {
+		boot-status = <0x0>;
+	};
+
+
+Onboard devices extended information table can be populated with "type41" child node.
+-------------------------------------------------------------------------------------
+Required properties:
+
+- ref-designation: String representing the device.
+- dev-type: 8-bit value representing device type.
+- dev-type-inst: 8-bit value representing device type instance.
+- seg-gr-num: 16-bit value representing segment group number.
+- bus-num: 8-bit value representing bus number.
+- dev-fn-num: 8-bit value representing device and function number.
+
+Example:
+	type41@0 {
+		ref-designation = "SATA controller";
+		dev-type = <0x09>;
+		dev-type-inst = <0x0>;
+		seg-gr-num = <0xFF>;
+		bus-num = <0xFF>;
+		dev-fn-num = <0xFF>;
+	};
+

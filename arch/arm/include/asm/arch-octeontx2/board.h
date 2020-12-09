@@ -190,4 +190,7 @@ const char *fdt_get_board_revision(void);
 void octeontx2_board_get_mac_addr(u8 index, u8 *mac_addr);
 void board_acquire_flash_arb(bool acquire);
 void cgx_intf_shutdown(void);
+#if CONFIG_IS_ENABLED(GENERATE_SMBIOS_TABLE)
+u64 fdt_get_smbios_info(void);
+#endif
 #endif /* __BOARD_H__ */

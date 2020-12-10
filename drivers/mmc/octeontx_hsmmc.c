@@ -46,37 +46,35 @@
 #define MMC_DEFAULT_DATA_OUT_TAP		39
 #define MMC_DEFAULT_HS200_CMD_IN_TAP		24
 #define MMC_DEFAULT_HS200_DATA_IN_TAP		24
-#if CONFIG_IS_ENABLED(ARCH_OCTEONTX2)
-#define MMC_DEFAULT_HS200_CMD_OUT_TAP	(otx_is_soc(CN95XX) ? 10 : 5)
-#define MMC_DEFAULT_HS200_DATA_OUT_TAP	(otx_is_soc(CN95XX) ? 10 : 5)
-#define MMC_DEFAULT_HS400_CMD_OUT_TAP	(otx_is_soc(CN95XX) ? 10 : 5)
-#define MMC_DEFAULT_HS400_DATA_OUT_TAP	(otx_is_soc(CN95XX) ? 5 : 3)
-#else
-#define MMC_DEFAULT_HS200_CMD_OUT_TAP		5
-#define MMC_DEFAULT_HS200_DATA_OUT_TAP		5
-#define MMC_DEFAULT_HS400_CMD_OUT_TAP		5
-#define MMC_DEFAULT_HS400_DATA_OUT_TAP		3
-#endif
-#define MMC_DEFAULT_HS200_CMD_OUT_DLY		800	/* Delay in ps */
-#define MMC_DEFAULT_HS200_DATA_OUT_DLY		800	/* Delay in ps */
-#define MMC_DEFAULT_HS400_CMD_OUT_DLY		800	/* Delay in ps */
-#define MMC_DEFAULT_HS400_DATA_OUT_DLY		400	/* Delay in ps */
-#define MMC_DEFAULT_SD_UHS_SDR104_CMD_OUT_TAP	MMC_DEFAULT_HS200_CMD_OUT_TAP
-#define MMC_DEFAULT_SD_UHS_SDR104_DATA_OUT_TAP	MMC_DEFAULT_HS200_DATA_OUT_TAP
-#define MMC_LEGACY_DEFAULT_CMD_OUT_TAP		39
-#define MMC_LEGACY_DEFAULT_DATA_OUT_TAP		39
-#define MMC_SD_LEGACY_DEFAULT_CMD_OUT_TAP	63
-#define MMC_SD_LEGACY_DEFAULT_DATA_OUT_TAP	63
-#define MMC_HS_CMD_OUT_TAP			32
-#define MMC_HS_DATA_OUT_TAP			32
-#define MMC_SD_HS_CMD_OUT_TAP			26
-#define MMC_SD_HS_DATA_OUT_TAP			26
-#define MMC_SD_UHS_SDR25_CMD_OUT_TAP		26
-#define MMC_SD_UHS_SDR25_DATA_OUT_TAP		26
-#define MMC_SD_UHS_SDR50_CMD_OUT_TAP		26
-#define MMC_SD_UHS_SDR50_DATA_OUT_TAP		26
 #define MMC_DEFAULT_TAP_DELAY			4
 #define TOTAL_NO_OF_TAPS			512
+
+/*
+ * EMM_CMD hold time from rising edge of EMMC_CLK.
+ * Typically 3.0 ns at frequencies < 26 MHz.
+ * Typically 3.0 ns at frequencies <= 52 MHz SDR.
+ * Typically 2.5 ns at frequencies <= 52 MHz DDR.
+ * Typically 0.8 ns at frequencies > 52 MHz SDR.
+ * Typically 0.8 ns at frequencies > 52 MHz DDR.
+ *
+ * Values are expressed in picoseconds (ps)
+ */
+static const u32 default_cmd_out_bus_timings[MMC_MODES_END] = {
+	5000, /* MMC_LEGACY */
+	4000, /* MMC_HS */
+	3500, /* SD_HS */
+	4000, /* MMC_HS_52 */
+	4000, /* MMC_DDR_52 */
+	3500, /* UHS_SDR12 */
+	3500, /* UHS_SDR25 */
+	3500, /* UHS_SDR50 */
+	4000, /* UHS_DDR50 */
+	800, /* UHS_SDR104 */
+	800, /* MMC_HS_200 */
+	800, /* MMC_HS_400 */
+	800, /* MMC_HS_400_ES */
+};
+
 static void octeontx_mmc_switch_to(struct mmc *mmc);
 static int octeontx_mmc_configure_delay(struct mmc *mmc);
 static void octeontx_mmc_set_timing(struct mmc *mmc);
@@ -1959,7 +1957,7 @@ static int octeontx_tune_hs400(struct mmc *mmc)
 		snprintf(env_name, sizeof(env_name),
 			 "emmc%d_hs400_cmd_out_delay",
 			 slot->bus_id);
-		env_set_ulong(env_name, slot->cmd_out_hs400_delay);
+		env_set_ulong(env_name, slot->cmd_out_taps_delay[MMC_HS_400]);
 		snprintf(env_name, sizeof(env_name),
 			 "emmc%d_hs400_data_out_tap",
 			 slot->bus_id);
@@ -1967,7 +1965,7 @@ static int octeontx_tune_hs400(struct mmc *mmc)
 		snprintf(env_name, sizeof(env_name),
 			 "emmc%d_hs400_data_out_delay",
 			 slot->bus_id);
-		env_set_ulong(env_name, slot->data_out_hs400_delay);
+		env_set_ulong(env_name, slot->data_out_taps_delay[MMC_HS_400]);
 	} else {
 		debug("%s(%s): HS400 environment export disabled\n",
 		      __func__, mmc->dev->name);
@@ -2236,10 +2234,10 @@ static int octeontx_mmc_adjust_tuning(struct mmc *mmc, struct adj *adj,
 		default:
 			snprintf(env_name, sizeof(env_name),
 				 "emmc%d_hs200_data_out_tap", slot->bus_id);
-			env_set_ulong(env_name, slot->data_out_hs200_delay);
+			env_set_ulong(env_name, slot->data_out_taps_delay[MMC_HS_200]);
 			snprintf(env_name, sizeof(env_name),
 				 "emmc%d_hs200_cmd_out_tap", slot->bus_id);
-			env_set_ulong(env_name, slot->cmd_out_hs200_delay);
+			env_set_ulong(env_name, slot->cmd_out_taps_delay[MMC_HS_200]);
 			break;
 		}
 	}
@@ -2613,7 +2611,6 @@ static void octeontx_mmc_set_timing(struct mmc *mmc)
 static int octeontx_mmc_configure_delay(struct mmc *mmc)
 {
 	struct octeontx_mmc_slot *slot = mmc_to_slot(mmc);
-	struct octeontx_mmc_host *host __maybe_unused = slot->host;
 	bool __maybe_unused is_hs200;
 	bool __maybe_unused is_hs400;
 
@@ -2627,115 +2624,36 @@ static int octeontx_mmc_configure_delay(struct mmc *mmc)
 		emm_sample.s.dat_cnt = slot->dat_cnt;
 		write_csr(mmc, MIO_EMM_SAMPLE(), emm_sample.u);
 	} else {
-		is_hs200 = (mmc->selected_mode == MMC_HS_200);
-		is_hs400 = (mmc->selected_mode == MMC_HS_400);
+		u32 cout, dout, half;
 
-		if ((is_hs200 && slot->hs200_tuned) ||
-		    (is_hs400 && slot->hs400_tuned) ||
-		    (!is_hs200 && !is_hs400 && slot->tuned)) {
-			octeontx_mmc_set_output_bus_timing(mmc);
+		cout = octeontx2_mmc_calc_delay(mmc,
+				slot->cmd_out_taps_delay[mmc->selected_mode]);
+		dout = octeontx2_mmc_calc_delay(mmc,
+				slot->data_out_taps_delay[mmc->selected_mode]);
+
+		half = DIV_ROUND_UP(MAX_NO_OF_TAPS, 2);
+		is_hs200 = (mmc->selected_mode == MMC_HS_200 ? true : false);
+		is_hs400 = (mmc->selected_mode == MMC_HS_400 ? true : false);
+
+		/* Set some defaults */
+		if (is_hs200) {
+			slot->hs200_taps.u = 0;
+			slot->hs200_taps.s.cmd_out_tap = cout;
+			slot->hs200_taps.s.data_out_tap = dout;
+			slot->hs200_taps.s.cmd_in_tap = half;
+			slot->hs200_taps.s.data_in_tap = half;
+		} else if (is_hs400) {
+			slot->hs400_taps.u = 0;
+			slot->hs400_taps.s.cmd_out_tap = cout;
+			slot->hs400_taps.s.data_out_tap = dout;
+			slot->hs400_taps.s.cmd_in_tap = half;
+			slot->hs400_taps.s.data_in_tap = half;
 		} else {
-			int half = MAX_NO_OF_TAPS / 2;
-			int dout, cout;
-
-			switch (mmc->selected_mode) {
-			case MMC_LEGACY:
-				if (IS_SD(mmc)) {
-					cout = MMC_SD_LEGACY_DEFAULT_CMD_OUT_TAP;
-					dout = MMC_SD_LEGACY_DEFAULT_DATA_OUT_TAP;
-				} else {
-					cout = MMC_LEGACY_DEFAULT_CMD_OUT_TAP;
-					dout = MMC_LEGACY_DEFAULT_DATA_OUT_TAP;
-				}
-				break;
-			case MMC_HS:
-				cout = MMC_HS_CMD_OUT_TAP;
-				dout = MMC_HS_DATA_OUT_TAP;
-				break;
-			case SD_HS:
-			case UHS_SDR12:
-			case UHS_SDR25:
-			case UHS_SDR50:
-				cout = MMC_SD_HS_CMD_OUT_TAP;
-				dout = MMC_SD_HS_DATA_OUT_TAP;
-				break;
-			case UHS_SDR104:
-			case UHS_DDR50:
-			case MMC_HS_52:
-			case MMC_DDR_52:
-				cout = MMC_DEFAULT_CMD_OUT_TAP;
-				dout = MMC_DEFAULT_DATA_OUT_TAP;
-				break;
-			case MMC_HS_200:
-				cout = -1;
-				dout = -1;
-				if (host->timing_calibrated) {
-					cout = octeontx2_mmc_calc_delay(
-						mmc, slot->cmd_out_hs200_delay);
-					dout = octeontx2_mmc_calc_delay(
-						mmc,
-						slot->data_out_hs200_delay);
-					debug("%s(%s): Calibrated HS200/HS400 cmd out delay: %dps tap: %d, data out delay: %d, tap: %d\n",
-					      __func__, mmc->dev->name,
-					      slot->cmd_out_hs200_delay, cout,
-					      slot->data_out_hs200_delay, dout);
-				} else {
-					cout = MMC_DEFAULT_HS200_CMD_OUT_TAP;
-					dout = MMC_DEFAULT_HS200_DATA_OUT_TAP;
-				}
-				is_hs200 = true;
-				break;
-			case MMC_HS_400:
-				cout = -1;
-				dout = -1;
-				if (host->timing_calibrated) {
-					if (slot->cmd_out_hs400_delay)
-						cout = octeontx2_mmc_calc_delay(
-							mmc,
-							slot->cmd_out_hs400_delay);
-					if (slot->data_out_hs400_delay)
-						dout = octeontx2_mmc_calc_delay(
-							mmc,
-							slot->data_out_hs400_delay);
-					debug("%s(%s): Calibrated HS200/HS400 cmd out delay: %dps tap: %d, data out delay: %d, tap: %d\n",
-					      __func__, mmc->dev->name,
-					      slot->cmd_out_hs400_delay, cout,
-					      slot->data_out_hs400_delay, dout);
-				} else {
-					cout = MMC_DEFAULT_HS400_CMD_OUT_TAP;
-					dout = MMC_DEFAULT_HS400_DATA_OUT_TAP;
-				}
-				is_hs400 = true;
-				break;
-			default:
-				pr_err("%s(%s): Invalid mode %d\n", __func__,
-				       mmc->dev->name, mmc->selected_mode);
-				return -1;
-			}
-			debug("%s(%s): Not tuned, hs200: %d, hs200 tuned: %d, hs400: %d, hs400 tuned: %d, tuned: %d\n",
-			      __func__, mmc->dev->name, is_hs200,
-			      slot->hs200_tuned,
-			      is_hs400, slot->hs400_tuned, slot->tuned);
-			/* Set some defaults */
-			if (is_hs200) {
-				slot->hs200_taps.u = 0;
-				slot->hs200_taps.s.cmd_out_tap = cout;
-				slot->hs200_taps.s.data_out_tap = dout;
-				slot->hs200_taps.s.cmd_in_tap = half;
-				slot->hs200_taps.s.data_in_tap = half;
-			} else if (is_hs400) {
-				slot->hs400_taps.u = 0;
-				slot->hs400_taps.s.cmd_out_tap = cout;
-				slot->hs400_taps.s.data_out_tap = dout;
-				slot->hs400_taps.s.cmd_in_tap = half;
-				slot->hs400_taps.s.data_in_tap = half;
-			} else {
-				slot->taps.u = 0;
-				slot->taps.s.cmd_out_tap = cout;
-				slot->taps.s.data_out_tap = dout;
-				slot->taps.s.cmd_in_tap = half;
-				slot->taps.s.data_in_tap = half;
-			}
+			slot->taps.u = 0;
+			slot->taps.s.cmd_out_tap = cout;
+			slot->taps.s.data_out_tap = dout;
+			slot->taps.s.cmd_in_tap = half;
+			slot->taps.s.data_in_tap = half;
 		}
 
 		if (is_hs200)
@@ -3096,11 +3014,11 @@ static int octeontx_mmc_set_output_bus_timing(struct mmc *mmc)
 		cout_delay = 2500;
 		dout_delay = 2500;
 	} else if (!mmc_is_mode_ddr(mmc->selected_mode)) {
-		cout_delay = slot->cmd_out_hs200_delay;
-		dout_delay = slot->data_out_hs200_delay;
+		cout_delay = slot->cmd_out_taps_delay[MMC_HS_200];
+		dout_delay = slot->data_out_taps_delay[MMC_HS_200];
 	} else {
-		cout_delay = slot->cmd_out_hs400_delay;
-		dout_delay = slot->data_out_hs400_delay;
+		cout_delay = slot->cmd_out_taps_delay[MMC_HS_400];
+		dout_delay = slot->data_out_taps_delay[MMC_HS_400];
 	}
 
 	snprintf(env_name, sizeof(env_name), "mmc%d_hs200_dout_delay_ps",
@@ -3463,7 +3381,7 @@ static int octeontx_mmc_get_config(struct udevice *dev)
 	uint voltages[2];
 	uint low, high;
 	char env_name[32];
-	int err;
+	int err, i;
 	ofnode node = dev->node;
 	int bus_width = 1;
 	ulong new_max_freq;
@@ -3581,41 +3499,46 @@ static int octeontx_mmc_get_config(struct udevice *dev)
 		slot->cfg.host_caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz |
 				       MMC_MODE_DDR_52MHz;
 
+	/* Set defautl values for bus mode timings */
+	memcpy(slot->cmd_out_taps_delay, default_cmd_out_bus_timings,
+	       sizeof(slot->cmd_out_taps_delay));
+
+	for (i = 0; i < MMC_MODES_END; i++) {
+		u32 val = slot->cmd_out_taps_delay[i];
+
+		if (mmc_is_mode_ddr(i))
+			val = DIV_ROUND_UP(val, 2);
+		slot->data_out_taps_delay[i] = val;
+	}
+
 	if (IS_ENABLED(CONFIG_ARCH_OCTEONTX2)) {
-		if (!slot->is_asim && !slot->is_emul) {
-			if (ofnode_read_bool(node, "mmc-hs200-1_8v"))
-				slot->cfg.host_caps |= MMC_MODE_HS200 |
-					MMC_MODE_HS_52MHz;
-			if (ofnode_read_bool(node, "mmc-hs400-1_8v"))
-				slot->cfg.host_caps |= MMC_MODE_HS400 |
-					MMC_MODE_HS_52MHz |
-					MMC_MODE_HS200 |
-					MMC_MODE_DDR_52MHz;
-			slot->cmd_out_hs200_delay =
-				ofnode_read_u32_default(node,
-					"marvell,cmd-out-hs200-dly",
-					MMC_DEFAULT_HS200_CMD_OUT_DLY);
-			debug("%s(%s): HS200 cmd out delay: %d\n",
-			      __func__, dev->name, slot->cmd_out_hs200_delay);
-			slot->data_out_hs200_delay =
-				ofnode_read_u32_default(node,
-					"marvell,data-out-hs200-dly",
-					MMC_DEFAULT_HS200_DATA_OUT_DLY);
-			debug("%s(%s): HS200 data out delay: %d\n",
-			      __func__, dev->name, slot->data_out_hs200_delay);
-			slot->cmd_out_hs400_delay =
-				ofnode_read_u32_default(node,
-					"marvell,cmd-out-hs400-dly",
-					MMC_DEFAULT_HS400_CMD_OUT_DLY);
-			debug("%s(%s): HS400 cmd out delay: %d\n",
-			      __func__, dev->name, slot->cmd_out_hs400_delay);
-			slot->data_out_hs400_delay =
-				ofnode_read_u32_default(node,
-					"marvell,data-out-hs400-dly",
-					MMC_DEFAULT_HS400_DATA_OUT_DLY);
-			debug("%s(%s): HS400 data out delay: %d\n",
-			      __func__, dev->name, slot->data_out_hs400_delay);
-		}
+	if (!slot->is_asim && !slot->is_emul) {
+		if (ofnode_read_bool(node, "mmc-hs200-1_8v"))
+			slot->cfg.host_caps |= MMC_MODE_HS200 |
+					       MMC_MODE_HS_52MHz;
+		if (ofnode_read_bool(node, "mmc-hs400-1_8v"))
+			slot->cfg.host_caps |= MMC_MODE_HS400 |
+					       MMC_MODE_HS_52MHz |
+					       MMC_MODE_HS200 |
+					       MMC_MODE_DDR_52MHz;
+		ofnode_read_u32(node, "marvell,cmd-out-hs200-dly",
+				&slot->cmd_out_taps_delay[MMC_HS_200]);
+		ofnode_read_u32(node, "marvell,data-out-hs200-dly",
+				&slot->data_out_taps_delay[MMC_HS_200]);
+		debug("%s(%s): HS200 delays cmd=%u, data=%u\n",
+		      __func__, dev->name,
+		      slot->cmd_out_taps_delay[MMC_HS_200],
+		      slot->data_out_taps_delay[MMC_HS_200]);
+
+		ofnode_read_u32(node, "marvell,cmd-out-hs400-dly",
+				&slot->cmd_out_taps_delay[MMC_HS_400]);
+		ofnode_read_u32(node, "marvell,data-out-hs400-dly",
+				&slot->data_out_taps_delay[MMC_HS_400]);
+		debug("%s(%s): HS400 delays cmd=%u, data=%u\n",
+		      __func__, dev->name,
+		      slot->cmd_out_taps_delay[MMC_HS_400],
+		      slot->data_out_taps_delay[MMC_HS_400]);
+	}
 	}
 
 	slot->disable_ddr = ofnode_read_bool(node, "marvell,disable-ddr");

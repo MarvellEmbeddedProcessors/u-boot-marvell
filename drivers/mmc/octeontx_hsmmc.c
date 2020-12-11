@@ -3538,6 +3538,33 @@ static int octeontx_mmc_get_config(struct udevice *dev)
 		      __func__, dev->name,
 		      slot->cmd_out_taps_delay[MMC_HS_400],
 		      slot->data_out_taps_delay[MMC_HS_400]);
+
+		ofnode_read_u32(node, "marvell,cmd-out-hs-sdr-dly",
+				&slot->cmd_out_taps_delay[MMC_HS_52]);
+		ofnode_read_u32(node, "marvell,data-out-hs-sdr-dly",
+				&slot->data_out_taps_delay[MMC_HS_52]);
+		debug("%s(%s): HS SDR delays cmd=%u, data=%u\n",
+		      __func__, dev->name,
+		      slot->cmd_out_taps_delay[MMC_HS_52],
+		      slot->data_out_taps_delay[MMC_HS_52]);
+
+		ofnode_read_u32(node, "marvell,cmd-out-hs-ddr-dly",
+				&slot->cmd_out_taps_delay[MMC_DDR_52]);
+		ofnode_read_u32(node, "marvell,data-out-hs-ddr-dly",
+				&slot->data_out_taps_delay[MMC_DDR_52]);
+		debug("%s(%s): DDR52 delays cmd=%u, data=%u\n",
+		      __func__, dev->name,
+		      slot->cmd_out_taps_delay[MMC_DDR_52],
+		      slot->data_out_taps_delay[MMC_DDR_52]);
+
+		ofnode_read_u32(node, "marvell,cmd-out-legacy-dly",
+				&slot->cmd_out_taps_delay[MMC_LEGACY]);
+		ofnode_read_u32(node, "marvell,data-out-legacy-dly",
+				&slot->data_out_taps_delay[MMC_LEGACY]);
+		debug("%s(%s): Legacy delays cmd=%u, data=%u\n",
+		      __func__, dev->name,
+		      slot->cmd_out_taps_delay[MMC_LEGACY],
+		      slot->data_out_taps_delay[MMC_LEGACY]);
 	}
 	}
 

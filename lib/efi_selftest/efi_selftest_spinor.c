@@ -1,0 +1,111 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (c) 2020 Marvell
+ *
+ * efi_selftest_spinor
+ *
+ */
+
+#include <efi_selftest.h>
+#include <spi_flash.h>
+
+static struct efi_boot_services *boottime;
+extern const efi_guid_t efi_guid_spi_nor_flash_protocol;
+
+static int setup(const efi_handle_t handle,
+		 const struct efi_system_table *systable)
+{
+	boottime = systable->boottime;
+	return EFI_ST_SUCCESS;
+}
+
+/*
+ * Execute unit test.
+ *
+ * @return:	EFI_ST_SUCCESS for success
+ */
+static int execute(void)
+{
+	efi_status_t ret;
+	efi_uintn_t no_handles, i;
+	efi_handle_t *handles;
+	struct efi_spi_nor_flash_protocol *spinor;
+	u8 flash_status[10];
+	u8 flash_id[3];
+
+	/* Get the handle for the partition */
+	ret = boottime->locate_handle_buffer(BY_PROTOCOL,
+				&efi_guid_spi_nor_flash_protocol, NULL,
+				&no_handles, &handles);
+	if (ret != EFI_SUCCESS) {
+		efi_st_error("Failed to locate handles\n");
+		return EFI_ST_FAILURE;
+	}
+	for (i = 0; i < no_handles; ++i) {
+		ret = boottime->open_protocol(handles[i],
+					      &efi_guid_spi_nor_flash_protocol,
+					      (void **)&spinor, NULL, NULL,
+					      EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+		if (ret != EFI_SUCCESS) {
+			efi_st_error("Failed to open device path protocol\n");
+			return EFI_ST_FAILURE;
+		}
+
+		ret = spinor->get_flash_id(spinor, flash_id);
+		if (ret != EFI_SUCCESS) {
+			efi_st_error("Failed to read status[%lu]\n", ret);
+			return EFI_ST_FAILURE;
+		}
+
+		ret = spinor->read_status(spinor, 1, flash_status);
+		if (ret != EFI_SUCCESS) {
+			efi_st_error("Failed to read status[%lu]\n", ret);
+			return EFI_ST_FAILURE;
+		}
+
+		u8 data[2048];
+
+		ret = spinor->read_data(spinor, 0xE30000, 2048, data);
+		if (ret != EFI_SUCCESS) {
+			efi_st_error("Failed to read data[%lu]\n", ret);
+			return EFI_ST_FAILURE;
+		}
+
+		ret = spinor->erase_blocks(spinor, 0x0, 1);
+		if (ret != EFI_SUCCESS) {
+			efi_st_error("Failed to erase data[%lu]\n", ret);
+			return EFI_ST_FAILURE;
+		}
+
+		ret = spinor->write_data(spinor, 0, 2048, data);
+		if (ret != EFI_SUCCESS) {
+			efi_st_error("Failed to write data[%lu]\n", ret);
+			return EFI_ST_FAILURE;
+		}
+
+		ret = spinor->read_data(spinor, 0, 2048, data);
+		if (ret != EFI_SUCCESS) {
+			efi_st_error("Failed to read data[%lu]\n", ret);
+			return EFI_ST_FAILURE;
+		}
+
+		ret = boottime->close_protocol(handles[i],
+					      &efi_guid_spi_nor_flash_protocol,
+					      NULL, NULL);
+	}
+
+	ret = boottime->free_pool(handles);
+	if (ret != EFI_SUCCESS) {
+		efi_st_error("Failed to free pool memory\n");
+		return EFI_ST_FAILURE;
+	}
+
+	return EFI_ST_SUCCESS;
+}
+
+EFI_UNIT_TEST(flashdev) = {
+	.name = "spinor device",
+	.phase = EFI_EXECUTE_BEFORE_BOOTTIME_EXIT,
+	.setup = setup,
+	.execute = execute,
+};

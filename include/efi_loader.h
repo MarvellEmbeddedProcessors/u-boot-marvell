@@ -808,6 +808,9 @@ bool efi_image_parse(void *efi, size_t len, struct efi_image_regions **regp,
 /* runtime implementation of memcpy() */
 void efi_memcpy_runtime(void *dest, const void *src, size_t n);
 
+/* Create EFI_SPI_NOR_FLASH_PROTOCOL */
+efi_status_t efi_spinor_protocol_register(void);
+
 #else /* CONFIG_IS_ENABLED(EFI_LOADER) */
 
 /* Without CONFIG_EFI_LOADER we don't have a runtime section, stub it out */

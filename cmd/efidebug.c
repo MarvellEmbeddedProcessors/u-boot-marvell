@@ -278,6 +278,10 @@ static const struct {
 		"Runtime properties",
 		EFI_RT_PROPERTIES_TABLE_GUID,
 	},
+	{
+		"SPI-NOR Flash Protocol",
+		EFI_SPI_NOR_FLASH_PROTOCOL_GUID,
+	},
 };
 
 /**

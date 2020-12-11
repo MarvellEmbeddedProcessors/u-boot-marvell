@@ -186,7 +186,7 @@ void __efi_runtime efi_update_table_header_crc32(struct efi_table_hdr *table)
  * @data_size:		size of reset_data
  * @reset_data:		information about the reset
  */
-static void EFIAPI efi_reset_system_boottime(
+static inline void EFIAPI efi_reset_system_boottime(
 			enum efi_reset_type reset_type,
 			efi_status_t reset_status,
 			unsigned long data_size, void *reset_data)

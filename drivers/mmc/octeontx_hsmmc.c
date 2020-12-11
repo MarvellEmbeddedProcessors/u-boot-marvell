@@ -3521,6 +3521,9 @@ static int octeontx_mmc_get_config(struct udevice *dev)
 					       MMC_MODE_HS_52MHz |
 					       MMC_MODE_HS200 |
 					       MMC_MODE_DDR_52MHz;
+		if (ofnode_read_bool(node, "mmc-ddr52-only"))
+			slot->cfg.host_caps |= MMC_MODE_DDR_52MHz;
+
 		ofnode_read_u32(node, "marvell,cmd-out-hs200-dly",
 				&slot->cmd_out_taps_delay[MMC_HS_200]);
 		ofnode_read_u32(node, "marvell,data-out-hs200-dly",

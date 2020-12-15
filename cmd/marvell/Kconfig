@@ -45,4 +45,26 @@ config CMD_BOOTIMGUP
 	help
 	  bootimgup command support
 
+config CMD_BOOTIMGUP_CN10K
+	depends on ARCH_CN10K
+	bool "bootimgup"
+	help
+	  bootimgup command support
+
+config CMD_BOOTIMGUP_CUST_SIG
+	depends on CMD_BOOTIMGUP_CN10K
+	depends on ARCH_CN10K
+	bool "bootimgup_cust_sig"
+	help
+	 Custom signature support for the bootimgup command used by some
+	 customers.
+
+config CMD_BOOTIMGUP_BACKUP
+	depends on CMD_BOOTIMGUP_CN10K
+	depends on ARCH_CN10K
+	bool "bootimgup_backup"
+	help
+	 Enable support for a backup image in the SPI NOR flash.  This
+	 requires that the SPI NOR be at least 32MiB in size.
+
 endmenu

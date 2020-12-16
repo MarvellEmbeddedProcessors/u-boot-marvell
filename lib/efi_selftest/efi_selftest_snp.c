@@ -167,6 +167,124 @@ static efi_status_t send_dhcp_discover(void)
 	return ret;
 }
 
+static efi_status_t create_dhcp_discover(void)
+{
+	efi_status_t ret;
+	struct efi_event *events[2];
+	efi_uintn_t index;
+	union {
+		struct dhcp p;
+		u8 b[PKTSIZE];
+	} buffer;
+	struct efi_mac_address srcaddr;
+	struct efi_mac_address destaddr;
+	size_t buffer_size;
+	u8 *addr;
+
+	/*
+	 * The timeout is to occur after 10 s.
+	 */
+	unsigned int timeout = 100;
+
+	/*
+	 * Send DHCP discover message
+	 */
+	ret = send_dhcp_discover();
+	if (ret != EFI_SUCCESS)
+		return EFI_ST_FAILURE;
+
+	/*
+	 * If we would call WaitForEvent only with the WaitForPacket event,
+	 * our code would block until a packet is received which might never
+	 * occur. By calling WaitFor event with both a timer event and the
+	 * WaitForPacket event we can escape this blocking situation.
+	 *
+	 * If the timer event occurs before we have received a DHCP reply
+	 * a further DHCP discover message is sent.
+	 */
+	events[0] = timer;
+	events[1] = net->wait_for_packet;
+	for (;;) {
+		u32 int_status;
+
+		/*
+		 * Wait for packet to be received or timer event.
+		 */
+		boottime->wait_for_event(2, events, &index);
+		if (index == 0) {
+			/*
+			 * The timer event occurred. Check for timeout.
+			 */
+			--timeout;
+			if (!timeout) {
+				efi_st_error("Timeout occurred\n");
+				return EFI_ST_FAILURE;
+			}
+			/*
+			 * Send further DHCP discover message
+			 */
+			ret = send_dhcp_discover();
+			if (ret != EFI_SUCCESS)
+				return EFI_ST_FAILURE;
+			continue;
+		}
+		/*
+		 * Receive packet
+		 */
+		buffer_size = sizeof(buffer);
+		ret = net->get_status(net, &int_status, NULL);
+		if (ret != EFI_SUCCESS) {
+			efi_st_error("Failed to get status");
+			return EFI_ST_FAILURE;
+		}
+		if (!(int_status & EFI_SIMPLE_NETWORK_RECEIVE_INTERRUPT)) {
+			efi_st_error("RX interrupt not set");
+			return EFI_ST_FAILURE;
+		}
+		ret = net->receive(net, NULL, &buffer_size, &buffer,
+				   &srcaddr, &destaddr, NULL);
+		if (ret != EFI_SUCCESS) {
+			efi_st_error("Failed to receive packet");
+			return EFI_ST_FAILURE;
+		}
+		/*
+		 * Check the packet is meant for this system.
+		 * Unfortunately QEMU ignores the broadcast flag.
+		 * So we have to check for broadcasts too.
+		 */
+		if (memcmp(&destaddr, &net->mode->current_address, ARP_HLEN) &&
+		    memcmp(&destaddr, BROADCAST_MAC, ARP_HLEN))
+			continue;
+		/*
+		 * Check this is a DHCP reply
+		 */
+		if (buffer.p.eth_hdr.et_protlen != ntohs(PROT_IP) ||
+		    buffer.p.ip_udp.ip_hl_v != 0x45 ||
+		    buffer.p.ip_udp.ip_p != IPPROTO_UDP ||
+		    buffer.p.ip_udp.udp_src != ntohs(67) ||
+		    buffer.p.ip_udp.udp_dst != ntohs(68) ||
+		    buffer.p.dhcp_hdr.op != BOOTREPLY)
+			continue;
+		/*
+		 * We successfully received a DHCP reply.
+		 */
+		break;
+	}
+
+	/*
+	 * Write a log message.
+	 */
+	addr = (u8 *)&buffer.p.ip_udp.ip_src;
+	efi_st_printf("DHCP reply received from %u.%u.%u.%u (%pm) ",
+		      addr[0], addr[1], addr[2], addr[3], &srcaddr);
+	if (!memcmp(&destaddr, BROADCAST_MAC, ARP_HLEN))
+		efi_st_printf("as broadcast message.\n");
+	else
+		efi_st_printf("as unicast message.\n");
+
+	return EFI_ST_SUCCESS;
+}
+
 /*
  * Setup unit test.
  *
@@ -287,21 +405,7 @@ static int setup(const efi_handle_t handle,
 static int execute(void)
 {
 	efi_status_t ret;
-	struct efi_event *events[2];
-	efi_uintn_t index;
-	union {
-		struct dhcp p;
-		u8 b[PKTSIZE];
-	} buffer;
 	struct efi_mac_address srcaddr;
-	struct efi_mac_address destaddr;
-	size_t buffer_size;
-	u8 *addr;
-
-	/*
-	 * The timeout is to occur after 10 s.
-	 */
-	unsigned int timeout = 10;
 
 	/* Setup may have failed */
 	if (!net || !timer) {
@@ -309,101 +413,27 @@ static int execute(void)
 		return EFI_ST_FAILURE;
 	}
 
-	/*
-	 * Send DHCP discover message
-	 */
-	ret = send_dhcp_discover();
+	ret = create_dhcp_discover();
 	if (ret != EFI_SUCCESS)
-		return EFI_ST_FAILURE;
+		efi_st_error("DHCP discover failed [MAC:%pm]\n",
+			     &net->mode->current_address);
 
-	/*
-	 * If we would call WaitForEvent only with the WaitForPacket event,
-	 * our code would block until a packet is received which might never
-	 * occur. By calling WaitFor event with both a timer event and the
-	 * WaitForPacket event we can escape this blocking situation.
-	 *
-	 * If the timer event occurs before we have received a DHCP reply
-	 * a further DHCP discover message is sent.
-	 */
-	events[0] = timer;
-	events[1] = net->wait_for_packet;
-	for (;;) {
-		u32 int_status;
+	/* Change MAC address to a dummy value */
+	srcaddr.mac_addr[0] = 0x02;
+	srcaddr.mac_addr[1] = 0x0B;
+	srcaddr.mac_addr[2] = 0x03;
+	srcaddr.mac_addr[3] = 0x0C;
+	srcaddr.mac_addr[4] = 0x0D;
+	srcaddr.mac_addr[5] = 0x0E;
 
-		/*
-		 * Wait for packet to be received or timer event.
-		 */
-		boottime->wait_for_event(2, events, &index);
-		if (index == 0) {
-			/*
-			 * The timer event occurred. Check for timeout.
-			 */
-			--timeout;
-			if (!timeout) {
-				efi_st_error("Timeout occurred\n");
-				return EFI_ST_FAILURE;
-			}
-			/*
-			 * Send further DHCP discover message
-			 */
-			ret = send_dhcp_discover();
-			if (ret != EFI_SUCCESS)
-				return EFI_ST_FAILURE;
-			continue;
-		}
-		/*
-		 * Receive packet
-		 */
-		buffer_size = sizeof(buffer);
-		ret = net->get_status(net, &int_status, NULL);
-		if (ret != EFI_SUCCESS) {
-			efi_st_error("Failed to get status");
-			return EFI_ST_FAILURE;
-		}
-		if (!(int_status & EFI_SIMPLE_NETWORK_RECEIVE_INTERRUPT)) {
-			efi_st_error("RX interrupt not set");
-			return EFI_ST_FAILURE;
-		}
-		ret = net->receive(net, NULL, &buffer_size, &buffer,
-				   &srcaddr, &destaddr, NULL);
-		if (ret != EFI_SUCCESS) {
-			efi_st_error("Failed to receive packet");
-			return EFI_ST_FAILURE;
-		}
-		/*
-		 * Check the packet is meant for this system.
-		 * Unfortunately QEMU ignores the broadcast flag.
-		 * So we have to check for broadcasts too.
-		 */
-		if (memcmp(&destaddr, &net->mode->current_address, ARP_HLEN) &&
-		    memcmp(&destaddr, BROADCAST_MAC, ARP_HLEN))
-			continue;
-		/*
-		 * Check this is a DHCP reply
-		 */
-		if (buffer.p.eth_hdr.et_protlen != ntohs(PROT_IP) ||
-		    buffer.p.ip_udp.ip_hl_v != 0x45 ||
-		    buffer.p.ip_udp.ip_p != IPPROTO_UDP ||
-		    buffer.p.ip_udp.udp_src != ntohs(67) ||
-		    buffer.p.ip_udp.udp_dst != ntohs(68) ||
-		    buffer.p.dhcp_hdr.op != BOOTREPLY)
-			continue;
-		/*
-		 * We successfully received a DHCP reply.
-		 */
-		break;
-	}
+	ret = net->station_address(net, 0, &srcaddr);
+	if (ret != EFI_SUCCESS)
+		efi_st_error("Cannot change MAC address\n");
 
-	/*
-	 * Write a log message.
-	 */
-	addr = (u8 *)&buffer.p.ip_udp.ip_src;
-	efi_st_printf("DHCP reply received from %u.%u.%u.%u (%pm) ",
-		      addr[0], addr[1], addr[2], addr[3], &srcaddr);
-	if (!memcmp(&destaddr, BROADCAST_MAC, ARP_HLEN))
-		efi_st_printf("as broadcast message.\n");
-	else
-		efi_st_printf("as unicast message.\n");
+	ret = create_dhcp_discover();
+	if (ret != EFI_SUCCESS)
+		efi_st_error("DHCP discover failed [MAC:%pm]\n",
+			     &net->mode->current_address);
 
 	return EFI_ST_SUCCESS;
 }

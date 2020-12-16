@@ -20,6 +20,7 @@
 #include <malloc.h>
 #include <net.h>
 #include <cpu_func.h>
+#include <dm/device.h>
 
 static const efi_guid_t efi_net_guid = EFI_SIMPLE_NETWORK_PROTOCOL_GUID;
 static const efi_guid_t efi_pxe_base_code_protocol_guid =
@@ -304,9 +305,47 @@ static efi_status_t EFIAPI efi_net_station_address
 		(struct efi_simple_network *this, int reset,
 		 struct efi_mac_address *new_mac)
 {
+	struct udevice *dev = NULL;
+	struct eth_pdata *pdata = NULL;
+	efi_status_t r = EFI_SUCCESS;
+	int ret = 0;
+
 	EFI_ENTRY("%p, %x, %p", this, reset, new_mac);
 
-	return EFI_EXIT(EFI_UNSUPPORTED);
+	dev = eth_get_dev();
+	if (!dev) {
+		/* No network device active */
+		r = EFI_NOT_FOUND;
+		goto end;
+	}
+
+	if (reset)
+		memcpy(this->mode->current_address.mac_addr,
+		       this->mode->permanent_address.mac_addr, 6);
+	else
+		memcpy(this->mode->current_address.mac_addr,
+		       new_mac->mac_addr, 6);
+
+	pdata = dev->platdata;
+	memcpy(pdata->enetaddr, this->mode->current_address.mac_addr, 6);
+	if (eth_get_ops(dev)->write_hwaddr) {
+		if (!is_valid_ethaddr(pdata->enetaddr)) {
+			printf("\nError: %s address %pM illegal value\n",
+			       dev->name, pdata->enetaddr);
+			r = EFI_INVALID_PARAMETER;
+			goto end;
+		}
+
+		ret = eth_get_ops(dev)->write_hwaddr(dev);
+		if (ret) {
+			printf("\nWarning: %s failed to set MAC address\n",
+			       dev->name);
+			r = EFI_DEVICE_ERROR;
+		}
+	}
+
+end:
+	return EFI_EXIT(r);
 }
 
 /*
@@ -881,6 +920,7 @@ efi_status_t efi_net_register(void)
 	netobj->net.mode = &netobj->net_mode;
 	netobj->net_mode.state = EFI_NETWORK_STOPPED;
 	memcpy(netobj->net_mode.current_address.mac_addr, eth_get_ethaddr(), 6);
+	memcpy(netobj->net_mode.permanent_address.mac_addr, eth_get_ethaddr(), 6);
 	netobj->net_mode.hwaddr_size = ARP_HLEN;
 	netobj->net_mode.media_header_size = ETHER_HDR_SIZE;
 	netobj->net_mode.max_packet_size = PKTSIZE;

@@ -597,7 +597,7 @@ void nix_lf_flush_rx(struct udevice *dev)
 	tail &= (nix->cq[NIX_CQ_RX].qsize - 1);
 
 	while (head != tail) {
-		rx_dr = (struct nix_rx_dr *)cq_rx_base + head * rx_cqe_sz;
+		rx_dr = (struct nix_rx_dr *)(cq_rx_base + head * rx_cqe_sz);
 		rxparse = &rx_dr->rx_parse;
 
 		debug("%s: rx parse: desc_sizem1 %x pkt_lenm1 %x\n",

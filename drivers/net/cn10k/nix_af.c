@@ -395,7 +395,7 @@ static int nix_af_setup_sq(struct nix *nix)
 	smq_cfg.s.lf = nix->lf;
 	smq_cfg.s.desc_shp_ctl_dis = 1;
 	smq_cfg.s.maxlen = MAX_MTU;
-	smq_cfg.s.minlen = NIX_MIN_HW_MTU;
+	smq_cfg.s.minlen = NIX_MIN_TX_MTU;
 	nix_af_reg_write(nix_af, NIXX_AF_SMQX_CFG(smq_index), smq_cfg.u);
 
 	mdq_parent.u = nix_af_reg_read(nix_af,
@@ -406,7 +406,7 @@ static int nix_af_setup_sq(struct nix *nix)
 
 	link_cfg.u = 0;
 	link_cfg.s.maxlen = NIX_MAX_HW_MTU;
-	link_cfg.s.minlen = NIX_MIN_HW_MTU;
+	link_cfg.s.minlen = NIX_MIN_RX_MTU;
 	nix_af_reg_write(nix->nix_af,
 			 NIXX_AF_RX_LINKX_CFG(nix->lmac->link_num),
 			 link_cfg.u);

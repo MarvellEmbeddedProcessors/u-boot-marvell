@@ -35,7 +35,8 @@
 #define NIX_INTF_TYPE_CGX		0
 #define NIX_INTF_TYPE_LBK		1
 #define NIX_MAX_HW_MTU			9212
-#define NIX_MIN_HW_MTU			40
+#define NIX_MIN_TX_MTU			64
+#define NIX_MIN_RX_MTU			40
 #define MAX_MTU				1536
 
 #define NPA_POOL_COUNT			3

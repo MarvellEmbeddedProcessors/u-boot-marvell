@@ -49,7 +49,7 @@
 #define ATF_BL2_STAGE1_SIZE		0x40000
 #define ATF_FIP_ADDRESS			0x440000
 #define ATF_FIP_NAME			0xAA640001
-
+#define AP_NBL1FW_HEADER_NEXT_OFF_MAGIC "NEXT"
 /**
  * The BDK is located inAP_NBL1FW
  */
@@ -61,7 +61,9 @@ struct bdk_header {
 	u32	zero;
 	char	name[64];	/** Zero terminated name */
 	char	version[32];	/** Zero terminated version */
-	char	pad[136];
+	char	next_off_magic[4]; /** NEXT; validates 'next_offset' */
+	u32	next_offset;	/** offset of next image */
+	char	pad[128];
 };
 
 /** ROM Code Load Information-Block Structure, all fields are little-endian */
@@ -127,18 +129,23 @@ static struct spi_flash *flash;
 /**
  * Validates the BDK headers
  *
- * @param	addr	address of BDK image
+ * @param	addr	    address of BDK image
+ * @param	next_offset ptr by which offset of next image is returned
+ *                          (-1 if not found in header)
  *
  * @return	0 for success or !0 for error
  */
-static int validate_bdk(unsigned long addr, size_t size)
+static int validate_bdk(unsigned long addr, size_t size, ssize_t *next_offset)
 {
 	struct bdk_header *bhdr = (struct bdk_header *)addr;
 	u32 crc;
 	const u32 zero = 0;
 	u32 len = le32_to_cpu(bhdr->length);
 
-	if (len > size) {
+        if (next_offset)
+		*next_offset = 0;
+
+	if (size && (len > size)) {
 		printf("Invalid header length %#x for BDK type image at %#lx\n",
 		       len, addr);
 		return 1;
@@ -148,6 +155,16 @@ static int validate_bdk(unsigned long addr, size_t size)
 		printf("%s: Invalid header \"%8s\"\n", __func__, bhdr->magic);
 		return 1;
 	}
+
+        if (next_offset) {
+		if ((bhdr->next_offset) &&
+		    !strncmp(bhdr->next_off_magic,
+		             AP_NBL1FW_HEADER_NEXT_OFF_MAGIC, 4))
+			*next_offset = bhdr->next_offset;
+		else
+			*next_offset = -1;
+	}
+
 	crc = crc32(0, (u8 *)bhdr, 0x10);
 	crc = crc32(crc, (u8 *)&zero, sizeof(zero));
 	crc = crc32(crc, (u8 *)&bhdr->zero, bhdr->length - 0x14);
@@ -203,7 +220,8 @@ static int validate_clib(unsigned long addr)
  */
 static int validate_bootimg_header(unsigned long addr)
 {
-	u32  fip_toc_header = *(u32 *)(addr + ATF_FIP_ADDRESS);
+	u32     fip_toc_header;
+	ssize_t fip_off;
 
 	if (validate_clib(addr + AP_NB1FW_INFO)) {
 		printf("%s: AP NB1FW INFO CLIB bad\n", __func__);
@@ -218,16 +236,31 @@ static int validate_bootimg_header(unsigned long addr)
 		return 1;
 	}
 
-	if (validate_bdk(addr + AP_NBL1FW_OPAQUE, AP_NBL1FW_OPAQUE_SIZE)) {
+	if (validate_bdk(addr + AP_NBL1FW_OPAQUE, AP_NBL1FW_OPAQUE_SIZE,
+			 NULL)) {
 		printf("Invalid BDK image at %#lx\n", addr + AP_NBL1FW_OPAQUE);
 		return 1;
 	}
-	if (validate_bdk(addr + AP_TBL1FW_OPAQUE, AP_TBL1FW_OPAQUE_SIZE)) {
+	if (validate_bdk(addr + AP_TBL1FW_OPAQUE, AP_TBL1FW_OPAQUE_SIZE,
+			 NULL)) {
 		printf("Invalid BDK image at %#lx\n", addr + AP_TBL1FW_OPAQUE);
 		return 1;
 	}
+
+	if (validate_bdk(addr + ATF_BL2_STAGE1, 0 /* no max len */, &fip_off)) {
+		printf("Invalid BDK image at %#lx\n", addr + ATF_BL2_STAGE1);
+		return 1;
+	}
+
+	if (fip_off > 0)
+		fip_off += ATF_BL2_STAGE1; /* fip offset fm start of BL2 img */
+	else
+		fip_off = ATF_FIP_ADDRESS;
+
+	fip_toc_header = *(u32 *)(addr + fip_off);
+
 	if (le32_to_cpu(fip_toc_header) != ATF_FIP_NAME) {
-		printf("Invalid FIP TOC header\n");
+		printf("Invalid FIP TOC header @ offset 0x%lx\n", fip_off);
 		return 1;
 	}
 	return 0;

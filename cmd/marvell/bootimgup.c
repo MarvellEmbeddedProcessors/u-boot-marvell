@@ -20,7 +20,9 @@
 #include <asm/io.h>
 #include <u-boot/crc.h>
 #include <linux/mtd/mtd.h>
+#ifdef CONFIG_ARCH_CN10K
 #include <asm/arch/update.h>
+#endif
 #include <asm/arch/smc.h>
 
 /* Offsets and sizes to various structures in the image */

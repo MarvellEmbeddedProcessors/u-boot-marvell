@@ -319,7 +319,7 @@ static int env_sf_load(void)
 	if (ret)
 		goto out;
 
-#if defined(CONFIG_ARCH_OCTEONTX2) || defined(CONFIG_ARCH_CN10K)
+#if defined(CONFIG_ARCH_CN10K)
 extern void board_get_env_offset(int *offset, const char *property);
 	int env_offset;
 

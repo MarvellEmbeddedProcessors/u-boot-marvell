@@ -18,7 +18,7 @@
 #include <u-boot/rsa.h>
 #include <u-boot/sha256.h>
 
-const efi_guid_t efi_guid_image_security_database =
+__efi_runtime_data const efi_guid_t efi_guid_image_security_database =
 		EFI_IMAGE_SECURITY_DATABASE_GUID;
 const efi_guid_t efi_guid_sha256 = EFI_CERT_SHA256_GUID;
 const efi_guid_t efi_guid_cert_rsa2048 = EFI_CERT_RSA2048_GUID;

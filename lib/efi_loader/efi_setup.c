@@ -13,7 +13,7 @@
 
 #define OBJ_LIST_NOT_INITIALIZED 1
 
-efi_status_t efi_obj_list_initialized = OBJ_LIST_NOT_INITIALIZED;
+efi_status_t __efi_runtime_data efi_obj_list_initialized = OBJ_LIST_NOT_INITIALIZED;
 
 const char *get_boot_device(void)
 {

@@ -279,11 +279,9 @@ err:
 	return ret;
 }
 #else
-static efi_status_t efi_variable_authenticate(u16 *variable,
-					      const efi_guid_t *vendor,
-					      efi_uintn_t *data_size,
-					      const void **data, u32 given_attr,
-					      u32 *env_attr, u64 *time)
+static inline efi_status_t efi_variable_authenticate(u16 *variable, const efi_guid_t *vendor,
+						     efi_uintn_t *data_size, const void **data,
+						     u32 given_attr, u32 *env_attr, u64 *time)
 {
 	return EFI_SUCCESS;
 }
@@ -304,9 +302,10 @@ efi_get_next_variable_name_int(efi_uintn_t *variable_name_size,
 	return efi_get_next_variable_name_mem(variable_name_size, variable_name, vendor);
 }
 
-efi_status_t efi_set_variable_int(u16 *variable_name, const efi_guid_t *vendor,
-				  u32 attributes, efi_uintn_t data_size,
-				  const void *data, bool ro_check)
+efi_status_t __efi_runtime
+efi_set_variable_int(u16 *variable_name, const efi_guid_t *vendor,
+		     u32 attributes, efi_uintn_t data_size,
+		     const void *data, bool ro_check)
 {
 	struct efi_var_entry *var;
 	efi_uintn_t ret;
@@ -419,11 +418,10 @@ efi_status_t efi_set_variable_int(u16 *variable_name, const efi_guid_t *vendor,
 
 	/* Write non-volatile EFI variables to file */
 	if ((attributes & EFI_VARIABLE_NON_VOLATILE &&
-	    ret == EFI_SUCCESS && efi_obj_list_initialized == EFI_SUCCESS) ||
-	    delete)
-		efi_var_to_file();
+	     ret == EFI_SUCCESS && efi_obj_list_initialized == EFI_SUCCESS) || delete)
+		ret = efi_var_to_file();
 
-	return EFI_SUCCESS;
+	return ret;
 }
 
 efi_status_t efi_query_variable_info_int(u32 attributes,
@@ -454,11 +452,10 @@ efi_status_t efi_query_variable_info_int(u32 attributes,
  *					selected type
  * Returns:				status code
  */
-efi_status_t __efi_runtime EFIAPI efi_query_variable_info_runtime(
-			u32 attributes,
-			u64 *maximum_variable_storage_size,
-			u64 *remaining_variable_storage_size,
-			u64 *maximum_variable_size)
+efi_status_t __efi_runtime EFIAPI
+efi_query_variable_info_runtime(u32 attributes, u64 *maximum_variable_storage_size,
+				u64 *remaining_variable_storage_size,
+				u64 *maximum_variable_size)
 {
 	return EFI_UNSUPPORTED;
 }
@@ -473,12 +470,20 @@ efi_status_t __efi_runtime EFIAPI efi_query_variable_info_runtime(
  * @data:		buffer with the variable value
  * Return:		status code
  */
-static efi_status_t __efi_runtime EFIAPI
+efi_status_t __efi_runtime EFIAPI
 efi_set_variable_runtime(u16 *variable_name, const efi_guid_t *vendor,
 			 u32 attributes, efi_uintn_t data_size,
 			 const void *data)
 {
-	return EFI_UNSUPPORTED;
+	efi_status_t ret;
+
+	/* Make sure that EFI_VARIABLE_READ_ONLY flasg is not set */
+	if (attributes & ~(u32)EFI_VARIABLE_MASK)
+		ret = EFI_INVALID_PARAMETER;
+	else
+		ret = efi_set_variable_int(variable_name, vendor, attributes,
+					   data_size, data, true);
+	return ret;
 }
 
 /**

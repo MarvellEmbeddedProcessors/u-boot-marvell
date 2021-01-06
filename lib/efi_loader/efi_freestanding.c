@@ -9,6 +9,7 @@
  */
 
 #include <common.h>
+#include <efi_loader.h>
 
 /**
  * memcmp() - compare memory areas
@@ -20,7 +21,7 @@
  *		result value is the same as the sign of the difference between
  *		the first differing pair of bytes taken as u8.
  */
-int memcmp(const void *s1, const void *s2, size_t n)
+int __efi_runtime memcmp(const void *s1, const void *s2, size_t n)
 {
 	const u8 *pos1 = s1;
 	const u8 *pos2 = s2;

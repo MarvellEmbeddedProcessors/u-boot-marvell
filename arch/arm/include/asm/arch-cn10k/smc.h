@@ -75,4 +75,37 @@ int smc_load_switch_fw(u64 super_img_addr, u64 cm3_img_addr,
  *		-5 -- EIO
  */
 int smc_load_efi_img(u64 img_addr, u64 *img_size);
+
+/*
+ * Get EFI variabled shared memory info
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ *	x1:
+ *		Physical address of the shared memory
+ *	x2:
+ *		Size in bytes of this shared memory
+ */
+int smc_efi_var_shared_memory(u64 *mem_addr, u64 *mem_size);
+
+/*
+ * Perform EFI variable store write to flash in ATF
+ *
+ * x1 - Variable store location
+ * x2 - Variable store size
+ * x3 - Offset in flash device
+ * x4 - Flash device bus number
+ * X5 - Flash device chip select
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ *		-2 -- SPI_CONFIG_ERR
+ *		-3 -- SPI_MMAP_ERR
+ *		-5 -- EIO
+ */
+int smc_write_efi_var(u64 var_addr, u64 var_size, u32 offset, u32 bus, u32 cs);
 #endif

@@ -12,6 +12,7 @@
 #include <asm/arch/smc.h>
 #include <asm/psci.h>
 #include <asm/arch/update.h>
+#include <efi_loader.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -81,6 +82,64 @@ int smc_load_efi_img(u64 img_addr, u64 *img_size)
 	smc_call(&regs);
 
 	*img_size = regs.regs[1];
+	return regs.regs[0];
+}
+
+/*
+ * Get EFI variabled shared memory info
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ *	x1:
+ *		Physical address of the shared memory
+ *	x2:
+ *		Size in bytes of this shared memory
+ */
+int smc_efi_var_shared_memory(u64 *mem_addr, u64 *mem_size)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_GET_EFI_SHARED_MEM;
+
+	smc_call(&regs);
+
+	*mem_addr = regs.regs[1];
+	*mem_size = regs.regs[2];
+	return regs.regs[0];
+}
+
+/*
+ * Perform EFI variable store write to flash in ATF
+ *
+ * x1 - Variable store location
+ * x2 - Variable store size
+ * x3 - Offset in flash device
+ * x4 - Flash device bus number
+ * X5 - Flash device chip select
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ *		-2 -- SPI_CONFIG_ERR
+ *		-3 -- SPI_MMAP_ERR
+ *		-5 -- EIO
+ */
+__efi_runtime int smc_write_efi_var(u64 var_addr, u64 var_size, u32 offset, u32 bus, u32 cs)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_WRITE_EFI_VAR;
+	regs.regs[1] = var_addr;
+	regs.regs[2] = var_size;
+	regs.regs[3] = offset;
+	regs.regs[4] = bus;
+	regs.regs[5] = cs;
+
+	smc_call(&regs);
+
 	return regs.regs[0];
 }
 

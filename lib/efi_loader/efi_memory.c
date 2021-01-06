@@ -14,6 +14,7 @@
 #include <asm/cache.h>
 #include <linux/list_sort.h>
 #include <linux/sizes.h>
+#include <efi_variable.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -327,7 +328,7 @@ static efi_status_t efi_add_memory_map_pg(u64 start, u64 pages,
 	}
 
 	/* Add our new map */
-        list_add_tail(&newlist->link, &efi_mem);
+	list_add_tail(&newlist->link, &efi_mem);
 
 	/* And make sure memory is listed in descending order */
 	efi_mem_sort();
@@ -529,7 +530,7 @@ void *efi_alloc(uint64_t len, int memory_type)
 	r = efi_allocate_pages(EFI_ALLOCATE_ANY_PAGES, memory_type, pages,
 			       &ret);
 	if (r == EFI_SUCCESS)
-		return (void*)(uintptr_t)ret;
+		return (void *)(uintptr_t)ret;
 
 	return NULL;
 }
@@ -808,6 +809,9 @@ static void add_u_boot_and_runtime(void)
 	runtime_pages = (runtime_end - runtime_start) >> EFI_PAGE_SHIFT;
 	efi_add_memory_map_pg(runtime_start, runtime_pages,
 			      EFI_RUNTIME_SERVICES_CODE, false);
+
+	/* Add EFI variable shared memory */
+	efi_add_memory_map(EFI_VAR_MEM_BASE, EFI_VAR_BUF_SIZE, EFI_RUNTIME_SERVICES_DATA);
 }
 
 int efi_memory_init(void)
@@ -825,7 +829,7 @@ int efi_memory_init(void)
 			       &efi_bounce_buffer_addr) != EFI_SUCCESS)
 		return -1;
 
-	efi_bounce_buffer = (void*)(uintptr_t)efi_bounce_buffer_addr;
+	efi_bounce_buffer = (void *)(uintptr_t)efi_bounce_buffer_addr;
 #endif
 
 	return 0;

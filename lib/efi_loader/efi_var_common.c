@@ -17,21 +17,20 @@ enum efi_secure_mode {
 	EFI_MODE_DEPLOYED,
 };
 
-struct efi_auth_var_name_type {
-	const u16 *name;
-	const efi_guid_t *guid;
-	const enum efi_auth_var_type type;
-};
+__efi_runtime_data const u16 pk[] = u"PK";
+__efi_runtime_data const u16 kek[] = u"KEK";
+__efi_runtime_data const u16 db[] = u"db";
+__efi_runtime_data const u16 dbx[] = u"dbx";
 
-static const struct efi_auth_var_name_type name_type[] = {
-	{u"PK", &efi_global_variable_guid, EFI_AUTH_VAR_PK},
-	{u"KEK", &efi_global_variable_guid, EFI_AUTH_VAR_KEK},
-	{u"db",  &efi_guid_image_security_database, EFI_AUTH_VAR_DB},
-	{u"dbx",  &efi_guid_image_security_database, EFI_AUTH_VAR_DBX},
+__efi_runtime_data const struct efi_auth_var_name_type name_type[] = {
+	{pk, &efi_global_variable_guid, EFI_AUTH_VAR_PK},
+	{kek, &efi_global_variable_guid, EFI_AUTH_VAR_KEK},
+	{db,  &efi_guid_image_security_database, EFI_AUTH_VAR_DB},
+	{dbx,  &efi_guid_image_security_database, EFI_AUTH_VAR_DBX},
 	/* not used yet
-	{u"dbt",  &efi_guid_image_security_database, EFI_AUTH_VAR_DBT},
-	{u"dbr",  &efi_guid_image_security_database, EFI_AUTH_VAR_DBR},
-	*/
+	 *{u"dbt",  &efi_guid_image_security_database, EFI_AUTH_VAR_DBT},
+	 *{u"dbr",  &efi_guid_image_security_database, EFI_AUTH_VAR_DBR},
+	 */
 };
 
 static bool efi_secure_boot;
@@ -149,10 +148,9 @@ efi_status_t EFIAPI efi_get_next_variable_name(efi_uintn_t *variable_name_size,
  *					selected type
  * Returns:				status code
  */
-efi_status_t EFIAPI efi_query_variable_info(
-			u32 attributes, u64 *maximum_variable_storage_size,
-			u64 *remaining_variable_storage_size,
-			u64 *maximum_variable_size)
+efi_status_t EFIAPI efi_query_variable_info(u32 attributes, u64 *maximum_variable_storage_size,
+					    u64 *remaining_variable_storage_size,
+					    u64 *maximum_variable_size)
 {
 	efi_status_t ret;
 
@@ -334,7 +332,7 @@ bool efi_secure_boot_enabled(void)
 	return efi_secure_boot;
 }
 
-enum efi_auth_var_type efi_auth_var_get_type(u16 *name, const efi_guid_t *guid)
+enum efi_auth_var_type __efi_runtime efi_auth_var_get_type(u16 *name, const efi_guid_t *guid)
 {
 	for (size_t i = 0; i < ARRAY_SIZE(name_type); ++i) {
 		if (!u16_strcmp(name, name_type[i].name) &&

@@ -20,6 +20,12 @@ enum efi_auth_var_type {
 	EFI_AUTH_VAR_DBR,
 };
 
+struct efi_auth_var_name_type {
+	const u16 *name;
+	const efi_guid_t *guid;
+	const enum efi_auth_var_type type;
+};
+
 /**
  * efi_get_variable() - retrieve value of a UEFI variable
  *
@@ -91,7 +97,8 @@ efi_status_t efi_query_variable_info_int(u32 attributes,
 
 #define EFI_VAR_FILE_NAME "ubootefi.var"
 
-#define EFI_VAR_BUF_SIZE 0x4000
+#define EFI_VAR_BUF_SIZE	0x4000
+#define EFI_VAR_MEM_BASE	0x01430000
 
 /*
  * This constant identifies the file format for storing UEFI variables in

@@ -65,6 +65,7 @@ struct dyn_sym {
 	u32 foo2;
 	u32 foo3;
 };
+
 #if (__riscv_xlen == 32)
 #define R_ABSOLUTE	R_RISCV_32
 #define SYM_INDEX	8
@@ -89,9 +90,9 @@ struct elf_rela {
 	long addend;
 };
 
-static __efi_runtime_data struct efi_mem_desc *efi_virtmap;
-static __efi_runtime_data efi_uintn_t efi_descriptor_count;
-static __efi_runtime_data efi_uintn_t efi_descriptor_size;
+__efi_runtime_data struct efi_mem_desc *efi_virtmap;
+__efi_runtime_data efi_uintn_t efi_descriptor_count;
+__efi_runtime_data efi_uintn_t efi_descriptor_size;
 
 /*
  * EFI runtime code lives in two stages. In the first stage, U-Boot and an EFI
@@ -130,9 +131,8 @@ efi_status_t efi_init_runtime_supported(void)
 	 * This value must be synced with efi_runtime_detach_list
 	 * as well as efi_runtime_services.
 	 */
-#ifdef CONFIG_EFI_HAVE_RUNTIME_RESET
-	rt_table->runtime_services_supported |= EFI_RT_SUPPORTED_RESET_SYSTEM;
-#endif
+	if (IS_ENABLED(CONFIG_EFI_HAVE_RUNTIME_RESET))
+		rt_table->runtime_services_supported |= EFI_RT_SUPPORTED_RESET_SYSTEM;
 
 	ret = efi_install_configuration_table(&efi_rt_properties_table_guid,
 					      rt_table);
@@ -161,6 +161,22 @@ void __efi_runtime efi_memcpy_runtime(void *dest, const void *src, size_t n)
 }
 
 /**
+ * efi_memset_runtime() - fill memory with a constant byte
+ *
+ * @s:		destination buffer
+ * @c:		byte value
+ * @n:		number of bytes to set
+ * Return:	pointer to destination buffer
+ */
+void __efi_runtime efi_memset_runtime(void *s, int c, size_t n)
+{
+	u8 *d = s;
+
+	for (; n; --n)
+		*d++ = c;
+}
+
+/**
  * efi_update_table_header_crc32() - Update crc32 in table header
  *
  * @table:	EFI table
@@ -186,10 +202,9 @@ void __efi_runtime efi_update_table_header_crc32(struct efi_table_hdr *table)
  * @data_size:		size of reset_data
  * @reset_data:		information about the reset
  */
-static inline void EFIAPI efi_reset_system_boottime(
-			enum efi_reset_type reset_type,
-			efi_status_t reset_status,
-			unsigned long data_size, void *reset_data)
+static inline void EFIAPI efi_reset_system_boottime(enum efi_reset_type reset_type,
+						    efi_status_t reset_status,
+						    unsigned long data_size, void *reset_data)
 {
 	struct efi_event *evt;
 
@@ -212,13 +227,13 @@ static inline void EFIAPI efi_reset_system_boottime(
 		do_reset(NULL, 0, 0, NULL);
 		break;
 	case EFI_RESET_SHUTDOWN:
-#ifdef CONFIG_CMD_POWEROFF
+	if (IS_ENABLED(CONFIG_CMD_POWEROFF))
 		do_poweroff(NULL, 0, 0, NULL);
-#endif
 		break;
 	}
 
-	while (1) { }
+	while (1) {
+	}
 }
 
 /**
@@ -234,55 +249,54 @@ static inline void EFIAPI efi_reset_system_boottime(
  * @capabilities:	pointer to structure to receive RTC properties
  * Returns:		status code
  */
-static efi_status_t EFIAPI efi_get_time_boottime(
-			struct efi_time *time,
-			struct efi_time_cap *capabilities)
+static efi_status_t EFIAPI efi_get_time_boottime(struct efi_time *time,
+						 struct efi_time_cap *capabilities)
 {
-#ifdef CONFIG_EFI_GET_TIME
-	efi_status_t ret = EFI_SUCCESS;
-	struct rtc_time tm;
-	struct udevice *dev;
+	if (IS_ENABLED(CONFIG_EFI_GET_TIME)) {
+		efi_status_t ret = EFI_SUCCESS;
+		struct rtc_time tm;
+		struct udevice *dev;
 
-	EFI_ENTRY("%p %p", time, capabilities);
+		EFI_ENTRY("%p %p", time, capabilities);
 
-	if (!time) {
-		ret = EFI_INVALID_PARAMETER;
-		goto out;
-	}
-	if (uclass_get_device(UCLASS_RTC, 0, &dev) ||
-	    dm_rtc_get(dev, &tm)) {
-		ret = EFI_UNSUPPORTED;
-		goto out;
-	}
-	if (dm_rtc_get(dev, &tm)) {
-		ret = EFI_DEVICE_ERROR;
-		goto out;
-	}
+		if (!time) {
+			ret = EFI_INVALID_PARAMETER;
+			goto out;
+		}
+		if (uclass_get_device(UCLASS_RTC, 0, &dev) ||
+		    dm_rtc_get(dev, &tm)) {
+			ret = EFI_UNSUPPORTED;
+			goto out;
+		}
+		if (dm_rtc_get(dev, &tm)) {
+			ret = EFI_DEVICE_ERROR;
+			goto out;
+		}
 
-	memset(time, 0, sizeof(*time));
-	time->year = tm.tm_year;
-	time->month = tm.tm_mon;
-	time->day = tm.tm_mday;
-	time->hour = tm.tm_hour;
-	time->minute = tm.tm_min;
-	time->second = tm.tm_sec;
-	if (tm.tm_isdst)
-		time->daylight =
-			EFI_TIME_ADJUST_DAYLIGHT | EFI_TIME_IN_DAYLIGHT;
-	time->timezone = EFI_UNSPECIFIED_TIMEZONE;
+		memset(time, 0, sizeof(*time));
+		time->year = tm.tm_year;
+		time->month = tm.tm_mon;
+		time->day = tm.tm_mday;
+		time->hour = tm.tm_hour;
+		time->minute = tm.tm_min;
+		time->second = tm.tm_sec;
+		if (tm.tm_isdst)
+			time->daylight =
+				EFI_TIME_ADJUST_DAYLIGHT | EFI_TIME_IN_DAYLIGHT;
+		time->timezone = EFI_UNSPECIFIED_TIMEZONE;
 
-	if (capabilities) {
-		/* Set reasonable dummy values */
-		capabilities->resolution = 1;		/* 1 Hz */
-		capabilities->accuracy = 100000000;	/* 100 ppm */
-		capabilities->sets_to_zero = false;
-	}
+		if (capabilities) {
+			/* Set reasonable dummy values */
+			capabilities->resolution = 1;		/* 1 Hz */
+			capabilities->accuracy = 100000000;	/* 100 ppm */
+			capabilities->sets_to_zero = false;
+		}
 out:
-	return EFI_EXIT(ret);
-#else
-	EFI_ENTRY("%p %p", time, capabilities);
-	return EFI_EXIT(EFI_UNSUPPORTED);
-#endif
+		return EFI_EXIT(ret);
+	} else {
+		EFI_ENTRY("%p %p", time, capabilities);
+		return EFI_EXIT(EFI_UNSUPPORTED);
+	}
 }
 
 #ifdef CONFIG_EFI_SET_TIME
@@ -323,7 +337,7 @@ static int efi_validate_time(struct efi_time *time)
  */
 static efi_status_t EFIAPI efi_set_time_boottime(struct efi_time *time)
 {
-#ifdef CONFIG_EFI_SET_TIME
+#if IS_ENABLED(CONFIG_EFI_SET_TIME)
 	efi_status_t ret = EFI_SUCCESS;
 	struct rtc_time tm;
 	struct udevice *dev;
@@ -361,6 +375,7 @@ out:
 	return EFI_EXIT(EFI_UNSUPPORTED);
 #endif
 }
+
 /**
  * efi_reset_system() - reset system
  *
@@ -378,12 +393,11 @@ out:
  * @data_size:		size of reset_data
  * @reset_data:		information about the reset
  */
-void __weak __efi_runtime EFIAPI efi_reset_system(
-			enum efi_reset_type reset_type,
-			efi_status_t reset_status,
-			unsigned long data_size, void *reset_data)
+void __weak __efi_runtime EFIAPI efi_reset_system(enum efi_reset_type reset_type,
+						  efi_status_t reset_status,
+						  unsigned long data_size, void *reset_data)
 {
-	return;
+//	return;
 }
 
 /**
@@ -410,9 +424,8 @@ efi_status_t __weak efi_reset_system_init(void)
  * @capabilities:	pointer to structure to receive RTC properties
  * Returns:		status code
  */
-efi_status_t __weak __efi_runtime EFIAPI efi_get_time(
-			struct efi_time *time,
-			struct efi_time_cap *capabilities)
+efi_status_t __weak __efi_runtime EFIAPI efi_get_time(struct efi_time *time,
+						      struct efi_time_cap *capabilities)
 {
 	return EFI_UNSUPPORTED;
 }
@@ -479,11 +492,11 @@ void efi_runtime_detach(void)
  * @virtmap:		virtual address mapping information
  * Return:		status code EFI_UNSUPPORTED
  */
-static __efi_runtime efi_status_t EFIAPI efi_set_virtual_address_map_runtime(
-			efi_uintn_t memory_map_size,
-			efi_uintn_t descriptor_size,
-			uint32_t descriptor_version,
-			struct efi_mem_desc *virtmap)
+static __efi_runtime efi_status_t EFIAPI
+efi_set_virtual_address_map_runtime(efi_uintn_t memory_map_size,
+				    efi_uintn_t descriptor_size,
+				    uint32_t descriptor_version,
+				    struct efi_mem_desc *virtmap)
 {
 	return EFI_UNSUPPORTED;
 }
@@ -501,8 +514,8 @@ static __efi_runtime efi_status_t EFIAPI efi_set_virtual_address_map_runtime(
  * @address:		pointer to be converted
  * Return:		status code EFI_UNSUPPORTED
  */
-static __efi_runtime efi_status_t EFIAPI efi_convert_pointer_runtime(
-			efi_uintn_t debug_disposition, void **address)
+static inline __efi_runtime efi_status_t EFIAPI
+efi_convert_pointer_runtime(efi_uintn_t debug_disposition, void **address)
 {
 	return EFI_UNSUPPORTED;
 }
@@ -588,7 +601,7 @@ static __efi_runtime void efi_relocate_runtime_table(ulong offset)
 	 * The entry for ConvertPointer() must point to a physical address.
 	 * The service is not usable after SetVirtualAddress().
 	 */
-	efi_runtime_services.convert_pointer = &efi_convert_pointer_runtime;
+	efi_runtime_services.convert_pointer = &efi_convert_pointer;
 
 	/*
 	 * TODO: Update UEFI variable RuntimeServicesSupported removing flags
@@ -604,9 +617,9 @@ static __efi_runtime void efi_relocate_runtime_table(ulong offset)
 void efi_runtime_relocate(ulong offset, struct efi_mem_desc *map)
 {
 #ifdef IS_RELA
-	struct elf_rela *rel = (void*)&__efi_runtime_rel_start;
+	struct elf_rela *rel = (void *)&__efi_runtime_rel_start;
 #else
-	struct elf_rel *rel = (void*)&__efi_runtime_rel_start;
+	struct elf_rel *rel = (void *)&__efi_runtime_rel_start;
 	static ulong lastoff = CONFIG_SYS_TEXT_BASE;
 #endif
 
@@ -616,7 +629,7 @@ void efi_runtime_relocate(ulong offset, struct efi_mem_desc *map)
 		ulong *p;
 		ulong newaddr;
 
-		p = (void*)((ulong)rel->offset - base) + gd->relocaddr;
+		p = (void *)((ulong)rel->offset - base) + gd->relocaddr;
 
 		/*
 		 * The runtime services table is updated in
@@ -640,6 +653,7 @@ void efi_runtime_relocate(ulong offset, struct efi_mem_desc *map)
 		case R_ABSOLUTE: {
 			ulong symidx = rel->info >> SYM_INDEX;
 			extern struct dyn_sym __dyn_sym_start[];
+
 			newaddr = __dyn_sym_start[symidx].addr + offset;
 #ifdef IS_RELA
 			newaddr -= CONFIG_SYS_TEXT_BASE;
@@ -654,9 +668,8 @@ void efi_runtime_relocate(ulong offset, struct efi_mem_desc *map)
 		}
 
 		/* Check if the relocation is inside bounds */
-		if (map && ((newaddr < map->virtual_start) ||
-		    newaddr > (map->virtual_start +
-			      (map->num_pages << EFI_PAGE_SHIFT)))) {
+		if (map && (newaddr < map->virtual_start ||
+			    newaddr > (map->virtual_start + (map->num_pages << EFI_PAGE_SHIFT)))) {
 			printf("%s: Relocation at %p is out of range (%lx)\n",
 			       __func__, p, newaddr);
 			continue;
@@ -665,14 +678,14 @@ void efi_runtime_relocate(ulong offset, struct efi_mem_desc *map)
 		debug("%s: Setting %p to %lx\n", __func__, p, newaddr);
 		*p = newaddr;
 		flush_dcache_range((ulong)p & ~(EFI_CACHELINE_SIZE - 1),
-			ALIGN((ulong)&p[1], EFI_CACHELINE_SIZE));
+				   ALIGN((ulong)&p[1], EFI_CACHELINE_SIZE));
 	}
 
 #ifndef IS_RELA
 	lastoff = offset;
 #endif
 
-        invalidate_icache_all();
+	invalidate_icache_all();
 }
 
 /**
@@ -689,11 +702,10 @@ void efi_runtime_relocate(ulong offset, struct efi_mem_desc *map)
  * @virtmap:		virtual address mapping information
  * Return:		status code
  */
-static efi_status_t EFIAPI efi_set_virtual_address_map(
-			efi_uintn_t memory_map_size,
-			efi_uintn_t descriptor_size,
-			uint32_t descriptor_version,
-			struct efi_mem_desc *virtmap)
+static efi_status_t EFIAPI
+efi_set_virtual_address_map(efi_uintn_t memory_map_size,
+			    efi_uintn_t descriptor_size,
+			    uint32_t descriptor_version, struct efi_mem_desc *virtmap)
 {
 	efi_uintn_t n = memory_map_size / descriptor_size;
 	efi_uintn_t i;
@@ -726,7 +738,7 @@ static efi_status_t EFIAPI efi_set_virtual_address_map(
 	 * services.
 	 */
 	for (i = 0; i < n; i++) {
-		struct efi_mem_desc *map = (void*)virtmap +
+		struct efi_mem_desc *map = (void *)virtmap +
 					   (descriptor_size * i);
 
 		if (map->type == EFI_RUNTIME_SERVICES_CODE)
@@ -744,13 +756,12 @@ static efi_status_t EFIAPI efi_set_virtual_address_map(
 	/* Notify EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE */
 	list_for_each_entry(event, &efi_events, link) {
 		if (event->notify_function)
-			EFI_CALL_VOID(event->notify_function(
-					event, event->notify_context));
+			EFI_CALL_VOID(event->notify_function(event, event->notify_context));
 	}
 
 	/* Rebind mmio pointers */
 	for (i = 0; i < n; i++) {
-		struct efi_mem_desc *map = (void*)virtmap +
+		struct efi_mem_desc *map = (void *)virtmap +
 					   (descriptor_size * i);
 		struct list_head *lhandle;
 		efi_physical_addr_t map_start = map->physical_start;
@@ -765,14 +776,14 @@ static efi_status_t EFIAPI efi_set_virtual_address_map(
 			lmmio = list_entry(lhandle,
 					   struct efi_runtime_mmio_list,
 					   link);
-			if ((map_start <= lmmio->paddr) &&
-			    (map_end >= lmmio->paddr)) {
+			if (map_start <= lmmio->paddr &&
+			    map_end >= lmmio->paddr) {
 				uintptr_t new_addr = lmmio->paddr + off;
 				*lmmio->ptr = (void *)new_addr;
 			}
 		}
-		if ((map_start <= (uintptr_t)systab.tables) &&
-		    (map_end >= (uintptr_t)systab.tables)) {
+		if (map_start <= (uintptr_t)systab.tables &&
+		    map_end >= (uintptr_t)systab.tables) {
 			char *ptr = (char *)systab.tables;
 
 			ptr += off;
@@ -784,7 +795,7 @@ static efi_status_t EFIAPI efi_set_virtual_address_map(
 	for (i = 0; i < n; i++) {
 		struct efi_mem_desc *map;
 
-		map = (void*)virtmap + (descriptor_size * i);
+		map = (void *)virtmap + (descriptor_size * i);
 		if (map->type == EFI_RUNTIME_SERVICES_CODE) {
 			ulong new_offset = map->virtual_start -
 					   map->physical_start + gd->relocaddr;
@@ -879,10 +890,9 @@ static efi_status_t __efi_runtime EFIAPI efi_unimplemented(void)
  * @scatter_gather_list:	pointer to arry of physical pointers
  * Returns:			status code
  */
-efi_status_t __efi_runtime EFIAPI efi_update_capsule(
-			struct efi_capsule_header **capsule_header_array,
-			efi_uintn_t capsule_count,
-			u64 scatter_gather_list)
+efi_status_t __efi_runtime EFIAPI
+efi_update_capsule(struct efi_capsule_header **capsule_header_array,
+		   efi_uintn_t capsule_count, u64 scatter_gather_list)
 {
 	return EFI_UNSUPPORTED;
 }
@@ -901,11 +911,10 @@ efi_status_t __efi_runtime EFIAPI efi_update_capsule(
  * @reset_type:			type of reset needed for capsule update
  * Returns:			status code
  */
-efi_status_t __efi_runtime EFIAPI efi_query_capsule_caps(
-			struct efi_capsule_header **capsule_header_array,
-			efi_uintn_t capsule_count,
-			u64 *maximum_capsule_size,
-			u32 *reset_type)
+efi_status_t __efi_runtime EFIAPI
+efi_query_capsule_caps(struct efi_capsule_header **capsule_header_array,
+		       efi_uintn_t capsule_count, u64 *maximum_capsule_size,
+		       u32 *reset_type)
 {
 	return EFI_UNSUPPORTED;
 }

@@ -313,7 +313,8 @@ read_error:
 
 int octeontx_smi_probe(struct udevice *dev)
 {
-	int ret, subnode, cnt = 0, node = dev->node.of_offset;
+	int ret, cnt = 0;
+	ofnode subnode;
 	struct mii_dev *bus;
 	struct octeontx_smi_priv *priv;
 	pci_dev_t bdf = dm_pci_get_bdf(dev);
@@ -325,10 +326,10 @@ int octeontx_smi_probe(struct udevice *dev)
 		return -1;
 	}
 
-	fdt_for_each_subnode(subnode, gd->fdt_blob, node) {
-		ret = fdt_node_check_compatible(gd->fdt_blob, subnode,
-						"cavium,thunder-8890-mdio");
-		if (ret)
+	ofnode_for_each_subnode(subnode, dev_ofnode(dev)) {
+		ret = ofnode_device_is_compatible(subnode,
+						  "cavium,thunder-8890-mdio");
+		if (!ret)
 			continue;
 
 		bus = mdio_alloc();
@@ -345,9 +346,7 @@ int octeontx_smi_probe(struct udevice *dev)
 		bus->priv = priv;
 
 		priv->mode = CLAUSE22;
-		priv->baseaddr = (void __iomem *)fdtdec_get_addr(gd->fdt_blob,
-								 subnode,
-								 "reg");
+		priv->baseaddr = (void __iomem *)ofnode_get_addr(subnode);
 		debug("mdio base addr %p\n", priv->baseaddr);
 
 		/* use given name or generate its own unique name */

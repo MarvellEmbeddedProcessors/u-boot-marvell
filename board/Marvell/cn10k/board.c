@@ -60,6 +60,37 @@ void cn10k_board_get_mac_addr(u8 index, u8 *mac_addr)
 	debug("%s mac %pM\n", __func__, mac_addr);
 }
 
+void board_get_secure_spi_bus_cs(int *bus, int *cs, int *num)
+{
+	const void *blob = gd->fdt_blob;
+	int sec_bus, sec_cs;
+	int node, preg;
+
+	*num = 0;
+	node = fdt_node_offset_by_compatible(blob, -1, "spi-flash");
+	while (node > 0) {
+		sec_bus = -1;
+		sec_cs = -1;
+		if (fdtdec_get_bool(blob, node, "secure-spi")) {
+			sec_cs = fdtdec_get_int(blob, node, "reg", -1);
+			preg = fdtdec_get_int(blob,
+					      fdt_parent_offset(blob, node),
+					      "reg", -1);
+			/* SPI node will have PCI addr, so map it */
+			if (preg == 0x3000)
+				sec_bus = 0;
+			if (preg == 0x3800)
+				sec_bus = 1;
+			debug("\n Secure SPI [bus:cs] [%d:%d]\n",
+			      sec_bus, sec_cs);
+			bus[*num] = sec_bus;
+			cs[*num] = sec_cs;
+			*num += 1;
+		}
+		node = fdt_node_offset_by_compatible(blob, node, "spi-flash");
+	}
+}
+
 void board_get_env_spi_bus_cs(int *bus, int *cs)
 {
 	const void *blob = gd->fdt_blob;

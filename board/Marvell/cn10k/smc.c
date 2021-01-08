@@ -115,28 +115,23 @@ int smc_efi_var_shared_memory(u64 *mem_addr, u64 *mem_size)
  *
  * x1 - Variable store location
  * x2 - Variable store size
- * x3 - Offset in flash device
- * x4 - Flash device bus number
- * X5 - Flash device chip select
+ * x3 - Flash device bus number
+ * X4 - Flash device chip select
  *
  * Return:
  *	x0:
  *		0 -- Success
  *		-1 -- Invalid Arguments
- *		-2 -- SPI_CONFIG_ERR
- *		-3 -- SPI_MMAP_ERR
- *		-5 -- EIO
  */
-__efi_runtime int smc_write_efi_var(u64 var_addr, u64 var_size, u32 offset, u32 bus, u32 cs)
+__efi_runtime int smc_write_efi_var(u64 var_addr, u64 var_size, u32 bus, u32 cs)
 {
 	struct pt_regs regs;
 
 	regs.regs[0] = PLAT_OCTEONTX_WRITE_EFI_VAR;
 	regs.regs[1] = var_addr;
 	regs.regs[2] = var_size;
-	regs.regs[3] = offset;
-	regs.regs[4] = bus;
-	regs.regs[5] = cs;
+	regs.regs[3] = bus;
+	regs.regs[4] = cs;
 
 	smc_call(&regs);
 
@@ -197,6 +192,94 @@ int smc_spi_update(const struct smc_update_descriptor *desc)
 	regs.regs[2] = sizeof(*desc);
 	regs.regs[3] = 0;
 	regs.regs[4] = 0;
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+
+/*
+ * Perform read from secure flash
+ *
+ * x1 - Buffer location
+ * x2 - Read size
+ * x3 - Offset in flash device to read from
+ * x4[31:16] - Flash device bus number
+ * X4[15:0]  - Flash device chip select
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ */
+int smc_read_secure_flash(u64 var_addr, u64 length, u32 offset, u32 bus, u32 cs)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SPI_SECURE_READ;
+	regs.regs[1] = var_addr;
+	regs.regs[2] = length;
+	regs.regs[3] = offset;
+	regs.regs[4] = (bus & 0xFFFF) << 16;
+	regs.regs[4] |= (cs & 0xFFFF);
+
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+
+/*
+ * Perform write to secure flash
+ *
+ * x1 - Buffer location
+ * x2 - Write size
+ * x3 - Offset in flash device to write to
+ * x4[31:16] - Flash device bus number
+ * X4[15:0]  - Flash device chip select
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ */
+int smc_write_secure_flash(u64 var_addr, u64 length, u32 offset, u32 bus, u32 cs)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SPI_SECURE_WRITE;
+	regs.regs[1] = var_addr;
+	regs.regs[2] = length;
+	regs.regs[3] = offset;
+	regs.regs[4] = (bus & 0xFFFF) << 16;
+	regs.regs[4] |= (cs & 0xFFFF);
+
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+
+/*
+ * Perform secure flash erase
+ *
+ * x1 - Erase size
+ * x2 - Offset in flash device to write to
+ * x3 - Flash device bus number
+ * X4 - Flash device chip select
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ */
+int smc_erase_secure_flash(u64 length, u32 offset, u32 bus, u32 cs)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SPI_SECURE_ERASE;
+	regs.regs[1] = length;
+	regs.regs[2] = offset;
+	regs.regs[3] = bus;
+	regs.regs[4] = cs;
+
 	smc_call(&regs);
 
 	return regs.regs[0];

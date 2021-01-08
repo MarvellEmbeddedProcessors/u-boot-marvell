@@ -95,17 +95,61 @@ int smc_efi_var_shared_memory(u64 *mem_addr, u64 *mem_size);
  *
  * x1 - Variable store location
  * x2 - Variable store size
- * x3 - Offset in flash device
- * x4 - Flash device bus number
- * X5 - Flash device chip select
+ * x3 - Flash device bus number
+ * X4 - Flash device chip select
  *
  * Return:
  *	x0:
  *		0 -- Success
  *		-1 -- Invalid Arguments
- *		-2 -- SPI_CONFIG_ERR
- *		-3 -- SPI_MMAP_ERR
- *		-5 -- EIO
  */
-int smc_write_efi_var(u64 var_addr, u64 var_size, u32 offset, u32 bus, u32 cs);
+int smc_write_efi_var(u64 var_addr, u64 var_size, u32 bus, u32 cs);
+
+/*
+ * Perform read from secure flash
+ *
+ * x1 - Buffer location
+ * x2 - Read size
+ * x3 - Offset in flash device to read from
+ * x4[31:16] - Flash device bus number
+ * X4[15:0]  - Flash device chip select
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ */
+int smc_read_secure_flash(u64 var_addr, u64 length, u32 offset, u32 bus, u32 cs);
+
+/*
+ * Perform write to secure flash
+ *
+ * x1 - Buffer location
+ * x2 - Write size
+ * x3 - Offset in flash device to write to
+ * x4[31:16] - Flash device bus number
+ * X4[15:0]  - Flash device chip select
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ */
+int smc_write_secure_flash(u64 var_addr, u64 length, u32 offset, u32 bus, u32 cs);
+
+/*
+ * Perform secure flash erase
+ *
+ * x1 - Erase size
+ * x2 - Offset in flash device to write to
+ * x3 - Flash device bus number
+ * X4 - Flash device chip select
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ */
+int smc_erase_secure_flash(u64 length, u32 offset, u32 bus, u32 cs);
+
 #endif

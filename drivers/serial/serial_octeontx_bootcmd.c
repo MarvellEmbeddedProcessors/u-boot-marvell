@@ -268,7 +268,7 @@ static int octeontx_bootcmd_ofdata_to_platdata(struct udevice *dev)
 	fdt_addr_t addr;
 	fdt_size_t size;
 
-	addr = devfdt_get_addr_size_index(dev, 0, &size);
+	addr = dev_read_addr_size_index(dev, 0, &size);
 	dev_dbg(dev, "%s(%s): base: 0x%llx, size: 0x%llx\n", __func__,
 		dev->name, addr, size);
 	if (addr == FDT_ADDR_T_NONE)

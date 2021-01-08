@@ -806,7 +806,7 @@ int octeontx_pcie_console_ofdata_to_platdata(struct udevice *dev)
 	fdt_size_t size;
 	int ret;
 
-	addr = devfdt_get_addr_size_index(dev, 0, &size);
+	addr = dev_read_addr_size_index(dev, 0, &size);
 	debug("%s(%s): base: %#llx, size: %#llx\n", __func__, dev->name,
 	      addr, size);
 	if (addr == FDT_ADDR_T_NONE) {

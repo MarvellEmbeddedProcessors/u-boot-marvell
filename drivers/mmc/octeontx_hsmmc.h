@@ -81,6 +81,9 @@ struct octeontx_mmc_slot {
 	/* out_taps_delay fields keep output timings for all bus modes */
 	u32                     cmd_out_taps_delay[MMC_MODES_END];
 	u32                     data_out_taps_delay[MMC_MODES_END];
+	/* XXXX_in_taps_delay fields controls input timings for all bus modes */
+	uint			cmd_in_taps_delay[MMC_MODES_END];
+	uint			data_in_taps_delay[MMC_MODES_END];
 	uint			clk_period;
 	bool			valid:1;
 	bool			is_acmd:1;

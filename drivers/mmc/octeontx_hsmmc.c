@@ -75,6 +75,22 @@ static const u32 default_cmd_out_bus_timings[MMC_MODES_END] = {
 	800, /* MMC_HS_400_ES */
 };
 
+static const u32 default_cmd_in_bus_timings[MMC_MODES_END] = {
+	5000, /* MMC_LEGACY */
+	4000, /* MMC_HS */
+	3500, /* SD_HS */
+	4000, /* MMC_HS_52 */
+	4000, /* MMC_DDR_52 */
+	3500, /* UHS_SDR12 */
+	3500, /* UHS_SDR25 */
+	3500, /* UHS_SDR50 */
+	4000, /* UHS_DDR50 */
+	800, /* UHS_SDR104 */
+	800, /* MMC_HS_200 */
+	800, /* MMC_HS_400 */
+	800, /* MMC_HS_400_ES */
+};
+
 static void octeontx_mmc_switch_to(struct mmc *mmc);
 static int octeontx_mmc_configure_delay(struct mmc *mmc);
 static void octeontx_mmc_set_timing(struct mmc *mmc);
@@ -1925,6 +1941,7 @@ static int octeontx_tune_hs400(struct mmc *mmc)
 	      __func__, mmc->dev->name, best_start, best_run, tap);
 	slot->hs400_taps = slot->hs200_taps;
 	slot->hs400_taps.s.data_in_tap = tap;
+	slot->data_in_taps_delay[MMC_HS_400] = tap * slot->host->timing_taps;
 	slot->hs400_tuned = true;
 	if (env_get_yesno("emmc_export_hs400_taps") > 0) {
 		debug("%s(%s): Exporting HS400 taps\n",
@@ -2624,14 +2641,17 @@ static int octeontx_mmc_configure_delay(struct mmc *mmc)
 		emm_sample.s.dat_cnt = slot->dat_cnt;
 		write_csr(mmc, MIO_EMM_SAMPLE(), emm_sample.u);
 	} else {
-		u32 cout, dout, half;
+		uint cout, dout, cin, din, delay;
 
-		cout = octeontx2_mmc_calc_delay(mmc,
-				slot->cmd_out_taps_delay[mmc->selected_mode]);
-		dout = octeontx2_mmc_calc_delay(mmc,
-				slot->data_out_taps_delay[mmc->selected_mode]);
+		delay = slot->cmd_out_taps_delay[mmc->selected_mode];
+		cout = octeontx2_mmc_calc_delay(mmc, delay);
+		delay = slot->data_out_taps_delay[mmc->selected_mode];
+		dout = octeontx2_mmc_calc_delay(mmc, delay);
+		delay = slot->cmd_in_taps_delay[mmc->selected_mode];
+		cin = octeontx2_mmc_calc_delay(mmc, delay);
+		delay = slot->data_in_taps_delay[mmc->selected_mode];
+		din = octeontx2_mmc_calc_delay(mmc, delay);
 
-		half = DIV_ROUND_UP(MAX_NO_OF_TAPS, 2);
 		is_hs200 = (mmc->selected_mode == MMC_HS_200 ? true : false);
 		is_hs400 = (mmc->selected_mode == MMC_HS_400 ? true : false);
 
@@ -2640,20 +2660,20 @@ static int octeontx_mmc_configure_delay(struct mmc *mmc)
 			slot->hs200_taps.u = 0;
 			slot->hs200_taps.s.cmd_out_tap = cout;
 			slot->hs200_taps.s.data_out_tap = dout;
-			slot->hs200_taps.s.cmd_in_tap = half;
-			slot->hs200_taps.s.data_in_tap = half;
+			slot->hs200_taps.s.cmd_in_tap = cin;
+			slot->hs200_taps.s.data_in_tap = din;
 		} else if (is_hs400) {
 			slot->hs400_taps.u = 0;
 			slot->hs400_taps.s.cmd_out_tap = cout;
 			slot->hs400_taps.s.data_out_tap = dout;
-			slot->hs400_taps.s.cmd_in_tap = half;
-			slot->hs400_taps.s.data_in_tap = half;
+			slot->hs400_taps.s.cmd_in_tap = cin;
+			slot->hs400_taps.s.data_in_tap = din;
 		} else {
 			slot->taps.u = 0;
 			slot->taps.s.cmd_out_tap = cout;
 			slot->taps.s.data_out_tap = dout;
-			slot->taps.s.cmd_in_tap = half;
-			slot->taps.s.data_in_tap = half;
+			slot->taps.s.cmd_in_tap = cin;
+			slot->taps.s.data_in_tap = din;
 		}
 
 		if (is_hs200)
@@ -3007,24 +3027,15 @@ static int octeontx_mmc_set_output_bus_timing(struct mmc *mmc)
 
 	octeontx_mmc_calibrate_delay(mmc);
 
-	if (mmc->clock < 26000000) {
-		cout_delay = 5000;
-		dout_delay = 5000;
-	} else if (mmc->clock <= 52000000) {
-		cout_delay = 2500;
-		dout_delay = 2500;
-	} else if (!mmc_is_mode_ddr(mmc->selected_mode)) {
-		cout_delay = slot->cmd_out_taps_delay[MMC_HS_200];
-		dout_delay = slot->data_out_taps_delay[MMC_HS_200];
-	} else {
-		cout_delay = slot->cmd_out_taps_delay[MMC_HS_400];
-		dout_delay = slot->data_out_taps_delay[MMC_HS_400];
-	}
+	cout_delay = slot->cmd_in_taps_delay[mmc->selected_mode];
+	dout_delay = slot->data_in_taps_delay[mmc->selected_mode];
 
-	snprintf(env_name, sizeof(env_name), "mmc%d_hs200_dout_delay_ps",
-		 slot->bus_id);
-	dout_delay = env_get_ulong(env_name, 10, dout_delay);
-	debug("%s: dout_delay: %u\n", __func__, dout_delay);
+	if (mmc->selected_mode == MMC_HS_200) {
+		snprintf(env_name, sizeof(env_name), "mmc%d_hs200_dout_delay_ps",
+			 slot->bus_id);
+		dout_delay = env_get_ulong(env_name, 10, dout_delay);
+		debug("%s: dout_delay: %u\n", __func__, dout_delay);
+	}
 
 	cout_bdelay = octeontx2_mmc_calc_delay(mmc, cout_delay);
 	dout_bdelay = octeontx2_mmc_calc_delay(mmc, dout_delay);
@@ -3503,12 +3514,22 @@ static int octeontx_mmc_get_config(struct udevice *dev)
 	memcpy(slot->cmd_out_taps_delay, default_cmd_out_bus_timings,
 	       sizeof(slot->cmd_out_taps_delay));
 
+	memcpy(slot->cmd_in_taps_delay, default_cmd_in_bus_timings,
+	       sizeof(slot->cmd_in_taps_delay));
+
 	for (i = 0; i < MMC_MODES_END; i++) {
+		/* set value for output timings */
 		u32 val = slot->cmd_out_taps_delay[i];
 
 		if (mmc_is_mode_ddr(i))
 			val = DIV_ROUND_UP(val, 2);
 		slot->data_out_taps_delay[i] = val;
+
+		/* Set value also for input timings */
+		val = slot->cmd_in_taps_delay[i];
+		if (mmc_is_mode_ddr(i))
+			val = DIV_ROUND_UP(val, 2);
+		slot->data_in_taps_delay[i] = val;
 	}
 
 	if (IS_ENABLED(CONFIG_ARCH_OCTEONTX2)) {

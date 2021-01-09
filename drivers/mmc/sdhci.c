@@ -220,9 +220,10 @@ static int sdhci_transfer_data(struct sdhci_host *host, struct mmc_data *data)
 			return -ETIMEDOUT;
 		}
 	} while (!(stat & SDHCI_INT_DATA_END));
-
-	dma_unmap_single(host->start_addr, data->blocks * data->blocksize,
-			 mmc_get_dma_dir(data));
+	if (host->flags & USE_DMA)
+		dma_unmap_single(host->start_addr,
+				 data->blocks * data->blocksize,
+				 mmc_get_dma_dir(data));
 
 	return 0;
 }
@@ -253,7 +254,7 @@ static int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 	unsigned int stat = 0;
 	int ret = 0;
 	int trans_bytes = 0, is_aligned = 1;
-	u32 mask, flags, mode;
+	u32 mask, flags, mode = 0;
 	unsigned int time = 0;
 	int mmc_dev = mmc_get_blk_desc(mmc)->devnum;
 	ulong start = get_timer(0);
@@ -333,13 +334,19 @@ static int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 				data->blocksize),
 				SDHCI_BLOCK_SIZE);
 		sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
+#ifdef UNALIGN_ACCESS
 		sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
+#endif
 	} else if (cmd->resp_type & MMC_RSP_BUSY) {
 		sdhci_writeb(host, 0xe, SDHCI_TIMEOUT_CONTROL);
 	}
 
 	sdhci_writel(host, cmd->cmdarg, SDHCI_ARGUMENT);
+#ifdef UNALIGN_ACCESS
 	sdhci_writew(host, SDHCI_MAKE_CMD(cmd->cmdidx, flags), SDHCI_COMMAND);
+#else
+	sdhci_writel(host, (SDHCI_MAKE_CMD(cmd->cmdidx, flags) << 16) | mode, SDHCI_TRANSFER_MODE);
+#endif
 	start = get_timer(0);
 	do {
 		stat = sdhci_readl(host, SDHCI_INT_STATUS);

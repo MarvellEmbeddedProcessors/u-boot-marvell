@@ -17,8 +17,10 @@
 #include <efi_variable.h>
 #include <u-boot/crc.h>
 #include <spi_flash.h>
+#ifdef CONFIG_ARCH_CN10K
 #include <asm/arch/board.h>
 #include <asm/arch/smc.h>
+#endif
 
 #define PART_STR_LEN 10
 __efi_runtime_data struct efi_var_file *efi_var_mem_base = (struct efi_var_file *)EFI_VAR_MEM_BASE;

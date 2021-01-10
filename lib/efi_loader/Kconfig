@@ -65,6 +65,14 @@ config EFI_VARIABLE_IN_SPI_FLASH_AT_OFFSET
         help
           Store EFI variables at this offset in SPI-NOR device.
 
+config EFI_SPI_NOR_FLASH_PROTOCOL
+	bool "Install EFI_SPI_NOR_FLASH_PROTOCOL on SPI-NOR devices"
+	depends on EFI_LOADER
+	default n
+	help
+	  Select this option if you want to provide UEFI SPI NOR FLASH
+	  PROTOCOL on SPI-NOR flash devices.
+
 config RESET_ON_EFI_BOOT_FAIL
 	bool "Reset system if EFI boot fails"
 	depends on ARCH_CN10K

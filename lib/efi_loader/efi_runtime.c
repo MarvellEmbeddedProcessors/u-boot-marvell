@@ -228,7 +228,7 @@ static inline void EFIAPI efi_reset_system_boottime(enum efi_reset_type reset_ty
 		break;
 	case EFI_RESET_SHUTDOWN:
 	if (IS_ENABLED(CONFIG_CMD_POWEROFF))
-		do_poweroff(NULL, 0, 0, NULL);
+			do_poweroff(NULL, 0, 0, NULL);
 		break;
 	}
 
@@ -252,7 +252,7 @@ static inline void EFIAPI efi_reset_system_boottime(enum efi_reset_type reset_ty
 static efi_status_t EFIAPI efi_get_time_boottime(struct efi_time *time,
 						 struct efi_time_cap *capabilities)
 {
-	if (IS_ENABLED(CONFIG_EFI_GET_TIME)) {
+#ifdef CONFIG_EFI_GET_TIME
 		efi_status_t ret = EFI_SUCCESS;
 		struct rtc_time tm;
 		struct udevice *dev;
@@ -293,10 +293,10 @@ static efi_status_t EFIAPI efi_get_time_boottime(struct efi_time *time,
 		}
 out:
 		return EFI_EXIT(ret);
-	} else {
+#else
 		EFI_ENTRY("%p %p", time, capabilities);
 		return EFI_EXIT(EFI_UNSUPPORTED);
-	}
+#endif
 }
 
 #ifdef CONFIG_EFI_SET_TIME

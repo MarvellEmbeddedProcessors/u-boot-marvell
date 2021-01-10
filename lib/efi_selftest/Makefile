@@ -41,7 +41,8 @@ efi_selftest_util.o \
 efi_selftest_variables.o \
 efi_selftest_variables_runtime.o \
 efi_selftest_watchdog.o \
-efi_selftest_spinor.o
+
+obj-$(CONFIG_EFI_SPI_NOR_FLASH_PROTOCOL) += efi_selftest_spinor.o
 
 obj-$(CONFIG_NET) += efi_selftest_snp.o
 

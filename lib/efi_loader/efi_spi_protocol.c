@@ -10,8 +10,10 @@
 #include <spi_flash.h>
 #include <linux/sizes.h>
 #include <dm/uclass.h>
+#ifdef CONFIG_ARCH_CN10K
 #include <asm/arch/smc.h>
 #include <asm/arch/board.h>
+#endif
 
 const efi_guid_t efi_guid_spi_nor_flash_protocol =
 		EFI_SPI_NOR_FLASH_PROTOCOL_GUID;
@@ -103,6 +105,7 @@ static efi_status_t EFIAPI read_data(struct efi_spi_nor_flash_protocol *this,
 	return EFI_EXIT(ret);
 }
 
+#ifdef CONFIG_ARCH_CN10K
 static efi_status_t EFIAPI read_data_secure(struct efi_spi_nor_flash_protocol *this,
 					    u32 offset, u32 len, u8 *data)
 {
@@ -121,6 +124,13 @@ static efi_status_t EFIAPI read_data_secure(struct efi_spi_nor_flash_protocol *t
 
 	return EFI_SUCCESS;
 }
+#else
+static efi_status_t EFIAPI read_data_secure(struct efi_spi_nor_flash_protocol *this,
+					    u32 offset, u32 len, u8 *data)
+{
+	return EFI_UNSUPPORTED;
+}
+#endif
 
 /*
  * Write data to the SPI flash.
@@ -158,6 +168,7 @@ static efi_status_t EFIAPI write_data(struct efi_spi_nor_flash_protocol *this,
 	return EFI_EXIT(ret);
 }
 
+#ifdef CONFIG_ARCH_CN10K
 static efi_status_t EFIAPI write_data_secure(struct efi_spi_nor_flash_protocol *this,
 					     u32 offset, u32 len, u8 *data)
 {
@@ -176,6 +187,13 @@ static efi_status_t EFIAPI write_data_secure(struct efi_spi_nor_flash_protocol *
 
 	return EFI_SUCCESS;
 }
+#else
+static efi_status_t EFIAPI write_data_secure(struct efi_spi_nor_flash_protocol *this,
+					     u32 offset, u32 len, u8 *data)
+{
+	return EFI_UNSUPPORTED;
+}
+#endif
 
 /*
  * Read the flash status register.
@@ -298,6 +316,7 @@ static efi_status_t EFIAPI erase_blocks(struct efi_spi_nor_flash_protocol *this,
 	return EFI_EXIT(ret);
 }
 
+#ifdef CONFIG_ARCH_CN10K
 static efi_status_t EFIAPI erase_blocks_secure(struct efi_spi_nor_flash_protocol *this,
 					       u32 offset, u32 blk_count)
 {
@@ -313,6 +332,13 @@ static efi_status_t EFIAPI erase_blocks_secure(struct efi_spi_nor_flash_protocol
 
 	return EFI_SUCCESS;
 }
+#else
+static efi_status_t EFIAPI erase_blocks_secure(struct efi_spi_nor_flash_protocol *this,
+					       u32 offset, u32 blk_count)
+{
+	return EFI_UNSUPPORTED;
+}
+#endif
 
 static efi_status_t install_spi_nor_flash_protocol(struct spi_flash *flash_dev,
 						   int bus, int cs, int secure)
@@ -381,8 +407,12 @@ efi_status_t efi_spinor_protocol_register(void)
 	int index = 0, ret = 0;
 	int bus[8], cs[8], num;
 
+	num = 0;
+#ifdef CONFIG_ARCH_CN10K
 	/* Add secure SPI-NOR to the protocol */
 	board_get_secure_spi_bus_cs(bus, cs, &num);
+#endif
+
 	debug("%s - %d Secure SPI-NOR devices detected\n", __func__, num);
 	for (int i = 0; i < num; i++) {
 		if ((bus[i] != -1) && (cs[i] != -1)) {
@@ -398,7 +428,9 @@ efi_status_t efi_spinor_protocol_register(void)
 		if (ret == -ENOENT)
 			continue;
 
-		flash_dev = dev_get_uclass_priv(dev);
+		flash_dev = NULL;
+		if (dev)
+			flash_dev = dev_get_uclass_priv(dev);
 		if (!flash_dev)
 			break;
 

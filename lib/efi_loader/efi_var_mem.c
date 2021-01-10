@@ -9,12 +9,14 @@
 #include <efi_loader.h>
 #include <efi_variable.h>
 #include <u-boot/crc.h>
+#ifdef CONFIG_ARCH_CN10K
 #include <asm/arch/smc.h>
+#endif
 
 __efi_runtime_data struct efi_var_file *efi_var_buf;
 __efi_runtime_data struct efi_var_entry *efi_current_var;
 extern struct efi_var_file *efi_var_mem_base;
-extern struct efi_auth_var_name_type *name_type;
+extern struct efi_auth_var_name_type name_type[4];
 
 /**
  * efi_var_mem_compare() - compare GUID and name with a variable
@@ -244,13 +246,16 @@ efi_var_mem_notify_virtual_address_map(struct efi_event *event, void *context)
 
 efi_status_t efi_var_mem_init(void)
 {
-	u64 memory, base, size;
+	u64 memory;
 	efi_status_t ret;
 	struct efi_event *event;
 
+#ifdef CONFIG_ARCH_CN10K
+	u64 base, size;
+
 	if (!smc_efi_var_shared_memory(&base, &size))
 		efi_var_mem_base = (struct efi_var_file *)base;
-
+#endif
 	ret = efi_allocate_pages(EFI_ALLOCATE_ANY_PAGES,
 				 EFI_RUNTIME_SERVICES_DATA,
 				 efi_size_in_pages(EFI_VAR_BUF_SIZE),

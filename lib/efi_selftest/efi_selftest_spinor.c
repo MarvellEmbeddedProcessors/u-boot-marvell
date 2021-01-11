@@ -41,54 +41,55 @@ static int execute(void)
 		efi_st_error("Failed to locate handles\n");
 		return EFI_ST_FAILURE;
 	}
+	efi_st_printf("Detected %d devices\n", (int)no_handles);
 	for (i = 0; i < no_handles; ++i) {
 		ret = boottime->open_protocol(handles[i],
 					      &efi_guid_spi_nor_flash_protocol,
 					      (void **)&spinor, NULL, NULL,
 					      EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 		if (ret != EFI_SUCCESS) {
-			efi_st_error("Failed to open device path protocol\n");
-			return EFI_ST_FAILURE;
+			efi_st_error("[%d]Failed to open device path protocol\n", (int)i);
+			continue;
 		}
 
 		ret = spinor->get_flash_id(spinor, flash_id);
 		if (ret != EFI_SUCCESS) {
-			efi_st_error("Failed to read status[%lu]\n", ret);
-			return EFI_ST_FAILURE;
+			efi_st_error("[%d]Failed to read status[%u]\n", (int)i, (int)ret);
+			continue;
 		}
 
 		ret = spinor->read_status(spinor, 1, flash_status);
 		if (ret != EFI_SUCCESS) {
-			efi_st_error("Failed to read status[%lu]\n", ret);
-			return EFI_ST_FAILURE;
+			efi_st_error("[%d]Failed to read status[%u]\n", (int)i, (int)ret);
+			continue;
 		}
 
 		u8 data[2048];
 
 		ret = spinor->read_data(spinor, 0xE30000, 2048, data);
 		if (ret != EFI_SUCCESS) {
-			efi_st_error("Failed to read data[%lu]\n", ret);
-			return EFI_ST_FAILURE;
+			efi_st_error("[%d]Failed to read data[%u]\n", (int)i, (int)ret);
+			continue;
 		}
 
 		ret = spinor->erase_blocks(spinor, 0x0, 1);
 		if (ret != EFI_SUCCESS) {
-			efi_st_error("Failed to erase data[%lu]\n", ret);
-			return EFI_ST_FAILURE;
+			efi_st_error("[%d]Failed to erase data[%u]\n", (int)i, (int)ret);
+			continue;
 		}
 
 		ret = spinor->write_data(spinor, 0, 2048, data);
 		if (ret != EFI_SUCCESS) {
-			efi_st_error("Failed to write data[%lu]\n", ret);
-			return EFI_ST_FAILURE;
+			efi_st_error("[%d]Failed to write data[%u]\n", (int)i, (int)ret);
+			continue;
 		}
 
 		ret = spinor->read_data(spinor, 0, 2048, data);
 		if (ret != EFI_SUCCESS) {
-			efi_st_error("Failed to read data[%lu]\n", ret);
-			return EFI_ST_FAILURE;
+			efi_st_error("[%d]Failed to read data[%u]\n", (int)i, (int)ret);
+			continue;
 		}
-
+		efi_st_printf("Test Pass for device %d\n", (int)i);
 		ret = boottime->close_protocol(handles[i],
 					      &efi_guid_spi_nor_flash_protocol,
 					      NULL, NULL);

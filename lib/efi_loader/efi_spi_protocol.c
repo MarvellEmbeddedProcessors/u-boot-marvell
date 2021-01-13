@@ -402,10 +402,17 @@ efi_status_t efi_spinor_protocol_register(void)
 		if (!flash_dev)
 			break;
 
-		r = install_spi_nor_flash_protocol(flash_dev, 0, 0, 0);
-		if (r)
-			debug("%s Unable to attach SPI NOR FLASH PROTOCOL to SPI-%d",
-			      __func__, index);
+		bus[0] = -1;
+		cs[0] = -1;
+#ifdef CONFIG_ARCH_CN10K
+		board_get_spi_bus_cs(dev, bus, cs);
+#endif
+		if ((bus[0] != -1) && (cs[0] != -1)) {
+			r = install_spi_nor_flash_protocol(flash_dev, bus[0], cs[0], 0);
+			if (r)
+				debug("%s Unable to attach SPI NOR FLASH PROTOCOL to SPI-%d",
+				      __func__, index);
+		}
 	} while (++index);
 
 	return EFI_SUCCESS;

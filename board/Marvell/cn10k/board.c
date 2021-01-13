@@ -24,6 +24,7 @@
 #include <asm/arch/board.h>
 #include <asm/arch/switch.h>
 #include <dm/util.h>
+#include <spi.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -89,6 +90,26 @@ void board_get_secure_spi_bus_cs(int *bus, int *cs, int *num)
 		}
 		node = fdt_node_offset_by_compatible(blob, node, "spi-flash");
 	}
+}
+
+void board_get_spi_bus_cs(struct udevice *dev, int *bus, int *cs)
+{
+	struct udevice *busp, *csp;
+	struct udevice *parent = dev_get_parent(dev);
+
+	for (int i = 0; i < 2; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (!spi_find_bus_and_cs(i, j, &busp, &csp)) {
+				printf("%s: busp:%p csp:%p\n", __func__, busp, csp);
+				if (parent == busp && dev == csp) {
+					*bus = i;
+					*cs = j;
+					break;
+				}
+			}
+		}
+	}
+	printf("%s Bus:%d CS:%d\n", __func__, *bus, *cs);
 }
 
 void board_get_env_spi_bus_cs(int *bus, int *cs)
@@ -299,7 +320,6 @@ void board_quiesce_devices(void)
 		ret = uclass_destroy(uc_dev);
 	if (ret)
 		printf("couldn't stop watchdog\n");
-
 }
 
 /*

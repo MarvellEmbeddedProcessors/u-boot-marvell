@@ -28,6 +28,7 @@ static struct pci_device_id switch_supported[] = {
 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x9000) },
 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x9200) },
 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x9210) },
+	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x2100) },
 	{}
 };
 

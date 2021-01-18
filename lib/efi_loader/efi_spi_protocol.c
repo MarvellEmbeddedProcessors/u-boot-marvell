@@ -11,7 +11,6 @@
 #include <linux/sizes.h>
 #include <dm/uclass.h>
 #ifdef CONFIG_ARCH_CN10K
-#include <asm/arch/smc.h>
 #include <asm/arch/board.h>
 #endif
 
@@ -43,7 +42,7 @@ struct efi_spi_nor_flash_protocol_obj {
  * @return EFI_DEVICE_ERROR       Invalid data received from SPI flash part.
 
  */
-static efi_status_t EFIAPI get_flash_id(struct efi_spi_nor_flash_protocol *this, u8 *buffer)
+static efi_status_t EFIAPI get_flash_id(const struct efi_spi_nor_flash_protocol *this, u8 *buffer)
 {
 	int ret = 0;
 
@@ -51,24 +50,14 @@ static efi_status_t EFIAPI get_flash_id(struct efi_spi_nor_flash_protocol *this,
 		return EFI_INVALID_PARAMETER;
 
 	EFI_ENTRY("%p %p", this, buffer);
-	ret = this->spi_peripheral->read_reg(this->spi_peripheral, SPINOR_OP_RDID, buffer, 3);
+	ret = this->spi_peripheral->read_reg((struct spi_nor *)this->spi_peripheral, SPINOR_OP_RDID,
+					     buffer, 3);
 	if (ret < 0) {
 		debug("%s(%s) error %d reading JEDEC ID\n", __func__,
 		      this->spi_peripheral->dev->name, ret);
 		return EFI_EXIT(EFI_DEVICE_ERROR);
 	}
 	return EFI_EXIT(ret);
-}
-
-static efi_status_t EFIAPI get_flash_id_secure(struct efi_spi_nor_flash_protocol *this, u8 *buffer)
-{
-	if (!buffer)
-		return EFI_INVALID_PARAMETER;
-
-	/* For secure SPI-NOR return 3 byte id as zero */
-	memset(buffer, 0, 3);
-
-	return EFI_SUCCESS;
 }
 
 /*
@@ -88,7 +77,7 @@ static efi_status_t EFIAPI get_flash_id_secure(struct efi_spi_nor_flash_protocol
  *                                len > FlashSize - offset
  *
  */
-static efi_status_t EFIAPI read_data(struct efi_spi_nor_flash_protocol *this,
+static efi_status_t EFIAPI read_data(const struct efi_spi_nor_flash_protocol *this,
 				     u32 offset, u32 len, u8 *data)
 {
 	int ret = 0;
@@ -104,33 +93,6 @@ static efi_status_t EFIAPI read_data(struct efi_spi_nor_flash_protocol *this,
 	      this->spi_peripheral->dev->name, len, ret);
 	return EFI_EXIT(ret);
 }
-
-#ifdef CONFIG_ARCH_CN10K
-static efi_status_t EFIAPI read_data_secure(struct efi_spi_nor_flash_protocol *this,
-					    u32 offset, u32 len, u8 *data)
-{
-	struct efi_spi_nor_flash_protocol_obj *proto;
-
-	if (!data)
-		return EFI_INVALID_PARAMETER;
-
-	proto = container_of(this, struct efi_spi_nor_flash_protocol_obj,
-			     efi_spi_nor_flash_protocol);
-	if (!proto || (proto->bus == -1) || (proto->cs == -1))
-		return EFI_DEVICE_ERROR;
-
-	if (smc_read_secure_flash((u64)data, len, offset, proto->bus, proto->cs))
-		return EFI_SECURITY_VIOLATION;
-
-	return EFI_SUCCESS;
-}
-#else
-static efi_status_t EFIAPI read_data_secure(struct efi_spi_nor_flash_protocol *this,
-					    u32 offset, u32 len, u8 *data)
-{
-	return EFI_UNSUPPORTED;
-}
-#endif
 
 /*
  * Write data to the SPI flash.
@@ -151,7 +113,7 @@ static efi_status_t EFIAPI read_data_secure(struct efi_spi_nor_flash_protocol *t
  * @return EFI_OUT_OF_RESOURCES   Insufficient memory to copy buffer.
  *
  */
-static efi_status_t EFIAPI write_data(struct efi_spi_nor_flash_protocol *this,
+static efi_status_t EFIAPI write_data(const struct efi_spi_nor_flash_protocol *this,
 				      u32 offset, u32 len, u8 *data)
 {
 	int ret = 0;
@@ -168,33 +130,6 @@ static efi_status_t EFIAPI write_data(struct efi_spi_nor_flash_protocol *this,
 	return EFI_EXIT(ret);
 }
 
-#ifdef CONFIG_ARCH_CN10K
-static efi_status_t EFIAPI write_data_secure(struct efi_spi_nor_flash_protocol *this,
-					     u32 offset, u32 len, u8 *data)
-{
-	struct efi_spi_nor_flash_protocol_obj *proto;
-
-	if (!data)
-		return EFI_INVALID_PARAMETER;
-
-	proto = container_of(this, struct efi_spi_nor_flash_protocol_obj,
-			     efi_spi_nor_flash_protocol);
-	if (!proto || (proto->bus == -1) || (proto->cs == -1))
-		return EFI_DEVICE_ERROR;
-
-	if (smc_write_secure_flash((u64)data, len, offset, proto->bus, proto->cs))
-		return EFI_SECURITY_VIOLATION;
-
-	return EFI_SUCCESS;
-}
-#else
-static efi_status_t EFIAPI write_data_secure(struct efi_spi_nor_flash_protocol *this,
-					     u32 offset, u32 len, u8 *data)
-{
-	return EFI_UNSUPPORTED;
-}
-#endif
-
 /*
  * Read the flash status register.
  *
@@ -208,7 +143,7 @@ static efi_status_t EFIAPI write_data_secure(struct efi_spi_nor_flash_protocol *
  * @return EFI_SUCCESS  The status register was read successfully.
  *
  */
-static efi_status_t EFIAPI read_status(struct efi_spi_nor_flash_protocol *this,
+static efi_status_t EFIAPI read_status(const struct efi_spi_nor_flash_protocol *this,
 				       u32 num_bytes, u8 *status)
 {
 	int ret = 0;
@@ -217,26 +152,14 @@ static efi_status_t EFIAPI read_status(struct efi_spi_nor_flash_protocol *this,
 		return EFI_INVALID_PARAMETER;
 
 	EFI_ENTRY("%p %d %p", this, num_bytes, status);
-	ret = this->spi_peripheral->read_reg(this->spi_peripheral, SPINOR_OP_RDSR,
-					     status, num_bytes);
+	ret = this->spi_peripheral->read_reg((struct spi_nor *)this->spi_peripheral,
+					     SPINOR_OP_RDSR, status, num_bytes);
 	if (ret < 0) {
 		debug("%s(%s) error %d reading Status Register\n", __func__,
 		      this->spi_peripheral->dev->name, ret);
 		return EFI_EXIT(EFI_DEVICE_ERROR);
 	}
 	return EFI_EXIT(ret);
-}
-
-static efi_status_t EFIAPI read_status_secure(struct efi_spi_nor_flash_protocol *this,
-					      u32 num_bytes, u8 *status)
-{
-	if (!status)
-		return EFI_INVALID_PARAMETER;
-
-	/* For secure SPI-NOR return status as zero */
-	memset(status, 0, num_bytes);
-
-	return EFI_SUCCESS;
 }
 
 /*
@@ -253,7 +176,7 @@ static efi_status_t EFIAPI read_status_secure(struct efi_spi_nor_flash_protocol 
  * @return EFI_OUT_OF_RESOURCES  Failed to allocate the write buffer.
  *
  */
-static efi_status_t EFIAPI write_status(struct efi_spi_nor_flash_protocol *this,
+static efi_status_t EFIAPI write_status(const struct efi_spi_nor_flash_protocol *this,
 					u32 num_bytes, u8 *status)
 {
 	int ret = 0;
@@ -262,23 +185,14 @@ static efi_status_t EFIAPI write_status(struct efi_spi_nor_flash_protocol *this,
 		return EFI_INVALID_PARAMETER;
 
 	EFI_ENTRY("%p %d %p", this, num_bytes, status);
-	ret = this->spi_peripheral->write_reg(this->spi_peripheral, SPINOR_OP_WRSR,
-					      status, num_bytes);
+	ret = this->spi_peripheral->write_reg((struct spi_nor *)this->spi_peripheral,
+					      SPINOR_OP_WRSR, status, num_bytes);
 	if (ret < 0) {
 		debug("%s(%s) error %d writing Status Register\n", __func__,
 		      this->spi_peripheral->dev->name, ret);
 		return EFI_EXIT(EFI_DEVICE_ERROR);
 	}
 	return EFI_EXIT(ret);
-}
-
-static efi_status_t EFIAPI write_status_secure(struct efi_spi_nor_flash_protocol *this,
-					       u32 num_bytes, u8 *status)
-{
-	if (!status)
-		return EFI_INVALID_PARAMETER;
-
-	return EFI_SUCCESS;
 }
 
 /*
@@ -298,7 +212,7 @@ static efi_status_t EFIAPI write_status_secure(struct efi_spi_nor_flash_protocol
  *					> FlashSize - offset
  *
  */
-static efi_status_t EFIAPI erase_blocks(struct efi_spi_nor_flash_protocol *this,
+static efi_status_t EFIAPI erase_blocks(const struct efi_spi_nor_flash_protocol *this,
 					u32 offset, u32 blk_count)
 {
 	int ret = 0;
@@ -316,32 +230,8 @@ static efi_status_t EFIAPI erase_blocks(struct efi_spi_nor_flash_protocol *this,
 	return EFI_EXIT(ret);
 }
 
-#ifdef CONFIG_ARCH_CN10K
-static efi_status_t EFIAPI erase_blocks_secure(struct efi_spi_nor_flash_protocol *this,
-					       u32 offset, u32 blk_count)
-{
-	struct efi_spi_nor_flash_protocol_obj *proto = NULL;
-
-	proto = container_of(this, struct efi_spi_nor_flash_protocol_obj,
-			     efi_spi_nor_flash_protocol);
-	if (!proto || (proto->bus == -1) || (proto->cs == -1))
-		return EFI_DEVICE_ERROR;
-
-	if (smc_erase_secure_flash(blk_count * SZ_4K, offset, proto->bus, proto->cs))
-		return EFI_SECURITY_VIOLATION;
-
-	return EFI_SUCCESS;
-}
-#else
-static efi_status_t EFIAPI erase_blocks_secure(struct efi_spi_nor_flash_protocol *this,
-					       u32 offset, u32 blk_count)
-{
-	return EFI_UNSUPPORTED;
-}
-#endif
-
 static efi_status_t install_spi_nor_flash_protocol(struct spi_flash *flash_dev,
-						   int bus, int cs, int secure)
+						   int bus, int cs)
 {
 	struct efi_spi_nor_flash_protocol_obj *proto_obj = NULL;
 	efi_status_t r;
@@ -365,36 +255,22 @@ static efi_status_t install_spi_nor_flash_protocol(struct spi_flash *flash_dev,
 
 	proto_obj->bus = bus;
 	proto_obj->cs = cs;
-	if (secure) {
-		/* Secure SPI-NOR uses different set of interface calls */
-		proto_obj->efi_spi_nor_flash_protocol.get_flash_id = get_flash_id_secure;
-		proto_obj->efi_spi_nor_flash_protocol.lf_read_data = read_data_secure;
-		proto_obj->efi_spi_nor_flash_protocol.read_data = read_data_secure;
-		proto_obj->efi_spi_nor_flash_protocol.write_data = write_data_secure;
-		proto_obj->efi_spi_nor_flash_protocol.read_status = read_status_secure;
-		proto_obj->efi_spi_nor_flash_protocol.write_status = write_status_secure;
-		proto_obj->efi_spi_nor_flash_protocol.erase_blocks = erase_blocks_secure;
+	proto_obj->efi_spi_nor_flash_protocol.get_flash_id = get_flash_id;
+	proto_obj->efi_spi_nor_flash_protocol.lf_read_data = read_data;
+	proto_obj->efi_spi_nor_flash_protocol.read_data = read_data;
+	proto_obj->efi_spi_nor_flash_protocol.write_data = write_data;
+	proto_obj->efi_spi_nor_flash_protocol.read_status = read_status;
+	proto_obj->efi_spi_nor_flash_protocol.write_status = write_status;
+	proto_obj->efi_spi_nor_flash_protocol.erase_blocks = erase_blocks;
 
-		proto_obj->efi_spi_nor_flash_protocol.spi_peripheral = flash_dev;
-		proto_obj->efi_spi_nor_flash_protocol.device_id[0] = 0;
-		proto_obj->efi_spi_nor_flash_protocol.flash_size = 0;
-		proto_obj->efi_spi_nor_flash_protocol.erase_block_size = 0;
+	proto_obj->efi_spi_nor_flash_protocol.spi_peripheral = flash_dev;
+	proto_obj->efi_spi_nor_flash_protocol.flash_size = flash_dev->size;
+	proto_obj->efi_spi_nor_flash_protocol.erase_block_size =
+							flash_dev->erase_size;
 
-	} else {
-		proto_obj->efi_spi_nor_flash_protocol.get_flash_id = get_flash_id;
-		proto_obj->efi_spi_nor_flash_protocol.lf_read_data = read_data;
-		proto_obj->efi_spi_nor_flash_protocol.read_data = read_data;
-		proto_obj->efi_spi_nor_flash_protocol.write_data = write_data;
-		proto_obj->efi_spi_nor_flash_protocol.read_status = read_status;
-		proto_obj->efi_spi_nor_flash_protocol.write_status = write_status;
-		proto_obj->efi_spi_nor_flash_protocol.erase_blocks = erase_blocks;
-
-		proto_obj->efi_spi_nor_flash_protocol.spi_peripheral = flash_dev;
-		proto_obj->efi_spi_nor_flash_protocol.device_id[0] = 0;
-		proto_obj->efi_spi_nor_flash_protocol.flash_size = flash_dev->size;
-		proto_obj->efi_spi_nor_flash_protocol.erase_block_size =
-								flash_dev->erase_size;
-	}
+	proto_obj->efi_spi_nor_flash_protocol.device_id[0] = 0;
+	r = proto_obj->efi_spi_nor_flash_protocol.get_flash_id(&proto_obj->efi_spi_nor_flash_protocol,
+							       proto_obj->efi_spi_nor_flash_protocol.device_id);
 
 	return r;
 }
@@ -402,29 +278,14 @@ static efi_status_t install_spi_nor_flash_protocol(struct spi_flash *flash_dev,
 efi_status_t efi_spinor_protocol_register(void)
 {
 	efi_status_t r;
-	struct udevice *dev = NULL;
+	struct udevice *dev;
 	struct spi_flash *flash_dev;
 	int index = 0, ret = 0;
-	int bus[8], cs[8], num;
-
-	num = 0;
-#ifdef CONFIG_ARCH_CN10K
-	/* Add secure SPI-NOR to the protocol */
-	board_get_secure_spi_bus_cs(bus, cs, &num);
-#endif
-
-	debug("%s - %d Secure SPI-NOR devices detected\n", __func__, num);
-	for (int i = 0; i < num; i++) {
-		if ((bus[i] != -1) && (cs[i] != -1)) {
-			r = install_spi_nor_flash_protocol(NULL, bus[i], cs[i], 1);
-			if (r)
-				debug("%s Unable to attach SPI NOR FLASH PROTOCOL to secure SPI- bus:%d cs:%d",
-				      __func__, bus[i], cs[i]);
-		}
-	}
+	int bus, cs;
 
 	do {
-		ret = uclass_get_device(UCLASS_SPI_FLASH, index, &dev);
+		dev = NULL;
+		ret = uclass_get_device(UCLASS_SPI_FLASH, index++, &dev);
 		if (ret == -ENOENT)
 			continue;
 
@@ -434,18 +295,18 @@ efi_status_t efi_spinor_protocol_register(void)
 		if (!flash_dev)
 			break;
 
-		bus[0] = -1;
-		cs[0] = -1;
+		bus = -1;
+		cs = -1;
 #ifdef CONFIG_ARCH_CN10K
-		board_get_spi_bus_cs(dev, bus, cs);
+		board_get_spi_bus_cs(dev, &bus, &cs);
 #endif
-		if ((bus[0] != -1) && (cs[0] != -1)) {
-			r = install_spi_nor_flash_protocol(flash_dev, bus[0], cs[0], 0);
+		if ((bus != -1) && (cs != -1)) {
+			r = install_spi_nor_flash_protocol(flash_dev, bus, cs);
 			if (r)
 				debug("%s Unable to attach SPI NOR FLASH PROTOCOL to SPI-%d",
 				      __func__, index);
 		}
-	} while (++index);
+	} while (index);
 
 	return EFI_SUCCESS;
 }

@@ -1784,24 +1784,24 @@ struct efi_signature_list {
 	EFI_GUID(0xb57ec3fe, 0xf833, 0x4ba6, \
 			0x85, 0x78, 0x2a, 0x7d, 0x6a, 0x87, 0x44, 0x4b)
 struct efi_spi_nor_flash_protocol {
-	struct spi_nor	*spi_peripheral;
+	const struct spi_nor	*spi_peripheral;
 	u32		flash_size;
 	u8		device_id[3];
 	u32		erase_block_size;
 
-	efi_status_t (EFIAPI * get_flash_id)(struct efi_spi_nor_flash_protocol *this,
+	efi_status_t (EFIAPI * get_flash_id)(const struct efi_spi_nor_flash_protocol *this,
 					     u8 *buffer);
-	efi_status_t (EFIAPI * read_data)(struct efi_spi_nor_flash_protocol *this,
+	efi_status_t (EFIAPI * read_data)(const struct efi_spi_nor_flash_protocol *this,
 					  u32 offset, u32 len, u8 *data);
-	efi_status_t (EFIAPI * lf_read_data)(struct efi_spi_nor_flash_protocol *this,
+	efi_status_t (EFIAPI * lf_read_data)(const struct efi_spi_nor_flash_protocol *this,
 					     u32 offset, u32 len, u8 *data);
-	efi_status_t (EFIAPI * write_data)(struct efi_spi_nor_flash_protocol *this,
+	efi_status_t (EFIAPI * write_data)(const struct efi_spi_nor_flash_protocol *this,
 					   u32 offset, u32 len, u8 *data);
-	efi_status_t (EFIAPI * read_status)(struct efi_spi_nor_flash_protocol *this,
+	efi_status_t (EFIAPI * read_status)(const struct efi_spi_nor_flash_protocol *this,
 					    u32 num_bytes, u8 *status);
-	efi_status_t (EFIAPI * write_status)(struct efi_spi_nor_flash_protocol *this,
+	efi_status_t (EFIAPI * write_status)(const struct efi_spi_nor_flash_protocol *this,
 					     u32 num_bytes, u8 *status);
-	efi_status_t (EFIAPI * erase_blocks)(struct efi_spi_nor_flash_protocol *this,
+	efi_status_t (EFIAPI * erase_blocks)(const struct efi_spi_nor_flash_protocol *this,
 					     u32 offset, u32 blk_count);
 };
 

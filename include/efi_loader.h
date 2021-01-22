@@ -80,7 +80,7 @@ const char *__efi_nesting_dec(void);
 	assert(__efi_entry_check()); \
 	debug("%sEFI: Entry %s(" format ")\n", __efi_nesting_inc(), \
 		__func__, ##__VA_ARGS__); \
-	} while(0)
+	} while (0)
 
 /*
  * Exit the u-boot world back to UEFI:
@@ -115,7 +115,7 @@ const char *__efi_nesting_dec(void);
 	exp; \
 	assert(__efi_entry_check()); \
 	debug("%sEFI: Return From: %s\n", __efi_nesting_dec(), #exp); \
-	} while(0)
+	} while (0)
 
 /*
  * Write an indented message with EFI prefix
@@ -638,6 +638,7 @@ efi_status_t efi_dp_from_name(const char *dev, const char *devnr,
 			      struct efi_device_path **file);
 ssize_t efi_dp_check_length(const struct efi_device_path *dp,
 			    const size_t maxlen);
+struct efi_device_path *efi_dp_from_spi(struct udevice *flash_dev, int bus, int cs);
 
 #define EFI_DP_TYPE(_dp, _type, _subtype) \
 	(((_dp)->type == DEVICE_PATH_TYPE_##_type) && \

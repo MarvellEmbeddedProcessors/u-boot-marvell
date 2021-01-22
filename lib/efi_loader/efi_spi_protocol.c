@@ -17,9 +17,17 @@
 const efi_guid_t efi_guid_spi_nor_flash_protocol =
 		EFI_SPI_NOR_FLASH_PROTOCOL_GUID;
 
+struct efi_spi_nor_flash_path {
+	struct efi_device_path dp;
+	efi_guid_t guid;
+	u8 vendor_data[2];
+	struct efi_device_path end;
+} __packed;
+
 struct efi_spi_nor_flash_protocol_obj {
 	struct efi_object header;
 	struct efi_spi_nor_flash_protocol efi_spi_nor_flash_protocol;
+	struct efi_spi_nor_flash_path *dp;
 	int bus;
 	int cs;
 };
@@ -235,6 +243,8 @@ static efi_status_t install_spi_nor_flash_protocol(struct spi_flash *flash_dev,
 {
 	struct efi_spi_nor_flash_protocol_obj *proto_obj = NULL;
 	efi_status_t r;
+	struct udevice dummy_dev;
+	const struct driver dummy_drv = {.id = UCLASS_SPI_FLASH};
 
 	proto_obj = calloc(1, sizeof(*proto_obj));
 	if (!proto_obj) {
@@ -246,8 +256,27 @@ static efi_status_t install_spi_nor_flash_protocol(struct spi_flash *flash_dev,
 	efi_add_handle(&proto_obj->header);
 
 	/* Fill in object data */
+	dummy_dev.driver = &dummy_drv;
+	dummy_dev.parent = NULL;
+	proto_obj->dp = (struct efi_spi_nor_flash_path *)efi_dp_from_spi(&dummy_dev, bus, cs);
+
+	proto_obj->dp->vendor_data[0] = bus;
+	proto_obj->dp->vendor_data[1] = cs;
+
+	proto_obj->dp->dp.length = sizeof(struct efi_spi_nor_flash_path) -
+						sizeof(struct efi_device_path);
+	proto_obj->dp->end.type = DEVICE_PATH_TYPE_END;
+	proto_obj->dp->end.sub_type = DEVICE_PATH_SUB_TYPE_END;
+	proto_obj->dp->end.length = sizeof(struct efi_device_path);
+
 	r = efi_add_protocol(&proto_obj->header, &efi_guid_spi_nor_flash_protocol,
 			     &proto_obj->efi_spi_nor_flash_protocol);
+	if (r != EFI_SUCCESS) {
+		debug("%s ERROR: Failure to add protocol\n", __func__);
+		return r;
+	}
+
+	r = efi_add_protocol(&proto_obj->header, &efi_guid_device_path, proto_obj->dp);
 	if (r != EFI_SUCCESS) {
 		debug("%s ERROR: Failure to add protocol\n", __func__);
 		return r;

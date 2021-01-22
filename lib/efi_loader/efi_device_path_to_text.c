@@ -184,6 +184,14 @@ static char *dp_msging(char *s, struct efi_device_path *dp)
 		s += sprintf(s, "%s(%u)", typename, sddp->slot_number);
 		break;
 	}
+	case DEVICE_PATH_SUB_TYPE_MSG_SPI: {
+		u32 bus, cs;
+
+		bus = ((struct efi_device_path_vendor *)dp)->vendor_data[0];
+		cs = ((struct efi_device_path_vendor *)dp)->vendor_data[1];
+		s += sprintf(s, "SPI(Bus:%d Cs:%d)", bus, cs);
+		break;
+	}
 	default:
 		s = dp_unknown(s, dp);
 		break;

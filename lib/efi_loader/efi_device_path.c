@@ -501,6 +501,11 @@ __maybe_unused static unsigned int dp_size(struct udevice *dev)
 	case UCLASS_USB_HUB:
 		return dp_size(dev->parent) +
 			sizeof(struct efi_device_path_usb_class);
+#ifdef CONFIG_SPI_FLASH
+	case UCLASS_SPI_FLASH:
+		return dp_size(dev->parent) +
+			sizeof(struct efi_device_path_vendor) + 1;
+#endif
 	default:
 		/* just skip over unknown classes: */
 		return dp_size(dev->parent);
@@ -700,6 +705,20 @@ __maybe_unused static void *dp_fill(void *buf, struct udevice *dev)
 
 		return &udp[1];
 	}
+#ifdef CONFIG_SPI_FLASH
+	case UCLASS_SPI_FLASH: {
+		struct efi_device_path_vendor *sdp =
+			dp_fill(buf, NULL);
+
+		sdp->dp.type = DEVICE_PATH_TYPE_MESSAGING_DEVICE;
+		sdp->dp.sub_type = DEVICE_PATH_SUB_TYPE_MSG_SPI;
+		sdp->dp.length = sizeof(*sdp) + 1;
+		efi_guid_t guid = U_BOOT_GUID;
+
+		memcpy(&sdp->guid, &guid, sizeof(efi_guid_t));
+		return &sdp[1];
+	}
+#endif
 	default:
 		debug("%s(%u) %s: unhandled device class: %s (%u)\n",
 		      __FILE__, __LINE__, __func__,
@@ -999,6 +1018,25 @@ struct efi_device_path *efi_dp_from_eth(void)
 
 	*((struct efi_device_path *)buf) = END;
 
+	return start;
+}
+#endif
+
+#ifdef CONFIG_SPI_FLASH
+struct efi_device_path *efi_dp_from_spi(struct udevice *flash_dev, int bus, int cs)
+{
+	struct efi_device_path_vendor *sdp;
+	void *buf, *start;
+
+	buf = dp_alloc(sizeof(struct efi_device_path) +
+			sizeof(char[2]) + sizeof(efi_guid_t) + sizeof(END));
+	if (!buf)
+		return NULL;
+
+	start = buf;
+	buf = dp_fill(buf, flash_dev);
+	sdp = buf;
+	buf = &sdp[1];
 	return start;
 }
 #endif

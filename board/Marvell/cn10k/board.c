@@ -77,7 +77,6 @@ void board_get_spi_bus_cs(struct udevice *dev, int *bus, int *cs)
 			}
 		}
 	}
-	debug("%s Bus:%d CS:%d\n", __func__, *bus, *cs);
 }
 
 void board_get_env_spi_bus_cs(int *bus, int *cs)

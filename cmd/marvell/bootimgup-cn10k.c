@@ -206,7 +206,7 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 				desc.image_addr = value;
 				ret = strict_strtoul(argv[1], 16, &value);
 				if (ret) {
-					printf("Error parsing mmc image size\n");
+					printf("Error parsing image size\n");
 					return CMD_RET_USAGE;
 				}
 

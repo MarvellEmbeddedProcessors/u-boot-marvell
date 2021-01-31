@@ -300,7 +300,8 @@ static efi_status_t efi_load_from_secure_spi(efi_handle_t *handle,
 	efi_status_t ret;
 	const char *env = NULL;
 	size_t sz;
-	u16 *pos;
+	u16 *pos, n;
+	u32 attributes;
 
 	source_buffer = env_get_hex("loadaddr", 0x20080000);
 
@@ -341,6 +342,15 @@ static efi_status_t efi_load_from_secure_spi(efi_handle_t *handle,
 		log_err("Loading image failed\n");
 		goto out;
 	}
+
+	n = 0xF1;
+	attributes = EFI_VARIABLE_BOOTSERVICE_ACCESS |
+		     EFI_VARIABLE_RUNTIME_ACCESS;
+	ret = efi_set_variable_int(L"BootCurrent",
+				   &efi_global_variable_guid,
+				   attributes, sizeof(n), &n, false);
+	if (ret != EFI_SUCCESS)
+		log_err("Setting BootCurrent failed\n");
 
 	/* Transfer environment variable as load options */
 	env = env_get("bootargs");

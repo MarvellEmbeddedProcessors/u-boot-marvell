@@ -298,8 +298,9 @@ static efi_status_t install_spi_nor_flash_protocol(struct spi_flash *flash_dev,
 							flash_dev->erase_size;
 
 	proto_obj->efi_spi_nor_flash_protocol.device_id[0] = 0;
-	r = proto_obj->efi_spi_nor_flash_protocol.get_flash_id(&proto_obj->efi_spi_nor_flash_protocol,
-							       proto_obj->efi_spi_nor_flash_protocol.device_id);
+	r = proto_obj->efi_spi_nor_flash_protocol.spi_peripheral->read_reg
+		((struct spi_nor *)proto_obj->efi_spi_nor_flash_protocol.spi_peripheral,
+		  SPINOR_OP_RDID, proto_obj->efi_spi_nor_flash_protocol.device_id, 3);
 
 	return r;
 }

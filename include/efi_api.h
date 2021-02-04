@@ -1796,12 +1796,12 @@ struct efi_spi_nor_flash_protocol {
 					  u32 offset, u32 len, u8 *data);
 	efi_status_t (EFIAPI * lf_read_data)(const struct efi_spi_nor_flash_protocol *this,
 					     u32 offset, u32 len, u8 *data);
-	efi_status_t (EFIAPI * write_data)(const struct efi_spi_nor_flash_protocol *this,
-					   u32 offset, u32 len, u8 *data);
 	efi_status_t (EFIAPI * read_status)(const struct efi_spi_nor_flash_protocol *this,
 					    u32 num_bytes, u8 *status);
 	efi_status_t (EFIAPI * write_status)(const struct efi_spi_nor_flash_protocol *this,
 					     u32 num_bytes, u8 *status);
+	efi_status_t (EFIAPI * write_data)(const struct efi_spi_nor_flash_protocol *this,
+					   u32 offset, u32 len, u8 *data);
 	efi_status_t (EFIAPI * erase_blocks)(const struct efi_spi_nor_flash_protocol *this,
 					     u32 offset, u32 blk_count);
 };

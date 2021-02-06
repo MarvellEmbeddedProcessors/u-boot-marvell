@@ -15,7 +15,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define OTX2_MEM_MAP_USED 4
 
 /* +1 is end of list which needs to be empty */
-#define OTX2_MEM_MAP_MAX (OTX2_MEM_MAP_USED + CONFIG_NR_DRAM_BANKS + 1)
+#define OTX2_MEM_MAP_MAX (OTX2_MEM_MAP_USED + CONFIG_NR_DRAM_BANKS + 2)
 
 static struct mm_region otx2_mem_map[OTX2_MEM_MAP_MAX] = {
 	{
@@ -47,6 +47,7 @@ static struct mm_region otx2_mem_map[OTX2_MEM_MAP_MAX] = {
 
 struct mm_region *mem_map = otx2_mem_map;
 
+#define SHFW_REGION	0x3000000UL
 void mem_map_fill(void)
 {
 	int banks = OTX2_MEM_MAP_USED;
@@ -63,6 +64,12 @@ void mem_map_fill(void)
 					    PTE_BLOCK_NON_SHARE;
 		banks = banks + 1;
 	}
+
+	otx2_mem_map[banks].virt = dram_start - SHFW_REGION;
+	otx2_mem_map[banks].phys = dram_start - SHFW_REGION;
+	otx2_mem_map[banks].size = SHFW_REGION;
+	otx2_mem_map[banks].attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+				    PTE_BLOCK_NON_SHARE;
 }
 
 u64 get_page_table_size(void)

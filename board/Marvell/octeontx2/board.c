@@ -189,6 +189,7 @@ void board_late_probe_devices(void)
 		cgx_cnt = 2;
 		break;
 	case LOKI:
+	case F95O:
 		cgx_cnt = 4;
 		break;
 	default:

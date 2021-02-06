@@ -16,6 +16,8 @@
 
 #include <linux/ioport.h>
 
+#include <asm/arch/soc.h>
+
 DECLARE_GLOBAL_DATA_PTR;
 
 /*
@@ -46,7 +48,21 @@ struct octeontx_pci {
 
 	struct resource cfg;
 	struct resource bus;
+	struct resource pem;
 };
+
+static inline bool is_otx2_B0(void)
+{
+	u64 var;
+
+	asm ("mrs %[rd],MIDR_EL1" : [rd] "=r" (var));
+	var = (var >> 20) & 0xF;
+
+	if (otx_is_soc(CN96XX) && var <= 1)
+		return true;
+
+	return false;
+}
 
 static uintptr_t octeontx_cfg_addr(struct octeontx_pci *pcie,
 				   int bus_offs, int shift_offs,
@@ -238,6 +254,111 @@ static int octeontx2_pem_read_config(const struct udevice *bus, pci_dev_t bdf,
 	return 0;
 }
 
+void pem_write_fixup(struct udevice *bus, uint offset, enum pci_size_t size)
+{
+#define PEM_CFG_WR 0x18
+#define PEM_CFG_RD 0x20
+
+#define PCIERC_RASDP_DE_ME		0x440
+#define PCIERC_RASDP_EP_CTL		0x420
+#define PCIERC_RAS_EINJ_EN		0x348
+#define PCIERC_RAS_EINJ_CTL6PE		0x3A4
+#define PCIERC_RAS_EINJ_CTL6_CMPP0	0x364
+#define PCIERC_RAS_EINJ_CTL6_CMPV0	0x374
+#define PCIERC_RAS_EINJ_CTL6_CHGP1	0x388
+#define PCIERC_RAS_EINJ_CTL6_CHGV1	0x398
+
+	struct octeontx_pci *pcie = (void *)dev_get_priv(bus);
+	u64 rval, wval;
+	u32 cfg_off, data;
+	u64 raddr, waddr;
+	u8 shift;
+
+	raddr = pcie->pem.start + PEM_CFG_RD;
+	waddr = pcie->pem.start + PEM_CFG_WR;
+
+	debug("%s raddr %llx waddr %llx\n", __func__, raddr, waddr);
+		cfg_off = PCIERC_RASDP_DE_ME;
+		wval = cfg_off;
+	debug("%s DE_ME raddr %llx wval %llx\n", __func__, raddr, wval);
+		writeq(wval, raddr);
+		rval = readq(raddr);
+	debug("%s DE_ME raddr %llx rval %llx\n", __func__, raddr, rval);
+		data = rval >> 32;
+		if (data & 0x1) {
+			data = (data & (~0x1));
+			wval |= ((u64)data << 32);
+	debug("%s DE_ME waddr %llx wval %llx\n", __func__, waddr, wval);
+			writeq(wval, waddr);
+		}
+
+		cfg_off = PCIERC_RAS_EINJ_CTL6_CMPP0;
+		wval = cfg_off;
+		data = 0xFE000000;
+		wval |= ((u64)data << 32);
+	debug("%s CMPP0 waddr %llx wval %llx\n", __func__, waddr, wval);
+		writeq(wval, waddr);
+
+		cfg_off = PCIERC_RAS_EINJ_CTL6_CMPV0;
+		wval = cfg_off;
+		data = 0x44000000;
+		wval |= ((u64)data << 32);
+	debug("%s CMPV0 waddr %llx wval %llx\n", __func__, waddr, wval);
+		writeq(wval, waddr);
+
+		cfg_off = PCIERC_RAS_EINJ_CTL6_CHGP1;
+		wval = cfg_off;
+		data = 0xFF;
+		wval |= ((u64)data << 32);
+	debug("%s CHGP1 waddr %llx wval %llx\n", __func__, waddr, wval);
+		writeq(wval, waddr);
+
+	cfg_off = PCIERC_RAS_EINJ_EN;
+	wval = cfg_off;
+	data = 0x40;
+	wval |= ((u64)data << 32);
+	debug("%s EINJ_EN waddr %llx wval %llx\n", __func__, waddr, wval);
+	writeq(wval, waddr);
+
+	cfg_off = PCIERC_RAS_EINJ_CTL6PE;
+	wval = cfg_off;
+	data = 0x1;
+	wval |= ((u64)data << 32);
+	debug("%s EINJ_CTL6PE waddr %llx wval %llx\n", __func__, waddr, wval);
+	writeq(wval, waddr);
+
+	switch (size) {
+	case PCI_SIZE_8:
+		shift = offset % 4;
+		data = (0x1 << shift);
+		break;
+	case PCI_SIZE_16:
+		shift = (offset % 4) ? 2 : 0;
+		data = (0x3 << shift);
+		break;
+	default:
+	case PCI_SIZE_32:
+		data = 0xF;
+		break;
+	}
+
+	cfg_off = PCIERC_RAS_EINJ_CTL6_CHGV1;
+	wval = cfg_off;
+	wval |= ((u64)data << 32);
+	debug("%s EINJ_CHGV1 waddr %llx <= wval %llx\n", __func__, waddr,
+	      wval);
+	writeq(wval, waddr);
+
+	cfg_off = PCIERC_RASDP_EP_CTL;
+	wval = cfg_off;
+	wval |= ((u64)0x1 << 32);
+	debug("%s EP_CTL waddr %llx <= wval %llx\n", __func__, waddr, wval);
+	writeq(wval, waddr);
+
+	wval = readq(waddr);
+	debug("%s EP_CTL waddr %llx => wval %llx\n", __func__, waddr, wval);
+}
+
 static int octeontx2_pem_write_config(struct udevice *bus, pci_dev_t bdf,
 				      uint offset, ulong value,
 				      enum pci_size_t size)
@@ -252,7 +373,39 @@ static int octeontx2_pem_write_config(struct udevice *bus, pci_dev_t bdf,
 	if (octeontx_bdf_invalid(bdf, hose))
 		return -EPERM;
 
-	writel_size(address + offset, size, value);
+	if (is_otx2_B0()) {
+		/* HW issue workaround only to older silicon */
+		uintptr_t addr = (address + offset) & ~0x3UL;
+		u32 data;
+		int tmp;
+
+		switch (size) {
+		case PCI_SIZE_8:
+			tmp = (address + offset) & 0x3;
+			size = PCI_SIZE_32;
+			data = readl(addr);
+			debug("tmp 8 long %lx %x\n", addr, data);
+			tmp *= 8;
+			value = (data & ~(0xFFUL << tmp)) | ((value & 0xFF) << tmp);
+			break;
+		case PCI_SIZE_16:
+			tmp = (address + offset) & 0x3;
+			size = PCI_SIZE_32;
+			data = readl(addr);
+			debug("tmp 16 long %lx %x\n", addr, data);
+			tmp *= 8;
+			value = (data & 0xFFFF) | (value << tmp);
+			break;
+		case PCI_SIZE_32:
+			break;
+		}
+		debug("tmp long %lx %lx\n", addr, value);
+
+		pem_write_fixup(bus, offset, size);
+		writel_size(addr, size, value);
+	} else {
+		writel_size(address + offset, size, value);
+	}
 
 	debug("%02x.%02x.%02x: u%d %x (%lx) <- %lx\n",
 	      PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf), size, offset,
@@ -327,6 +480,15 @@ static int pci_octeontx_probe(struct udevice *dev)
 	if (err) {
 		debug("Error reading resource: %s\n", fdt_strerror(err));
 		return err;
+	}
+
+	if (pcie->type == OTX2_PEM) {
+		err = dev_read_resource(dev, 1, &pcie->pem);
+		if (err) {
+			debug("Error reading resource: %s\n",
+			      fdt_strerror(err));
+			return err;
+		}
 	}
 
 	err = dev_read_pci_bus_range(dev, &pcie->bus);

@@ -106,9 +106,9 @@ static void writel_size(uintptr_t addr, enum pci_size_t size, ulong valuep)
 	};
 }
 
-static bool octeontx_bdf_invalid(pci_dev_t bdf)
+static bool octeontx_bdf_invalid(pci_dev_t bdf, struct pci_controller *ctlr)
 {
-	if (PCI_BUS(bdf) == 1 && PCI_DEV(bdf) > 0)
+	if (((PCI_BUS(bdf) + 1 - ctlr->first_busno) == 1) && PCI_DEV(bdf) > 0)
 		return true;
 
 	return false;
@@ -166,8 +166,8 @@ static int octeontx_pem_read_config(const struct udevice *bus, pci_dev_t bdf,
 
 	*valuep = pci_conv_32_to_size(~0UL, offset, size);
 
-	if (octeontx_bdf_invalid(bdf))
-		return -EPERM;
+	if (octeontx_bdf_invalid(bdf, hose))
+		return 0;
 
 	*valuep = readl_size(address + offset, size);
 
@@ -201,7 +201,7 @@ static int octeontx_pem_write_config(struct udevice *bus, pci_dev_t bdf,
 	    value != pci_conv_32_to_size(~0UL, offset, size))
 		value +=  pci_conv_32_to_size(bus_offs, offset, size);
 
-	if (octeontx_bdf_invalid(bdf))
+	if (octeontx_bdf_invalid(bdf, hose))
 		return -EPERM;
 
 	writel_size(address + offset, size, value);
@@ -226,8 +226,8 @@ static int octeontx2_pem_read_config(const struct udevice *bus, pci_dev_t bdf,
 
 	*valuep = pci_conv_32_to_size(~0UL, offset, size);
 
-	if (octeontx_bdf_invalid(bdf))
-		return -EPERM;
+	if (octeontx_bdf_invalid(bdf, hose))
+		return 0;
 
 	*valuep = readl_size(address + offset, size);
 
@@ -249,7 +249,7 @@ static int octeontx2_pem_write_config(struct udevice *bus, pci_dev_t bdf,
 	address = octeontx_cfg_addr(pcie, 1 - hose->first_busno, 0,
 				    bdf, 0);
 
-	if (octeontx_bdf_invalid(bdf))
+	if (octeontx_bdf_invalid(bdf, hose))
 		return -EPERM;
 
 	writel_size(address + offset, size, value);

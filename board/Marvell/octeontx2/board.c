@@ -93,6 +93,28 @@ void board_get_env_spi_bus_cs(int *bus, int *cs)
 	*cs = env_cs;
 }
 
+void board_get_env_offset(int *offset, const char *property)
+{
+	const void *blob = gd->fdt_blob;
+	int env_offset;
+	int node;
+
+	env_offset = -1;
+	node = fdt_node_offset_by_compatible(blob, -1, "spi-flash");
+	while (node > 0) {
+		if (fdtdec_get_bool(blob, node, "u-boot,env")) {
+			env_offset = fdtdec_get_int(blob, node, property, -1);
+			debug("\n %s : 0x%x\n", property, env_offset);
+			break;
+		}
+		node = fdt_node_offset_by_compatible(blob, node, "spi-flash");
+	}
+	if (env_offset == -1)
+		debug("\%s property not found in fdt\n", property);
+
+	*offset = env_offset;
+}
+
 void board_quiesce_devices(void)
 {
 	struct uclass *uc_dev;
@@ -119,6 +141,13 @@ void board_quiesce_devices(void)
 
 	/* SMC call - removes all LF<->PF mappings */
 	smc_disable_rvu_lfs(0);
+
+	/* Removes watchdog */
+	ret = uclass_get(UCLASS_WDT, &uc_dev);
+	if (uc_dev)
+		ret = uclass_destroy(uc_dev);
+	if (ret)
+		printf("couldn't stop watchdog\n");
 }
 
 int board_early_init_r(void)

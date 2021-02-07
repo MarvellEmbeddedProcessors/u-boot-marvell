@@ -193,4 +193,6 @@ void cgx_intf_shutdown(void);
 #if CONFIG_IS_ENABLED(GENERATE_SMBIOS_TABLE)
 u64 fdt_get_smbios_info(void);
 #endif
+void board_get_env_offset(int *offset, const char *property);
+void board_get_env_spi_bus_cs(int *bus, int *cs);
 #endif /* __BOARD_H__ */

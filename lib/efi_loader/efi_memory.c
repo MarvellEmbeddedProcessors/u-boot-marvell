@@ -809,9 +809,6 @@ static void add_u_boot_and_runtime(void)
 	runtime_pages = (runtime_end - runtime_start) >> EFI_PAGE_SHIFT;
 	efi_add_memory_map_pg(runtime_start, runtime_pages,
 			      EFI_RUNTIME_SERVICES_CODE, false);
-
-	/* Add EFI variable shared memory */
-	efi_add_memory_map(EFI_VAR_MEM_BASE, EFI_VAR_BUF_SIZE, EFI_RUNTIME_SERVICES_DATA);
 }
 
 int efi_memory_init(void)

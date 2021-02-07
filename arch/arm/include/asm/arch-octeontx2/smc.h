@@ -24,5 +24,5 @@ ssize_t smc_mdio_dbg_write(int cgx_lmac, int mode, int phyaddr, int devad,
 #ifdef CONFIG_CMD_ATTEST
 ssize_t smc_attest(long subcmd, long ctx_arg);
 #endif
-
+int smc_efi_var_shared_memory(u64 *mem_addr, u64 *mem_size);
 #endif

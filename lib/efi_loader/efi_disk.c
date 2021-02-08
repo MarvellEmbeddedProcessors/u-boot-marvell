@@ -63,7 +63,7 @@ struct efi_disk_obj {
  * Return:			status code
  */
 static efi_status_t EFIAPI efi_disk_reset(struct efi_block_io *this,
-			char extended_verification)
+					  char extended_verification)
 {
 	EFI_ENTRY("%p, %x", this, extended_verification);
 	return EFI_EXIT(EFI_SUCCESS);
@@ -85,7 +85,7 @@ static efi_status_t efi_disk_rw_blocks(struct efi_block_io *this,
 	unsigned long n;
 
 	diskobj = container_of(this, struct efi_disk_obj, ops);
-	desc = (struct blk_desc *) diskobj->desc;
+	desc = (struct blk_desc *)diskobj->desc;
 	blksz = desc->blksz;
 	blocks = buffer_size / blksz;
 	lba += diskobj->offset;
@@ -348,8 +348,7 @@ static int efi_fs_exists(struct blk_desc *desc, int part)
  * @disk:		pointer to receive the created handle
  * Return:		disk object
  */
-static efi_status_t efi_disk_add_dev(
-				efi_handle_t parent,
+static efi_status_t efi_disk_add_dev(efi_handle_t parent,
 				struct efi_device_path *dp_parent,
 				const char *if_typename,
 				struct blk_desc *desc,
@@ -492,7 +491,7 @@ int efi_disk_create_partitions(efi_handle_t parent, struct blk_desc *desc,
 			 part);
 		ret = efi_disk_add_dev(parent, dp, if_typename, desc, diskid,
 				       info.start, part, NULL);
-		if (ret != EFI_SUCCESS) {
+		if (ret != EFI_SUCCESS && ret != EFI_ALREADY_STARTED) {
 			log_err("Adding partition %s failed\n", pdevname);
 			continue;
 		}
@@ -533,12 +532,12 @@ efi_status_t efi_disk_register(void)
 		/* Add block device for the full device */
 		log_info("Scanning disk %s...\n", dev->name);
 		ret = efi_disk_add_dev(NULL, NULL, if_typename,
-					desc, desc->devnum, 0, 0, &disk);
+				       desc, desc->devnum, 0, 0, &disk);
 		if (ret == EFI_NOT_READY) {
 			log_notice("Disk %s not ready\n", dev->name);
 			continue;
 		}
-		if (ret) {
+		if (ret && ret != EFI_ALREADY_STARTED) {
 			log_err("ERROR: failure to add disk device %s, r = %lu\n",
 				dev->name, ret & ~EFI_ERROR_MASK);
 			return ret;
@@ -546,9 +545,8 @@ efi_status_t efi_disk_register(void)
 		disks++;
 
 		/* Partitions show up as block devices in EFI */
-		disks += efi_disk_create_partitions(
-					&disk->header, desc, if_typename,
-					desc->devnum, dev->name);
+		disks += efi_disk_create_partitions(&disk->header, desc, if_typename,
+						    desc->devnum, dev->name);
 	}
 #else
 	int i, if_type;
@@ -584,7 +582,7 @@ efi_status_t efi_disk_register(void)
 				log_notice("Disk %s not ready\n", devname);
 				continue;
 			}
-			if (ret) {
+			if (ret && ret != EFI_ALREADY_STARTED) {
 				log_err("ERROR: failure to add disk device %s, r = %lu\n",
 					devname, ret & ~EFI_ERROR_MASK);
 				return ret;

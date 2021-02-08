@@ -14,6 +14,16 @@ config ARMV8_SPL_EXCEPTION_VECTORS
 config ARMV8_MULTIENTRY
         bool "Enable multiple CPUs to enter into U-Boot"
 
+config ARMV8_SUPPORT_V3_EXTENSION
+        bool "Enable if CPU supports ARMv8.3 extensions"
+	default n
+	help
+	  This helps to calculate correct sets/ways for a cache level in
+	  CCSIDR_EL1 and using ID_AA64MMFR_EL1.CCSIDX register to determine
+	  the format.
+
+	  Say N here in case you are not sure.
+
 config ARMV8_SET_SMPEN
         bool "Enable data coherency with other cores in cluster"
         help

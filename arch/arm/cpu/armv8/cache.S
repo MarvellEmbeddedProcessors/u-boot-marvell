@@ -26,6 +26,23 @@ ENTRY(__asm_dcache_level)
 	lsl	x12, x0, #1
 	msr	csselr_el1, x12		/* select cache level */
 	isb				/* sync change of cssidr_el1 */
+#if CONFIG_ARMV8_SUPPORT_V3_EXTENSION
+	mrs	x8, id_aa64mmfr2_el1	/* read id_aar64mmfr2_el1 */
+	mov	x2, #0xf
+	and	x2, x2, x8, lsr #20	/* read CCIDX */
+	cmp	x2, #1
+	b.ne	ccsidr32b
+	mrs	x6, ccsidr_el1		/* read the new cssidr_el1 */
+	and	x2, x6, #7		/* x2 <- log2(cache line size)-4 */
+	add	x2, x2, #4		/* x2 <- log2(cache line size) */
+	mov	x3, #0x1fffff
+	and	x3, x3, x6, lsr #3	/* x3 <- max number of #ways */
+	clz	w5, w3			/* bit position of #ways */
+	mov	x4, #0xffffff
+	and	x4, x4, x6, lsr #32	/* x4 <- max number of #sets */
+	b	loop_set
+ccsidr32b:
+#endif
 	mrs	x6, ccsidr_el1		/* read the new cssidr_el1 */
 	and	x2, x6, #7		/* x2 <- log2(cache line size)-4 */
 	add	x2, x2, #4		/* x2 <- log2(cache line size) */

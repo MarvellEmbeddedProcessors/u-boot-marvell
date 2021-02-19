@@ -15,6 +15,7 @@
 #include <malloc.h>
 #include <rtc.h>
 #include <u-boot/crc.h>
+#include <efi_variable.h>
 
 /* For manual relocation support */
 DECLARE_GLOBAL_DATA_PTR;
@@ -919,6 +920,45 @@ efi_query_capsule_caps(struct efi_capsule_header **capsule_header_array,
 	return EFI_UNSUPPORTED;
 }
 
+/**
+ * efi_get_next_high_monotonic_count() - get next value of the counter
+ * @count: returned value of the counter
+ *
+ * This function implements the NextMonotonicCount service.
+ *
+ * See the Unified Extensible Firmware Interface (UEFI) specification for
+ * details.
+ *
+ * Return: status code
+ */
+efi_status_t __efi_runtime EFIAPI efi_get_next_high_monotonic_count(uint64_t *count)
+{
+	uint32_t mtc;
+	efi_uintn_t mtc_size = 4;
+	efi_status_t ret;
+
+	if (!count) {
+		ret = EFI_INVALID_PARAMETER;
+		goto out;
+	}
+
+	/* Get the upper 32-bits of the monotonic count */
+	mtc = 0;
+	ret = efi_get_variable_int(L"MTC", &efi_global_variable_guid, NULL,
+				   &mtc_size, &mtc, NULL);
+	*count = mtc++;
+
+	ret = efi_set_variable_int(L"MTC", &efi_global_variable_guid,
+				   EFI_VARIABLE_RUNTIME_ACCESS |
+				   EFI_VARIABLE_NON_VOLATILE |
+				   EFI_VARIABLE_BOOTSERVICE_ACCESS,
+				   mtc_size, &mtc, false);
+
+	ret = EFI_SUCCESS;
+out:
+	return ret;
+}
+
 struct efi_runtime_services __efi_runtime_data efi_runtime_services = {
 	.hdr = {
 		.signature = EFI_RUNTIME_SERVICES_SIGNATURE,
@@ -934,7 +974,7 @@ struct efi_runtime_services __efi_runtime_data efi_runtime_services = {
 	.get_variable = efi_get_variable,
 	.get_next_variable_name = efi_get_next_variable_name,
 	.set_variable = efi_set_variable,
-	.get_next_high_mono_count = (void *)&efi_unimplemented,
+	.get_next_high_mono_count = (void *)&efi_get_next_high_monotonic_count,
 	.reset_system = &efi_reset_system,
 	.update_capsule = efi_update_capsule,
 	.query_capsule_caps = efi_query_capsule_caps,

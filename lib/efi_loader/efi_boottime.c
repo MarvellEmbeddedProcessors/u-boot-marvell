@@ -19,6 +19,7 @@
 #include <u-boot/crc.h>
 #include <watchdog.h>
 #include <net.h>
+#include <efi_variable.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -2068,15 +2069,40 @@ out:
  */
 static efi_status_t EFIAPI efi_get_next_monotonic_count(uint64_t *count)
 {
-	static uint64_t mono;
+	static uint32_t mono;
+	uint32_t mtc;
+	efi_uintn_t mtc_size = 4;
 	efi_status_t ret;
 
 	EFI_ENTRY("%p", count);
+
 	if (!count) {
 		ret = EFI_INVALID_PARAMETER;
 		goto out;
 	}
+
+	/* Get the upper 32-bits of the monotonic count */
+	mtc = 0;
+	ret = efi_get_variable_int(L"MTC", &efi_global_variable_guid, NULL,
+				   &mtc_size, &mtc, NULL);
+	if (ret)
+		log_err("MTC variable not found\n");
+
 	*count = mono++;
+	*count |= (uint64_t)mtc << 32;
+
+	/* If lower 32-bit overflows, increment upper 32-bit */
+	if (mono == 0) {
+		mtc++;
+		ret = efi_set_variable_int(L"MTC", &efi_global_variable_guid,
+					   EFI_VARIABLE_RUNTIME_ACCESS |
+					   EFI_VARIABLE_NON_VOLATILE |
+					   EFI_VARIABLE_BOOTSERVICE_ACCESS,
+					   mtc_size, &mtc, false);
+		if (ret)
+			log_err("Monotonic Count variable not incremented\n");
+	}
+
 	ret = EFI_SUCCESS;
 out:
 	return EFI_EXIT(ret);

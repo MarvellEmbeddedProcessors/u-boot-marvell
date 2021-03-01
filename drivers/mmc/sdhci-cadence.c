@@ -372,10 +372,10 @@ static void init_emmc_hs400(struct sdhci_cdns_sd6_phy_timings *t, int t_sdclk)
 	};
 }
 
-static void (*(init_timings))(struct sdhci_cdns_sd6_phy_timings*, int) = {
-	&init_emmc_legacy, &init_emmc_sdr, &init_hs, &init_uhs_sdr12,
-	&init_uhs_sdr25, &init_uhs_sdr50, &init_uhs_sdr104, &init_uhs_ddr50,
-	&init_emmc_ddr, &init_emmc_hs200, &init_emmc_hs400
+static void (*init_timings[])(struct sdhci_cdns_sd6_phy_timings*, int) = {
+	init_emmc_legacy, init_emmc_sdr, init_hs, init_uhs_sdr12,
+	init_uhs_sdr25, init_uhs_sdr50, init_uhs_sdr104, init_uhs_ddr50,
+	init_emmc_ddr, init_emmc_hs200, init_emmc_hs400
 };
 
 #ifdef SD4_ENABLE

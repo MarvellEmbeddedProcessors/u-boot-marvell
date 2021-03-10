@@ -427,12 +427,6 @@ static int cdns_xspi_send_stig_command(struct cdns_xspi_dev *cdns_xspi,
 	cdns_xspi_wait_for_controller_idle(cdns_xspi);
 	cdns_xspi->sdma_error = false;
 
-	//Issue with flag status register in asim
-	if (otx_is_platform(PLATFORM_ASIM) && op->cmd.opcode == 0x70) {
-		*(uint8_t *)(op->data.buf.in) = 0x80;
-		return 0;
-	}
-
 	cmd_regs[1] = CDNS_XSPI_CMD_FLD_P1_INSTR_CMD_1(op, data_phase);
 	cmd_regs[2] = CDNS_XSPI_CMD_FLD_P1_INSTR_CMD_2(op);
 	cmd_regs[3] = CDNS_XSPI_CMD_FLD_P1_INSTR_CMD_3(op);

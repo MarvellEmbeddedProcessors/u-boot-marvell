@@ -277,6 +277,8 @@ const int cdns_xspi_clk_div_list[] = {
 	-1	//End of list
 };
 
+static int cdns_xspi_controller_init(struct cdns_xspi_dev *cdns_xspi);
+
 // Find max avalible clocl
 static bool cdns_xspi_setup_clock(struct cdns_xspi_dev *cdns_xspi, int requested_clk)
 {
@@ -386,6 +388,16 @@ static int cdns_xspi_stig_ready(struct cdns_xspi_dev *cdns_xspi)
 		return 0;
 }
 
+static int cdns_verify_stig_mode_config(struct cdns_xspi_dev *cdns_xspi)
+{
+	int cntrl = readl(cdns_xspi->iobase + CDNS_XSPI_CTRL_CONFIG_REG);
+
+	if (FIELD_GET(CDNS_XSPI_CTRL_WORK_MODE, cntrl) != CDNS_XSPI_CTRL_WORK_MODE_STIG)
+		return cdns_xspi_controller_init(cdns_xspi);
+
+	return 0;
+}
+
 static void cdns_xspi_trigger_command(struct cdns_xspi_dev *cdns_xspi,
 				      u32 cmd_regs[6])
 {
@@ -425,6 +437,11 @@ static int cdns_xspi_send_stig_command(struct cdns_xspi_dev *cdns_xspi,
 	u32 cmd_regs[5] = {0};
 
 	cdns_xspi_wait_for_controller_idle(cdns_xspi);
+	if (cdns_verify_stig_mode_config(cdns_xspi)) {
+		printf("Failed to configure xSPI");
+		return -1;
+	}
+
 	cdns_xspi->sdma_error = false;
 
 	cmd_regs[1] = CDNS_XSPI_CMD_FLD_P1_INSTR_CMD_1(op, data_phase);

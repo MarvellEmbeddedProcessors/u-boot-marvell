@@ -31,13 +31,10 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define BOOTCMD_NAME	"pci-bootcmd"
 
-int __soc_early_init_f(void)
+__weak int soc_early_init_f(void)
 {
 	return 0;
 }
-
-int soc_early_init_f(void)
-			__attribute__((weak, alias("__soc_early_init_f")));
 
 int board_early_init_f(void)
 {
@@ -48,10 +45,10 @@ int board_early_init_f(void)
 
 int board_early_init_r(void)
 {
-#ifdef CONFIG_DM_REGULATOR
-	/* Check if any existing regulator should be turned down */
-	regulators_enable_boot_off(false);
-#endif
+	if (CONFIG_IS_ENABLED(DM_REGULATOR)) {
+		/* Check if any existing regulator should be turned down */
+		regulators_enable_boot_off(false);
+	}
 
 	return 0;
 }
@@ -61,8 +58,8 @@ int board_init(void)
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
 
-#ifdef CONFIG_BOARD_CONFIG_EEPROM
-	cfg_eeprom_init();
+#if (CONFIG_IS_ENABLED(BOARD_CONFIG_EEPROM))
+		cfg_eeprom_init();
 #endif
 
 	return 0;
@@ -125,14 +122,14 @@ int board_late_init(void)
 	return 0;
 }
 
-void ft_cpu_setup(void *blob, bd_t *bd)
+void ft_cpu_setup(void *blob, struct bd_info *bd)
 {
 #ifdef CONFIG_ARMV8_SEC_FIRMWARE_SUPPORT
 	fdt_fixup_kaslr(blob);
 #endif
 }
 
-int ft_board_setup(void *blob, bd_t *bd)
+int ft_board_setup(void *blob, struct bd_info *bd)
 {
 	ft_cpu_setup(blob, bd);
 	return 0;

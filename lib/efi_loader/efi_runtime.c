@@ -931,7 +931,7 @@ efi_query_capsule_caps(struct efi_capsule_header **capsule_header_array,
  *
  * Return: status code
  */
-efi_status_t __efi_runtime EFIAPI efi_get_next_high_monotonic_count(uint64_t *count)
+efi_status_t __efi_runtime EFIAPI efi_get_next_high_monotonic_count(uint32_t *count)
 {
 	uint32_t mtc;
 	efi_uintn_t mtc_size = 4;

@@ -24,14 +24,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define	SUPER_FW_RAM_ADDR	0x10040000
 #define	CM3_FW_RAM_ADDR		0x10100000
 
-static struct pci_device_id switch_supported[] = {
-	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x9000) },
-	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x9200) },
-	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x9210) },
-	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x2100) },
-	{}
-};
-
 void copy32(void *source, void *dest, u32 count)
 {
 	u32 *src = source, *dst = dest;
@@ -49,12 +41,21 @@ int load_switch_images(u64 *cm3_size)
 
 struct udevice *get_switch_dev(void)
 {
-	int ret;
-	struct udevice *udev = NULL;
+	struct udevice *bus, *dev = NULL;
+	struct uclass *uc;
 
-	ret = pci_find_device_id(switch_supported, 0, &udev);
+	uclass_id_foreach_dev(UCLASS_PCI, bus, uc) {
+		device_foreach_child(dev, bus) {
+			struct pci_child_platdata *pplat;
 
-	return udev;
+			pplat = dev_get_parent_platdata(dev);
+			if (pplat && pplat->vendor == PCI_VENDOR_ID_MARVELL) {
+				if (0x21 == ((pplat->device >> 8) & 0xFF))
+					break;
+			}
+		}
+	}
+	return dev;
 }
 
 void board_switch_reset(void)

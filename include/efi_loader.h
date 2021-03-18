@@ -205,6 +205,8 @@ extern const efi_guid_t efi_guid_sha256;
 extern const efi_guid_t efi_guid_cert_x509;
 extern const efi_guid_t efi_guid_cert_x509_sha256;
 extern const efi_guid_t efi_guid_cert_type_pkcs7;
+extern const efi_guid_t efi_guid_spi_nor_flash_protocol;
+
 
 /* GUID of RNG protocol */
 extern const efi_guid_t efi_guid_rng_protocol;
@@ -792,6 +794,7 @@ static inline bool efi_signature_verify_one(struct efi_image_regions *regs,
 {
 	return efi_signature_verify(regs, msg, db, NULL);
 }
+
 bool efi_signature_check_signers(struct pkcs7_message *msg,
 				 struct efi_signature_store *dbx);
 
@@ -815,6 +818,7 @@ void efi_memset_runtime(void *dest, int value, size_t n);
 
 /* Create EFI_SPI_NOR_FLASH_PROTOCOL */
 efi_status_t efi_spinor_protocol_register(void);
+efi_status_t efi_sec_spinor_protocol_register(void);
 
 efi_status_t efi_pci_io_protocol_register(void);
 

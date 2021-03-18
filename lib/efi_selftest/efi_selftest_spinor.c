@@ -53,13 +53,13 @@ static int execute(void)
 		}
 
 		ret = spinor->get_flash_id(spinor, flash_id);
-		if (ret != EFI_SUCCESS) {
-			efi_st_error("[%d]Failed to read status[%u]\n", (int)i, (int)ret);
+		if (ret != EFI_SUCCESS && ret != EFI_UNSUPPORTED) {
+			efi_st_error("[%d]Failed to read flash id[%u]\n", (int)i, (int)ret);
 			continue;
 		}
 
 		ret = spinor->read_status(spinor, 1, flash_status);
-		if (ret != EFI_SUCCESS) {
+		if (ret != EFI_SUCCESS && ret != EFI_UNSUPPORTED) {
 			efi_st_error("[%d]Failed to read status[%u]\n", (int)i, (int)ret);
 			continue;
 		}
@@ -73,13 +73,13 @@ static int execute(void)
 		}
 
 		ret = spinor->erase_blocks(spinor, 0x0, 1);
-		if (ret != EFI_SUCCESS) {
+		if (ret != EFI_SUCCESS && ret != EFI_UNSUPPORTED) {
 			efi_st_error("[%d]Failed to erase data[%u]\n", (int)i, (int)ret);
 			continue;
 		}
 
 		ret = spinor->write_data(spinor, 0, 2048, data);
-		if (ret != EFI_SUCCESS) {
+		if (ret != EFI_SUCCESS && ret != EFI_UNSUPPORTED) {
 			efi_st_error("[%d]Failed to write data[%u]\n", (int)i, (int)ret);
 			continue;
 		}

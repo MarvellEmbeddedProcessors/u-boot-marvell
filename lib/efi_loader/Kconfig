@@ -81,6 +81,14 @@ config EFI_PCI_IO_PROTOCOL
 	  Select this option if you want to provide UEFI PCI IO PROTOCOL
 	  on PCI devices.
 
+config EFI_SEC_SPI_NOR_FLASH
+	bool "Install EFI_SPI_NOR_FLASH_PROTOCOL on secure SPI-NOR devices"
+	depends on EFI_LOADER
+	default n
+	help
+	  Select this option if you want to provide UEFI SPI NOR FLASH
+	  PROTOCOL on secure SPI-NOR flash devices.
+
 config RESET_ON_EFI_BOOT_FAIL
 	bool "Reset system if EFI boot fails"
 	depends on ARCH_CN10K

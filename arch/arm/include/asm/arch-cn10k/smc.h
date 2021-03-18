@@ -105,4 +105,20 @@ int smc_efi_var_shared_memory(u64 *mem_addr, u64 *mem_size);
  */
 int smc_write_efi_var(u64 var_addr, u64 var_size, u32 bus, u32 cs);
 
+/*
+ * Perform secure SPI flash operation
+ *
+ * x1 - Offset in flash
+ * x2 - Buffer pointer
+ * x3 - Size
+ * X4 - x3[3:0] - Bus, x3[7:4] - Chipselecti, [15:8] - Operation
+ *	Operation: 1 - Read, 4 - Info
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ */
+unsigned long smc_sec_spi_op(u64 offset, u64 buffer, u64 size, u32 bus, u32 cs, u32 op);
+
 #endif

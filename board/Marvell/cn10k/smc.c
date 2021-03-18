@@ -139,6 +139,35 @@ __efi_runtime int smc_write_efi_var(u64 var_addr, u64 var_size, u32 bus, u32 cs)
 }
 
 /*
+ * Perform secure SPI flash operation
+ *
+ * x1 - Offset in flash
+ * x2 - Buffer pointer
+ * x3 - Size
+ * X4 - x3[3:0] - Bus, x3[7:4] - Chipselecti, [15:8] - Operation
+ *	Operation: 1 - Read, 4 - Info
+ *
+ * Return:
+ *	x0:
+ *		0 -- Success
+ *		-1 -- Invalid Arguments
+ */
+unsigned long smc_sec_spi_op(u64 offset, u64 buffer, u64 size, u32 bus, u32 cs, u32 op)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SPI_SECURE_OP;
+	regs.regs[1] = offset;
+	regs.regs[2] = buffer;
+	regs.regs[3] = size;
+	regs.regs[4] = (bus << 4) | (cs & 0xF) | (op << 8);
+
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+
+/*
  * Perform Switch Firmware load to DRAM in ATF
  *
  * x1 - super image location

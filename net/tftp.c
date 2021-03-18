@@ -667,8 +667,7 @@ static void tftp_handler(uchar *pkt, unsigned dest, struct in_addr sip,
 		}
 
 		if (len < tftp_block_size) {
-			if (tftp_windowsize > 1)
-				tftp_send();
+			tftp_send();
 			tftp_complete();
 		}
 		break;

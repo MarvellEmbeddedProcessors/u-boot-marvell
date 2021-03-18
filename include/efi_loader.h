@@ -638,6 +638,7 @@ efi_status_t efi_dp_from_name(const char *dev, const char *devnr,
 			      struct efi_device_path **file);
 ssize_t efi_dp_check_length(const struct efi_device_path *dp,
 			    const size_t maxlen);
+struct efi_device_path *efi_dp_from_pci(struct udevice *dev);
 struct efi_device_path *efi_dp_from_spi(struct udevice *flash_dev, int bus, int cs);
 
 #define EFI_DP_TYPE(_dp, _type, _subtype) \
@@ -814,6 +815,8 @@ void efi_memset_runtime(void *dest, int value, size_t n);
 
 /* Create EFI_SPI_NOR_FLASH_PROTOCOL */
 efi_status_t efi_spinor_protocol_register(void);
+
+efi_status_t efi_pci_io_protocol_register(void);
 
 #else /* CONFIG_IS_ENABLED(EFI_LOADER) */
 

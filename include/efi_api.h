@@ -1806,4 +1806,129 @@ struct efi_spi_nor_flash_protocol {
 					     u32 offset, u32 blk_count);
 };
 
+/* EFI_PCI_IO_PROTOCOL */
+#define EFI_PCI_IO_PROTOCOL_GUID \
+	EFI_GUID(0x4cf5b200, 0x68b8, 0x4ca5, \
+			0x9e, 0xec, 0xb2, 0x3e, 0x3f, 0x50, 0x02, 0x9a)
+
+/* Attribute bits */
+#define EFI_PCI_IO_ATTRIBUTE_ISA_MOTHERBOARD_IO		0x0001
+#define EFI_PCI_IO_ATTRIBUTE_ISA_IO			0x0002
+#define EFI_PCI_IO_ATTRIBUTE_VGA_PALETTE_IO		0x0004
+#define EFI_PCI_IO_ATTRIBUTE_VGA_MEMORY			0x0008
+#define EFI_PCI_IO_ATTRIBUTE_VGA_IO			0x0010
+#define EFI_PCI_IO_ATTRIBUTE_IDE_PRIMARY_IO		0x0020
+#define EFI_PCI_IO_ATTRIBUTE_IDE_SECONDARY_IO		0x0040
+#define EFI_PCI_IO_ATTRIBUTE_MEMORY_WRITE_COMBINE	0x0080
+#define EFI_PCI_IO_ATTRIBUTE_IO				0x0100
+#define EFI_PCI_IO_ATTRIBUTE_MEMORY			0x0200
+#define EFI_PCI_IO_ATTRIBUTE_BUS_MASTER			0x0400
+#define EFI_PCI_IO_ATTRIBUTE_MEMORY_CACHED		0x0800
+#define EFI_PCI_IO_ATTRIBUTE_MEMORY_DISABLE		0x1000
+#define EFI_PCI_IO_ATTRIBUTE_EMBEDDED_DEVICE		0x2000
+#define EFI_PCI_IO_ATTRIBUTE_EMBEDDED_ROM		0x4000
+#define EFI_PCI_IO_ATTRIBUTE_DUAL_ADDRESS_CYCLE		0x8000
+#define EFI_PCI_IO_ATTRIBUTE_ISA_IO_16			0x10000
+#define EFI_PCI_IO_ATTRIBUTE_VGA_PALETTE_IO_16		0x20000
+#define EFI_PCI_IO_ATTRIBUTE_VGA_IO_16			0x40000
+
+typedef enum {
+	EFIPCIIOWIDTHUINT8,
+	EFIPCIIOWIDTHUINT16,
+	EFIPCIIOWIDTHUINT32,
+	EFIPCIIOWIDTHUINT64,
+	EFIPCIIOWIDTHFIFOUINT8,
+	EFIPCIIOWIDTHFIFOUINT16,
+	EFIPCIIOWIDTHFIFOUINT32,
+	EFIPCIIOWIDTHFIFOUINT64,
+	EFIPCIIOWIDTHFILLUINT8,
+	EFIPCIIOWIDTHFILLUINT16,
+	EFIPCIIOWIDTHFILLUINT32,
+	EFIPCIIOWIDTHFILLUINT64,
+	EFIPCIIOWIDTHMAXIMUM
+} efi_pci_io_protocol_width;
+
+typedef enum {
+	BUSMASTERREAD,
+	BUSMASTERWRITE,
+	BUSMASTERCOMMONBUFFER,
+	MAXIMUM
+} efi_pci_io_protocol_op;
+
+typedef enum {
+	OPGET,
+	OPSET,
+	OPENABLE,
+	OPDISABLE,
+	OPSUPPORTED,
+	OPMAXIMUM
+} efi_pci_io_protocol_attr_op;
+
+struct efi_pci_io_protocol;
+
+typedef efi_status_t (EFIAPI * IO_MEM)(const struct efi_pci_io_protocol *this,
+				efi_pci_io_protocol_width proto_width,
+				u8 bar_index, u64 offset, u32 count,
+				void *buffer);
+typedef struct {
+	IO_MEM read;
+	IO_MEM write;
+} EFI_PCI_IO_ACCESS;
+
+typedef efi_status_t (EFIAPI * CONFIG)(const struct efi_pci_io_protocol *this,
+				efi_pci_io_protocol_width proto_width,
+				u32 offset, u32 count, void *buffer);
+typedef struct {
+	CONFIG read;
+	CONFIG write;
+} EFI_PCI_IO_CONFIG_ACCESS;
+
+struct efi_pci_io_protocol {
+	efi_status_t (EFIAPI * poll_mem)(const struct efi_pci_io_protocol *this,
+					 efi_pci_io_protocol_width proto_width,
+					 u8 bar_index, u64 offset, u64 mask,
+					 u64 value, u64 delay, u64 *result);
+	efi_status_t (EFIAPI * poll_io)(const struct efi_pci_io_protocol *this,
+					efi_pci_io_protocol_width proto_width,
+					u8 bar_index, u64 offset, u64 mask,
+					u64 value, u64 delay, u64 *result);
+	EFI_PCI_IO_ACCESS mem;
+	EFI_PCI_IO_ACCESS io;
+	EFI_PCI_IO_CONFIG_ACCESS config;
+
+	efi_status_t (EFIAPI * copy_mem)(const struct efi_pci_io_protocol *this,
+					 efi_pci_io_protocol_width proto_width,
+					 u8 dst_bar_index, u64 dst_offset,
+					 u8 src_bar_index, u64 src_offset,
+					 u32 count);
+	efi_status_t (EFIAPI * map)(const struct efi_pci_io_protocol *this,
+				    efi_pci_io_protocol_op op,
+				    void *host_address, u32 *num_bytes,
+				    u64 *phys_addr, void **mapping);
+	efi_status_t (EFIAPI * unmap)(const struct efi_pci_io_protocol *this,
+				      void *mapping);
+	efi_status_t (EFIAPI * alloc_buffer)(const struct efi_pci_io_protocol *this,
+					     efi_pci_io_protocol_width proto_width,
+					     int alloc_type,
+					     enum efi_mem_type mem_type,
+					     u32 pages, void **host_address,
+					     u64 attributes);
+	efi_status_t (EFIAPI * free_buffer)(const struct efi_pci_io_protocol *this,
+					    u32 pages, void *host_address);
+	efi_status_t (EFIAPI * flush)(const struct efi_pci_io_protocol *this);
+	efi_status_t (EFIAPI * get_location)(const struct efi_pci_io_protocol *this,
+					     u32 *segment_number, u32 *bus_number,
+					     u32 *device_number, u32 *function_number);
+	efi_status_t (EFIAPI * attributes)(const struct efi_pci_io_protocol *this,
+					   efi_pci_io_protocol_attr_op attr_op,
+					   u64 attributes, u64 *result);
+	efi_status_t (EFIAPI * get_bar_attributes)(const struct efi_pci_io_protocol *this,
+						   u8 bar_index, u64 *supports, void **resources);
+	efi_status_t (EFIAPI * set_bar_attributes)(const struct efi_pci_io_protocol *this,
+						   u64 attributes, u8 bar_index,
+						   u64 *offset, u64 *length);
+	u64 rom_size;
+	void *rom_image;
+};
+
 #endif

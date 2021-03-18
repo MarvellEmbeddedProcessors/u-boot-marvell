@@ -1022,6 +1022,20 @@ struct efi_device_path *efi_dp_from_eth(void)
 }
 #endif
 
+#ifdef CONFIG_DM_PCI
+struct efi_device_path *efi_dp_from_pci(struct udevice *pci_dev)
+{
+	void *buf;
+
+	buf = dp_alloc(sizeof(struct efi_device_path_acpi_path) +
+			sizeof(char[4]) + sizeof(END));
+	if (!buf)
+		return NULL;
+
+	return buf;
+}
+#endif
+
 #ifdef CONFIG_SPI_FLASH
 struct efi_device_path *efi_dp_from_spi(struct udevice *flash_dev, int bus, int cs)
 {

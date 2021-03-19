@@ -59,7 +59,10 @@ static efi_status_t EFIAPI poll_mem(const struct efi_pci_io_protocol *this,
 				    u8 bar_index, u64 offset, u64 mask,
 				    u64 value, u64 delay, u64 *result)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p, %x, %x, %llx, %llx, %llx, %llx, %p", this, proto_width,
+		  bar_index, offset, mask, value, delay, result);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 /*
@@ -93,7 +96,10 @@ efi_status_t EFIAPI poll_io(const struct efi_pci_io_protocol *this,
 			    u8 bar_index, u64 offset, u64 mask,
 			    u64 value, u64 delay, u64 *result)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p, %x, %x, %llx, %llx, %llx, %llx, %p", this, proto_width,
+		  bar_index, offset, mask, value, delay, result);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 /*
@@ -131,10 +137,13 @@ efi_status_t EFIAPI mem_read(const struct efi_pci_io_protocol *this,
 	int bar;
 	u64 cpu_addr;
 
+	EFI_ENTRY("%p, %x, %x, %llx, %x, %p", this, proto_width,
+		  bar_index, offset, count, buffer);
+
 	if (!buffer || !count || proto_width >= EFIPCIIOWIDTHMAXIMUM)
-		return EFI_INVALID_PARAMETER;
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
 	if (bar_index < 0 || bar_index > 5)
-		return EFI_UNSUPPORTED;
+		return EFI_EXIT(EFI_UNSUPPORTED);
 
 	p_obj = container_of(this, struct efi_pci_io_protocol_obj,
 			     efi_pci_io_protocol);
@@ -163,7 +172,7 @@ efi_status_t EFIAPI mem_read(const struct efi_pci_io_protocol *this,
 
 	addr = dm_pci_map_bar(pdev, bar, PCI_REGION_MEM);
 	if (!addr)
-		return EFI_UNSUPPORTED;
+		return EFI_EXIT(EFI_UNSUPPORTED);
 	cpu_addr = (u64)addr;
 
 	for (int i = 0; i < count; i++) {
@@ -212,7 +221,7 @@ efi_status_t EFIAPI mem_read(const struct efi_pci_io_protocol *this,
 		}
 	}
 
-	return EFI_SUCCESS;
+	return EFI_EXIT(EFI_SUCCESS);
 }
 
 /*
@@ -243,10 +252,13 @@ efi_status_t EFIAPI mem_write(const struct efi_pci_io_protocol *this,
 	int bar;
 	u64 cpu_addr;
 
+	EFI_ENTRY("%p, %x, %x, %llx, %x, %p", this, proto_width,
+		  bar_index, offset, count, buffer);
+
 	if (!buffer || !count || proto_width >= EFIPCIIOWIDTHMAXIMUM)
-		return EFI_INVALID_PARAMETER;
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
 	if (bar_index < 0 || bar_index > 5)
-		return EFI_UNSUPPORTED;
+		return EFI_EXIT(EFI_UNSUPPORTED);
 
 	p_obj = container_of(this, struct efi_pci_io_protocol_obj,
 			     efi_pci_io_protocol);
@@ -275,7 +287,7 @@ efi_status_t EFIAPI mem_write(const struct efi_pci_io_protocol *this,
 
 	addr = dm_pci_map_bar(pdev, bar, PCI_REGION_MEM);
 	if (!addr)
-		return EFI_UNSUPPORTED;
+		return EFI_EXIT(EFI_UNSUPPORTED);
 	cpu_addr = (u64)addr;
 
 	for (int i = 0; i < count; i++) {
@@ -333,7 +345,7 @@ efi_status_t EFIAPI mem_write(const struct efi_pci_io_protocol *this,
 		}
 	}
 
-	return EFI_SUCCESS;
+	return EFI_EXIT(EFI_SUCCESS);
 }
 
 /*
@@ -358,7 +370,10 @@ efi_status_t EFIAPI io_read(const struct efi_pci_io_protocol *this,
 			    u8 bar_index, u64 offset, u32 count,
 			    void *buffer)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p, %x, %x, %llx, %x, %p", this, proto_width,
+		  bar_index, offset, count, buffer);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 /*
@@ -383,7 +398,10 @@ efi_status_t EFIAPI io_write(const struct efi_pci_io_protocol *this,
 			     u8 bar_index, u64 offset, u32 count,
 			     void *buffer)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p, %x, %x, %llx, %x, %p", this, proto_width,
+		  bar_index, offset, count, buffer);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 /*
@@ -410,13 +428,16 @@ efi_status_t EFIAPI cfg_read(const struct efi_pci_io_protocol *this,
 	u16 val16;
 	u32 val32;
 
+	EFI_ENTRY("%p, %x, %x, %x, %p", this, proto_width,
+		  offset, count, buffer);
+
 	if (proto_width == EFIPCIIOWIDTHUINT64 ||
 	    proto_width == EFIPCIIOWIDTHFIFOUINT64 ||
 	    proto_width == EFIPCIIOWIDTHFILLUINT64) {
-		return EFI_INVALID_PARAMETER;
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
 	}
 	if (!buffer || proto_width >= EFIPCIIOWIDTHMAXIMUM)
-		return EFI_INVALID_PARAMETER;
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
 
 	p_obj = container_of(this, struct efi_pci_io_protocol_obj,
 			     efi_pci_io_protocol);
@@ -461,11 +482,11 @@ efi_status_t EFIAPI cfg_read(const struct efi_pci_io_protocol *this,
 			*(u32 *)(buffer) = val32;
 			break;
 		default:
-			return EFI_INVALID_PARAMETER;
+			return EFI_EXIT(EFI_INVALID_PARAMETER);
 		}
 	}
 
-	return EFI_SUCCESS;
+	return EFI_EXIT(EFI_SUCCESS);
 }
 
 /*
@@ -490,13 +511,16 @@ efi_status_t EFIAPI cfg_write(const struct efi_pci_io_protocol *this,
 	struct udevice *pdev;
 	unsigned long value;
 
+	EFI_ENTRY("%p, %x, %x, %x, %p", this, proto_width,
+		  offset, count, buffer);
+
 	if (proto_width == EFIPCIIOWIDTHUINT64 ||
 	    proto_width == EFIPCIIOWIDTHFIFOUINT64 ||
 	    proto_width == EFIPCIIOWIDTHFILLUINT64) {
-		return EFI_INVALID_PARAMETER;
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
 	}
 	if (!buffer || proto_width >= EFIPCIIOWIDTHMAXIMUM)
-		return EFI_INVALID_PARAMETER;
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
 
 	p_obj = container_of(this, struct efi_pci_io_protocol_obj,
 			     efi_pci_io_protocol);
@@ -541,11 +565,11 @@ efi_status_t EFIAPI cfg_write(const struct efi_pci_io_protocol *this,
 			dm_pci_write_config32(pdev, offset + 4 * i, value);
 			break;
 		default:
-			return EFI_INVALID_PARAMETER;
+			return EFI_EXIT(EFI_INVALID_PARAMETER);
 		}
 	}
 
-	return EFI_SUCCESS;
+	return EFI_EXIT(EFI_SUCCESS);
 }
 
 /*
@@ -580,7 +604,10 @@ efi_status_t EFIAPI copy_mem(const struct efi_pci_io_protocol *this,
 			     u8 src_bar_index, u64 src_offset,
 			     u32 count)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p, %x, %x, %llx, %x, %llx, %x", this, proto_width,
+		  dst_bar_index, dst_offset, src_bar_index, src_offset, count);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 /*
@@ -605,7 +632,10 @@ efi_status_t EFIAPI map(const struct efi_pci_io_protocol *this,
 			void *host_address, u32 *num_bytes,
 			u64 *phys_addr, void **mapping)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p, %x, %p, %p, %p, %p", this, op,
+		  host_address, num_bytes, phys_addr, mapping);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 /*
@@ -619,7 +649,9 @@ efi_status_t EFIAPI map(const struct efi_pci_io_protocol *this,
 efi_status_t EFIAPI unmap(const struct efi_pci_io_protocol *this,
 			  void *mapping)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p, %p", this, mapping);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 /*
@@ -646,7 +678,10 @@ efi_status_t EFIAPI alloc_buffer(const struct efi_pci_io_protocol *this,
 				 u32 pages, void **host_address,
 				 u64 attributes)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p, %x, %x, %x, %x, %p, %llx", this, proto_width,
+		  alloc_type, mem_type, pages, host_address, attributes);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 /*
@@ -662,7 +697,9 @@ efi_status_t EFIAPI alloc_buffer(const struct efi_pci_io_protocol *this,
 efi_status_t EFIAPI free_buffer(const struct efi_pci_io_protocol *this,
 				u32 pages, void *host_address)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p, %x, %p", this, pages, host_address);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 /*
@@ -676,7 +713,9 @@ efi_status_t EFIAPI free_buffer(const struct efi_pci_io_protocol *this,
  */
 efi_status_t EFIAPI flush(const struct efi_pci_io_protocol *this)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p", this);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 /*
@@ -697,18 +736,21 @@ efi_status_t EFIAPI get_location(const struct efi_pci_io_protocol *this,
 {
 	struct efi_pci_io_protocol_obj *p_obj;
 
+	EFI_ENTRY("%p, %p, %p, %p, %p", this, segment_number,
+		  bus_number, device_number, function_number);
+
 	p_obj = container_of(this, struct efi_pci_io_protocol_obj,
 			     efi_pci_io_protocol);
 	if (!segment_number || !bus_number || !device_number ||
 	    !function_number)
-		return EFI_INVALID_PARAMETER;
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
 
 	*segment_number = (p_obj->dbdf >> 16) & 0xFF;
 	*bus_number = (p_obj->dbdf >> 8) & 0xFF;
 	*device_number = (p_obj->dbdf >> 3) & 0x1F;
 	*function_number = p_obj->dbdf & 0x7;
 
-	return EFI_SUCCESS;
+	return EFI_EXIT(EFI_SUCCESS);
 }
 
 /*
@@ -732,7 +774,9 @@ efi_status_t EFIAPI attributes(const struct efi_pci_io_protocol *this,
 			       efi_pci_io_protocol_attr_op attr_op,
 			       u64 attributes, u64 *result)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p, %x, %llx, %p", this, attr_op, attributes, result);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 /*
@@ -758,7 +802,9 @@ efi_status_t EFIAPI attributes(const struct efi_pci_io_protocol *this,
 efi_status_t EFIAPI get_bar_attributes(const struct efi_pci_io_protocol *this,
 				       u8 bar_index, u64 *supports, void **resources)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p, %x, %p, %p", this, bar_index, supports, resources);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 /*
@@ -787,7 +833,10 @@ efi_status_t EFIAPI set_bar_attributes(const struct efi_pci_io_protocol *this,
 				       u64 attributes, u8 bar_index,
 				       u64 *offset, u64 *length)
 {
-	return EFI_UNSUPPORTED;
+	EFI_ENTRY("%p, %llx, %x, %p, %p", this, attributes, bar_index,
+		  offset, length);
+
+	return EFI_EXIT(EFI_UNSUPPORTED);
 }
 
 static efi_status_t install_pci_io_protocol(struct udevice *dev, u8 domain)

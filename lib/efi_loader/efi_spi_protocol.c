@@ -54,10 +54,11 @@ static efi_status_t EFIAPI get_flash_id(const struct efi_spi_nor_flash_protocol 
 {
 	int ret = 0;
 
-	if (!buffer)
-		return EFI_INVALID_PARAMETER;
-
 	EFI_ENTRY("%p %p", this, buffer);
+
+	if (!buffer)
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
+
 	ret = this->spi_peripheral->read_reg((struct spi_nor *)this->spi_peripheral, SPINOR_OP_RDID,
 					     buffer, 3);
 	if (ret < 0) {
@@ -91,11 +92,12 @@ static efi_status_t EFIAPI read_data(const struct efi_spi_nor_flash_protocol *th
 	int ret = 0;
 	struct dm_spi_flash_ops *ops = sf_get_ops(this->spi_peripheral->dev);
 
+	EFI_ENTRY("%p %d %d", this, offset, len);
+
 	if (!data || offset > this->spi_peripheral->size ||
 	    (len > (this->spi_peripheral->size - offset)))
-		return EFI_INVALID_PARAMETER;
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
 
-	EFI_ENTRY("%p %d %d", this, offset, len);
 	ret = ops->read(this->spi_peripheral->dev, offset, len, data);
 	debug("%s(%s) len:%u status:%d\n\n", __func__,
 	      this->spi_peripheral->dev->name, len, ret);
@@ -127,11 +129,12 @@ static efi_status_t EFIAPI write_data(const struct efi_spi_nor_flash_protocol *t
 	int ret = 0;
 	struct dm_spi_flash_ops *ops = sf_get_ops(this->spi_peripheral->dev);
 
+	EFI_ENTRY("%p %d %d", this, offset, len);
+
 	if (!data || offset > this->spi_peripheral->size ||
 	    (len > (this->spi_peripheral->size - offset)))
-		return EFI_INVALID_PARAMETER;
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
 
-	EFI_ENTRY("%p %d %d", this, offset, len);
 	ret = ops->write(this->spi_peripheral->dev, offset, len, data);
 	debug("%s(%s) len:%u status:%d\n\n", __func__,
 	      this->spi_peripheral->dev->name, len, ret);
@@ -156,10 +159,10 @@ static efi_status_t EFIAPI read_status(const struct efi_spi_nor_flash_protocol *
 {
 	int ret = 0;
 
-	if (!status)
-		return EFI_INVALID_PARAMETER;
-
 	EFI_ENTRY("%p %d %p", this, num_bytes, status);
+	if (!status)
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
+
 	ret = this->spi_peripheral->read_reg((struct spi_nor *)this->spi_peripheral,
 					     SPINOR_OP_RDSR, status, num_bytes);
 	if (ret < 0) {
@@ -189,10 +192,10 @@ static efi_status_t EFIAPI write_status(const struct efi_spi_nor_flash_protocol 
 {
 	int ret = 0;
 
-	if (!status)
-		return EFI_INVALID_PARAMETER;
-
 	EFI_ENTRY("%p %d %p", this, num_bytes, status);
+	if (!status)
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
+
 	ret = this->spi_peripheral->write_reg((struct spi_nor *)this->spi_peripheral,
 					      SPINOR_OP_WRSR, status, num_bytes);
 	if (ret < 0) {
@@ -227,11 +230,11 @@ static efi_status_t EFIAPI erase_blocks(const struct efi_spi_nor_flash_protocol 
 	u32 offset_aligned = offset & ~(SZ_4K - 1);
 	struct dm_spi_flash_ops *ops = sf_get_ops(this->spi_peripheral->dev);
 
+	EFI_ENTRY("%p %d %d", this, offset, blk_count);
 	if (offset > this->spi_peripheral->size ||
 	    (blk_count * SZ_4K) > (this->spi_peripheral->size - offset))
-		return EFI_INVALID_PARAMETER;
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
 
-	EFI_ENTRY("%p %d %d", this, offset, blk_count);
 	ret = ops->erase(this->spi_peripheral->dev, offset_aligned, blk_count * SZ_4K);
 	debug("%s(%s) blk_count:%u status:%d\n\n", __func__,
 	      this->spi_peripheral->dev->name, blk_count, ret);

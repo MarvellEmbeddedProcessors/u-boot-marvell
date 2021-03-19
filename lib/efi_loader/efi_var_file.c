@@ -176,22 +176,23 @@ efi_status_t __efi_runtime efi_var_to_file(void)
 
 #if IS_ENABLED(CONFIG_EFI_VARIABLE_IN_SPI_FLASH)
 	if (systab.boottime) {
-		ret = efi_init_spi_flash();
-		if (ret != EFI_SUCCESS)
-			goto error;
 		/*
 		 * VAR Buffer size is fixed for 16K so assume the file is stored
 		 * at configured offset in data flash.
 		 * Erase sector - 64KB usually.
 		 */
+		EFI_ENTRY("0x%x 0x%x", efi_var_offset, flash->erase_size);
 		r = spi_flash_erase(flash, efi_var_offset,
 				    flash->erase_size);
 		if (ret != EFI_SUCCESS)
 			goto error;
+
 		r = spi_flash_write(flash, efi_var_offset,
 				    len, (void *)map_to_sysmem((void *)buf));
 		if (r)
 			ret = EFI_DEVICE_ERROR;
+
+		EFI_EXIT(ret);
 	} else {
 		/* SMC call to write variable store to flash device */
 		ret = smc_write_efi_var((u64)efi_var_mem_base_phy,

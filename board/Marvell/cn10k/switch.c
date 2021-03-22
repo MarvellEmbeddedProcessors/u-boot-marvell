@@ -41,7 +41,7 @@ int load_switch_images(u64 *cm3_size)
 
 struct udevice *get_switch_dev(void)
 {
-	struct udevice *bus, *dev = NULL;
+	struct udevice *bus, *dev;
 	struct uclass *uc;
 
 	uclass_id_foreach_dev(UCLASS_PCI, bus, uc) {
@@ -51,11 +51,11 @@ struct udevice *get_switch_dev(void)
 			pplat = dev_get_parent_platdata(dev);
 			if (pplat && pplat->vendor == PCI_VENDOR_ID_MARVELL) {
 				if (0x21 == ((pplat->device >> 8) & 0xFF))
-					break;
+					return dev;
 			}
 		}
 	}
-	return dev;
+	return NULL;
 }
 
 void board_switch_reset(void)

@@ -62,7 +62,7 @@ static int execute(void)
 				    EFI_VARIABLE_BOOTSERVICE_ACCESS |
 				    EFI_VARIABLE_RUNTIME_ACCESS,
 				    3, v + 4);
-	if (ret != EFI_UNSUPPORTED) {
+	if (ret != EFI_SUCCESS) {
 		efi_st_error("SetVariable failed\n");
 		return EFI_ST_FAILURE;
 	}

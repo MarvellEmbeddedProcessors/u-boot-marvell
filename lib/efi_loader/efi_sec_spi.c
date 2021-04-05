@@ -10,6 +10,7 @@
 #include <spi_flash.h>
 #include <linux/sizes.h>
 #include <dm/uclass.h>
+#include <spi.h>
 #ifdef CONFIG_ARCH_CN10K
 #include <asm/arch/board.h>
 #include <asm/arch/smc.h>
@@ -85,8 +86,8 @@ static efi_status_t EFIAPI read_data(const struct efi_spi_nor_flash_protocol *th
 	EFI_ENTRY("%p %d %d", this, offset, len);
 	ret = smc_sec_spi_op(offset, (u64)data, len, parent->bus,
 			     parent->cs, OP_READ);
-	debug("%s(%s) len:%u status:%d\n\n", __func__,
-	      this->spi_peripheral->dev->name, len, ret);
+	debug("%s(%d/%d) len:%u status:%d\n\n", __func__,
+	      parent->bus, parent->cs, len, ret);
 	return EFI_EXIT(ret);
 }
 
@@ -177,68 +178,134 @@ static efi_status_t EFIAPI erase_blocks(const struct efi_spi_nor_flash_protocol 
 	return EFI_UNSUPPORTED;
 }
 
-static efi_status_t install_sec_spi_nor_flash_protocol(int bus, int cs)
+static efi_status_t install_sec_spi_nor_flash_protocol(char *bus_cs)
 {
-	struct efi_sec_spi_nor_flash_protocol_obj *proto_obj = NULL;
 	efi_status_t r;
+	struct efi_sec_spi_nor_flash_protocol_obj *proto_obj = NULL;
 	struct udevice dummy_dev;
 	const struct driver dummy_drv = {.id = UCLASS_SPI_FLASH};
+	int idx_bus, idx_cs;
+	int bus, cs;
 
-	proto_obj = calloc(1, sizeof(*proto_obj));
-	if (!proto_obj) {
-		debug("%s ERROR: Out of memory\n", __func__);
-		return EFI_OUT_OF_RESOURCES;
-	}
+	/* Loop through CS's to create protocol for each device */
+	for (idx_bus = 0; idx_bus < (bus_cs[0] & 0xF); idx_bus++) {
+		/* Create SpiBus */
+		struct efi_spi_bus *spi_bus = calloc(1, sizeof(struct efi_spi_bus));
 
-	/* Hook up to the device list */
-	efi_add_handle(&proto_obj->header);
+		if (!spi_bus) {
+			debug("%s:%d ERROR: Out of memory\n", __func__, __LINE__);
+			return EFI_OUT_OF_RESOURCES;
+		}
+		spi_bus->friendly_name = NULL;
+		spi_bus->peripheral_list = NULL;
+		spi_bus->controller_path =
+			efi_dp_create_device_node(DEVICE_PATH_TYPE_END,
+						  DEVICE_PATH_SUB_TYPE_END,
+						  sizeof(struct efi_device_path));
+		spi_bus->clock = NULL;
+		spi_bus->clock_parameter = NULL;
 
-	/* Fill in object data */
-	dummy_dev.driver = &dummy_drv;
-	dummy_dev.parent = NULL;
-	proto_obj->dp = (struct efi_sec_spi_nor_flash_path *)efi_dp_from_spi(&dummy_dev, bus, cs);
+		for (idx_cs = 0; idx_cs < ((bus_cs[0] >> 4) & 0xF); idx_cs++) {
+			bus = bus_cs[idx_cs + 1] & 0xF;
+			cs = (bus_cs[idx_cs + 1] >> 4) & 0xF;
 
-	proto_obj->dp->vendor_data[0] = bus;
-	proto_obj->dp->vendor_data[1] = cs;
+			/* Create SpiPart */
+			struct efi_spi_part *spi_part = calloc(1, sizeof(struct efi_spi_part));
 
-	proto_obj->dp->dp.length = sizeof(struct efi_sec_spi_nor_flash_path) -
+			if (!spi_part) {
+				debug("%s:%d ERROR: Out of memory\n", __func__, __LINE__);
+				return EFI_OUT_OF_RESOURCES;
+			}
+
+			/* Create spi peripheral object */
+			const struct efi_spi_peripheral *spi_peripheral =
+				calloc(1, sizeof(struct efi_spi_peripheral));
+
+			if (!spi_peripheral) {
+				debug("%s:%d ERROR: Out of memory\n", __func__, __LINE__);
+				return EFI_OUT_OF_RESOURCES;
+			}
+
+			/* First child of spi_bus */
+			if (!spi_bus->peripheral_list) {
+				memcpy((void *)&spi_bus->peripheral_list,
+				       (void *)&spi_peripheral, sizeof(void *));
+			} else {
+				struct efi_spi_peripheral *tmp;
+
+				tmp = (struct efi_spi_peripheral *)spi_bus->peripheral_list;
+
+				while (tmp->next_spi_peripheral)
+					tmp = (struct efi_spi_peripheral *)tmp->next_spi_peripheral;
+				memcpy((void *)&tmp->next_spi_peripheral,
+				       (void *)&spi_peripheral, sizeof(void *));
+			}
+
+			memcpy((void *)&spi_peripheral->spi_part,
+			       (void *)&spi_part, sizeof(struct spi_part *));
+			memcpy((void *)&spi_peripheral->spi_bus,
+			       (void *)&spi_bus, sizeof(struct spi_bus *));
+
+			/* Create protocol object */
+			proto_obj = calloc(1, sizeof(*proto_obj));
+			if (!proto_obj) {
+				debug("%s:%d ERROR: Out of memory\n", __func__, __LINE__);
+				return EFI_OUT_OF_RESOURCES;
+			}
+			proto_obj->efi_spi_nor_flash_protocol.spi_peripheral = spi_peripheral;
+
+			/* Hook up to the device list */
+			efi_add_handle(&proto_obj->header);
+
+			/* Fill in object data */
+			dummy_dev.driver = &dummy_drv;
+			dummy_dev.parent = NULL;
+			proto_obj->dp = (struct efi_sec_spi_nor_flash_path *)
+					 efi_dp_from_spi(&dummy_dev, bus, cs);
+
+			proto_obj->dp->vendor_data[0] = bus;
+			proto_obj->dp->vendor_data[1] = cs;
+
+			proto_obj->dp->dp.length = sizeof(struct efi_sec_spi_nor_flash_path) -
 						sizeof(struct efi_device_path);
-	proto_obj->dp->end.type = DEVICE_PATH_TYPE_END;
-	proto_obj->dp->end.sub_type = DEVICE_PATH_SUB_TYPE_END;
-	proto_obj->dp->end.length = sizeof(struct efi_device_path);
+			proto_obj->dp->end.type = DEVICE_PATH_TYPE_END;
+			proto_obj->dp->end.sub_type = DEVICE_PATH_SUB_TYPE_END;
+			proto_obj->dp->end.length = sizeof(struct efi_device_path);
 
-	r = efi_add_protocol(&proto_obj->header, &efi_guid_spi_nor_flash_protocol,
-			     &proto_obj->efi_spi_nor_flash_protocol);
-	if (r != EFI_SUCCESS) {
-		debug("%s ERROR: Failure to add protocol\n", __func__);
-		return r;
+			r = efi_add_protocol(&proto_obj->header, &efi_guid_spi_nor_flash_protocol,
+					     &proto_obj->efi_spi_nor_flash_protocol);
+			if (r != EFI_SUCCESS) {
+				debug("%s ERROR: Failure to add protocol\n", __func__);
+				return r;
+			}
+
+			r = efi_add_protocol(&proto_obj->header,
+					     &efi_guid_device_path, proto_obj->dp);
+			if (r != EFI_SUCCESS) {
+				debug("%s ERROR: Failure to add protocol\n", __func__);
+				return r;
+			}
+
+			proto_obj->bus = bus;
+			proto_obj->cs = cs;
+			proto_obj->efi_spi_nor_flash_protocol.spi_peripheral = spi_peripheral;
+			proto_obj->efi_spi_nor_flash_protocol.get_flash_id = get_flash_id;
+			proto_obj->efi_spi_nor_flash_protocol.lf_read_data = read_data;
+			proto_obj->efi_spi_nor_flash_protocol.read_data = read_data;
+			proto_obj->efi_spi_nor_flash_protocol.write_data = write_data;
+			proto_obj->efi_spi_nor_flash_protocol.read_status = read_status;
+			proto_obj->efi_spi_nor_flash_protocol.write_status = write_status;
+			proto_obj->efi_spi_nor_flash_protocol.erase_blocks = erase_blocks;
+
+			proto_obj->efi_spi_nor_flash_protocol.device_id[0] = 0;
+		}
 	}
 
-	r = efi_add_protocol(&proto_obj->header, &efi_guid_device_path, proto_obj->dp);
-	if (r != EFI_SUCCESS) {
-		debug("%s ERROR: Failure to add protocol\n", __func__);
-		return r;
-	}
-
-	proto_obj->bus = bus;
-	proto_obj->cs = cs;
-	proto_obj->efi_spi_nor_flash_protocol.get_flash_id = get_flash_id;
-	proto_obj->efi_spi_nor_flash_protocol.lf_read_data = read_data;
-	proto_obj->efi_spi_nor_flash_protocol.read_data = read_data;
-	proto_obj->efi_spi_nor_flash_protocol.write_data = write_data;
-	proto_obj->efi_spi_nor_flash_protocol.read_status = read_status;
-	proto_obj->efi_spi_nor_flash_protocol.write_status = write_status;
-	proto_obj->efi_spi_nor_flash_protocol.erase_blocks = erase_blocks;
-
-	proto_obj->efi_spi_nor_flash_protocol.device_id[0] = 0;
-	return r;
+	return EFI_SUCCESS;
 }
 
 efi_status_t efi_sec_spinor_protocol_register(void)
 {
-	efi_status_t r;
-	int index = 0;
-	int bus, cs;
 	unsigned long spi_info = 0;
 	char *bus_cs;
 
@@ -248,15 +315,5 @@ efi_status_t efi_sec_spinor_protocol_register(void)
 #endif
 	bus_cs = (char *)&spi_info;
 
-	/* Loop through CS's to create protocol for each device */
-	for (index = 0; index < ((bus_cs[0] >> 4) & 0xF); index++) {
-		bus = bus_cs[index + 1] & 0xF;
-		cs = (bus_cs[index + 1] >> 4) & 0xF;
-		r = install_sec_spi_nor_flash_protocol(bus, cs);
-		if (r)
-			debug("%s Unable to attach SPI NOR FLASH PROTOCOL to secure SPI%d-%d",
-			      __func__, bus, cs);
-	}
-
-	return EFI_SUCCESS;
+	return install_sec_spi_nor_flash_protocol(bus_cs);
 }

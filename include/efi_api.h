@@ -1784,8 +1784,48 @@ struct efi_signature_list {
 #define EFI_SPI_NOR_FLASH_PROTOCOL_GUID \
 	EFI_GUID(0xb57ec3fe, 0xf833, 0x4ba6, \
 			0x85, 0x78, 0x2a, 0x7d, 0x6a, 0x87, 0x44, 0x4b)
+
+struct efi_spi_peripheral;
+
+typedef efi_status_t (EFIAPI * efi_spi_chip_select)(const struct efi_spi_peripheral *spi_preipheral,
+		      bool pin_value);
+
+struct efi_spi_part {
+	const u16 *vendor;
+	const u16 *part_number;
+	u32 min_clk_hz;
+	u32 max_clk_hz;
+	bool chip_select_polarity;
+};
+
+struct efi_spi_peripheral {
+	const struct efi_spi_peripheral *next_spi_peripheral;
+	const u16 *friendly_name;
+	const efi_guid_t *spi_peripheral_driver_guid;
+	const struct efi_spi_part *spi_part;
+	u32 max_clock_hz;
+	bool clock_polarity;
+	bool clock_phase;
+	u32 attributes;
+	const void *configuration_data;
+	const struct efi_spi_bus *spi_bus;
+	efi_spi_chip_select chip_select;
+	void *chip_select_parameter;
+};
+
+typedef efi_status_t (EFIAPI * efi_spi_clock)(const struct efi_spi_peripheral *spi_preipheral,
+		      u32 *clock_hz);
+
+struct efi_spi_bus {
+	const u16 *friendly_name;
+	const struct efi_spi_peripheral *peripheral_list;
+	const struct efi_device_path *controller_path;
+	efi_spi_clock clock;
+	void *clock_parameter;
+};
+
 struct efi_spi_nor_flash_protocol {
-	const struct spi_nor	*spi_peripheral;
+	const struct efi_spi_peripheral *spi_peripheral;
 	u32		flash_size;
 	u8		device_id[3];
 	u32		erase_block_size;

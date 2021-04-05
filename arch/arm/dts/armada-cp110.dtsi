@@ -269,6 +269,40 @@
 			};
 		};
 
+		CP110_LABEL(pcie_ep): pcie-ep@600000 {
+			compatible = "marvell,armada-pcie-ep", "snps,dw-pcie";
+			reg =	<U64_TO_U32_H(CP110_PCIE_EP_REG_BASE(0))
+				U64_TO_U32_L(CP110_PCIE_EP_REG_BASE(0)) 0 0x4000>,
+				<U64_TO_U32_H(CP110_PCIE_EP_REG_BASE(2))
+				U64_TO_U32_L(CP110_PCIE_EP_REG_BASE(2)) 0 0x80000>,
+				<U64_TO_U32_H(CP110_PCIE_EP_REG_BASE(1))
+				U64_TO_U32_L(CP110_PCIE_EP_REG_BASE(1)) 0 0x1000>;
+			reg-names = "core", "lm", "shadow_core";
+			status = "disabled";
+		};
+
+		CP110_LABEL(pci_ep_uio): pci-ep-uio {
+			compatible = "marvell,pci-ep-uio";
+			reg = <0x00 0x00000000 0x0 0x00100000>,
+			      <0x00 0x3f000000 0x0 0x01000000>,
+			      <0x00 0xf0000000 0x0 0x01000000>,
+			      <0x80 0x00000000 0x4 0x00000000>;
+			reg-names = "bar0", "bar2", "bar4", "host-map";
+			device-id = <0x7080>;
+			vf-device-id = <0x7081>;
+			class-code = <0x2>;
+			subclass-code = <0x0>;
+			status = "disabled";
+		};
+
+		CP110_LABEL(bootcmd): pci-bootcmd@3ffff000 {
+			/* remote bootcmd buffer location */
+			compatible = "marvell,pci-bootcmd";
+			reg = <0 0x3ffff000 0 0x1000>;
+			skip-init;
+			status = "disabled";
+		};
+
 		CP110_LABEL(pcie0): pcie0@600000 {
 			compatible = "marvell,armada8k-pcie", "snps,dw-pcie";
 			reg =

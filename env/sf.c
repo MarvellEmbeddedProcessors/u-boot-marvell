@@ -42,7 +42,7 @@ static int setup_flash_device(void)
 	struct udevice *new;
 	int	ret;
 
-#if defined(CONFIG_ARCH_CN10K)
+#if defined(CONFIG_ARCH_CN10K) || defined(CONFIG_ARCH_OCTEONTX2)
 	int bus, cs;
 extern void board_get_env_spi_bus_cs(int *bus, int *cs);
 

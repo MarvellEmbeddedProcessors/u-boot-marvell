@@ -937,6 +937,7 @@ efi_status_t __efi_runtime EFIAPI efi_get_next_high_monotonic_count(uint32_t *co
 	efi_uintn_t mtc_size = 4;
 	efi_status_t ret;
 
+	EFI_ENTRY("%d ", *count);
 	if (!count) {
 		ret = EFI_INVALID_PARAMETER;
 		goto out;
@@ -956,7 +957,7 @@ efi_status_t __efi_runtime EFIAPI efi_get_next_high_monotonic_count(uint32_t *co
 
 	ret = EFI_SUCCESS;
 out:
-	return ret;
+	return EFI_EXIT(ret);
 }
 
 struct efi_runtime_services __efi_runtime_data efi_runtime_services = {

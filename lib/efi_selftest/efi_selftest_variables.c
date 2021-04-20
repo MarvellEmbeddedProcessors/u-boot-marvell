@@ -57,7 +57,8 @@ static int execute(void)
 					   &max_storage, &rem_storage,
 					   &max_size);
 	if (ret != EFI_SUCCESS) {
-		efi_st_todo("QueryVariableInfo failed\n");
+		efi_st_error("QueryVariableInfo failed\n");
+		return EFI_ST_FAILURE;
 	} else if (!max_storage || !rem_storage || !max_size) {
 		efi_st_error("QueryVariableInfo: wrong info\n");
 		return EFI_ST_FAILURE;

@@ -1,10 +1,10 @@
 menu "Marvell specific command line interface"
 
 config CMD_FAILSAFE
-	depends on ARCH_OCTEONTX2
+	depends on ARCH_OCTEONTX2 || ARCH_CN10K
 	bool "Command for supporting fail safe boot"
 	help
-	   Support for fail safe boot on Marvell's OcteonTX2 platforms.
+	   Support for fail safe boot on Marvell's OcteonTX2 or CN10K platforms.
 	   Disables forced secondary boot and reports if boot from
 	   primary device was successful.
 

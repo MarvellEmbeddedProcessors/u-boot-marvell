@@ -24,6 +24,8 @@
 
 #define CONFIG_SYS_LOAD_ADDR		CONFIG_SYS_SDRAM_BASE
 
+#define CONFIG_LAST_STAGE_INIT
+
 /* Allow environment variable to be overwritten */
 #define CONFIG_ENV_OVERWRITE
 

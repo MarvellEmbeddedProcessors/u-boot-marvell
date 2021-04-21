@@ -9,6 +9,8 @@
 #include <command.h>
 #include <asm/arch/smc.h>
 
+extern ssize_t smc_flsf_clr_force_2ndry(void);
+
 static int do_fsafe_clr(
 	struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 {
@@ -17,5 +19,5 @@ static int do_fsafe_clr(
 
 U_BOOT_CMD(
 	fsafe_clr, 1, 0, do_fsafe_clr,
-	"Marvell OcteonTX2 Fail Safe: clear secondary boot", ""
+	"Marvell OcteonTX2/CN10K Fail Safe: clear secondary boot", ""
 );

@@ -26,6 +26,8 @@
 #include <dm/util.h>
 #include <spi.h>
 
+extern ssize_t smc_flsf_fw_booted(void);
+
 DECLARE_GLOBAL_DATA_PTR;
 
 void cleanup_env_ethaddr(void)
@@ -304,3 +306,11 @@ int checkboard(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_LAST_STAGE_INIT
+int last_stage_init(void)
+{
+	(void)smc_flsf_fw_booted();
+	return 0;
+}
+#endif

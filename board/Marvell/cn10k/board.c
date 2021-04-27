@@ -9,6 +9,7 @@
 #include <console.h>
 #include <dm.h>
 #include <dm/uclass-internal.h>
+#include <dm/device-internal.h>
 #include <env.h>
 #include <init.h>
 #include <log.h>
@@ -134,6 +135,39 @@ void board_get_env_offset(int *offset, const char *property)
 	*offset = env_offset;
 }
 
+void probe_network_devices(bool probe)
+{
+	struct udevice *dev;
+	int err, rpm_cnt, i;
+
+	switch (read_partnum()) {
+	case CNF10KA:
+		rpm_cnt = 4;
+		break;
+	case CNF10KB:
+		rpm_cnt = 9;
+		break;
+	default:
+		rpm_cnt = 3;
+		break;
+	}
+	/* MAC(RPM) and RVU AF devices */
+	for (i = 0; i < rpm_cnt; i++) {
+		err = dm_pci_find_device(PCI_VENDOR_ID_CAVIUM,
+					 PCI_DEVICE_ID_CAVIUM_RPM, i, &dev);
+		if (err)
+			debug("%s RPM%d device not found\n", __func__, i);
+		if (!probe)
+			device_remove(dev, DM_REMOVE_NORMAL);
+	}
+	err = dm_pci_find_device(PCI_VENDOR_ID_CAVIUM,
+				 PCI_DEVICE_ID_CAVIUM_RVU_AF, 0, &dev);
+	if (err)
+		debug("NIC AF device not found\n");
+	if (!probe)
+		device_remove(dev, DM_REMOVE_NORMAL);
+}
+
 int board_early_init_r(void)
 {
 	pci_init();
@@ -162,36 +196,6 @@ int dram_init(void)
 	mem_map_fill(rvu_addr, rvu_size);
 
 	return 0;
-}
-
-void board_late_probe_devices(void)
-{
-	struct udevice *dev;
-	int err, rpm_cnt, i;
-
-	switch (read_partnum()) {
-	case CNF10KA:
-		rpm_cnt = 4;
-		break;
-	case CNF10KB:
-		rpm_cnt = 9;
-		break;
-	default:
-		rpm_cnt = 3;
-		break;
-	}
-
-	/* Probe MAC(RPM) and NIC AF devices before Network stack init */
-	for (i = 0; i < rpm_cnt; i++) {
-		err = dm_pci_find_device(PCI_VENDOR_ID_CAVIUM,
-					 PCI_DEVICE_ID_CAVIUM_RPM, i, &dev);
-		if (err)
-			debug("%s RPM%d device not found\n", __func__, i);
-	}
-	err = dm_pci_find_device(PCI_VENDOR_ID_CAVIUM,
-				 PCI_DEVICE_ID_CAVIUM_RVU_AF, 0, &dev);
-	if (err)
-		debug("RVU AF device not found\n");
 }
 
 /**
@@ -241,7 +245,7 @@ int board_late_init(void)
 	if (IS_ENABLED(CONFIG_CN10K_ETH_INTF))
 		init_sh_fwdata();
 	if (IS_ENABLED(CONFIG_NET_CN10K))
-		board_late_probe_devices();
+		probe_network_devices(true);
 
 	if (IS_ENABLED(CONFIG_TARGET_CN10K_A))
 		board_switch_init();
@@ -269,6 +273,9 @@ void board_quiesce_devices(void)
 		eth_intf_shutdown();
 
 	/* Removes all RPM and RVU AF devices */
+	if (IS_ENABLED(CONFIG_NET_CN10K))
+		probe_network_devices(false);
+
 	ret = uclass_get(UCLASS_MISC, &uc_dev);
 	if (uc_dev)
 		ret = uclass_destroy(uc_dev);

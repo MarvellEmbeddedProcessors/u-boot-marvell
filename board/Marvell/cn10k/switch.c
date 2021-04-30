@@ -24,13 +24,45 @@ DECLARE_GLOBAL_DATA_PTR;
 #define	SUPER_FW_RAM_ADDR	0x10040000
 #define	CM3_FW_RAM_ADDR		0x10100000
 
+/* Switch boot progress codes */
+#define SW_BOOT_INIT_IN_PROGRESS	1
+#define SW_BOOT_INIT_DONE		2
+#define SW_BOOT_INIT_FAILED		3
+
+void *second_magic_word_loc(void *bar2)
+{
+	return (bar2 + readl(bar2 + 0xBFFF8));
+}
+
+#define SWITCH_FIRST_MAGIC_WORD_LOC(x)	(void *)((x) + 0xBFFFC)
+#define MAILBOX_POINTER(x)		second_magic_word_loc(x)
+#define CONTROL_WORD_POINTER(x)		MAILBOX_POINTER(x) - 256
+#define OPCODE_WORD_POINTER(x)		MAILBOX_POINTER(x) - 252
+#define COMMAND_DATA_POINTER(x)		MAILBOX_POINTER(x) - 248
+#define BOOT_STATUS_POINTER(x)		MAILBOX_POINTER(x) + 4
+#define BOOT_ERROR_POINTER(x)		MAILBOX_POINTER(x) + 8
+#define GENERAL_ERROR_POINTER(x)	MAILBOX_POINTER(x) + 12
+
+/* Error Codes */
+#define INVALID_CFG_ID			0x10
+#define CFG_FILE_NOT_FOUND		0x11
+
+struct boot_chan {
+	u32 control_word;
+	u16 opcode_word;
+	u16 data[125];
+};
+
+void *sw_bar2;
+
 void copy32(void *source, void *dest, u32 count)
 {
 	u32 *src = source, *dst = dest;
 
 	count >>= 2;
-	while (count--)
+	while (count--) {
 		writel(readl(src++), dst++);
+	};
 }
 
 int load_switch_images(u64 *cm3_size)
@@ -56,6 +88,590 @@ struct udevice *get_switch_dev(void)
 		}
 	}
 	return NULL;
+}
+
+int create_cmd(struct boot_chan *cmd, u16 opcode, int argc, ...)
+{
+	va_list valist;
+	int i;
+	u32 tmp;
+
+	va_start(valist, argc);
+
+	memset(cmd, 0, sizeof(struct boot_chan));
+	cmd->opcode_word = opcode;
+	for (i = 0; i < argc * 2; i += 2) {
+		tmp = va_arg(valist, u32);
+		cmd->data[i] = (tmp & 0xFFFF);
+		cmd->data[i + 1] = (tmp >> 16) & 0xFFFF;
+	}
+
+	va_end(valist);
+	return 0;
+}
+
+int read_virtual_reg_offset(u32 offset, u32 *reg_val)
+{
+	*reg_val = 0;
+
+	if (offset > 19)
+		return -1;
+
+	*reg_val = readl(MAILBOX_POINTER(sw_bar2) + (offset / 4));
+
+	return 0;
+}
+
+int send_bootch_cmd(struct boot_chan *cmd, u8 num_bytes)
+{
+	u32 mailbox_offset;
+	u32 reg_val;
+	int timeout;
+
+	if (!cmd) {
+		printf("%s ERR: CMD NULL\n", __func__);
+		return -1;
+	}
+
+	/* Check Boot INIT_DONE */
+	mailbox_offset = readl(MAILBOX_POINTER(sw_bar2));
+	reg_val = readl(BOOT_STATUS_POINTER(sw_bar2));
+	if (reg_val != SW_BOOT_INIT_DONE)
+		return -1;
+
+	/* Wait for OWN bit to clear in control word */
+	timeout = 100;
+	reg_val = readl(CONTROL_WORD_POINTER(sw_bar2));
+	while (reg_val & (1 << 31)) {
+		if (--timeout < 0)
+			break;
+		mdelay(1);
+		reg_val = readl(CONTROL_WORD_POINTER(sw_bar2));
+	}
+
+	if (timeout < 0) {
+		printf("%s ERR: OWN bit won't clear\n", __func__);
+		return -1;
+	}
+
+	/* Write the command */
+	copy32((void *)&cmd->opcode_word, OPCODE_WORD_POINTER(sw_bar2), num_bytes);
+	debug("0x%08x --> %p\n", cmd->control_word, CONTROL_WORD_POINTER(sw_bar2));
+	writel(cmd->control_word, CONTROL_WORD_POINTER(sw_bar2));
+	return 0;
+}
+
+int check_bootch_cmd_status(u8 *return_code)
+{
+	u32 mailbox_offset;
+	u32 reg_val;
+	int timeout;
+
+	/* Check Boot INIT_DONE */
+	mailbox_offset = readl(MAILBOX_POINTER(sw_bar2));
+	reg_val = readl(BOOT_STATUS_POINTER(sw_bar2));
+	if (reg_val != SW_BOOT_INIT_DONE)
+		return -1;
+
+	/* Wait for OWN bit to clear */
+	timeout = 100;
+	reg_val = readl(CONTROL_WORD_POINTER(sw_bar2));
+	while (reg_val & (1 << 31)) {
+		if (--timeout < 0)
+			break;
+		mdelay(1);
+		reg_val = readl(CONTROL_WORD_POINTER(sw_bar2));
+	}
+
+	if (timeout < 0) {
+		printf("%s ERR: OWN bit won't clear\n", __func__);
+		return -1;
+	}
+
+	/* Read control word for status */
+	*return_code = readl(CONTROL_WORD_POINTER(sw_bar2)) & 0xFF;
+
+	return 0;
+}
+
+int get_cmd_response(u8 num_bytes, void *buffer)
+{
+	copy32(OPCODE_WORD_POINTER(sw_bar2), buffer, num_bytes);
+
+	return 0;
+}
+
+u8 switch_cmd_opcode4(u32 profile_num)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes bit number + 2 bytes pad */
+	create_cmd(&cmd, 4, 1, profile_num);
+	cmd.control_word = (1 << 31) | (8 << 18);
+
+	if (!get_switch_dev()) {
+		printf("Switch Device NOT Detected\n");
+		return status;
+	}
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 8))
+		printf("%s %d ERR: Opcode 4 send error\n", __func__, __LINE__);
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status))
+		printf("%s %d ERR: Opcode 4 response error[%d]\n",
+		       __func__, __LINE__, status);
+
+	return status;
+}
+
+int switch_cmd_opcode5(char *buffer)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 2 bytes pad */
+	create_cmd(&cmd, 5, 0);
+	cmd.control_word = (1 << 31) | (0x2c << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 4)) {
+		printf("%s %d ERR: Opcode 5 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 5 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	/* Four version strings, each 32bytes long */
+	get_cmd_response(32 * 4, (void *)buffer);
+	return 0;
+}
+
+int switch_cmd_opcode6(u32 dev_num, u32 interface_num, u32 *status)
+{
+	struct boot_chan cmd;
+	u8 resp = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev num + 4 bytes interface num + 2 bytes pad
+	 */
+	create_cmd(&cmd, 6, 2, dev_num, interface_num);
+	cmd.control_word = (1 << 31) | (12 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 12)) {
+		printf("%s %d ERR: Opcode 6 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&resp)) {
+		printf("%s %d ERR: Opcode 6 response error [%d]\n", __func__, __LINE__, resp);
+		return -1;
+	}
+
+	/* 16-bit status */
+	get_cmd_response(4, status);
+	return 0;
+}
+
+int switch_cmd_opcode7(u32 group_num, u32 id, char *buffer)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes bit-map + 4 bytes group num + 2 bytes pad
+	 */
+	create_cmd(&cmd, 7, 2, group_num, id);
+	cmd.control_word = (1 << 31) | (12 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 12)) {
+		printf("%s %d ERR: Opcode 7 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 7 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	/* string buffer  */
+	get_cmd_response(252, buffer);
+	return 0;
+}
+
+int switch_cmd_opcode10(u32 dev_num, u32 interface_num, u32 speed, u32 mode, u32 fec)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev-num + 4 bytes interface num
+	 * + 4 bytes speed + 4 bytes mode + 4 bytes FEC + 2 bytes pad
+	 */
+	create_cmd(&cmd, 10, 5, dev_num, interface_num, speed, mode, fec);
+	cmd.control_word = (1 << 31) | (24 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 24)) {
+		printf("%s %d ERR: Opcode 10 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 10 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	return 0;
+}
+
+int switch_cmd_opcode11(u32 dev_num, u32 interface_num, u32 lane_num, u32 prbs_mode, u32 enable)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev-num + 4 bytes interface num + 4 bytes lane number
+	 * + 4 bytes prbs mode + 4 bytes enable/disable flag  + 2 bytes pad
+	 */
+	create_cmd(&cmd, 11, 5, dev_num, interface_num, lane_num, prbs_mode, enable);
+	cmd.control_word = (1 << 31) | (24 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 24)) {
+		printf("%s %d ERR: Opcode 11 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 11 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	return 0;
+}
+
+int switch_cmd_opcode12(u32 dev_num, u32 interface_num, u32 lane_num, u32 clear_count, u32 *count)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev num + 4 bytes interface num + 4 bytes lane number
+	 * + 4 bytes clear/accumulate flag  + 2 bytes pad
+	 */
+	create_cmd(&cmd, 12, 4, dev_num, interface_num, lane_num, clear_count);
+	cmd.control_word = (1 << 31) | (20 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 20)) {
+		printf("%s %d ERR: Opcode 12 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 12 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	/* 32-bit PRBS count */
+	get_cmd_response(4, count);
+	return 0;
+}
+
+int switch_cmd_opcode13(u32 dev_num, u32 interface_num, u32 amplitude, u32 tx_amp_adj,
+			int emph_0, int emph_1, u32 amp_shift)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev num + 4 bytes interface num + 4 bytes amplitude
+	 * + 4 bytes tx amplitude adjust + 4 bytes emphasis 0 (-7 to 15)
+	 * + 4 bytes emphasis 1 (-31 to 31)   + 4 bytes amplitude shift + 2 bytes pad
+	 */
+	create_cmd(&cmd, 13, 7, dev_num, interface_num, amplitude, tx_amp_adj,
+		   emph_0, emph_1, amp_shift);
+	cmd.control_word = (1 << 31) | (32 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 32)) {
+		printf("%s %d ERR: Opcode 13 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 13 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	return 0;
+}
+
+int switch_cmd_opcode14(u32 dev_num, u32 interface_num, u32 lane_num, u32 dc_gain,
+			u32 lf_gain, u32 hf_gain, u32 ctle_bw, u32 ctle_loop_bw, u32 sq_thresh)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev num + 4 bytes interface num + 4 bytes lane num
+	 * + 4 bytes DC gain (0 to 15) + 4 bytes low freq gain (0 to 15)
+	 * + 4 bytes high freq gain (0 to 15)   + 4 bytes CTLE bandwidth (0 to 15)
+	 * + 4 bytes CTLE loop bandwidth (0 to 15) + 4 bytes squelch detector threshold (0 to 310)
+	 * + 2 bytes pad
+	 */
+	create_cmd(&cmd, 14, 9, dev_num, interface_num, lane_num, dc_gain,
+		   lf_gain, hf_gain, ctle_bw, ctle_loop_bw, sq_thresh);
+	cmd.control_word = (1 << 31) | (40 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 40)) {
+		printf("%s %d ERR: Opcode 14 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 14 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	return 0;
+}
+
+int switch_cmd_opcode15(u32 dev_num, u32 interface_num, u32 lane_num, u32 fc_pause,
+			u32 fc_am_dir, u32 fec_supp, u32 fec_req, u32 mode, u32 speed)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev num + 4 bytes interface num + 4 bytes lane num
+	 * + 4 bytes FC pause + 4 bytes FC amplitude direction
+	 * + 4 bytes FEC supported (0 = OFF, 1 = FC, 2 = RS, 3 = BOTH)
+	 * + 4 bytes FEC required (0 = OFF, 1 = FC, 2 = RS, 3 = BOTH))
+	 * + 4 bytes port mode + 4 bytes port speed
+	 * + 2 bytes pad
+	 */
+	create_cmd(&cmd, 15, 9, dev_num, interface_num, lane_num, fc_pause, fc_am_dir,
+		   fec_supp, fec_req, mode, speed);
+	cmd.control_word = (1 << 31) | (40 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 40)) {
+		printf("%s %d ERR: Opcode 15 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 15 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	return 0;
+}
+
+int switch_cmd_opcode17(u32 dev_num, u32 interface_num, u32 lane_num, u32 speed,
+			u32 sq_thresh, u32 lf_gain, u32 hf_gain, u32 dc_gain,
+			u32 ctle_bw, u32 ctle_loop_bw, u32 etl_min_delay,
+			u32 etl_max_delay, u32 etl_enable, u32 override_bitmap)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev num + 4 bytes interface num + 4 bytes lane num
+	 * + 4 bytes speed + 4 bytes squelch threshold (0 to 310)
+	 * + 4 bytes low freq gain (0 to 15) + 4 bytes high freq gain (0 to 15)
+	 * + 4 bytes DC gain (0 to 15) + 4 bytes CTLE bandwidth (0 to 15)
+	 * + 4 bytes CTLE loop bandwidth (0 to 15) + 4 bytes ETL min delay (0 to 31)
+	 * + 4 bytes ETL max delay (0 to 31) + 4 bytes ETL enable
+	 * + 4 bytes field override bitmap + 2 bytes pad
+	 */
+	create_cmd(&cmd, 17, 14, dev_num, interface_num, lane_num, speed, sq_thresh,
+		   lf_gain, hf_gain, dc_gain, ctle_bw, ctle_loop_bw, etl_min_delay,
+		   etl_max_delay, etl_enable, override_bitmap);
+	cmd.control_word = (1 << 31) | (60 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 60)) {
+		printf("%s %d ERR: Opcode 17 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 17 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	return 0;
+}
+
+int switch_cmd_opcode18(u32 dev_num, u32 interface_num, u32 lane_num, u32 speed,
+			int tx_amp_offset, int emph0_offset, int emph1_offset)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev num + 4 bytes interface num + 4 bytes speed
+	 * + 4 bytes tx amplitude offset (-15 to 15 in steps of 2)
+	 * + 4 bytes emphasis 0 offset (-15 to 15 in steps of 2)
+	 * + 4 bytes emphasis 1 offset (-15 to 15 in steps of 2)   + 2 bytes pad
+	 */
+	create_cmd(&cmd, 18, 6, dev_num, interface_num, lane_num, speed, tx_amp_offset,
+		   emph0_offset, emph1_offset);
+	cmd.control_word = (1 << 31) | (28 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 28)) {
+		printf("%s %d ERR: Opcode 18 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 18 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	return 0;
+}
+
+int switch_cmd_opcode19(u32 dev_num, u32 intf_num, u32 lpbk_mode)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev num + 4 bytes interface num
+	 * + 4 bytes loopback mode (0 = no lpbk, 1 = SERDES tx2rx, 2 = SERDES rx2tx, 3 = MAC tx2rx)
+	 * + 2 bytes pad
+	 */
+	create_cmd(&cmd, 19, 3, dev_num, intf_num, lpbk_mode);
+	cmd.control_word = (1 << 31) | (16 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 16)) {
+		printf("%s %d ERR: Opcode 19 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 19 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	return 0;
+}
+
+int switch_cmd_opcode20(u32 dev_num, u32 intf_num, u32 nego_mode)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev num + 4 bytes interface num
+	 * + 4 bytes negotiation mode (10h = 10Mbps half duplex, 10f = 10Mbps full dupex,
+	 * 100h = 100Mbps half, 100f= 100Mbps full, 1000f = 1Gbps full, 10000f = 10Gbps full)
+	 * + 2 bytes pad
+	 */
+	create_cmd(&cmd, 20, 3, dev_num, intf_num, nego_mode);
+	cmd.control_word = (1 << 31) | (16 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 16)) {
+		printf("%s %d ERR: Opcode 20 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 20 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	return 0;
+}
+
+int switch_cmd_opcode21(u32 dev_num, u32 intf_num, u32 lane_num, u32 *buffer)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev num + 4 bytes interface num
+	 * + 4 bytes lane num + 2 bytes pad
+	 */
+	create_cmd(&cmd, 21, 3, dev_num, intf_num, lane_num);
+	cmd.control_word = (1 << 31) | (16 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 16)) {
+		printf("%s %d ERR: Opcode 21 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 21 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	/* SERDES TX Parameters */
+	get_cmd_response(20, buffer);
+
+	return 0;
+}
+
+int switch_cmd_opcode22(u32 dev_num, u32 intf_num, u32 lane_num, u32 *buffer)
+{
+	struct boot_chan cmd;
+	u8 status = 0;
+
+	/* Prepare command */
+	/* 2 bytes op-code + 4 bytes dev num + 4 bytes interface num
+	 * + 4 bytes lane num + 2 bytes pad
+	 */
+	create_cmd(&cmd, 22, 3, dev_num, intf_num, lane_num);
+	cmd.control_word = (1 << 31) | (16 << 18);
+
+	/* Send command */
+	if (send_bootch_cmd(&cmd, 16)) {
+		printf("%s %d ERR: Opcode 22 send error\n", __func__, __LINE__);
+		return -1;
+	}
+
+	/* Check response */
+	if (check_bootch_cmd_status(&status)) {
+		printf("%s %d ERR: Opcode 22 response error [%d]\n", __func__, __LINE__, status);
+		return -1;
+	}
+
+	/* SERDES RX Parameters */
+	get_cmd_response(24, buffer);
+
+	return 0;
 }
 
 void board_switch_reset(void)
@@ -112,7 +728,7 @@ void board_switch_reset(void)
 	 * mw 0x87200000170c 0x00008720; ATU upper base address
 	 * mw 0x872000001710 0x00afffff; ATU limit address (limit to 1MB)
 	 * mw 0x872000001714 0x3c000000; ATU target lower base address
-					 (start of CNM-RUNIT)
+				 (start of CNM-RUNIT)
 	 * mw 0x872000001718 0x00000000; ATU target upper base address
 	 */
 	writel(0x0, sw_bar0 + 0x1700);
@@ -152,9 +768,11 @@ void board_switch_init(void)
 {
 	struct udevice *dev;
 	struct pci_child_platdata *pplat;
-	void *sw_bar0, *sw_bar2;
+	void *sw_bar0/*, *sw_bar2*/;
 	u32 sw_bar2_lo, sw_bar2_hi;
 	u64 cm3_img_sz;
+	int timeout;
+	u64 mailbox_offset;
 
 	dev = get_switch_dev();
 	if (!dev)
@@ -252,7 +870,45 @@ void board_switch_init(void)
 	writel(0x000e1a80, sw_bar2 + 0x0500);
 	writel(0x300e1a80, sw_bar2 + 0x0500);
 
-	//TODO - Status check of super/ap image access completion
-	printf("done.\n");
+	debug("done.%p %p\n", sw_bar0, sw_bar2);
+	mdelay(5000);
+
+	/* Check for successful initialization of switch firmware */
+	/* Check first magic word at fixed location */
+	timeout = 10;
+	while (readl(sw_bar2 + 0xBFFFC) != 0x5a5b5c5d) {
+		mdelay(1);
+		if (--timeout < 0)
+			break;
+	}
+
+	if (readl(sw_bar2 + 0xBFFFC) != 0x5a5b5c5d) {
+		printf("%s ERROR: Switch not init![0x%x]\n", __func__,
+		       readl(sw_bar2 + 0xBFFFC));
+		return;
+	}
+
+	/* Check boot status */
+	timeout = 10;
+	mailbox_offset = readl(sw_bar2 + 0xBFFF8ULL);
+	debug("%s Mailbox Offset:0x%llx\n", __func__, mailbox_offset);
+	while (readl(sw_bar2 + mailbox_offset + 4) != SW_BOOT_INIT_DONE) {
+		mdelay(1);
+		if (--timeout < 0)
+			break;
+	}
+	debug("%s Boot Status:0x%x[0x%llx]\n", __func__,
+	      readl(sw_bar2 + mailbox_offset + 4), mailbox_offset + 4);
+	if (readl(sw_bar2 + mailbox_offset + 4) != SW_BOOT_INIT_DONE) {
+		/* Check firmware boot error code */
+		printf("%s ERROR: Switch not init! [Boot Status:0x%x]\n",
+		       __func__, readl(sw_bar2 + mailbox_offset + 4));
+		printf("Boot Err Code:0x%x General Err Code:0x%x\n",
+		       readl(sw_bar2 + mailbox_offset + 8),
+		       readl(sw_bar2 + mailbox_offset + 12));
+		return;
+	}
+
+	printf("%s Switch Init Success\n", __func__);
 }
 

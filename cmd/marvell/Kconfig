@@ -23,6 +23,12 @@ config CMD_EFI_CMDS
 	   Support to load EFI Application Images from Secure SPI Flash
 	   on CN10K platforms.
 
+config CMD_SWITCH_CMDS
+	depends on ARCH_CN10K
+	bool "Switch commands"
+	help
+	   Support command to configure switch ports on CN10K platforms.
+
 config CMD_MDIO_DBG
 	depends on ARCH_OCTEONTX2
 	bool "PHY registers read/write support on mdio bus"

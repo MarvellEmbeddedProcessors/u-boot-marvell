@@ -19,4 +19,5 @@ obj-$(CONFIG_CMD_ETH) += eth_cmds.o
 obj-$(CONFIG_CMD_EFI_CMDS) += efi_cmds.o
 obj-$(CONFIG_CMD_BOOTIMGUP_CN10K) += bootimgup-cn10k.o
 obj-$(CONFIG_CMD_FAILSAFE) += octeontx2_failsafe_cmds.o
+obj-$(CONFIG_CMD_SWITCH_CMDS) += switch_cmds.o
 endif

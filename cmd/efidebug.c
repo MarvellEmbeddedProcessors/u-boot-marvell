@@ -282,6 +282,10 @@ static const struct {
 		"SPI-NOR Flash Protocol",
 		EFI_SPI_NOR_FLASH_PROTOCOL_GUID,
 	},
+	{
+		"Switch Configuration Protocol",
+		EFI_SWITCH_CONFIG_PROTOCOL_GUID,
+	},
 };
 
 /**

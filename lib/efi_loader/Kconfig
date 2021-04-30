@@ -89,6 +89,14 @@ config EFI_SEC_SPI_NOR_FLASH
 	  Select this option if you want to provide UEFI SPI NOR FLASH
 	  PROTOCOL on secure SPI-NOR flash devices.
 
+config EFI_SWCFG_PROTOCOL
+	bool "Enable Switch Configuration protocol"
+	depends on ARCH_CN10K
+	default n
+	help
+	  Select this option if you want to enable switch configuration
+	  protocol when a switch device is detected.
+
 config RESET_ON_EFI_BOOT_FAIL
 	bool "Reset system if EFI boot fails"
 	depends on ARCH_CN10K

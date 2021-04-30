@@ -822,6 +822,8 @@ efi_status_t efi_sec_spinor_protocol_register(void);
 
 efi_status_t efi_pci_io_protocol_register(void);
 
+efi_status_t efi_switch_config_protocol_register(void);
+
 #else /* CONFIG_IS_ENABLED(EFI_LOADER) */
 
 /* Without CONFIG_EFI_LOADER we don't have a runtime section, stub it out */

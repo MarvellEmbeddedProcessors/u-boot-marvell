@@ -1971,4 +1971,24 @@ struct efi_pci_io_protocol {
 	void *rom_image;
 };
 
+/* EFI_SWITCH_CONFIG_PROTOCOL */
+#define EFI_SWITCH_CONFIG_PROTOCOL_GUID \
+	EFI_GUID(0xe75518a5, 0xcc72, 0x4571, \
+			0x93, 0xb2, 0x99, 0xdb, 0x8b, 0xf0, 0xef, 0x6f)
+
+struct efi_switch_config_protocol {
+	efi_status_t (EFIAPI * set_config_profile)(const struct efi_switch_config_protocol *this,
+						   u8 profile_num);
+	efi_status_t (EFIAPI * get_port_status)(const struct efi_switch_config_protocol *this,
+						u32 dev_num, u32 port_num, u16 *status);
+	efi_status_t (EFIAPI * get_mi_version)(const struct efi_switch_config_protocol *this,
+					       char *buffer);
+	efi_status_t (EFIAPI * get_boot_status)(const struct efi_switch_config_protocol *this,
+						u32 *status);
+	efi_status_t (EFIAPI * get_boot_error)(const struct efi_switch_config_protocol *this,
+					       u32 *error);
+	efi_status_t (EFIAPI * get_general_error)(const struct efi_switch_config_protocol *this,
+						  u32 *error);
+};
+
 #endif

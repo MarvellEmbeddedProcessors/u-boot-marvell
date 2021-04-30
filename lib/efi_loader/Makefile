@@ -57,6 +57,7 @@ obj-y += efi_signature.o
 obj-$(CONFIG_EFI_SPI_NOR_FLASH_PROTOCOL) += efi_spi_protocol.o
 obj-$(CONFIG_EFI_PCI_IO_PROTOCOL) += efi_pci_io_protocol.o
 obj-$(CONFIG_EFI_SEC_SPI_NOR_FLASH) += efi_sec_spi.o
+obj-$(CONFIG_EFI_SWCFG_PROTOCOL) += efi_swcfg_protocol.o
 
 EFI_VAR_SEED_FILE := $(subst $\",,$(CONFIG_EFI_VAR_SEED_FILE))
 $(obj)/efi_var_seed.o: $(srctree)/$(EFI_VAR_SEED_FILE)

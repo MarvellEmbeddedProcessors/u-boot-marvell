@@ -509,6 +509,7 @@ config MMC_SDHCI_CADENCE
 	depends on MMC_SDHCI
 	depends on OF_CONTROL
 	select MMC_SDHCI_IO_ACCESSORS
+	select MMC_SDHCI_ADMA
 	help
 	  This selects the Cadence SD/SDIO/eMMC driver.
 

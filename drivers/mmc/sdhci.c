@@ -334,7 +334,7 @@ static int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 				data->blocksize),
 				SDHCI_BLOCK_SIZE);
 		sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
-#ifdef UNALIGN_ACCESS
+#ifndef CONFIG_ARCH_CN10K
 		sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
 #endif
 	} else if (cmd->resp_type & MMC_RSP_BUSY) {
@@ -342,7 +342,7 @@ static int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 	}
 
 	sdhci_writel(host, cmd->cmdarg, SDHCI_ARGUMENT);
-#ifdef UNALIGN_ACCESS
+#ifndef CONFIG_ARCH_CN10K
 	sdhci_writew(host, SDHCI_MAKE_CMD(cmd->cmdidx, flags), SDHCI_COMMAND);
 #else
 	sdhci_writel(host, (SDHCI_MAKE_CMD(cmd->cmdidx, flags) << 16) | mode, SDHCI_TRANSFER_MODE);

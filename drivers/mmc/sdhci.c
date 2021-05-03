@@ -666,6 +666,10 @@ static int sdhci_init(struct mmc *mmc)
 	if (host->ops && host->ops->get_cd)
 		host->ops->get_cd(host);
 
+#ifdef CONFIG_DMA_ADDR_T_64BIT
+	sdhci_writew(host, SDHCI_CTRL_A64B_ADDR, SDHCI_HOST_CONTROL2);
+#endif
+
 	/* Enable only interrupts served by the SD controller */
 	sdhci_writel(host, SDHCI_INT_DATA_MASK | SDHCI_INT_CMD_MASK,
 		     SDHCI_INT_ENABLE);
@@ -772,19 +776,19 @@ int sdhci_setup_cfg(struct mmc_config *cfg, struct sdhci_host *host,
 	}
 #endif
 #if CONFIG_IS_ENABLED(MMC_SDHCI_ADMA)
-	if (!(caps & SDHCI_CAN_DO_ADMA2)) {
-		printf("%s: Your controller doesn't support SDMA!!\n",
-		       __func__);
-		return -EINVAL;
-	}
-	host->adma_desc_table = memalign(ARCH_DMA_MINALIGN, ADMA_TABLE_SZ);
+	if (caps & SDHCI_CAN_DO_ADMA2) {
+		host->adma_desc_table = memalign(ARCH_DMA_MINALIGN, ADMA_TABLE_SZ);
 
-	host->adma_addr = (dma_addr_t)host->adma_desc_table;
+		host->adma_addr = (dma_addr_t)host->adma_desc_table;
 #ifdef CONFIG_DMA_ADDR_T_64BIT
-	host->flags |= USE_ADMA64;
+		host->flags |= USE_ADMA64;
 #else
-	host->flags |= USE_ADMA;
+		host->flags |= USE_ADMA;
 #endif
+	} else {
+		debug("%s: Your controller doesn't support ADMA2!!\n",
+		       __func__);
+	}
 #endif
 	if (host->quirks & SDHCI_QUIRK_REG32_RW)
 		host->version =

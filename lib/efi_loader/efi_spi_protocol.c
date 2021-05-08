@@ -322,7 +322,7 @@ static efi_status_t EFIAPI erase_blocks(const struct efi_spi_nor_flash_protocol 
 static efi_status_t install_spi_nor_flash_protocol(struct udevice *bus_dev)
 {
 	efi_status_t r;
-	struct udevice *spi_dev;
+	struct udevice *dev;
 	struct spi_flash *flash_dev;
 	struct efi_spi_nor_flash_protocol_obj *proto_obj = NULL;
 	struct udevice dummy_dev;
@@ -344,13 +344,13 @@ static efi_status_t install_spi_nor_flash_protocol(struct udevice *bus_dev)
 	spi_bus->clock = NULL;
 	spi_bus->clock_parameter = NULL;
 
-	device_foreach_child(spi_dev, bus_dev) {
-		if (spi_dev)
-			flash_dev = dev_get_uclass_priv(spi_dev);
+	device_foreach_child_probe(dev, bus_dev) {
+		if (dev)
+			flash_dev = dev_get_uclass_priv(dev);
 		bus = -1;
 		cs = -1;
 #ifdef CONFIG_ARCH_CN10K
-		board_get_spi_bus_cs(spi_dev, &bus, &cs);
+		board_get_spi_bus_cs(dev, &bus, &cs);
 #endif
 		if ((bus != -1) && (cs != -1)) {
 			/* Create SpiPart */

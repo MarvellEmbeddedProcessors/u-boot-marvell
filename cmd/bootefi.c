@@ -695,10 +695,7 @@ void efi_set_bootdev(const char *dev, const char *devnr, const char *path)
 		bootefi_device_path = device;
 		if (image) {
 			/* FIXME: image should not contain device */
-			struct efi_device_path *image_tmp = image;
-
 			efi_dp_split_file_path(image, &device, &image);
-			efi_free_pool(image_tmp);
 		}
 		bootefi_image_path = image;
 	} else {

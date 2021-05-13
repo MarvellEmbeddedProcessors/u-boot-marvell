@@ -58,20 +58,20 @@ void mem_map_fill(u64 rvu_addr, u64 rvu_size)
 		cn10k_mem_map[banks].phys = dram_start;
 		cn10k_mem_map[banks].size = gd->ram_size;
 		cn10k_mem_map[banks].attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
-					    PTE_BLOCK_NON_SHARE;
+					    PTE_BLOCK_INNER_SHARE;
 		banks = banks + 1;
 	}
 	cn10k_mem_map[banks].virt = dram_start - SHFW_REGION;
 	cn10k_mem_map[banks].phys = dram_start - SHFW_REGION;
 	cn10k_mem_map[banks].size = SHFW_REGION;
 	cn10k_mem_map[banks].attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
-				    PTE_BLOCK_NON_SHARE;
+				    PTE_BLOCK_INNER_SHARE;
 	banks++;
 	cn10k_mem_map[banks].virt = rvu_addr;
 	cn10k_mem_map[banks].phys = rvu_addr;
 	cn10k_mem_map[banks].size = rvu_size;
 	cn10k_mem_map[banks].attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
-				    PTE_BLOCK_NON_SHARE;
+				    PTE_BLOCK_INNER_SHARE;
 }
 
 u64 get_page_table_size(void)

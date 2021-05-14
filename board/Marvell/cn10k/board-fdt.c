@@ -178,7 +178,8 @@ static int ft_board_clean_props(void *blob, int node)
 					"BOARD-SERIAL",
 					"BOARD-MAC-ADDRESS",
 					"BOARD-REVISION",
-					"BOARD-MAC-ADDRESS-NUM"
+					"BOARD-MAC-ADDRESS-NUM",
+					"BOARD-MAC-ADDRESS-ID-NUM"
 					};
 	int offset;
 	const char *name;
@@ -189,6 +190,7 @@ static int ft_board_clean_props(void *blob, int node)
 	bool found;
 	int off_idx = 0;
 	int prop_offsets[1000];
+	int has_mac_id_num = 0;
 
 	fdt_for_each_property_offset(offset, blob, node) {
 		if (off_idx == ARRAY_SIZE(prop_offsets)) {
@@ -207,12 +209,29 @@ static int ft_board_clean_props(void *blob, int node)
 			return -1;
 		}
 		debug("Found property %s at offset 0x%x\n", name, offset);
+		/* Check for BOARD-MAC-ADDRESS-ID-NUM, it is special */
+		if (!strcmp(name, "BOARD-MAC-ADDRESS-ID-NUM"))
+			has_mac_id_num = simple_strtol(data, NULL, 16);
+
 		/* Delete all properties that are not in our list */
 		found = false;
 		for (i = 0; i < ARRAY_SIZE(octeontx_brd_nodes); i++) {
 			if (!strcmp(name, octeontx_brd_nodes[i])) {
 				found = true;
 				break;
+			}
+		}
+		/* or aren't board MAC addresses */
+		if (!found && has_mac_id_num > 0) {
+			for (i = 0; i < has_mac_id_num; i++) {
+				char mac_id_name[32];
+
+				snprintf(mac_id_name, sizeof(mac_id_name),
+					 "BOARD-MAC-ADDRESS-ID%d", i);
+				if (!strcmp(name, mac_id_name)) {
+					found = true;
+					break;
+				}
 			}
 		}
 		if (!found) {

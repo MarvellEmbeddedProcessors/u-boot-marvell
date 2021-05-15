@@ -1,7 +1,7 @@
+// SPDX-License-Identifier:    GPL-2.0
 /*
  * Copyright (C) 2021 Marvell
  *
- * SPDX-License-Identifier:    GPL-2.0
  * https://spdx.org/licenses
  */
 
@@ -42,7 +42,7 @@ static int do_ethparam_common(struct cmd_tbl *cmdtp, int flag, int argc,
 	const char *cmd;
 	char *endp;
 	const char *devname;
-	int ret = CMD_RET_USAGE, arg, cgx = -1, lmac = -1;
+	int ret = CMD_RET_USAGE, arg;
 	struct udevice *dev = NULL;
 
 	if (argc < 2)

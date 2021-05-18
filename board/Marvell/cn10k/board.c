@@ -26,6 +26,7 @@
 #include <asm/arch/switch.h>
 #include <dm/util.h>
 #include <spi.h>
+#include <wdt.h>
 
 extern ssize_t smc_flsf_fw_booted(void);
 
@@ -260,15 +261,17 @@ int board_late_init(void)
 
 void board_quiesce_devices(void)
 {
-	struct uclass *uc_dev;
+	struct uclass *uc;
+	struct udevice *dev, *next;
 	int ret;
 
 	/* Removes all RVU PF devices */
-	ret = uclass_get(UCLASS_ETH, &uc_dev);
-	if (uc_dev)
-		ret = uclass_destroy(uc_dev);
-	if (ret)
-		printf("couldn't remove rvu pf devices\n");
+	ret = uclass_get(UCLASS_ETH, &uc);
+	if (!ret) {
+		uclass_foreach_dev_safe(dev, next, uc) {
+			device_remove(dev, DM_REMOVE_NORMAL);
+		}
+	}
 
 	/* Bring down all lmac links */
 	if (IS_ENABLED(CONFIG_CN10K_ETH_INTF))
@@ -278,24 +281,15 @@ void board_quiesce_devices(void)
 	if (IS_ENABLED(CONFIG_NET_CN10K))
 		probe_network_devices(false);
 
-	ret = uclass_get(UCLASS_MISC, &uc_dev);
-	if (uc_dev)
-		ret = uclass_destroy(uc_dev);
-	if (ret)
-		printf("couldn't remove misc (rpm/rvu_af) devices\n");
-
 	/* SMC call - removes all LF<->PF mappings */
 	smc_disable_rvu_lfs(0);
 
 	if (IS_ENABLED(CONFIG_TARGET_CN10K_A))
 		board_switch_reset();
 
-	/* Removes watchdog */
-	ret = uclass_get(UCLASS_WDT, &uc_dev);
-	if (uc_dev)
-		ret = uclass_destroy(uc_dev);
-	if (ret)
-		printf("couldn't stop watchdog\n");
+	/* Stop watchdog */
+	if (gd && (gd->flags & GD_FLG_WDT_READY))
+		wdt_stop(gd->watchdog_dev);
 }
 
 /*

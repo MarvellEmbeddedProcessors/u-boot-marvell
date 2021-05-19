@@ -57,7 +57,7 @@ efi_status_t EFIAPI efi_get_port_status(const struct efi_switch_config_protocol 
 
 	EFI_ENTRY("%d %d", dev_num, port_num);
 
-	if (!this)
+	if (!this || (port_num % 2))
 		return EFI_EXIT(EFI_INVALID_PARAMETER);
 
 	result = 0;

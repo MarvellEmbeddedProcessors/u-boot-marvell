@@ -30,8 +30,8 @@ static int process_prbs_get_request(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	value = 0;
 	ret = strict_strtoul(argv[4], 10, &value);
-	if (ret) {
-		printf("Invalid interface number\n");
+	if (ret || (value % 2)) {
+		printf("Invalid port number\n");
 		printf("USAGE: swcfg get prbs <dev num> <port num> <lane num> <accumulate>\n");
 		return CMD_RET_SUCCESS;
 	}
@@ -96,8 +96,8 @@ static int process_prbs_set_request(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	value = 0;
 	ret = strict_strtoul(argv[4], 10, &value);
-	if (ret) {
-		printf("Invalid interface number\n");
+	if (ret || (value % 2)) {
+		printf("Invalid port number\n");
 		printf("USAGE: swcfg set prbs <dev num> <port num> <lane num> ");
 		printf("<prbs mode> <enable>\n");
 		printf("<enable> : 1 - Enable PRBS mode, 0 - Disable PRBS mode\n");
@@ -172,8 +172,8 @@ static int process_serdes_get_request(struct cmd_tbl *cmdtp, int flag, int argc,
 
 		value = 0;
 		ret = strict_strtoul(argv[5], 10, &value);
-		if (ret) {
-			printf("Invalid interface number\n");
+		if (ret || (value % 2)) {
+			printf("Invalid portnumber\n");
 			printf("USAGE: swcfg get serdes rx  <dev num> <port num> <lane num>\n");
 			return CMD_RET_SUCCESS;
 		}
@@ -221,8 +221,8 @@ static int process_serdes_get_request(struct cmd_tbl *cmdtp, int flag, int argc,
 
 		value = 0;
 		ret = strict_strtoul(argv[5], 10, &value);
-		if (ret) {
-			printf("Invalid interface number\n");
+		if (ret || (value % 2)) {
+			printf("Invalid port number\n");
 			printf("USAGE: swcfg get serdes tx  <dev num> <port num> <lane num>\n");
 			return CMD_RET_SUCCESS;
 		}
@@ -291,8 +291,8 @@ static int process_serdes_set_request(struct cmd_tbl *cmdtp, int flag, int argc,
 
 		value = 0;
 		ret = strict_strtoul(argv[5], 10, &value);
-		if (ret) {
-			printf("Invalid interface number\n");
+		if (ret || (value % 2)) {
+			printf("Invalid port number\n");
 			printf("USAGE: swcfg set serdes rx <dev num> <port num> ");
 			printf("<lane num> <dc gain> <lf gain> <hf gain> ");
 			printf("<ctle bw> <ctle loop bw> <sq thresh>\n");
@@ -416,7 +416,7 @@ static int process_serdes_set_request(struct cmd_tbl *cmdtp, int flag, int argc,
 
 		value = 0;
 		ret = strict_strtoul(argv[5], 10, &value);
-		if (ret) {
+		if (ret || (value % 2)) {
 			printf("Invalid port number\n");
 			printf("USAGE: swcfg set serdes tx <dev num> <port num> ");
 			printf("<amplitude> <amp adjust> <emphasis 0> ");
@@ -531,8 +531,8 @@ static int process_port_ap_configuration(struct cmd_tbl *cmdtp, int flag, int ar
 
 		value = 0;
 		ret = strict_strtoul(argv[6], 10, &value);
-		if (ret) {
-			printf("Invalid interface number\n");
+		if (ret || (value % 2)) {
+			printf("Invalid port number\n");
 			printf("USAGE: swcfg set cfg ap rx <dev num> <port num> <lane num>");
 			printf(" <speed> <sq thresh> <lf gain> <hf gain> <dc gain> <ctle bw>");
 			printf(" <ctle loop bw> <etl min delay> <etl max delay> <etl enable>");
@@ -734,8 +734,8 @@ static int process_port_ap_configuration(struct cmd_tbl *cmdtp, int flag, int ar
 
 		value = 0;
 		ret = strict_strtoul(argv[6], 10, &value);
-		if (ret) {
-			printf("Invalid interface number\n");
+		if (ret || (value % 2)) {
+			printf("Invalid port number\n");
 			printf("USAGE: swcfg set cfg ap tx <dev num> <port num> <lane num>");
 			printf(" <speed> <tx amp offset> <tx emph0 offset> <tx emph1 offset>\n");
 			return CMD_RET_SUCCESS;
@@ -823,8 +823,8 @@ static int process_port_ap_configuration(struct cmd_tbl *cmdtp, int flag, int ar
 
 		value = 0;
 		ret = strict_strtoul(argv[5], 10, &value);
-		if (ret) {
-			printf("Invalid interface number\n");
+		if (ret || (value % 2)) {
+			printf("Invalid port number\n");
 			printf("USAGE: swcfg set cfg ap <dev num> <port num> <lane num>");
 			printf(" <fc pause> <fc am dir> <fec supported> <fec required> <mode> <speed>\n");
 			return CMD_RET_SUCCESS;
@@ -945,8 +945,8 @@ static int process_port_configuration(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	value = 0;
 	ret = strict_strtoul(argv[4], 10, &value);
-	if (ret) {
-		printf("Invalid interface number\n");
+	if (ret || (value % 2)) {
+		printf("Invalid port number\n");
 		printf("USAGE: swcfg set cfg <dev num> <port num> <speed> <mode> <fec>\n");
 		return CMD_RET_SUCCESS;
 	}
@@ -1106,7 +1106,7 @@ static int do_switch_cmd(struct cmd_tbl *cmdtp, int flag, int argc,
 
 			value = 0;
 			ret = strict_strtoul(argv[4], 10, &value);
-			if (ret) {
+			if (ret || (value % 2)) {
 				printf("Invalid port number\n");
 				printf("USAGE: swcfg get status <dev num> <port num>\n");
 				return CMD_RET_SUCCESS;
@@ -1151,8 +1151,8 @@ static int do_switch_cmd(struct cmd_tbl *cmdtp, int flag, int argc,
 
 			value = 0;
 			ret = strict_strtoul(argv[4], 10, &value);
-			if (ret) {
-				printf("Invalid interface number\n");
+			if (ret || (value % 2)) {
+				printf("Invalid port number\n");
 				printf("USAGE: swcfg set lpbk <dev num> <port num> <lpbk mode>\n");
 				printf("0 no lpbk, 1 serdes tx2rx, 2 serdes rx2tx, 3 mac tx2rx\n");
 				return CMD_RET_SUCCESS;
@@ -1197,8 +1197,8 @@ static int do_switch_cmd(struct cmd_tbl *cmdtp, int flag, int argc,
 
 			value = 0;
 			ret = strict_strtoul(argv[4], 10, &value);
-			if (ret) {
-				printf("Invalid interface number\n");
+			if (ret || (value % 2)) {
+				printf("Invalid port number\n");
 				printf("USAGE: swcfg set nego <dev num> <port num> <negotiation mode>\n");
 				printf("0 - 10Gbps full, 1 - 1Gbps full, 2 - 100Mbps full, 3 - 100Mbps half 4 - 10Mbps full, 5 - 10Mbps half\n");
 				return CMD_RET_SUCCESS;

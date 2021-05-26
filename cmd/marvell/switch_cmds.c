@@ -999,6 +999,11 @@ static int do_switch_cmd(struct cmd_tbl *cmdtp, int flag, int argc,
 	u32 dev_num, intf_num, reg_val, flag_val, lane_num;
 	int ret = CMD_RET_USAGE;
 
+	/* Check if switch on PCIe bus */
+	if (!get_switch_dev()) {
+		printf("No switch device detected\n");
+		return CMD_RET_SUCCESS;
+	}
 	if (argc < 2)
 		return ret;
 

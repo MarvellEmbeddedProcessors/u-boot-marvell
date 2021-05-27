@@ -619,7 +619,7 @@ int pci_generic_mmap_read_config(
 
 int dm_pci_hose_probe_bus(struct udevice *bus)
 {
-	int sub_bus;
+	int sub_bus = 0;
 	int ret;
 	int ea_pos;
 	u8 reg;
@@ -631,7 +631,10 @@ int dm_pci_hose_probe_bus(struct udevice *bus)
 		dm_pci_read_config8(bus, ea_pos + sizeof(u32) + sizeof(u8),
 				    &reg);
 		sub_bus = reg;
-	} else {
+		if (!sub_bus)
+			ea_pos = 0;
+	}
+	if (!ea_pos) {
 		sub_bus = pci_get_bus_max() + 1;
 	}
 	debug("%s: bus = %d/%s\n", __func__, sub_bus, bus->name);

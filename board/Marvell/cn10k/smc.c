@@ -11,9 +11,8 @@
 #include <asm/ptrace.h>
 #include <asm/arch/smc.h>
 #include <asm/psci.h>
-#include <efi_loader.h>
-#include <linux/bitops.h>
 #include <asm/arch/update.h>
+#include <efi_loader.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -242,20 +241,6 @@ ssize_t smc_flsf_clr_force_2ndry(void)
 	struct pt_regs regs;
 
 	regs.regs[0] = OCTEONTX2_FSAFE_CLR_FORCE_SEC;
-	smc_call(&regs);
-
-	return regs.regs[0];
-}
-
-int smc_spi_verify(struct smc_version_info *desc)
-{
-	struct pt_regs regs;
-
-	regs.regs[0] = PLAT_OCTEONTX_VERIFY_FIRMWARE;
-	regs.regs[1] = (u64)desc;
-	regs.regs[2] = sizeof(*desc);
-	regs.regs[3] = 0;
-	regs.regs[4] = 0;
 	smc_call(&regs);
 
 	return regs.regs[0];

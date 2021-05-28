@@ -119,6 +119,20 @@ int smc_write_efi_var(u64 var_addr, u64 var_size, u32 bus, u32 cs);
  *		0 -- Success
  *		-1 -- Invalid Arguments
  */
-unsigned long smc_sec_spi_op(u64 offset, u64 buffer, u64 size, u32 bus, u32 cs, u32 op);
+unsigned long smc_sec_spi_op(u64 offset, u64 buffer, u64 size, u32 bus,
+			     u32 cs, u32 op);
+
+/**
+ * Verify objects in flash
+ *
+ * x1 - address of descriptor
+ * x2 - size of descriptor
+ *
+ * returns:
+ *	x0:
+ *		0 -- success
+ *		negative - error
+ */
+int smc_spi_verify(struct smc_version_info *desc);
 
 #endif

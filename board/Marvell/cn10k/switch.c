@@ -29,12 +29,16 @@ DECLARE_GLOBAL_DATA_PTR;
 #define SW_BOOT_INIT_DONE		2
 #define SW_BOOT_INIT_FAILED		3
 
+#define SW_MAGIC_WORD		0x5a5b5c5d
+#define SW_MAGWRD_OFFSET	0xBFFFCULL
+#define SW_MAGWRD2_OFFSET	0xBFFF8ULL
+
 void *second_magic_word_loc(void *bar2)
 {
-	return (bar2 + readl(bar2 + 0xBFFF8));
+	return (bar2 + readl(bar2 + SW_MAGWRD2_OFFSET));
 }
 
-#define SWITCH_FIRST_MAGIC_WORD_LOC(x)	(void *)((x) + 0xBFFFC)
+#define SWITCH_FIRST_MAGIC_WORD_LOC(x)	(void *)((x) + SW_MAGWRD_OFFSET)
 #define MAILBOX_POINTER(x)		second_magic_word_loc(x)
 #define CONTROL_WORD_POINTER(x)		MAILBOX_POINTER(x) - 256
 #define OPCODE_WORD_POINTER(x)		MAILBOX_POINTER(x) - 252
@@ -129,7 +133,7 @@ int send_bootch_cmd(struct boot_chan *cmd, u8 num_bytes)
 	int timeout;
 
 	if (!cmd) {
-		printf("%s ERR: CMD NULL\n", __func__);
+		debug("%s ERR: CMD NULL\n", __func__);
 		return -1;
 	}
 
@@ -150,7 +154,7 @@ int send_bootch_cmd(struct boot_chan *cmd, u8 num_bytes)
 	}
 
 	if (timeout < 0) {
-		printf("%s ERR: OWN bit won't clear\n", __func__);
+		debug("%s ERR: OWN bit won't clear\n", __func__);
 		return -1;
 	}
 
@@ -184,7 +188,7 @@ int check_bootch_cmd_status(u8 *return_code)
 	}
 
 	if (timeout < 0) {
-		printf("%s ERR: OWN bit won't clear\n", __func__);
+		debug("%s ERR: OWN bit won't clear\n", __func__);
 		return -1;
 	}
 
@@ -212,18 +216,18 @@ u8 switch_cmd_opcode4(u32 profile_num)
 	cmd.control_word = (1 << 31) | (8 << 18);
 
 	if (!get_switch_dev()) {
-		printf("Switch Device NOT Detected\n");
+		debug("Switch Device NOT Detected\n");
 		return status;
 	}
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 8))
-		printf("%s %d ERR: Opcode 4 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 4 send error\n", __func__, __LINE__);
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status))
-		printf("%s %d ERR: Opcode 4 response error[%d]\n",
-		       __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 4 response error[%d]\n",
+		      __func__, __LINE__, status);
 
 	return status;
 }
@@ -240,13 +244,13 @@ int switch_cmd_opcode5(char *buffer)
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 4)) {
-		printf("%s %d ERR: Opcode 5 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 5 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 5 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 5 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -268,13 +272,13 @@ int switch_cmd_opcode6(u32 dev_num, u32 interface_num, u32 *status)
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 12)) {
-		printf("%s %d ERR: Opcode 6 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 6 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&resp)) {
-		printf("%s %d ERR: Opcode 6 response error [%d]\n", __func__, __LINE__, resp);
+		debug("%s %d ERR: Opcode 6 response error [%d]\n", __func__, __LINE__, resp);
 		return -1;
 	}
 
@@ -296,13 +300,13 @@ int switch_cmd_opcode7(u32 group_num, u32 id, char *buffer)
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 12)) {
-		printf("%s %d ERR: Opcode 7 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 7 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 7 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 7 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -325,13 +329,13 @@ int switch_cmd_opcode10(u32 dev_num, u32 interface_num, u32 speed, u32 mode, u32
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 24)) {
-		printf("%s %d ERR: Opcode 10 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 10 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 10 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 10 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -352,13 +356,13 @@ int switch_cmd_opcode11(u32 dev_num, u32 interface_num, u32 lane_num, u32 prbs_m
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 24)) {
-		printf("%s %d ERR: Opcode 11 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 11 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 11 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 11 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -379,13 +383,13 @@ int switch_cmd_opcode12(u32 dev_num, u32 interface_num, u32 lane_num, u32 clear_
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 20)) {
-		printf("%s %d ERR: Opcode 12 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 12 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 12 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 12 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -411,13 +415,13 @@ int switch_cmd_opcode13(u32 dev_num, u32 interface_num, u32 amplitude, u32 tx_am
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 32)) {
-		printf("%s %d ERR: Opcode 13 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 13 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 13 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 13 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -443,13 +447,13 @@ int switch_cmd_opcode14(u32 dev_num, u32 interface_num, u32 lane_num, u32 dc_gai
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 40)) {
-		printf("%s %d ERR: Opcode 14 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 14 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 14 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 14 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -476,13 +480,13 @@ int switch_cmd_opcode15(u32 dev_num, u32 interface_num, u32 lane_num, u32 fc_pau
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 40)) {
-		printf("%s %d ERR: Opcode 15 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 15 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 15 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 15 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -513,13 +517,13 @@ int switch_cmd_opcode17(u32 dev_num, u32 interface_num, u32 lane_num, u32 speed,
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 60)) {
-		printf("%s %d ERR: Opcode 17 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 17 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 17 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 17 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -544,13 +548,13 @@ int switch_cmd_opcode18(u32 dev_num, u32 interface_num, u32 lane_num, u32 speed,
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 28)) {
-		printf("%s %d ERR: Opcode 18 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 18 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 18 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 18 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -572,13 +576,13 @@ int switch_cmd_opcode19(u32 dev_num, u32 intf_num, u32 lpbk_mode)
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 16)) {
-		printf("%s %d ERR: Opcode 19 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 19 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 19 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 19 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -601,13 +605,13 @@ int switch_cmd_opcode20(u32 dev_num, u32 intf_num, u32 nego_mode)
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 16)) {
-		printf("%s %d ERR: Opcode 20 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 20 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 20 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 20 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -628,13 +632,13 @@ int switch_cmd_opcode21(u32 dev_num, u32 intf_num, u32 lane_num, u32 *buffer)
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 16)) {
-		printf("%s %d ERR: Opcode 21 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 21 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 21 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 21 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -658,13 +662,13 @@ int switch_cmd_opcode22(u32 dev_num, u32 intf_num, u32 lane_num, u32 *buffer)
 
 	/* Send command */
 	if (send_bootch_cmd(&cmd, 16)) {
-		printf("%s %d ERR: Opcode 22 send error\n", __func__, __LINE__);
+		debug("%s %d ERR: Opcode 22 send error\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Check response */
 	if (check_bootch_cmd_status(&status)) {
-		printf("%s %d ERR: Opcode 22 response error [%d]\n", __func__, __LINE__, status);
+		debug("%s %d ERR: Opcode 22 response error [%d]\n", __func__, __LINE__, status);
 		return -1;
 	}
 
@@ -876,21 +880,21 @@ void board_switch_init(void)
 	/* Check for successful initialization of switch firmware */
 	/* Check first magic word at fixed location */
 	timeout = 10;
-	while (readl(sw_bar2 + 0xBFFFC) != 0x5a5b5c5d) {
+	while (readl(sw_bar2 + SW_MAGWRD_OFFSET) != SW_MAGIC_WORD) {
 		mdelay(1);
 		if (--timeout < 0)
 			break;
 	}
 
-	if (readl(sw_bar2 + 0xBFFFC) != 0x5a5b5c5d) {
+	if (readl(sw_bar2 + SW_MAGWRD_OFFSET) != SW_MAGIC_WORD) {
 		printf("%s ERROR: Switch not init![0x%x]\n", __func__,
-		       readl(sw_bar2 + 0xBFFFC));
+		       readl(sw_bar2 + SW_MAGWRD_OFFSET));
 		return;
 	}
 
 	/* Check boot status */
 	timeout = 10;
-	mailbox_offset = readl(sw_bar2 + 0xBFFF8ULL);
+	mailbox_offset = readl(sw_bar2 + SW_MAGWRD2_OFFSET);
 	debug("%s Mailbox Offset:0x%llx\n", __func__, mailbox_offset);
 	while (readl(sw_bar2 + mailbox_offset + 4) != SW_BOOT_INIT_DONE) {
 		mdelay(1);
@@ -909,6 +913,6 @@ void board_switch_init(void)
 		return;
 	}
 
-	printf("%s Switch Init Success\n", __func__);
+	printf("Switch Init Success\n");
 }
 

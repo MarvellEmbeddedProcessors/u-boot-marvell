@@ -166,10 +166,22 @@ typedef enum {
 	ETH_MODE_100G_C2M_BIT,
 	ETH_MODE_100G_CR4_BIT,		/* = 25 */
 	ETH_MODE_100G_KR4_BIT,
-	ETH_MODE_MAX_BIT		/* = 27 */
+	ETH_MODE_LAUI_2_C2C_BIT,
+	ETH_MODE_LAUI_2_C2M_BIT,
+	ETH_MODE_50GBASE_CR2_C_BIT,
+	ETH_MODE_50GBASE_KR2_C_BIT,	/* = 30 */
+	ETH_MODE_100GAUI_2_C2C_BIT,
+	ETH_MODE_100GAUI_2_C2M_BIT,
+	ETH_MODE_100GBASE_CR2_BIT,
+	ETH_MODE_100GBASE_KR2_BIT,
+	ETH_MODE_SFI_1G_BIT,		/* = 35 */
+	ETH_MODE_25GBASE_CR_C_BIT,
+	ETH_MODE_25GBASE_KR_C_BIT,	/* = 37 */
+	/* Add new RPM modes here */
+	ETH_MODE_RPM_MAX_BIT,
 } eth_mode_t;
 
-#define ETH_ALL_SUPPORTED_MODES 0xFFFFFFFF
+#define ETH_ALL_SUPPORTED_MODES 0xFFFFFFFFFFFFFFFF
 
 /* scratchx(0) CSR used for ATF->non-secure SW communication.
  * This acts as the status register
@@ -378,8 +390,7 @@ struct eth_mode_change_args {
 	u64 speed:4; /* eth_link_speed enum */
 	u64 duplex:1; /* 0 - full duplex, 1 - half duplex */
 	u64 an:1;	/* 0 - disable AN, 1 - enable AN */
-	u64 port:8; /* device port */
-	u64 mode:42;
+	u64 mode:50;
 };
 
 /* command argument to be passed for cmd ID - ETH_CMD_LINK_CHANGE */

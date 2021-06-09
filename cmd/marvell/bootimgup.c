@@ -139,11 +139,14 @@ static int validate_bdk(unsigned long addr, size_t size, ssize_t *next_offset)
 	const u32 zero = 0;
 	u32 len = le32_to_cpu(bhdr->length);
 
-        if (next_offset)
+	debug("%s: addr: 0x%lx, size: 0x%lx, len: 0x%x\n",
+	      __func__, addr, size, len);
+
+	if (next_offset)
 		*next_offset = 0;
 
 	if (size && (len > size)) {
-		printf("Invalid header length %#x for BDK type image at %#lx\n",
+		printf("Invalid header length %#x for EBF type image at %#lx\n",
 		       len, addr);
 		return 1;
 	}
@@ -160,6 +163,7 @@ static int validate_bdk(unsigned long addr, size_t size, ssize_t *next_offset)
 			*next_offset = bhdr->next_offset;
 		else
 			*next_offset = -1;
+		debug("%s: next offset: 0x%x\n", __func__, *next_offset);
 	}
 
 	crc = crc32(0, (u8 *)bhdr, 0x10);
@@ -215,7 +219,7 @@ static int validate_clib(unsigned long addr)
  *
  * @return	0 for success, !0 for error
  */
-static int validate_bootimg_header(unsigned long addr)
+static int validate_bootimg_header(unsigned long addr, bool secure)
 {
 	u32     fip_toc_header;
 	ssize_t fip_off;
@@ -233,27 +237,39 @@ static int validate_bootimg_header(unsigned long addr)
 		return 1;
 	}
 
+	debug("%s: Validating NBL1FW at address 0x%lx\n",
+	      __func__, addr + AP_NBL1FW_OPAQUE);
 	if (validate_bdk(addr + AP_NBL1FW_OPAQUE, AP_NBL1FW_OPAQUE_SIZE,
 			 NULL)) {
-		printf("Invalid BDK image at %#lx\n", addr + AP_NBL1FW_OPAQUE);
+		printf("Invalid EBF image at %#lx\n", addr + AP_NBL1FW_OPAQUE);
 		return 1;
 	}
+	debug("%s: Validating TBL1FW at address 0x%lx\n",
+	      __func__, addr + AP_TBL1FW_OPAQUE);
 	if (validate_bdk(addr + AP_TBL1FW_OPAQUE, AP_TBL1FW_OPAQUE_SIZE,
 			 NULL)) {
-		printf("Invalid BDK image at %#lx\n", addr + AP_TBL1FW_OPAQUE);
+		printf("Invalid EBF image at %#lx\n", addr + AP_TBL1FW_OPAQUE);
 		return 1;
 	}
 
-	if (validate_bdk(addr + ATF_BL2_STAGE1, 0 /* no max len */, &fip_off)) {
-		printf("Invalid BDK image at %#lx\n", addr + ATF_BL2_STAGE1);
-		return 1;
+	if (!secure) {
+		debug("%s: Validating ATF_BL2_STAGE1 at address 0x%lx\n",
+		      __func__, addr + ATF_BL2_STAGE1);
+		if (validate_bdk(addr + ATF_BL2_STAGE1, 0 /* no max len */,
+				 &fip_off)) {
+			printf("Invalid ATF BL2 image at %#lx\n",
+			       addr + ATF_BL2_STAGE1);
+			return 1;
+		}
+	} else {
+		fip_off = 0;
 	}
-
 	if (fip_off > 0)
 		fip_off += ATF_BL2_STAGE1; /* fip offset fm start of BL2 img */
 	else
 		fip_off = ATF_FIP_ADDRESS;
 
+	debug("%s: FIP offset: 0x%x\n", __func__, fip_off);
 	fip_toc_header = *(u32 *)(addr + fip_off);
 
 	if (le32_to_cpu(fip_toc_header) != ATF_FIP_NAME) {
@@ -826,7 +842,8 @@ static int finish_rom_scr(struct rom_scr_info *si, u8 *buf)
 }
 #endif
 
-static int do_bootu_spi(int argc, char * const argv[], bool update_scr)
+static int do_bootu_spi(int argc, char * const argv[], bool update_scr,
+			bool secure)
 {
 	unsigned long addr, offset, len;
 	void *buf;
@@ -910,7 +927,7 @@ static int do_bootu_spi(int argc, char * const argv[], bool update_scr)
 	}
 	buf = (u8 *)addr;
 
-	if (validate_bootimg_header(addr)) {
+	if (validate_bootimg_header(addr, secure)) {
 		printf("\n No valid boot image header found\n");
 		return CMD_RET_FAILURE;
 	}
@@ -1033,7 +1050,7 @@ static struct mmc *init_mmc_device(int dev, bool force_init)
 }
 
 static int do_bootu_mmc(int argc, char * const argv[],
-			bool update_scp, bool overwrite_part)
+			bool update_scp, bool secure, bool overwrite_part)
 {
 	static int curr_device = -1;
 	struct mmc *mmc;
@@ -1080,7 +1097,7 @@ static int do_bootu_mmc(int argc, char * const argv[],
 	}
 	debug("%s update scp: %s, overwrite partition table: %s\n",
 	      __func__, update_scp ? "yes" : "no",
-	      overwrite_part ? "yes" : "no");
+		 overwrite_part ? "yes" : "no");
 	debug("%s loadaddr %s filesize %s\n", __func__, env1, env2);
 	debug("%s curr_device %d\n", __func__, curr_device);
 	blk = 0;
@@ -1106,7 +1123,7 @@ static int do_bootu_mmc(int argc, char * const argv[],
 		return CMD_RET_FAILURE;
 	}
 
-	if (validate_bootimg_header(addr)) {
+	if (validate_bootimg_header(addr, secure)) {
 		printf("\nNo valid boot image header found\n");
 		return CMD_RET_FAILURE;
 	}
@@ -1199,6 +1216,7 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 	int ret;
 	int i;
 	bool overwrite_part = false;
+	bool secure = false;
 #if CONFIG_IS_ENABLED(ARCH_OCTEONTX)
 	/* OcteonTX does not have a SCP section so it is always updated */
 	const bool update_scp = true;
@@ -1209,6 +1227,11 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 	/* Check flags at the beginning */
 	if (argc > 1) {
 		for (i = 1; i < min(argc, 3); i++) {
+			if (!strcmp(argv[1], "-S")) {
+				secure = true;
+				argv++;
+				argc--;
+			}
 #if !CONFIG_IS_ENABLED(ARCH_OCTEONTX)
 			if (!strcmp(argv[1], "-s")) {
 				update_scp = true;
@@ -1235,10 +1258,11 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 	if (strcmp(cmd, "spi") == 0) {
 		if (overwrite_part)
 			puts("-p is ignored for SPI\n");
-		ret = do_bootu_spi(argc, argv, update_scp);
+		ret = do_bootu_spi(argc, argv, update_scp, secure);
 	}
 	else if (strcmp(cmd, "mmc") == 0)
-		ret = do_bootu_mmc(argc, argv, update_scp, overwrite_part);
+		ret = do_bootu_mmc(argc, argv, update_scp, secure,
+				   overwrite_part);
 	else
 		ret = -1;
 
@@ -1252,13 +1276,14 @@ usage:
 U_BOOT_CMD(
 #if !CONFIG_IS_ENABLED(ARCH_OCTEONTX)
 	bootimgup, 7, 1, do_bootimgup, "Updates Boot Image",
-	" <[-s]> <[-p]> <mmc | spi> <[devid] | [bus:cs]> [image_address] [image_size]\n"
+	" <[-S]> <[-s]> <[-p]> <mmc | spi> <[devid] | [bus:cs]> [image_address] [image_size]\n"
 	" where: \n"
 	" -s - overwrite SCP ROM area\n"
 #else
 	bootimgup, 6, 1, do_bootimgup, "Updates Boot Image",
-	" <[-p]> <mmc | spi> <[devid] | [bus:cs]> [image_address] [image_size]\n"
+	" <[-S]> <[-p]> <mmc | spi> <[devid] | [bus:cs]> [image_address] [image_size]\n"
 #endif
+	" -S - Must be set for trusted images\n"
 	" -p - (MMC only) overwrite the partition table\n"
 	" spi - updates boot image on spi flash \n"
 	" bus and cs should be passed together, passing only one \n"

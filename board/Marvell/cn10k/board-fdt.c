@@ -176,10 +176,42 @@ static int ft_board_clean_props(void *blob, int node)
 	static const char * const
 		octeontx_brd_nodes[] = {"BOARD-MODEL",
 					"BOARD-SERIAL",
-					"BOARD-MAC-ADDRESS",
 					"BOARD-REVISION",
+					"BOARD-MAC-ADDRESS",
 					"BOARD-MAC-ADDRESS-NUM",
-					"BOARD-MAC-ADDRESS-ID-NUM"
+					"BOARD-MAC-ADDRESS-ID-NUM",
+					"BOARD-MAC-ADDRESS-ID0",
+					"BOARD-MAC-ADDRESS-ID1",
+					"BOARD-MAC-ADDRESS-ID2",
+					"BOARD-MAC-ADDRESS-ID3",
+					"BOARD-MAC-ADDRESS-ID4",
+					"BOARD-MAC-ADDRESS-ID5",
+					"BOARD-MAC-ADDRESS-ID6",
+					"BOARD-MAC-ADDRESS-ID7",
+					"BOARD-MAC-ADDRESS-ID8",
+					"BOARD-MAC-ADDRESS-ID9",
+					"BOARD-MAC-ADDRESS-ID10",
+					"BOARD-MAC-ADDRESS-ID11",
+					"BOARD-MAC-ADDRESS-ID12",
+					"BOARD-MAC-ADDRESS-ID13",
+					"BOARD-MAC-ADDRESS-ID14",
+					"BOARD-MAC-ADDRESS-ID15",
+					"BOARD-MAC-ADDRESS-ID16",
+					"BOARD-MAC-ADDRESS-ID17",
+					"BOARD-MAC-ADDRESS-ID18",
+					"BOARD-MAC-ADDRESS-ID19",
+					"BOARD-MAC-ADDRESS-ID20",
+					"BOARD-MAC-ADDRESS-ID21",
+					"BOARD-MAC-ADDRESS-ID22",
+					"BOARD-MAC-ADDRESS-ID23",
+					"BOARD-MAC-ADDRESS-ID24",
+					"BOARD-MAC-ADDRESS-ID25",
+					"BOARD-MAC-ADDRESS-ID26",
+					"BOARD-MAC-ADDRESS-ID27",
+					"BOARD-MAC-ADDRESS-ID28",
+					"BOARD-MAC-ADDRESS-ID29",
+					"BOARD-MAC-ADDRESS-ID30",
+					"BOARD-MAC-ADDRESS-ID31",
 					};
 	int offset;
 	const char *name;
@@ -190,7 +222,6 @@ static int ft_board_clean_props(void *blob, int node)
 	bool found;
 	int off_idx = 0;
 	int prop_offsets[1000];
-	int has_mac_id_num = 0;
 
 	fdt_for_each_property_offset(offset, blob, node) {
 		if (off_idx == ARRAY_SIZE(prop_offsets)) {
@@ -209,9 +240,6 @@ static int ft_board_clean_props(void *blob, int node)
 			return -1;
 		}
 		debug("Found property %s at offset 0x%x\n", name, offset);
-		/* Check for BOARD-MAC-ADDRESS-ID-NUM, it is special */
-		if (!strcmp(name, "BOARD-MAC-ADDRESS-ID-NUM"))
-			has_mac_id_num = simple_strtol(data, NULL, 16);
 
 		/* Delete all properties that are not in our list */
 		found = false;
@@ -219,19 +247,6 @@ static int ft_board_clean_props(void *blob, int node)
 			if (!strcmp(name, octeontx_brd_nodes[i])) {
 				found = true;
 				break;
-			}
-		}
-		/* or aren't board MAC addresses */
-		if (!found && has_mac_id_num > 0) {
-			for (i = 0; i < has_mac_id_num; i++) {
-				char mac_id_name[32];
-
-				snprintf(mac_id_name, sizeof(mac_id_name),
-					 "BOARD-MAC-ADDRESS-ID%d", i);
-				if (!strcmp(name, mac_id_name)) {
-					found = true;
-					break;
-				}
 			}
 		}
 		if (!found) {

@@ -335,8 +335,17 @@ static void mode_to_args(int mode, struct eth_mode_change_args *args)
 
 static void mode_to_args(int mode, struct eth_mode_change_args *args, int flag)
 {
+	int mode_group = 0;
+
 	args->an = 0;
 	args->duplex = 0;
+	/* If mode ID exceeding eth_mode_t enum value of 41, mode_group_idx
+	 * should be assigned accordingly
+	 */
+	args->mode_group_idx = 0;
+	mode_group = mode - 41;
+	if (mode_group > 0)
+		args->mode_group_idx = 1;
 
 	printf("mode %d, flag %d\n", mode, flag);
 	switch (mode) {
@@ -470,7 +479,7 @@ int eth_intf_set_mode(struct udevice *ethdev, int mode)
 	union eth_cmd_s cmd;
 
 	cmd.cmd.id = ETH_CMD_MODE_CHANGE;
-	//printf("%s: mode %d\n", __func__, mode);
+	printf("%s: mode %d\n", __func__, mode);
 
 	mode_to_args(mode, &cmd.mode_change_args, 1);
 
@@ -550,17 +559,14 @@ int eth_intf_get_mode(struct udevice *ethdev)
 	case ETH_MODE_25G_C2C_BIT:
 		printf("25G_C2C\n");
 		break;
-	case ETH_MODE_25G_2_C2C_BIT:
-		printf("25G_2_C2C\n");
+	case ETH_MODE_25G_C2M_BIT:
+		printf("25G_C2M\n");
 		break;
 	case ETH_MODE_50G_C2C_BIT:
 		printf("50G_1_C2C\n");
 		break;
 	case ETH_MODE_50G_C2M_BIT:
 		printf("50G_1_C2M\n");
-		break;
-	case ETH_MODE_50G_4_C2C_BIT:
-		printf("50G_4_C2C\n");
 		break;
 	case ETH_MODE_100GAUI_2_C2C_BIT:
 		printf("100G_2_C2C\n");

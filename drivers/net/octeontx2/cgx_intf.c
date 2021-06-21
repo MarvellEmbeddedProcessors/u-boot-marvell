@@ -315,7 +315,7 @@ static void mode_to_args(int mode, struct cgx_mode_change_args *args)
 {
 	args->an = 0;
 	args->duplex = 0;
-	args->port = 0;
+	args->mode_group_idx = 0;
 
 	switch (mode) {
 	case MODE_10G_C2C:

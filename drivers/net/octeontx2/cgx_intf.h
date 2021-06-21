@@ -361,7 +361,14 @@ struct cgx_mode_change_args {
 	uint64_t speed:4; /* cgx_link_speed enum */
 	uint64_t duplex:1; /* 0 - full duplex, 1 - half duplex */
 	uint64_t an:1;	/* 0 - disable AN, 1 - enable AN */
-	uint64_t port:8; /* device port */
+	uint64_t reserved2:6;
+	/* This field categorize the mode ID range to accomodate more modes.
+	* To specify mode ID range of 0 - 41, this field will be 0.
+	* To specify mode ID range of 42 - 83, this field will be 1 and so.
+	* mode ID will be still mentioned as 1 << (0 - 41). But the mode_group_idx
+	* decides the actual mode range
+	*/
+	uint64_t mode_group_idx:2;
 	uint64_t mode:42;
 };
 

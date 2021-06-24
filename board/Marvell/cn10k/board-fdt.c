@@ -212,6 +212,10 @@ static int ft_board_clean_props(void *blob, int node)
 					"BOARD-MAC-ADDRESS-ID29",
 					"BOARD-MAC-ADDRESS-ID30",
 					"BOARD-MAC-ADDRESS-ID31",
+					"RESET-COUNT-WARM",
+					"RESET-COUNT-COLD",
+					"RESET-COUNT-CORE-WDOG",
+					"RESET-COUNT-SCP-WDOG"
 					};
 	int offset;
 	const char *name;

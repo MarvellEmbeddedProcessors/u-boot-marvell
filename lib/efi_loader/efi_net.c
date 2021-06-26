@@ -21,6 +21,7 @@
 #include <net.h>
 #include <cpu_func.h>
 #include <dm/device.h>
+#include <dm/uclass-internal.h>
 
 static const efi_guid_t efi_net_guid = EFI_SIMPLE_NETWORK_PROTOCOL_GUID;
 static const efi_guid_t efi_pxe_base_code_protocol_guid =
@@ -55,7 +56,12 @@ struct efi_net_obj {
 	struct efi_simple_network_mode net_mode;
 	struct efi_pxe_base_code_protocol pxe;
 	struct efi_pxe_mode pxe_mode;
+	int dev_num;
 };
+
+#define MAX_NET_DEV	10
+static struct efi_net_obj *net_dev_array[MAX_NET_DEV];
+static int active_device;
 
 /*
  * efi_net_start() - start the network interface
@@ -69,6 +75,8 @@ struct efi_net_obj {
  */
 static efi_status_t EFIAPI efi_net_start(struct efi_simple_network *this)
 {
+	struct efi_net_obj *parent;
+	char eth[20];
 	efi_status_t ret = EFI_SUCCESS;
 
 	EFI_ENTRY("%p", this);
@@ -79,12 +87,19 @@ static efi_status_t EFIAPI efi_net_start(struct efi_simple_network *this)
 		goto out;
 	}
 
+	parent = container_of(this, struct efi_net_obj, net);
+
 	if (this->mode->state != EFI_NETWORK_STOPPED) {
 		ret = EFI_ALREADY_STARTED;
 	} else {
 		this->int_status = 0;
 		wait_for_packet->is_signaled = false;
 		this->mode->state = EFI_NETWORK_STARTED;
+		active_device = parent->dev_num;
+
+		/* Select eth interface */
+		snprintf(eth, sizeof(eth), "eth%d", active_device);
+		env_set("ethact", eth);
 	}
 out:
 	return EFI_EXIT(ret);
@@ -102,6 +117,7 @@ out:
  */
 static efi_status_t EFIAPI efi_net_stop(struct efi_simple_network *this)
 {
+	struct efi_net_obj *parent;
 	efi_status_t ret = EFI_SUCCESS;
 
 	EFI_ENTRY("%p", this);
@@ -111,6 +127,8 @@ static efi_status_t EFIAPI efi_net_stop(struct efi_simple_network *this)
 		ret = EFI_INVALID_PARAMETER;
 		goto out;
 	}
+
+	parent = container_of(this, struct efi_net_obj, net);
 
 	if (this->mode->state == EFI_NETWORK_STOPPED) {
 		ret = EFI_NOT_STARTED;
@@ -718,7 +736,7 @@ static void efi_net_push(void *pkt, int len)
 static void EFIAPI efi_network_timer_notify(struct efi_event *event,
 					    void *context)
 {
-	struct efi_simple_network *this = (struct efi_simple_network *)context;
+	struct efi_simple_network *this = &net_dev_array[active_device]->net;
 
 	EFI_ENTRY("%p, %p", event, context);
 
@@ -868,80 +886,91 @@ static efi_status_t EFIAPI efi_pxe_base_code_set_packets(
  */
 efi_status_t efi_net_register(void)
 {
-	struct efi_net_obj *netobj = NULL;
+	struct udevice *net_dev;
+	struct efi_net_obj *netobj;
 	efi_status_t r;
+	int dev_idx;
+	uchar mac_addr[ARP_HLEN];
 
-	if (!eth_get_dev()) {
-		/* No network device active, don't expose any */
-		return EFI_SUCCESS;
+	net_dev = NULL;
+	dev_idx = 0;
+	uclass_find_first_device(UCLASS_ETH, &net_dev);
+	while (net_dev) {
+		/* Create net object */
+		netobj = calloc(1, sizeof(*netobj));
+		if (!netobj)
+			goto out_of_resources;
+
+		/* Hook net up to the device list */
+		efi_add_handle(&netobj->header);
+
+		/* Fill in object data */
+		r = efi_add_protocol(&netobj->header, &efi_net_guid,
+				     &netobj->net);
+		if (r != EFI_SUCCESS)
+			goto failure_to_add_protocol;
+		r = efi_add_protocol(&netobj->header, &efi_guid_device_path,
+				     efi_dp_from_eth_index(dev_idx));
+		if (r != EFI_SUCCESS)
+			goto failure_to_add_protocol;
+		r = efi_add_protocol(&netobj->header, &efi_pxe_base_code_protocol_guid,
+				     &netobj->pxe);
+		if (r != EFI_SUCCESS)
+			goto failure_to_add_protocol;
+		netobj->net.revision = EFI_SIMPLE_NETWORK_PROTOCOL_REVISION;
+		netobj->net.start = efi_net_start;
+		netobj->net.stop = efi_net_stop;
+		netobj->net.initialize = efi_net_initialize;
+		netobj->net.reset = efi_net_reset;
+		netobj->net.shutdown = efi_net_shutdown;
+		netobj->net.receive_filters = efi_net_receive_filters;
+		netobj->net.station_address = efi_net_station_address;
+		netobj->net.statistics = efi_net_statistics;
+		netobj->net.mcastiptomac = efi_net_mcastiptomac;
+		netobj->net.nvdata = efi_net_nvdata;
+		netobj->net.get_status = efi_net_get_status;
+		netobj->net.transmit = efi_net_transmit;
+		netobj->net.receive = efi_net_receive;
+		netobj->net.mode = &netobj->net_mode;
+		netobj->net_mode.state = EFI_NETWORK_STOPPED;
+		if (eth_env_get_enetaddr_by_index("eth", dev_idx, mac_addr)) {
+			memcpy(netobj->net_mode.current_address.mac_addr, mac_addr, ARP_HLEN);
+			memcpy(netobj->net_mode.permanent_address.mac_addr, mac_addr, ARP_HLEN);
+		}
+		netobj->net_mode.hwaddr_size = ARP_HLEN;
+		netobj->net_mode.media_header_size = ETHER_HDR_SIZE;
+		netobj->net_mode.max_packet_size = PKTSIZE;
+		netobj->net_mode.if_type = ARP_ETHER;
+
+		netobj->pxe.revision = EFI_PXE_BASE_CODE_PROTOCOL_REVISION;
+		netobj->pxe.start = efi_pxe_base_code_start;
+		netobj->pxe.stop = efi_pxe_base_code_stop;
+		netobj->pxe.dhcp = efi_pxe_base_code_dhcp;
+		netobj->pxe.discover = efi_pxe_base_code_discover;
+		netobj->pxe.mtftp = efi_pxe_base_code_mtftp;
+		netobj->pxe.udp_write = efi_pxe_base_code_udp_write;
+		netobj->pxe.udp_read = efi_pxe_base_code_udp_read;
+		netobj->pxe.set_ip_filter = efi_pxe_base_code_set_ip_filter;
+		netobj->pxe.arp = efi_pxe_base_code_arp;
+		netobj->pxe.set_parameters = efi_pxe_base_code_set_parameters;
+		netobj->pxe.set_station_ip = efi_pxe_base_code_set_station_ip;
+		netobj->pxe.set_packets = efi_pxe_base_code_set_packets;
+		netobj->pxe.mode = &netobj->pxe_mode;
+		if (dhcp_ack)
+			netobj->pxe_mode.dhcp_ack = *dhcp_ack;
+
+		netobj->dev_num = dev_idx;
+		net_dev_array[dev_idx] = netobj;
+
+		uclass_find_next_device(&net_dev);
+		dev_idx++;
 	}
-
-	/* We only expose the "active" network device, so one is enough */
-	netobj = calloc(1, sizeof(*netobj));
-	if (!netobj)
-		goto out_of_resources;
 
 	/* Allocate an aligned transmit buffer */
 	transmit_buffer = calloc(1, PKTSIZE_ALIGN + PKTALIGN);
 	if (!transmit_buffer)
 		goto out_of_resources;
 	transmit_buffer = (void *)ALIGN((uintptr_t)transmit_buffer, PKTALIGN);
-
-	/* Hook net up to the device list */
-	efi_add_handle(&netobj->header);
-
-	/* Fill in object data */
-	r = efi_add_protocol(&netobj->header, &efi_net_guid,
-			     &netobj->net);
-	if (r != EFI_SUCCESS)
-		goto failure_to_add_protocol;
-	r = efi_add_protocol(&netobj->header, &efi_guid_device_path,
-			     efi_dp_from_eth());
-	if (r != EFI_SUCCESS)
-		goto failure_to_add_protocol;
-	r = efi_add_protocol(&netobj->header, &efi_pxe_base_code_protocol_guid,
-			     &netobj->pxe);
-	if (r != EFI_SUCCESS)
-		goto failure_to_add_protocol;
-	netobj->net.revision = EFI_SIMPLE_NETWORK_PROTOCOL_REVISION;
-	netobj->net.start = efi_net_start;
-	netobj->net.stop = efi_net_stop;
-	netobj->net.initialize = efi_net_initialize;
-	netobj->net.reset = efi_net_reset;
-	netobj->net.shutdown = efi_net_shutdown;
-	netobj->net.receive_filters = efi_net_receive_filters;
-	netobj->net.station_address = efi_net_station_address;
-	netobj->net.statistics = efi_net_statistics;
-	netobj->net.mcastiptomac = efi_net_mcastiptomac;
-	netobj->net.nvdata = efi_net_nvdata;
-	netobj->net.get_status = efi_net_get_status;
-	netobj->net.transmit = efi_net_transmit;
-	netobj->net.receive = efi_net_receive;
-	netobj->net.mode = &netobj->net_mode;
-	netobj->net_mode.state = EFI_NETWORK_STOPPED;
-	memcpy(netobj->net_mode.current_address.mac_addr, eth_get_ethaddr(), 6);
-	memcpy(netobj->net_mode.permanent_address.mac_addr, eth_get_ethaddr(), 6);
-	netobj->net_mode.hwaddr_size = ARP_HLEN;
-	netobj->net_mode.media_header_size = ETHER_HDR_SIZE;
-	netobj->net_mode.max_packet_size = PKTSIZE;
-	netobj->net_mode.if_type = ARP_ETHER;
-
-	netobj->pxe.revision = EFI_PXE_BASE_CODE_PROTOCOL_REVISION;
-	netobj->pxe.start = efi_pxe_base_code_start;
-	netobj->pxe.stop = efi_pxe_base_code_stop;
-	netobj->pxe.dhcp = efi_pxe_base_code_dhcp;
-	netobj->pxe.discover = efi_pxe_base_code_discover;
-	netobj->pxe.mtftp = efi_pxe_base_code_mtftp;
-	netobj->pxe.udp_write = efi_pxe_base_code_udp_write;
-	netobj->pxe.udp_read = efi_pxe_base_code_udp_read;
-	netobj->pxe.set_ip_filter = efi_pxe_base_code_set_ip_filter;
-	netobj->pxe.arp = efi_pxe_base_code_arp;
-	netobj->pxe.set_parameters = efi_pxe_base_code_set_parameters;
-	netobj->pxe.set_station_ip = efi_pxe_base_code_set_station_ip;
-	netobj->pxe.set_packets = efi_pxe_base_code_set_packets;
-	netobj->pxe.mode = &netobj->pxe_mode;
-	if (dhcp_ack)
-		netobj->pxe_mode.dhcp_ack = *dhcp_ack;
 
 	/*
 	 * Create WaitForPacket event.
@@ -953,7 +982,10 @@ efi_status_t efi_net_register(void)
 		printf("ERROR: Failed to register network event\n");
 		return r;
 	}
-	netobj->net.wait_for_packet = wait_for_packet;
+
+	while (dev_idx--)
+		net_dev_array[dev_idx]->net.wait_for_packet = wait_for_packet;
+
 	/*
 	 * Create a timer event.
 	 *
@@ -963,7 +995,7 @@ efi_status_t efi_net_register(void)
 	 * iPXE is running at TPL_CALLBACK most of the time. Use a higher TPL.
 	 */
 	r = efi_create_event(EVT_TIMER | EVT_NOTIFY_SIGNAL, TPL_NOTIFY,
-			     efi_network_timer_notify, &netobj->net, NULL,
+			     efi_network_timer_notify, NULL, NULL,
 			     &network_timer_event);
 	if (r != EFI_SUCCESS) {
 		printf("ERROR: Failed to register network event\n");
@@ -981,7 +1013,8 @@ failure_to_add_protocol:
 	printf("ERROR: Failure to add protocol\n");
 	return r;
 out_of_resources:
-	free(netobj);
+	while (dev_idx--)
+		free(net_dev_array[dev_idx]);
 	/* free(transmit_buffer) not needed yet */
 	printf("ERROR: Out of memory\n");
 	return EFI_OUT_OF_RESOURCES;

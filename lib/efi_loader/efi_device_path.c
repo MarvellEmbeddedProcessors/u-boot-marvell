@@ -1022,6 +1022,52 @@ struct efi_device_path *efi_dp_from_eth(void)
 }
 #endif
 
+#ifdef CONFIG_NET
+struct efi_device_path *efi_dp_from_eth_index(int index)
+{
+#ifndef CONFIG_DM_ETH
+	struct efi_device_path_mac_addr *ndp;
+#endif
+	char eth[20];
+	void *buf, *start;
+	unsigned int dpsize = 0;
+
+	snprintf(eth, sizeof(eth), "eth%d", index);
+	assert(eth_get_dev_by_name(eth));
+
+#ifdef CONFIG_DM_ETH
+	dpsize += dp_size(eth_get_dev_by_name(eth));
+#else
+	dpsize += sizeof(ROOT);
+	dpsize += sizeof(*ndp);
+#endif
+
+	buf = dp_alloc(dpsize + sizeof(END));
+	if (!buf)
+		return NULL;
+	start = buf;
+
+#ifdef CONFIG_DM_ETH
+	buf = dp_fill(buf, eth_get_dev_by_name(eth));
+#else
+	memcpy(buf, &ROOT, sizeof(ROOT));
+	buf += sizeof(ROOT);
+
+	ndp = buf;
+	ndp->dp.type = DEVICE_PATH_TYPE_MESSAGING_DEVICE;
+	ndp->dp.sub_type = DEVICE_PATH_SUB_TYPE_MSG_MAC_ADDR;
+	ndp->dp.length = sizeof(*ndp);
+	ndp->if_type = 1; /* Ethernet */
+	memcpy(ndp->mac.addr, eth_get_ethaddr(), ARP_HLEN);
+	buf = &ndp[1];
+#endif
+
+	*((struct efi_device_path *)buf) = END;
+
+	return start;
+}
+#endif
+
 #ifdef CONFIG_DM_PCI
 struct efi_device_path *efi_dp_from_pci(struct udevice *pci_dev)
 {

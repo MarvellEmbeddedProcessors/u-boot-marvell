@@ -334,36 +334,36 @@ static int setup(const efi_handle_t handle,
  */
 static int execute(void)
 {
-	int r;
 	efi_status_t ret;
 	struct efi_mac_address srcaddr;
-	char buffer[20];
-	struct udevice *dev = NULL;
-
-	/* Get the handle for the protocol */
-	ret = boottime->locate_protocol(&efi_net_guid, NULL, (void **)&net);
-	if (ret != EFI_SUCCESS) {
-		efi_st_error("Failed to locate simple network protocol\n");
-		return EFI_ST_FAILURE;
-	}
+	efi_handle_t *handles;
+	efi_uintn_t no_handles, i;
 
 	/* Setup may have failed */
-	if (!net || !timer) {
+	if (!timer) {
 		efi_st_error("Cannot run test after setup failure\n");
 		return EFI_ST_FAILURE;
 	}
 
-	EFI_ENTRY("%p", net);
-	r = uclass_first_device(UCLASS_ETH, &dev);
-	EFI_EXIT(r);
-	do {
-		if (!dev || (dev->seq == -1))
-			continue;
+	/* Get the handle for the protocol */
+	ret = boottime->locate_handle_buffer(BY_PROTOCOL,
+				&efi_net_guid, NULL,
+				&no_handles, &handles);
+	if (ret != EFI_SUCCESS) {
+		efi_st_error("No SNP protocol handles\n");
+		return EFI_ST_FAILURE;
+	}
+	efi_st_printf("Detected %d SNP handles\n", (int)no_handles);
 
-		sprintf(buffer, "eth%d", dev->seq);
-		EFI_ENTRY("%s", buffer);
-		r = env_set("ethact", buffer);
-		EFI_EXIT(r);
+	for (i = 0; i < no_handles; ++i) {
+		ret = boottime->open_protocol(handles[i],
+					      &efi_net_guid,
+					      (void **)&net, NULL, NULL,
+					      EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+		if (ret != EFI_SUCCESS) {
+			efi_st_error("[%d]Failed to open SNP protocol\n", (int)i);
+			continue;
+		}
 
 		/*
 		 * Check hardware address size.
@@ -377,6 +377,7 @@ static int execute(void)
 				     net->mode->hwaddr_size, ARP_HLEN);
 			return EFI_ST_FAILURE;
 		}
+
 		/*
 		 * Check that WaitForPacket event exists.
 		 */
@@ -454,7 +455,6 @@ static int execute(void)
 
 		/* Reset MAC to default */
 		ret = net->station_address(net, 1, &srcaddr);
-
 		/*
 		 * Shut down network adapter.
 		 */
@@ -479,12 +479,7 @@ static int execute(void)
 			efi_st_error("Failed to stop network adapter\n");
 			return EFI_ST_FAILURE;
 		}
-
-		EFI_ENTRY("%p", net);
-		uclass_next_device(&dev);
-		EFI_EXIT(0);
-	} while (dev);
-
+	}
 	return EFI_ST_SUCCESS;
 }
 

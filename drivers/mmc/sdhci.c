@@ -104,7 +104,7 @@ static void sdhci_prepare_adma_table(struct sdhci_host *host,
 	host->desc_slot = 0;
 
 	while (--i) {
-		sdhci_adma_desc(host, dma_addr, ADMA_MAX_LEN, false);
+		sdhci_adma_desc(host, dma_addr, (uint16_t)ADMA_MAX_LEN, false);
 		dma_addr += ADMA_MAX_LEN;
 		trans_bytes -= ADMA_MAX_LEN;
 	}

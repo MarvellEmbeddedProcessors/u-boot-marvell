@@ -11,6 +11,8 @@
 #include <dm/uclass-internal.h>
 #include <net.h>
 
+extern int eth_intf_set_mode(struct udevice *ethdev, int mode);
+extern int eth_intf_get_mode(struct udevice *ethdev);
 extern int eth_intf_set_fec(struct udevice *ethdev, int type);
 extern int eth_intf_get_fec(struct udevice *ethdev);
 extern void nix_print_mac_info(struct udevice *dev);

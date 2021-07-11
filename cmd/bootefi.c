@@ -24,6 +24,7 @@
 #include <memalign.h>
 #include <asm-generic/sections.h>
 #include <linux/linkage.h>
+#include <wdt.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -632,6 +633,10 @@ static int do_bootefi(struct cmd_tbl *cmdtp, int flag, int argc,
 	else if (ret != EFI_SUCCESS)
 		return CMD_RET_FAILURE;
 
+	/* Disable watch dog */
+#if CONFIG_IS_ENABLED(WDT)
+	wdt_stop(gd->watchdog_dev);
+#endif
 	if (!strcmp(argv[1], "bootmgr"))
 		return do_efibootmgr();
 #ifdef CONFIG_CMD_BOOTEFI_SELFTEST

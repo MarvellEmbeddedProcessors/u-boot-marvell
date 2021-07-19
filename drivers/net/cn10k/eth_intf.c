@@ -266,18 +266,6 @@ void eth_intf_shutdown(void)
 	eth_intf_req(0, 0, cmd, &scr0.u, 1);
 }
 
-#if 0
-enum eth_mode {
-	MODE_10G_C2C,
-	MODE_10G_C2M,
-	MODE_10G_KR,
-	MODE_25G_C2C,
-	MODE_25G_2_C2C,
-	MODE_50G_C2C,
-	MODE_50G_4_C2C
-};
-#endif
-
 static char intf_speed_to_str[][8] = {
 	"None",
 	"10M",
@@ -294,46 +282,6 @@ static char intf_speed_to_str[][8] = {
 	"100G",
 };
 
-#if 0
-static void mode_to_args(int mode, struct eth_mode_change_args *args)
-{
-	args->an = 0;
-	args->duplex = 0;
-	args->port = 0;
-
-	switch (mode) {
-	case MODE_10G_C2C:
-		args->speed = ETH_LINK_10G;
-		args->mode = BIT_ULL(ETH_MODE_10G_C2C_BIT);
-		break;
-	case MODE_10G_C2M:
-		args->speed = ETH_LINK_10G;
-		args->mode = BIT_ULL(ETH_MODE_10G_C2M_BIT);
-		break;
-	case MODE_10G_KR:
-		args->speed = ETH_LINK_10G;
-		args->mode = BIT_ULL(ETH_MODE_10G_KR_BIT);
-		args->an = 1;
-		break;
-	case MODE_25G_C2C:
-		args->speed = ETH_LINK_25G;
-		args->mode = BIT_ULL(ETH_MODE_25G_C2C_BIT);
-		break;
-	case MODE_25G_2_C2C:
-		args->speed = ETH_LINK_25G;
-		args->mode = BIT_ULL(ETH_MODE_25G_2_C2C_BIT);
-		break;
-	case MODE_50G_C2C:
-		args->speed = ETH_LINK_50G;
-		args->mode = BIT_ULL(ETH_MODE_50G_C2C_BIT);
-		break;
-	case MODE_50G_4_C2C:
-		args->speed = ETH_LINK_50G;
-		args->mode = BIT_ULL(ETH_MODE_50G_4_C2C_BIT);
-	}
-}
-#endif
-
 static void mode_to_args(int mode, struct eth_mode_change_args *args, int flag)
 {
 	int mode_group = 0;
@@ -348,125 +296,125 @@ static void mode_to_args(int mode, struct eth_mode_change_args *args, int flag)
 	if (mode_group > 0)
 		args->mode_group_idx = 1;
 
-	printf("mode %d, flag %d\n", mode, flag);
+	debug("mode %d, flag %d\n", mode, flag);
 	switch (mode) {
 	case ETH_MODE_SGMII_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_1G;
 			args->mode = BIT_ULL(ETH_MODE_SGMII_BIT);
 		} else
-			printf("SGMII\n");
+			debug("SGMII\n");
 		break;
 	case ETH_MODE_1000_BASEX_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_1G;
 			args->mode = BIT_ULL(ETH_MODE_1000_BASEX_BIT);
 		} else
-			printf("1G_X\n");
+			debug("1G_X\n");
 		break;
 	case ETH_MODE_10G_C2C_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_10G;
 			args->mode = BIT_ULL(ETH_MODE_10G_C2C_BIT);
 		} else
-			printf("10G_C2C\n");
+			debug("10G_C2C\n");
 		break;
 	case ETH_MODE_10G_C2M_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_10G;
 			args->mode = BIT_ULL(ETH_MODE_10G_C2M_BIT);
 		} else
-			printf("10G_C2M\n");
+			debug("10G_C2M\n");
 		break;
 	case ETH_MODE_10G_KR_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_10G;
 			args->mode = BIT_ULL(ETH_MODE_10G_KR_BIT);
 		} else
-			printf("10G_KR\n");
+			debug("10G_KR\n");
 		break;
 	case ETH_MODE_25G_C2C_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_25G;
 			args->mode = BIT_ULL(ETH_MODE_25G_C2C_BIT);
 		} else
-			printf("25G_C2C\n");
+			debug("25G_C2C\n");
 		break;
 	case ETH_MODE_25G_C2M_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_25G;
 			args->mode = BIT_ULL(ETH_MODE_25G_C2M_BIT);
 		} else
-			printf("25G_C2M\n");
+			debug("25G_C2M\n");
 		break;
 	case ETH_MODE_25G_CR_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_25G;
 			args->mode = BIT_ULL(ETH_MODE_25G_CR_BIT);
 		} else
-			printf("25G_CR\n");
+			debug("25G_CR\n");
 		break;
 	case ETH_MODE_25G_KR_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_25G;
 			args->mode = BIT_ULL(ETH_MODE_25G_KR_BIT);
 		} else
-			printf("25G_KR\n");
+			debug("25G_KR\n");
 		break;
 	case ETH_MODE_50G_C2C_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_50G;
 			args->mode = BIT_ULL(ETH_MODE_50G_C2C_BIT);
 		} else
-			printf("50G_C2C\n");
+			debug("50G_C2C\n");
 		break;
 	case ETH_MODE_LAUI_2_C2C_BIT:
-			printf("50G_2_C2C\n");
+			debug("50G_2_C2C\n");
 		break;
 	case ETH_MODE_50G_C2M_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_50G;
 			args->mode = BIT_ULL(ETH_MODE_50G_C2M_BIT);
 		} else
-			printf("50G_C2M\n");
+			debug("50G_C2M\n");
 		break;
 	case ETH_MODE_LAUI_2_C2M_BIT:
-			printf("50G_2_C2M\n");
+			debug("50G_2_C2M\n");
 		break;
 	case ETH_MODE_50G_CR_BIT:
-		printf("50G_CR\n");
+		debug("50G_CR\n");
 		break;
 	case ETH_MODE_50G_KR_BIT:
-		printf("50G_KR\n");
+		debug("50G_KR\n");
 		break;
 	case ETH_MODE_100G_C2C_BIT:
-		printf("100G_C2C\n");
+		debug("100G_C2C\n");
 		break;
 	case ETH_MODE_100G_C2M_BIT:
-		printf("100G_C2M\n");
+		debug("100G_C2M\n");
 		break;
 	case ETH_MODE_100G_CR4_BIT:
-		printf("100G_CR\n");
+		debug("100G_CR\n");
 		break;
 	case ETH_MODE_100G_KR4_BIT:
-		printf("100G_KR\n");
+		debug("100G_KR\n");
 		break;
 	case ETH_MODE_100GAUI_2_C2C_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_100G;
 			args->mode = BIT_ULL(ETH_MODE_100GAUI_2_C2C_BIT);
 		} else
-			printf("100G_2_C2C\n");
+			debug("100G_2_C2C\n");
 		break;
 	case ETH_MODE_100GAUI_2_C2M_BIT:
 		if (flag) {
 			args->speed = ETH_LINK_100G;
 			args->mode = BIT_ULL(ETH_MODE_100GAUI_2_C2M_BIT);
 		} else
-			printf("100G_2_C2M\n");
+			debug("100G_2_C2M\n");
 		break;
 	default:
-		printf("Unknown\n");
+		debug("Unknown Mode\n");
 		break;
 	}
 }
@@ -480,7 +428,7 @@ int eth_intf_set_mode(struct udevice *ethdev, int mode)
 	union eth_cmd_s cmd;
 
 	cmd.cmd.id = ETH_CMD_MODE_CHANGE;
-	printf("%s: mode %d\n", __func__, mode);
+	debug("%s: mode %d\n", __func__, mode);
 
 	mode_to_args(mode, &cmd.mode_change_args, 1);
 
@@ -499,28 +447,27 @@ int eth_intf_set_mode(struct udevice *ethdev, int mode)
 		return -1;
 	}
 
-	printf("Current Link Status: ");
 	mode_to_args(mode, &cmd.mode_change_args, 0);
 
 	if (scr0.s.link_sts.speed) {
-		printf("%s\n", intf_speed_to_str[scr0.s.link_sts.speed]);
+		printf("Mode %s ", intf_speed_to_str[scr0.s.link_sts.speed]);
 		switch (scr0.s.link_sts.fec) {
 		case 0:
-			printf("FEC_NONE\n");
+			printf("FEC_NONE ");
 			break;
 		case 1:
-			printf("FEC_BASE_R\n");
+			printf("FEC_BASE_R ");
 			break;
 		case 2:
-			printf("FEC_RS\n");
+			printf("FEC_RS ");
 			break;
 		}
-		printf("Auto Negotiation %sabled\n",
+		printf("Auto Negotiation %sabled ",
 		       scr0.s.link_sts.an ? "En" : "Dis");
 		printf("%s Duplex\n",
 		       scr0.s.link_sts.full_duplex ? "Full" : "Half");
 	} else {
-		printf("Down\n");
+		printf("Link is Down for %s\n", ethdev->name);
 	}
 	return 0;
 }

@@ -16,6 +16,14 @@ config CMD_ETH
 	   LMAC modes on RVU PF [CGX] network interfaces on Marvell
 	   OcteonTX2 platforms.
 
+config CMD_SERDES_DIAGNOSTICS
+	depends on ARCH_CN10K
+	bool "Commands related to CN10K SerDes diagnostics"
+	help
+	   SerDes diagnostics tool used for CN10k platform. Supports
+	   performing PRBS, setting Loopback mode and reading/writing
+	   Tx/Rx tuning parameters.
+
 config CMD_EFI_CMDS
 	depends on ARCH_CN10K
 	bool "EFI commands"

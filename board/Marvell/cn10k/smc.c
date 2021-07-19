@@ -260,3 +260,182 @@ int smc_spi_verify(struct smc_version_info *desc)
 
 	return regs.regs[0];
 }
+
+ssize_t smc_serdes_prbs_start(int port,
+			      struct gserm_data *gserm,
+			      int pattern, int gen_check,
+			      int err_inject_cnt)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_PRBS;
+	regs.regs[1] = (gen_check << 18) | (PRBS_START << 16) |
+			(0xff << 8) | port;
+	regs.regs[2] = pattern;
+	regs.regs[3] = err_inject_cnt;
+	smc_call(&regs);
+
+	if (gserm) {
+		gserm->gserm_idx = (regs.regs[2] >> 24) & 0xff;
+		gserm->lanes_num = regs.regs[2] & 0xff;
+		gserm->mapping = (regs.regs[2] >> 8) & 0xffff;
+	}
+
+	return regs.regs[0];
+}
+
+ssize_t smc_serdes_prbs_stop(int port, struct gserm_data *gserm)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_PRBS;
+	regs.regs[1] = (PRBS_STOP << 16) | (0xff << 8) | port;
+	regs.regs[2] = 0;
+	regs.regs[3] = 0;
+	smc_call(&regs);
+
+	if (gserm) {
+		gserm->gserm_idx = (regs.regs[2] >> 24) & 0xff;
+		gserm->lanes_num = regs.regs[2] & 0xff;
+		gserm->mapping = (regs.regs[2] >> 8) & 0xffff;
+	}
+
+	return regs.regs[0];
+}
+
+ssize_t smc_serdes_prbs_clear(int port, struct gserm_data *gserm)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_PRBS;
+	regs.regs[1] = (PRBS_CLEAR << 16) | (0xff << 8) | port;
+	regs.regs[2] = 0;
+	regs.regs[3] = 0;
+	smc_call(&regs);
+
+	if (gserm) {
+		gserm->gserm_idx = (regs.regs[2] >> 24) & 0xff;
+		gserm->lanes_num = regs.regs[2] & 0xff;
+		gserm->mapping = (regs.regs[2] >> 8) & 0xffff;
+	}
+
+	return regs.regs[0];
+}
+
+ssize_t smc_serdes_prbs_show(int port,
+			     struct gserm_data *gserm,
+			     void **error_stats)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_PRBS;
+	regs.regs[1] = (PRBS_SHOW << 16) | (0xff << 8) | port;
+	regs.regs[2] = 0;
+	regs.regs[3] = 0;
+	regs.regs[4] = 0;
+	smc_call(&regs);
+
+	if (error_stats)
+		*error_stats = (void *)regs.regs[1];
+
+	if (gserm) {
+		gserm->gserm_idx = (regs.regs[2] >> 24) & 0xff;
+		gserm->lanes_num = regs.regs[2] & 0xff;
+		gserm->mapping = (regs.regs[2] >> 8) & 0xffff;
+	}
+
+	return regs.regs[0];
+}
+
+ssize_t smc_serdes_lpbk(int port, struct gserm_data *gserm, int type)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_LOOPBACK;
+	regs.regs[1] = (0xff << 8) | port;
+	regs.regs[2] = type;
+	smc_call(&regs);
+
+	if (gserm) {
+		gserm->gserm_idx = (regs.regs[1] >> 24) & 0xff;
+		gserm->lanes_num = regs.regs[1] & 0xff;
+		gserm->mapping = (regs.regs[1] >> 8) & 0xffff;
+	}
+
+	return regs.regs[0];
+}
+
+ssize_t smc_serdes_get_rx_tuning(int port, int lane,
+				 void **params,
+				 struct gserm_data *gserm)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_RX_TUNING;
+	regs.regs[1] = (lane << 8) | port;
+	regs.regs[2] = 0;
+	regs.regs[3] = 0;
+	regs.regs[4] = 0;
+	smc_call(&regs);
+
+	if (params)
+		*params = (void *)regs.regs[1];
+
+	if (gserm) {
+		gserm->gserm_idx = (regs.regs[2] >> 24) & 0xff;
+		gserm->lanes_num = regs.regs[2] & 0xff;
+		gserm->mapping = (regs.regs[2] >> 8) & 0xffff;
+	}
+
+	return regs.regs[0];
+}
+
+ssize_t smc_serdes_get_tx_tuning(int port, int lane,
+				 void **params,
+				 struct gserm_data *gserm)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_TX_TUNING;
+	regs.regs[1] = (lane << 8) | port;
+	regs.regs[2] = 0;
+	regs.regs[3] = 0;
+	regs.regs[4] = 0;
+	smc_call(&regs);
+
+	if (params)
+		*params = (void *)regs.regs[1];
+
+	if (gserm) {
+		gserm->gserm_idx = (regs.regs[2] >> 24) & 0xff;
+		gserm->lanes_num = regs.regs[2] & 0xff;
+		gserm->mapping = (regs.regs[2] >> 8) & 0xffff;
+	}
+
+	return regs.regs[0];
+}
+
+ssize_t smc_serdes_set_tx_tuning(int port, int lane,
+				 u32 pre3_pre2,
+				 u32 pre1_main,
+				 u32 post_flags,
+				 struct gserm_data *gserm)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_TX_TUNING;
+	regs.regs[1] = (lane << 8) | port;
+	regs.regs[2] = pre3_pre2;
+	regs.regs[3] = pre1_main;
+	regs.regs[4] = post_flags;
+	smc_call(&regs);
+
+	if (gserm) {
+		gserm->gserm_idx = (regs.regs[2] >> 24) & 0xff;
+		gserm->lanes_num = regs.regs[2] & 0xff;
+		gserm->mapping = (regs.regs[2] >> 8) & 0xffff;
+	}
+
+	return regs.regs[0];
+}
+

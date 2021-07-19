@@ -135,4 +135,189 @@ unsigned long smc_sec_spi_op(u64 offset, u64 buffer, u64 size, u32 bus,
  */
 int smc_spi_verify(struct smc_version_info *desc);
 
+struct gserm_data {
+	u8 gserm_idx;
+	u8 lanes_num;
+	u16 mapping;
+};
+
+/**
+ * Set SerDes PRBS
+ *
+ * x1[19]: enable/disable generator (enabled by default)
+ * x1[18]: enable/disable checker (enabled by default)
+ * x1[17:16]: subcommand:
+ *	0 - start prbs
+ *	1 - show prbs
+ *	2 - clear prbs
+ *	3 - stop prbs
+ *
+ * x1[15:8]:	lane# or 0xff if no lane provided
+ *		in which case it will be executed for
+ *		all the lanes assigned to the given port
+ * x1[7:0]:	port#
+ *
+ * x2: prbs pattern (valid only for start command)
+ * x3: inject error count (valid only for start command)
+ *
+ * returns:
+ *	x0:
+ *		0 -- success
+ *		negative - error
+ *
+ *	Show command only:
+ *	x1:
+ *		SERDES_PRBS_DATA_BASE address, where the following
+ *		structure is stored to return prbs error statistics
+ *		data for maximum of 4 lanes:
+ *
+ *		struct prbs_error_stats {
+ *			uint64_t total_bits;
+ *			uint64_t error_bits;
+ *		} stats[4];
+ *
+ *	x2[31:24]: gserm number
+ *	x2[23:8] : port lane# to gserm lane# mapping
+ *	x2[7:0]  : Number of lanes assigned to the given port
+ *
+ */
+ssize_t smc_serdes_prbs_start(int port,
+			      struct gserm_data *gserm,
+			      int pattern, int gen_check,
+			      int err_inject_cnt);
+
+ssize_t smc_serdes_prbs_stop(int port, struct gserm_data *gserm);
+ssize_t smc_serdes_prbs_clear(int port, struct gserm_data *gserm);
+ssize_t smc_serdes_prbs_show(int port, struct gserm_data *gserm,
+			     void **error_stats);
+
+enum prbs_subcmd {
+	PRBS_START,
+	PRBS_SHOW,
+	PRBS_CLEAR,
+	PRBS_STOP
+};
+
+/**
+ * Set SerDes Loopback
+ *
+ * x1[15:8]:	lane# or 0xff if no lane provided
+ *		in which case it will be executed for
+ *		all the lanes assigned to the given port
+ * x1[7:0]:	port#
+ *
+ * x2: type of loopback:
+ *	0: No Loopback
+ *	1: Near End Analog
+ *	2: Near End Digital
+ *	3: Far End Digital
+ *
+ * returns:
+ *	x0:
+ *		0 -- success
+ *		negative - error
+ *
+ *	x1[31:24]: gserm number
+ *	x1[23:8] : port lane# to gserm lane# mapping
+ *	x1[7:0]  : Number of lanes assigned to the given port
+ */
+ssize_t smc_serdes_lpbk(int port, struct gserm_data *gserm, int type);
+
+/**
+ * Read SerDes Rx tuning parameters
+ *
+ * x1[15:8]:	lane# or 0xff if no lane provided
+ *		in which case it will be executed for
+ *		all the lanes assigned to the given port
+ * x1[7:0]:	port#
+ *
+ * returns:
+ *	x0:
+ *		0 -- success
+ *		negative - error
+ *	x1:
+ *		SERDES_SETTINGS_DATA_BASE address, where
+ *		the following structure is stored:
+ *		struct rx_eq_params {
+ *			s32 dfe_taps[24];
+ *			u32 ctle_params[13];
+ *		} params[4];
+ *
+ *	x2[31:24]: gserm number
+ *	x2[23:8] : port lane# to gserm lane# mapping
+ *	x2[7:0]  : Number of lanes assigned to the given port
+ *
+ */
+ssize_t smc_serdes_get_rx_tuning(int port, int lane,
+				 void **params,
+				 struct gserm_data *gserm);
+
+/**
+ * Read SerDes Tx tuning parameters
+ *
+ * x1[15:8]:	lane# or 0xff if no lane provided
+ *		in which case it will be executed for
+ *		all the lanes assigned to the given port
+ * x1[7:0]:	port#
+ *
+ * returns:
+ *	x0:
+ *		0 -- success
+ *		negative - error
+ *
+ *	x1:
+ *		SERDES_SETTINGS_DATA_BASE address, where
+ *		the following structure is stored:
+ *		struct tx_eq_params {
+ *			u16 pre3;
+ *			u16 pre2;
+ *			u16 pre1;
+ *			u16 main;
+ *			u16 post;
+ *		} params[4];
+ *
+ *	x2[31:24]: gserm number
+ *	x2[23:8] : port lane# to gserm lane# mapping
+ *	x2[7:0]  : Number of lanes assigned to the given port
+ */
+ssize_t smc_serdes_get_tx_tuning(int port, int lane,
+				 void **params,
+				 struct gserm_data *gserm);
+
+/**
+ * Write SerDes Tx tuning parameters
+ *
+ * x1[15:8]:	lane# or 0xff if no lane provided
+ *		in which case it will be executed for
+ *		all the lanes assigned to the given port
+ * x1[7:0]:	port#
+ *
+ * x2[31:16]: pre3 parameter
+ * x2[15:0]: pre2 parameter
+ *
+ * x3[31:16]: pre1 parameter
+ * x3[15:0]: main parameter
+ *
+ * x4[31:16]: post parameter
+ * x4[4]: '1' means post provided
+ * x4[3]: '1' means main provided
+ * x4[2]: '1' means pre1 provided
+ * x4[1]: '1' means pre2 provided
+ * x4[0]: '1' means pre3 provided
+ *
+ * returns:
+ *	x0:
+ *		0 -- success
+ *		negative - error
+ *
+ *	x2[31:24]: gserm number
+ *	x2[23:8] : port lane# to gserm lane# mapping
+ *	x2[7:0]  : Number of lanes assigned to the given port
+ */
+ssize_t smc_serdes_set_tx_tuning(int port, int lane,
+				 u32 pre3_pre2,
+				 u32 pre1_main,
+				 u32 post_flags,
+				 struct gserm_data *gserm);
+
 #endif

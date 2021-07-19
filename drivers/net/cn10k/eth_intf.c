@@ -279,6 +279,7 @@ enum eth_mode {
 #endif
 
 static char intf_speed_to_str[][8] = {
+	"None",
 	"10M",
 	"100M",
 	"1G",

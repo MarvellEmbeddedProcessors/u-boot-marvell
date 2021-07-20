@@ -658,12 +658,6 @@ int cgx_intf_set_ignore(struct udevice *ethdev, int cgx, int lmac, int ignore)
 			       cgx_id, lmac_id);
 		return -1;
 	}
-	if (ethdev)
-		printf("Persist settings %signored for %s\n",
-		       scr0.s.persist.ignore ? "" : "not ", ethdev->name);
-	else
-		printf("Persist settings %signored for CGX%d LMAC%d\n",
-		       scr0.s.persist.ignore ? "" : "not ", cgx_id, lmac_id);
 
 	return 0;
 }

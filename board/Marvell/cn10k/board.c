@@ -29,9 +29,88 @@
 #include <wdt.h>
 #include <linux/iopoll.h>
 
+#ifdef CONFIG_CN10K_TTYMEM
+#define CONSOLE_NAME	"ttymem"
+#endif
+
+#ifdef CONFIG_CN10K_TTYMEM
+#define CONSOLE_NAME	"ttymem"
+#endif
+
 extern ssize_t smc_flsf_fw_booted(void);
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#ifdef CONFIG_CN10K_TTYMEM
+static int init_ttymem_console(void)
+{
+	struct udevice *ttymem_dev = NULL;
+	int ret = 0;
+	char iomux_name[128];
+	char *stdoutname = env_get("stdout");
+	char *stderrname = env_get("stderr");
+	bool stdout_set, stderr_set;
+
+	if (!stdoutname) {
+		env_set("stdout", "serial");
+		stdoutname = env_get("stdout");
+	}
+	if (!stderrname) {
+		env_set("stderr", "serial");
+		stderrname = env_get("stderr");
+	}
+
+	if (!stdoutname || !stderrname) {
+		printf("%s: Error setting environment variabled for serial\n",
+			__func__);
+		return -1;
+	}
+
+	stdout_set = !!strstr(stdoutname, CONSOLE_NAME);
+	stderr_set = !!strstr(stderrname, CONSOLE_NAME);
+
+	printf("stdout: %s \nstderr: %s\n",stdoutname, stderrname);
+
+	ret = uclass_get_device_by_driver(UCLASS_SERIAL,
+				DM_GET_DRIVER(serial_ttymem),
+				&ttymem_dev);
+	if (!ttymem_dev) {
+		printf("ttymem dev not found %s\n", ttymem_dev->name);
+		return 0;
+	}
+
+	if (stdout_set)
+		strncpy(iomux_name, stdoutname, sizeof(iomux_name));
+	else
+		snprintf(iomux_name, sizeof(iomux_name), "%s,%s", stdoutname,
+			 ttymem_dev->name);
+
+	ret = iomux_doenv(stdout, iomux_name);
+	if (!stdout_set)
+		env_set("stdout", iomux_name);
+
+	if (stderr_set)
+		strncpy(iomux_name, stderrname, sizeof(iomux_name));
+	else
+		snprintf(iomux_name, sizeof(iomux_name), "%s,%s", stderrname,
+			 ttymem_dev->name);
+
+	ret = iomux_doenv(stderr, iomux_name);
+	if (ret) {
+		pr_err("%s: Error setting I/O stderr MUX to %s\n",
+		       __func__, iomux_name);
+		return ret;
+	}
+
+	if (!stderr_set)
+		env_set("stderr", iomux_name);
+
+	debug("%s: stdout: %s, stderr: %s, ret: %d\n",
+	      __func__, env_get("stdout"),
+	      env_get("stderr"), ret);
+	return ret;
+}
+#endif
 
 void cleanup_env_ethaddr(void)
 {
@@ -216,6 +295,9 @@ int board_late_init(void)
 	bool save_env = false;
 	const char *str;
 
+#ifdef CONFIG_CN10K_TTYMEM
+	init_ttymem_console();
+#endif
 	debug("%s()\n", __func__);
 
 	/*

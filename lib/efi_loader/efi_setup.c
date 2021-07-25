@@ -22,7 +22,10 @@ const char *get_boot_device(void)
 
 	node = ofnode_path("/cavium,bdk");
 	if (ofnode_valid(node))
-		str = ofnode_read_string(node, "BOOT-DEVICE.N0");
+		if (IS_ENABLED(CONFIG_ARCH_CN10K))
+			str = ofnode_read_string(node, "BOOT-DEVICE");
+		else
+			str = ofnode_read_string(node, "BOOT-DEVICE.N0");
 	else
 		printf("Error: cannot retrieve boot device from fdt\n");
 

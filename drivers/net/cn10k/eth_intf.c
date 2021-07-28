@@ -366,10 +366,14 @@ static void mode_to_args(int mode, struct eth_mode_change_args *args, int flag)
 			args->speed = ETH_LINK_50G;
 			args->mode = BIT_ULL(ETH_MODE_50G_C2C_BIT);
 		} else
-			debug("50G_C2C\n");
+			debug("50GAUI_1_C2C\n");
 		break;
 	case ETH_MODE_LAUI_2_C2C_BIT:
-			debug("50G_2_C2C\n");
+		if (flag) {
+			args->speed = ETH_LINK_50G;
+			args->mode = BIT_ULL(ETH_MODE_LAUI_2_C2C_BIT);
+		} else
+			debug("50GAUI_2_C2C\n");
 		break;
 	case ETH_MODE_50G_C2M_BIT:
 		if (flag) {
@@ -379,7 +383,11 @@ static void mode_to_args(int mode, struct eth_mode_change_args *args, int flag)
 			debug("50G_C2M\n");
 		break;
 	case ETH_MODE_LAUI_2_C2M_BIT:
-			debug("50G_2_C2M\n");
+		if (flag) {
+			args->speed = ETH_LINK_50G;
+			args->mode = BIT_ULL(ETH_MODE_LAUI_2_C2M_BIT);
+		} else
+			debug("50GAUI_2_C2M\n");
 		break;
 	case ETH_MODE_50G_CR_BIT:
 		debug("50G_CR\n");
@@ -388,16 +396,38 @@ static void mode_to_args(int mode, struct eth_mode_change_args *args, int flag)
 		debug("50G_KR\n");
 		break;
 	case ETH_MODE_100G_C2C_BIT:
-		debug("100G_C2C\n");
+		if (flag) {
+			args->speed = ETH_LINK_100G;
+			args->mode = BIT_ULL(ETH_MODE_100G_C2C_BIT);
+		} else
+			debug("100GAUI_4_C2C\n");
 		break;
 	case ETH_MODE_100G_C2M_BIT:
-		debug("100G_C2M\n");
+		if (flag) {
+			args->speed = ETH_LINK_100G;
+			args->mode = BIT_ULL(ETH_MODE_100G_C2M_BIT);
+		} else
+			debug("100GAUI_4_C2M\n");
 		break;
 	case ETH_MODE_100G_CR4_BIT:
 		debug("100G_CR\n");
 		break;
 	case ETH_MODE_100G_KR4_BIT:
 		debug("100G_KR\n");
+		break;
+	case ETH_MODE_40G_C2C_BIT:
+		if (flag) {
+			args->speed = ETH_LINK_40G;
+			args->mode = BIT_ULL(ETH_MODE_40G_C2C_BIT);
+		} else
+			debug("40GAUI_C2C\n");
+		break;
+	case ETH_MODE_40G_C2M_BIT:
+		if (flag) {
+			args->speed = ETH_LINK_40G;
+			args->mode = BIT_ULL(ETH_MODE_40G_C2M_BIT);
+		} else
+			debug("40GAUI_C2M\n");
 		break;
 	case ETH_MODE_100GAUI_2_C2C_BIT:
 		if (flag) {
@@ -412,6 +442,13 @@ static void mode_to_args(int mode, struct eth_mode_change_args *args, int flag)
 			args->mode = BIT_ULL(ETH_MODE_100GAUI_2_C2M_BIT);
 		} else
 			debug("100G_2_C2M\n");
+		break;
+	case ETH_MODE_SFI_1G_BIT:
+		if (flag) {
+			args->speed = ETH_LINK_1G;
+			args->mode = BIT_ULL(ETH_MODE_SFI_1G_BIT);
+		} else
+			debug("SFI 1G\n");
 		break;
 	default:
 		debug("Unknown Mode\n");
@@ -505,22 +542,43 @@ int eth_intf_get_mode(struct udevice *ethdev)
 		printf("10G_KR\n");
 		break;
 	case ETH_MODE_25G_C2C_BIT:
-		printf("25G_C2C\n");
+		printf("25GAUI_C2C\n");
 		break;
 	case ETH_MODE_25G_C2M_BIT:
-		printf("25G_C2M\n");
+		printf("25GAUI_C2M\n");
+		break;
+	case ETH_MODE_40G_C2C_BIT:
+		printf("40GAUI_4_C2C\n");
+		break;
+	case ETH_MODE_40G_C2M_BIT:
+		printf("40GAUI_4_C2M\n");
+		break;
+	case ETH_MODE_100G_C2C_BIT:
+		printf("100GAUI_4_C2C\n");
+		break;
+	case ETH_MODE_100G_C2M_BIT:
+		printf("100GAUI_4_C2M\n");
 		break;
 	case ETH_MODE_50G_C2C_BIT:
-		printf("50G_1_C2C\n");
+		printf("50GAUI_1_C2C\n");
 		break;
 	case ETH_MODE_50G_C2M_BIT:
-		printf("50G_1_C2M\n");
+		printf("50GAUI_1_C2M\n");
 		break;
 	case ETH_MODE_100GAUI_2_C2C_BIT:
-		printf("100G_2_C2C\n");
+		printf("100GAUI_2_C2C\n");
 		break;
 	case ETH_MODE_100GAUI_2_C2M_BIT:
-		printf("100G_2_C2M\n");
+		printf("100GAUI_2_C2M\n");
+		break;
+	case ETH_MODE_LAUI_2_C2C_BIT:
+		printf("50GAUI_2_C2C\n");
+		break;
+	case ETH_MODE_LAUI_2_C2M_BIT:
+		printf("50GAUI_2_C2M\n");
+		break;
+	case ETH_MODE_SFI_1G_BIT:
+		printf("SFI_1G\n");
 		break;
 	/* FIXME: Add other modes when supported by ATF */
 	default:

@@ -124,10 +124,17 @@ U_BOOT_CMD(set_mode, 3, 1, do_ethparam_common,
 	"    4 - 10G_C2M\n"
 	"    7 - 25G_C2C\n"
 	"    8 - 25G_C2M\n"
+	"   12 - 40G_C2C\n"
+	"   13 - 40G_C2M\n"
 	"   17 - 50G_1_C2C\n"
 	"   18 - 50G_1_C2M\n"
+	"   23 - 100G_4_C2C\n"
+	"   24 - 100G_4_C2M\n"
+	"   27 - 50G_2_C2C\n"
+	"   28 - 50G_2_C2M\n"
 	"   31 - 100G_2_C2C\n"
 	"   32 - 100G_2_C2M\n"
+	"   35 - SFI_1G\n"
 	"Use 'ethlist' command to display network interface names\n"
 );
 

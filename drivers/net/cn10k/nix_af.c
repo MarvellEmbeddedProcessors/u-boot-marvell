@@ -490,14 +490,15 @@ static int nix_attach_receive_queue(struct nix_af *nix_af, int lf)
 	rq_req.rq.s.cq = NIX_CQ_RX;
 	rq_req.rq.s.wqe_aura = -1;	/* No WQE aura */
 	rq_req.rq.s.spb_aura = NPA_POOL_RX;
-	rq_req.rq.s.lpb_aura = NPA_POOL_RX;
+	rq_req.rq.s.lpb_aura = NPA_POOL_RX_LPB;
 	/* U-Boot doesn't use WQE group for anything */
 	rq_req.rq.s.pb_caching = 1;
 	rq_req.rq.s.xqe_drop_ena = 0;	/* Disable RED dropping */
 	rq_req.rq.s.spb_drop_ena = 0;
 	rq_req.rq.s.lpb_drop_ena = 0;
-	rq_req.rq.s.spb_sizem1 = (MAX_MTU / (3 * 8)) - 1; /* 512 bytes */
-	rq_req.rq.s.lpb_sizem1 = (MAX_MTU / 8) - 1;
+	rq_req.rq.s.spb_sizem1 = ((MAX_MTU / 8) - 1) & 0x3F; /* 1536 bytes */
+	rq_req.rq.s.spb_high_sizem1 = (((MAX_MTU / 8) - 1) >> 6) & 0x7; /* MSB 1536 bytes */
+	rq_req.rq.s.lpb_sizem1 = (NIX_MAX_HW_MTU / 8) - 1;
 	rq_req.rq.s.first_skip = 0;
 	rq_req.rq.s.later_skip = 0;
 	rq_req.rq.s.xqe_imm_copy = 0;

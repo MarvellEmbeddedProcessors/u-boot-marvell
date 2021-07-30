@@ -34,19 +34,21 @@
 
 #define NIX_INTF_TYPE_CGX		0
 #define NIX_INTF_TYPE_LBK		1
-#define NIX_MAX_HW_MTU			9212
+#define NIX_MAX_HW_MTU			16384
 #define NIX_MIN_TX_MTU			60
 #define NIX_MIN_RX_MTU			40
 #define MAX_MTU				1536
 
-#define NPA_POOL_COUNT			3
+#define NPA_POOL_COUNT			4
 #define NPA_AURA_COUNT(x)		(1ULL << ((x) + 6))
 #define NPA_POOL_RX			0ULL
 #define NPA_POOL_TX			1ULL
 #define NPA_POOL_SQB			2ULL
+#define NPA_POOL_RX_LPB			3ULL
 #define RQ_QLEN				Q_COUNT(Q_SIZE_256)
 #define SQ_QLEN				Q_COUNT(Q_SIZE_256)
 #define SQB_QLEN			Q_COUNT(Q_SIZE_16)
+#define RQ_LPB_QLEN			Q_COUNT(Q_SIZE_64)
 
 #define NIX_CQ_RX			0ULL
 #define NIX_CQ_TX			1ULL

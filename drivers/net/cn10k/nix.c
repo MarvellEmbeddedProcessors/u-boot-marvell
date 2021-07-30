@@ -133,15 +133,19 @@ int npa_lf_setup(struct nix *nix)
 							stack_page_pointers;
 	npa->stack_pages[NPA_POOL_SQB] = (SQB_QLEN + stack_page_pointers - 1) /
 							stack_page_pointers;
+	npa->stack_pages[NPA_POOL_RX_LPB] = (RQ_LPB_QLEN + stack_page_pointers - 1) /
+							stack_page_pointers;
 	npa->pool_stack_pointers = stack_page_pointers;
 
 	npa->q_len[NPA_POOL_RX] = RQ_QLEN;
 	npa->q_len[NPA_POOL_TX] = SQ_QLEN;
 	npa->q_len[NPA_POOL_SQB] = SQB_QLEN;
+	npa->q_len[NPA_POOL_RX_LPB] = RQ_LPB_QLEN;
 
 	npa->buf_size[NPA_POOL_RX] = MAX_MTU + CONFIG_SYS_CACHELINE_SIZE;
 	npa->buf_size[NPA_POOL_TX] = MAX_MTU + CONFIG_SYS_CACHELINE_SIZE;
 	npa->buf_size[NPA_POOL_SQB] = nix_af->sqb_size;
+	npa->buf_size[NPA_POOL_RX_LPB] = NIX_MAX_HW_MTU + CONFIG_SYS_CACHELINE_SIZE;
 
 	npa->aura_ctx = nix_memalloc(NPA_POOL_COUNT,
 				     sizeof(union npa_aura_s),
@@ -526,7 +530,7 @@ int nix_lf_xmit(struct udevice *dev, void *pkt, int pkt_len)
 		return -1;
 	}
 	memcpy(packet, pkt, pkt_len);
-	debug("%s TX buffer %p\n", __func__, packet);
+	debug("\n%s TX buffer %p\n", __func__, packet);
 
 	tx_dr.hdr.s.aura = NPA_POOL_TX;
 	tx_dr.hdr.s.df = 0;
@@ -562,15 +566,15 @@ int nix_lf_xmit(struct udevice *dev, void *pkt, int pkt_len)
 	return 0;
 }
 
-void npa_lf_rx_free_ptr(struct npa *npa, u64 pkt_addr)
+void npa_lf_rx_free_ptr(struct npa *npa, u64 pkt_addr, int pool_id)
 {
 	u64 lmt_data[2], val, lmt_addr = readq(npa->lmt_base);
 
 	/* Push pointer to the pool. 128 bit writes only */
 	lmt_data[1] = pkt_addr;
-	lmt_data[0] = NPA_POOL_RX | (1ULL << 32);
-	val = NPA_POOL_RX;
-	memcpy((void *)lmt_addr + (NPA_POOL_RX * 0x80), lmt_data, 16);
+	lmt_data[0] = pool_id | (1ULL << 32);
+	val = pool_id;
+	memcpy((void *)lmt_addr + (pool_id * 0x80), lmt_data, 16);
 	__iowmb();
 	lmt_submit((u64)(npa->npa_base + NPA_LF_AURA_BATCH_FREE0()),
 		   val);
@@ -588,6 +592,8 @@ void nix_lf_flush_rx(struct udevice *dev)
 	u32 head, tail;
 	u32 rx_cqe_sz = nix->cq[NIX_CQ_RX].entry_sz;
 	u64 *seg;
+	union nix_rx_sg_s *rxsg;
+	int pool_id = NPA_POOL_RX;
 
 	/* flush rx cqe entries */
 	op_status.u = nix_cq_op_status(nix, NIX_CQ_RX);
@@ -595,19 +601,23 @@ void nix_lf_flush_rx(struct udevice *dev)
 	tail = op_status.s.tail;
 	head &= (nix->cq[NIX_CQ_RX].qsize - 1);
 	tail &= (nix->cq[NIX_CQ_RX].qsize - 1);
+	debug("%s cq rx head %d tail %d\n", __func__, head, tail);
 
 	while (head != tail) {
 		rx_dr = (struct nix_rx_dr *)(cq_rx_base + head * rx_cqe_sz);
 		rxparse = &rx_dr->rx_parse;
+		rxsg = &rx_dr->rx_sg;
 
 		debug("%s: rx parse: desc_sizem1 %x pkt_lenm1 %x\n",
 		      __func__, rxparse->s.desc_sizem1, rxparse->s.pkt_lenm1);
 
-		seg = (dma_addr_t *)(&rx_dr->rx_sg + 1);
+		seg = (dma_addr_t *)(rxsg + 1);
 
-		npa_lf_rx_free_ptr(nix->npa, (u64)(*seg));
-
-		debug("%s return %llx to NPA\n", __func__, *seg);
+		if (rxparse->s.pkt_lenm1 > MAX_MTU)
+			pool_id = NPA_POOL_RX_LPB;
+		npa_lf_rx_free_ptr(nix->npa, (u64)(*seg), pool_id);
+		debug("%s return %llx to NPA pool %d\n", __func__,
+		      *seg, pool_id);
 		nix_pf_reg_write(nix, NIXX_LF_CQ_OP_DOOR(),
 				 (NIX_CQ_RX << 32) | 1);
 
@@ -624,11 +634,30 @@ int nix_lf_free_pkt(struct udevice *dev, uchar *pkt, int pkt_len)
 {
 	struct rvu_pf *rvu = dev_get_priv(dev);
 	struct nix *nix = rvu->nix;
+	int pool_id = NPA_POOL_RX;
+	union nixx_lf_cq_op_status op_status;
+	u32 head, tail;
+
+	op_status.u = nix_cq_op_status(nix, NIX_CQ_RX);
+	head = op_status.s.head;
+	tail = op_status.s.tail;
+	head &= (nix->cq[NIX_CQ_RX].qsize - 1);
+	tail &= (nix->cq[NIX_CQ_RX].qsize - 1);
+	debug("%s cq rx head %d tail %d\n", __func__, head, tail);
+	/*
+	 * In case halt method flushes out RX CQE, nothing to do.
+	 * Otherwise duplicate free occurs.
+	 */
+	if (head == tail)
+		return 0;
 
 	/* Return rx packet to NPA */
-	debug("%s return %p to NPA\n", __func__, pkt);
+	if (pkt_len > MAX_MTU)
+		pool_id = NPA_POOL_RX_LPB;
 
-	npa_lf_rx_free_ptr(nix->npa, (u64)pkt);
+	debug("%s return %p to NPA pool %d\n", __func__, pkt, pool_id);
+
+	npa_lf_rx_free_ptr(nix->npa, (u64)pkt, pool_id);
 
 	nix_pf_reg_write(nix, NIXX_LF_CQ_OP_DOOR(),
 			 (NIX_CQ_RX << 32) | 1);
@@ -645,6 +674,7 @@ int nix_lf_recv(struct udevice *dev, int flags, uchar **packetp)
 	void *cq_rx_base = nix->cq[NIX_CQ_RX].base;
 	struct nix_rx_dr *rx_dr;
 	union nix_rx_parse_s *rxparse;
+	union nix_rx_sg_s *rxsg;
 	void *pkt, *cqe;
 	int pkt_len = 0;
 	u64 *addr;
@@ -665,6 +695,7 @@ int nix_lf_recv(struct udevice *dev, int flags, uchar **packetp)
 	cqe = cq_rx_base + head * nix->cq[NIX_CQ_RX].entry_sz;
 	rx_dr = (struct nix_rx_dr *)cqe;
 	rxparse = &rx_dr->rx_parse;
+	rxsg = &rx_dr->rx_sg;
 
 	debug("%s: rx parse: desc_sizem1 %x pkt_lenm1 %x\n",
 	      __func__, rxparse->s.desc_sizem1, rxparse->s.pkt_lenm1);
@@ -678,20 +709,19 @@ int nix_lf_recv(struct udevice *dev, int flags, uchar **packetp)
 	}
 
 	pkt_len = rxparse->s.pkt_lenm1 + 1;
-	addr = (dma_addr_t *)(&rx_dr->rx_sg + 1);
+	addr = (dma_addr_t *)(rxsg + 1);
 	pkt = (void *)addr[0];
 
-	debug("%s: segs: %d (%d@0x%llx, %d@0x%llx, %d@0x%llx)\n", __func__,
-	      rx_dr->rx_sg.s.segs, rx_dr->rx_sg.s.seg1_size, addr[0],
-	      rx_dr->rx_sg.s.seg2_size, addr[1],
-	      rx_dr->rx_sg.s.seg3_size, addr[2]);
-	if (pkt_len < rx_dr->rx_sg.s.seg1_size + rx_dr->rx_sg.s.seg2_size +
-			rx_dr->rx_sg.s.seg3_size) {
+	debug("%s: segs: %d (%d@0x%llx, %d@0x%llx, %d@0x%llx)\n",
+	      __func__, rxsg->s.segs, rxsg->s.seg1_size, addr[0],
+	      rxsg->s.seg2_size, addr[1],
+	      rxsg->s.seg3_size, addr[2]);
+	if (pkt_len < rxsg->s.seg1_size) {
 		debug("%s: Error: rx buffer size too small\n", __func__);
 		return -1;
 	}
-
 	__iowmb();
+
 #define DEBUG_PKT
 #ifdef DEBUG_PKT
 	debug("RX PKT Data\n");

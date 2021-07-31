@@ -80,6 +80,10 @@ struct udevice *get_switch_dev(void)
 	struct udevice *bus, *dev;
 	struct uclass *uc;
 
+	if (!fdt_get_switch_config()) {
+		printf("\nSkip Switch micro-init option is set\n");
+		return NULL;
+	}
 	uclass_id_foreach_dev(UCLASS_PCI, bus, uc) {
 		device_foreach_child(dev, bus) {
 			struct pci_child_platdata *pplat;
@@ -216,7 +220,7 @@ u8 switch_cmd_opcode4(u32 profile_num)
 	cmd.control_word = (1 << 31) | (8 << 18);
 
 	if (!get_switch_dev()) {
-		debug("Switch Device NOT Detected\n");
+		debug("%s: Switch Device NOT Detected\n", __func__);
 		return status;
 	}
 

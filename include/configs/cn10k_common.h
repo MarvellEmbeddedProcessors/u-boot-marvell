@@ -17,7 +17,7 @@
 #define CONFIG_SYS_SDRAM_BASE		CONFIG_SYS_TEXT_BASE
 
 /** Stack starting address */
-#define CONFIG_SYS_INIT_SP_ADDR		(CONFIG_SYS_SDRAM_BASE + 0xffff0)
+#define CONFIG_SYS_INIT_SP_ADDR		(CONFIG_SYS_SDRAM_BASE + 0xfffff0)
 
 /** Heap size for U-Boot */
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + 64 * 1024 * 1024)

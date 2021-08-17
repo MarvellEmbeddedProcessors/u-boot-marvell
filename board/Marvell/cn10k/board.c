@@ -27,6 +27,7 @@
 #include <dm/util.h>
 #include <spi.h>
 #include <wdt.h>
+#include <linux/iopoll.h>
 
 extern ssize_t smc_flsf_fw_booted(void);
 
@@ -308,6 +309,30 @@ int checkboard(void)
 	printf("Board: %s\n", fdt_get_board_model());
 
 	return 0;
+}
+
+int board_acquire_flash_arb(bool acquire)
+{
+	union cpc_boot_ownerx ownerx;
+	int ret = 0;
+
+	if (!acquire) {
+		ownerx.u = readl(CPC_BOOT_OWNERX(3));
+		ownerx.s.boot_req = 0;
+		writel(ownerx.u, CPC_BOOT_OWNERX(3));
+	} else {
+		ownerx.u = 0;
+		ownerx.s.boot_req = 1;
+		writel(ownerx.u, CPC_BOOT_OWNERX(3));
+		udelay(1);
+		ret = readl_relaxed_poll_timeout(CPC_BOOT_OWNERX(3), ownerx.u,
+						 ((ownerx.s.boot_wait) == 0), 1000);
+	}
+
+	if (ret)
+		debug("%s: Failed to acquire flash\n", __func__);
+
+	return ret;
 }
 
 #ifdef CONFIG_LAST_STAGE_INIT

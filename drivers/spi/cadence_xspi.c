@@ -278,6 +278,7 @@ const int cdns_xspi_clk_div_list[] = {
 };
 
 static int cdns_xspi_controller_init(struct cdns_xspi_dev *cdns_xspi);
+int board_acquire_flash_arb(bool acquire);
 
 // Find max avalible clocl
 static bool cdns_xspi_setup_clock(struct cdns_xspi_dev *cdns_xspi, int requested_clk)
@@ -340,11 +341,19 @@ static void iowrite8_rep(void __iomem *addr, const uint8_t *buf, int len)
 
 static int cdns_xspi_claim_bus(struct udevice *dev)
 {
+	if ((IS_ENABLED(CONFIG_ARCH_CN10K))) {
+		if (board_acquire_flash_arb(true))
+			board_acquire_flash_arb(false);
+	}
+
 	return 0;
 }
 
 static int cdns_xspi_release_bus(struct udevice *dev)
 {
+	if ((IS_ENABLED(CONFIG_ARCH_CN10K)))
+		board_acquire_flash_arb(false);
+
 	return 0;
 }
 

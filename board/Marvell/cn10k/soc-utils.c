@@ -19,11 +19,11 @@ platform_t read_platform(void)
 {
 	platform_t plat = PLATFORM_HW;
 
-	const char *model = fdt_get_board_model();
+	const char *model = fdt_get_run_platform();
 
-	if (model && !strncmp(model, "ASIM-", 5))
+	if (model && !strncmp(model, "ASIM_", 5))
 		plat = PLATFORM_ASIM;
-	if (model && !strncmp(model, "EMUL-", 5))
+	if (model && !strncmp(model, "EMUL_", 5))
 		plat = PLATFORM_EMULATOR;
 
 	return plat;

@@ -22,6 +22,36 @@ DECLARE_GLOBAL_DATA_PTR;
 
 extern unsigned long fdt_base_addr;
 
+const char *fdt_get_run_platform(void)
+{
+	int node, ret, len = 32;
+	const void *fdt = gd->fdt_blob;
+	const char *str = NULL;
+
+	if (!fdt) {
+		printf("ERROR: %s: no valid device tree found\n", __func__);
+		return str;
+	}
+
+	ret = fdt_check_header(fdt);
+	if (ret < 0) {
+		printf("fdt: %s\n", fdt_strerror(ret));
+		return str;
+	}
+
+	node = fdt_path_offset(fdt, "/soc@0");
+	if (node < 0) {
+		printf("%s: /soc is missing from device tree: %s\n",
+		       __func__, fdt_strerror(node));
+		return str;
+	}
+
+	str = fdt_getprop(fdt, node, "runplatform", &len);
+	if (!str)
+		printf("Error: cannot retrieve platform from fdt\n");
+	return str;
+}
+
 static int fdt_get_bdk_node(void)
 {
 	int node, ret;

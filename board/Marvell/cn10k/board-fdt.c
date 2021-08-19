@@ -266,7 +266,9 @@ static int ft_board_clean_props(void *blob, int node)
 					"RESET-COUNT-WARM",
 					"RESET-COUNT-COLD",
 					"RESET-COUNT-CORE-WDOG",
-					"RESET-COUNT-SCP-WDOG"
+					"RESET-COUNT-SCP-WDOG",
+					"RESET-COUNT-MCP-WDOG",
+					"RESET-COUNT-ECP-WDOG"
 					};
 	int offset;
 	const char *name;

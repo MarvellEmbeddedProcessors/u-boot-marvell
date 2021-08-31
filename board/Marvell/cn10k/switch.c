@@ -125,7 +125,7 @@ int read_virtual_reg_offset(u32 offset, u32 *reg_val)
 	if (offset > 19)
 		return -1;
 
-	*reg_val = readl(MAILBOX_POINTER(sw_bar2) + (offset / 4));
+	*reg_val = readl(MAILBOX_POINTER(sw_bar2) + offset);
 
 	return 0;
 }

@@ -42,11 +42,15 @@ u8 read_partvar(void)
 	return ((read_midr() >> 20) & 0xF);
 }
 
-#define FUS_CACHE0_REG 0x87e003001000
 u8 read_partnum(void)
 {
-	u64 fus_cache0 = readq(FUS_CACHE0_REG);
-	return (u8)(fus_cache0 & 0xff);
+	if (of_machine_is_compatible("marvell,cn10ka"))
+		return CN10KA;
+	if (of_machine_is_compatible("marvell,cnf10ka"))
+		return CNF10KA;
+	if (of_machine_is_compatible("marvell,cnf10kb"))
+		return CNF10KB;
+	return 0;
 }
 
 const char *read_board_name(void)

@@ -1563,8 +1563,6 @@ static int sdhci_cdns_probe(struct udevice *dev)
 	fdt_addr_t base;
 	int ret;
 	struct sdhci_cdns_sd6_phy *phy;
-	unsigned int val;
-	struct clk *clk;
 
 	base = dev_read_addr(dev);
 	if (base == FDT_ADDR_T_NONE)

@@ -123,6 +123,7 @@ int cgx_intf_req(u8 cgx, u8 lmac, union cgx_cmd_s cmd_args, u64 *rsp,
 
 	if (use_cmd_id_only) {
 		scr1.s.cmd.id = cmd;
+		scr1.s.cmd.reserved2 = 0;
 	} else {
 		cmd_args.own_status = scr1.s.own_status;
 		scr1.s = cmd_args;
@@ -243,6 +244,7 @@ int cgx_intf_link_up_dwn(u8 cgx, u8 lmac, u8 up_dwn, u64 *lnk_sts)
 	union cgx_cmd_s cmd;
 
 	cmd.cmd.id = up_dwn ? CGX_CMD_LINK_BRING_UP : CGX_CMD_LINK_BRING_DOWN;
+	cmd.cmd.reserved2 = 0;
 
 	ret = cgx_intf_req(cgx, lmac, cmd, &scr0.u, 1);
 	if (ret)

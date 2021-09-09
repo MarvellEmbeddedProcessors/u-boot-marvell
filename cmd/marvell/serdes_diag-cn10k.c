@@ -94,15 +94,15 @@ static const char *const lpbk_type[] = {
 enum tx_param {
 	TX_PARAM_PRE2,
 	TX_PARAM_PRE1,
-	TX_PARAM_MAIN,
 	TX_PARAM_POST,
+	TX_PARAM_MAIN,
 };
 
 struct tx_eq_params {
 	u16 pre2;
 	u16 pre1;
-	u16 main;
 	u16 post;
+	u16 main;
 };
 
 static struct {
@@ -494,7 +494,7 @@ static int do_serdes_tx(struct cmd_tbl *cmdtp, int flag, int argc,
 			char *const argv[])
 {
 	unsigned long port, lane;
-	u32 pre2_pre1 = 0, main_post = 0, flags = 0;
+	u32 pre2_pre1 = 0, post_main = 0, flags = 0;
 	int lanes_cnt, max_idx, lane_idx = 0xff;
 	struct gserm_data gserm_data;
 	int arg_idx;
@@ -558,13 +558,13 @@ static int do_serdes_tx(struct cmd_tbl *cmdtp, int flag, int argc,
 			flags |= 0x02;
 			break;
 
-		case TX_PARAM_MAIN:
-			main_post |= value << 16;
+		case TX_PARAM_POST:
+			post_main |= value << 16;
 			flags |= 0x04;
 			break;
 
-		case TX_PARAM_POST:
-			main_post |= value;
+		case TX_PARAM_MAIN:
+			post_main |= value;
 			flags |= 0x08;
 			break;
 
@@ -577,7 +577,7 @@ static int do_serdes_tx(struct cmd_tbl *cmdtp, int flag, int argc,
 	printf("port#:\tlane#:\tgserm#:\tg-lane#:\tstatus:\n");
 	ret = smc_serdes_set_tx_tuning(port, lane_idx,
 				       pre2_pre1,
-				       main_post,
+				       post_main,
 				       flags,
 				       &gserm_data);
 	if (ret)

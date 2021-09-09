@@ -417,7 +417,7 @@ ssize_t smc_serdes_get_tx_tuning(int port, int lane,
 
 ssize_t smc_serdes_set_tx_tuning(int port, int lane,
 				 u32 pre2_pre1,
-				 u32 main_post,
+				 u32 post_main,
 				 u32 flags,
 				 struct gserm_data *gserm)
 {
@@ -426,7 +426,7 @@ ssize_t smc_serdes_set_tx_tuning(int port, int lane,
 	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_TX_TUNING;
 	regs.regs[1] = (lane << 8) | port;
 	regs.regs[2] = pre2_pre1;
-	regs.regs[3] = main_post;
+	regs.regs[3] = post_main;
 	regs.regs[4] = flags;
 	smc_call(&regs);
 

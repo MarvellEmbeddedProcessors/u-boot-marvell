@@ -271,8 +271,8 @@ ssize_t smc_serdes_get_rx_tuning(int port, int lane,
  *		struct tx_eq_params {
  *			u16 pre2;
  *			u16 pre1;
- *			u16 main;
  *			u16 post;
+ *			u16 main;
  *		} params[4];
  *
  *	x2[31:24]: gserm number
@@ -294,11 +294,11 @@ ssize_t smc_serdes_get_tx_tuning(int port, int lane,
  * x2[31:16]: pre2 parameter
  * x2[15:0]: pre1 parameter
  *
- * x3[31:16]: main parameter
- * x3[15:0]: post parameter
+ * x3[31:16]: post parameter
+ * x3[15:0]: main parameter
  *
- * x4[3]: '1' means post provided
- * x4[2]: '1' means main provided
+ * x4[3]: '1' means main provided
+ * x4[2]: '1' means post provided
  * x4[1]: '1' means pre1 provided
  * x4[0]: '1' means pre2 provided
  *
@@ -313,7 +313,7 @@ ssize_t smc_serdes_get_tx_tuning(int port, int lane,
  */
 ssize_t smc_serdes_set_tx_tuning(int port, int lane,
 				 u32 pre2_pre1,
-				 u32 main_post,
+				 u32 post_main,
 				 u32 flags,
 				 struct gserm_data *gserm);
 

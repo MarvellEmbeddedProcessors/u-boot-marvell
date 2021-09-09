@@ -92,7 +92,6 @@ static const char *const lpbk_type[] = {
 };
 
 enum tx_param {
-	TX_PARAM_PRE3,
 	TX_PARAM_PRE2,
 	TX_PARAM_PRE1,
 	TX_PARAM_MAIN,
@@ -100,7 +99,6 @@ enum tx_param {
 };
 
 struct tx_eq_params {
-	u16 pre3;
 	u16 pre2;
 	u16 pre1;
 	u16 main;
@@ -111,7 +109,6 @@ static struct {
 	enum tx_param e;
 	const char *s;
 } tx_param[] = {
-	{TX_PARAM_PRE3, "pre3"},
 	{TX_PARAM_PRE2, "pre2"},
 	{TX_PARAM_PRE1, "pre1"},
 	{TX_PARAM_MAIN, "main"},
@@ -497,7 +494,7 @@ static int do_serdes_tx(struct cmd_tbl *cmdtp, int flag, int argc,
 			char *const argv[])
 {
 	unsigned long port, lane;
-	u32 pre3_pre2 = 0, pre1_main = 0, post_flags = 0;
+	u32 pre2_pre1 = 0, main_post = 0, flags = 0;
 	int lanes_cnt, max_idx, lane_idx = 0xff;
 	struct gserm_data gserm_data;
 	int arg_idx;
@@ -551,29 +548,24 @@ static int do_serdes_tx(struct cmd_tbl *cmdtp, int flag, int argc,
 		arg_idx++;
 
 		switch (param) {
-		case TX_PARAM_PRE3:
-			pre3_pre2 |= value << 16;
-			post_flags |= 0x01;
-			break;
-
 		case TX_PARAM_PRE2:
-			pre3_pre2 |= value;
-			post_flags |= 0x02;
+			pre2_pre1 |= value << 16;
+			flags |= 0x01;
 			break;
 
 		case TX_PARAM_PRE1:
-			pre1_main |= value << 16;
-			post_flags |= 0x04;
+			pre2_pre1 |= value;
+			flags |= 0x02;
 			break;
 
 		case TX_PARAM_MAIN:
-			pre1_main |= value;
-			post_flags |= 0x08;
+			main_post |= value << 16;
+			flags |= 0x04;
 			break;
 
 		case TX_PARAM_POST:
-			post_flags |= value << 16;
-			post_flags |= 0x10;
+			main_post |= value;
+			flags |= 0x08;
 			break;
 
 		default:
@@ -584,9 +576,9 @@ static int do_serdes_tx(struct cmd_tbl *cmdtp, int flag, int argc,
 	printf("SerDes Tx Tuning Parameters:\n");
 	printf("port#:\tlane#:\tgserm#:\tg-lane#:\tstatus:\n");
 	ret = smc_serdes_set_tx_tuning(port, lane_idx,
-				       pre3_pre2,
-				       pre1_main,
-				       post_flags,
+				       pre2_pre1,
+				       main_post,
+				       flags,
 				       &gserm_data);
 	if (ret)
 		return CMD_RET_FAILURE;
@@ -612,7 +604,7 @@ static int do_serdes_tx(struct cmd_tbl *cmdtp, int flag, int argc,
 read_tx_tuning:
 	printf("SerDes Tx Tuning Parameters:\n");
 	printf("port#:\tlane#:\tgserm#:\tg-lane#:"
-		"\tpre3:\tpre2:\tpre1:\tmain:\tpost:\n");
+		"\tpre2:\tpre1:\tmain:\tpost:\n");
 	ret = smc_serdes_get_tx_tuning((int)port, lane_idx,
 				       &params, &gserm_data);
 	if (ret)
@@ -630,11 +622,10 @@ read_tx_tuning:
 	for (; lane_idx < max_idx; lane_idx++) {
 		int glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
 
-		printf("%d\t%d\t%d\t%d\t\t0x%x\t0x%x\t0x%x\t0x%x\t0x%x\n",
+		printf("%d\t%d\t%d\t%d\t\t0x%x\t0x%x\t0x%x\t0x%x\n",
 		       (int)port, lane_idx,
 		       (int)gserm_data.gserm_idx,
 		       glane,
-		       tx_eq_params[lane_idx].pre3,
 		       tx_eq_params[lane_idx].pre2,
 		       tx_eq_params[lane_idx].pre1,
 		       tx_eq_params[lane_idx].main,
@@ -645,13 +636,13 @@ read_tx_tuning:
 }
 
 U_BOOT_CMD(
-	sdes_tx, 13, 1, do_serdes_tx, "read/write serdes Tx tuning parameters",
-	"<port#> [<lane#>] [pre3 <pre3>] [pre2 <pre2>] [pre1 <pre1>]\n"
+	sdes_tx, 11, 1, do_serdes_tx, "read/write serdes Tx tuning parameters",
+	"<port#> [<lane#>] [pre2 <pre2>] [pre1 <pre1>]\n"
 	"\t\t[main <main>] [post <post>]\n"
 	"sdes_tx <port#> [<lane#>]\n\n"
 	"parameters:\n"
 	"\t <port#>, <lane#>: Port & lane pair denoting serdes lane.\n"
-	"\t <pre3>, <pre2>, <pre1>, <main>, <post>:\n"
+	"\t <pre2>, <pre1>, <main>, <post>:\n"
 	"\t\t Transmitter’s tuning parameters.\n"
 );
 

@@ -269,7 +269,6 @@ ssize_t smc_serdes_get_rx_tuning(int port, int lane,
  *		SERDES_SETTINGS_DATA_BASE address, where
  *		the following structure is stored:
  *		struct tx_eq_params {
- *			u16 pre3;
  *			u16 pre2;
  *			u16 pre1;
  *			u16 main;
@@ -292,18 +291,16 @@ ssize_t smc_serdes_get_tx_tuning(int port, int lane,
  *		all the lanes assigned to the given port
  * x1[7:0]:	port#
  *
- * x2[31:16]: pre3 parameter
- * x2[15:0]: pre2 parameter
+ * x2[31:16]: pre2 parameter
+ * x2[15:0]: pre1 parameter
  *
- * x3[31:16]: pre1 parameter
- * x3[15:0]: main parameter
+ * x3[31:16]: main parameter
+ * x3[15:0]: post parameter
  *
- * x4[31:16]: post parameter
- * x4[4]: '1' means post provided
- * x4[3]: '1' means main provided
- * x4[2]: '1' means pre1 provided
- * x4[1]: '1' means pre2 provided
- * x4[0]: '1' means pre3 provided
+ * x4[3]: '1' means post provided
+ * x4[2]: '1' means main provided
+ * x4[1]: '1' means pre1 provided
+ * x4[0]: '1' means pre2 provided
  *
  * returns:
  *	x0:
@@ -315,9 +312,9 @@ ssize_t smc_serdes_get_tx_tuning(int port, int lane,
  *	x2[7:0]  : Number of lanes assigned to the given port
  */
 ssize_t smc_serdes_set_tx_tuning(int port, int lane,
-				 u32 pre3_pre2,
-				 u32 pre1_main,
-				 u32 post_flags,
+				 u32 pre2_pre1,
+				 u32 main_post,
+				 u32 flags,
 				 struct gserm_data *gserm);
 
 #endif

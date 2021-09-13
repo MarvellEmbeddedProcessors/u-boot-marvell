@@ -323,20 +323,49 @@ static bool cdns_xspi_setup_clock(struct cdns_xspi_dev *cdns_xspi, int requested
 	return update_clk;
 }
 
-static void ioread8_rep(void __iomem  *addr, uint8_t *buf, int len)
-{
+inline static void copy_mem(uint8_t *dst, uint8_t *src, int len) {
 	int i;
 
-	for (i = 0; i < len; i++)
-		buf[i] = readb(addr);
+	for (i=0; i<len; i++) {
+		dst[i] = src[i];
+	}
+}
+
+static void ioread8_rep(void __iomem  *addr, uint8_t *buf, int len)
+{
+	int i = 0;
+	int rcount = len / 8;
+	int rcount_nf = len % 8;
+	uint64_t tmp;
+	uint8_t ptr;
+
+	for (i = 0; i < rcount; i++) {
+		tmp = readq(addr);
+		copy_mem(&buf[i*8], &tmp, 8);
+	}
+
+	if (rcount_nf != 0) {
+		tmp = readq(addr);
+		copy_mem(&buf[i*8], &tmp, rcount_nf);
+	}
 }
 
 static void iowrite8_rep(void __iomem *addr, const uint8_t *buf, int len)
 {
-	int i;
+	int i = 0;
+	int rcount = len / 8;
+	int rcount_nf = len % 8;
+	uint64_t tmp;
 
-	for (i = 0; i < len; i++)
-		writeb(buf[i], addr);
+	for (i = 0; i < rcount; i++) {
+		copy_mem(&tmp, &buf[i*8], 8);
+		writeq(tmp, addr);
+	}
+
+	if (rcount_nf != 0) {
+		copy_mem(&tmp, &buf[i*8], rcount_nf);
+		writeq(tmp, addr);
+	}
 }
 
 static int cdns_xspi_claim_bus(struct udevice *dev)
@@ -421,11 +450,25 @@ static void cdns_xspi_trigger_command(struct cdns_xspi_dev *cdns_xspi,
 static void cdns_xspi_sdma_handle(struct cdns_xspi_dev *cdns_xspi)
 {
 	u32 sdma_size, sdma_trd_info;
-	u8 sdma_dir;
+	u32 sdma_status;
+	u8 sdma_dir, sdma_ready = 0;
+
+	//Wait for SDMA - skip on asimxx
+	if (!otx_is_platform(PLATFORM_ASIM)) {
+		do {
+			sdma_status = readl(cdns_xspi->iobase + CDNS_XSPI_INTR_STATUS_REG);
+			sdma_ready = FIELD_GET(CDNS_XSPI_SDMA_TRIGGER, sdma_status);
+		}while(!sdma_ready);
+	}
 
 	sdma_size = readl(cdns_xspi->iobase + CDNS_XSPI_SDMA_SIZE_REG);
 	sdma_trd_info = readl(cdns_xspi->iobase + CDNS_XSPI_SDMA_TRD_INFO_REG);
 	sdma_dir = FIELD_GET(CDNS_XSPI_SDMA_DIR, sdma_trd_info);
+
+	//Clear SDMA bit
+	sdma_status = readl(cdns_xspi->iobase + CDNS_XSPI_INTR_STATUS_REG);
+	sdma_status |= (CDNS_XSPI_SDMA_TRIGGER);
+	writel(sdma_status, cdns_xspi->iobase + CDNS_XSPI_INTR_STATUS_REG);
 
 	switch (sdma_dir) {
 	case CDNS_XSPI_SDMA_DIR_READ:
@@ -473,7 +516,6 @@ static int cdns_xspi_send_stig_command(struct cdns_xspi_dev *cdns_xspi,
 		cdns_xspi->out_buffer = op->data.buf.out;
 
 		cdns_xspi_trigger_command(cdns_xspi, cmd_regs);
-		cdns_xspi_stig_ready(cdns_xspi);
 		cdns_xspi_sdma_handle(cdns_xspi);
 	}
 	cdns_xspi_stig_ready(cdns_xspi);

@@ -24,6 +24,12 @@ config CMD_SERDES_DIAGNOSTICS
 	   performing PRBS, setting Loopback mode and reading/writing
 	   Tx/Rx tuning parameters.
 
+config CMD_PHY_DIAGNOSTICS
+	bool "Commands related to PHY diagnostics"
+	help
+	   Supports reading temperature, performing PRBS, setting Loopback and
+	   reading/writing PHY registers.
+
 config CMD_EFI_CMDS
 	depends on ARCH_CN10K
 	bool "EFI commands"

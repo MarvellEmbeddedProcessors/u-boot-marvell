@@ -261,6 +261,134 @@ int smc_spi_verify(struct smc_version_info *desc)
 	return regs.regs[0];
 }
 
+int smc_phy_dbg_temp_read(int eth, int lmac, int *temp)
+{
+	struct pt_regs regs;
+
+	if (!temp)
+		return -1;
+
+	regs.regs[0] = PLAT_OCTEONTX_PHY_GET_TEMP;
+	regs.regs[1] = eth;
+	regs.regs[2] = lmac;
+	smc_call(&regs);
+
+	if (!regs.regs[0])
+		*temp = regs.regs[1];
+
+	return regs.regs[0];
+}
+
+int smc_phy_dbg_loopback_write(int eth, int lmac, int enable)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_PHY_LOOPBACK;
+	regs.regs[1] = enable;
+	regs.regs[2] = eth;
+	regs.regs[3] = lmac;
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+
+ssize_t smc_phy_dbg_prbs_read(int eth, int lmac, int host)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_PHY_DBG_PRBS;
+	regs.regs[1] = 3;
+	regs.regs[2] = host;
+	regs.regs[3] = eth;
+	regs.regs[4] = lmac;
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+
+int smc_phy_dbg_prbs_write(int eth, int lmac, int cmd, int host, int type)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_PHY_DBG_PRBS;
+	regs.regs[1] = cmd;
+	regs.regs[2] = type << 2 | 1 << 1 | host;
+	regs.regs[3] = eth;
+	regs.regs[4] = lmac;
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+
+int smc_phy_dbg_get_serdes_cfg(int eth, int lmac, u32 *cfg)
+{
+	struct pt_regs regs;
+
+	if (!cfg)
+		return -1;
+
+	regs.regs[0] = PLAT_OCTEONTX_PHY_SERDES_CFG;
+	regs.regs[1] = 0;
+	regs.regs[3] = eth;
+	regs.regs[4] = lmac;
+	smc_call(&regs);
+
+	if (!regs.regs[0])
+		*cfg = regs.regs[1];
+
+	return regs.regs[0];
+}
+
+int smc_phy_dbg_set_serdes_cfg(int eth, int lmac, u32 cfg)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_PHY_SERDES_CFG;
+	regs.regs[1] = 1;
+	regs.regs[2] = cfg;
+	regs.regs[3] = eth;
+	regs.regs[4] = lmac;
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+
+ssize_t smc_phy_dbg_reg_read(int eth, int lmac, int mode,
+			     int dev_page, int reg, int *val)
+{
+	struct pt_regs regs;
+
+	if (!val)
+		return -1;
+
+	regs.regs[0] = PLAT_OCTEONTX_PHY_MDIO;
+	regs.regs[1] = (dev_page << 2) | (mode << 1);
+	regs.regs[2] = reg;
+	regs.regs[3] = eth;
+	regs.regs[4] = lmac;
+	smc_call(&regs);
+
+	if (!regs.regs[0])
+		*val = regs.regs[1];
+
+	return regs.regs[0];
+}
+
+int smc_phy_dbg_reg_write(int eth, int lmac, int mode,
+			  int dev_page, int reg, int val)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_PHY_MDIO;
+	regs.regs[1] = (dev_page << 2) | (mode << 1) | 1;
+	regs.regs[2] = (val << 16) | reg;
+	regs.regs[3] = eth;
+	regs.regs[4] = lmac;
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+
 ssize_t smc_serdes_prbs_start(int port,
 			      struct gserm_data *gserm,
 			      int pattern, int gen_check,

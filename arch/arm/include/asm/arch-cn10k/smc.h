@@ -142,6 +142,123 @@ struct gserm_data {
 };
 
 /**
+ * Get PHY's temperature
+ *
+ * x1 - eth
+ * x2 - lmac
+ *
+ * Return:
+ *	x0: 0 (Success) or -1 (Fail)
+ *	x1: Avaraged temperature sensor reading of phy @eth(x1), lmac(x2)
+ */
+int smc_phy_dbg_temp_read(int eth, int lmac, int *temp);
+
+/**
+ * Set PHY's loopback
+ *
+ * x1 - cmd
+ *	0 - disable line loopback for phy @eth(x2),lmac(x3)
+ *	1 - enable line loopback for phy @eth(x2),lmac(x3)
+ *
+ * x2 - eth
+ * x3 - lmac
+ * Return:
+ *	x0: 0 (Success) or -1 (Fail)
+ *
+ */
+int smc_phy_dbg_loopback_write(int eth, int lmac, int enable);
+
+/**
+ * Configure PRBS for PHY / Get PRBS counters
+ *
+ * x1 - cmd
+ *	1 - start phy prbs with config (x2) for phy @eth(x3),lmac(x4)
+ *	2 - stop phy prbs for phy @eth(x3),lmac(x4)
+ *	3 - get prbs error counters for phy @eth(x3),lmac(x4)
+ *
+ * x2 - config, fields are:
+ *	- x2[3:2] is pattern selector, options are:
+ *		0x00 - PRBS_7
+ *		0x01 - PRBS_23
+ *		0x10 - PRBS_31
+ *		0x11 - PRBS_1010
+ *	- x2[1] is the direction
+ *	- x2[0] is denoting host or line side:
+ *		1 - host side
+ *		0 - line side
+ * x3 - eth
+ * x4 - lmac
+ * Return:
+ *	x0: 0 (Success) or -1 (Fail)
+ *			or
+ *		prbs error count for host/line side
+ *			(PHY_PRBS_GET_DATA_CMD only)
+ */
+ssize_t smc_phy_dbg_prbs_read(int eth, int lmac, int host);
+int smc_phy_dbg_prbs_write(int eth, int lmac,
+			   int cmd, int host, int type);
+
+/**
+ * Read / Write PHY registers
+ *
+ * x1 - cmd, clause and device addr:
+ *	x1[0]: command
+ *		0 - Read PHY register
+ *		1 - Write PHY register
+ *	x1[1]: MDIO clause
+ *		0 - clause22
+ *		1 - clause45
+ *
+ *	x1[6:2]: device addr (clause45)
+ *			or
+ *		page nr (paged access in clause22)
+ *
+ *
+ * x2 - register address and/or value
+ *	x2[15:0]: register address
+ *	x2[31:16]: register value (only in case of Write cmd)
+ *
+ * x3 - eth
+ * x4 - lmac
+ *
+ * Return:
+ *	x0: 0 (Success) or -1 (Fail)
+ *	x1: register value (only in case of Read cmd)
+ *
+ */
+ssize_t smc_phy_dbg_reg_read(int eth, int lmac,
+			     int mode, int dev_page, int reg, int *val);
+int smc_phy_dbg_reg_write(int eth, int lmac,
+			  int mode, int dev_page, int reg, int val);
+
+/**
+ * Set / Get PHY's SerDes config (VoD)
+ *
+ * x1 - cmd
+ *	0 - Get SerDes config
+ *	1 - Set SerDes config
+ * x2 - phy's SERDES config (only Tx amplitude supported):
+ *	x2[2:0] SGMII VOD level (Tx ampl.), one of:
+ *		000 = 14mV
+ *		001 = 112mV
+ *		010 = 210mV
+ *		011 = 308mV
+ *		100 = 406mV
+ *		101 = 504mV
+ *		110 = 602mV
+ *		111 = 700mV
+ * x3 - eth
+ * x4 - lmac
+ * Return:
+ *	x0: 0 (Success) or -1 (Fail)
+ *	x1: config in the same format as in x2
+ *		(cmd == 0 only)
+ *
+ */
+int smc_phy_dbg_get_serdes_cfg(int eth, int lmac, u32 *cfg);
+int smc_phy_dbg_set_serdes_cfg(int eth, int lmac, u32 cfg);
+
+/**
  * Set SerDes PRBS
  *
  * x1[19]: enable/disable generator (enabled by default)

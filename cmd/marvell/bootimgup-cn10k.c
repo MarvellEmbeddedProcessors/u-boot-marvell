@@ -4,7 +4,7 @@
  *
  * https://spdx.org/licenses
  */
-#define DEBUG
+
 #include <common.h>
 #include <command.h>
 #include <div64.h>
@@ -505,11 +505,12 @@ static int do_get_version_info(struct cmd_tbl *cmdtp, int flag, int argc,
 			printf("  Object hash:                 ");
 			print_hash(object->obj_hash, object->hash_size);
 		}
-		if (object->hash_size)
+		if (object->hash_size) {
 			printf("  TIM hash:                    ");
-		else
+			print_hash(object->tim_hash, object->hash_size);
+                } else {
 			printf("  TIM hash missing\n");
-		print_hash(object->tim_hash, object->hash_size);
+                }
 		printf("  Version:\n");
 		print_version(&object->version, "    ");
 		printf("\n");

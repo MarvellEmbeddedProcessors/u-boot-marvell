@@ -14,6 +14,15 @@ config DM_RTC
 	  drivers to perform the actual functions. See rtc.h for a
 	  description of the API.
 
+config MARVELL_RTC
+	bool "MARVELL RTC support"
+	depends on DM_RTC
+	help
+	  Choose this option to add
+	  support for Marvell's
+	  RTC driver, which is used
+	  by Armada 7K, 8K and OcteonTX2 CN913x.
+
 config SPL_DM_RTC
 	bool "Enable Driver Model for RTC drivers in SPL"
 	depends on SPL_DM

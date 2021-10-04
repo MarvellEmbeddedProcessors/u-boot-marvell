@@ -17,6 +17,7 @@
 
 /* Register offsets */
 #define RPM_CMR_INT		0x87e0e0000040
+#define RPM_CMR_SW_INT		0x87e0e0000180
 #define RPM_CMR_SCRATCH0	0x87e0e0001050
 #define RPM_CMR_SCRATCH1	0x87e0e0001058
 

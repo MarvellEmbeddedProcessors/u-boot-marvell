@@ -81,10 +81,10 @@ static int wait_for_ownership(u8 rpm, u8 lmac)
 		if (scr0.s.evt_sts.evt_type == ETH_EVT_ASYNC &&
 		    scr0.s.evt_sts.ack) {
 			/* clear interrupt */
-			cmrx_int = readq(RPM_CMR_INT +
+			cmrx_int = readq(RPM_CMR_SW_INT +
 					 RPM_SHIFT(rpm) + CMR_SHIFT(lmac));
 			cmrx_int |= 0x2; // Overflw bit
-			writeq(cmrx_int, RPM_CMR_INT +
+			writeq(cmrx_int, RPM_CMR_SW_INT +
 					 RPM_SHIFT(rpm) + CMR_SHIFT(lmac));
 
 			/* clear ack */
@@ -167,9 +167,9 @@ int eth_intf_req(u8 rpm, u8 lmac, union eth_cmd_s cmd_args, u64 *rsp,
 
 error:
 	/* clear interrupt */
-	cmrx_int = readq(RPM_CMR_INT + RPM_SHIFT(rpm) + CMR_SHIFT(lmac));
+	cmrx_int = readq(RPM_CMR_SW_INT + RPM_SHIFT(rpm) + CMR_SHIFT(lmac));
 	cmrx_int |= 0x2; // Overflw bit
-	writeq(cmrx_int, RPM_CMR_INT + RPM_SHIFT(rpm) + CMR_SHIFT(lmac));
+	writeq(cmrx_int, RPM_CMR_SW_INT + RPM_SHIFT(rpm) + CMR_SHIFT(lmac));
 
 	/* clear ownership and ack */
 	scr0.s.evt_sts.ack = 0;

@@ -29,6 +29,10 @@
 		     "marvell,armada-ap806";
 };
 
+&cp0_rtc {
+	status = "okay";
+};
+
 &cp0_pinctl {
 	compatible = "marvell,mvebu-pinctrl", "marvell,7k-pinctrl";
 	bank-name ="cp0-110";

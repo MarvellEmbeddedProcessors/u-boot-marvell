@@ -22,8 +22,6 @@
 	if (0) \
 		printf(fmt, ##__VA_ARGS__)
 
-#define SDR_10MHZ			10000000
-
 #define SDHCI_CDNS_SD6_MAXCLK		200000000
 
 #define SDHCI_CDNS_HRS00			0x00
@@ -123,7 +121,8 @@
 #define SDHCI_CDNS_SD6_PHY_CTRL					0x2080
 #define	SDHCI_CDNS_SD6_PHY_CTRL_PHONY_DQS_TIMING		GENMASK(9, 4)
 
-
+#define SDHCI_CDNS_SD6_PHY_GPIO_CTRL0				0x2088
+#define SDHCI_CDNS_SD6_PHY_GPIO_CTRL0_CLK_OVR_EN		BIT(7)
 /* SRS - Slot Register Set (SDHCI-compatible) */
 #define SDHCI_CDNS_SRS_BASE		0x200
 
@@ -408,10 +407,9 @@ static void init_emmc_hs400(struct sdhci_cdns_sd6_phy_timings *t, int t_sdclk)
 	};
 }
 
-static void (*init_timings[])(struct sdhci_cdns_sd6_phy_timings*, int) = {
-	init_emmc_legacy, init_emmc_sdr, init_hs, init_uhs_sdr12,
-	init_uhs_sdr25, init_uhs_sdr50, init_uhs_sdr104, init_uhs_ddr50,
-	init_emmc_ddr, init_emmc_hs200, init_emmc_hs400
+static void (*(init_timings[]))(struct sdhci_cdns_sd6_phy_timings*, int) = {
+	&init_hs, &init_emmc_legacy, &init_emmc_sdr,
+	&init_emmc_ddr, &init_emmc_hs200, &init_emmc_hs400
 };
 
 #ifdef SD4_ENABLE
@@ -477,136 +475,57 @@ static int sdhci_cdns_sd4_phy_init(struct sdhci_cdns_plat *plat,
 #endif
 
 #ifdef PHY_DEBUG
+void sdhci_cdns_sd6_dump(struct sdhci_cdns_plat *plat)
+{
+        int i;
+
+        for (i = 0; i < 14; i++)
+                DEBUG_DRV("HRS%d 0x%x\n", i, readl(plat->hrs_addr + (i * 4)));
+
+        for (i = 0; i < 27; i++)
+                DEBUG_DRV("SRS%d 0x%x\n", i, readl(plat->hrs_addr + 0x200 + (i * 4)));
+}
+
 static void sdhci_cdns_sd6_phy_dump(struct sdhci_cdns_sd6_phy *phy)
 {
-	printf("sdhci_cdns_sd6_phy_init mode %d t_sdclk %d\n", phy->mode, phy->t_sdclk);
+	DEBUG_DRV("sdhci_cdns_sd6_phy_init mode %d t_sdclk %d\n", phy->mode, phy->t_sdclk);
 
-	printf("cp_clk_wr_delay %d\n", phy->settings.cp_clk_wr_delay);
-	printf("cp_clk_wrdqs_delay %d \n", phy->settings.cp_clk_wrdqs_delay);
-	printf("cp_data_select_oe_end %d\n", phy->settings.cp_data_select_oe_end);
-	printf("cp_dll_bypass_mode %d\n", phy->settings.cp_dll_bypass_mode);
-	printf("cp_dll_locked_mode %d\n", phy->settings.cp_dll_locked_mode);
-	printf("cp_dll_start_point %d\n", phy->settings.cp_dll_start_point);
-	printf("cp_io_mask_always_on %d\n", phy->settings.cp_io_mask_always_on);
-	printf("cp_io_mask_end %d\n", phy->settings.cp_io_mask_end);
-	printf("cp_io_mask_start %d\n", phy->settings.cp_io_mask_start);
-	printf("cp_rd_del_sel %d\n", phy->settings.cp_rd_del_sel);
-	printf("cp_read_dqs_cmd_delay %d\n", phy->settings.cp_read_dqs_cmd_delay);
-	printf("cp_read_dqs_delay %d\n", phy->settings.cp_read_dqs_delay);
-	printf("cp_sw_half_cycle_shift %d\n", phy->settings.cp_sw_half_cycle_shift);
-	printf("cp_sync_method %d\n", phy->settings.cp_sync_method);
-	printf("cp_use_ext_lpbk_dqs %d\n", phy->settings.cp_use_ext_lpbk_dqs);
-	printf("cp_use_lpbk_dqs %d\n", phy->settings.cp_use_lpbk_dqs);
-	printf("cp_use_phony_dqs %d\n", phy->settings.cp_use_phony_dqs);
-	printf("cp_use_phony_dqs_cmd %d\n", phy->settings.cp_use_phony_dqs_cmd);
-	printf("sdhc_extended_rd_mode %d\n", phy->settings.sdhc_extended_rd_mode);
-	printf("sdhc_extended_wr_mode %d\n", phy->settings.sdhc_extended_wr_mode);
+	DEBUG_DRV("cp_clk_wr_delay %d\n", phy->settings.cp_clk_wr_delay);
+	DEBUG_DRV("cp_clk_wrdqs_delay %d \n", phy->settings.cp_clk_wrdqs_delay);
+	DEBUG_DRV("cp_data_select_oe_end %d\n", phy->settings.cp_data_select_oe_end);
+	DEBUG_DRV("cp_dll_bypass_mode %d\n", phy->settings.cp_dll_bypass_mode);
+	DEBUG_DRV("cp_dll_locked_mode %d\n", phy->settings.cp_dll_locked_mode);
+	DEBUG_DRV("cp_dll_start_point %d\n", phy->settings.cp_dll_start_point);
+	DEBUG_DRV("cp_io_mask_always_on %d\n", phy->settings.cp_io_mask_always_on);
+	DEBUG_DRV("cp_io_mask_end %d\n", phy->settings.cp_io_mask_end);
+	DEBUG_DRV("cp_io_mask_start %d\n", phy->settings.cp_io_mask_start);
+	DEBUG_DRV("cp_rd_del_sel %d\n", phy->settings.cp_rd_del_sel);
+	DEBUG_DRV("cp_read_dqs_cmd_delay %d\n", phy->settings.cp_read_dqs_cmd_delay);
+	DEBUG_DRV("cp_read_dqs_delay %d\n", phy->settings.cp_read_dqs_delay);
+	DEBUG_DRV("cp_sw_half_cycle_shift %d\n", phy->settings.cp_sw_half_cycle_shift);
+	DEBUG_DRV("cp_sync_method %d\n", phy->settings.cp_sync_method);
+	DEBUG_DRV("cp_use_ext_lpbk_dqs %d\n", phy->settings.cp_use_ext_lpbk_dqs);
+	DEBUG_DRV("cp_use_lpbk_dqs %d\n", phy->settings.cp_use_lpbk_dqs);
+	DEBUG_DRV("cp_use_phony_dqs %d\n", phy->settings.cp_use_phony_dqs);
+	DEBUG_DRV("cp_use_phony_dqs_cmd %d\n", phy->settings.cp_use_phony_dqs_cmd);
+	DEBUG_DRV("sdhc_extended_rd_mode %d\n", phy->settings.sdhc_extended_rd_mode);
+	DEBUG_DRV("sdhc_extended_wr_mode %d\n", phy->settings.sdhc_extended_wr_mode);
 
-	printf("sdhc_hcsdclkadj %d\n", phy->settings.sdhc_hcsdclkadj);
-	printf("sdhc_idelay_val %d\n", phy->settings.sdhc_idelay_val);
-	printf("sdhc_rdcmd_en %d\n", phy->settings.sdhc_rdcmd_en);
-	printf("sdhc_rddata_en %d\n", phy->settings.sdhc_rddata_en);
-	printf("sdhc_rw_compensate %d\n", phy->settings.sdhc_rw_compensate);
-	printf("sdhc_sdcfsh %d\n", phy->settings.sdhc_sdcfsh);
-	printf("sdhc_sdcfsl %d\n", phy->settings.sdhc_sdcfsl);
-	printf("sdhc_wrcmd0_dly %d %d\n", phy->settings.sdhc_wrcmd0_dly, phy->settings.sdhc_wrcmd0_sdclk_dly);
-	printf("sdhc_wrcmd1_dly %d %d\n", phy->settings.sdhc_wrcmd1_dly, phy->settings.sdhc_wrcmd1_sdclk_dly);
-	printf("sdhc_wrdata0_dly %d %d \n", phy->settings.sdhc_wrdata0_dly, phy->settings.sdhc_wrdata0_sdclk_dly);
+	DEBUG_DRV("sdhc_hcsdclkadj %d\n", phy->settings.sdhc_hcsdclkadj);
+	DEBUG_DRV("sdhc_idelay_val %d\n", phy->settings.sdhc_idelay_val);
+	DEBUG_DRV("sdhc_rdcmd_en %d\n", phy->settings.sdhc_rdcmd_en);
+	DEBUG_DRV("sdhc_rddata_en %d\n", phy->settings.sdhc_rddata_en);
+	DEBUG_DRV("sdhc_rw_compensate %d\n", phy->settings.sdhc_rw_compensate);
+	DEBUG_DRV("sdhc_sdcfsh %d\n", phy->settings.sdhc_sdcfsh);
+	DEBUG_DRV("sdhc_sdcfsl %d\n", phy->settings.sdhc_sdcfsl);
+	DEBUG_DRV("sdhc_wrcmd0_dly %d %d\n", phy->settings.sdhc_wrcmd0_dly, phy->settings.sdhc_wrcmd0_sdclk_dly);
+	DEBUG_DRV("sdhc_wrcmd1_dly %d %d\n", phy->settings.sdhc_wrcmd1_dly, phy->settings.sdhc_wrcmd1_sdclk_dly);
+	DEBUG_DRV("sdhc_wrdata0_dly %d %d \n", phy->settings.sdhc_wrdata0_dly, phy->settings.sdhc_wrdata0_sdclk_dly);
 
-	printf("sdhc_wrdata1_dly %d %d \n", phy->settings.sdhc_wrdata1_dly, phy->settings.sdhc_wrdata1_sdclk_dly);
-	printf("hs200_tune_val %d\n", phy->settings.hs200_tune_val);
+	DEBUG_DRV("sdhc_wrdata1_dly %d %d \n", phy->settings.sdhc_wrdata1_dly, phy->settings.sdhc_wrdata1_sdclk_dly);
+	DEBUG_DRV("hs200_tune_val %d\n", phy->settings.hs200_tune_val);
 }
 #endif
-
-static void sdhci_cdns_sd6_calc_phy(struct sdhci_cdns_sd6_phy *phy)
-{
-	int mode = phy->mode;
-
-	if (mode == SDHCI_CDNS_HRS06_MODE_MMC_SDR) {
-#if defined(SDR_25MHZ)
-		printf("SDR_25MHZ SDHCI_CDNS_HRS06_MODE_MMC_SDR PHY configuration\n");
-		phy->settings.cp_clk_wr_delay = 0;
-		phy->settings.cp_clk_wrdqs_delay = 0;
-		phy->settings.cp_data_select_oe_end = 1;
-		phy->settings.cp_dll_bypass_mode = 1;
-		phy->settings.cp_dll_locked_mode = 3;
-		phy->settings.cp_dll_start_point = 4;
-		phy->settings.cp_gate_cfg_always_on = 1;
-		phy->settings.cp_io_mask_always_on = 0;
-		phy->settings.cp_io_mask_end = 7;
-		phy->settings.cp_io_mask_start = 0;
-		phy->settings.cp_rd_del_sel = 52;
-		phy->settings.cp_read_dqs_cmd_delay = 0;
-		phy->settings.cp_read_dqs_delay = 0;
-		phy->settings.cp_sw_half_cycle_shift = 0;
-		phy->settings.cp_sync_method = 1;
-		phy->settings.cp_underrun_suppress = 1;
-		phy->settings.cp_use_ext_lpbk_dqs = 1;
-		phy->settings.cp_use_lpbk_dqs = 1;
-		phy->settings.cp_use_phony_dqs = 1;
-		phy->settings.cp_use_phony_dqs_cmd = 1;
-		phy->settings.sdhc_extended_rd_mode = 1;
-		phy->settings.sdhc_extended_wr_mode = 1;
-		phy->settings.sdhc_hcsdclkadj = 3;
-		phy->settings.sdhc_idelay_val = 1;
-		phy->settings.sdhc_rdcmd_en = 1;
-		phy->settings.sdhc_rddata_en = 1;
-		phy->settings.sdhc_rw_compensate = 14;
-		phy->settings.sdhc_sdcfsh = 0;
-		phy->settings.sdhc_sdcfsl = 4;
-		phy->settings.sdhc_wrcmd0_dly = 1;
-		phy->settings.sdhc_wrcmd0_sdclk_dly = 0;
-		phy->settings.sdhc_wrcmd1_dly = 0;
-		phy->settings.sdhc_wrcmd1_sdclk_dly = 0;
-		phy->settings.sdhc_wrdata0_dly = 1;
-		phy->settings.sdhc_wrdata0_sdclk_dly = 0;
-		phy->settings.sdhc_wrdata1_dly = 0;
-		phy->settings.sdhc_wrdata1_sdclk_dly = 0;
-#else
-		DEBUG_DRV("SDR_10MHZ SDHCI_CDNS_HRS06_MODE_MMC_SDR PHY configuration\n");
-		phy->settings.cp_clk_wr_delay = 0;
-		phy->settings.cp_clk_wrdqs_delay = 0;
-		phy->settings.cp_data_select_oe_end = 1;
-		phy->settings.cp_dll_bypass_mode = 1;
-		phy->settings.cp_dll_locked_mode = 3;
-		phy->settings.cp_dll_start_point = 4;
-		phy->settings.cp_gate_cfg_always_on = 1;
-		phy->settings.cp_io_mask_always_on = 0;
-		phy->settings.cp_io_mask_end = 0;
-		phy->settings.cp_io_mask_start = 0;
-		phy->settings.cp_rd_del_sel = 52;
-		phy->settings.cp_read_dqs_cmd_delay = 0;
-		phy->settings.cp_read_dqs_delay = 0;
-		phy->settings.cp_sw_half_cycle_shift = 0;
-		phy->settings.cp_sync_method = 1;
-		phy->settings.cp_underrun_suppress = 1;
-		phy->settings.cp_use_ext_lpbk_dqs = 1;
-		phy->settings.cp_use_lpbk_dqs = 1;
-		phy->settings.cp_use_phony_dqs = 1;
-		phy->settings.cp_use_phony_dqs_cmd = 1;
-		phy->settings.sdhc_extended_rd_mode = 1;
-		phy->settings.sdhc_extended_wr_mode = 1;
-		phy->settings.sdhc_hcsdclkadj = 1;
-		phy->settings.sdhc_idelay_val = 0;
-		phy->settings.sdhc_rdcmd_en = 1;
-		phy->settings.sdhc_rddata_en = 1;
-		phy->settings.sdhc_rw_compensate = 9;
-		phy->settings.sdhc_sdcfsh = 0;
-		phy->settings.sdhc_sdcfsl = 10;
-		phy->settings.sdhc_wrcmd0_dly = 1;
-		phy->settings.sdhc_wrcmd0_sdclk_dly = 0;
-		phy->settings.sdhc_wrcmd1_dly = 0;
-		phy->settings.sdhc_wrcmd1_sdclk_dly = 0;
-		phy->settings.sdhc_wrdata0_dly = 1;
-		phy->settings.sdhc_wrdata0_sdclk_dly = 0;
-		phy->settings.sdhc_wrdata1_dly = 0;
-		phy->settings.sdhc_wrdata1_sdclk_dly = 0;
-#endif
-	}
-	else {
-		DEBUG_DRV("Error: PHY configuration is not updated, mode %d\n", mode);
-	}
-}
 
 static u32 sdhci_cdns_sd6_readl(struct sdhci_host *host, int reg)
 {
@@ -706,39 +625,29 @@ static int sdhci_cdns_sd6_get_fdt_params(struct udevice *dev, struct sdhci_cdns_
 	struct sdhci_cdns_sd6_phy *phy = plat->priv;
 	const char *mode_name;
 
-#ifdef CN10K_SILICON
 	dev_read_u32(dev, "cdns,iocell_input_delay", &phy->d.iocell_input_delay);
 
 	dev_read_u32(dev, "cdns,iocell_output_delay", &phy->d.iocell_output_delay);
 
 	dev_read_u32(dev, "cdns,delay_element", &phy->d.delay_element);
-#else
-	phy->d.iocell_input_delay = 0;
-	phy->d.iocell_output_delay = 0;
-	phy->d.delay_element = 0;
-#endif
 
 	mode_name = dev_read_string(dev, "cdns, mode");
 
 	if (mode_name != NULL) {
 		if (!strcmp("emmc_sdr", mode_name))
-			phy->mode = MMC_HS_52;
+			phy->mode = SDHCI_CDNS_HRS06_MODE_MMC_SDR;
 		else if (!strcmp("emmc_ddr", mode_name))
-			phy->mode = MMC_DDR_52;
+			phy->mode = SDHCI_CDNS_HRS06_MODE_MMC_DDR;
 		else if (!strcmp("emmc_hs200", mode_name))
-			phy->mode = MMC_HS_200;
+			phy->mode = SDHCI_CDNS_HRS06_MODE_MMC_HS200;
 		else if (!strcmp("emmc_hs400", mode_name))
-			phy->mode = MMC_HS_400;
+			phy->mode = SDHCI_CDNS_HRS06_MODE_MMC_HS400;
 		else if (!strcmp("sd_hs", mode_name))
-			phy->mode = SD_HS;
+			phy->mode = SDHCI_CDNS_HRS06_MODE_SD;
 		else
 			phy->mode = MMC_HS;
 	} else
 		phy->mode = MMC_HS;
-
-#ifdef SDR_10MHZ
-	phy->mode = SDHCI_CDNS_HRS06_MODE_MMC_SDR;
-#endif
 
 	return 0;
 }
@@ -764,7 +673,7 @@ static void sdhci_cdns_sd6_write_phy_reg(struct sdhci_cdns_plat *plat,
 
 #ifdef PHY_DEBUG
 	if (data != data_read)
-		printf("Error written and read PHY data are different\n");
+		DEBUG_DRV("Error written and read PHY data are different\n");
 #endif
 }
 
@@ -802,7 +711,6 @@ static int sdhci_cdns_sd6_phy_init(struct udevice *dev, struct sdhci_cdns_plat *
 
 	DEBUG_DRV("%s mode %d sdck %u\n", __func__, phy->mode, phy->t_sdclk);
 
-	sdhci_cdns_sd6_calc_phy(phy);
 #ifdef PHY_DEBUG
 	sdhci_cdns_sd6_phy_dump(phy);
 #endif
@@ -879,6 +787,11 @@ static int sdhci_cdns_sd6_phy_init(struct udevice *dev, struct sdhci_cdns_plat *
 	DEBUG_DRV("SDHCI_CDNS_SD6_PHY_CTRL 0x%x \n", reg);
 	sdhci_cdns_sd6_write_phy_reg(plat, SDHCI_CDNS_SD6_PHY_CTRL, reg);
 
+	reg = sdhci_cdns_sd6_read_phy_reg(plat, SDHCI_CDNS_SD6_PHY_GPIO_CTRL0);
+	reg |= SDHCI_CDNS_SD6_PHY_GPIO_CTRL0_CLK_OVR_EN;
+	sdhci_cdns_sd6_write_phy_reg(plat, SDHCI_CDNS_SD6_PHY_GPIO_CTRL0, reg);
+
+	DEBUG_DRV("PHY GPIO CTRL0 0x%x\n", sdhci_cdns_sd6_read_phy_reg(plat, SDHCI_CDNS_SD6_PHY_GPIO_CTRL0));
 	ret = sdhci_cdns_sd6_dll_reset(plat, false);
 	if (ret)
 		return ret;
@@ -971,7 +884,6 @@ static void sdhci_cdns_set_control_reg(struct sdhci_host *host)
 	unsigned int clock = mmc->clock;
 	u32 mode, tmp;
 
-#ifdef USE_MMC_TIMING
 	/*
 	 * REVISIT:
 	 * The mode should be decided by MMC_TIMING_* like Linux, but
@@ -991,11 +903,6 @@ static void sdhci_cdns_set_control_reg(struct sdhci_host *host)
 			mode = SDHCI_CDNS_HRS06_MODE_MMC_HS200;
 	}
 
-#endif
-#ifdef SDR_10MHZ
-	mode = SDHCI_CDNS_HRS06_MODE_MMC_SDR;
-#endif
-	DEBUG_DRV("%s: mode %d clock %d \n", __func__, mode, clock);
 	tmp = readl(plat->hrs_addr + SDHCI_CDNS_HRS06);
 	tmp &= ~SDHCI_CDNS_HRS06_MODE;
 	tmp |= FIELD_PREP(SDHCI_CDNS_HRS06_MODE, mode);
@@ -1059,8 +966,8 @@ static int sdhci_cdns_sd6_phy_lock_dll(struct sdhci_cdns_sd6_phy *phy)
 
 	phy->vars.t_sdmclk_calc = delay_element * delay_elements_in_sdmclk;
 	phy->d.delay_element = delay_element;
-	phy->settings.cp_dll_locked_mode = mode;
-	phy->settings.cp_dll_bypass_mode = 0;
+	phy->settings.cp_dll_locked_mode = SDHCI_CDNS_SD6_PHY_LOCK_MODE_SATURATION;
+	phy->settings.cp_dll_bypass_mode = 1;
 
 	return 0;
 }
@@ -1184,8 +1091,8 @@ static void sdhci_cdns_sd6_phy_calc_cmd_in(struct sdhci_cdns_sd6_phy *phy)
 		phy->settings.cp_io_mask_end--;
 
 	//XXX
-	//phy->settings.cp_sync_method = 1;
-	//phy->settings.cp_rd_del_sel = 52;
+	phy->settings.cp_sync_method = 1;
+	phy->settings.cp_rd_del_sel = 52;
 	//phy->settings.cp_use_ext_lpbk_dqs = 1;
 	//phy->settings.cp_use_lpbk_dqs = 1;
 
@@ -1328,7 +1235,7 @@ static void sdhci_cdns_sd6_phy_calc_io(struct sdhci_cdns_sd6_phy *phy)
 	u32 rw_compensate;
 
 	rw_compensate = (phy->d.iocell_input_delay + phy->d.iocell_output_delay)
-		/ phy->t_sdmclk + phy->settings.sdhc_wrdata0_dly + 5 + 3;
+		/ phy->t_sdmclk + phy->settings.sdhc_wrdata0_dly; // + 5 + 3;
 
 	phy->settings.sdhc_idelay_val = (2 * phy->d.iocell_input_delay)
 		/ phy->t_sdmclk;
@@ -1397,7 +1304,7 @@ static int sdhci_cdns_sd6_phy_update_timings(struct sdhci_cdns_plat *plat)
 	phy->d.phy_cmd_o_delay = 2 * t_sdmclk + t_sdmclk / 2;
 	phy->d.phy_dat_o_delay = 2 * t_sdmclk + t_sdmclk / 2;
 
-	if (phy->t_sdclk == phy->t_sdmclk) {
+	if (phy->t_sdclk != phy->t_sdmclk) {
 		phy->settings.sdhc_extended_wr_mode = 0;
 		phy->settings.sdhc_extended_rd_mode = 0;
 	} else {
@@ -1427,32 +1334,13 @@ static void sdhci_cdns_sd6_set_clock(struct sdhci_host *host,
 	phy->t_sdclk = 5000; //DIV_ROUND_DOWN_ULL(1e12, clock);
 
 	if (sdhci_cdns_sd6_phy_update_timings(plat))
-		printf("%s: update timings failed\n", __func__);
+		DEBUG_DRV("%s: update timings failed\n", __func__);
 	else
 		host->clock = clock;
 
         if (sdhci_cdns_sd6_phy_init(dev, plat))
-                dev_info(mmc_dev(host->mmc), "%s: phy init failed\n", __func__);
-
-	regval = sdhci_cdns_sd6_readw(host, SDHCI_CDNS_SRS11);
-	regval &= ~(0x3FF << 6);
-	regval |= (phy->settings.sdhc_sdcfsh << 6) | (phy->settings.sdhc_sdcfsl << 8);
-	regval |= SDHCI_CLOCK_INT_EN;
-	sdhci_cdns_sd6_writew(host, regval, SDHCI_CDNS_SRS11);
+               dev_err(mmc_dev(host->mmc), "%s: phy init failed\n", __func__);
 }
-
-#ifdef PHY_DEBUG
-void sdhci_cdns_sd6_dump(struct sdhci_cdns_plat *plat)
-{
-	int i;
-
-	for (i = 0; i < 14; i++)
-		printf("HRS%d 0x%x\n", i, readl(plat->hrs_addr + (i * 4)));
-
-	for (i = 0; i < 27; i++)
-		printf("SRS%d 0x%x\n", i, readl(plat->hrs_addr + 0x200 + (i * 4)));
-}
-#endif
 
 static int sdhci_cdns_sd6_plat_init(struct udevice *dev, struct sdhci_cdns_plat *plat)
 {
@@ -1463,13 +1351,9 @@ static int sdhci_cdns_sd6_plat_init(struct udevice *dev, struct sdhci_cdns_plat 
 
 	sdhci_cdns_sd6_get_fdt_params(dev, plat);
 
-#if defined(SDR_25MHZ)
 	phy->t_sdclk = 5000;
 	phy->t_sdmclk = 5000;
-#else
-	phy->t_sdmclk = 5000;
-	phy->t_sdclk = 100000;
-#endif
+
 	phy->settings.cp_use_phony_dqs = 1;
 	phy->settings.cp_use_phony_dqs_cmd = 1;
 	phy->settings.cp_dll_bypass_mode = 1;
@@ -1595,29 +1479,18 @@ static int sdhci_cdns_probe(struct udevice *dev)
 #else
 	sdhci_cdns_sd6_plat_init(dev, plat);
 
-#if defined(SDR_25MHZ)
-        phy->t_sdclk = 5000;
-        phy->t_sdmclk = 5000;
-#else
-        phy->t_sdmclk = 5000;
-        phy->t_sdclk = 100000;
-#endif
-
 	ret = sdhci_cdns_sd6_phy_init(dev, plat);
 	if (ret)
 		return ret;
 #endif
 
-#ifdef SDR_10MHZ
-	host->max_clk = SDR_10MHZ;
-#else
 	host->max_clk = SDHCI_CDNS_SD6_MAXCLK;
-#endif
 	host->mmc = &plat->mmc;
 	host->mmc->dev = dev;
+	host->clock = 52000000;
 
 	DEBUG_DRV("sdmclk %d sdclk %d\n", phy->t_sdmclk, phy->t_sdclk);
-	ret = sdhci_setup_cfg(&plat->cfg, host, phy->t.t_sdclk_min, phy->t.t_sdclk_max);
+	ret = sdhci_setup_cfg(&plat->cfg, host, host->max_clk, 25000000);
 	if (ret)
 		return ret;
 

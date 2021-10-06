@@ -493,6 +493,61 @@ ssize_t smc_serdes_lpbk(int port, struct gserm_data *gserm, int type)
 	return regs.regs[0];
 }
 
+ssize_t smc_serdes_start_rx_training(int port, int lane,
+				     struct gserm_data *gserm)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_RX_TRAINING;
+	regs.regs[1] = (lane << 8) | port;
+	regs.regs[2] = 0;
+	regs.regs[3] = 0;
+	regs.regs[4] = 0;
+	smc_call(&regs);
+
+	if (gserm) {
+		gserm->gserm_idx = (regs.regs[1] >> 24) & 0xff;
+		gserm->lanes_num = regs.regs[1] & 0xff;
+		gserm->mapping = (regs.regs[1] >> 8) & 0xffff;
+	}
+
+	return regs.regs[0];
+}
+
+ssize_t smc_serdes_check_rx_training(int port, int lane,
+				     int *completed, int *res)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_RX_TRAINING;
+	regs.regs[1] = (lane << 8) | port;
+	regs.regs[2] = 1;
+	regs.regs[3] = 0;
+	regs.regs[4] = 0;
+	smc_call(&regs);
+
+	if (completed && res) {
+		*completed = regs.regs[2] & 1;
+		*res = (regs.regs[2] >> 1) & 1;
+	}
+
+	return regs.regs[0];
+}
+
+ssize_t smc_serdes_stop_rx_training(int port, int lane)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_RX_TRAINING;
+	regs.regs[1] = (lane << 8) | port;
+	regs.regs[2] = 2;
+	regs.regs[3] = 0;
+	regs.regs[4] = 0;
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
+
 ssize_t smc_serdes_get_rx_tuning(int port, int lane,
 				 void **params,
 				 struct gserm_data *gserm)

@@ -10,6 +10,7 @@
 #include <dm.h>
 #include <dm/uclass-internal.h>
 #include <linux/arm-smccc.h>
+#include <linux/delay.h>
 #include <asm/arch/smc.h>
 #include <net.h>
 
@@ -486,6 +487,63 @@ static int do_serdes_rx(struct cmd_tbl *cmdtp, int flag, int argc,
 U_BOOT_CMD(
 	sdes_rx, 3, 1, do_serdes_rx, "read serdes Rx tuning parameters",
 	"<port#> [<lane#>]\n\n"
+	"parameters:\n"
+	"\t <port#>, <lane#>: Port & lane pair denoting serdes lane.\n"
+);
+
+static int do_serdes_rx_training(struct cmd_tbl *cmdtp, int flag, int argc,
+				 char *const argv[])
+{
+	unsigned long port, lane;
+	int port_idx, lane_idx, glane, completed = 0, failed, tries = 30;
+	struct gserm_data gserm_data;
+	ssize_t ret;
+
+	if (argc < 3)
+		return CMD_RET_USAGE;
+
+	if (strict_strtoul(argv[1], 10, &port))
+		return CMD_RET_USAGE;
+
+	port_idx = port & 0xff;
+
+	if (strict_strtoul(argv[2], 10, &lane))
+		return CMD_RET_FAILURE;
+
+	lane_idx = lane & 0xff;
+
+	printf("SerDes Rx Training:\n");
+	printf("port#:\tlane#:\tgserm#:\tg-lane#:\tstatus:\n");
+
+	ret = smc_serdes_start_rx_training(port_idx, lane_idx,
+					   &gserm_data);
+	if (ret)
+		return CMD_RET_FAILURE;
+
+	while (!completed && tries--) {
+		mdelay(100);
+		smc_serdes_check_rx_training(port_idx, lane_idx,
+					     &completed, &failed);
+	}
+
+	if (!completed) {
+		failed = 1;
+		smc_serdes_stop_rx_training(port_idx, lane_idx);
+	}
+
+	glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
+
+	printf("%d\t%d\t%d\t%d\t\t%s\n",
+	       port_idx, lane_idx,
+	       (int)gserm_data.gserm_idx, glane,
+	       failed ? "FAILED" : "OK");
+
+	return CMD_RET_SUCCESS;
+}
+
+U_BOOT_CMD(
+	sdes_rx_tr, 3, 1, do_serdes_rx_training, "perform serdes Rx training",
+	"<port#> <lane#>\n"
 	"parameters:\n"
 	"\t <port#>, <lane#>: Port & lane pair denoting serdes lane.\n"
 );

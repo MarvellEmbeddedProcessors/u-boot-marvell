@@ -341,6 +341,37 @@ enum prbs_subcmd {
 ssize_t smc_serdes_lpbk(int port, struct gserm_data *gserm, int type);
 
 /**
+ * Perform SerDes Rx training
+ *
+ * x1[15:8]:	lane#
+ * x1[7:0]:	port#
+ *
+ * x2: cmd:
+ *     0 - start training
+ *     1 - check status
+ *     2 - stop training
+ *
+ * returns:
+ *	x0:
+ *		0 -- success
+ *		negative - error
+ *
+ *	x1[31:24]: gserm number
+ *	x1[23:8] : port lane# to gserm lane# mapping
+ *	x1[7:0]  : Number of lanes assigned to the given port
+ *
+ *	check status cmd only:
+ *	x2[0]: 1 - training completed, 0 otherwise
+ *	x2[1]: 1 - training failed, 0 - training succeded
+ *
+ */
+ssize_t smc_serdes_start_rx_training(int port, int lane,
+				     struct gserm_data *gserm);
+ssize_t smc_serdes_check_rx_training(int port, int lane,
+				     int *completed, int *res);
+ssize_t smc_serdes_stop_rx_training(int port, int lane);
+
+/**
  * Read SerDes Rx tuning parameters
  *
  * x1[15:8]:	lane# or 0xff if no lane provided

@@ -391,16 +391,15 @@ int smc_phy_dbg_reg_write(int eth, int lmac, int mode,
 
 ssize_t smc_serdes_prbs_start(int port,
 			      struct gserm_data *gserm,
-			      int pattern, int gen_check,
-			      int err_inject_cnt)
+			      int gen_pattern, int check_pattern)
 {
 	struct pt_regs regs;
 
 	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_PRBS;
-	regs.regs[1] = (gen_check << 18) | (PRBS_START << 16) |
-			(0xff << 8) | port;
-	regs.regs[2] = pattern;
-	regs.regs[3] = err_inject_cnt;
+	regs.regs[1] = (PRBS_START << 16) | (0xff << 8) | port;
+	regs.regs[2] = gen_pattern;
+	regs.regs[3] = check_pattern;
+	regs.regs[4] = 0;
 	smc_call(&regs);
 
 	if (gserm) {
@@ -420,6 +419,7 @@ ssize_t smc_serdes_prbs_stop(int port, struct gserm_data *gserm)
 	regs.regs[1] = (PRBS_STOP << 16) | (0xff << 8) | port;
 	regs.regs[2] = 0;
 	regs.regs[3] = 0;
+	regs.regs[4] = 0;
 	smc_call(&regs);
 
 	if (gserm) {
@@ -439,6 +439,7 @@ ssize_t smc_serdes_prbs_clear(int port, struct gserm_data *gserm)
 	regs.regs[1] = (PRBS_CLEAR << 16) | (0xff << 8) | port;
 	regs.regs[2] = 0;
 	regs.regs[3] = 0;
+	regs.regs[4] = 0;
 	smc_call(&regs);
 
 	if (gserm) {
@@ -465,6 +466,28 @@ ssize_t smc_serdes_prbs_show(int port,
 
 	if (error_stats)
 		*error_stats = (void *)regs.regs[1];
+
+	if (gserm) {
+		gserm->gserm_idx = (regs.regs[2] >> 24) & 0xff;
+		gserm->lanes_num = regs.regs[2] & 0xff;
+		gserm->mapping = (regs.regs[2] >> 8) & 0xffff;
+	}
+
+	return regs.regs[0];
+}
+
+ssize_t smc_serdes_prbs_inject(int port,
+			       struct gserm_data *gserm,
+			       int errors_cnt)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_PRBS;
+	regs.regs[1] = (PRBS_INJECT << 16) | (0xff << 8) | port;
+	regs.regs[2] = 0;
+	regs.regs[3] = 0;
+	regs.regs[4] = errors_cnt;
+	smc_call(&regs);
 
 	if (gserm) {
 		gserm->gserm_idx = (regs.regs[2] >> 24) & 0xff;

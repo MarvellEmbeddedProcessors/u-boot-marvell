@@ -261,21 +261,21 @@ int smc_phy_dbg_set_serdes_cfg(int eth, int lmac, u32 cfg);
 /**
  * Set SerDes PRBS
  *
- * x1[19]: enable/disable generator (enabled by default)
- * x1[18]: enable/disable checker (enabled by default)
- * x1[17:16]: subcommand:
+ * x1[18:16]: subcommand:
  *	0 - start prbs
  *	1 - show prbs
  *	2 - clear prbs
  *	3 - stop prbs
+ *	4 - inject errors
  *
  * x1[15:8]:	lane# or 0xff if no lane provided
  *		in which case it will be executed for
  *		all the lanes assigned to the given port
  * x1[7:0]:	port#
  *
- * x2: prbs pattern (valid only for start command)
- * x3: inject error count (valid only for start command)
+ * x2 - prbs pattern for generator (start command only)
+ * x3 - prbs pattern for checker (start command only)
+ * x4 - number of errors to be injected (inject errors command only)
  *
  * returns:
  *	x0:
@@ -291,6 +291,7 @@ int smc_phy_dbg_set_serdes_cfg(int eth, int lmac, u32 cfg);
  *		struct prbs_error_stats {
  *			uint64_t total_bits;
  *			uint64_t error_bits;
+ *			int locked;
  *		} stats[4];
  *
  *	x2[31:24]: gserm number
@@ -300,19 +301,21 @@ int smc_phy_dbg_set_serdes_cfg(int eth, int lmac, u32 cfg);
  */
 ssize_t smc_serdes_prbs_start(int port,
 			      struct gserm_data *gserm,
-			      int pattern, int gen_check,
-			      int err_inject_cnt);
+			      int gen_pattern, int check_pattern);
 
 ssize_t smc_serdes_prbs_stop(int port, struct gserm_data *gserm);
 ssize_t smc_serdes_prbs_clear(int port, struct gserm_data *gserm);
 ssize_t smc_serdes_prbs_show(int port, struct gserm_data *gserm,
 			     void **error_stats);
+ssize_t smc_serdes_prbs_inject(int port, struct gserm_data *gserm,
+			       int errors_cnt);
 
 enum prbs_subcmd {
 	PRBS_START,
 	PRBS_SHOW,
 	PRBS_CLEAR,
-	PRBS_STOP
+	PRBS_STOP,
+	PRBS_INJECT
 };
 
 /**

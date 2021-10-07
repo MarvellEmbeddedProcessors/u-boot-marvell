@@ -39,6 +39,7 @@ static struct {
 	{PRBS_SHOW, "show"},
 	{PRBS_CLEAR, "clear"},
 	{PRBS_STOP, "stop"},
+	{PRBS_INJECT, "inject"},
 };
 
 DEFINE_STR_2_ENUM_FUNC(prbs_subcmd)
@@ -47,7 +48,6 @@ enum prbs_optcmd {
 	PRBS_CHECKER,
 	PRBS_GENERATOR,
 	PRBS_BOTH,
-	PRBS_INJECT
 };
 
 static struct {
@@ -57,7 +57,6 @@ static struct {
 	{PRBS_CHECKER, "check"},
 	{PRBS_GENERATOR, "gen"},
 	{PRBS_BOTH, "both"},
-	{PRBS_INJECT, "inject"},
 };
 
 DEFINE_STR_2_ENUM_FUNC(prbs_optcmd)
@@ -76,6 +75,7 @@ enum prbs_pattern {
 struct prbs_error_stats {
 	u64 total_bits;
 	u64 error_bits;
+	int locked;
 };
 
 enum lpbk_type {
@@ -169,13 +169,40 @@ struct rx_eq_params {
 	u32 ctle_params[CTLE_PARAMS_NUM];
 };
 
+static inline int _get_pattern(int argc, char *const argv[], int *arg_idx)
+{
+	unsigned long pattern;
+
+	if (argc == *arg_idx || strict_strtoul(argv[*arg_idx], 10, &pattern))
+		return -1;
+
+	 (*arg_idx)++;
+
+	switch (pattern) {
+	/* Validate pattern against the list below */
+	case PRBS_7:
+	case PRBS_9:
+	case PRBS_11:
+	case PRBS_15:
+	case PRBS_16:
+	case PRBS_23:
+	case PRBS_31:
+	case PRBS_32:
+		return (int)pattern;
+
+	default:
+		return -1;
+	}
+}
+
 static int do_serdes_prbs(struct cmd_tbl *cmdtp, int flag, int argc,
 			  char *const argv[])
 {
-	unsigned long port, pattern, inject_cnt;
-	int subcmd, gen_check = 0x3;
-	int optcmd, ret, arg_idx, lanes_num;
+	unsigned long port, inject_cnt;
+	int gen_pattern = 0, check_pattern = 0;
+	int subcmd, optcmd, ret, arg_idx, lanes_num;
 	struct gserm_data gserm_data;
+	char strbuf[32] = {0};
 
 	if (argc < 3)
 		return CMD_RET_USAGE;
@@ -189,67 +216,31 @@ static int do_serdes_prbs(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	port &= 0xff;
 
-	/* If subcmd is PRBS_START, then parsing is done
-	 * and the smc call can be sent straight away.
-	 */
 	if (subcmd != PRBS_START) {
-		pattern = 0;
-		inject_cnt = 0;
+		if (subcmd == PRBS_INJECT) {
+			if (argc == 3 || strict_strtoul(argv[3], 10, &inject_cnt))
+				return CMD_RET_USAGE;
+		}
 		goto send_smc;
 	}
 
-	/* If it is PRBS_START command, yet another mandatory
-	 * parameter is required: pattern
-	 */
-	if (argc < 4 || strict_strtoul(argv[3], 10, &pattern))
-		return CMD_RET_USAGE;
-
-	switch (pattern) {
-	/* Validate pattern against the list below */
-	case PRBS_7:
-	case PRBS_9:
-	case PRBS_11:
-	case PRBS_15:
-	case PRBS_16:
-	case PRBS_23:
-	case PRBS_31:
-	case PRBS_32:
-		break;
-
-	default:
-		return CMD_RET_USAGE;
-	}
-
-	/* All other parameters are optional, thus enabled
-	 * generator and checker by default and setting
-	 * inject_cnt to zero just in case they are not
-	 * provided.
-	 */
-	inject_cnt = 0;
-	arg_idx = 4;
-
+	arg_idx = 3;
 	while (arg_idx < argc) {
 		optcmd = prbs_optcmd_str2enum(argv[arg_idx]);
 		arg_idx++;
 
 		switch (optcmd) {
-		case PRBS_INJECT:
-			if (arg_idx == argc || strict_strtoul(argv[arg_idx], 10,
-							      &inject_cnt)) {
-				return CMD_RET_USAGE;
-			}
-			arg_idx++;
-			break;
-
 		case PRBS_GENERATOR:
-			gen_check = 0x2;
+			gen_pattern = _get_pattern(argc, argv, &arg_idx);
 			break;
 
 		case PRBS_CHECKER:
-			gen_check = 0x1;
+			check_pattern = _get_pattern(argc, argv, &arg_idx);
 			break;
 
 		case PRBS_BOTH:
+			gen_pattern = _get_pattern(argc, argv, &arg_idx);
+			check_pattern = gen_pattern;
 			break;
 
 		default:
@@ -257,44 +248,18 @@ static int do_serdes_prbs(struct cmd_tbl *cmdtp, int flag, int argc,
 		}
 	}
 
+	if (gen_pattern == -1 || check_pattern == -1)
+		return CMD_RET_USAGE;
+
 send_smc:
 	printf("SerDes PRBS:\n");
 
-	switch (subcmd) {
-	case PRBS_START:
-	{
-		printf("port#:\tlane#:\tgserm#:\tg-lane#:\tpattern:"
-					"\tgen/check:\tinject:\tcmd:\n");
-		ret = smc_serdes_prbs_start(port, &gserm_data,
-					    pattern, gen_check,
-					    inject_cnt);
-		if (ret)
-			return CMD_RET_FAILURE;
-
-		lanes_num = gserm_data.lanes_num;
-
-		for (int lane_idx = 0; lane_idx < lanes_num; lane_idx++) {
-			int glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
-
-			printf("%d\t%d\t%d\t%d\t\t%d\t\t%s\t\t%d\t%s\n",
-			       (int)port,
-			       lane_idx,
-			       (int)gserm_data.gserm_idx,
-			       glane,
-			       (int)pattern,
-			       prbs_optcmd[gen_check - 1].s,
-			       (int)inject_cnt,
-			       prbs_subcmd[subcmd].s);
-		}
-	}	break;
-
-	case PRBS_SHOW:
-	{
+	if (subcmd == PRBS_SHOW) {
 		void *stats;
 		struct prbs_error_stats *error_stats;
 
 		printf("port#:\tlane#:\tgserm#:\tg-lane#:"
-				"\ttotal_bits:\terror_bits:\n");
+				"\tlocked:\ttotal_bits:\terror_bits:\n");
 		ret = smc_serdes_prbs_show(port, &gserm_data,
 					   &stats);
 		if (ret)
@@ -307,52 +272,84 @@ send_smc:
 		for (int lane_idx = 0; lane_idx < lanes_num; lane_idx++) {
 			int glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
 
-			printf("%d\t%d\t%d\t%d\t\t%llu\t\t%llu\n",
+			printf("%d\t%d\t%d\t%d\t\t%d\t%llu\t\t%llu\n",
 			       (int)port,
 			       lane_idx,
 			       (int)gserm_data.gserm_idx,
 			       glane,
+			       error_stats[lane_idx].locked,
 			       error_stats[lane_idx].total_bits,
 			       error_stats[lane_idx].error_bits);
 		}
-	}	break;
+		return CMD_RET_SUCCESS;
+	}
 
-	default:
-		printf("port#:\tlane#:\tgserm#:\tg-lane#:\tcmd:\n");
-		ret = (subcmd == PRBS_CLEAR) ?
-			smc_serdes_prbs_clear(port, &gserm_data) :
-			smc_serdes_prbs_stop(port, &gserm_data);
-		if (ret)
-			return CMD_RET_FAILURE;
+	printf("port#:\tlane#:\tgserm#:\tg-lane#:\tcmd:\n");
 
-		lanes_num = gserm_data.lanes_num;
+	switch (subcmd) {
+	case PRBS_START:
+		ret = smc_serdes_prbs_start(port, &gserm_data,
+					    gen_pattern, check_pattern);
 
-		for (int lane_idx = 0; lane_idx < lanes_num; lane_idx++) {
-			int glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
+		if (gen_pattern || check_pattern) {
+			char cbuf[16] = {0};
+			char gbuf[16] = {0};
 
-			printf("%d\t%d\t%d\t%d\t\t%s\n",
-			       (int)port,
-			       lane_idx,
-			       (int)gserm_data.gserm_idx,
-			       glane,
-			       prbs_subcmd[subcmd].s);
+			if (gen_pattern)
+				snprintf(gbuf, 16, " gen=%d", gen_pattern);
+
+			if (check_pattern)
+				snprintf(cbuf, 16, " check=%d", check_pattern);
+
+			snprintf(strbuf, 32, "(patterns:%s%s)", gbuf, cbuf);
 		}
 		break;
+	case PRBS_CLEAR:
+		ret = smc_serdes_prbs_clear(port, &gserm_data);
+		snprintf(strbuf, 32, "counters");
+		break;
+	case PRBS_STOP:
+		ret = smc_serdes_prbs_stop(port, &gserm_data);
+		break;
+	case PRBS_INJECT:
+		ret = smc_serdes_prbs_inject(port, &gserm_data, inject_cnt);
+		snprintf(strbuf, 32, "%ld errors", inject_cnt);
+		break;
+	default:
+		return CMD_RET_FAILURE;
+	}
+
+	if (ret)
+		return CMD_RET_FAILURE;
+
+	lanes_num = gserm_data.lanes_num;
+
+	for (int lane_idx = 0; lane_idx < lanes_num; lane_idx++) {
+		int glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
+
+		printf("%d\t%d\t%d\t%d\t\t%s %s\n",
+		       (int)port,
+		       lane_idx,
+		       (int)gserm_data.gserm_idx,
+		       glane,
+		       prbs_subcmd[subcmd].s,
+		       strbuf);
 	}
 	return CMD_RET_SUCCESS;
 }
 
 U_BOOT_CMD(
 	sdes_prbs, 7, 1, do_serdes_prbs, "perform SerDes PRBS",
-	"start <port#> <pattern> [gen|check|both] [inject <count>]\n"
+	"start <port#> [gen <pattern>] [check <pattern>] [both <pattern>]\n"
 	"sdes_prbs show <port#>\n"
 	"sdes_prbs stop <port#>\n"
-	"sdes_prbs clear <port#>\n\n"
+	"sdes_prbs clear <port#>\n"
+	"sdes_prbs inject <port#> <count>\n\n"
 	"Parameters:\n"
 	"\t <port#>: Port number from the DTS\n"
+	"\t gen,check,both: generator, checker or both\n"
 	"\t <pattern>: The pattern. Options are: 7 9 11 15 16 23 31 32\n"
-	"\t [gen|check|both]:  Start prbs generator, checker or both (default)\n"
-	"\t [inject <count>]: Inject <count> of errors\n"
+	"\t <count>: Inject <count> of errors (accepted values: 1..8)\n"
 );
 
 static int do_serdes_lpbk(struct cmd_tbl *cmdtp, int flag, int argc,

@@ -410,11 +410,11 @@ static int do_phy_read(struct cmd_tbl *cmdtp, int flag, int argc,
 
 U_BOOT_CMD(
 	phy_read, 6, 1, do_phy_read, "read PHY register",
-	"<eth#> <lmac#> <clause> <dev_page> <reg>\n\n"
+	"<eth#> <lmac#> <mode> <dev_page> <reg>\n\n"
 	"Parameters:\n"
 	"\t <eth#>: RPM/CGX index\n"
 	"\t <lmac#>: lmac index\n"
-	"\t <clause>: Loopback type:\n"
+	"\t <mode>: MDIO mode:\n"
 	"\t\t c22: use Clause 22\n"
 	"\t\t c45: use Clause 45\n"
 	"\t <dev_page>: device addr or page num (clause 22)\n"
@@ -456,11 +456,11 @@ static int do_phy_write(struct cmd_tbl *cmdtp, int flag, int argc,
 
 U_BOOT_CMD(
 	phy_write, 7, 1, do_phy_write, "write PHY register",
-	"<eth#> <lmac#> <clause> <dev_page> <reg> <val>\n\n"
+	"<eth#> <lmac#> <mode> <dev_page> <reg> <val>\n\n"
 	"Parameters:\n"
 	"\t <eth#>: RPM/CGX index\n"
 	"\t <lmac#>: lmac index\n"
-	"\t <clause>: Loopback type:\n"
+	"\t <mode>: MDIO mode:\n"
 	"\t\t c22: use Clause 22\n"
 	"\t\t c45: use Clause 45\n"
 	"\t <dev_page>: device addr or page num (clause 22)\n"

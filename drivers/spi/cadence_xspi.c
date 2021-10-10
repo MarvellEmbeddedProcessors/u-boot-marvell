@@ -634,8 +634,7 @@ static int cdns_xspi_read_dqs_delay_training(struct cdns_xspi_dev *cdns_xspi)
 	phy_dll_slave_ctrl = readl(cdns_xspi->auxbase +
 		CDNS_XSPI_CCP_PHY_DLL_SLAVE_CTRL);
 
-	dev_info(cdns_xspi->dev,
-		 "Running PHY training for read_dqs_delay parameter\n");
+	log_debug("Running PHY training for read_dqs_delay parameter\n");
 
 	for (rd_dqs_del = 0; rd_dqs_del < U8_MAX; rd_dqs_del++) {
 		phy_dll_slave_ctrl &= ~CDNS_XSPI_CCP_READ_DQS_DELAY;
@@ -669,8 +668,7 @@ static int cdns_xspi_read_dqs_delay_training(struct cdns_xspi_dev *cdns_xspi)
 	}
 
 	rd_dqs_del = rd_dqs_del_min + rd_dqs_del_max / 2;
-	dev_info(cdns_xspi->dev,
-		 "Using optimal read_dqs_delay value: %d\n", rd_dqs_del);
+	log_debug("Using optimal read_dqs_delay value: %d\n", rd_dqs_del);
 
 	phy_dll_slave_ctrl &= ~CDNS_XSPI_CCP_READ_DQS_DELAY;
 	phy_dll_slave_ctrl |= FIELD_PREP(CDNS_XSPI_CCP_READ_DQS_DELAY,

@@ -332,16 +332,15 @@ static void ioread8_rep(void __iomem  *addr, uint8_t *buf, int len)
 	int rcount = len / 8;
 	int rcount_nf = len % 8;
 	uint64_t tmp;
-	uint8_t ptr;
 
 	for (i = 0; i < rcount; i++) {
 		tmp = readq(addr);
-		copy_mem(&buf[i*8], &tmp, 8);
+		copy_mem(&buf[i * 8], (uint8_t *)&tmp, 8);
 	}
 
 	if (rcount_nf != 0) {
 		tmp = readq(addr);
-		copy_mem(&buf[i*8], &tmp, rcount_nf);
+		copy_mem(&buf[i * 8], (uint8_t *)&tmp, rcount_nf);
 	}
 }
 
@@ -353,12 +352,12 @@ static void iowrite8_rep(void __iomem *addr, const uint8_t *buf, int len)
 	uint64_t tmp;
 
 	for (i = 0; i < rcount; i++) {
-		copy_mem(&tmp, &buf[i*8], 8);
+		copy_mem((uint8_t *)&tmp, (uint8_t *)&buf[i * 8], 8);
 		writeq(tmp, addr);
 	}
 
 	if (rcount_nf != 0) {
-		copy_mem(&tmp, &buf[i*8], rcount_nf);
+		copy_mem((uint8_t *)&tmp, (uint8_t *)&buf[i * 8], rcount_nf);
 		writeq(tmp, addr);
 	}
 }
@@ -468,12 +467,12 @@ static void cdns_xspi_sdma_handle(struct cdns_xspi_dev *cdns_xspi)
 	switch (sdma_dir) {
 	case CDNS_XSPI_SDMA_DIR_READ:
 		ioread8_rep(cdns_xspi->directbase,
-			    cdns_xspi->in_buffer, sdma_size);
+			    (uint8_t *)cdns_xspi->in_buffer, sdma_size);
 		break;
 
 	case CDNS_XSPI_SDMA_DIR_WRITE:
 		iowrite8_rep(cdns_xspi->directbase,
-			     cdns_xspi->out_buffer, sdma_size);
+			     (uint8_t *)cdns_xspi->out_buffer, sdma_size);
 		break;
 	}
 }

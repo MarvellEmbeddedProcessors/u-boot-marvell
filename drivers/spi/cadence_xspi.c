@@ -202,8 +202,11 @@
 
 #define CDNS_XSPI_CMD_FLD_DSEQ_CMD_3(op) ( \
 	FIELD_PREP(CDNS_XSPI_CMD_DSEQ_R3_DCNT_H, \
-		(op->data.nbytes >> 16) & 0xffff) | \
-	FIELD_PREP(CDNS_XSPI_CMD_DSEQ_R3_NUM_OF_DUMMY, op->dummy.nbytes * 8))
+		  (op->data.nbytes >> 16) & 0xffff) | \
+	FIELD_PREP(CDNS_XSPI_CMD_DSEQ_R3_NUM_OF_DUMMY, \
+		  op->dummy.buswidth != 0 ? \
+		  ((op->dummy.nbytes * 8) / op->dummy.buswidth) : \
+		  0))
 
 #define CDNS_XSPI_CMD_FLD_DSEQ_CMD_4(op, chipsel) ( \
 	FIELD_PREP(CDNS_XSPI_CMD_DSEQ_R4_BANK, chipsel) | \
@@ -557,6 +560,8 @@ static int cdns_xspi_exec_op(struct spi_slave *slave,
 		  op->addr.nbytes, op->addr.buswidth, op->addr.val);
 	log_debug("SPI data: direction: %X, len: %d, ptr: %p\n",
 		  op->data.dir, op->data.nbytes, op->data.buf.in);
+	log_debug("SPI dummy: nbytes: %d, buswidth: %d\n",
+		  op->dummy.nbytes, op->dummy.buswidth);
 	if (data_phase)
 		log_debug("Data Phase enabled\n");
 	else

@@ -179,15 +179,17 @@ int rpm_lmac_link_status(struct lmac *lmac, int lmac_id, u64 *status)
 int rpm_lmac_rx_tx_enable(struct lmac *lmac, int lmac_id, bool enable)
 {
 	struct rpm *rpm = lmac->rpm;
-	union rpmx_cmrx_config cmrx_config;
+	union rpmx_mti_mac100x_command_config command_config;
 
 	if (!rpm || lmac_id >= rpm->lmac_count)
 		return -ENODEV;
 
-	cmrx_config.u = rpm_read(rpm, lmac_id, RPMX_CMRX_CONFIG(0));
-	cmrx_config.s.data_pkt_rx_en =
-	cmrx_config.s.data_pkt_tx_en = enable ? 1 : 0;
-	rpm_write(rpm, lmac_id, RPMX_CMRX_CONFIG(0), cmrx_config.u);
+	command_config.u = rpm_read(rpm, lmac_id,
+				    RPMX_MTI_MAC100X_COMMAND_CONFIG(0));
+	command_config.s.rx_ena =
+	command_config.s.tx_ena = enable ? 1 : 0;
+	rpm_write(rpm, lmac_id, RPMX_MTI_MAC100X_COMMAND_CONFIG(0),
+		  command_config.u);
 	return 0;
 }
 

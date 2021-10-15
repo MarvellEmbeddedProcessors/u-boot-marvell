@@ -286,7 +286,7 @@ int npa_af_setup(struct npa_af *npa_af)
 	npa_af_reg_write(npa_af, NPA_AF_GEN_CFG(), npa_cfg.u);
 	/* Enable NDC cache */
 	ndc_cfg.u = npa_af_reg_read(npa_af, NPA_AF_NDC_CFG());
-	ndc_cfg.s.ndc_bypass = 0;
+	ndc_cfg.s.ndc_bypass = 1;
 	npa_af_reg_write(npa_af, NPA_AF_NDC_CFG(), ndc_cfg.u);
 	/* Set up queue size */
 	aq_cfg.u = npa_af_reg_read(npa_af, NPA_AF_AQ_CFG());
@@ -369,7 +369,7 @@ static int nix_af_setup_sq(struct nix *nix)
 	offset = NIXX_AF_TL3_TL2X_LINKX_CFG(tl3_index,
 					    nix->lmac->link_num);
 	tl3_tl2_link_cfg.u = nix_af_reg_read(nix_af, offset);
-	tl3_tl2_link_cfg.s.bp_ena = 1;
+	tl3_tl2_link_cfg.s.bp_ena = 0;
 	tl3_tl2_link_cfg.s.ena = 1;
 	tl3_tl2_link_cfg.s.relchan = 0;
 	offset = NIXX_AF_TL3_TL2X_LINKX_CFG(tl3_index,
@@ -541,6 +541,7 @@ static int nix_attach_send_queue(struct nix *nix)
 
 	sq_req.sq.s.ena = 1;
 	sq_req.sq.s.cq_ena = 1;
+	sq_req.sq.s.sqe_way_mask = 0xffff;
 	sq_req.sq.s.max_sqe_size = NIX_MAXSQESZ_E_W16;
 	sq_req.sq.s.sdp_mcast = 0;
 	sq_req.sq.s.cq = NIX_CQ_TX;
@@ -549,6 +550,7 @@ static int nix_attach_send_queue(struct nix *nix)
 	sq_req.sq.s.sso_ena = 0;
 	sq_req.sq.s.default_chan = nix->lmac->chan_num;
 	sq_req.sq.s.sqe_stype = NIX_STYPE_E_STP;
+	sq_req.sq.s.smq_rr_weight = 1;
 	sq_req.sq.s.qint_idx = 0;
 	sq_req.sq.s.sqb_aura = NPA_POOL_SQB;
 
@@ -970,19 +972,19 @@ int nix_af_setup(struct nix_af *nix_af)
 	/* Enable NDC cache */
 	ndc_cfg.u = nix_af_reg_read(nix_af, NIXX_AF_NDC_CFG());
 	ndc_cfg.s.ndc_ign_pois = 0;
-	ndc_cfg.s.byp_sq = 0;
-	ndc_cfg.s.byp_sqb = 0;
-	ndc_cfg.s.byp_cqs = 0;
-	ndc_cfg.s.byp_cints = 0;
-	ndc_cfg.s.byp_dyno = 0;
-	ndc_cfg.s.byp_mce = 0;
-	ndc_cfg.s.byp_rqc = 0;
-	ndc_cfg.s.byp_rsse = 0;
-	ndc_cfg.s.byp_mc_data = 0;
-	ndc_cfg.s.byp_mc_wqe = 0;
-	ndc_cfg.s.byp_mr_data = 0;
-	ndc_cfg.s.byp_mr_wqe = 0;
-	ndc_cfg.s.byp_qints = 0;
+	ndc_cfg.s.byp_sq = 1;
+	ndc_cfg.s.byp_sqb = 1;
+	ndc_cfg.s.byp_cqs = 1;
+	ndc_cfg.s.byp_cints = 1;
+	ndc_cfg.s.byp_dyno = 1;
+	ndc_cfg.s.byp_mce = 1;
+	ndc_cfg.s.byp_rqc = 1;
+	ndc_cfg.s.byp_rsse = 1;
+	ndc_cfg.s.byp_mc_data = 1;
+	ndc_cfg.s.byp_mc_wqe = 1;
+	ndc_cfg.s.byp_mr_data = 1;
+	ndc_cfg.s.byp_mr_wqe = 1;
+	ndc_cfg.s.byp_qints = 1;
 	nix_af_reg_write(nix_af, NIXX_AF_NDC_CFG(), ndc_cfg.u);
 
 	/* Set up queue size */

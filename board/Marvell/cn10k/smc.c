@@ -411,14 +411,15 @@ ssize_t smc_serdes_prbs_start(int port,
 	return regs.regs[0];
 }
 
-ssize_t smc_serdes_prbs_stop(int port, struct gserm_data *gserm)
+ssize_t smc_serdes_prbs_stop(int port, struct gserm_data *gserm,
+			     int gen, int check)
 {
 	struct pt_regs regs;
 
 	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_PRBS;
 	regs.regs[1] = (PRBS_STOP << 16) | (0xff << 8) | port;
-	regs.regs[2] = 0;
-	regs.regs[3] = 0;
+	regs.regs[2] = gen;
+	regs.regs[3] = check;
 	regs.regs[4] = 0;
 	smc_call(&regs);
 

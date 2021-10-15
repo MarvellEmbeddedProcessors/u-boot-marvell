@@ -216,7 +216,7 @@ static int do_serdes_prbs(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	port &= 0xff;
 
-	if (subcmd != PRBS_START) {
+	if (subcmd != PRBS_START && subcmd != PRBS_STOP) {
 		if (subcmd == PRBS_INJECT) {
 			if (argc == 3 || strict_strtoul(argv[3], 10, &inject_cnt))
 				return CMD_RET_USAGE;
@@ -231,15 +231,18 @@ static int do_serdes_prbs(struct cmd_tbl *cmdtp, int flag, int argc,
 
 		switch (optcmd) {
 		case PRBS_GENERATOR:
-			gen_pattern = _get_pattern(argc, argv, &arg_idx);
+			gen_pattern = subcmd == PRBS_START ?
+				_get_pattern(argc, argv, &arg_idx) : 1;
 			break;
 
 		case PRBS_CHECKER:
-			check_pattern = _get_pattern(argc, argv, &arg_idx);
+			check_pattern = subcmd == PRBS_START ?
+				_get_pattern(argc, argv, &arg_idx) : 1;
 			break;
 
 		case PRBS_BOTH:
-			gen_pattern = _get_pattern(argc, argv, &arg_idx);
+			gen_pattern = subcmd == PRBS_START ?
+				_get_pattern(argc, argv, &arg_idx) : 1;
 			check_pattern = gen_pattern;
 			break;
 
@@ -309,7 +312,19 @@ send_smc:
 		snprintf(strbuf, 32, "counters");
 		break;
 	case PRBS_STOP:
-		ret = smc_serdes_prbs_stop(port, &gserm_data);
+		/* if both gen and check not provided, then stop both */
+		if (!gen_pattern && !check_pattern) {
+			gen_pattern = 1;
+			check_pattern = 1;
+		}
+
+		ret = smc_serdes_prbs_stop(port, &gserm_data,
+					   gen_pattern, check_pattern);
+
+		snprintf(strbuf, 32, "%s%s%s",
+			 gen_pattern ? " generator" : "",
+			 gen_pattern && check_pattern ? "," : "",
+			 check_pattern ? " checker" : "");
 		break;
 	case PRBS_INJECT:
 		ret = smc_serdes_prbs_inject(port, &gserm_data, inject_cnt);
@@ -342,7 +357,7 @@ U_BOOT_CMD(
 	sdes_prbs, 7, 1, do_serdes_prbs, "perform SerDes PRBS",
 	"start <port#> [gen <pattern>] [check <pattern>] [both <pattern>]\n"
 	"sdes_prbs show <port#>\n"
-	"sdes_prbs stop <port#>\n"
+	"sdes_prbs stop <port#> [gen|check|both]\n"
 	"sdes_prbs clear <port#>\n"
 	"sdes_prbs inject <port#> <count>\n\n"
 	"Parameters:\n"

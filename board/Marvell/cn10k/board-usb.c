@@ -8,6 +8,7 @@
 #include <string.h>
 #include <errno.h>
 #include <dm.h>
+#include <linux/delay.h>
 #include <usb.h>
 #include <asm/gpio.h>
 

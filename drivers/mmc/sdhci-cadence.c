@@ -409,7 +409,9 @@ static void init_emmc_hs400(struct sdhci_cdns_sd6_phy_timings *t, int t_sdclk)
 
 static void (*(init_timings[]))(struct sdhci_cdns_sd6_phy_timings*, int) = {
 	&init_hs, &init_emmc_legacy, &init_emmc_sdr,
-	&init_emmc_ddr, &init_emmc_hs200, &init_emmc_hs400
+	&init_emmc_ddr, &init_emmc_hs200, &init_emmc_hs400,
+	&init_uhs_sdr12, &init_uhs_sdr25, &init_uhs_sdr50,
+	&init_uhs_sdr104, &init_uhs_ddr50
 };
 
 #ifdef SD4_ENABLE
@@ -1328,18 +1330,17 @@ static void sdhci_cdns_sd6_set_clock(struct sdhci_host *host,
 	struct udevice *dev = host->mmc->dev;
 	struct sdhci_cdns_plat *plat = dev_get_platdata(dev);
 	struct sdhci_cdns_sd6_phy *phy = plat->priv;
-	unsigned int regval;
 
 	DEBUG_DRV("sdhci_cdns_sd6_set_clock %d\n", clock);
 	phy->t_sdclk = 5000; //DIV_ROUND_DOWN_ULL(1e12, clock);
 
 	if (sdhci_cdns_sd6_phy_update_timings(plat))
-		DEBUG_DRV("%s: update timings failed\n", __func__);
+		debug("%s: update timings failed\n", __func__);
 	else
 		host->clock = clock;
 
         if (sdhci_cdns_sd6_phy_init(dev, plat))
-               dev_err(mmc_dev(host->mmc), "%s: phy init failed\n", __func__);
+               debug("%s: phy init failed\n", __func__);
 }
 
 static int sdhci_cdns_sd6_plat_init(struct udevice *dev, struct sdhci_cdns_plat *plat)

@@ -34,4 +34,5 @@ static inline void lmt_submit(u64 io_address, u64 val)
 {
 	asm volatile("steor %x[rf],[%[rs]]"
 			: [rf] "+r"(val) : [rs] "r"(io_address));
+	asm volatile("dsb st" : : : "memory");
 }

@@ -1884,9 +1884,13 @@ efi_status_t EFIAPI efi_load_image(bool boot_policy,
 		struct efi_device_path_file_path *fp =
 			(struct efi_device_path_file_path *)file_path;
 		int flen = u16_strlen(fp->str);
-		char filename[80];
+		char *filename;
 		char *eth_str, *ip_str, *path, *substring;
-		memset(filename, 0, sizeof(filename));
+		filename = calloc(flen + 1, sizeof(u8));
+		if (!filename) {
+			ret = EFI_OUT_OF_RESOURCES;
+			goto error;
+		}
 		utf16_to_utf8((u8 *)filename, fp->str, flen);
 		substring = strchr((const char *)filename, ':');
 		/* If file path is <IP>:<File> format, use network */
@@ -1912,6 +1916,7 @@ efi_status_t EFIAPI efi_load_image(bool boot_policy,
 			ret = efi_load_image_from_path(file_path, &dest_buffer,
 					       &source_size);
 		}
+		free(filename);
 		if (ret != EFI_SUCCESS)
 			goto error;
 	} else {

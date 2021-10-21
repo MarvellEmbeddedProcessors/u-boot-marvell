@@ -78,6 +78,10 @@ DEFINE_STR_2_ENUM_FUNC(prbs_optcmd)
 #define PAM4_PATTERN(_p) ((_p) << 8)
 
 enum prbs_pattern {
+	PRBS_CLK2 = 1,
+	PRBS_CLK4 = 2,
+	PRBS_CLK8 = 4,
+
 	PRBS_7 = 7,
 	PRBS_9 = 9,
 	PRBS_11 = 11,
@@ -99,11 +103,16 @@ enum prbs_pattern {
 };
 
 #define PRBS(_p) {PRBS_ ## _p, #_p}
+#define PRBS_CLK(_p) {PRBS_CLK ## _p, "clk/"#_p}
 
 static struct {
 	enum prbs_pattern e;
 	const char *s;
 } prbs_pattern[] = {
+	PRBS_CLK(2),
+	PRBS_CLK(4),
+	PRBS_CLK(8),
+
 	PRBS(7),
 	PRBS(9),
 	PRBS(11),
@@ -235,11 +244,12 @@ static inline int _get_pattern(int argc, char *const argv[], int *arg_idx)
 static int do_serdes_prbs(struct cmd_tbl *cmdtp, int flag, int argc,
 			  char *const argv[])
 {
+#define STRBUF_SZ 64
 	unsigned long port, inject_cnt;
 	int gen_pattern = 0, check_pattern = 0;
 	int subcmd, optcmd, ret, arg_idx, lanes_num;
 	struct gserm_data gserm_data;
-	char strbuf[32] = {0};
+	char strbuf[STRBUF_SZ] = {0};
 
 	if (argc < 3)
 		return CMD_RET_USAGE;
@@ -351,12 +361,13 @@ send_smc:
 					 ptrn ? ptrn : "");
 			}
 
-			snprintf(strbuf, 32, "(patterns:%s%s)", gbuf, cbuf);
+			snprintf(strbuf, STRBUF_SZ, "(patterns:%s%s)",
+				 gbuf, cbuf);
 		}
 		break;
 	case PRBS_CLEAR:
 		ret = smc_serdes_prbs_clear(port, &gserm_data);
-		snprintf(strbuf, 32, "counters");
+		snprintf(strbuf, STRBUF_SZ, "counters");
 		break;
 	case PRBS_STOP:
 		/* if both gen and check not provided, then stop both */
@@ -368,14 +379,14 @@ send_smc:
 		ret = smc_serdes_prbs_stop(port, &gserm_data,
 					   gen_pattern, check_pattern);
 
-		snprintf(strbuf, 32, "%s%s%s",
+		snprintf(strbuf, STRBUF_SZ, "%s%s%s",
 			 gen_pattern ? " generator" : "",
 			 gen_pattern && check_pattern ? "," : "",
 			 check_pattern ? " checker" : "");
 		break;
 	case PRBS_INJECT:
 		ret = smc_serdes_prbs_inject(port, &gserm_data, inject_cnt);
-		snprintf(strbuf, 32, "%ld errors", inject_cnt);
+		snprintf(strbuf, STRBUF_SZ, "%ld errors", inject_cnt);
 		break;
 	default:
 		return CMD_RET_FAILURE;
@@ -410,8 +421,10 @@ U_BOOT_CMD(
 	"Parameters:\n"
 	"\t <port#>: Port number from the DTS\n"
 	"\t gen,check,both: generator, checker or both\n"
-	"\t <pattern>: The pattern. Options are: 7 9 11 15 16 23 31 32\n"
-	"\t\t or: 11_0..3 13_0..3 (PAM4 patterns)\n"
+	"\t <pattern>: The pattern. Options are:\n"
+	"\t\t\t 7 9 11 15 16 23 31 32 (Regular patterns)\n"
+	"\t\t\t 11_0..3 13_0..3 (PAM4 patterns)\n"
+	"\t\t\t clk/2 clk/4 clk/8 (Clock patterns)\n"
 	"\t <count>: Inject <count> of errors (accepted values: 1..8)\n"
 );
 

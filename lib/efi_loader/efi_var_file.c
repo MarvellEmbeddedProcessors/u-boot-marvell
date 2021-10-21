@@ -164,7 +164,7 @@ efi_status_t __efi_runtime efi_var_collect(struct efi_var_file **bufp, loff_t *l
  */
 efi_status_t __efi_runtime efi_var_to_file(void)
 {
-#ifdef CONFIG_EFI_VARIABLE_FILE_STORE
+#if IS_ENABLED(CONFIG_EFI_VARIABLE_FILE_STORE) || IS_ENABLED(CONFIG_EFI_VARIABLE_IN_SPI_FLASH)
 	efi_status_t ret;
 	struct efi_var_file *buf;
 	loff_t len;
@@ -264,7 +264,7 @@ efi_status_t efi_var_restore(struct efi_var_file *buf)
  */
 efi_status_t efi_var_from_file(void)
 {
-#ifdef CONFIG_EFI_VARIABLE_FILE_STORE
+#if IS_ENABLED(CONFIG_EFI_VARIABLE_FILE_STORE) || IS_ENABLED(CONFIG_EFI_VARIABLE_IN_SPI_FLASH)
 	struct efi_var_file *buf;
 	loff_t len;
 	efi_status_t ret;

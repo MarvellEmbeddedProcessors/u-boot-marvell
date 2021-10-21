@@ -91,7 +91,7 @@ int fdt_get_bdk_usb_power_gpio(int port_no)
 	snprintf(prop_name, sizeof(prop_name), "USB-PWR-GPIO.PORT%d", port_no);
 	str = fdt_getprop(fdt, node, prop_name, &len);
 	if (!str) {
-		printf("Error: cannot retrieve %s from device tree\n",
+		debug("Error: cannot retrieve %s from device tree\n",
 		       prop_name);
 		return -1;
 	}

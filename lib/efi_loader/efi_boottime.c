@@ -1880,14 +1880,27 @@ efi_status_t EFIAPI efi_load_image(bool boot_policy,
 	}
 
 	if (!source_buffer) {
-		/* Retrieve file path */
-		struct efi_device_path_file_path *fp =
-			(struct efi_device_path_file_path *)file_path;
-		int flen = u16_strlen(fp->str);
-		char filename[80];
+		int flen;
+		char *filename;
 		char *eth_str, *ip_str, *path, *substring;
-		memset(filename, 0, sizeof(filename));
-		utf16_to_utf8((u8 *)filename, fp->str, flen);
+		u16 *dp_text;
+		/*
+		 * Do not use 'filepath->str' as this may not be
+		 * in text form.  For example, for a USB path, the 'str'
+		 * is in binary form whereas for a NET path, the 'str' is
+		 * in textual form.
+		 *
+		 * So, convert the device path to text before using it.
+		 */
+		dp_text = efi_dp_str(file_path);
+		flen = u16_strlen(dp_text);
+		filename = calloc(flen + 1, sizeof(u8));
+		if (!filename) {
+			ret = EFI_OUT_OF_RESOURCES;
+			goto error;
+		}
+		utf16_to_utf8((u8 *)filename, dp_text, flen);
+		efi_free_pool(dp_text);
 		substring = strchr((const char *)filename, ':');
 		/* If file path is <IP>:<File> format, use network */
 		substring = strchr((const char *)filename, ':');
@@ -1912,6 +1925,7 @@ efi_status_t EFIAPI efi_load_image(bool boot_policy,
 			ret = efi_load_image_from_path(file_path, &dest_buffer,
 					       &source_size);
 		}
+		free(filename);
 		if (ret != EFI_SUCCESS)
 			goto error;
 	} else {

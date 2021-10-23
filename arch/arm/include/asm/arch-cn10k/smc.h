@@ -103,7 +103,7 @@ int smc_efi_var_shared_memory(u64 *mem_addr, u64 *mem_size);
  *		0 -- Success
  *		-1 -- Invalid Arguments
  */
-int smc_write_efi_var(u64 var_addr, u64 var_size, u32 bus, u32 cs);
+int smc_write_efi_var(u64 var_addr, u64 var_size);
 
 /*
  * Perform secure SPI flash operation

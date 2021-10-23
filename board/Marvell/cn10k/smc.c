@@ -124,15 +124,13 @@ int smc_efi_var_shared_memory(u64 *mem_addr, u64 *mem_size)
  *		0 -- Success
  *		-1 -- Invalid Arguments
  */
-__efi_runtime int smc_write_efi_var(u64 var_addr, u64 var_size, u32 bus, u32 cs)
+__efi_runtime int smc_write_efi_var(u64 var_addr, u64 var_size)
 {
 	struct pt_regs regs;
 
 	regs.regs[0] = PLAT_OCTEONTX_WRITE_EFI_VAR;
 	regs.regs[1] = var_addr;
 	regs.regs[2] = var_size;
-	regs.regs[3] = bus;
-	regs.regs[4] = cs;
 
 	smc_call(&regs);
 

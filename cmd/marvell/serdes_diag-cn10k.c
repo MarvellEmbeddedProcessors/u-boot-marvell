@@ -753,7 +753,7 @@ read_tx_tuning:
 	for (; lane_idx < max_idx; lane_idx++) {
 		int glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
 
-		printf("%d\t%d\t%d\t%d\t\t0x%x\t0x%x\t0x%x\t0x%x\n",
+		printf("%d\t%d\t%d\t%d\t\t%hd\t%hd\t%hd\t%hd\n",
 		       (int)port, lane_idx,
 		       (int)gserm_data.gserm_idx,
 		       glane,

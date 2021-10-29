@@ -78,18 +78,22 @@ DEFINE_STR_2_ENUM_FUNC(prbs_optcmd)
 #define PAM4_PATTERN(_p) ((_p) << 8)
 
 enum prbs_pattern {
-	PRBS_CLK2 = 1,
-	PRBS_CLK4 = 2,
-	PRBS_CLK8 = 4,
+	PRBS_1T = 1,
+	PRBS_2T = 2,
+	PRBS_4T = 4,
+	PRBS_5T = 5,
 
 	PRBS_7 = 7,
 	PRBS_9 = 9,
+	PRBS_10T = 10,
 	PRBS_11 = 11,
 	PRBS_15 = 15,
 	PRBS_16 = 16,
 	PRBS_23 = 23,
 	PRBS_31 = 31,
 	PRBS_32 = 32,
+	PRBS_SSPRQ,
+	PRBS_K28_5,
 
 	PRBS_11_0 = PAM4_PATTERN(11),
 	PRBS_11_1,
@@ -103,24 +107,28 @@ enum prbs_pattern {
 };
 
 #define PRBS(_p) {PRBS_ ## _p, #_p}
-#define PRBS_CLK(_p) {PRBS_CLK ## _p, "clk/"#_p}
 
 static struct {
 	enum prbs_pattern e;
 	const char *s;
 } prbs_pattern[] = {
-	PRBS_CLK(2),
-	PRBS_CLK(4),
-	PRBS_CLK(8),
+	PRBS(1T),
+	PRBS(2T),
+	PRBS(4T),
+	PRBS(5T),
 
 	PRBS(7),
 	PRBS(9),
+	PRBS(10T),
 	PRBS(11),
 	PRBS(15),
 	PRBS(16),
 	PRBS(23),
 	PRBS(31),
 	PRBS(32),
+	PRBS(SSPRQ),
+	PRBS(K28_5),
+
 	PRBS(11_0),
 	PRBS(11_1),
 	PRBS(11_2),
@@ -424,7 +432,8 @@ U_BOOT_CMD(
 	"\t <pattern>: The pattern. Options are:\n"
 	"\t\t\t 7 9 11 15 16 23 31 32 (Regular patterns)\n"
 	"\t\t\t 11_0..3 13_0..3 (PAM4 patterns)\n"
-	"\t\t\t clk/2 clk/4 clk/8 (Clock patterns)\n"
+	"\t\t\t K28_5 T1 T2 T4 T5 T10 (Jitter patterns)\n"
+	"\t\t\t SSPRQ (Test sequence by IEEE 802.3-2018)\n"
 	"\t <count>: Inject <count> of errors (accepted values: 1..8)\n"
 );
 

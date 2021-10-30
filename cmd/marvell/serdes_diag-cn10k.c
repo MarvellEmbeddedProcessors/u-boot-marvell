@@ -578,7 +578,7 @@ static int do_serdes_rx_training(struct cmd_tbl *cmdtp, int flag, int argc,
 {
 	unsigned long port, lane;
 	int port_idx, glane, lanes_cnt, max_idx, lane_idx = 0xff;
-	int ongoing, failed = 0, tries = 30;
+	int idx, ongoing, failed = 0, tries = 30;
 	struct gserm_data gserm_data;
 	ssize_t ret;
 
@@ -616,18 +616,18 @@ static int do_serdes_rx_training(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	while (ongoing && tries--) {
 		udelay(100);
-		for (lane_idx = 0; lane_idx < max_idx; lane_idx++) {
+		for (idx = lane_idx; idx < max_idx; idx++) {
 			int completed, res;
 
-			if (!((ongoing >> lane_idx) & 1))
+			if (!((ongoing >> idx) & 1))
 				continue;
 
-			smc_serdes_check_rx_training(port_idx, lane_idx,
+			smc_serdes_check_rx_training(port_idx, idx,
 						     &completed, &res);
 			if (completed) {
-				ongoing &= ~(1 << lane_idx);
+				ongoing &= ~(1 << idx);
 				if (res)
-					failed |= (1 << lane_idx);
+					failed |= (1 << idx);
 			}
 		}
 	}
@@ -640,19 +640,19 @@ static int do_serdes_rx_training(struct cmd_tbl *cmdtp, int flag, int argc,
 	/* For all the lanes that failed to complete
 	 * need to call the stop_rx_training explicitly.
 	 */
-	for (lane_idx = 0; ongoing; lane_idx++) {
+	for (idx = lane_idx; ongoing; idx++) {
 		if (ongoing & 1)
 			smc_serdes_stop_rx_training(port_idx,
-						    lane_idx);
+						    idx);
 		ongoing >>= 1;
 	}
 
-	for (lane_idx = 0; lane_idx < max_idx; lane_idx++) {
-		int res = (failed >> lane_idx) & 1;
+	for (idx = lane_idx; idx < max_idx; idx++) {
+		int res = (failed >> idx) & 1;
 
-		glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
+		glane = (gserm_data.mapping >> 4 * idx) & 0xf;
 		printf("%d\t%d\t%d\t%d\t\t%s\n",
-		       port_idx, lane_idx,
+		       port_idx, idx,
 		       (int)gserm_data.gserm_idx, glane,
 		       res ? "FAILED" : "OK");
 	}

@@ -716,22 +716,25 @@ void board_switch_reset(void)
 	sw_bar2_hi = (u32)(((ulong)sw_bar2 >> 32) & 0xffffffff);
 
 	/* Check version for Hitless start-up */
-	memset(buffer, 0, sizeof(buffer));
-	ret = switch_cmd_opcode5(buffer);
-	if (ret) {
-		pr_debug("%s %d : version cmd error [0x%x]\n",
-			 __func__, __LINE__, ret);
-		printf("Skipping switch soft-reset as version cmd fail\n");
-		return;
+	if (otx_is_platform(PLATFORM_ASIM)) {
+		memset(buffer, 0, sizeof(buffer));
+		ret = switch_cmd_opcode5(buffer);
+		if (ret) {
+			pr_debug("%s %d : version cmd error [0x%x]\n",
+				 __func__, __LINE__, ret);
+			printf("Skipping switch soft-reset as version cmd fail\n");
+			return;
+		}
+
+		temp[0] = buffer[1];
+		temp[1] = buffer[3];
+		temp[2] = buffer[4];
+		temp[3] = '\0';
+		ret = strict_strtoul(temp, 10, &val);
+		/* Above V1.10 support Hitless start-up so do not reset */
+		if (val > 110)
+			return;
 	}
-	temp[0] = buffer[1];
-	temp[1] = buffer[3];
-	temp[2] = buffer[4];
-	temp[3] = '\0';
-	ret = strict_strtoul(temp, 10, &val);
-	/* Above V1.10 support Hitless start-up so do not reset */
-	if (val > 110)
-		return;
 
 	/*
 	 * Open 1M iATU address translation window into Prestera DFX-server,

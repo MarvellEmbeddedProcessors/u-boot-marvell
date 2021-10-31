@@ -51,7 +51,6 @@ config EFI_MM_COMM_TEE
 config EFI_VARIABLE_IN_SPI_FLASH
 	bool "Store non-volatile UEFI variables in SPI-NOR"
 	depends on ARCH_CN10K || ARCH_OCTEONTX2
-	default n
 	help
 	  Select this option if you want non-volatile UEFI variables to be
 	  stored as raw file on SPI-NOR flash device.

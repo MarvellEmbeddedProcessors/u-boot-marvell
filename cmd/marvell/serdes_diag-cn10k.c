@@ -640,11 +640,9 @@ static int do_serdes_rx_training(struct cmd_tbl *cmdtp, int flag, int argc,
 	/* For all the lanes that failed to complete
 	 * need to call the stop_rx_training explicitly.
 	 */
-	for (idx = lane_idx; ongoing; idx++) {
-		if (ongoing & 1)
-			smc_serdes_stop_rx_training(port_idx,
-						    idx);
-		ongoing >>= 1;
+	for (idx = lane_idx; idx < max_idx; idx++) {
+		if ((ongoing >> idx) & 1)
+			smc_serdes_stop_rx_training(port_idx, idx);
 	}
 
 	for (idx = lane_idx; idx < max_idx; idx++) {

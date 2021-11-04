@@ -253,20 +253,20 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 }
 
 U_BOOT_CMD(
-#if defined(CMD_BOOTIMGUP_CUST_SIG) && defined(CMD_BOOTIMGUP_BACKUP)
+#if defined(CONFIG_CMD_BOOTIMGUP_CUST_SIG) && defined(CONFIG_CMD_BOOTIMGUP_BACKUP)
 	bootimgup, 11, 1, do_bootimgup, "Updates Boot Image",
 	" <[-v]> <[-b]> <[-p]> <mmc [devid] | spi [bus:cs]> [image_address] [image_size] -sig [signature address] [signature size]\n"
-#elif defined(CMD_BOOTIMGUP_CUST_SIG) && !defined(CMD_BOOTIMGUP_BACKUP)
+#elif defined(CONFIG_CMD_BOOTIMGUP_CUST_SIG) && !defined(CONFIG_CMD_BOOTIMGUP_BACKUP)
 	bootimgup, 10, 1, do_bootimgup, "Updates Boot Image",
 	" <[-v]> <[-p]> <mmc [devid] | spi [bus:cs]> [image_address] [image_size] -sig [signature address] [signature size]\n"
-#elif !defined(CMD_BOOTIMGUP_CUST_SIG) && defined(CMD_BOOTIMGUP_BACKUP)
+#elif !defined(CONFIG_CMD_BOOTIMGUP_CUST_SIG) && defined(CONFIG_CMD_BOOTIMGUP_BACKUP)
 	bootimgup, 8, 1, do_bootimgup, "Updates Boot Image",
 	" <[-v]> <[-b]> <[-p]> <mmc | spi> <[devid] | [bus:cs]> [image_address] [image_size]\n"
 #else
 	bootimgup, 7, 1, do_bootimgup, "Updates Boot Image",
 	" <[-v]> <[-p]> <mmc | spi> <[devid] | [bus:cs]> [image_address] [image_size]\n"
 #endif
-#ifdef CMD_BOOTIMGUP_BACKUP
+#ifdef CONFIG_CMD_BOOTIMGUP_BACKUP
 	" -b - updates the backup image location\n"
 #endif
 	" -v - skip version check\n"
@@ -292,7 +292,7 @@ U_BOOT_CMD(
 	"\n"
 	" If not given, then $fileaddr and $filesize values in\n"
 	" environment are used, otherwise fail to update.\n"
-#ifdef CMD_BOOTIMGUP_CUST_SIG
+#ifdef CONFIG_CMD_BOOTIMGUP_CUST_SIG
 	" -sig [signature address] [signature size size]\n"
 	"  Address and size of image signature\n"
 	" If missing, the environment variables $sigaddr and $sigsize will be used.\n"

@@ -615,7 +615,7 @@ static int do_serdes_rx_training(struct cmd_tbl *cmdtp, int flag, int argc,
 	}
 
 	while (ongoing && tries--) {
-		udelay(100);
+		mdelay(100);
 		for (idx = lane_idx; idx < max_idx; idx++) {
 			int completed, res;
 

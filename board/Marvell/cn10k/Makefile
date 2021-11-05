@@ -6,5 +6,5 @@
 # */
 
 obj-y	:= board.o smc.o soc-utils.o
-obj-${CONFIG_TARGET_CN10K_A} += switch.o
+obj-${CONFIG_TARGET_CN10K_A} += switch.o board-usb.o
 obj-$(CONFIG_OF_LIBFDT) += board-fdt.o

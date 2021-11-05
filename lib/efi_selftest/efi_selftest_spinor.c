@@ -52,6 +52,9 @@ static int execute(void)
 			continue;
 		}
 
+		if (spinor->spi_peripheral->friendly_name)
+			printf("Device Name: %ls\n", spinor->spi_peripheral->friendly_name);
+
 		ret = spinor->get_flash_id(spinor, flash_id);
 		if (ret != EFI_SUCCESS && ret != EFI_UNSUPPORTED) {
 			efi_st_error("[%d]Failed to read flash id[%u]\n", (int)i, (int)ret);

@@ -22,7 +22,7 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 #define	SUPER_FW_RAM_ADDR	0x10040000
-#define	CM3_FW_RAM_ADDR		0x10100000
+#define	CM3_FW_RAM_ADDR		0x10200000
 
 /* Switch boot progress codes */
 #define SW_BOOT_INIT_IN_PROGRESS	1
@@ -35,7 +35,13 @@ DECLARE_GLOBAL_DATA_PTR;
 
 void *second_magic_word_loc(void *bar2)
 {
-	return (bar2 + readl(bar2 + SW_MAGWRD2_OFFSET));
+	u64 val = (u64)bar2;
+
+	val += readl(bar2 + SW_MAGWRD2_OFFSET);
+	/* MG0 SRAM Offset for hardware */
+	val |= 0x80000;
+
+	return (void *)val;
 }
 
 #define SWITCH_FIRST_MAGIC_WORD_LOC(x)	(void *)((x) + SW_MAGWRD_OFFSET)
@@ -710,22 +716,25 @@ void board_switch_reset(void)
 	sw_bar2_hi = (u32)(((ulong)sw_bar2 >> 32) & 0xffffffff);
 
 	/* Check version for Hitless start-up */
-	memset(buffer, 0, sizeof(buffer));
-	ret = switch_cmd_opcode5(buffer);
-	if (ret) {
-		pr_debug("%s %d : version cmd error [0x%x]\n",
-			 __func__, __LINE__, ret);
-		printf("Skipping switch soft-reset as version cmd fail\n");
-		return;
+	if (otx_is_platform(PLATFORM_ASIM)) {
+		memset(buffer, 0, sizeof(buffer));
+		ret = switch_cmd_opcode5(buffer);
+		if (ret) {
+			pr_debug("%s %d : version cmd error [0x%x]\n",
+				 __func__, __LINE__, ret);
+			printf("Skipping switch soft-reset as version cmd fail\n");
+			return;
+		}
+
+		temp[0] = buffer[1];
+		temp[1] = buffer[3];
+		temp[2] = buffer[4];
+		temp[3] = '\0';
+		ret = strict_strtoul(temp, 10, &val);
+		/* Above V1.10 support Hitless start-up so do not reset */
+		if (val > 110)
+			return;
 	}
-	temp[0] = buffer[1];
-	temp[1] = buffer[3];
-	temp[2] = buffer[4];
-	temp[3] = '\0';
-	ret = strict_strtoul(temp, 10, &val);
-	/* Above V1.10 support Hitless start-up so do not reset */
-	if (val > 110)
-		return;
 
 	/*
 	 * Open 1M iATU address translation window into Prestera DFX-server,
@@ -743,7 +752,7 @@ void board_switch_reset(void)
 	writel(0x0, sw_bar0 + 0x1500);
 	writel(0x80000000, sw_bar0 + 0x1504);
 	writel(sw_bar2_lo + 0x100000, sw_bar0 + 0x1508);
-	writel(sw_bar2_hi, sw_bar0 + 0x150c);
+	writel(0x0, sw_bar0 + 0x150c);
 	writel(sw_bar2_lo + 0x1fffff, sw_bar0 + 0x1510);
 	writel(0x0, sw_bar0 + 0x1514);
 	writel(0x0, sw_bar0 + 0x1518);
@@ -764,7 +773,7 @@ void board_switch_reset(void)
 	writel(0x0, sw_bar0 + 0x1700);
 	writel(0x80000000, sw_bar0 + 0x1704);
 	writel(sw_bar2_lo + 0x200000, sw_bar0 + 0x1708);
-	writel(sw_bar2_hi, sw_bar0 + 0x170c);
+	writel(0x0, sw_bar0 + 0x170c);
 	writel(sw_bar2_lo + 0x2fffff, sw_bar0 + 0x1710);
 	writel(0x3c000000, sw_bar0 + 0x1714);
 	writel(0x0, sw_bar0 + 0x1718);
@@ -869,7 +878,7 @@ void board_switch_init(void)
 	writel(0x0, sw_bar0 + 0x1300);
 	writel(0x80000000, sw_bar0 + 0x1304);
 	writel(sw_bar2_lo, sw_bar0 + 0x1308);
-	writel(sw_bar2_hi, sw_bar0 + 0x130c);
+	writel(0x0, sw_bar0 + 0x130c);
 	writel(sw_bar2_lo + 0xfffff, sw_bar0 + 0x1310);
 	writel(0x3c200000, sw_bar0 + 0x1314);
 	writel(0x0, sw_bar0 + 0x1318);
@@ -921,6 +930,8 @@ void board_switch_init(void)
 	/* Check boot status */
 	timeout = 10;
 	mailbox_offset = readl(sw_bar2 + SW_MAGWRD2_OFFSET);
+	/* MG0 SRAM Offset for hardware */
+	mailbox_offset |= 0x80000;
 	debug("%s Mailbox Offset:0x%llx\n", __func__, mailbox_offset);
 	while (readl(sw_bar2 + mailbox_offset + 4) != SW_BOOT_INIT_DONE) {
 		mdelay(1);

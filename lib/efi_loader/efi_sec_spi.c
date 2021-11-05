@@ -34,6 +34,26 @@ struct efi_sec_spi_nor_flash_protocol_obj {
 	int cs;
 };
 
+static u16 *device_name_string(int bus, int cs)
+{
+	char name[50];
+	u16 *out, *tmp;
+	efi_uintn_t len;
+	efi_status_t ret;
+
+	snprintf(name, sizeof(name), "SPI[%d:%d]", bus, cs);
+	len = sizeof(u16) * strlen(name) + 1;
+
+	ret = efi_allocate_pool(EFI_ALLOCATE_ANY_PAGES, len, (void **)&out);
+	if (ret != EFI_SUCCESS)
+		return NULL;
+
+	tmp = out;
+	utf8_utf16_strncpy(&tmp, name, len);
+
+	return out;
+}
+
 /*
  * Read the 3 byte manufacture and device ID from the SPI flash.
  *
@@ -186,6 +206,7 @@ static efi_status_t install_sec_spi_nor_flash_protocol(char *bus_cs)
 	const struct driver dummy_drv = {.id = UCLASS_SPI_FLASH};
 	int idx_bus, idx_cs;
 	int bus, cs;
+	u16 *name;
 
 	/* Loop through CS's to create protocol for each device */
 	for (idx_bus = 0; idx_bus < (bus_cs[0] & 0xF); idx_bus++) {
@@ -245,6 +266,8 @@ static efi_status_t install_sec_spi_nor_flash_protocol(char *bus_cs)
 			       (void *)&spi_part, sizeof(struct spi_part *));
 			memcpy((void *)&spi_peripheral->spi_bus,
 			       (void *)&spi_bus, sizeof(struct spi_bus *));
+			name = device_name_string(bus, cs);
+			memcpy((void *)&spi_peripheral->friendly_name, &name, sizeof(name));
 
 			/* Create protocol object */
 			proto_obj = calloc(1, sizeof(*proto_obj));

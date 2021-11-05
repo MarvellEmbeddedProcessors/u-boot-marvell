@@ -31,6 +31,20 @@ static inline int _conv_arr ## _str2enum(const char *str)		\
 	return -1;							\
 }
 
+#define DEFINE_ENUM_2_STR_FUNC(_conv_arr)				\
+static inline const char *_conv_arr ## _enum2str(int val)		\
+{									\
+	size_t idx;							\
+	size_t len = ARRAY_SIZE(_conv_arr);				\
+									\
+	for (idx = 0; idx < len; idx++) {				\
+		if (_conv_arr[idx].e == val)				\
+			return _conv_arr[idx].s;			\
+	}								\
+									\
+	return NULL;							\
+}
+
 static struct {
 	enum prbs_subcmd e;
 	const char *s;
@@ -61,16 +75,72 @@ static struct {
 
 DEFINE_STR_2_ENUM_FUNC(prbs_optcmd)
 
+#define PAM4_PATTERN(_p) ((_p) << 8)
+
 enum prbs_pattern {
+	PRBS_1T = 1,
+	PRBS_2T = 2,
+	PRBS_4T = 4,
+	PRBS_5T = 5,
+
 	PRBS_7 = 7,
 	PRBS_9 = 9,
+	PRBS_10T = 10,
 	PRBS_11 = 11,
 	PRBS_15 = 15,
 	PRBS_16 = 16,
 	PRBS_23 = 23,
 	PRBS_31 = 31,
-	PRBS_32 = 32
+	PRBS_32 = 32,
+	PRBS_SSPRQ,
+	PRBS_K28_5,
+
+	PRBS_11_0 = PAM4_PATTERN(11),
+	PRBS_11_1,
+	PRBS_11_2,
+	PRBS_11_3,
+
+	PRBS_13_0 = PAM4_PATTERN(13),
+	PRBS_13_1,
+	PRBS_13_2,
+	PRBS_13_3,
 };
+
+#define PRBS(_p) {PRBS_ ## _p, #_p}
+
+static struct {
+	enum prbs_pattern e;
+	const char *s;
+} prbs_pattern[] = {
+	PRBS(1T),
+	PRBS(2T),
+	PRBS(4T),
+	PRBS(5T),
+
+	PRBS(7),
+	PRBS(9),
+	PRBS(10T),
+	PRBS(11),
+	PRBS(15),
+	PRBS(16),
+	PRBS(23),
+	PRBS(31),
+	PRBS(32),
+	PRBS(SSPRQ),
+	PRBS(K28_5),
+
+	PRBS(11_0),
+	PRBS(11_1),
+	PRBS(11_2),
+	PRBS(11_3),
+	PRBS(13_0),
+	PRBS(13_1),
+	PRBS(13_2),
+	PRBS(13_3),
+};
+
+DEFINE_STR_2_ENUM_FUNC(prbs_pattern)
+DEFINE_ENUM_2_STR_FUNC(prbs_pattern)
 
 struct prbs_error_stats {
 	u64 total_bits;
@@ -171,38 +241,23 @@ struct rx_eq_params {
 
 static inline int _get_pattern(int argc, char *const argv[], int *arg_idx)
 {
-	unsigned long pattern;
+	int pattern;
 
-	if (argc == *arg_idx || strict_strtoul(argv[*arg_idx], 10, &pattern))
-		return -1;
-
+	pattern = prbs_pattern_str2enum(argv[*arg_idx]);
 	 (*arg_idx)++;
 
-	switch (pattern) {
-	/* Validate pattern against the list below */
-	case PRBS_7:
-	case PRBS_9:
-	case PRBS_11:
-	case PRBS_15:
-	case PRBS_16:
-	case PRBS_23:
-	case PRBS_31:
-	case PRBS_32:
-		return (int)pattern;
-
-	default:
-		return -1;
-	}
+	return pattern;
 }
 
 static int do_serdes_prbs(struct cmd_tbl *cmdtp, int flag, int argc,
 			  char *const argv[])
 {
+#define STRBUF_SZ 64
 	unsigned long port, inject_cnt;
 	int gen_pattern = 0, check_pattern = 0;
 	int subcmd, optcmd, ret, arg_idx, lanes_num;
 	struct gserm_data gserm_data;
-	char strbuf[32] = {0};
+	char strbuf[STRBUF_SZ] = {0};
 
 	if (argc < 3)
 		return CMD_RET_USAGE;
@@ -216,7 +271,7 @@ static int do_serdes_prbs(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	port &= 0xff;
 
-	if (subcmd != PRBS_START) {
+	if (subcmd != PRBS_START && subcmd != PRBS_STOP) {
 		if (subcmd == PRBS_INJECT) {
 			if (argc == 3 || strict_strtoul(argv[3], 10, &inject_cnt))
 				return CMD_RET_USAGE;
@@ -231,15 +286,18 @@ static int do_serdes_prbs(struct cmd_tbl *cmdtp, int flag, int argc,
 
 		switch (optcmd) {
 		case PRBS_GENERATOR:
-			gen_pattern = _get_pattern(argc, argv, &arg_idx);
+			gen_pattern = subcmd == PRBS_START ?
+				_get_pattern(argc, argv, &arg_idx) : 1;
 			break;
 
 		case PRBS_CHECKER:
-			check_pattern = _get_pattern(argc, argv, &arg_idx);
+			check_pattern = subcmd == PRBS_START ?
+				_get_pattern(argc, argv, &arg_idx) : 1;
 			break;
 
 		case PRBS_BOTH:
-			gen_pattern = _get_pattern(argc, argv, &arg_idx);
+			gen_pattern = subcmd == PRBS_START ?
+				_get_pattern(argc, argv, &arg_idx) : 1;
 			check_pattern = gen_pattern;
 			break;
 
@@ -295,25 +353,48 @@ send_smc:
 			char cbuf[16] = {0};
 			char gbuf[16] = {0};
 
-			if (gen_pattern)
-				snprintf(gbuf, 16, " gen=%d", gen_pattern);
+			if (gen_pattern) {
+				const char *ptrn =
+					prbs_pattern_enum2str(gen_pattern);
 
-			if (check_pattern)
-				snprintf(cbuf, 16, " check=%d", check_pattern);
+				snprintf(gbuf, 16, " gen=%s",
+					 ptrn ? ptrn : "");
+			}
 
-			snprintf(strbuf, 32, "(patterns:%s%s)", gbuf, cbuf);
+			if (check_pattern) {
+				const char *ptrn =
+					prbs_pattern_enum2str(check_pattern);
+
+				snprintf(cbuf, 16, " check=%s",
+					 ptrn ? ptrn : "");
+			}
+
+			snprintf(strbuf, STRBUF_SZ, "(patterns:%s%s)",
+				 gbuf, cbuf);
 		}
 		break;
 	case PRBS_CLEAR:
 		ret = smc_serdes_prbs_clear(port, &gserm_data);
-		snprintf(strbuf, 32, "counters");
+		snprintf(strbuf, STRBUF_SZ, "counters");
 		break;
 	case PRBS_STOP:
-		ret = smc_serdes_prbs_stop(port, &gserm_data);
+		/* if both gen and check not provided, then stop both */
+		if (!gen_pattern && !check_pattern) {
+			gen_pattern = 1;
+			check_pattern = 1;
+		}
+
+		ret = smc_serdes_prbs_stop(port, &gserm_data,
+					   gen_pattern, check_pattern);
+
+		snprintf(strbuf, STRBUF_SZ, "%s%s%s",
+			 gen_pattern ? " generator" : "",
+			 gen_pattern && check_pattern ? "," : "",
+			 check_pattern ? " checker" : "");
 		break;
 	case PRBS_INJECT:
 		ret = smc_serdes_prbs_inject(port, &gserm_data, inject_cnt);
-		snprintf(strbuf, 32, "%ld errors", inject_cnt);
+		snprintf(strbuf, STRBUF_SZ, "%ld errors", inject_cnt);
 		break;
 	default:
 		return CMD_RET_FAILURE;
@@ -342,13 +423,17 @@ U_BOOT_CMD(
 	sdes_prbs, 7, 1, do_serdes_prbs, "perform SerDes PRBS",
 	"start <port#> [gen <pattern>] [check <pattern>] [both <pattern>]\n"
 	"sdes_prbs show <port#>\n"
-	"sdes_prbs stop <port#>\n"
+	"sdes_prbs stop <port#> [gen|check|both]\n"
 	"sdes_prbs clear <port#>\n"
 	"sdes_prbs inject <port#> <count>\n\n"
 	"Parameters:\n"
 	"\t <port#>: Port number from the DTS\n"
 	"\t gen,check,both: generator, checker or both\n"
-	"\t <pattern>: The pattern. Options are: 7 9 11 15 16 23 31 32\n"
+	"\t <pattern>: The pattern. Options are:\n"
+	"\t\t\t 7 9 11 15 16 23 31 32 (Regular patterns)\n"
+	"\t\t\t 11_0..3 13_0..3 (PAM4 patterns)\n"
+	"\t\t\t K28_5 T1 T2 T4 T5 T10 (Jitter patterns)\n"
+	"\t\t\t SSPRQ (Test sequence by IEEE 802.3-2018)\n"
 	"\t <count>: Inject <count> of errors (accepted values: 1..8)\n"
 );
 
@@ -492,11 +577,12 @@ static int do_serdes_rx_training(struct cmd_tbl *cmdtp, int flag, int argc,
 				 char *const argv[])
 {
 	unsigned long port, lane;
-	int port_idx, lane_idx, glane, completed = 0, failed, tries = 30;
+	int port_idx, glane, lanes_cnt, max_idx, lane_idx = 0xff;
+	int idx, ongoing, failed = 0, tries = 30;
 	struct gserm_data gserm_data;
 	ssize_t ret;
 
-	if (argc < 3)
+	if (argc < 2)
 		return CMD_RET_USAGE;
 
 	if (strict_strtoul(argv[1], 10, &port))
@@ -504,36 +590,70 @@ static int do_serdes_rx_training(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	port_idx = port & 0xff;
 
-	if (strict_strtoul(argv[2], 10, &lane))
-		return CMD_RET_FAILURE;
-
-	lane_idx = lane & 0xff;
-
 	printf("SerDes Rx Training:\n");
 	printf("port#:\tlane#:\tgserm#:\tg-lane#:\tstatus:\n");
+	if (argc > 2) {
+		if (strict_strtoul(argv[2], 10, &lane))
+			return CMD_RET_FAILURE;
+
+		lane_idx = lane & 0xff;
+		max_idx = lane_idx + 1;
+		ongoing = (1 << lane_idx);
+	}
 
 	ret = smc_serdes_start_rx_training(port_idx, lane_idx,
 					   &gserm_data);
 	if (ret)
 		return CMD_RET_FAILURE;
 
-	while (!completed && tries--) {
+	lanes_cnt = gserm_data.lanes_num;
+
+	if (lane_idx == 0xff) {
+		lane_idx = 0;
+		max_idx = lanes_cnt;
+		ongoing = (1 << lanes_cnt) - 1;
+	}
+
+	while (ongoing && tries--) {
 		mdelay(100);
-		smc_serdes_check_rx_training(port_idx, lane_idx,
-					     &completed, &failed);
+		for (idx = lane_idx; idx < max_idx; idx++) {
+			int completed, res;
+
+			if (!((ongoing >> idx) & 1))
+				continue;
+
+			smc_serdes_check_rx_training(port_idx, idx,
+						     &completed, &res);
+			if (completed) {
+				ongoing &= ~(1 << idx);
+				if (res)
+					failed |= (1 << idx);
+			}
+		}
 	}
 
-	if (!completed) {
-		failed = 1;
-		smc_serdes_stop_rx_training(port_idx, lane_idx);
+	/* All the lanes that did not complete are
+	 * marked as failed.
+	 */
+	failed |= ongoing;
+
+	/* For all the lanes that failed to complete
+	 * need to call the stop_rx_training explicitly.
+	 */
+	for (idx = lane_idx; idx < max_idx; idx++) {
+		if ((ongoing >> idx) & 1)
+			smc_serdes_stop_rx_training(port_idx, idx);
 	}
 
-	glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
+	for (idx = lane_idx; idx < max_idx; idx++) {
+		int res = (failed >> idx) & 1;
 
-	printf("%d\t%d\t%d\t%d\t\t%s\n",
-	       port_idx, lane_idx,
-	       (int)gserm_data.gserm_idx, glane,
-	       failed ? "FAILED" : "OK");
+		glane = (gserm_data.mapping >> 4 * idx) & 0xf;
+		printf("%d\t%d\t%d\t%d\t\t%s\n",
+		       port_idx, idx,
+		       (int)gserm_data.gserm_idx, glane,
+		       res ? "FAILED" : "OK");
+	}
 
 	return CMD_RET_SUCCESS;
 }
@@ -677,7 +797,7 @@ read_tx_tuning:
 	for (; lane_idx < max_idx; lane_idx++) {
 		int glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
 
-		printf("%d\t%d\t%d\t%d\t\t0x%x\t0x%x\t0x%x\t0x%x\n",
+		printf("%d\t%d\t%d\t%d\t\t%hd\t%hd\t%hd\t%hd\n",
 		       (int)port, lane_idx,
 		       (int)gserm_data.gserm_idx,
 		       glane,

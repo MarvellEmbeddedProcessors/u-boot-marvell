@@ -273,8 +273,8 @@ int smc_phy_dbg_set_serdes_cfg(int eth, int lmac, u32 cfg);
  *		all the lanes assigned to the given port
  * x1[7:0]:	port#
  *
- * x2 - prbs pattern for generator (start command only)
- * x3 - prbs pattern for checker (start command only)
+ * x2 - prbs pattern for generator (start & stop commands only)
+ * x3 - prbs pattern for checker (start & stop commands only)
  * x4 - number of errors to be injected (inject errors command only)
  *
  * returns:
@@ -303,7 +303,8 @@ ssize_t smc_serdes_prbs_start(int port,
 			      struct gserm_data *gserm,
 			      int gen_pattern, int check_pattern);
 
-ssize_t smc_serdes_prbs_stop(int port, struct gserm_data *gserm);
+ssize_t smc_serdes_prbs_stop(int port, struct gserm_data *gserm,
+			     int gen, int check);
 ssize_t smc_serdes_prbs_clear(int port, struct gserm_data *gserm);
 ssize_t smc_serdes_prbs_show(int port, struct gserm_data *gserm,
 			     void **error_stats);

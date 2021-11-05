@@ -279,14 +279,15 @@ int smc_phy_dbg_temp_read(int eth, int lmac, int *temp)
 	return regs.regs[0];
 }
 
-int smc_phy_dbg_loopback_write(int eth, int lmac, int enable)
+int smc_phy_dbg_loopback_write(int eth, int lmac, int cmd, int side, int type)
 {
 	struct pt_regs regs;
 
 	regs.regs[0] = PLAT_OCTEONTX_PHY_LOOPBACK;
-	regs.regs[1] = enable;
-	regs.regs[2] = eth;
-	regs.regs[3] = lmac;
+	regs.regs[1] = cmd;
+	regs.regs[2] = (type << 2) | side;
+	regs.regs[3] = eth;
+	regs.regs[4] = lmac;
 	smc_call(&regs);
 
 	return regs.regs[0];
@@ -306,13 +307,14 @@ ssize_t smc_phy_dbg_prbs_read(int eth, int lmac, int host)
 	return regs.regs[0];
 }
 
-int smc_phy_dbg_prbs_write(int eth, int lmac, int cmd, int host, int type)
+int smc_phy_dbg_prbs_write(int eth, int lmac, int cmd,
+			   int host, int dir, int type)
 {
 	struct pt_regs regs;
 
 	regs.regs[0] = PLAT_OCTEONTX_PHY_DBG_PRBS;
 	regs.regs[1] = cmd;
-	regs.regs[2] = type << 2 | 1 << 1 | host;
+	regs.regs[2] = type << 3 | dir << 1 | host;
 	regs.regs[3] = eth;
 	regs.regs[4] = lmac;
 	smc_call(&regs);

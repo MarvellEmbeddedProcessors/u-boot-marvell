@@ -157,16 +157,19 @@ int smc_phy_dbg_temp_read(int eth, int lmac, int *temp);
  * Set PHY's loopback
  *
  * x1 - cmd
- *	0 - disable line loopback for phy @eth(x2),lmac(x3)
- *	1 - enable line loopback for phy @eth(x2),lmac(x3)
+ *	1 - start loopback
+ *	2 - stop loopback
  *
- * x2 - eth
- * x3 - lmac
+ * x2[3:2] - loopback type (PCS_SHALLOW = 0, PCS_DEEP = 1, PMA_DEEP = 2)
+ * x2[0:1] - PHY side (line = 0, host = 1)
+ *
+ * x3 - eth
+ * x4 - lmac
  * Return:
  *	x0: 0 (Success) or -1 (Fail)
  *
  */
-int smc_phy_dbg_loopback_write(int eth, int lmac, int enable);
+int smc_phy_dbg_loopback_write(int eth, int lmac, int cmd, int side, int type);
 
 /**
  * Configure PRBS for PHY / Get PRBS counters
@@ -177,15 +180,18 @@ int smc_phy_dbg_loopback_write(int eth, int lmac, int enable);
  *	3 - get prbs error counters for phy @eth(x3),lmac(x4)
  *
  * x2 - config, fields are:
- *	- x2[3:2] is pattern selector, options are:
- *		0x00 - PRBS_7
- *		0x01 - PRBS_23
- *		0x10 - PRBS_31
- *		0x11 - PRBS_1010
- *	- x2[1] is the direction
+ *	- x2[4:3] is pattern selector, options are:
+ *			0x00 - PRBS_7
+ *			0x01 - PRBS_23
+ *			0x10 - PRBS_31
+ *			0x11 - PRBS_1010
+ *	- x2[2:1] is the direction
+ *			1 - tx
+ *			2 - rx
+ *			3 - tx-rx
  *	- x2[0] is denoting host or line side:
- *		1 - host side
- *		0 - line side
+ *			1 - host side
+ *			0 - line side
  * x3 - eth
  * x4 - lmac
  * Return:
@@ -196,7 +202,7 @@ int smc_phy_dbg_loopback_write(int eth, int lmac, int enable);
  */
 ssize_t smc_phy_dbg_prbs_read(int eth, int lmac, int host);
 int smc_phy_dbg_prbs_write(int eth, int lmac,
-			   int cmd, int host, int type);
+			   int cmd, int host, int dir, int type);
 
 /**
  * Read / Write PHY registers

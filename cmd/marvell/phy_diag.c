@@ -95,6 +95,23 @@ static struct {
 
 DEFINE_STR_2_ENUM_FUNC(prbs_sides)
 
+enum phy_prbs_direction {
+	PRBS_DIRECTION_TX = 1,
+	PRBS_DIRECTION_RX,
+	PRBS_DIRECTION_TX_RX,
+};
+
+static struct {
+	enum phy_prbs_direction e;
+	const char *s;
+} prbs_directions[] = {
+	{PRBS_DIRECTION_TX, "tx"},
+	{PRBS_DIRECTION_RX, "rx"},
+	{PRBS_DIRECTION_TX_RX, "tx-rx"},
+};
+
+DEFINE_STR_2_ENUM_FUNC(prbs_directions)
+
 enum prbs_type {
 	PRBS_7 = 0,
 	PRBS_23,
@@ -106,13 +123,61 @@ static struct {
 	enum prbs_type e;
 	const char *s;
 } prbs_types[] = {
-	{PRBS_7, "7"},
-	{PRBS_23, "23"},
-	{PRBS_31, "31"},
-	{PRBS_1010, "1010"},
+	{PRBS_7, "prbs_7"},
+	{PRBS_23, "prbs_23"},
+	{PRBS_31, "prbs_31"},
+	{PRBS_1010, "prbs_1010"},
 };
 
 DEFINE_STR_2_ENUM_FUNC(prbs_types)
+
+/* loopback definitions */
+enum phy_loopback_cmd {
+	PHY_LOOPBACK_START_CMD = 1,
+	PHY_LOOPBACK_STOP_CMD,
+};
+
+static struct {
+	enum phy_loopback_cmd e;
+	const char *s;
+} loopback_cmds[] = {
+	{PHY_LOOPBACK_START_CMD, "start"},
+	{PHY_LOOPBACK_STOP_CMD, "stop"},
+};
+
+DEFINE_STR_2_ENUM_FUNC(loopback_cmds)
+
+enum phy_loopback_side {
+	LOOPBACK_SIDE_LINE = 0,
+	LOOPBACK_SIDE_HOST,
+};
+
+static struct {
+	enum phy_loopback_side e;
+	const char *s;
+} loopback_sides[] = {
+	{LOOPBACK_SIDE_LINE, "line"},
+	{LOOPBACK_SIDE_HOST, "host"},
+};
+
+DEFINE_STR_2_ENUM_FUNC(loopback_sides)
+
+enum phy_loopback_type {
+	PCS_SHALLOW = 0,
+	PCS_DEEP,
+	PMA_DEEP,
+};
+
+static struct {
+	enum phy_loopback_type e;
+	const char *s;
+} loopback_types[] = {
+	{PCS_SHALLOW, "pcs_shallow"},
+	{PCS_DEEP, "pcs_deep"},
+	{PMA_DEEP, "pma_deep"},
+};
+
+DEFINE_STR_2_ENUM_FUNC(loopback_types)
 
 enum phy_sdes_cmd {
 	PHY_SDES_GET_CFG,
@@ -137,10 +202,10 @@ DEFINE_STR_2_ENUM_FUNC(mdio_optype)
 static int do_phy_lpbk(struct cmd_tbl *cmdtp, int flag, int argc,
 		       char *const argv[])
 {
-	unsigned long eth_idx, lmac_idx, type;
-	int ret;
+	unsigned long eth_idx, lmac_idx;
+	int ret, side, cmd, type = 0;
 
-	if (argc < 4)
+	if (argc < 5)
 		return CMD_RET_USAGE;
 
 	if (strict_strtoul(argv[1], 10, &eth_idx))
@@ -149,39 +214,59 @@ static int do_phy_lpbk(struct cmd_tbl *cmdtp, int flag, int argc,
 	if (strict_strtoul(argv[2], 10, &lmac_idx))
 		return CMD_RET_USAGE;
 
-	if (strict_strtoul(argv[3], 10, &type))
+	cmd = loopback_cmds_str2enum(argv[3]);
+	if (cmd == -1)
 		return CMD_RET_USAGE;
 
-	/* Validate looback type against the list below */
-	switch (type) {
-	case PHY_LPBK_TYPE_NONE:
-	case PHY_LPBK_TYPE_LINE:
-		break;
-
-	default:
-		printf("ERROR: Unsupported loopback type\n");
+	side = loopback_sides_str2enum(argv[4]);
+	if (side == -1)
 		return CMD_RET_USAGE;
+
+	if (cmd == PHY_LOOPBACK_START_CMD) {
+		if (argc < 6)
+			return CMD_RET_USAGE;
+
+		type = loopback_types_str2enum(argv[5]);
+		if (type == -1)
+			return CMD_RET_USAGE;
 	}
 
 	printf("Enable PHY Loopback:\n");
-	printf("eth#:\tlmac#:\ttype:\tstatus:\n");
 
-	ret = smc_phy_dbg_loopback_write(eth_idx, lmac_idx, type);
-	printf("%ld\t%ld\t%ld\t%s\n",
-	       eth_idx, lmac_idx, type, ret ? "FAILED" : "OK");
+	ret = smc_phy_dbg_loopback_write(eth_idx, lmac_idx, cmd, side, type);
+
+	if (cmd == PHY_LOOPBACK_START_CMD) {
+		printf("eth#:\tlmac#:\tcmd:\tside:\ttype:\t\tstatus:\n");
+		printf("%ld\t%ld\tstart\t%s\t%s\t%s\n",
+		       eth_idx, lmac_idx,
+		       loopback_sides[side].s,
+		       loopback_types[type].s,
+		       ret ? "FAILED" : "OK");
+	} else {
+		printf("eth#:\tlmac#:\tcmd:\tside:\tstatus:\n");
+		printf("%ld\t%ld\tstop\t%s\t%s\n",
+		       eth_idx, lmac_idx,
+		       loopback_sides[side].s,
+		       ret ? "FAILED" : "OK");
+	}
 
 	return ret ? CMD_RET_FAILURE : CMD_RET_SUCCESS;
 }
 
 U_BOOT_CMD(
-	phy_lpbk, 4, 1, do_phy_lpbk, "enable PHY Loopback",
-	"<eth#> <lmac#> <type>\n\n"
+	phy_lpbk, 6, 1, do_phy_lpbk, "enable PHY Loopback",
+	"<eth#> <lmac#> start <side> <type>\n"
+	"phy_lpbk <eth#> <lmac#> stop <side>\n\n"
 	"Parameters:\n"
 	"\t <eth#>: RPM/CGX index\n"
 	"\t <lmac#>: lmac index\n"
-	"\t <enable>: Loopback type:\n"
-	"\t\t 0: No Loopback\n"
-	"\t\t 1: Line loopback\n"
+	"\t <side>: PHY side:\n"
+	"\t\t line\n"
+	"\t\t host\n"
+	"\t <type>: Loopback type:\n"
+	"\t\t pcs_shallow\n"
+	"\t\t pcs_deep\n"
+	"\t\t pma_deep\n"
 );
 
 static int do_phy_temp(struct cmd_tbl *cmdtp, int flag, int argc,
@@ -224,7 +309,7 @@ static int do_phy_prbs(struct cmd_tbl *cmdtp, int flag, int argc,
 		       char *const argv[])
 {
 	unsigned long eth_idx, lmac_idx;
-	int ret, cmd, host, type = 0;
+	int ret, cmd, host = 0, dir = 0, type = 0;
 	int host_errors, line_errors;
 
 	if (argc < 4)
@@ -240,41 +325,50 @@ static int do_phy_prbs(struct cmd_tbl *cmdtp, int flag, int argc,
 	if (cmd == -1)
 		return CMD_RET_USAGE;
 
-	if (cmd != PHY_PRBS_GET_DATA_CMD) {
-		if (argc < 5)
+	switch (cmd) {
+	case PHY_PRBS_START_CMD:
+		if (argc < 7)
 			return CMD_RET_USAGE;
 
 		host = prbs_sides_str2enum(argv[4]);
-	}
+		dir = prbs_directions_str2enum(argv[5]);
+		type = prbs_types_str2enum(argv[6]);
 
-	if (cmd == -1 || host == -1)
-		return CMD_RET_USAGE;
-
-	switch (cmd) {
-	case PHY_PRBS_START_CMD:
-		if (argc < 6)
-			return CMD_RET_USAGE;
-
-		type = prbs_types_str2enum(argv[5]);
-		if (type == -1)
+		if (host == -1 || dir == -1 || type == -1)
 			return CMD_RET_USAGE;
 
 		ret = smc_phy_dbg_prbs_write(eth_idx, lmac_idx,
-					     PHY_PRBS_START_CMD, host, type);
+					     PHY_PRBS_START_CMD,
+					     host, dir, type);
 
 		printf("Start PHY PRBS:\n");
-		printf("eth#:\tlmac#:\thost:\ttype:\tstatus:\n");
-		printf("%ld\t%ld\t%d\t%d\t%s\n",
-		       eth_idx, lmac_idx, host, type, ret ? "FAILED" : "OK");
+		printf("eth#:\tlmac#:\tside:\tdir:\ttype:\t\tstatus:\n");
+		printf("%ld\t%ld\t%s\t%s\t%s\t%s%s\n",
+		       eth_idx, lmac_idx,
+		       prbs_sides[host].s,
+		       prbs_directions[dir - 1].s,
+		       prbs_types[type].s,
+		       type != PRBS_1010 ? "\t" : "",
+		       ret ? "FAILED" : "OK");
 		break;
 
 	case PHY_PRBS_STOP_CMD:
+		host = prbs_sides_str2enum(argv[4]);
+		if (argc > 5)
+			dir = prbs_directions_str2enum(argv[5]);
+
+		if (host == -1 || dir == -1)
+			return CMD_RET_USAGE;
+
 		ret = smc_phy_dbg_prbs_write(eth_idx, lmac_idx,
-					     PHY_PRBS_STOP_CMD, host, type);
+					     PHY_PRBS_STOP_CMD,
+					     host, dir, type);
 		printf("Stop PHY PRBS:\n");
-		printf("eth#:\tlmac#:\thost:\tstatus:\n");
-		printf("%ld\t%ld\t%d\t%s\n",
-		       eth_idx, lmac_idx, host, ret ? "FAILED" : "OK");
+		printf("eth#:\tlmac#:\tside:\tstatus:\n");
+		printf("%ld\t%ld\t%s\t%s\n",
+		       eth_idx, lmac_idx,
+		       prbs_sides[host].s,
+		       ret ? "FAILED" : "OK");
 
 		break;
 
@@ -295,9 +389,9 @@ static int do_phy_prbs(struct cmd_tbl *cmdtp, int flag, int argc,
 }
 
 U_BOOT_CMD(
-	phy_prbs, 6, 1, do_phy_prbs, "start/stop/show PHY PRBS",
-	"<eth#> <lmac#> start <side> <type>\n"
-	"phy_prbs <eth#> <lmac#> stop <side>\n"
+	phy_prbs, 7, 1, do_phy_prbs, "start/stop/show PHY PRBS",
+	"<eth#> <lmac#> start <side> <dir> <type>\n"
+	"phy_prbs <eth#> <lmac#> stop <side> [<dir>]\n"
 	"phy_prbs <eth#> <lmac#> show\n\n"
 	"Parameters:\n"
 	"\t <eth#>: RPM/CGX index\n"
@@ -305,11 +399,15 @@ U_BOOT_CMD(
 	"\t <side>:\n"
 	"\t\t host: host side PRBS\n"
 	"\t\t line: line side PRBS\n"
+	"\t <dir>:\n"
+	"\t\t rx\n"
+	"\t\t tx\n"
+	"\t\t tx-rx\n"
 	"\t <type>:\n"
-	"\t\t 7\n"
-	"\t\t 23\n"
-	"\t\t 31\n"
-	"\t\t 1010\n"
+	"\t\t prbs_7\n"
+	"\t\t prbs_23\n"
+	"\t\t prbs_31\n"
+	"\t\t prbs_1010\n"
 );
 
 static inline int parse_mdio_op_data(char *const argv[], int argc,

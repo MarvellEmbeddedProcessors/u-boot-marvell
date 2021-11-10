@@ -77,27 +77,6 @@ static int fdt_get_bdk_node(void)
 	return node;
 }
 
-int fdt_get_bdk_usb_power_gpio(int port_no)
-{
-	int node = fdt_get_bdk_node();
-	const void *fdt = gd->fdt_blob;
-	char prop_name[32];
-	const char *str;
-	int len;
-
-	if (node <= 0)
-		return -1;
-
-	snprintf(prop_name, sizeof(prop_name), "USB-PWR-GPIO.PORT%d", port_no);
-	str = fdt_getprop(fdt, node, prop_name, &len);
-	if (!str) {
-		debug("Error: cannot retrieve %s from device tree\n",
-		       prop_name);
-		return -1;
-	}
-	return simple_strtoul(str, NULL, 10);
-}
-
 u64 fdt_get_board_mac_addr(bool use_id, u8 id)
 {
 	int node, len = 16;

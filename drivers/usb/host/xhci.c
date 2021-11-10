@@ -133,11 +133,6 @@ struct xhci_ctrl *xhci_get_ctrl(struct usb_device *udev)
 #endif
 }
 
-__weak int board_xhci_power_set(struct usb_device *udev, bool enable)
-{
-	return 0;
-}
-
 /**
  * Waits for as per specified amount of time
  * for the "result" to match with "done"
@@ -1087,7 +1082,6 @@ static int xhci_submit_root(struct usb_device *udev, unsigned long pipe,
 		case USB_PORT_FEAT_POWER:
 			reg |= PORT_POWER;
 			xhci_writel(status_reg, reg);
-			board_xhci_power_set(udev, true);
 			break;
 		case USB_PORT_FEAT_RESET:
 			reg |= PORT_RESET;
@@ -1107,7 +1101,6 @@ static int xhci_submit_root(struct usb_device *udev, unsigned long pipe,
 			break;
 		case USB_PORT_FEAT_POWER:
 			reg &= ~PORT_POWER;
-			board_xhci_power_set(udev, false);
 			break;
 		case USB_PORT_FEAT_C_RESET:
 		case USB_PORT_FEAT_C_CONNECTION:

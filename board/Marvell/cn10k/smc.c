@@ -597,6 +597,28 @@ ssize_t smc_serdes_get_rx_tuning(int port, int lane,
 	return regs.regs[0];
 }
 
+ssize_t smc_serdes_set_rx_tuning(int port, int lane,
+				 u32 config,
+				 struct gserm_data *gserm)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = PLAT_OCTEONTX_SERDES_DBG_RX_TUNING;
+	regs.regs[1] = (lane << 8) | port;
+	regs.regs[2] = config;
+	regs.regs[3] = 0;
+	regs.regs[4] = 0;
+	smc_call(&regs);
+
+	if (gserm) {
+		gserm->gserm_idx = (regs.regs[2] >> 24) & 0xff;
+		gserm->lanes_num = regs.regs[2] & 0xff;
+		gserm->mapping = (regs.regs[2] >> 8) & 0xffff;
+	}
+
+	return regs.regs[0];
+}
+
 ssize_t smc_serdes_get_tx_tuning(int port, int lane,
 				 void **params,
 				 struct gserm_data *gserm)

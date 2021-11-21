@@ -399,6 +399,10 @@ ssize_t smc_serdes_stop_rx_training(int port, int lane);
  *		struct rx_eq_params {
  *			s32 dfe_taps[24];
  *			u32 ctle_params[13];
+ *			int polarity;
+ *			int gray_code;
+ *			int pre_code;
+ *			int squelch_detect;
  *		} params[4];
  *
  *	x2[31:24]: gserm number
@@ -408,6 +412,34 @@ ssize_t smc_serdes_stop_rx_training(int port, int lane);
  */
 ssize_t smc_serdes_get_rx_tuning(int port, int lane,
 				 void **params,
+				 struct gserm_data *gserm);
+
+/**
+ * Write SerDes Rx tuning parameters
+ *
+ * x1[15:8]:	lane# or 0xff if no lane provided
+ *		in which case it will be executed for
+ *		all the lanes assigned to the given port
+ * x1[7:0]:	port#
+ *
+ * x2 - polarity, gray code, pre code:
+ *	x2[5:4] polarity provided & value
+ *	x2[3:2] gray code provided & value
+ *	x2[1:0] pre code provided & value
+ *
+ * returns:
+ *	x0:
+ *		0 -- success
+ *		negative - error
+ *
+ *
+ *	x2[31:24]: gserm number
+ *	x2[23:8] : port lane# to gserm lane# mapping
+ *	x2[7:0]  : Number of lanes assigned to the given port
+ *
+ */
+ssize_t smc_serdes_set_rx_tuning(int port, int lane,
+				 u32 config,
 				 struct gserm_data *gserm);
 
 /**
@@ -431,6 +463,9 @@ ssize_t smc_serdes_get_rx_tuning(int port, int lane,
  *			u16 pre1;
  *			u16 post;
  *			u16 main;
+ *			int polarity;
+ *			int gray_code;
+ *			int pre_code;
  *		} params[4];
  *
  *	x2[31:24]: gserm number
@@ -455,6 +490,9 @@ ssize_t smc_serdes_get_tx_tuning(int port, int lane,
  * x3[31:16]: post parameter
  * x3[15:0]: main parameter
  *
+ * x4[9:8] polarity provided & value
+ * x4[7:6] gray code provided & value
+ * x4[5:4] pre code provided & value
  * x4[3]: '1' means main provided
  * x4[2]: '1' means post provided
  * x4[1]: '1' means pre1 provided

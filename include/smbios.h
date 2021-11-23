@@ -372,10 +372,12 @@ struct __packed smbios_type17 {
 	u16 module_product_id;
 	u16 memory_subsystem_controller_manufacturer_id;
 	u16 memory_subsystem_controller_product_id;
-	u32 non_volatile_size;
-	u32 volatile_size;
-	u32 cache_size;
-	u32 logical_size;
+	u64 non_volatile_size;
+	u64 volatile_size;
+	u64 cache_size;
+	u64 logical_size;
+	u32 extended_speed;
+	u32 extended_configured_memory_speed;
 	char eos[SMBIOS_STRUCT_EOS_BYTES];
 };
 

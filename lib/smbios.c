@@ -37,6 +37,7 @@ static int smbios_add_string(char *start, const char *str)
 {
 	int i = 1;
 	char *p = start;
+
 	if (!*str)
 		str = "Unknown";
 
@@ -239,6 +240,7 @@ static void smbios_write_type4_dm(struct smbios_type4 *t, ofnode node_type4)
 	u8 core_enabled = 0;
 	u8 thread_count = 0;
 	u16 max_speed = 0;
+	u16 current_speed = 0;
 	u16 proc_char = 0;
 	u8 status = 0;
 	u16 processor_family = SMBIOS_PROCESSOR_FAMILY_UNKNOWN;
@@ -293,31 +295,71 @@ static void smbios_write_type4_dm(struct smbios_type4 *t, ofnode node_type4)
 	u32 tmp = 0;
 
 	socket_designation = ofnode_read_string(node_type4, "socket");
+
 	tmp = 0;
 	ofnode_read_u32(node_type4, "processor-type", &tmp);
 	proc_type = (u8)tmp;
+
 	tmp = 0;
 	ofnode_read_u32(node_type4, "processor-family", &tmp);
 	processor_family = (u8)tmp;
+
 	tmp = 0;
 	ofnode_read_u32(node_type4, "processor-family2", &tmp);
 	t->processor_family2 = (u16)tmp;
 	vendor = ofnode_read_string(node_type4, "processor-manufacturer");
+
+	tmp = 0;
+	ofnode_read_u32(node_type4, "processor-id", &tmp);
+	t->processor_id[0] = tmp;
+	t->processor_id[1] = 0;
+
+	name = ofnode_read_string(node_type4, "processor-version");
+
+	tmp = 0;
+	ofnode_read_u32(node_type4, "voltage", &tmp);
+	voltage = (u8)tmp;
+
+	tmp = 0;
+	ofnode_read_u32(node_type4, "external-clock", &tmp);
+	t->external_clock = (u16)tmp;
+
 	tmp = 0;
 	ofnode_read_u32(node_type4, "maxspeed", &tmp);
 	max_speed = (u16)tmp;
+
+	tmp = 0;
+	ofnode_read_u32(node_type4, "curspeed", &tmp);
+	current_speed = (u16)tmp;
+
+	tmp = 0;
+	ofnode_read_u32(node_type4, "cpu-status", &tmp);
+	status = (u8)tmp;
+
 	tmp = 0;
 	ofnode_read_u32(node_type4, "processor-upgrade", &tmp);
 	t->processor_upgrade = (u8)tmp;
+
+	serial_number	= ofnode_read_string(node_type4, "serial-number");
+	asset_tag		= ofnode_read_string(node_type4, "asset-tag");
+	part_number		= ofnode_read_string(node_type4, "part-number");
+
 	tmp = 0;
 	ofnode_read_u32(node_type4, "core-count", &tmp);
 	core_count = (u8)tmp;
+
 	tmp = 0;
 	ofnode_read_u32(node_type4, "core-enabled", &tmp);
 	core_enabled = (u8)tmp;
+
 	tmp = 0;
-	ofnode_read_u32(node_type4, "status", &tmp);
-	status = (u8)tmp;
+	ofnode_read_u32(node_type4, "thread-count", &tmp);
+	thread_count = (u8)tmp;
+
+	tmp = 0;
+	ofnode_read_u32(node_type4, "processor-characteristics", &tmp);
+	proc_char = (u16)tmp;
+
 #endif
 
 	t->processor_family = processor_family;
@@ -330,6 +372,7 @@ static void smbios_write_type4_dm(struct smbios_type4 *t, ofnode node_type4)
 	t->core_enabled = core_enabled;
 	t->thread_count = thread_count;
 	t->max_speed = max_speed;
+	t->current_speed = current_speed;
 	t->processor_characteristics = proc_char;
 	t->serial_number = smbios_add_string(t->eos, serial_number);
 	t->asset_tag = smbios_add_string(t->eos, asset_tag);
@@ -395,8 +438,8 @@ static void smbios_write_type7_dm(struct smbios_type7 *t, ofnode node_type7)
 	t->maximum_cache_size2 = tmp;
 
 	tmp = 0;
-	ofnode_read_u32(node_type7, "maxsize2", &tmp);
-	t->maximum_cache_size2 = tmp;
+	if (!ofnode_read_u32(node_type7, "maxsize2", &tmp)) // Update field only when corresponding node found
+		t->maximum_cache_size2 = tmp;
 
 	tmp = 0;
 	ofnode_read_u32(node_type7, "installed-size", &tmp);
@@ -404,8 +447,8 @@ static void smbios_write_type7_dm(struct smbios_type7 *t, ofnode node_type7)
 	t->installed_cache_size2 = tmp;
 
 	tmp = 0;
-	ofnode_read_u32(node_type7, "installed-size2", &tmp);
-	t->installed_cache_size2 = tmp;
+	if (!ofnode_read_u32(node_type7, "installed-size2", &tmp)) // Update field only when corresponding node found
+		t->installed_cache_size2 = tmp;
 
 	tmp = 0;
 	ofnode_read_u32(node_type7, "cache-config", &tmp);
@@ -415,8 +458,13 @@ static void smbios_write_type7_dm(struct smbios_type7 *t, ofnode node_type7)
 	ofnode_read_u32(node_type7, "associativity", &tmp);
 	t->associativity = (u8)tmp;
 
-	t->supported_sram_type = DMTF_TYPE7_SRAM_TYPE_UNKNOWN;
-	t->current_sram_type = DMTF_TYPE7_SRAM_TYPE_UNKNOWN;
+	tmp = 0;
+	ofnode_read_u32(node_type7, "supported-sram", &tmp);
+	t->supported_sram_type = (u16)tmp;
+
+	tmp = 0;
+	ofnode_read_u32(node_type7, "current-sram", &tmp);
+	t->current_sram_type = (u16)tmp;
 }
 
 static int smbios_write_type7(ulong *current, int handle)
@@ -656,6 +704,7 @@ static void smbios_write_type17_dm(struct smbios_type17 *t, ofnode node_type17,
 				   ulong *current, int handle, int index)
 {
 	u32 tmp;
+	u64 tmp64;
 
 	tmp = 0;
 	ofnode_read_u32(node_type17, "array-handle", &tmp);
@@ -668,6 +717,14 @@ static void smbios_write_type17_dm(struct smbios_type17 *t, ofnode node_type17,
 	tmp = 0;
 	ofnode_read_u32(node_type17, "ext-size", &tmp);
 	t->extended_size = tmp;
+
+	tmp64 = 0;
+	ofnode_read_u64(node_type17, "vol-sizes", &tmp64);
+	t->volatile_size = tmp64;
+
+	tmp64 = 0;
+	ofnode_read_u64(node_type17, "log-sizes", &tmp64);
+	t->logical_size = tmp64;
 
 	tmp = 0;
 	ofnode_read_u32(node_type17, "form-factor", &tmp);
@@ -715,6 +772,25 @@ static void smbios_write_type17_dm(struct smbios_type17 *t, ofnode node_type17,
 	tmp = 0;
 	ofnode_read_u32(node_type17, "attributes", &tmp);
 	t->attributes = (u8)tmp;
+
+	tmp = 0;
+	ofnode_read_u32(node_type17, "module-product-id", &tmp);
+	t->module_product_id = (u16)tmp;
+
+	tmp = 0;
+	ofnode_read_u32(node_type17, "module-manufacturer-id", &tmp);
+	t->module_manufacturer_id = (u16)tmp;
+
+	t->serial_number = smbios_add_string(t->eos,
+					      ofnode_read_string(node_type17, "serial-number"));
+
+	t->manufacturer = smbios_add_string(t->eos,
+					      ofnode_read_string(node_type17, "manufacturer"));
+
+	t->part_number = smbios_add_string(t->eos,
+					      ofnode_read_string(node_type17, "part-number"));
+
+	t->memory_technology = 0x03; // DRAM
 }
 
 static int smbios_write_type17(ulong *current, int handle)

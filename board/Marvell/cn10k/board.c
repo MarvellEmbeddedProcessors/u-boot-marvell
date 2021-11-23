@@ -16,7 +16,7 @@
 #include <malloc.h>
 #include <net.h>
 #include <errno.h>
-#include <asm/io.h>
+#include <linux/io.h>
 #include <linux/compiler.h>
 #include <linux/libfdt.h>
 #include <fdt_support.h>
@@ -202,6 +202,10 @@ int dram_init(void)
 	return 0;
 }
 
+#if CONFIG_IS_ENABLED(GENERATE_SMBIOS_TABLE)
+u64 fdt_get_smbios_info(void);
+#endif
+
 /**
  * Board late initialization routine.
  */
@@ -256,6 +260,10 @@ int board_late_init(void)
 
 	if (save_env)
 		env_save();
+
+#if CONFIG_IS_ENABLED(GENERATE_SMBIOS_TABLE)
+	fdt_get_smbios_info();
+#endif
 
 	return 0;
 }

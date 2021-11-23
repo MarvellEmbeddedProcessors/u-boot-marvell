@@ -123,13 +123,9 @@
 		union { /* module nominal voltage, vdd */
 			unsigned char all_bits;
 			struct {
-				unsigned char operable_1_2V:1,
-					endurant_1_2V:1,
-					operable_1V:1,
-					endurant_1V:1,
-					operable_2V:1,
-					endurant_2V:1,
-					reserved:2; /* all 0s */
+		unsigned char operable : 1,
+			      endurant : 1,
+			      reserved : 6;         /* all 0s */
 			} bit_fields;
 		} byte_11;
 		union { /* module organization*/
@@ -282,4 +278,286 @@
 		unsigned char bytes_320_383[MV_DDR_SPD_DATA_BLOCK2M_SIZE];  /* reserved; all 0s */
 	} byte_fields;
 };
+
+// ddr5_spd_data union copied 1:1 from firmware/ebf/cn10k/libebf-dram/ebf-ddr54-spd.h
+// at 17.11.2021 from ebf-devel branch.
+// just renamed union from original ddr5_spd_data to mv_ddr5_spd_data to follow naming convention
+
+/* DDR5 SPD:
+ * Based on JEDEC Standard No. JC-45-2260.01 JESD400-5 DDR5 SPD Contents Document Release 0.90b:
+ * Serial Presence Detect (SPD) for DDR5 SDRAM Modules
+ */
+
+/* blocks 0-1: base configuration and dram parameters */
+#define DDR5_BLOCK0_AND_1_SIZE          128
+/* blocks 3-6: Standard Module Parameters - Annex A.x: Solder Down, Unbuffered ,and Registered DIMM */
+#define DDR5_BLOCK3_TO_6_SIZE           256
+/* block 2: manufacturing information */
+#define DDR5_BLOCK8_AND_9               128
+/* block 3: end user programmable */
+#define DDR5_BLOCK10_TO_15              128
+
+#define DDR5_SPD_BLOCK0_TO_9_SIZE       640
+
+union mv_ddr5_spd_data {
+	unsigned char all_bytes[DDR5_SPD_BLOCK0_TO_9_SIZE];
+	struct {
+	/* blocks 0 and 1 : Base Configuration and DRAM Parameters*/
+	union {         /* Number of Bytes in SPD Device */
+		unsigned char all_bits;
+	    struct {
+		unsigned char reserved0 : 4,
+			      spd_bytes_total : 3,
+			      reserved1 : 1;
+	    } bit_fields;
+	} byte_0;
+	union {         /* spd revision */
+		unsigned char all_bits;
+		struct {
+		unsigned char addtions_level : 4,
+			      encoding_level : 4;
+	    } bit_fields;
+	} byte_1;
+	unsigned char byte_2;          /* Key Byte / Host Bus Command Protocol Type */
+	union {         /* key byte/module type */
+		unsigned char all_bits;
+		struct {
+		unsigned char base_module_type : 4,
+			      hybrid_media : 3,
+			      hybrid : 1;
+	    } bit_fields;
+	} byte_3;
+	union {         /* First SDRAM Density and Package */
+		unsigned char all_bits;
+		struct {
+		unsigned char sdram_density_per_die : 5,
+			      die_per_package : 3;
+	    } bit_fields;
+	} byte_4;
+	union {         /* First SDRAM Addressing */
+		unsigned char all_bits;
+		struct {
+		unsigned char first_sdram_row_address_bits : 5,
+			      first_sdram_column_address_bits : 3;
+	    } bit_fields;
+	} byte_5;
+	union {         /* First SDRAM I/O Width */
+		unsigned char all_bits;
+		struct {
+		unsigned char reserved : 5,
+			      sdram_io_width : 3;
+	    } bit_fields;
+	} byte_6;
+	union {         /* First SDRAM Bank Groups & Banks Per Bank Group */
+		unsigned char all_bits;
+		struct {
+		unsigned char first_sdram_bank_per_bank_group : 3,
+			      reserved : 2,
+			      first_sdram_bank_group : 3;
+	    } bit_fields;
+	} byte_7;
+	union {/* Second SDRAM Density and Package */
+		unsigned char all_bits;
+		struct {
+		unsigned char sdram_density_per_die : 5,
+			      die_per_package : 3;
+	    } bit_fields;
+	} byte_8;
+	union {         /* Second SDRAM Addressing */
+		unsigned char all_bits;
+		struct {
+		unsigned char second_sdram_row_address_bits : 5,
+			      second_sdram_column_address_bits : 3;
+	    } bit_fields;
+	} byte_9;
+	union {         /* Secondary SDRAM I/O Width */
+		unsigned char all_bits;
+		struct {
+		unsigned char reserved : 5,
+			      sdram_io_width : 3;
+	    } bit_fields;
+	} byte_10;
+	union {         /* Second SDRAM Bank Groups & Banks Per Bank Group */
+		unsigned char all_bits;
+		struct {
+		unsigned char second_sdram_bank_per_bank_group : 3,
+			      reserved : 2,
+			      second_sdram_bank_broup : 3;         /* all 0s */
+	    } bit_fields;
+	} byte_11;
+	union {         /* SDRAM Optional Features*/
+		unsigned char all_bits;
+		struct {
+		unsigned char reserved : 4,
+			      bl_32 : 1,
+			      soft_ppr : 1,
+			      post_package_repair : 2;
+	    } bit_fields;
+	} byte_12;
+	unsigned char byte_13; /* Reserved; must be coded as 0x00.*/
+	unsigned char byte_14;         /* Reserved; must be coded as 0x00.*/
+	unsigned char byte_15;         /* Reserved; must be coded as 0x00.*/
+	union {         /* SDRAM Nominal Voltage, VDD */
+		unsigned char all_bits;
+		struct {
+		unsigned char endurant : 2,
+			      operable : 2,
+			      nominal : 4;
+	    } bit_fields;
+	} byte_16;
+	union { /* SDRAM Nominal Voltage, VDDQ */
+		unsigned char all_bits;
+		struct {
+		unsigned char endurant : 2,
+			      operable : 2,
+			      nominal : 4;
+	    } bit_fields;
+	} byte_17;
+	union { /* SDRAM Nominal Voltage, VPP */
+		unsigned char all_bits;
+		struct {
+		unsigned char endurant : 2,
+			      operable : 2,
+			      nominal : 4;
+	    } bit_fields;
+	} byte_18;
+	unsigned char byte_19; /* Reserved; must be coded as 0x00.*/
+	unsigned char byte_20; /* SDRAM Minimum Cycle Time (tCKAVGmin) Least Significant Byte*/
+	unsigned char byte_21; /* SDRAM Minimum Cycle Time (tCKAVGmin) Most Significant Byte*/
+	unsigned char byte_22; /* SDRAM Minimum Cycle Time (tCKAVGmax) Least Significant Byte*/
+	unsigned char byte_23; /* SDRAM Minimum Cycle Time (tCKAVGmax) Most Significant Byte*/
+	unsigned char byte_24;         /* cas latencies supported, first byte */
+	unsigned char byte_25;         /* cas latencies supported, second byte */
+	unsigned char byte_26;         /* cas latencies supported, third byte */
+	unsigned char byte_27;         /* cas latencies supported, fourth byte */
+	unsigned char byte_28; /* cas latencies supported, fifth byte */
+	unsigned char byte_29; /* Reserved; must be coded as 0x00.*/
+	unsigned char byte_30; /* SDRAM Minimum CAS Latency Time (tAAmin) Least Significant Byte*/
+	unsigned char byte_31; /* SDRAM Minimum CAS Latency Time (tAAmin) Most Significant Byte*/
+	unsigned char byte_32; /* SDRAM Minimum RAS to CAS Delay Time (tRCDmin) Least Significant Byte*/
+	unsigned char byte_33; /* SDRAM Minimum RAS to CAS Delay Time (tRCDmin) Most Significant Byte*/
+	unsigned char byte_34; /* SDRAM Minimum Row Precharge Delay Time (tRPmin) Least Significant Byte*/
+	unsigned char byte_35; /* SDRAM Minimum Row Precharge Delay Time (tRPmin) Most Significant Byte */
+	unsigned char byte_36; /* SDRAM Minimum Active to Precharge Delay Time (tRASmin) Least Significant Byte*/
+	unsigned char byte_37; /* SDRAM Minimum Active to Precharge Delay Time (tRASmin) Most Significant Byte*/
+	unsigned char byte_38; /* SDRAM Minimum Active to Active/Refresh Delay Time (tRCmin) Least Significant Byte*/
+	unsigned char byte_39; /* SDRAM Minimum Active to Active/Refresh Delay Time (tRCmin) Most Significant Byte*/
+	unsigned char byte_40; /* SDRAM Minimum Write Recovery Time (tWRmin) Least Significant Byte*/
+	unsigned char byte_41; /* SDRAM Minimum Write Recovery Time (tWRmin) Most Significant Byte*/
+	unsigned char byte_42; /* SDRAM Minimum Refresh Recovery Delay Time (tRFC1min, tRFC1_slr min) Least Significant Byte*/
+	unsigned char byte_43; /* SDRAM Minimum Refresh Recovery Delay Time (tRFC1min, tRFC1_slr min) Most Significant Byte*/
+	unsigned char byte_44; /* SDRAM Minimum Refresh Recovery Delay Time (tRFC2min, tRFC2_slr min) Least Significant Byte*/
+	unsigned char byte_45; /* SDRAM Minimum Refresh Recovery Delay Time (tRFC2min, tRFC2_slr min) Most Significant Byte*/
+	unsigned char byte_46; /* SDRAM Minimum Refresh Recovery Delay Time (tRFCsbmin, tRFCsb_slr min) Least Significant Byte*/
+	unsigned char byte_47; /* SDRAM Minimum Refresh Recovery Delay Time (tRFCsbmin, tRFCsb_slr min) Most Significant Byte*/
+	unsigned char byte_48; /* SDRAM Minimum Refresh Recovery Delay Time, 3DS Different Logical Rank(tRFC1_dlr min) Least Significant Byte*/
+	unsigned char byte_49; /* SDRAM Minimum Refresh Recovery Delay Time, 3DS Different Logical Rank(tRFC1_dlr min) Most Significant Byte*/
+	unsigned char byte_50; /* SDRAM Minimum Refresh Recovery Delay Time, 3DS Different Logical Rank(tRFC2_dlr min) Least Significant Byte*/
+	unsigned char byte_51; /* SDRAM Minimum Refresh Recovery Delay Time, 3DS Different Logical Rank(tRFC2_dlr min) Most Significant Byte*/
+	unsigned char byte_52; /* SDRAM Minimum Refresh Recovery Delay Time, 3DS Different Logical Rank(tRFCsb_dlr min) Least Significant Byte*/
+	unsigned char byte_53; /* SDRAM Minimum Refresh Recovery Delay Time, 3DS Different Logical Rank(tRFCsb_dlr min) Most Significant Byte*/
+	unsigned char byte_54; /* Primary SDRAM Refresh Management First Byte*/
+	unsigned char byte_55; /* Primary SDRAM Refresh Management Second Byte*/
+	unsigned char byte_56; /* Secondary SDRAM Refresh Management First Byte*/
+	unsigned char byte_57; /* Secondary SDRAM Refresh Management Second Byte*/
+	unsigned char bytes_58_125[68]; /* reserved; all 0s */
+	unsigned char byte_126; /*Cyclical Redundancy Code (CRC) for Base Configuration Section, Least Significant Byte*/
+	unsigned char byte_127; /*Cyclical Redundancy Code (CRC) for Base Configuration Section, Most Significant Byte*/
+	unsigned char bytes_128_191[64]; /* reserved; all 0s */
+	/* blocks 3 to 6 : Module-Specific Section : including Solder down, unbuffered and R-DIMM*/
+
+	unsigned char byte_192; /* SPD Revision for Module Information */
+	unsigned char byte_193; /* Reserved */
+	unsigned char byte_194; /* SPD Manufacturer ID Code, First Byte */
+	unsigned char byte_195; /* SPD Manufacturer ID Code, Second Byte */
+	union { /* SPD Device Type */
+		unsigned char all_bits;
+		struct {
+		unsigned char device_type : 4,
+			      reserved : 2,
+			      devices_installed : 2;
+	    } bit_fields;
+	} byte_196;
+	unsigned char byte_197; /* SPD Device Revision */
+	unsigned char bytes_198_229[32]; /* reserved; all 0s */
+	union { /* Module Nominal Height */
+		unsigned char all_bits;
+		struct {
+		unsigned char nominal_height_max : 5,
+			      reserved : 3;
+	    } bit_fields;
+	} byte_230;
+	union {  /* Module Maximum Thickness*/
+		unsigned char all_bits;
+		struct {
+		unsigned char thickness_max_front : 4,
+			      thickness_max_back : 4;
+	    } bit_fields;
+	} byte_231;
+	union { /* Reference Raw Card Used*/
+		unsigned char all_bits;
+		struct {
+		unsigned char reference_design : 5,
+			      design_revision : 3;
+	    } bit_fields;
+	} byte_232;
+	union { /* DIMM Attributes*/
+		unsigned char all_bits;
+		struct {
+		unsigned char num_rows_on_module : 2,
+			      heat_spreader : 1,
+			      reserved : 1,
+			      temperature_grade : 4;
+	    } bit_fields;
+	} byte_233;
+	union { /* Module Organization*/
+		unsigned char all_bits;
+		struct {
+		unsigned char reserved0 : 3,
+			      package_rank_per_channel : 3,
+			      rank_mix : 1,
+			      reserved1 : 1;
+	    } bit_fields;
+	} byte_234;
+	union { /* Memory Channel Bus Width*/
+		unsigned char all_bits;
+		struct {
+		unsigned char primary_bus_width_per_channel : 3,
+			      bus_width_ext_per_channel : 2,
+			      channel_per_dimm : 2,
+			      reserved : 1;
+	    } bit_fields;
+	} byte_235;
+	unsigned char bytes_236_239[4]; /* reserved; all 0s */
+	unsigned char bytes_240; /* RDIMM only: Registering Clock Driver Manufacturer ID Code, First Byte */
+	unsigned char bytes_241; /* RDIMM only: Registering Clock Driver Manufacturer ID Code, Second Byte*/
+	unsigned char bytes_242; /* RDIMM only: Register Device Type */
+	unsigned char bytes_243; /* RDIMM only: Register Revision Number */
+	unsigned char bytes_246_445[200];
+
+	/* blocks 8 to 9 : Manufacturing Information*/
+
+	unsigned char bytes_512; /* Module Manufacturer ID Code, First Byte */
+	unsigned char bytes_513; /* Module Manufacturer ID Code, Second Byte */
+	unsigned char bytes_514; /* Module Manufacturing Location */
+	unsigned char bytes_515_516[2]; /* Module Manufacturing Date */
+	unsigned char bytes_517_520[4]; /* Module Serial Number*/
+	unsigned char bytes_521_550[30]; /* Module Part Number*/
+	unsigned char bytes_552; /* DRAM Manufacturer ID Code, First Byte */
+	unsigned char bytes_553; /* DRAM Manufacturer ID Code, Second Byte */
+	unsigned char bytes_554; /* DRAM Stepping */
+	unsigned char bytes_638_639[2]; /* reserved; all 0s */
+
+	/* blocks 8 to 9 : Manufacturing Information*/
+
+	unsigned char bytes_640_1023[384];/* End User Programmable */
+
+	} byte_fields;
+};
+
+union mv_spd_data {
+	union mv_ddr_spd_data   ddr4_spd_data;	// DDR4
+	union mv_ddr5_spd_data  ddr5_spd_data;	// DDR5
+};
+
 #endif /* _MV_DDR_SPD_H */

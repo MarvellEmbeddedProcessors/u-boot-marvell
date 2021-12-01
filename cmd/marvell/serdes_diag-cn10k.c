@@ -94,6 +94,7 @@ enum prbs_pattern {
 	PRBS_32 = 32,
 	PRBS_SSPRQ,
 	PRBS_K28_5,
+	PRBS_31Q,
 
 	PRBS_11_0 = PAM4_PATTERN(11),
 	PRBS_11_1,
@@ -128,6 +129,7 @@ static struct {
 	PRBS(32),
 	PRBS(SSPRQ),
 	PRBS(K28_5),
+	PRBS(31Q),
 
 	PRBS(11_0),
 	PRBS(11_1),
@@ -461,8 +463,8 @@ U_BOOT_CMD(
 	"\t gen,check,both: generator, checker or both\n"
 	"\t <pattern>: The pattern. Options are:\n"
 	"\t\t\t 7 9 11 15 16 23 31 32 (Regular patterns)\n"
-	"\t\t\t 11_0..3 13_0..3 (PAM4 patterns)\n"
-	"\t\t\t K28_5 T1 T2 T4 T5 T10 (Jitter patterns)\n"
+	"\t\t\t 11_0..3 13_0..3 31Q (PAM4 patterns)\n"
+	"\t\t\t K28_5 1T 2T 4T 5T 10T (Jitter patterns)\n"
 	"\t\t\t SSPRQ (Test sequence by IEEE 802.3-2018)\n"
 	"\t <count>: Inject <count> of errors (accepted values: 1..8)\n"
 );

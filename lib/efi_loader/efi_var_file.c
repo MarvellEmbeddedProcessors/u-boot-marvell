@@ -198,7 +198,7 @@ efi_status_t __efi_runtime efi_var_to_file(void)
 	} else {
 		/* SMC call to write variable store to flash device */
 		ret = smc_write_efi_var((u64)efi_var_mem_base_phy,
-					EFI_VAR_BUF_SIZE, bus, cs);
+					EFI_VAR_BUF_SIZE);
 	}
 #else
 	loff_t actlen;

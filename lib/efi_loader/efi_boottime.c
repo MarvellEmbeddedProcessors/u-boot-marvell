@@ -1919,7 +1919,7 @@ efi_status_t EFIAPI efi_load_image(bool boot_policy,
 				if (s != NULL)
 					dest_buffer = (void *)simple_strtoul(s, NULL, 16);
 				ret = efi_load_image_from_net(path, addr,
-					simple_strtol(eth_str, NULL, 10), image_handle, &source_size);
+					simple_strtol(++eth_str, NULL, 10), image_handle, &source_size);
 			}
 		} else {
 			ret = efi_load_image_from_path(file_path, &dest_buffer,

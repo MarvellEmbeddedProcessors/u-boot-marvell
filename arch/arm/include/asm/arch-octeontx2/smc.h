@@ -25,5 +25,5 @@ ssize_t smc_mdio_dbg_write(int cgx_lmac, int mode, int phyaddr, int devad,
 ssize_t smc_attest(long subcmd, long ctx_arg);
 #endif
 int smc_efi_var_shared_memory(u64 *mem_addr, u64 *mem_size);
-int smc_write_efi_var(u64 var_addr, u64 var_size, u32 bus, u32 cs);
+int smc_write_efi_var(u64 var_addr, u64 var_size);
 #endif

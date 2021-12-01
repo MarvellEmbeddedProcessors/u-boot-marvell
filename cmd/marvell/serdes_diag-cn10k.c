@@ -94,6 +94,7 @@ enum prbs_pattern {
 	PRBS_32 = 32,
 	PRBS_SSPRQ,
 	PRBS_K28_5,
+	PRBS_31Q,
 
 	PRBS_11_0 = PAM4_PATTERN(11),
 	PRBS_11_1,
@@ -128,6 +129,7 @@ static struct {
 	PRBS(32),
 	PRBS(SSPRQ),
 	PRBS(K28_5),
+	PRBS(31Q),
 
 	PRBS(11_0),
 	PRBS(11_1),
@@ -167,6 +169,9 @@ enum tx_param {
 	TX_PARAM_PRE1,
 	TX_PARAM_POST,
 	TX_PARAM_MAIN,
+	TX_POLARITY,
+	TX_GRAY_CODE,
+	TX_PRE_CODE,
 };
 
 struct tx_eq_params {
@@ -174,6 +179,9 @@ struct tx_eq_params {
 	u16 pre1;
 	u16 post;
 	u16 main;
+	int polarity;
+	int gray_code;
+	int pre_code;
 };
 
 static struct {
@@ -184,9 +192,29 @@ static struct {
 	{TX_PARAM_PRE1, "pre1"},
 	{TX_PARAM_MAIN, "main"},
 	{TX_PARAM_POST, "post"},
+	{TX_POLARITY,   "polarity"},
+	{TX_GRAY_CODE,  "graycode"},
+	{TX_PRE_CODE,   "precode"},
 };
 
 DEFINE_STR_2_ENUM_FUNC(tx_param)
+
+enum rx_param {
+	RX_POLARITY,
+	RX_GRAY_CODE,
+	RX_PRE_CODE,
+};
+
+static struct {
+	enum rx_param e;
+	const char *s;
+} rx_param[] = {
+	{RX_POLARITY,   "polarity"},
+	{RX_GRAY_CODE,  "graycode"},
+	{RX_PRE_CODE,   "precode"},
+};
+
+DEFINE_STR_2_ENUM_FUNC(rx_param)
 
 #define DFE_TAPS_NUM 24
 #define CTLE_PARAMS_NUM 13
@@ -237,6 +265,10 @@ const char *ctle_params_names[] = {
 struct rx_eq_params {
 	s32 dfe_taps[DFE_TAPS_NUM];
 	u32 ctle_params[CTLE_PARAMS_NUM];
+	int polarity;
+	int gray_code;
+	int pre_code;
+	int squelch_detected;
 };
 
 static inline int _get_pattern(int argc, char *const argv[], int *arg_idx)
@@ -431,8 +463,8 @@ U_BOOT_CMD(
 	"\t gen,check,both: generator, checker or both\n"
 	"\t <pattern>: The pattern. Options are:\n"
 	"\t\t\t 7 9 11 15 16 23 31 32 (Regular patterns)\n"
-	"\t\t\t 11_0..3 13_0..3 (PAM4 patterns)\n"
-	"\t\t\t K28_5 T1 T2 T4 T5 T10 (Jitter patterns)\n"
+	"\t\t\t 11_0..3 13_0..3 31Q (PAM4 patterns)\n"
+	"\t\t\t K28_5 1T 2T 4T 5T 10T (Jitter patterns)\n"
 	"\t\t\t SSPRQ (Test sequence by IEEE 802.3-2018)\n"
 	"\t <count>: Inject <count> of errors (accepted values: 1..8)\n"
 );
@@ -507,8 +539,9 @@ static int do_serdes_rx(struct cmd_tbl *cmdtp, int flag, int argc,
 			char *const argv[])
 {
 	unsigned long port, lane;
-	int lanes_cnt, max_idx, lane_idx = 0xff;
+	int lanes_cnt, max_idx, lane_idx = 0xff, flags = 0;
 	struct gserm_data gserm_data;
+	int arg_idx;
 	ssize_t ret;
 	void *params;
 	struct rx_eq_params *rx_eq_params;
@@ -521,16 +554,87 @@ static int do_serdes_rx(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	port &= 0xff;
 
-	printf("SerDes Rx Tuning Parameters:\n");
-	printf("port#:\tlane#:\tgserm#:\tg-lane#:\n");
+	arg_idx = 2;
 	if (argc > 2) {
-		if (strict_strtoul(argv[2], 10, &lane))
-			return CMD_RET_FAILURE;
-
-		lane_idx = lane & 0xff;
-		max_idx = lane_idx + 1;
+		if (!strict_strtoul(argv[2], 10, &lane)) {
+			arg_idx = 3;
+			lane_idx = lane & 0xff;
+			max_idx = lane_idx + 1;
+		}
 	}
 
+	/* If there are no parameters left, then it means
+	 * a Rx read command.
+	 */
+	if (arg_idx == argc)
+		goto read_rx_tuning;
+
+	/* Next parameters are optional and they should come in pairs
+	 * [name <value>], like: [precode <prec>].
+	 * The loop below is to parse each such pair.
+	 */
+	while (arg_idx < argc) {
+		int param;
+		unsigned long value;
+
+		param = rx_param_str2enum(argv[arg_idx]);
+		if (param == -1)
+			return CMD_RET_USAGE;
+
+		arg_idx++;
+		if (arg_idx == argc || strict_strtoul(argv[arg_idx], 0, &value))
+			return CMD_RET_USAGE;
+
+		value &= 0xffff;
+		arg_idx++;
+
+		switch (param) {
+		case RX_PRE_CODE:
+			flags |= (0x2 | (value & 1));
+			break;
+
+		case RX_GRAY_CODE:
+			flags |= (0x2 | (value & 1)) << 2;
+			break;
+
+		case RX_POLARITY:
+			flags |= (0x2 | (value & 1)) << 4;
+			break;
+
+		default:
+			return CMD_RET_USAGE;
+		}
+	}
+
+	printf("SerDes Rx Tuning Parameters:\n");
+	printf("port#:\tlane#:\tgserm#:\tg-lane#:\tstatus:\n");
+	ret = smc_serdes_set_rx_tuning(port, lane_idx,
+				       flags,
+				       &gserm_data);
+	if (ret)
+		return CMD_RET_FAILURE;
+
+	lanes_cnt = gserm_data.lanes_num;
+
+	if (lane_idx == 0xff) {
+		lane_idx = 0;
+		max_idx = lanes_cnt;
+	}
+
+	for (; lane_idx < max_idx; lane_idx++) {
+		int glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
+
+		printf("%d\t%d\t%d\t%d\t\tUpdated\n",
+		       (int)port, lane_idx,
+		       (int)gserm_data.gserm_idx,
+		       glane);
+	}
+
+	return CMD_RET_SUCCESS;
+
+read_rx_tuning:
+	printf("SerDes Rx Tuning Parameters:\n");
+	printf("port#:\tlane#:\tgserm#:\tg-lane#:\n");
 	ret = smc_serdes_get_rx_tuning((int)port, lane_idx,
 				       &params, &gserm_data);
 	if (ret)
@@ -561,16 +665,39 @@ static int do_serdes_rx(struct cmd_tbl *cmdtp, int flag, int argc,
 		for (int idx = 0; idx < CTLE_PARAMS_NUM; idx++)
 			printf("\t\t%s%d\n", ctle_params_names[idx],
 			       rx_eq_params[lane_idx].ctle_params[idx]);
+
+		printf("\n\n\t\trx polarity:\t%d\n",
+		       rx_eq_params[lane_idx].polarity);
+
+		printf("\t\trx gray code:\t%d\n",
+		       rx_eq_params[lane_idx].gray_code);
+
+		printf("\t\trx pre code:\t%d\n",
+		       rx_eq_params[lane_idx].pre_code);
+
+		printf("\n\t\t%s detected\n",
+		       rx_eq_params[lane_idx].squelch_detected ?
+		       "Squelch" : "Signal");
 	}
 
 	return CMD_RET_SUCCESS;
 }
 
 U_BOOT_CMD(
-	sdes_rx, 3, 1, do_serdes_rx, "read serdes Rx tuning parameters",
-	"<port#> [<lane#>]\n\n"
+	sdes_rx, 9, 1, do_serdes_rx, "write/read serdes Rx tuning parameters",
+	"<port#> [<lane#>] [polarity <pol>] [gray_code <gray>] [precode <prec>]\n"
+	"sdes_rx <port#> [<lane#>]\n\n"
 	"parameters:\n"
 	"\t <port#>, <lane#>: Port & lane pair denoting serdes lane.\n"
+	"\t <pol>: rx lane polarity:\n"
+	"\t\t 0 - normal polarity\n"
+	"\t\t 1 - inverted polarity\n"
+	"\t <gray>: rx gray code enable:\n"
+	"\t\t 0 - disable\n"
+	"\t\t 1 - enable\n"
+	"\t <prec>: rx pre code enable:\n"
+	"\t\t 0 - disable\n"
+	"\t\t 1 - enable\n"
 );
 
 static int do_serdes_rx_training(struct cmd_tbl *cmdtp, int flag, int argc,
@@ -743,6 +870,18 @@ static int do_serdes_tx(struct cmd_tbl *cmdtp, int flag, int argc,
 			flags |= 0x08;
 			break;
 
+		case TX_PRE_CODE:
+			flags |= (0x2 | (value & 1)) << 4;
+			break;
+
+		case TX_GRAY_CODE:
+			flags |= (0x2 | (value & 1)) << 6;
+			break;
+
+		case TX_POLARITY:
+			flags |= (0x2 | (value & 1)) << 8;
+			break;
+
 		default:
 			return CMD_RET_USAGE;
 		}
@@ -778,8 +917,7 @@ static int do_serdes_tx(struct cmd_tbl *cmdtp, int flag, int argc,
 
 read_tx_tuning:
 	printf("SerDes Tx Tuning Parameters:\n");
-	printf("port#:\tlane#:\tgserm#:\tg-lane#:"
-		"\tpre2:\tpre1:\tmain:\tpost:\n");
+	printf("port#:\tlane#:\tgserm#:\tg-lane#:\tpre2:\tpre1:\tmain:\tpost:\tpolarity:\tgray code:\tpre code:\n");
 	ret = smc_serdes_get_tx_tuning((int)port, lane_idx,
 				       &params, &gserm_data);
 	if (ret)
@@ -797,27 +935,38 @@ read_tx_tuning:
 	for (; lane_idx < max_idx; lane_idx++) {
 		int glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
 
-		printf("%d\t%d\t%d\t%d\t\t%hd\t%hd\t%hd\t%hd\n",
+		printf("%d\t%d\t%d\t%d\t\t%hd\t%hd\t%hd\t%hd\t%d\t\t%d\t\t%d\n",
 		       (int)port, lane_idx,
 		       (int)gserm_data.gserm_idx,
 		       glane,
 		       tx_eq_params[lane_idx].pre2,
 		       tx_eq_params[lane_idx].pre1,
 		       tx_eq_params[lane_idx].main,
-		       tx_eq_params[lane_idx].post);
+		       tx_eq_params[lane_idx].post,
+		       tx_eq_params[lane_idx].polarity,
+		       tx_eq_params[lane_idx].gray_code,
+		       tx_eq_params[lane_idx].pre_code);
 	}
 
 	return CMD_RET_SUCCESS;
 }
 
 U_BOOT_CMD(
-	sdes_tx, 11, 1, do_serdes_tx, "read/write serdes Tx tuning parameters",
-	"<port#> [<lane#>] [pre2 <pre2>] [pre1 <pre1>]\n"
-	"\t\t[main <main>] [post <post>]\n"
+	sdes_tx, 17, 1, do_serdes_tx, "read/write serdes Tx tuning parameters",
+	"<port#> [<lane#>] [pre2 <pre2>] [pre1 <pre1>] [main <main>] [post <post>] [polarity <pol>] [graycode <gray>] [precode <prec>]\n"
 	"sdes_tx <port#> [<lane#>]\n\n"
 	"parameters:\n"
 	"\t <port#>, <lane#>: Port & lane pair denoting serdes lane.\n"
 	"\t <pre2>, <pre1>, <main>, <post>:\n"
 	"\t\t Transmitter’s tuning parameters.\n"
+	"\t <pol>: tx lane polarity:\n"
+	"\t\t 0 - normal polarity\n"
+	"\t\t 1 - inverted polarity\n"
+	"\t <gray>: tx gray code enable:\n"
+	"\t\t 0 - disable\n"
+	"\t\t 1 - enable\n"
+	"\t <prec>: tx pre code enable:\n"
+	"\t\t 0 - disable\n"
+	"\t\t 1 - enable\n"
 );
 

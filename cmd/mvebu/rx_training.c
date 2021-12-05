@@ -13,7 +13,7 @@
 #include <dm/device-internal.h>
 #include <mvebu/comphy.h>
 
-int rx_training_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+int rx_training_cmd(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 {
 	struct udevice *dev;
 	struct uclass *uc;

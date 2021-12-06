@@ -61,7 +61,7 @@ config CMD_MVEBU_MV_GET_COUNTERS
 
 config CMD_MVEBU_RX_TRAINING
 	bool "rx_training"
-	depends on TARGET_MVEBU_ARMADA_8K
+	depends on TARGET_MVEBU_ARMADA_8K || TARGET_OCTEONTX2_CN913x
 	default n
 	help
 	  Perform RX training sequence

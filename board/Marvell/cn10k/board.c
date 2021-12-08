@@ -100,9 +100,9 @@ void board_get_env_spi_bus_cs(int *bus, int *cs)
 					      fdt_parent_offset(blob, node),
 					      "reg", -1);
 			/* SPI node will have PCI addr, so map it */
-			if (preg == 0x3000)
+			if (preg == 0x8040)
 				env_bus = 0;
-			if (preg == 0x3800)
+			if (preg == 0x8050)
 				env_bus = 1;
 			debug("\n Env SPI [bus:cs] [%d:%d]\n",
 			      env_bus, env_cs);

@@ -509,7 +509,7 @@ u64 fdt_get_smbios_info(void)
 
 	memset(spd_cache, 0, sizeof(spd_cache));
 
-	str = fdt_getprop(fdt, cavium_bdk, "DDR-DMC-MASK", (int *) &spd_cache_len[i]);
+	str = fdt_getprop(fdt, cavium_bdk, "DDR-DMC-MASK", NULL);
 	if (str) {
 		dmc_mask = simple_strtoul(str, NULL, 0);
 	}

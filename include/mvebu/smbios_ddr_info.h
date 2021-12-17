@@ -9,6 +9,9 @@
 
 #include <linux/bitops.h>
 
+/* The DRAM location where SPD data is stored from firmware running from SRAM */
+#define SHARED_DDR_BTW_BLE_UBOOT	0x6000000
+
 #define _256M	0x10000000
 #define _512M	0x20000000
 

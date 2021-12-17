@@ -150,6 +150,12 @@ struct prbs_error_stats {
 	int locked;
 };
 
+struct prbs_stats {
+	struct prbs_error_stats error_stats[4];
+	int gen_pattern;
+	int check_pattern;
+};
+
 enum lpbk_type {
 	LPBK_TYPE_NONE = 0,
 	LPBK_TYPE_NEA,
@@ -182,6 +188,7 @@ struct tx_eq_params {
 	int polarity;
 	int gray_code;
 	int pre_code;
+	int tx_idle;
 };
 
 static struct {
@@ -203,6 +210,7 @@ enum rx_param {
 	RX_POLARITY,
 	RX_GRAY_CODE,
 	RX_PRE_CODE,
+	RX_INIT,
 };
 
 static struct {
@@ -212,6 +220,7 @@ static struct {
 	{RX_POLARITY,   "polarity"},
 	{RX_GRAY_CODE,  "graycode"},
 	{RX_PRE_CODE,   "precode"},
+	{RX_INIT,	"init"},
 };
 
 DEFINE_STR_2_ENUM_FUNC(rx_param)
@@ -345,19 +354,44 @@ send_smc:
 	printf("SerDes PRBS:\n");
 
 	if (subcmd == PRBS_SHOW) {
-		void *stats;
-		struct prbs_error_stats *error_stats;
+		void *_stats;
+		struct prbs_stats *stats;
 
-		printf("port#:\tlane#:\tgserm#:\tg-lane#:"
-				"\tlocked:\ttotal_bits:\terror_bits:\n");
 		ret = smc_serdes_prbs_show(port, &gserm_data,
-					   &stats);
+					   &_stats);
 		if (ret)
 			return CMD_RET_FAILURE;
 
 		lanes_num = gserm_data.lanes_num;
 
-		error_stats = (struct prbs_error_stats *)stats;
+		stats = (struct prbs_stats *)_stats;
+
+		if (stats->gen_pattern || stats->check_pattern) {
+			char cbuf[16] = {0};
+			char gbuf[16] = {0};
+
+			if (stats->gen_pattern) {
+				const char *ptrn =
+					prbs_pattern_enum2str(stats->gen_pattern);
+
+				snprintf(gbuf, 16, " gen=%s",
+					 ptrn ? ptrn : "");
+			}
+
+			if (stats->check_pattern) {
+				const char *ptrn =
+					prbs_pattern_enum2str(stats->check_pattern);
+
+				snprintf(cbuf, 16, " check=%s",
+					 ptrn ? ptrn : "");
+			}
+
+			printf("PRBS enabled (patterns:%s%s)\n", gbuf, cbuf);
+		} else {
+			printf("PRBS disabled\n");
+		}
+
+		printf("port#:\tlane#:\tgserm#:\tg-lane#:\tlocked:\ttotal_bits:\terror_bits:\n");
 
 		for (int lane_idx = 0; lane_idx < lanes_num; lane_idx++) {
 			int glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
@@ -367,9 +401,9 @@ send_smc:
 			       lane_idx,
 			       (int)gserm_data.gserm_idx,
 			       glane,
-			       error_stats[lane_idx].locked,
-			       error_stats[lane_idx].total_bits,
-			       error_stats[lane_idx].error_bits);
+			       stats->error_stats[lane_idx].locked,
+			       stats->error_stats[lane_idx].total_bits,
+			       stats->error_stats[lane_idx].error_bits);
 		}
 		return CMD_RET_SUCCESS;
 	}
@@ -601,6 +635,10 @@ static int do_serdes_rx(struct cmd_tbl *cmdtp, int flag, int argc,
 			flags |= (0x2 | (value & 1)) << 4;
 			break;
 
+		case RX_INIT:
+			flags |= (1 << 6);
+			break;
+
 		default:
 			return CMD_RET_USAGE;
 		}
@@ -684,11 +722,12 @@ read_rx_tuning:
 }
 
 U_BOOT_CMD(
-	sdes_rx, 9, 1, do_serdes_rx, "write/read serdes Rx tuning parameters",
-	"<port#> [<lane#>] [polarity <pol>] [gray_code <gray>] [precode <prec>]\n"
+	sdes_rx, 11, 1, do_serdes_rx, "write/read serdes Rx tuning parameters",
+	"<port#> [<lane#>] [polarity <pol>] [graycode <gray>] [precode <prec>] [init 1]\n"
 	"sdes_rx <port#> [<lane#>]\n\n"
 	"parameters:\n"
 	"\t <port#>, <lane#>: Port & lane pair denoting serdes lane.\n"
+	"\t init: perform Rx init\n"
 	"\t <pol>: rx lane polarity:\n"
 	"\t\t 0 - normal polarity\n"
 	"\t\t 1 - inverted polarity\n"
@@ -917,7 +956,7 @@ static int do_serdes_tx(struct cmd_tbl *cmdtp, int flag, int argc,
 
 read_tx_tuning:
 	printf("SerDes Tx Tuning Parameters:\n");
-	printf("port#:\tlane#:\tgserm#:\tg-lane#:\tpre2:\tpre1:\tmain:\tpost:\tpolarity:\tgray code:\tpre code:\n");
+	printf("port#:\tlane#:\tgserm#:\tg-lane#:\tpre2:\tpre1:\tmain:\tpost:\tpolarity:\tgray code:\tpre code:\ttx_idle:\n");
 	ret = smc_serdes_get_tx_tuning((int)port, lane_idx,
 				       &params, &gserm_data);
 	if (ret)
@@ -935,7 +974,7 @@ read_tx_tuning:
 	for (; lane_idx < max_idx; lane_idx++) {
 		int glane = (gserm_data.mapping >> 4 * lane_idx) & 0xf;
 
-		printf("%d\t%d\t%d\t%d\t\t%hd\t%hd\t%hd\t%hd\t%d\t\t%d\t\t%d\n",
+		printf("%d\t%d\t%d\t%d\t\t%hd\t%hd\t%hd\t%hd\t%d\t\t%d\t\t%d\t\t%d\n",
 		       (int)port, lane_idx,
 		       (int)gserm_data.gserm_idx,
 		       glane,
@@ -945,7 +984,8 @@ read_tx_tuning:
 		       tx_eq_params[lane_idx].post,
 		       tx_eq_params[lane_idx].polarity,
 		       tx_eq_params[lane_idx].gray_code,
-		       tx_eq_params[lane_idx].pre_code);
+		       tx_eq_params[lane_idx].pre_code,
+		       tx_eq_params[lane_idx].tx_idle);
 	}
 
 	return CMD_RET_SUCCESS;

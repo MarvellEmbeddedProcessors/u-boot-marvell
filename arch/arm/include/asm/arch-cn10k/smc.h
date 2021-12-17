@@ -291,14 +291,16 @@ int smc_phy_dbg_set_serdes_cfg(int eth, int lmac, u32 cfg);
  *	Show command only:
  *	x1:
  *		SERDES_PRBS_DATA_BASE address, where the following
- *		structure is stored to return prbs error statistics
- *		data for maximum of 4 lanes:
+ *		structure is stored to return prbs statistics
+ *		data for maximum of 4 lanes + gen/check patterns:
  *
  *		struct prbs_error_stats {
  *			uint64_t total_bits;
  *			uint64_t error_bits;
  *			int locked;
  *		} stats[4];
+ *		int gen_pattern;
+ *		int check_pattern;
  *
  *	x2[31:24]: gserm number
  *	x2[23:8] : port lane# to gserm lane# mapping
@@ -422,7 +424,8 @@ ssize_t smc_serdes_get_rx_tuning(int port, int lane,
  *		all the lanes assigned to the given port
  * x1[7:0]:	port#
  *
- * x2 - polarity, gray code, pre code:
+ * x2 - rx_init, polarity, gray code, pre code:
+ *	x2[6]	do Rx init
  *	x2[5:4] polarity provided & value
  *	x2[3:2] gray code provided & value
  *	x2[1:0] pre code provided & value
@@ -466,6 +469,7 @@ ssize_t smc_serdes_set_rx_tuning(int port, int lane,
  *			int polarity;
  *			int gray_code;
  *			int pre_code;
+			int tx_idle;
  *		} params[4];
  *
  *	x2[31:24]: gserm number

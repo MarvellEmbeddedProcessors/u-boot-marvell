@@ -902,4 +902,9 @@ config SYS_SDMR
 	depends on MPC8XX_CONS
 	default 0
 
+config CN10K_TTYMEM
+	bool "Memory console"
+	depends on ARCH_CN10K
+	select CONSOLE_MUX
+	default n
 endmenu

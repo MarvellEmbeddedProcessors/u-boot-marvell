@@ -335,7 +335,7 @@ static void smbios_add_ddr_info(u8 dimm)
 	if (!skip_module_supplier_data) {
 		tmp_val32 = get_dram_serial();
 		sprintf(tmp_str, "%X", tmp_val32);
-		fdt_setprop_string(fdt, node_offset, "serial-number", tmp_str);
+		//fdt_setprop_string(fdt, node_offset, "serial-number", tmp_str);
 		debug("SMBIOS: updated serial-number to %s\n", tmp_str);
 
 		tmp_val32 = get_module_manufacturer_id();
@@ -346,7 +346,7 @@ static void smbios_add_ddr_info(u8 dimm)
 		// module-manufacturer-id into corresponding string. Thus skipped "manufacturer" update.
 
 		get_dram_module_part_no(tmp_str);
-		fdt_setprop_string(fdt, node_offset, "part-number", tmp_str);
+		//fdt_setprop_string(fdt, node_offset, "part-number", tmp_str);
 		debug("SMBIOS: updated part-number to %s\n", tmp_str);
 
 		tmp_val32 = get_product_id();
@@ -399,17 +399,17 @@ void smbios_update_type4(void)
 		debug("SMBIOS: /soc@0 node found in FDT\n");
 
 		if (rev_str) {
-			fdt_setprop_string(fdt, t4_node_offset, "processor-version", rev_str);
+			//fdt_setprop_string(fdt, t4_node_offset, "processor-version", rev_str);
 			debug("SMBIOS: updated processor-version to %s\n", rev_str);
 		}
 	}
 
 	sprintf(tmp_str, "Not Specified");	// Might be adjusted by OEM
-	fdt_setprop_string(fdt, t4_node_offset, "serial-number", tmp_str);
+	//fdt_setprop_string(fdt, t4_node_offset, "serial-number", tmp_str);
 	debug("SMBIOS: updated serial-number to %s\n", tmp_str);
 
 	sprintf(tmp_str, "Not Specified");	// Might be adjusted by OEM
-	fdt_setprop_string(fdt, t4_node_offset, "asset-tag", tmp_str);
+	//fdt_setprop_string(fdt, t4_node_offset, "asset-tag", tmp_str);
 	debug("SMBIOS: updated asset-tag to %s\n", tmp_str);
 
 	switch (read_partnum()) {
@@ -427,7 +427,7 @@ void smbios_update_type4(void)
 		break;
 	}
 
-	fdt_setprop_string(fdt, t4_node_offset, "part-number", tmp_str);
+	//fdt_setprop_string(fdt, t4_node_offset, "part-number", tmp_str);
 	debug("SMBIOS: updated part-number to %s\n", tmp_str);
 
 	speed = fdt_getprop(fdt, cavium_bdk, "CORECLOCK-FREQ-MAX", NULL);
@@ -509,7 +509,7 @@ u64 fdt_get_smbios_info(void)
 
 	memset(spd_cache, 0, sizeof(spd_cache));
 
-	str = fdt_getprop(fdt, cavium_bdk, "DDR-DMC-MASK", (int *) &spd_cache_len[i]);
+	str = fdt_getprop(fdt, cavium_bdk, "DDR-DMC-MASK", NULL);
 	if (str) {
 		dmc_mask = simple_strtoul(str, NULL, 0);
 	}

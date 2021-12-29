@@ -698,6 +698,11 @@ void board_switch_reset(void)
 	char temp[4];
 	int ret;
 
+	if (!fdt_get_switch_reset()) {
+		printf("\nSkipping Switch Reset, option is set\n");
+		return;
+	}
+
 	dev = get_switch_dev();
 	if (!dev)
 		return;

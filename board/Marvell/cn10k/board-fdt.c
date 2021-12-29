@@ -687,6 +687,27 @@ int fdt_get_switch_config(void)
 	return config_switch;
 }
 
+/*
+ * Get config option SWITCH-RESET value if defined,
+ * otherwise default to 1.
+ */
+int fdt_get_switch_reset(void)
+{
+	int node, config_switch = 1;
+	const char *str = NULL;
+	const void *fdt = gd->fdt_blob;
+
+	node = fdt_get_bdk_node();
+	if (!node)
+		return config_switch;
+
+	str = fdt_getprop(fdt, node, "SWITCH-RESET", NULL);
+	if (str)
+		config_switch = (str[0] - '0');
+
+	return config_switch;
+}
+
 int arch_fixup_memory_node(void *blob)
 {
 	return 0;

@@ -743,6 +743,10 @@ static int cdns_xspi_exec_op(struct spi_slave *slave,
 	return ret;
 }
 
+#if defined(CONFIG_ARCH_CN10K)
+int board_acquire_flash_arb(bool acquire);
+#endif
+
 static int cdns_xspi_claim_bus(struct udevice *dev)
 {
 	if ((IS_ENABLED(CONFIG_ARCH_CN10K))) {

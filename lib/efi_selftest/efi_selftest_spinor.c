@@ -75,18 +75,6 @@ static int execute(void)
 			continue;
 		}
 
-		ret = spinor->erase_blocks(spinor, 0x0, 1);
-		if (ret != EFI_SUCCESS && ret != EFI_UNSUPPORTED) {
-			efi_st_error("[%d]Failed to erase data[%u]\n", (int)i, (int)ret);
-			continue;
-		}
-
-		ret = spinor->write_data(spinor, 0, 2048, data);
-		if (ret != EFI_SUCCESS && ret != EFI_UNSUPPORTED) {
-			efi_st_error("[%d]Failed to write data[%u]\n", (int)i, (int)ret);
-			continue;
-		}
-
 		ret = spinor->read_data(spinor, 0, 2048, data);
 		if (ret != EFI_SUCCESS) {
 			efi_st_error("[%d]Failed to read data[%u]\n", (int)i, (int)ret);

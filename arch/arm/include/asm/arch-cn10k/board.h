@@ -51,6 +51,7 @@ void init_sh_fwdata(void);
 void board_get_env_spi_bus_cs(int *bus, int *cs);
 void board_get_env_offset(int *offset, const char *property);
 void board_get_spi_bus_cs(struct udevice *dev, int *bus, int *cs);
+int board_acquire_flash_arb(bool acquire);
 int fdt_get_switch_config(void);
 int fdt_get_switch_reset(void);
 #endif /* __BOARD_H__ */

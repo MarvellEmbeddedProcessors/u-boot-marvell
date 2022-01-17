@@ -67,20 +67,39 @@ static int execute(void)
 			continue;
 		}
 
-		u8 data[2048];
+		u8 dataw[4096], datar[4096];
+		memset(dataw, 0, sizeof(dataw));
+		memset(datar, 0, sizeof(datar));
 
-		ret = spinor->read_data(spinor, 0xE30000, 2048, data);
+		ret = spinor->read_data(spinor, 0, sizeof(dataw), dataw);
 		if (ret != EFI_SUCCESS) {
 			efi_st_error("[%d]Failed to read data[%u]\n", (int)i, (int)ret);
 			continue;
 		}
 
-		ret = spinor->read_data(spinor, 0, 2048, data);
+		ret = spinor->erase_blocks(spinor, 0, 1);
+		if (ret != EFI_SUCCESS && ret != EFI_UNSUPPORTED) {
+			efi_st_error("[%d]Failed to erase data[%u]\n", (int)i, (int)ret);
+			continue;
+		}
+
+		ret = spinor->write_data(spinor, 0, sizeof(dataw), dataw);
+		if (ret != EFI_SUCCESS && ret != EFI_UNSUPPORTED) {
+			efi_st_error("[%d]Failed to write data[%u]\n", (int)i, (int)ret);
+			continue;
+		}
+
+		ret = spinor->read_data(spinor, 0, sizeof(datar), datar);
 		if (ret != EFI_SUCCESS) {
 			efi_st_error("[%d]Failed to read data[%u]\n", (int)i, (int)ret);
 			continue;
 		}
-		efi_st_printf("Test Pass for device %d\n", (int)i);
+
+		if (memcmp(datar, dataw, sizeof(datar)))
+			efi_st_printf("Test Fail for device %d\n", (int)i);
+		else
+			efi_st_printf("Test Pass for device %d\n", (int)i);
+
 		ret = boottime->close_protocol(handles[i],
 					      &efi_guid_spi_nor_flash_protocol,
 					      NULL, NULL);

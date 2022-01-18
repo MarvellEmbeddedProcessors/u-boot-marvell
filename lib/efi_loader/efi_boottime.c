@@ -1893,7 +1893,8 @@ efi_status_t EFIAPI efi_load_image(bool boot_policy,
 		 * So, convert the device path to text before using it.
 		 */
 		dp_text = efi_dp_str(file_path);
-		flen = u16_strlen(dp_text);
+		if (dp_text)
+			flen = u16_strlen(dp_text);
 		filename = calloc(flen + 1, sizeof(u8));
 		if (!filename) {
 			ret = EFI_OUT_OF_RESOURCES;

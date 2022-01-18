@@ -31,6 +31,7 @@ void rvu_get_lfid_for_pf(int pf, int *nixid, int *npaid)
 	union rvu_pf_func_s pf_func;
 	struct rvu_af *af = dev_get_priv(rvu_af_dev);
 	struct nix_af *nix_af = af->nix_af;
+	ulong start;
 
 	pf_func.u = 0;
 	pf_func.s.pf = pf;
@@ -40,16 +41,19 @@ void rvu_get_lfid_for_pf(int pf, int *nixid, int *npaid)
 	nix_lf_dbg.s.exec = 1;
 	nix_af_reg_write(nix_af, NIXX_AF_RVU_LF_CFG_DEBUG(),
 			 nix_lf_dbg.u);
+	start = get_timer(0);
 	do {
 		nix_lf_dbg.u = nix_af_reg_read(nix_af,
 					       NIXX_AF_RVU_LF_CFG_DEBUG());
-	} while (nix_lf_dbg.s.exec);
+	} while (nix_lf_dbg.s.exec && (get_timer(start) < 1000));
+	if (nix_lf_dbg.s.exec)
+		printf("\n%s: LF debug exec timed out\n", __func__);
 
 	if (nix_lf_dbg.s.lf_valid)
 		*nixid = nix_lf_dbg.s.lf;
 
 	debug("%s: nix lf_valid %d lf %d nixid %d\n", __func__,
-	      nix_lf_dbg.s.lf_valid, nix_lf_dbg.s.lf, *nixid);
+	      (u8)nix_lf_dbg.s.lf_valid, (u16)nix_lf_dbg.s.lf, *nixid);
 
 	npa_lf_dbg.u = 0;
 	npa_lf_dbg.s.pf_func = pf_func.u & 0xFFFF;

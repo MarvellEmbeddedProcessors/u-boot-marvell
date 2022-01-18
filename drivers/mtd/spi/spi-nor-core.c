@@ -758,7 +758,7 @@ static int mx_is_unlocked_sr(struct spi_nor *nor, loff_t ofs, uint64_t len,
 static int mx_lock(struct spi_nor *nor, loff_t ofs, uint64_t len)
 {
 	struct mtd_info *mtd = &nor->mtd;
-	int status_old, status_new;
+	int status_old, status_new, reg;
 	u8 config;
 	u8 mask = SR_BP2 | SR_BP1 | SR_BP0;
 	u8 shift = ffs(mask) - 1, pow, val;
@@ -770,9 +770,10 @@ static int mx_lock(struct spi_nor *nor, loff_t ofs, uint64_t len)
 	if (status_old < 0)
 		return status_old;
 
-	config = read_cr_mx(nor);
-	if (config < 0)
-		return config;
+	reg = read_cr_mx(nor);
+	if (reg < 0)
+		return reg;
+	config = (u8)reg;
 
 	/* For this flash device, BP3 of status is in position 5
 	 * so add it to mask

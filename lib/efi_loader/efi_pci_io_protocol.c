@@ -142,7 +142,7 @@ efi_status_t EFIAPI mem_read(const struct efi_pci_io_protocol *this,
 
 	if (!buffer || !count || proto_width >= EFIPCIIOWIDTHMAXIMUM)
 		return EFI_EXIT(EFI_INVALID_PARAMETER);
-	if (bar_index < 0 || bar_index > 5)
+	if (bar_index > 5)
 		return EFI_EXIT(EFI_UNSUPPORTED);
 
 	p_obj = container_of(this, struct efi_pci_io_protocol_obj,
@@ -257,7 +257,7 @@ efi_status_t EFIAPI mem_write(const struct efi_pci_io_protocol *this,
 
 	if (!buffer || !count || proto_width >= EFIPCIIOWIDTHMAXIMUM)
 		return EFI_EXIT(EFI_INVALID_PARAMETER);
-	if (bar_index < 0 || bar_index > 5)
+	if (bar_index > 5)
 		return EFI_EXIT(EFI_UNSUPPORTED);
 
 	p_obj = container_of(this, struct efi_pci_io_protocol_obj,

@@ -423,16 +423,22 @@ struct nix *nix_lf_alloc(struct udevice *dev)
 	      nix->lmac->link_num, nix->lmac->chan_num,	nix->lmac->pknd);
 
 	err = npa_lf_setup(nix);
-	if (err)
+	if (err) {
+		free(nix);
 		return NULL;
+	}
 
 	err = npc_lf_setup(nix);
-	if (err)
+	if (err) {
+		free(nix);
 		return NULL;
+	}
 
 	err = nix_lf_setup(nix);
-	if (err)
+	if (err) {
+		free(nix);
 		return NULL;
+	}
 
 	return nix;
 }
@@ -477,7 +483,7 @@ void nix_cqe_tx_pkt_handler(struct nix *nix, void *cqe)
 
 	if (txcqe->s.cqe_type != NIX_XQE_TYPE_E_SEND) {
 		printf("%s: Error: Unsupported CQ header type %d\n",
-		       __func__, txcqe->s.cqe_type);
+		       __func__, (u8)txcqe->s.cqe_type);
 		return;
 	}
 	nix_pf_reg_write(nix, NIXX_LF_CQ_OP_DOOR(),
@@ -609,7 +615,8 @@ void nix_lf_flush_rx(struct udevice *dev)
 		rxsg = &rx_dr->rx_sg;
 
 		debug("%s: rx parse: desc_sizem1 %x pkt_lenm1 %x\n",
-		      __func__, rxparse->s.desc_sizem1, rxparse->s.pkt_lenm1);
+		      __func__, (u8)rxparse->s.desc_sizem1,
+		      (u16)rxparse->s.pkt_lenm1);
 
 		seg = (dma_addr_t *)(rxsg + 1);
 
@@ -698,7 +705,7 @@ int nix_lf_recv(struct udevice *dev, int flags, uchar **packetp)
 	rxsg = &rx_dr->rx_sg;
 
 	debug("%s: rx parse: desc_sizem1 %x pkt_lenm1 %x\n",
-	      __func__, rxparse->s.desc_sizem1, rxparse->s.pkt_lenm1);
+	      __func__, (u8)rxparse->s.desc_sizem1, (u16)rxparse->s.pkt_lenm1);
 	debug("%s: rx parse: pkind %x chan %x\n",
 	      __func__, rxparse->s.pkind, rxparse->s.chan);
 

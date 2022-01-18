@@ -185,9 +185,6 @@ static int octeon_gpio_probe(struct udevice *dev)
 	if (priv->data->probe == PROBE_PCI) {
 		priv->base = dm_pci_map_bar(dev, PCI_BASE_ADDRESS_0,
 					    PCI_REGION_MEM);
-		uc_priv->gpio_count = readq(priv->base +
-					    priv->data->reg_offs + GPIO_CONST) &
-			GPIO_CONST_GPIOS_MASK;
 	} else {
 		priv->base = dev_remap_addr(dev);
 		uc_priv->gpio_count = ofnode_read_u32_default(dev->node,
@@ -199,6 +196,11 @@ static int octeon_gpio_probe(struct udevice *dev)
 		      __func__, dev->name);
 		return -ENODEV;
 	}
+
+	if (priv->data->probe == PROBE_PCI)
+		uc_priv->gpio_count = readq(priv->base +
+					    priv->data->reg_offs + GPIO_CONST) &
+			GPIO_CONST_GPIOS_MASK;
 
 	uc_priv->bank_name  = strdup(dev->name);
 	end = strchr(uc_priv->bank_name, '@');

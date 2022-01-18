@@ -155,7 +155,7 @@ int eth_intf_req(u8 rpm, u8 lmac, union eth_cmd_s cmd_args, u64 *rsp,
 	}
 	if (scr0.s.evt_sts.id != cmd) {
 		debug("%s received resp for cmd %d expected cmd %d\n",
-		      __func__, scr0.s.evt_sts.id, cmd);
+		      __func__, (u8)scr0.s.evt_sts.id, cmd);
 		err = -1;
 		goto error;
 	}

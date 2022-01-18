@@ -396,7 +396,7 @@ int checkboard(void)
 	if (!str)
 		str = "UNKNOWN";
 
-	printf("Board: %s\n", fdt_get_board_model());
+	printf("Board: %s\n", str);
 
 	return 0;
 }

@@ -50,6 +50,8 @@ u8 read_partnum(void)
 		return CNF10KA;
 	if (of_machine_is_compatible("marvell,cnf10kb"))
 		return CNF10KB;
+	if (of_machine_is_compatible("marvell,cn10kb"))
+		return CN10KB;
 	return 0;
 }
 

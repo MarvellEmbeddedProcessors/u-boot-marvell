@@ -4,4 +4,10 @@
 #
 # Copyright (C) 2018 Marvell International Ltd.
 # commit id of base tag for this branch
-a1892bd61597f933f2e83aeee5560ad4b0bd2807 Prepare v2020.10
+#
+# Change from v2020.10 to v2020.10-rc4 as initially devel
+# branch is based on rc4 and later rebased changes upto v2020.10
+# but this resulted in different commit ID values for commits
+# between v2020.10 and v2020.10-rc4 in u-boot mainline vs devel
+# code base.
+96d66a9b8ce11aae9f8bef5244b83b4740b37644 Prepare v2020.10-rc4

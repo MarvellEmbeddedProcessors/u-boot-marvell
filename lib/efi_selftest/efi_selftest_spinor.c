@@ -9,13 +9,42 @@
 #include <efi_selftest.h>
 #include <spi_flash.h>
 
+static const struct efi_system_table *systemtab;
 static struct efi_boot_services *boottime;
+static const char *fdt;
+static const efi_guid_t fdt_guid = EFI_FDT_GUID;
 extern const efi_guid_t efi_guid_spi_nor_flash_protocol;
+
+/**
+ * efi_st_get_config_table() - get configuration table
+ *
+ * @guid:      GUID of the configuration table
+ * Return:     pointer to configuration table or NULL
+ */
+static void *efi_st_get_config_table(const efi_guid_t *guid)
+{
+	size_t i;
+
+	for (i = 0; i < systab.nr_tables; i++) {
+		if (!guidcmp(guid, &systemtab->tables[i].guid))
+			return systemtab->tables[i].table;
+	}
+	return NULL;
+}
 
 static int setup(const efi_handle_t handle,
 		 const struct efi_system_table *systable)
 {
 	boottime = systable->boottime;
+	systemtab = systable;
+
+	fdt = efi_st_get_config_table(&fdt_guid);
+
+	if (!fdt) {
+		efi_st_error("Missing device tree\n");
+		return EFI_ST_FAILURE;
+	}
+
 	return EFI_ST_SUCCESS;
 }
 
@@ -68,28 +97,61 @@ static int execute(void)
 		}
 
 		u8 dataw[4096], datar[4096];
+		char name_str[40];
+		const char *node_path;
+		int bus, cs;
+		int node_offset, subnode_offset, flash_offset;
+
+		/* Determine offset in SPI flash that can be used for testing */
+		utf16_to_utf8(&name_str, spinor->spi_peripheral->friendly_name,
+			      u16_strlen(spinor->spi_peripheral->friendly_name));
+		bus = name_str[4] - '0';
+		cs = name_str[6] - '0';
+
+		snprintf(name_str, sizeof(name_str), "spi%d", bus);
+		node_path = fdt_get_alias(fdt, name_str);
+		if (node_path < 0)
+			continue;
+
+		node_offset = fdt_path_offset(fdt, node_path);
+		snprintf(name_str, sizeof(name_str), "flash@%d", cs);
+		subnode_offset = fdt_subnode_offset(fdt, node_offset, name_str);
+		flash_offset = fdtdec_get_int(fdt, subnode_offset, "spi-test-offset", -1);
+		if (flash_offset < 0) {
+			flash_offset = 0;
+			ret = spinor->read_data(spinor, flash_offset, sizeof(dataw), dataw);
+			if (ret != EFI_SUCCESS) {
+				efi_st_error("[%d]Failed to read data[%u]\n", (int)i, (int)ret);
+				efi_st_printf("Test Fail for device %d\n", (int)i);
+				continue;
+			} else {
+				efi_st_printf("Test Pass for device %d\n", (int)i);
+			}
+			goto END;
+		}
+
 		memset(dataw, 0, sizeof(dataw));
 		memset(datar, 0, sizeof(datar));
 
-		ret = spinor->read_data(spinor, 0, sizeof(dataw), dataw);
+		ret = spinor->read_data(spinor, flash_offset, sizeof(dataw), dataw);
 		if (ret != EFI_SUCCESS) {
 			efi_st_error("[%d]Failed to read data[%u]\n", (int)i, (int)ret);
 			continue;
 		}
 
-		ret = spinor->erase_blocks(spinor, 0, 1);
+		ret = spinor->erase_blocks(spinor, flash_offset, 1);
 		if (ret != EFI_SUCCESS && ret != EFI_UNSUPPORTED) {
 			efi_st_error("[%d]Failed to erase data[%u]\n", (int)i, (int)ret);
 			continue;
 		}
 
-		ret = spinor->write_data(spinor, 0, sizeof(dataw), dataw);
+		ret = spinor->write_data(spinor, flash_offset, sizeof(dataw), dataw);
 		if (ret != EFI_SUCCESS && ret != EFI_UNSUPPORTED) {
 			efi_st_error("[%d]Failed to write data[%u]\n", (int)i, (int)ret);
 			continue;
 		}
 
-		ret = spinor->read_data(spinor, 0, sizeof(datar), datar);
+		ret = spinor->read_data(spinor, flash_offset, sizeof(datar), datar);
 		if (ret != EFI_SUCCESS) {
 			efi_st_error("[%d]Failed to read data[%u]\n", (int)i, (int)ret);
 			continue;
@@ -100,6 +162,7 @@ static int execute(void)
 		else
 			efi_st_printf("Test Pass for device %d\n", (int)i);
 
+END:
 		ret = boottime->close_protocol(handles[i],
 					      &efi_guid_spi_nor_flash_protocol,
 					      NULL, NULL);

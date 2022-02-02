@@ -422,6 +422,9 @@ void smbios_update_type4(void)
 	case CNF10KB:
 		sprintf(tmp_str, "CNF10KB");
 		break;
+	case CN10KB:
+		sprintf(tmp_str, "CN10KB");
+		break;
 	default:
 		sprintf(tmp_str, "Unknown");
 		break;

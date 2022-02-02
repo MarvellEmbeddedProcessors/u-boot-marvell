@@ -6,3 +6,4 @@ F:	include/configs/cn10k_common.h
 F:	configs/cn10ka_defconfig
 F:	configs/cnf10ka_defconfig
 F:	configs/cnf10kb_defconfig
+F:	configs/cn10kb_defconfig

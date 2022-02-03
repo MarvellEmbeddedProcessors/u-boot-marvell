@@ -122,6 +122,7 @@ U_BOOT_CMD(set_mode, 3, 1, do_ethparam_common,
 	"    1 - 1G-X\n"
 	"    3 - 10G_C2C\n"
 	"    4 - 10G_C2M\n"
+	"    5 - 10G_KR\n"
 	"    7 - 25G_C2C\n"
 	"    8 - 25G_C2M\n"
 	"   12 - 40G_C2C\n"

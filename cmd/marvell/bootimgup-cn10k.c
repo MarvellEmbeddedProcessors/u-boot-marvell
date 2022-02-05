@@ -13,6 +13,9 @@
 #include <asm/arch/smc.h>
 #include <stdio.h>
 
+/**
+ * Send update requests to ATF
+ */
 static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 
 			char * const argv[])
@@ -22,6 +25,7 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 	struct smc_update_descriptor desc;
 	const char *env_addr, *env_size;
 	bool spi = false, mmc = false;
+	bool do_force = false;
 
 	memset(&desc, 0, sizeof(desc));
 	desc.magic = UPDATE_MAGIC;
@@ -81,7 +85,12 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	/* Walk through all arguments */
 	while (argc > 0) {
-		pr_debug("Parsing argument \"%s\"\n", argv[0]);
+		if (!strcmp(argv[0], "-f")) {
+			desc.update_flags |= UPDATE_FLAG_FORCE_WRITE;
+			argc--;
+			argv++;
+			continue;
+		}
 		if (!strcmp(argv[0], "-v")) {
 			desc.update_flags |= UPDATE_FLAG_IGNORE_VERSION;
 			argc--;
@@ -132,6 +141,8 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 		if (!strcmp(argv[0], "mmc")) {
 			argv++;
 			argc--;
+			desc.update_flags |= UPDATE_FLAG_EMMC;
+			pr_debug("Parsing mmc parameters\n");
 			/*
 			 * mmc can have the parameters:
 			 *   [device ID/bus]
@@ -142,7 +153,7 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 			 * or
 			 *   [-p] [device ID/bus] [image address] [image size]
 			 */
-			if (argc > 0 && !strcmp(argv[1], "-p")) {
+			if (argc > 0 && !strcmp(argv[0], "-p")) {
 				desc.update_flags |= UPDATE_FLAG_ERASE_PART;
 				pr_debug("Overwrite partition data\n");
 				argc--;
@@ -152,7 +163,7 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 				printf("mmc missing device ID\n");
 				return CMD_RET_USAGE;
 			}
-			ret = strict_strtoul(argv[1], 0, &value);
+			ret = strict_strtoul(argv[0], 0, &value);
 			if (ret) {
 				printf("Error parsing mmc device/bus number\n");
 				return CMD_RET_USAGE;
@@ -182,6 +193,8 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 				continue;
 			}
 		}
+		if (!argc)
+			break;
 		if (!strcmp(argv[0], "spi")) {
 			char *end;
 
@@ -270,6 +283,7 @@ U_BOOT_CMD(
 	" -b - updates the backup image location\n"
 #endif
 	" -v - skip version check\n"
+	" -f - force writes over matching data\n"
 	" -p - (MMC only) overwrite the partition table\n"
 	" spi - updates boot image on spi flash\n"
 	" bus and cs should be passed together, if missing, 0 is assumed.\n"
@@ -416,7 +430,7 @@ static int do_get_version_info(struct cmd_tbl *cmdtp, int flag, int argc,
 				printf("mmc missing device ID\n");
 				return CMD_RET_USAGE;
 			}
-			ret = strict_strtoul(argv[1], 0, &value);
+			ret = strict_strtoul(argv[0], 0, &value);
 			if (ret) {
 				printf("Error parsing mmc device/bus number\n");
 				return CMD_RET_USAGE;

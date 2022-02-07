@@ -115,6 +115,7 @@ obj-y += thermal/
 obj-$(CONFIG_TEE) += tee/
 obj-y += axi/
 obj-y += ufs/
+obj-y += fuse/
 obj-$(CONFIG_W1) += w1/
 obj-$(CONFIG_W1_EEPROM) += w1-eeprom/
 

@@ -108,6 +108,22 @@
 				#gpio-cells = <2>;
 			};
 
+			CP110_LABEL(ld_efuse0): CP110_LABEL(efuse0)@400F00 {
+				compatible = "marvell,mvebu-fuse-ld-prop";
+				reg = <0x400008 0x4>;
+				otp-mem = <0x400F00>;
+				extra-bit-per-63 = <1>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(ld_efuse1): CP110_LABEL(efuse1)@400F00 {
+				compatible = "marvell,mvebu-fuse-ld-user";
+				reg = <0x400008 0x4>;
+				otp-mem = <0x400F00>;
+				extra-bit-per-63 = <1>;
+				status = "disabled";
+			};
+
 			CP110_LABEL(sata0): sata@540000 {
 				compatible = "marvell,armada-8k-ahci";
 				reg = <0x540000 0x30000>;

@@ -48,4 +48,7 @@
 
 #define PLAT_OCTEONTX_GET_EFI_SHARED_MEM	0xc2000b09
 #define PLAT_OCTEONTX_WRITE_EFI_VAR	0xc2000b0a
+
+#define OCTEONTX_SET_AVS_STATUS         0xc2000b08
+
 #endif /* __SMC_ID_H__ */

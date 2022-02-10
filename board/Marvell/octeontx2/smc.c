@@ -123,6 +123,16 @@ ssize_t smc_mdio_dbg_write(int cgx_lmac, int mode, int phyaddr, int devad,
 	return regs.regs[0];
 }
 
+ssize_t smc_set_avsstatus(uint8_t avs_status)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = OCTEONTX_SET_AVS_STATUS;
+	regs.regs[1] = avs_status;
+	smc_call(&regs);
+
+	return regs.regs[0];
+}
 /*
  * on entry,
  *   subcmd:  one of OCTEONTX_ATTESTATION_QUERY_SUBCMD_xxx

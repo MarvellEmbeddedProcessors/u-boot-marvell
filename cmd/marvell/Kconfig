@@ -58,6 +58,13 @@ config CMD_ATTEST
 	   Support for Software Attestation on Marvell's OcteonTX2 platforms.
 	   Displays Secure Boot software component version information.
 
+config CMD_AVSSTATUS
+	depends on ARCH_OCTEONTX2
+	bool "Command for supporting setting AVS status"
+	help
+	   Support for setting AVS status.
+
+
 config CMD_BOOTIMGUP
 	depends on ARCH_OCTEONTX || ARCH_OCTEONTX2
 	depends on MMC_OCTEONTX || SPI_FLASH

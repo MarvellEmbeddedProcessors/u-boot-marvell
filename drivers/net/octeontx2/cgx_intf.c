@@ -343,7 +343,7 @@ static void mode_to_args(int mode, struct cgx_mode_change_args *args)
 		break;
 	case MODE_50G_C2C:
 		args->speed = CGX_LINK_50G;
-		args->mode = BIT_ULL(CGX_MODE_50G_C2C_BIT);
+		args->mode = BIT_ULL(CGX_MODE_50GAUI_2_C2C_BIT);
 		break;
 	case MODE_50G_4_C2C:
 		args->speed = CGX_LINK_50G;
@@ -434,7 +434,7 @@ int cgx_intf_get_mode(struct udevice *ethdev)
 	case CGX_MODE_25G_2_C2C_BIT:
 		printf("25G_2_C2C\n");
 		break;
-	case CGX_MODE_50G_C2C_BIT:
+	case CGX_MODE_50GAUI_2_C2C_BIT:
 		printf("50G_C2C\n");
 		break;
 	case CGX_MODE_50G_4_C2C_BIT:

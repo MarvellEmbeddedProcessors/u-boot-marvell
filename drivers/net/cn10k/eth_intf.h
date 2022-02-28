@@ -181,6 +181,14 @@ typedef enum {
 	ETH_MODE_RPM_MAX_BIT,
 } eth_mode_t;
 
+typedef enum {
+	MODE_CPRI_2_4G_BIT,
+	MODE_CPRI_3_1G_BIT,
+	MODE_CPRI_4_9G_BIT,
+	MODE_CPRI_6_1G_BIT,
+	MODE_CPRI_9_8G_BIT,
+} cpri_mode_t;
+
 #define ETH_ALL_SUPPORTED_MODES 0xFFFFFFFFFFFFFFFF
 
 /* scratchx(0) CSR used for ATF->non-secure SW communication.
@@ -390,7 +398,8 @@ struct eth_mode_change_args {
 	u64 speed:4; /* eth_link_speed enum */
 	u64 duplex:1; /* 0 - full duplex, 1 - half duplex */
 	u64 an:1;	/* 0 - disable AN, 1 - enable AN */
-	uint64_t reserved2:6;
+	uint64_t use_portm_idx:1;
+	uint64_t portm_idx:5;
 	/* This field categorize the mode ID range to accomodate more modes.
 	* To specify mode ID range of 0 - 41, this field will be 0.
 	* To specify mode ID range of 42 - 83, this field will be 1 and so.

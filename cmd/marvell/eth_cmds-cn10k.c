@@ -11,7 +11,7 @@
 #include <dm/uclass-internal.h>
 #include <net.h>
 
-extern int eth_intf_set_mode(struct udevice *ethdev, int mode);
+extern int eth_intf_set_mode(struct udevice *ethdev, int mode, int port);
 extern int eth_intf_get_mode(struct udevice *ethdev);
 extern int eth_intf_set_fec(struct udevice *ethdev, int type);
 extern int eth_intf_get_fec(struct udevice *ethdev);
@@ -44,7 +44,7 @@ static int do_ethparam_common(struct cmd_tbl *cmdtp, int flag, int argc,
 	const char *cmd;
 	char *endp;
 	const char *devname;
-	int ret = CMD_RET_USAGE, arg;
+	int ret = CMD_RET_USAGE, arg, port;
 	struct udevice *dev = NULL;
 
 	if (argc < 2)
@@ -78,9 +78,15 @@ static int do_ethparam_common(struct cmd_tbl *cmdtp, int flag, int argc,
 		if (argc < 3)
 			return CMD_RET_FAILURE;
 		arg = simple_strtol(argv[2], &endp, 0);
-		if (arg < 0 || arg > 37)
+		if (arg < 0)
 			return ret;
-		ret = eth_intf_set_mode(dev, arg);
+
+		if (argc < 4)
+			port = -1;
+		else
+			port = simple_strtol(argv[3], &endp, 0);
+
+		ret = eth_intf_set_mode(dev, arg, port);
 	}
 	return (ret == 0) ? CMD_RET_SUCCESS : CMD_RET_FAILURE;
 }
@@ -112,9 +118,9 @@ U_BOOT_CMD(get_mode, 2, 1, do_ethparam_common,
  * with eth_mode_t defined in eth_intf.h
  * FIXME: Only added modes that are supported by ATF
  */
-U_BOOT_CMD(set_mode, 3, 1, do_ethparam_common,
+U_BOOT_CMD(set_mode, 4, 1, do_ethparam_common,
 	"Modify Interface mode for selected ethernet interface",
-	"Example - set_mode <ethX> [mode]\n"
+	"Example - set_mode <ethX> [mode] [portm_idx]\n"
 	"Change mode of selected network interface\n"
 	"\n"
 	"mode encoding -\n"

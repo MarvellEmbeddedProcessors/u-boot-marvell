@@ -282,21 +282,56 @@ static char intf_speed_to_str[][8] = {
 	"100G",
 };
 
-static void mode_to_args(int mode, struct eth_mode_change_args *args, int flag)
+static inline u64 cpri_mode_to_mode_bitmask(int mode)
+{
+	switch (mode) {
+	case MODE_CPRI_2_4G_BIT:
+		return BIT_ULL(0);
+	case MODE_CPRI_3_1G_BIT:
+		return BIT_ULL(1);
+	case MODE_CPRI_4_9G_BIT:
+		return BIT_ULL(2);
+	case MODE_CPRI_6_1G_BIT:
+		return BIT_ULL(3);
+	case MODE_CPRI_9_8G_BIT:
+		return BIT_ULL(4);
+	default:
+		break;
+	}
+
+	return (u64)(-1);
+}
+
+static void mode_to_args(int mode, struct eth_mode_change_args *args, int flag, int port)
 {
 	int mode_group = 0;
+
+	if (port != -1) {
+		args->portm_idx = port;
+		args->use_portm_idx = 1;
+	} else {
+		args->use_portm_idx = 0;
+	}
 
 	args->an = 0;
 	args->duplex = 0;
 	/* If mode ID exceeding eth_mode_t enum value of 41, mode_group_idx
 	 * should be assigned accordingly
 	 */
-	args->mode_group_idx = 0;
-	mode_group = mode - 41;
-	if (mode_group > 0)
-		args->mode_group_idx = 1;
+	if (mode >= 40 && mode <= 44)
+		mode_group = 2;
 
-	debug("mode %d, flag %d\n", mode, flag);
+	args->mode_group_idx = mode_group;
+
+	debug("mode %d, mode_group_idx %d, flag %d\n", mode, mode_group, flag);
+
+	if (mode_group == 2) {
+		args->speed = 0;
+		if (flag)
+			args->mode = cpri_mode_to_mode_bitmask(mode - 40);
+		return;
+	}
+
 	switch (mode) {
 	case ETH_MODE_SGMII_BIT:
 		if (flag) {
@@ -456,7 +491,7 @@ static void mode_to_args(int mode, struct eth_mode_change_args *args, int flag)
 	}
 }
 
-int eth_intf_set_mode(struct udevice *ethdev, int mode)
+int eth_intf_set_mode(struct udevice *ethdev, int mode, int port)
 {
 	struct rvu_pf *rvu = dev_get_priv(ethdev);
 	struct nix *nix = rvu->nix;
@@ -467,7 +502,7 @@ int eth_intf_set_mode(struct udevice *ethdev, int mode)
 	cmd.cmd.id = ETH_CMD_MODE_CHANGE;
 	debug("%s: mode %d\n", __func__, mode);
 
-	mode_to_args(mode, &cmd.mode_change_args, 1);
+	mode_to_args(mode, &cmd.mode_change_args, 1, port);
 
 	ret = eth_intf_req(nix->lmac->rpm->rpm_id, nix->lmac->lmac_id,
 			   cmd, &scr0.u, 0);
@@ -484,7 +519,7 @@ int eth_intf_set_mode(struct udevice *ethdev, int mode)
 		return -1;
 	}
 
-	mode_to_args(mode, &cmd.mode_change_args, 0);
+	mode_to_args(mode, &cmd.mode_change_args, 0, port);
 
 	if (scr0.s.link_sts.speed) {
 		printf("Mode %s ", intf_speed_to_str[scr0.s.link_sts.speed]);

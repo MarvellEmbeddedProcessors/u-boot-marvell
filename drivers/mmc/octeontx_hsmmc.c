@@ -2209,7 +2209,7 @@ static int octeontx_mmc_adjust_tuning(struct mmc *mmc, struct adj *adj,
 #endif
 	octeontx_mmc_set_timing(mmc);
 
-	if (is_hs200 && env_get_yesno("emmc_export_hs200_taps")) {
+	if (is_hs200 && env_get_yesno("emmc_export_hs200_taps") == 1) {
 		char env_name[64];
 
 		env_set_ulong("emmc_timing_tap", slot->host->timing_taps);

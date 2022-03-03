@@ -137,6 +137,18 @@
 	status = "okay";
 };
 
+&ap_hd_efuse0 {
+	status = "okay";
+};
+
+&ap_ld_efuse0 {
+	status = "okay";
+};
+
+&ap_ld_efuse1 {
+	status = "okay";
+};
+
 /*
  * CP related configuration
  */
@@ -170,6 +182,14 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&cp0_sdhci_pins>;
 	bus-width = <4>;
+	status = "okay";
+};
+
+&cp0_ld_efuse0 {
+	status = "okay";
+};
+
+&cp0_ld_efuse1 {
 	status = "okay";
 };
 

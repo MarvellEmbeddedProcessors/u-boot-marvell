@@ -13,6 +13,21 @@
 #include <asm/arch/smc.h>
 #include <stdio.h>
 
+/** Simple macro to set or clear flags */
+#define PARSE_FLAG(parm, flag, set)				\
+	{							\
+		u32 mflag = (flag);				\
+		if (!strcmp(argv[0], parm)) {			\
+			if (set)				\
+				desc.update_flags |= mflag;	\
+			else					\
+				desc.update_flags &= ~mflag;	\
+			argc--;					\
+			argv++;					\
+			continue;				\
+		}						\
+	}
+
 /**
  * Send update requests to ATF
  */
@@ -25,7 +40,6 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 	struct smc_update_descriptor desc;
 	const char *env_addr, *env_size;
 	bool spi = false, mmc = false;
-	bool do_force = false;
 
 	memset(&desc, 0, sizeof(desc));
 	desc.magic = UPDATE_MAGIC;
@@ -83,28 +97,17 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 		pr_debug("filesize: 0x%llx\n", desc.image_size);
 	}
 
+	/* Default to erasing EBF config data */
+	desc.update_flags |= UPDATE_FLAG_ERASE_CONFIG;
 	/* Walk through all arguments */
 	while (argc > 0) {
-		if (!strcmp(argv[0], "-f")) {
-			desc.update_flags |= UPDATE_FLAG_FORCE_WRITE;
-			argc--;
-			argv++;
-			continue;
-		}
-		if (!strcmp(argv[0], "-v")) {
-			desc.update_flags |= UPDATE_FLAG_IGNORE_VERSION;
-			argc--;
-			argv++;
-			continue;
-		}
-		if (CONFIG_IS_ENABLED(CMD_BOOTIMGUP_BACKUP) &&
-		    !strcmp(argv[0], "-b")) {
-			desc.update_flags |= UPDATE_FLAG_BACKUP;
-			argc--;
-			argv++;
-			pr_debug("Update backup image\n");
-			continue;
-		}
+		PARSE_FLAG("-f", UPDATE_FLAG_FORCE_WRITE, true);
+		PARSE_FLAG("-e", UPDATE_FLAG_ERASE_CONFIG, false);
+		PARSE_FLAG("-v", UPDATE_FLAG_IGNORE_VERSION, true);
+		if (CONFIG_IS_ENABLED(CMD_BOOTIMGUP_BACKUP))
+			PARSE_FLAG("-b", UPDATE_FLAG_BACKUP, true);
+		PARSE_FLAG("-p", UPDATE_FLAG_ERASE_PART, true);
+
 		/* Parse customer signature */
 		if (CONFIG_IS_ENABLED(CMD_BOOTIMGUP_CUST_SIG) &&
 		    !strcmp(argv[0], "-sig")) {
@@ -129,13 +132,6 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 			argv += 3;
 			pr_debug("Signature address: 0x%llx, size: 0x%llx\n",
 				 desc.user_addr, desc.user_size);
-			continue;
-		}
-		if (!strcmp(argv[0], "-p")) {
-			desc.update_flags |= UPDATE_FLAG_ERASE_PART;
-			argc--;
-			argv++;
-			pr_debug("Overwrite partition data\n");
 			continue;
 		}
 		if (!strcmp(argv[0], "mmc")) {
@@ -267,21 +263,22 @@ static int do_bootimgup(struct cmd_tbl *cmdtp, int flag, int argc,
 
 U_BOOT_CMD(
 #if defined(CONFIG_CMD_BOOTIMGUP_CUST_SIG) && defined(CONFIG_CMD_BOOTIMGUP_BACKUP)
-	bootimgup, 11, 1, do_bootimgup, "Updates Boot Image",
-	" <[-v]> <[-b]> <[-p]> <mmc [devid] | spi [bus:cs]> [image_address] [image_size] -sig [signature address] [signature size]\n"
+	bootimgup, 12, 1, do_bootimgup, "Updates Boot Image",
+	" <[-v]> <[-b]> <[-e]> <[-p]> <mmc [devid] | spi [bus:cs]> [image_address] [image_size] -sig [signature address] [signature size]\n"
 #elif defined(CONFIG_CMD_BOOTIMGUP_CUST_SIG) && !defined(CONFIG_CMD_BOOTIMGUP_BACKUP)
-	bootimgup, 10, 1, do_bootimgup, "Updates Boot Image",
-	" <[-v]> <[-p]> <mmc [devid] | spi [bus:cs]> [image_address] [image_size] -sig [signature address] [signature size]\n"
+	bootimgup, 11, 1, do_bootimgup, "Updates Boot Image",
+	" <[-v]> <[-e]> <[-p]> <mmc [devid] | spi [bus:cs]> [image_address] [image_size] -sig [signature address] [signature size]\n"
 #elif !defined(CONFIG_CMD_BOOTIMGUP_CUST_SIG) && defined(CONFIG_CMD_BOOTIMGUP_BACKUP)
-	bootimgup, 8, 1, do_bootimgup, "Updates Boot Image",
-	" <[-v]> <[-b]> <[-p]> <mmc | spi> <[devid] | [bus:cs]> [image_address] [image_size]\n"
+	bootimgup, 9, 1, do_bootimgup, "Updates Boot Image",
+	" <[-v]> <[-b]> <[-e]> <[-p]> <mmc | spi> <[devid] | [bus:cs]> [image_address] [image_size]\n"
 #else
-	bootimgup, 7, 1, do_bootimgup, "Updates Boot Image",
-	" <[-v]> <[-p]> <mmc | spi> <[devid] | [bus:cs]> [image_address] [image_size]\n"
+	bootimgup, 8, 1, do_bootimgup, "Updates Boot Image",
+	" <[-v]> <[-e]> <[-p]> <mmc | spi> <[devid] | [bus:cs]> [image_address] [image_size]\n"
 #endif
 #ifdef CONFIG_CMD_BOOTIMGUP_BACKUP
 	" -b - updates the backup image location\n"
 #endif
+	" -e - do not erase EBF configuration\n"
 	" -v - skip version check\n"
 	" -f - force writes over matching data\n"
 	" -p - (MMC only) overwrite the partition table\n"
